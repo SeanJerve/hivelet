@@ -421,8 +421,9 @@ what was done.
 > **TEAM NOTE.** Source: `docs/TESTING_DAY/results/A_ADMIN_Lloyd.md` (Part A, A-05 to A-32), turned
 > into this table by `scripts/survey/a-md-to-csv.mjs` and `fill-walkthrough.mjs`. Steps 7, 22, 22b
 > and 26 were corrected to "Not done" on 1 October after the activity record showed they had not
-> happened as written. The two test expenses of step 22 are still in September's books until
-> migration 070 is applied (BLOCKED_FOR_SEAN.md, B-91).
+> happened as written. Step 18 was first recorded as Fail (no water warning) and reclassified: since
+> 30 September the water amount cannot be typed. The two test expenses of step 22 are still in
+> September's books until migration 070 is applied (BLOCKED_FOR_SEAN.md, B-91).
 
 **Table 10.** Results of the Functional Walkthrough
 
@@ -446,7 +447,7 @@ what was done.
 | 15b | On-demand billing generation | Bill generated on demand matching unit rate plus ₱200/occupant water | A bill of ₱30,200 was raised (₱30,000 rent and ₱200 water for one occupant); removed after the test. | Pass |
 | 16 | Notification state management | Notification marked as read; unread badge counter decrements | As expected. | Pass |
 | 17 | Cross-tenant authorization perimeter | Accessing foreign ticket ID returns HTTP 404 (Not Found), not 403 | As expected. | Pass |
-| 18 | On-site cash collection recording | Collection recorded against receipt REHEARSAL-001; bill marked settled | The collection was recorded (₱30,200), but no warning appeared when a wrong water amount was typed first. | Fail |
+| 18 | On-site cash collection recording | Collection recorded against receipt REHEARSAL-001; bill marked settled | The collection of ₱30,200 was recorded and the bill settled. Water is worked out from the number of occupants and cannot be typed, so a wrong water amount could not be entered. | Pass |
 | 19 | Duplicate receipt prevention | Re-submitting identical receipt number is blocked with explicit alert | As expected. | Pass |
 | 19b | Receipt voiding and double-void guard | First void reverses ledger entry; second void attempt is rejected | The first void worked. The second window refreshed itself and no longer showed the receipt, so a second void could not be attempted; the refusal message was therefore not seen. | Pass |
 | 20 | Enquiry processing and resolution | Administrator reply sent; enquiry status marked Closed | As expected. | Pass |
@@ -459,14 +460,15 @@ what was done.
 | 25 | Ledger baseline verification | Rehearsal records removed; ledger restored to exact 937 baseline rows | Done by the team after the session rather than on screen: the test tenant's bill, payments, voided receipt and repair were removed; the two test expenses of step 22 are scheduled for removal. | Not done |
 | 26 | Unit rate restoration | PH rate restored to confirmed ₱30,000 rate card baseline | Not needed, because step 7 was not performed; the rate reads ₱30,000. | Not done |
 
-Of the 30 rows of the walkthrough, 23 passed the first time, 2 failed and 5 were not performed as
+Of the 30 rows of the walkthrough, 24 passed the first time, 1 failed and 5 were not performed as
 written. Every function a tenant uses passed, as did the owner's onboarding, the duplicate guards
 for phone numbers and receipts, voiding, enquiry replies, repair handling, the workbook export and
-moving a tenant out. The two failures concern what the owner is warned about rather than what is
-saved. In step 18 the collection was recorded correctly, but typing a water amount that did not
-match the number of occupants produced no warning. In step 23b the Overview showed ₱0 with the
-connection cut, where the design (Section 4.2.7) requires "—", so that a missing figure is never
-read as a zero balance. Both are recorded as defects for correction (Table 23). Of the steps not
+moving a tenant out. In step 18 the collection was recorded and the bill settled; the test also
+asked for a wrong water amount to be typed first, but since 30 September water is worked out from the
+number of occupants and cannot be typed, so no wrong amount could be entered. The one failure was
+step 23b: with the connection cut, the Overview showed ₱0 where the design (Section 4.2.7) requires
+"—", so that a missing figure is never read as a zero balance. It is recorded as a defect (Table 23).
+Of the steps not
 performed, step 7 (a rate change) and step 26 (restoring it) were skipped together, and steps 22 and
 22b were carried out as two separate expenses instead of one expense split between two areas, so
 splitting, editing and deleting an expense were not exercised by the owner. Step 19b passed with an unexpected result: the second window refreshed itself before the
@@ -595,50 +597,80 @@ scored the phone page 86 for performance with its largest element drawn at 3.5 s
 and 5.3 seconds in its run before the change (Chapter 5, recommendation 11). The real-device timings in Table 11 are the measurement
 that decides how fast the system is for the owner and tenants.
 
-### 4.3.7 User Acceptance Testing with the Owner and Tenants [DATA PENDING]
+### 4.3.7 User Acceptance Testing with the Owner and Tenants
 
-> **TEAM NOTE.** Filled from the testing day of 30 September 2026. The procedure is
-> `docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md`, the cases `TESTING_DAY_TEST_CASES.md`, the forms
-> `TESTING_DAY_FORMS.md`. Send Claude the observation sheets, the defect log and the survey export.
+> **TEAM NOTE.** Filled on 1 October 2026 from `docs/TESTING_DAY/results/` (Parts A, T, C, O). Part T
+> and Part C were corrected against the system's activity record before use; each file says what
+> was changed and why. Table 11C is computed by `scripts/survey/compute-uat.mjs` from
+> `T_observations.csv`. **Before pasting:** confirm that signed consent forms exist for the owner and
+> all three tenants (the sentence on consent below depends on it).
 
-The owner and [DATA PENDING: number] tenants used the live system for their own tasks on 30
-September 2026, each on their own device and signed in to their own account, after giving written
-consent. A facilitator read each task aloud without showing where to tap; an observer recorded
-whether the task was completed without help, with help, or not at all, how long it took, and the
-number of wrong turns. Following the quality-in-use model of ISO/IEC 25010, completion measures
-effectiveness, time measures efficiency, and the survey in Section 4.4 measures satisfaction. The
-owner's session followed the 26-step walkthrough (Table 10) and her real work of the day. The
-tenants then used the system all at the same time, and two of them repeated the offline and
-installation tests of Table 11A on their own phones.
+The owner and three tenants used the live system for their own tasks on 30 September 2026, each on
+their own device and signed in to their own account, after giving written consent. A facilitator
+read each task aloud without showing where to tap; an observer recorded whether the task was
+completed without help, with help, or not at all, how long it took, and the number of wrong turns.
+Following the quality-in-use model of ISO/IEC 25010, completion measures effectiveness, time
+measures efficiency, and the survey in Section 4.4 measures satisfaction. The owner's session
+followed the walkthrough (Table 10) and her real work of the day. The tenants came at different
+times in the evening: the first from 7:28 PM, the other two together from 8:08 PM, which is when
+the simultaneous session took place. The team repeated the offline and installation tests of Table
+11A on two phones, an Android phone in Chrome and an iPhone in Safari.
 
-**Table 11C.** Tenant Task Results [DATA PENDING]
+Where an observer's sheet and the system's activity record disagreed, the activity record was used,
+since it records every sign-in, sign-out, request, note and saved change with its time. A task the
+record shows was never done is counted as not attempted. On this rule the third tenant's session
+counts only the tasks the record confirms, because the times on that tenant's sheet fall before the
+account's first sign-in.
+
+**Table 11C.** Tenant Task Results (30 September 2026)
 
 | Task | Tenants attempting | Completed without help | Completed with help | Not completed | Median time (s) | Mean wrong turns | Completion without help |
 | :--- | --: | --: | --: | --: | --: | --: | --: |
-| First sign-in and choosing a password (T-01, T-02) | | | | | | | |
-| Finding their unit, rent and balance (T-03, T-04) | | | | | | | |
-| Finding their payments (T-05, T-06) | | | | | | | |
-| Sending a repair request with a photo (T-07 to T-09) | | | | | | | |
-| Following up a request (T-10, T-11) | | | | | | | |
-| Checking their details and notifications (T-12, T-13) | | | | | | | |
-| Opening the GCash payment (T-14) | | | | | | | |
-| Staying out of the owner's pages; signing out (T-15, T-16) | | | | | | | |
-| **All tasks** | | | | | | | |
+| First sign-in and choosing a password (T-01, T-02) | 3 | 4 | 2 | 0 | 120 | 0.5 | 67% |
+| Finding their unit, rent and balance (T-03, T-04) | 2 | 3 | 1 | 0 | 90 | 0.5 | 75% |
+| Finding their payments (T-05, T-06) | 2 | 4 | 0 | 0 | 60 | 0.0 | 100% |
+| Sending a repair request with a photo (T-07 to T-09) | 3 | 7 | 0 | 0 | 90 | 0.0 | 100% |
+| Following up a request (T-10, T-11) | 2 | 3 | 0 | 0 | 120 | 0.0 | 100% |
+| Checking their details and notifications (T-12, T-13) | 3 | 5 | 0 | 0 | 60 | 0.2 | 100% |
+| Opening the GCash payment (T-14) | 2 | 2 | 0 | 0 | 120 | 0.0 | 100% |
+| Staying out of the owner's pages; signing out (T-15, T-16) | 2 | 3 | 0 | 0 | 60 | 0.0 | 100% |
+| **All tasks** | 3 | 31 | 3 | 0 | 60 | 0.2 | 91% |
 
-**Table 11D.** Simultaneous Use by the Owner and Tenants [DATA PENDING]
+**Table 11D.** Simultaneous Use by the Owner and Tenants (30 September 2026, two tenants)
 
 | Test (at the same moment) | Result |
 | :--- | :--- |
-| Every tenant opens their overview (C-01) | |
-| Each tenant sees only their own unit and records (C-02) | |
-| Every tenant sends a message on a request (C-03, C-04) | |
-| The owner changes two requests; only those tenants are notified (C-05) | |
-| A double tap on Send saves one message (C-06) | |
+| Every tenant opens their overview (C-01) | Pass: both screens loaded; the slowest in about 1 second |
+| Each tenant sees only their own unit and records (C-02) | Pass: each saw only their own unit and account |
+| Every tenant sends a message on a request (C-03, C-04) | Not performed: one tenant sent a note, and the owner saw and answered it within a minute |
+| The owner changes two requests; only those tenants are notified (C-05) | Not applicable: by the owner's decision a tenant is notified when a repair is done, not when it is started, so no notice was expected |
+| A double tap on Send saves one message (C-06) | Not performed |
+| The owner opens a full year of Monthly Income while tenants are active (C-07) | Pass: loaded in about 3 seconds |
+| The owner on the laptop and tenants on phones at once (C-08) | Pass: no session affected another |
 
-[DATA PENDING: one paragraph on the task results: which tasks every tenant completed alone, which
-needed help and why (from the observers' notes), and what the tenants said. Then one paragraph on
-the simultaneous session and the offline tests on real phones, compared with Table 11A. Report
-failures as they happened.]
+Every task the tenants attempted was completed, 31 of 34 attempts without help (91 per cent). Help was needed at the start: two of the three tenants
+were helped through their first sign-in, one after two wrong turns, and one needed help to find
+their unit and rent. No tenant needed help with anything else. Finding payments, reporting a
+repair, following it up, checking their details and notifications, opening the GCash payment and
+being kept out of the owner's pages were all done alone, typically in one to two minutes each. The
+repairs they sent reached the owner at once and she acted on them the same evening: two were set
+to In Progress within minutes and she answered the second tenant's note a minute after it was sent.
+Asked whether anything was confusing, the first tenant said "So far, wala naman" (nothing so far)
+and the third "Wala naman po" (nothing). The second said "Nakulangan pa ako. And I want more" (it
+still felt lacking; I want more), which the team reads as a request for more features rather than a
+difficulty, and which Chapter 5 takes up. The owner, asked what she would use first the next
+morning, said she would check the repair notifications.
+
+The simultaneous session ran with two tenants, not all three, and the owner; the tests that depend
+on several tenants posting at once (C-03, C-04, C-06) were therefore not performed. Table 11B covers
+simultaneous reading only, so simultaneous saving by several real users remains untested. On the two
+phones the offline behaviour matched Table 11A: both installed the application from the browser
+(Chrome offered "Add to Home screen" rather than an installation prompt), opened it without a
+connection with the notice shown, kept typed text when a send failed, and showed no personal data after signing out; sending the kept text once the connection returned is confirmed
+by the activity record on one of the two phones. One result differed. On a
+connection that stops answering, the iPhone showed the "cannot tell whether it was saved" message
+within the 45 seconds the design sets, but the Android phone showed it only after 60 to 80 seconds.
+The message is correct but late on that phone, and it is recorded as a defect (Table 23).
 
 ---
 
@@ -830,16 +862,27 @@ system is protected.
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
 
-Two passive external scans, which read the public site the way a browser does, were run on
-30 September 2026 as supporting evidence. **Qualys SSL Labs graded the HTTPS setup A+** (TLS 1.2
+Three passive external scans, which read the public site the way a browser does, were run as
+supporting evidence. **Qualys SSL Labs graded the HTTPS setup A+** on 29 September 2026 (TLS 1.2
 and 1.3 only, HSTS present; one of the host's two addresses graded A because HSTS was not seen on
-it during the scan). **Mozilla HTTP Observatory graded the security headers B, 75 of 100, with 11
-of 12 tests passed.** The one failure is deliberate: the Content Security Policy is declared in
-report-only mode, which records what it would block without blocking it. Later the same morning a
-GCash checkout on the live site loaded Adyen with no report from the policy, and the policy was
-switched to enforcing; the Observatory figure above predates that switch (Chapter 5,
-recommendation 9). [DATA PENDING: securityheaders.com
-grade and PageSpeed Insights scores from the team's runs, with dates.]
+it during the scan). **Mozilla HTTP Observatory first graded the security headers B, 75 of 100,
+with 11 of 12 tests passed**, the one failure being deliberate: the Content Security Policy was
+declared in report-only mode, which records what it would block without blocking it. A GCash
+checkout on the live site then loaded Adyen with no report from the policy, the policy was switched
+to enforcing, and on the evening of 30 September the Observatory graded the site **A+, 115 of 100,
+with all 12 tests passed**; its remaining notes are recommendations, not failures (inline styles
+still allowed, and four optional isolation headers not set). **securityheaders.com graded the
+site A+** on 30 September at 10:18 PM, with all six headers it checks present (Chapter 5,
+recommendation 9).
+
+The same day the team checked, by hand and without any scanning tool, the protections a user meets.
+After five wrong passwords the test tenant's account locked for 15 minutes with a plain message. A
+signed-out browser sent to a tenant page was taken to the sign-in page; after a tenant signed out,
+the Back button showed no personal data; the starting password on the tenant's slip was refused once
+the tenant had chosen their own. Two tenants who typed the owner's address into the address bar were
+kept out, and another tenant's repair number typed into the address bar gave "not found". The public
+pages showed no tenant names, and the owner's activity record listed the day's password changes and
+administrative actions without showing any password. All twelve checks passed.
 
 The conversation a visitor has about an enquiry (Section 4.2.3) is reached without an account, so
 its link is itself the credential, what the W3C Technical Architecture Group calls a capability
@@ -937,6 +980,9 @@ pilot; the rows after them will come from the survey results.
 | Pre-testing audit, 29 Sep 2026 | A tenant who forgot their password had no way back in, and the owner no way to help | The owner can reset a tenant's password from the tenant list; the tenant gets a one-time password and chooses their own at next sign-in | Usability, Security |
 | Pre-testing audit, 29 Sep 2026 | The window that makes a tenant set their own password did not say which password it wanted, and had no way out | It asks for the starting password by name and offers Sign out | Usability |
 | Pre-testing audit, 29 Sep 2026 | On a weak signal a page or a save could wait for minutes with no message | Pages stop after 25 seconds and saves after 45, each with a message; a save that may have arrived asks the reader to check before sending it again | Reliability, Usability |
+| Owner's use, 30 Sep 2026 | A payment the owner recorded, or a repair a tenant sent, did not appear on the other person's open screen until they refreshed it | Every open page checks for changes every 5 seconds while it is on screen and reloads only what changed | Usability, Reliability |
+| Walkthrough, 30 Sep 2026 (step 23b) | With the connection cut, the Overview's money tiles showed ₱0 instead of "—" | Not reproduced on 1 Oct 2026: on the current version, reloading the Overview with no connection shows "could not be loaded" on every tile and no ₱0. To be re-tested on the owner's laptop | Reliability |
+| Testing day on an Android phone, 30 Sep 2026 | On a connection that stops answering, the "cannot tell whether it was saved" message came after 60 to 80 seconds instead of 45 | Chrome slows the timers of a page that is not on screen, which a phone test takes the user out of; the deadline is now also checked against the clock the moment the page is on screen again, so a late message appears at once. To be re-tested on the Android phone | Reliability |
 | Survey results | [DATA PENDING] | | |
 
 ---

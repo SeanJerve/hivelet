@@ -69,14 +69,18 @@ checked read-only against the live database by Claude at 22:55 Manila. Nothing w
   printed total is ₱600 short of the receipt. Correct the bill's water and total to ₱800 / ₱8,800 in
   a migration, or leave it and say so. The receipt is correct and stays. The rate stays ₱8,000
   (water is added on top; ₱8,800 as the rate would bill ₱9,600).
-- **Defect A-23: no warning for a wrong water figure.** When recording a payment with a water
-  amount that differs from occupants × ₱200, no warning appeared (Part A says one should). Check
-  whether the warning compares against the occupant count typed in the form or the tenancy's own.
+- ~~**Defect A-23: no warning for a wrong water figure.**~~ **Not a defect** (Claude, 1 Oct): since
+  your 30 Sep change the water amount cannot be typed ("Water is never typed", OnsitePaymentModal),
+  so there is no wrong figure to warn about. A-23 reclassified Pass; the case wording predates it.
 - **Defect A-30: offline Overview shows ₱0.** With the laptop disconnected and Overview reloaded,
-  the money tiles showed **₱0** and "Try again" instead of "—" (the rule the check:liveness suite
-  guards). A real regression or a cached response: reproduce with DevTools Offline.
+  the money tiles showed **₱0** and "Try again" instead of "—". **Not reproduced on 1 Oct** (Claude):
+  the local build with a cached admin session and no API reachable shows "could not be loaded" on
+  every tile and no ₱0. Re-test on the owner's laptop; if it recurs, note which tile showed ₱0.
 - **Defect O-12 (Android): the 45-second save deadline fired after 60 to 80 s** on an Infinix GT20
-  in Chrome (iPhone 15 Safari: within 45 s). `frontend/src/lib/api.ts`.
+  in Chrome (iPhone 15 Safari: within 45 s). **Mitigated 1 Oct** (Claude, `frontend/src/lib/api.ts`):
+  Chrome slows timers on a hidden page, so the deadline is now also checked against the clock on
+  `visibilitychange`; verified in the browser (before the deadline: still waiting; past it: TIMEOUT
+  at once; reads: NETWORK_ERROR). Re-test O-12 on the GT20.
 - ~~The PH rehearsal repair (18:46)~~: removed by 069.
 
 ### B-89 — after the testing day: garbage fee out, invoices not OR, tenants own contact details, live pages · **DONE 2026-09-30: 066, 067, 068 applied and verified**
