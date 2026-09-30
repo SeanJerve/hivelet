@@ -36,10 +36,13 @@ export const TYPING = {
   // Income: the receipt number, digit by digit.
   or: {scene: 'income', text: '5120', at: 240, base: 4.5, seed: 31},
   // Tenant: the repair request.
-  title: {scene: 'tenant', text: 'Faucet keeps dripping', at: 322, base: 2.3, seed: 11},
-  details: {scene: 'tenant', text: 'Even when closed.', at: 380, base: 2.1, seed: 12},
+  title: {scene: 'tenant', text: 'Faucet keeps dripping', at: 454, base: 2.3, seed: 11},
+  details: {scene: 'tenant', text: 'Even when closed.', at: 512, base: 2.1, seed: 12},
   // Guests: the question asked about the unit.
   question: {scene: 'guests', text: 'Can we view it on Saturday?', at: 262, base: 2.1, seed: 21},
+  // Guests: her answer in Inquiries, and the visitor writing back on their page.
+  reply: {scene: 'guests', text: 'Yes po, Saturday at 10 am.', at: 468, base: 2.1, seed: 22},
+  back: {scene: 'guests', text: 'Thank you po!', at: 624, base: 2.2, seed: 23},
 };
 
 const memo = {};

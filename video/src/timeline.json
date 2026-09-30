@@ -1,17 +1,17 @@
 {
   "fps": 30,
   "scenes": [
-    {"id": "act1", "frames": 1270},
+    {"id": "act1", "frames": 1328},
     {"id": "ch-landlady", "frames": 60},
     {"id": "overview", "frames": 270},
     {"id": "rooms", "frames": 180},
     {"id": "income", "frames": 360},
     {"id": "ch-tenants", "frames": 60},
-    {"id": "tenant", "frames": 570},
+    {"id": "tenant", "frames": 702},
     {"id": "ch-guests", "frames": 60},
-    {"id": "guests", "frames": 420},
+    {"id": "guests", "frames": 710},
     {"id": "proof", "frames": 165},
     {"id": "end", "frames": 180}
   ],
-  "act1": {"beats": [180, 330, 438, 546, 654, 762], "connected": 870, "hive": 1010, "braam": 1160}
+  "act1": {"beats": [180, 330, 438, 546, 654, 762], "connected": 892, "hive": 1032, "braam": 1218}
 }

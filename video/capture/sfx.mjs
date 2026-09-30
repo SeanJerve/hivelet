@@ -433,3 +433,23 @@ settle('settle-deep', 95, 0.13, 0.55, 1000);
   for (let i = 0; i < s.length; i++) { const t = i / SR; s[i] *= Math.min(1, t / 0.1) * Math.min(1, (d - t) / 0.25); }
   write('sketch', bandpass(s, (t) => 3400 + 500 * Math.sin(2 * Math.PI * 1.3 * t), 1.4), undefined, 0.2);
 }
+
+// ---- The sixth cut --------------------------------------------------------------
+// Steps: a visitor's shoe on a tiled floor as they walk up to the landlady - a
+// soft heel knock and a lighter toe after it, in the mids so it is not taken for
+// the heartbeat under Act 1. Two, so consecutive steps are not identical. Their
+// own seeded noise, so every sound written above is unchanged.
+[[1150, 150, 11], [1320, 165, 23]].forEach(([f, body, sd], k) => {
+  let s = sd * 7919 + 17;
+  const own = () => { s = (s * 16807) % 2147483647; return (s / 2147483647) * 2 - 1; };
+  const b = buf(0.22);
+  const heel = buf(0.05), toe = buf(0.04);
+  for (let i = 0; i < heel.length; i++) heel[i] = own() * Math.exp(-(i / SR) / 0.009);
+  for (let i = 0; i < toe.length; i++) toe[i] = own() * Math.exp(-(i / SR) / 0.006);
+  const h = bandpass(heel, () => f, 1.3), t = bandpass(toe, () => f * 1.45, 1.6);
+  for (let i = 0; i < h.length; i++) b[i] += h[i] * 1.4;
+  const at = Math.floor(0.055 * SR);
+  for (let i = 0; i < t.length && at + i < b.length; i++) b[at + i] += t[i] * 0.55;
+  tone(b, 0, body, 0.03, 0.35, 0.001);
+  write(`step-${'ab'[k]}`, lowpass(b, 5200), undefined, 0.36);
+});

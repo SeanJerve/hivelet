@@ -3,12 +3,12 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {C, jakarta} from '../theme';
-import {easeIn, easeInOut, lerp, peso, pop, t01} from '../anim';
+import {easeIn, easeInOut, easeOut, lerp, peso, pop, t01} from '../anim';
 import {ActionCam, Bg, FloorShadow, Focus, Head} from '../fx';
 import {AppHeader, Cursor, Field, Input, Ripple} from '../ui/Kit';
-import {AttentionTile, BoardColumn, InquiryItem, RepairCard} from '../ui/Admin';
-import {AmountDue, DoneNote, PaymentReceived, PayOpening, Phone, RepairForm, STATUS, TenantHome} from '../ui/Tenant';
-import {AskDialog, PLAN, PlanImage, SHOW, UnitShowcase} from '../ui/Public';
+import {AttentionTile, BoardColumn, INBOX, InquiryInbox, RepairCard} from '../ui/Admin';
+import {AmountDue, DoneNote, PaymentReceived, PaymentsPage, PayOpening, Phone, RentMonthsTile, RepairForm, STATUS, TenantHome} from '../ui/Tenant';
+import {AskDialog, DIALOG, InquiryThread, PLAN, PlanImage, REF_CODE, SHOW, THREAD, UnitShowcase} from '../ui/Public';
 import {Cues} from '../Sfx';
 import {Zone} from './Owner';
 import {TYPING, typedOf} from '../typing.mjs';
@@ -21,10 +21,13 @@ const TopHead: React.FC<{text: string; accent: string[]; sub?: string; at: numbe
 // The board card carries the same title the tenant typed.
 const REPAIR_TITLE = TYPING.title.text;
 
-// Tenant timings (cues.mjs uses the same frames). The GCash payment runs 100 to
-// 176; everything after it is its v6 frame plus 70.
-export const T = {pay: 100, opening: 106, received: 138, payOut: 176, chip: 174, tile: 186, review: 246, settled: 268, toForm: 296,
-  focusDetails: 378, closeOut: 426, send: 444, board: 446, fly: 450, s1: 486, s2: 506, note: 528};
+// Tenant timings (cues.mjs uses the same frames). After her bill, the phone goes
+// to her Payments page for her rent, month by month (months 100 to back 222),
+// and back to her Overview to pay; from the payment on, everything is its
+// fifth-cut frame plus 132.
+export const T = {months: 100, scroll: 124, grow: 126, monthsOut: 196, back: 200,
+  pay: 232, opening: 238, received: 270, payOut: 308, chip: 306, tile: 318, review: 378, settled: 400, toForm: 428,
+  focusDetails: 510, closeOut: 558, send: 576, board: 578, fly: 582, s1: 618, s2: 638, note: 660};
 
 export const Tenant: React.FC = () => {
   const f = useCurrentFrame();
@@ -34,7 +37,16 @@ export const Tenant: React.FC = () => {
   const amount = Math.round(lerp(0, 4700, t01(f, 14, 62)));
   const payTap = T.pay, sendTap = T.send;
   const settled = t01(f, T.settled, T.settled + 20);
+  const toPay = t01(f, T.months, T.months + 22, easeInOut);
+  const toHome = t01(f, T.back, T.back + 22, easeInOut);
   const toForm = t01(f, T.toForm, T.toForm + 22, easeInOut);
+  // Her months: the page scrolls down to them, and each month rises in turn,
+  // October 2025 to September 2026, on the phone and in the close-up together.
+  const scroll = 716 * t01(f, T.scroll, T.scroll + 28, easeInOut);
+  const grow = (i: number) => t01(f, T.grow + i * 3, T.grow + i * 3 + 14, easeOut);
+  const figures = t01(f, T.grow, T.grow + 46, easeOut);
+  const monthsIn = pop(f, T.months + 10);
+  const monthsOut = t01(f, T.monthsOut, T.monthsOut + 14, easeIn);
   const titleText = typedOf('title', f);
   const detailText = typedOf('details', f);
   const typingFocus = f < T.focusDetails ? 'title' : f < sendTap ? 'details' : null;
@@ -102,9 +114,16 @@ export const Tenant: React.FC = () => {
       <div style={{position: 'absolute', left: PX / PZ, top: PY / PZ, zoom: PZ, perspective: 1800}}>
         <div style={{transformOrigin: '50% 60%', transform: `translateY(${(1 - enter) * 260}px) rotateY(${(1 - enter) * -30}deg) rotateX(${(1 - enter) * 10}deg)`, opacity: Math.min(1, enter * 1.6)}}>
           <Phone>
-            <div style={{position: 'absolute', inset: 0, transform: `translateX(${-toForm * 390}px)`}}>
-              <TenantHome amount={peso(amount, 2)} settled={settled} press={f >= payTap - 3 && f < payTap + 7 ? 1 : 0} pill={pop(f, 62)} />
-            </div>
+            {toPay - toHome < 1 && toForm < 1 ? (
+              <div style={{position: 'absolute', inset: 0, transform: `translateX(${-(toPay - toHome) * 390 - toForm * 390}px)`}}>
+                <TenantHome amount={peso(amount, 2)} settled={settled} press={f >= payTap - 3 && f < payTap + 7 ? 1 : 0} pill={pop(f, 62)} />
+              </div>
+            ) : null}
+            {toPay > 0 && toHome < 1 ? (
+              <div style={{position: 'absolute', inset: 0, transform: `translateX(${(1 - toPay) * 390 + toHome * 390}px)`, background: C.canvas}}>
+                <PaymentsPage grow={grow} figures={figures} scroll={scroll} />
+              </div>
+            ) : null}
             {f >= T.opening && f < T.payOut + 16 ? (
               <div style={{position: 'absolute', inset: 0, background: `rgba(15,27,21,${0.45 * Math.min(1, opening) * (1 - payOut)})`, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                 <div style={{opacity: 1 - payOut, transform: 'scale(0.98)'}}>{payCard(1)}</div>
@@ -122,7 +141,8 @@ export const Tenant: React.FC = () => {
       <Ripple x={from.x} y={from.y} p={t01(f, sendTap, sendTap + 18)} />
 
       <TopHead text="Their bill, on their phone." accent={['phone.']} at={12} out={92} />
-      <TopHead text="Pay by GCash." accent={['GCash.']} sub="She confirms it." at={110} out={T.settled + 22} />
+      <TopHead text="Every month, in the open." accent={['open.']} at={T.months + 14} out={T.monthsOut} />
+      <TopHead text="Pay by GCash." accent={['GCash.']} sub="She confirms it." at={T.back + 12} out={T.settled + 22} />
       <TopHead text="Report a repair." accent={['repair.']} at={T.toForm + 6} out={sendTap} />
       <TopHead text="Follow it to the end." accent={['end.']} at={sendTap + 18} />
 
@@ -156,6 +176,14 @@ export const Tenant: React.FC = () => {
         ) : null}
         {f >= T.review - 28 && f < T.review + 24 ? <><Ripple x={cur.x} y={cur.y} p={t01(f, reviewAt, reviewAt + 18)} /><Cursor x={cur.x} y={cur.y} press={cPress} size={40} opacity={t01(f, T.review - 28, T.review - 20) * (1 - t01(f, T.review + 8, T.review + 20))} /></> : null}
       </ActionCam>
+
+      {/* Her rent, month by month, close up: the same tile as it reads on a wider screen. */}
+      {f >= T.months + 10 && f < T.monthsOut + 14 ? (
+        <div style={{position: 'absolute', left: 1000 / 1.15, top: 262 / 1.15, zoom: 1.15, width: 620, transform: `translateY(${monthsOut * 30}px) scale(${lerp(0.94, 1, monthsIn)})`,
+          opacity: Math.min(1, monthsIn * 1.6) * (1 - t01(f, T.monthsOut, T.monthsOut + 12)), borderRadius: 24, boxShadow: '0 40px 90px rgba(15,27,21,0.16)'}}>
+          <RentMonthsTile wide grow={grow} figures={figures} />
+        </div>
+      ) : null}
 
       {/* A close-up of the form as the tenant types. */}
       {f >= T.toForm + 14 && f < T.closeOut + 14 ? (
@@ -192,9 +220,29 @@ export const Tenant: React.FC = () => {
 
 // ---- For guests ------------------------------------------------------------------
 // A vacant unit on its category page, its floor plan drawn with the unit marked,
-// the plan lifted for a closer look, then "Ask about unit B3B" and the question
-// arriving in her Inquiries.
-export const G = {plan: 26, chip: 76, lift: 104, drop: 176, click: 206, dialog: 212, fill: 232, focus: 250, send: 338, list: 350, item: 368};
+// the plan lifted for a closer look, then "Ask about unit B3B": the question is
+// sent and the dialog gives the visitor the way back in (the conversation link
+// and a reference code, no account). It lands in her Inquiries; she answers and
+// saves the reply; the visitor's conversation page shows it, and they write back.
+export const G = {plan: 26, chip: 76, lift: 104, drop: 176, click: 206, dialog: 212, fill: 232, focus: 250, send: 338,
+  saved: 350, code: 374, codeOut: 398, dialogOut: 400, inbox: 410, item: 428, pick: 446, save: 554, answered: 558,
+  inboxOut: 574, thread: 580, reply: 600, send2: 666};
+
+// Where things sit on screen (the zone right of the text column).
+const DZ = 1.1, DX = 1340 - (DIALOG.w / 2) * DZ;
+const dialogTop = (h: number) => (1080 - h * DZ) / 2;
+const IZ = 0.9, IX = 1340 - (INBOX.w / 2) * IZ, IY = (1080 - (INBOX.head + INBOX.h) * IZ) / 2;
+const inbox = (x: number, y: number) => ({x: IX + x * IZ, y: IY + y * IZ});
+const VX = 1340 - THREAD.w / 2, VY = (1080 - THREAD.h) / 2;
+const thread = (x: number, y: number) => ({x: VX + x, y: VY + y});
+// Points on those pieces, from their layouts: Kaye's row in the list, her answer
+// box and Save reply; the visitor's second message slot, their box and Send.
+const ROW = inbox(165, INBOX.head + 108 + 69);
+const DETAIL = inbox(INBOX.list + INBOX.gap + INBOX.detail / 2, INBOX.head + INBOX.h / 2);
+const SAVE = inbox(INBOX.list + INBOX.gap + 511, INBOX.head + INBOX.detailHead + INBOX.thread + 24 + 22 + 96 + 12 + 33);
+const HER_REPLY = inbox(INBOX.list + INBOX.gap + 360, INBOX.head + INBOX.detailHead + 24 + 88 + 20);
+const SLOT2 = thread(THREAD.pad, 204 + 67 + 12);
+const SEND2 = thread(THREAD.pad + 46, 204 + 238 + 16 + 44 + 32 + 22 + 96 + 12 + 22);
 
 export const Guests: React.FC = () => {
   const f = useCurrentFrame();
@@ -215,35 +263,64 @@ export const Guests: React.FC = () => {
   const ring2 = t01(f, G.lift + 40, G.lift + 72);
   const lifted = f >= G.lift && f < G.drop + 26;
 
-  // "Ask about unit B3B", then the dialog.
+  // "Ask about unit B3B", then the dialog; once sent, the same dialog becomes the
+  // confirmation, easing from the form's height to its own, still centred.
   const btn = {x: 1590, y: 752};
   const curA = {x: lerp(1760, btn.x, t01(f, 184, 202, easeInOut)), y: lerp(1010, btn.y, t01(f, 184, 202, easeInOut))};
   const pressA = t01(f, G.click - 3, G.click) * (1 - t01(f, G.click, G.click + 7));
   const dialogIn = pop(f, G.dialog, {damping: 22, stiffness: 120});
-  const dialogOut = t01(f, G.send + 4, G.send + 18, easeIn);
-  // The dialog, 598px tall at zoom DZ, centred in the zone.
-  const DZ = 1.1, DX = 1340 - 320 * DZ, DY = (1080 - 598 * DZ) / 2;
-  const sendBtn = {x: DX + (52 + 75) * DZ, y: DY + (598 - 48 - 22) * DZ};
+  const saved = t01(f, G.saved, G.saved + 26, (t) => t);
+  const dialogH = lerp(DIALOG.form, DIALOG.saved, saved < 0.5 ? 2 * saved * saved : 1 - (-2 * saved + 2) ** 2 / 2);
+  const DY = dialogTop(dialogH);
+  const dialogOut = t01(f, G.dialogOut, G.dialogOut + 12, easeIn);
+  const sendBtn = {x: DX + (DIALOG.padX + 75) * DZ, y: dialogTop(DIALOG.form) + (DIALOG.form - DIALOG.padY - 22) * DZ};
   const curB = {x: lerp(1560, sendBtn.x, t01(f, 314, 332, easeInOut)), y: lerp(980, sendBtn.y, t01(f, 314, 332, easeInOut))};
   const pressB = t01(f, G.send - 3, G.send) * (1 - t01(f, G.send, G.send + 7));
-  // The tutorial camera: in on Ask about unit B3B as it is clicked, back out as the
-  // dialog opens, close on the question while it is typed, to Send, then out.
-  const guestZoom: Focus[] = [
-    {at: 184, x: btn.x, y: btn.y, s: 1.4, tx: 1440, ty: 640, dur: 22},
-    {at: G.dialog, s: 1, dur: 18},
-    {at: G.focus - 6, x: 1300, y: 660, s: 1.45, tx: 1340, ty: 560, dur: 22},
-    {at: 318, x: sendBtn.x, y: sendBtn.y, s: 1.35, tx: 1250, ty: 640, dur: 18},
-    {at: G.send + 8, s: 1, dur: 22},
-  ];
+  // The link and the reference code, where the camera goes to read them.
+  const code = {x: DX + (DIALOG.padX + 220) * DZ, y: dialogTop(DIALOG.saved) + 300 * DZ};
   const cardDim = t01(f, G.dialog - 2, G.dialog + 14);
   const cardOut = t01(f, G.send + 4, G.send + 18, easeIn);
   const question = typedOf('question', f);
   const filled = (at: number, v: string) => (f >= at ? v : '');
 
-  // Her Inquiries, with the question arriving at the top.
-  const bubble = t01(f, G.send + 4, G.send + 32, easeInOut);
-  const listIn = pop(f, G.list, {damping: 20, stiffness: 90});
-  const newItem = pop(f, G.item, {damping: 20, stiffness: 110});
+  // Her Inquiries: the question arrives at the top, she picks it, answers, saves.
+  const bubble = t01(f, G.dialogOut, G.dialogOut + 28, easeInOut);
+  const inboxIn = pop(f, G.inbox, {damping: 20, stiffness: 90});
+  const inboxOut = t01(f, G.inboxOut, G.inboxOut + 14, easeIn);
+  const arrive = pop(f, G.item, {damping: 20, stiffness: 110});
+  const picked = t01(f, G.pick + 2, G.pick + 18);
+  const reply = typedOf('reply', f);
+  const answered = pop(f, G.answered, {damping: 20, stiffness: 120});
+  const curC = {x: lerp(1560, ROW.x, t01(f, G.item + 4, G.pick - 2, easeInOut)), y: lerp(960, ROW.y, t01(f, G.item + 4, G.pick - 2, easeInOut))};
+  const pressC = t01(f, G.pick - 3, G.pick) * (1 - t01(f, G.pick, G.pick + 7));
+  const curD = {x: lerp(1780, SAVE.x, t01(f, G.save - 16, G.save - 2, easeInOut)), y: lerp(1010, SAVE.y, t01(f, G.save - 16, G.save - 2, easeInOut))};
+  const pressD = t01(f, G.save - 3, G.save) * (1 - t01(f, G.save, G.save + 7));
+
+  // Her reply leaves her screen and lands on the visitor's conversation page.
+  const flight = t01(f, G.inboxOut, G.reply, easeInOut);
+  const threadIn = pop(f, G.thread, {damping: 20, stiffness: 90});
+  const theirs = pop(f, G.reply, {damping: 20, stiffness: 120});
+  const back = typedOf('back', f);
+  const sent = pop(f, G.send2 + 4, {damping: 20, stiffness: 120});
+  const curE = {x: lerp(1560, SEND2.x, t01(f, G.send2 - 14, G.send2 - 2, easeInOut)), y: lerp(1010, SEND2.y, t01(f, G.send2 - 14, G.send2 - 2, easeInOut))};
+  const pressE = t01(f, G.send2 - 3, G.send2) * (1 - t01(f, G.send2, G.send2 + 7));
+
+  // The tutorial camera: in on Ask about unit B3B as it is clicked, back out as the
+  // dialog opens, close on the question while it is typed, to Send, out; then to
+  // the link and the code; her answer box and Save reply; the visitor's box and Send.
+  const guestZoom: Focus[] = [
+    {at: 184, x: btn.x, y: btn.y, s: 1.4, tx: 1440, ty: 640, dur: 22},
+    {at: G.dialog, s: 1, dur: 18},
+    {at: G.focus - 6, x: 1300, y: 600, s: 1.3, tx: 1340, ty: 560, dur: 22},
+    {at: 318, x: sendBtn.x, y: sendBtn.y, s: 1.35, tx: 1250, ty: 640, dur: 18},
+    {at: G.send + 4, s: 1, dur: 18},
+    {at: G.code, x: code.x, y: code.y, s: 1.25, tx: 1300, ty: 560, dur: 20},
+    {at: G.codeOut, s: 1, dur: 16},
+    {at: G.pick + 12, x: DETAIL.x, y: DETAIL.y, s: 1.3, tx: 1400, ty: 560, dur: 22},
+    {at: G.answered + 8, s: 1, dur: 16},
+    {at: G.reply + 10, x: 1340, y: VY + 420, s: 1.2, tx: 1340, ty: 540, dur: 20},
+    {at: G.send2 + 8, s: 1, dur: 20},
+  ];
 
   return (
     <AbsoluteFill>
@@ -262,38 +339,61 @@ export const Guests: React.FC = () => {
         </div>
       ) : null}
 
-      {f >= G.dialog && f < G.send + 20 ? (
-        <div style={{position: 'absolute', left: DX / DZ, top: DY / DZ, zoom: DZ, transformOrigin: '50% 50%', transform: `scale(${lerp(0.96, 1, dialogIn) - dialogOut * 0.03})`,
+      {f >= G.dialog && f < G.dialogOut + 16 ? (
+        <div style={{position: 'absolute', left: DX / DZ, top: DY / DZ, zoom: DZ, transformOrigin: '50% 50%', transform: `scale(${lerp(0.96, 1, dialogIn) - dialogOut * 0.05})`,
           opacity: Math.min(1, dialogIn * 1.6) * (1 - dialogOut)}}>
           <AskDialog name={filled(G.fill, 'Kaye Ordoñez')} phone={filled(G.fill + 4, '0918-555-0142')} email={filled(G.fill + 8, 'kaye.ordonez@email.com')}
-            question={question} focus={f >= G.focus && f < G.send ? 'question' : null} press={f >= G.send - 3 && f < G.send + 7 ? 1 : 0} />
+            question={question} focus={f >= G.focus && f < G.send ? 'question' : null} press={f >= G.send - 3 && f < G.send + 7 ? 1 : 0} saved={saved} />
         </div>
       ) : null}
       {f >= 184 && f < G.dialog + 12 ? <><Ripple x={curA.x} y={curA.y} p={t01(f, G.click, G.click + 18)} /><Cursor x={curA.x} y={curA.y} press={pressA} size={40} opacity={t01(f, 184, 192) * (1 - t01(f, G.dialog, G.dialog + 10))} /></> : null}
       {f >= 314 && f < G.send + 16 ? <><Ripple x={curB.x} y={curB.y} p={t01(f, G.send, G.send + 18)} /><Cursor x={curB.x} y={curB.y} press={pressB} size={40} opacity={t01(f, 314, 322) * (1 - t01(f, G.send + 6, G.send + 16))} /></> : null}
 
-      {f >= G.send + 4 && f < G.send + 34 ? (
-        <div style={{position: 'absolute', left: lerp(DX + 52 * DZ, 1060, bubble), top: lerp(DY + 376 * DZ, 300, bubble) - Math.sin(bubble * Math.PI) * 120, transform: `scale(${lerp(1, 0.8, bubble)})`,
-          transformOrigin: '0 0', background: C.brand, color: '#fff', borderRadius: '24px 24px 24px 6px', padding: '16px 22px', fontFamily: jakarta, fontSize: 19, lineHeight: 1.45,
-          boxShadow: '0 20px 50px rgba(15,27,21,0.26)', opacity: 1 - t01(f, G.send + 26, G.send + 34)}}>
+      {/* The question, lifting off the dialog and dropping into her list. */}
+      {f >= G.dialogOut && f < G.dialogOut + 30 ? (
+        <div style={{position: 'absolute', left: lerp(DX + DIALOG.padX * DZ, IX + 16 * IZ, bubble), top: lerp(DY + 40 * DZ, IY + (INBOX.head + 112) * IZ, bubble) - Math.sin(bubble * Math.PI) * 120,
+          transform: `scale(${lerp(1, 0.8, bubble)})`, transformOrigin: '0 0', background: C.brand, color: '#fff', borderRadius: '24px 24px 24px 6px', padding: '16px 22px', fontFamily: jakarta,
+          fontSize: 19, lineHeight: 1.45, boxShadow: '0 20px 50px rgba(15,27,21,0.26)', opacity: 1 - t01(f, G.dialogOut + 22, G.dialogOut + 30), whiteSpace: 'nowrap'}}>
           {TYPING.question.text}
         </div>
       ) : null}
-      {f >= G.list ? (
-        <div style={{position: 'absolute', left: 1020 / 1.25, top: 230 / 1.25, zoom: 1.25, borderRadius: 24, overflow: 'hidden', background: C.tile, boxShadow: '0 40px 90px rgba(15,27,21,0.12)',
-          transform: `translateY(${(1 - listIn) * 60}px)`, opacity: Math.min(1, listIn * 1.6)}}>
-          <div style={{height: newItem * 130, overflow: 'hidden'}}>
-            <InquiryItem name="Kaye Ordoñez" when="Sep 29, 2026" unit="B3B" status="Waiting for an answer" tone="verify" active msg={TYPING.question.text} />
-          </div>
-          <InquiryItem name="Luis Barrameda" when="Sep 26, 2026" unit="B3B" status="Answered" tone="neutral" msg="Hello, I start at Bicol University next month. How much is the monthly rate?" />
-          <InquiryItem name="Mica Tolentino" when="Sep 21, 2026" unit="1G" status="Nothing came of it" tone="neutral" msg="Do you have a studio for one person?" />
+
+      {f >= G.inbox && f < G.inboxOut + 16 ? (
+        <div style={{position: 'absolute', left: IX / IZ, top: IY / IZ, zoom: IZ, transform: `translateY(${(1 - inboxIn) * 60}px) translateX(${-inboxOut * 60}px)`,
+          opacity: Math.min(1, inboxIn * 1.6) * (1 - inboxOut)}}>
+          <InquiryInbox lead={{name: 'Kaye Ordoñez', date: 'Sep 29, 2026', unit: 'B3B', status: 'Pending', msg: TYPING.question.text}}
+            others={[
+              {name: 'Luis Barrameda', date: 'Sep 26, 2026', unit: 'B3B', status: 'Contacted', msg: 'Hello, I start at Bicol University next month. How much is the monthly rate?'},
+              {name: 'Mica Tolentino', date: 'Sep 21, 2026', unit: '1G', status: 'Closed', msg: 'Do you have a studio for one person?'},
+            ]}
+            arrive={arrive} picked={picked} reply={f < G.save + 2 ? reply : ''} replyFocus={f >= TYPING.reply.at - 8 && f < G.save} replyText={TYPING.reply.text}
+            saved={answered} press={f >= G.save - 3 && f < G.save + 7 ? 1 : 0} refCode={REF_CODE} />
         </div>
       ) : null}
+      {f >= G.item + 4 && f < G.pick + 14 ? <><Ripple x={curC.x} y={curC.y} p={t01(f, G.pick, G.pick + 18)} /><Cursor x={curC.x} y={curC.y} press={pressC} size={40} opacity={t01(f, G.item + 4, G.item + 12) * (1 - t01(f, G.pick + 4, G.pick + 14))} /></> : null}
+      {f >= G.save - 16 && f < G.save + 16 ? <><Ripple x={curD.x} y={curD.y} p={t01(f, G.save, G.save + 18)} /><Cursor x={curD.x} y={curD.y} press={pressD} size={40} opacity={t01(f, G.save - 16, G.save - 8) * (1 - t01(f, G.save + 6, G.save + 16))} /></> : null}
+
+      {f >= G.thread ? (
+        <div style={{position: 'absolute', left: VX, top: VY, transform: `translateY(${(1 - threadIn) * 60}px) translateX(${(1 - threadIn) * 60}px)`, opacity: Math.min(1, threadIn * 1.6)}}>
+          <InquiryThread question={TYPING.question.text} replyText={TYPING.reply.text} reply={theirs} back={f < G.send2 + 2 ? back : ''} backText={TYPING.back.text}
+            backFocus={f >= TYPING.back.at - 8 && f < G.send2} sent={sent} press={f >= G.send2 - 3 && f < G.send2 + 7 ? 1 : 0} />
+        </div>
+      ) : null}
+      {/* Her answer, lifting off her screen and landing on the visitor's page. */}
+      {f >= G.inboxOut && f < G.reply + 6 ? (
+        <div style={{position: 'absolute', left: lerp(HER_REPLY.x, SLOT2.x, flight), top: lerp(HER_REPLY.y, SLOT2.y, flight) - Math.sin(flight * Math.PI) * 110,
+          background: C.brand, color: '#fff', borderRadius: 16, padding: '12px 16px', fontFamily: jakarta, fontSize: 15, lineHeight: '24px', whiteSpace: 'nowrap',
+          transform: `scale(${1 + Math.sin(flight * Math.PI) * 0.08})`, transformOrigin: '0 0', boxShadow: '0 20px 50px rgba(15,27,21,0.26)', opacity: 1 - t01(f, G.reply - 2, G.reply + 6)}}>
+          {TYPING.reply.text}
+        </div>
+      ) : null}
+      {f >= G.send2 - 14 && f < G.send2 + 16 ? <><Ripple x={curE.x} y={curE.y} p={t01(f, G.send2, G.send2 + 18)} /><Cursor x={curE.x} y={curE.y} press={pressE} size={40} opacity={t01(f, G.send2 - 14, G.send2 - 6) * (1 - t01(f, G.send2 + 6, G.send2 + 16))} /></> : null}
       </ActionCam></Zone>
       <Head size={100} text={'Find a\nvacant room.'} accent={['vacant']} at={10} out={98} />
       <Head size={100} text={'See the\nfloor plan.'} accent={['plan.']} sub="Each unit, marked on its floor." subSize={32} at={108} out={G.drop + 10} />
-      <Head size={100} text={'Just ask.\nNo sign-up.'} accent={['ask.']} at={G.click - 2} out={G.send + 4} />
-      <Head size={100} text={'Straight to\nher Inquiries.'} accent={['Inquiries.']} at={G.send + 20} />
+      <Head size={100} text="Ask here." accent={['here.']} sub="No account needed." subSize={32} at={G.click - 2} out={G.dialogOut} />
+      <Head size={100} text={'She answers\nin Hivelet.'} accent={['Hivelet.']} at={G.inbox + 6} out={G.inboxOut} />
+      <Head size={100} text={'Hear back\nhere.'} accent={['here.']} at={G.thread + 12} />
       <Cues scene="guests" />
     </AbsoluteFill>
   );

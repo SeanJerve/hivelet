@@ -42,13 +42,14 @@ export const IconBtn: React.FC<{dark?: boolean; children: React.ReactNode; size?
   </div>
 );
 
-export type PillTone = 'paid' | 'verify' | 'overdue' | 'neutral' | 'unentered' | 'on-dark';
+export type PillTone = 'paid' | 'verify' | 'overdue' | 'neutral' | 'unentered' | 'expected' | 'on-dark';
 const PILL: Record<PillTone, React.CSSProperties> = {
   paid: {background: C.brandSoft, color: C.brand},
   verify: {background: C.verifySoft, color: C.verify},
   overdue: {background: C.overdueSoft, color: C.overdue},
   neutral: {background: C.canvas, color: C.inkSoft},
   unentered: {background: C.tile, color: C.inkSoft, border: `1px solid ${C.line}`},
+  expected: {background: C.tile, color: C.inkSoft, border: `1px dashed ${C.hatch}`},
   'on-dark': {background: 'rgba(255,255,255,0.1)', color: C.onNight},
 };
 export const Pill: React.FC<{tone?: PillTone; children: React.ReactNode; style?: React.CSSProperties}> = ({tone = 'neutral', children, style}) => (

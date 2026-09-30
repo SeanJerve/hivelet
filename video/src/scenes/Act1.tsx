@@ -3,11 +3,13 @@
 //   B[0]    The sheet shrinks into her workbook file, which slides into a drive.
 //   B[1..5] The other problems, each in its own place: receipts nobody checks,
 //           rows left incomplete, repairs in a chat, tenants asking what they owe,
-//           inquiries arriving from everywhere.
+//           inquiries arriving from everywhere, the last one a visitor asking
+//           the landlady in person, which leaves nothing written down.
 //   CON     Pull back: all six on a ring around "Nothing connected."; the links
 //           between neighbours reach for each other and break.
 //   HIVE    Each problem bends into a hexagon carrying its icon and flies into a
-//           hive; the centre cell grows into the Hivelet icon.
+//           hive; the cells close up into one piece and its outline straightens
+//           into the Hivelet mark, whole on the brass hit (BRAAM).
 // Facts: Chapter 4 and 5 (two sheets on removable storage, receipt numbers used
 // twice, 402 of 937 rows incomplete, requests by message or in person). How
 // prospects asked before the system (social media, text, walk-in) is from Sean;
@@ -16,7 +18,7 @@ import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {CircleHelp, FileSpreadsheet, Footprints, Inbox, MessageCircle, ReceiptText, Table2} from 'lucide-react';
 import {C, jakarta, sora} from '../theme';
-import {camera, easeIn, easeInOut, easeOut, gentle, lerp, pop, t01} from '../anim';
+import {camera, easeInOut, easeOut, gentle, lerp, pop, t01} from '../anim';
 import {Bg, Head, Kin, Stage} from '../fx';
 import {Mark} from '../ui/Kit';
 import {Cues} from '../Sfx';
@@ -27,6 +29,11 @@ const B = tl.act1.beats;
 const CONNECTED = tl.act1.connected;
 const HIVE = tl.act1.hive;
 const BRAAM = tl.act1.braam;
+// The hive becoming the mark. The centre cell arrives at `centre`; from s0 to s1
+// the cells close up (the hive draws in by 5%, so neighbours meet), their colours
+// become one green and their icons sink; from m0 to m1 the outline straightens
+// into the mark's hexagon, whole on the brass hit (BRAAM).
+const FUSE = {centre: HIVE + 122, s0: BRAAM - 52, s1: BRAAM - 26, m0: BRAAM - 26, m1: BRAAM + 2, green: '#3f9a6b'};
 const hand = "'Segoe Print', 'Comic Sans MS', cursive";
 const mono = 'ui-monospace, Consolas, monospace';
 
@@ -43,14 +50,17 @@ const rad = (d: number) => (d * Math.PI) / 180;
 const P = Object.fromEntries(ORDER.map((k) => [k, {
   x: CENTER.x + (EL.rx / SCALE_BACK) * Math.cos(rad(ANG[k])), y: CENTER.y + (EL.ry / SCALE_BACK) * Math.sin(rad(ANG[k])),
 }])) as Record<Prop, {x: number; y: number}>;
-const SIZE: Record<Prop, [number, number]> = {usb: [760, 300], receipts: [760, 420], rows: [800, 560], chat: [700, 460], ask: [640, 260], inquiries: [700, 480]};
+const SIZE: Record<Prop, [number, number]> = {usb: [760, 300], receipts: [760, 420], rows: [800, 560], chat: [700, 460], ask: [640, 260], inquiries: [720, 560]};
 const ICON = {usb: FileSpreadsheet, receipts: ReceiptText, rows: Table2, chat: MessageCircle, ask: CircleHelp, inquiries: Inbox};
 
-// The hive, in screen pixels once the camera has pulled back.
+// The hive, in screen pixels once the camera has pulled back. Its cells are
+// flat-topped, so the hive as a whole comes out point-up, the way the mark
+// stands: when the cells close up, the outline only has to straighten.
 const HR = 58;
-const axial = (q: number, r: number) => ({x: 960 + HR * Math.sqrt(3) * (q + r / 2), y: 540 + HR * 1.5 * r});
+const SQ3 = Math.sqrt(3);
+const axial = (q: number, r: number) => ({x: 960 + HR * 1.5 * q, y: 540 + HR * SQ3 * (r + q / 2)});
 const toWorld = (s: {x: number; y: number}) => ({x: CENTER.x + (s.x - 960) / SCALE_BACK, y: CENTER.y + (s.y - 540) / SCALE_BACK});
-// Each problem goes to the ring-one cell on its own side of the centre.
+// Each problem goes to the ring-one cell just clockwise of it, so no two paths cross.
 const TARGET: Record<Prop, [number, number]> = {usb: [-1, 0], receipts: [0, -1], rows: [1, -1], chat: [1, 0], ask: [0, 1], inquiries: [-1, 1]};
 const RING2 = (() => {
   const out: [number, number][] = [];
@@ -59,17 +69,88 @@ const RING2 = (() => {
   return out.sort((m, n) => a(m) - a(n));
 })();
 const SHADES = [C.brand, '#1f7048', C.brandStrong, '#2a8a5c', C.brandBright, '#236b47'];
-const HEX_W = Math.sqrt(3) * (HR / SCALE_BACK) * 0.95, HEX_H = 2 * (HR / SCALE_BACK) * 0.95;
+// A cell's circumradius on screen: a little under the spacing, so the hive shows its seams.
+const CELL_R = 0.95 * HR;
+const HEX_W = (2 * CELL_R) / SCALE_BACK, HEX_H = (SQ3 * CELL_R) / SCALE_BACK;
+// The icon a problem carries into its cell: 72 stage pixels, as drawn on the stage.
+const CELL_ICON = 72 * SCALE_BACK;
 
-// A rectangle whose corners slide to a pointy-top hexagon as m goes 0 to 1. The
+// A rectangle whose corners slide to a flat-topped hexagon as m goes 0 to 1. The
 // clip starts `pad` pixels outside the box so the props' shadows are not cut off
 // in one frame, and closes in as the shape bends.
 const morphClip = (m: number, pad: number) => {
-  const y1 = `calc(${25 * m}% - ${pad}px)`, y2 = `calc(${100 - 25 * m}% + ${pad}px)`;
-  const L = `${-pad}px`, R = `calc(100% + ${pad}px)`;
-  return `polygon(50% ${-pad}px, ${R} ${y1}, ${R} ${y2}, 50% calc(100% + ${pad}px), ${L} ${y2}, ${L} ${y1})`;
+  const x1 = `calc(${25 * m}% - ${pad}px)`, x2 = `calc(${100 - 25 * m}% + ${pad}px)`;
+  const T = `${-pad}px`, B = `calc(100% + ${pad}px)`;
+  return `polygon(${x1} ${T}, ${x2} ${T}, calc(100% + ${pad}px) 50%, ${x2} ${B}, ${x1} ${B}, ${-pad}px 50%)`;
 };
 const HEX_CLIP = morphClip(1, 0);
+
+// ---- The hive becoming the mark ------------------------------------------------
+// The whole hive's outline (the edges no two cells share), walked clockwise from
+// the middle of the top cell's top edge, for cells of circumradius 1 touching.
+// Then the mark's own rounded hexagon (HEX_PATH in ui/Kit.tsx), walked clockwise
+// from its top point. Both are cut into the same number of equal steps, so the
+// one can be drawn moving point by point into the other: six-fold symmetric, the
+// hive's six blunt ends land on the mark's six corners.
+type Pt = {x: number; y: number};
+const MORPH_N = 720;
+const resample = (loop: Pt[], n: number): Pt[] => {
+  const pts = [...loop, loop[0]];
+  const cum = [0];
+  for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+  const total = cum[cum.length - 1];
+  const out: Pt[] = [];
+  let j = 0;
+  for (let k = 0; k < n; k++) {
+    const d = (k * total) / n;
+    while (cum[j + 1] < d) j++;
+    const u = (d - cum[j]) / (cum[j + 1] - cum[j] || 1);
+    out.push({x: lerp(pts[j].x, pts[j + 1].x, u), y: lerp(pts[j].y, pts[j + 1].y, u)});
+  }
+  return out;
+};
+const HIVE_OUTLINE: Pt[] = (() => {
+  const cells: [number, number][] = [];
+  for (let q = -2; q <= 2; q++) for (let r = -2; r <= 2; r++) if (Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r)) <= 2) cells.push([q, r]);
+  const key = (p: Pt) => `${Math.round(p.x * 1000)},${Math.round(p.y * 1000)}`;
+  const edges: [Pt, Pt][] = [];
+  const count = new Map<string, number>();
+  for (const [q, r] of cells) {
+    const c = {x: 1.5 * q, y: SQ3 * (r + q / 2)};
+    const v = Array.from({length: 6}, (_, k) => ({x: c.x + Math.cos(rad(60 * k)), y: c.y + Math.sin(rad(60 * k))}));
+    for (let k = 0; k < 6; k++) {
+      const a = v[k], b = v[(k + 1) % 6];
+      edges.push([a, b]);
+      const u = [key(a), key(b)].sort().join('|');
+      count.set(u, (count.get(u) ?? 0) + 1);
+    }
+  }
+  const outer = edges.filter(([a, b]) => count.get([key(a), key(b)].sort().join('|')) === 1);
+  const next = new Map(outer.map((e) => [key(e[0]), e]));
+  // Start on the top cell's top edge, which runs left to right.
+  let e = outer.find(([a, b]) => Math.abs(a.y - b.y) < 1e-6 && a.y < -4 && a.x < 0)!;
+  const loop: Pt[] = [{x: 0, y: e[0].y}];
+  for (let i = 0; i < outer.length; i++) { loop.push(e[1]); e = next.get(key(e[1]))!; }
+  return resample(loop, MORPH_N);
+})();
+const MARK_OUTLINE: Pt[] = (() => {
+  const Q = (a: Pt, c: Pt, b: Pt, n = 24) => Array.from({length: n}, (_, i) => { const t = (i + 1) / n; return {x: (1 - t) ** 2 * a.x + 2 * (1 - t) * t * c.x + t * t * b.x, y: (1 - t) ** 2 * a.y + 2 * (1 - t) * t * c.y + t * t * b.y}; });
+  // HEX_PATH, from the top point: the second half of the top corner, then each side and corner.
+  const P = (x: number, y: number) => ({x, y});
+  const top = Q(P(217.89, 34), P(256, 12), P(294.11, 34), 48);
+  const loop: Pt[] = [P(256, 23), ...top.slice(24),
+    P(429.21, 112), ...Q(P(429.21, 112), P(467.31, 134), P(467.31, 178)),
+    P(467.31, 334), ...Q(P(467.31, 334), P(467.31, 378), P(429.21, 400)),
+    P(294.11, 478), ...Q(P(294.11, 478), P(256, 500), P(217.89, 478)),
+    P(82.79, 400), ...Q(P(82.79, 400), P(44.69, 378), P(44.69, 334)),
+    P(44.69, 178), ...Q(P(44.69, 178), P(44.69, 134), P(82.79, 112)),
+    P(217.89, 34), ...top.slice(0, 23)];
+  return resample(loop.map((p) => ({x: (p.x - 256) / 244, y: (p.y - 256) / 244})), MORPH_N);
+})();
+const outlinePath = (pts: Pt[]) => 'M' + pts.map((p) => `${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' L') + ' Z';
+// The mark's size as the hive becomes it, and once it has moved aside for the name
+// (the circumradius of its hexagon, in screen pixels).
+const MARK_R = {whole: 212, lockup: 143};
 
 // ---- The props ------------------------------------------------------------------
 
@@ -273,36 +354,87 @@ const Source: React.FC<{logo: React.ReactNode; label: string; children: React.Re
     {children}
   </div>
 );
+// The in-person one: a visitor walks up to the landlady and asks. It is only
+// spoken, so it leaves nothing behind to look up later.
+// Timings inside the Inquiries prop, from its `at`: the visitor walks in over
+// WALK..WALK+20, a foot landing at +10 and +20; the question at SAY, her answer at REPLY.
+export const IN_PERSON = {card: 38, walk: 40, say: 64, reply: 78};
+const Person: React.FC<{x: number; y?: number; face: 1 | -1; skin: string; hair: string; top: string; kind: 'visitor' | 'landlady'}> = ({x, y = 0, face, skin, hair, top, kind}) => (
+  <g transform={`translate(${x} ${y}) scale(${face} 1)`}>
+    <rect x={-13} y={176} width={26} height={32} rx={6} fill={skin} />
+    <path d="M -80 272 V 242 Q -80 206 -44 204 H 44 Q 80 206 80 242 V 272 Z" fill={top} />
+    {kind === 'visitor' ? (
+      // A student's backpack strap over the near shoulder.
+      <path d="M 40 205 Q 52 236 46 272" fill="none" stroke="#7a5234" strokeWidth={11} strokeLinecap="round" />
+    ) : (
+      // Her cardigan's opening.
+      <path d="M -10 206 L 0 232 L 10 206" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth={4} strokeLinejoin="round" strokeLinecap="round" />
+    )}
+    {kind === 'landlady' ? <circle cx={-30} cy={112} r={18} fill={hair} /> : null}
+    <circle cx={4} cy={148} r={37} fill={skin} />
+    {kind === 'visitor'
+      ? <path d="M -34 166 Q -44 118 -6 110 Q 36 102 42 140 Q 20 128 -2 132 Q -18 136 -20 166 Z" fill={hair} />
+      : <path d="M -34 184 Q -48 126 -8 110 Q 34 98 42 138 Q 18 124 -4 130 Q -18 150 -14 186 Z" fill={hair} />}
+    <circle cx={25} cy={148} r={3.4} fill="#1a1411" />
+  </g>
+);
+const Said: React.FC<{text: string; p: number; left: number; top: number; tail: number; her?: boolean}> = ({text, p, left, top, tail, her}) => (
+  <div style={{position: 'absolute', left, top, opacity: Math.min(1, p * 1.6), transform: `translateY(${(1 - p) * 12}px) scale(${lerp(0.8, 1, p)})`, transformOrigin: `${tail}px 100%`}}>
+    <div style={{position: 'relative', padding: '11px 17px', borderRadius: 20, background: her ? C.brand : C.onNight, color: her ? '#fff' : C.ink,
+      fontFamily: jakarta, fontSize: 20, fontWeight: 500, whiteSpace: 'nowrap', boxShadow: '0 14px 30px rgba(0,0,0,0.35)'}}>
+      {text}
+      <span style={{position: 'absolute', left: tail - 7, bottom: -6, width: 14, height: 14, background: her ? C.brand : C.onNight, transform: 'rotate(45deg)', borderRadius: 2}} />
+    </div>
+  </div>
+);
+const InPerson: React.FC<{f: number; at: number}> = ({f, at}) => {
+  const walk = t01(f, at + IN_PERSON.walk, at + IN_PERSON.walk + 20, (t) => t);
+  const eased = 1 - Math.pow(1 - walk, 1.6);
+  const bob = -9 * Math.abs(Math.sin(Math.PI * 2 * walk));
+  return (
+    <div style={{position: 'relative', width: 470, height: 272, borderRadius: 24, overflow: 'hidden', background: '#1d2d24', border: '1px solid rgba(255,255,255,0.08)',
+      boxShadow: '0 30px 60px rgba(0,0,0,0.45)'}}>
+      <svg width={470} height={272} viewBox="0 0 470 272" style={{position: 'absolute', inset: 0}}>
+        <Person x={342} y={16} face={-1} kind="landlady" skin="#b3774d" hair="#1c1512" top={C.brandBright} />
+        <Person x={lerp(-110, 128, eased)} y={16 + bob} face={1} kind="visitor" skin="#c68a5c" hair="#2a211c" top="#e7dcc6" />
+      </svg>
+      <Said text="Any vacant room po?" p={pop(f, at + IN_PERSON.say)} left={18} top={14} tail={112} />
+      <Said text="Yes! Come back later." her p={pop(f, at + IN_PERSON.reply)} left={214} top={64} tail={124} />
+    </div>
+  );
+};
+
 const Inquiries: React.FC<{f: number; at: number}> = ({f, at}) => (
-  <div style={{position: 'relative', width: 700, height: 480}}>
-    <Source logo={<FacebookLogo />} label="Facebook" p={pop(f, at + 12)} rot={-3} style={{left: 0, top: 0}}>
+  <div style={{position: 'relative', width: 720, height: 560}}>
+    <Source logo={<FacebookLogo />} label="Facebook" p={pop(f, at + 10)} rot={-3} style={{left: 0, top: 0}}>
       <div style={{borderRadius: 18, background: '#26352d', padding: '16px 18px', display: 'flex', gap: 12, fontFamily: jakarta, color: '#fff', boxShadow: '0 30px 60px rgba(0,0,0,0.4)'}}>
         <span style={{width: 40, height: 40, borderRadius: 20, background: C.brandBright, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15}}>KO</span>
         <div><div style={{fontSize: 15, fontWeight: 700}}>Kaye O.</div><div style={{fontSize: 20, marginTop: 2}}>Is this still available?</div></div>
       </div>
     </Source>
-    <Source logo={<MessagesLogo />} label="Text" p={pop(f, at + 26)} rot={2} style={{left: 320, top: 150}}>
+    <Source logo={<MessagesLogo />} label="Text" p={pop(f, at + 24)} rot={2} style={{left: 340, top: 118}}>
       <div style={{borderRadius: '22px 22px 22px 6px', background: '#26352d', padding: '16px 20px', fontFamily: jakarta, color: '#fff', fontSize: 21, boxShadow: '0 30px 60px rgba(0,0,0,0.4)'}}>Hi po, how much is a studio?</div>
     </Source>
-    <Source logo={<span style={{width: 26, height: 26, borderRadius: 13, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Footprints size={15} /></span>} label="In person" p={pop(f, at + 40)} rot={-4} style={{left: 40, top: 300}}>
-      <div style={{width: 300, background: '#f3e7a6', padding: '16px 20px', fontFamily: hand, color: '#3b3a2c', fontSize: 22, lineHeight: 1.35, boxShadow: '0 30px 60px rgba(0,0,0,0.45)'}}>Walk-in asked about 2a. Will come back?</div>
+    <Source logo={<span style={{width: 26, height: 26, borderRadius: 13, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Footprints size={15} /></span>} label="In person" p={pop(f, at + IN_PERSON.card)} rot={-2} style={{left: 24, top: 236, width: 470}}>
+      <InPerson f={f} at={at} />
     </Source>
   </div>
 );
 
 // Blend two #rrggbb colours.
 const mix = (a: string, b: string, t: number) => '#' + [1, 3, 5].map((i) => Math.round(lerp(parseInt(a.slice(i, i + 2), 16), parseInt(b.slice(i, i + 2), 16), t)).toString(16).padStart(2, '0')).join('');
-// A hive cell drawn as the mark's own rounded hexagon, with the circumradius of
-// the cells around it (0.95 r), so the centre cell and the logo are one shape.
-const CentreCell: React.FC<{x: number; y: number; r: number; hex: string; draw: number; opacity?: number; glow?: number; shadow?: number}> = ({x, y, r, hex, draw, opacity = 1, glow = 0, shadow = 0}) => {
-  const size = (0.95 * r * 512) / 244;
-  const filters = [glow > 0 ? `drop-shadow(0 0 ${24 * glow}px rgba(95,194,142,${0.7 * glow}))` : '', shadow > 0 ? `drop-shadow(0 30px 60px rgba(15,27,21,${0.25 * shadow}))` : ''].join(' ').trim();
+// The mark (ui/Kit.tsx) at circumradius r, centred on (x, y), with the hive's
+// glow while it forms and a floor shadow once it stands on the light.
+const Whole: React.FC<{x: number; y: number; r: number; hex: string; draw: number; glow?: number; shadow?: number}> = ({x, y, r, hex, draw, glow = 0, shadow = 0}) => {
+  const size = (r * 512) / 244;
+  const filters = [glow > 0 ? `drop-shadow(0 0 ${30 * glow}px rgba(95,194,142,${0.6 * glow}))` : '', shadow > 0 ? `drop-shadow(0 30px 60px rgba(15,27,21,${0.25 * shadow}))` : ''].join(' ').trim();
   return (
-    <div style={{position: 'absolute', left: x - size / 2, top: y - size / 2, width: size, height: size, opacity, filter: filters || undefined}}>
+    <div style={{position: 'absolute', left: x - size / 2, top: y - size / 2, width: size, height: size, filter: filters || undefined}}>
       <Mark size={size} hex={hex} draw={draw} />
     </div>
   );
 };
+const hexPoints = (cx: number, cy: number, r: number) => Array.from({length: 6}, (_, k) => `${(cx + r * Math.cos(rad(60 * k))).toFixed(2)},${(cy + r * Math.sin(rad(60 * k))).toFixed(2)}`).join(' ');
 
 // The part of a polyline between two fractional indices.
 const slice = (pts: {x: number; y: number}[], a: number, b: number) => {
@@ -360,10 +492,11 @@ export const Act1: React.FC = () => {
   const snap = t01(f, CONNECTED + 104, CONNECTED + 112);
   const bob = (i: number) => Math.sin((f + i * 23) / 28) * 10 * t01(f, CONNECTED, CONNECTED + 30);
 
-  // The hive glows once whole, then lets go as the light comes up.
-  const glow = t01(f, BRAAM - 40, BRAAM - 14) * (1 - t01(f, BRAAM - 14, BRAAM));
-  const release = t01(f, BRAAM - 14, BRAAM + 6, easeIn);
-  const glowFilter = glow > 0 ? `drop-shadow(0 0 ${40 * glow}px rgba(95,194,142,${0.6 * glow}))` : undefined;
+  // The hive becoming one (FUSE): the cells close up and their colours and icons
+  // give way to one green; then the outline straightens into the mark. The stage
+  // draws the hive until the cells start to close; from then the flat layer
+  // below draws the same cells, in the same places, and carries on.
+  const fused = f >= FUSE.s0;
 
   // Each problem as a world object: in place, lit while it is discussed, then
   // bending into a hexagon with its icon and flying to its cell.
@@ -378,15 +511,16 @@ export const Act1: React.FC = () => {
     const m = t01(f, HIVE + i * 4, HIVE + 44 + i * 4, easeInOut);
     const g = t01(f, HIVE + 30 + i * 4, HIVE + 84 + i * 4, easeInOut);
     const target = toWorld(axial(...TARGET[k]));
-    const cx = lerp(P[k].x, target.x, g) + (target.x - CENTER.x) * release * 1.2;
-    const cy = lerp(P[k].y, target.y, g) + bob(i) * (1 - g) + (target.y - CENTER.y) * release * 1.2;
+    if (fused) return null;
+    const cx = lerp(P[k].x, target.x, g);
+    const cy = lerp(P[k].y, target.y, g) + bob(i) * (1 - g);
     const bw = lerp(w, HEX_W, m), bh = lerp(h, HEX_H, m);
     const inner = lerp(1, Math.min(HEX_W / w, HEX_H / h) * 1.15, m);
     const pad = 200 * (1 - t01(m, 0, 0.5, easeOut));
     const Icon = ICON[k];
     return (
-      <div key={k} style={{position: 'absolute', left: cx - bw / 2, top: cy - bh / 2, width: bw, height: bh, opacity: shown * (1 - dim) * spot * (1 - release),
-        transform: `translateY(${(1 - shown) * 60}px) scale(${1 - release * 0.4})`, filter: glowFilter}}>
+      <div key={k} style={{position: 'absolute', left: cx - bw / 2, top: cy - bh / 2, width: bw, height: bh, opacity: shown * (1 - dim) * spot,
+        transform: `translateY(${(1 - shown) * 60}px)`}}>
         <div style={{position: 'absolute', inset: 0, clipPath: m > 0 ? morphClip(m, pad) : undefined}}>
           <div style={{position: 'absolute', left: bw / 2 - w / 2, top: bh / 2 - h / 2, width: w, height: h, display: 'flex', alignItems: 'center', justifyContent: 'center',
             transform: `scale(${inner})`, opacity: 1 - t01(m, 0.35, 0.8)}}>{content}</div>
@@ -400,10 +534,30 @@ export const Act1: React.FC = () => {
     );
   };
 
-  const grow = t01(f, BRAAM - 10, BRAAM + 26, easeInOut);
   const light = t01(f, BRAAM - 2, BRAAM + 30, easeInOut);
   const shift = t01(f, BRAAM + 40, BRAAM + 70, easeInOut);
-  const centre = pop(f, HIVE + 122);
+  const centre = pop(f, FUSE.centre);
+  const close = t01(f, FUSE.s0 + 4, FUSE.s1, easeInOut);
+  const oneColour = t01(f, FUSE.s0, FUSE.s1 - 4, easeInOut);
+  const iconsOut = t01(f, FUSE.s0, FUSE.s0 + 16, easeInOut);
+  const m = t01(f, FUSE.m0, FUSE.m1, easeInOut);
+  const glow = t01(f, FUSE.s0, BRAAM - 6) * (1 - t01(f, BRAAM, BRAAM + 24));
+  // A small give as the brass lands, then the mark settles.
+  const give = 1 + 0.035 * Math.sin(Math.PI * t01(f, BRAAM, BRAAM + 22));
+  const hexCol = mix(FUSE.green, C.brand, t01(f, BRAAM - 4, BRAAM + 30));
+  const spacing = lerp(1, 0.95, close);
+  const cells = [
+    {q: 0, r: 0, shade: FUSE.green, Icon: null as null | typeof Inbox},
+    ...ORDER.map((k, i) => ({q: TARGET[k][0], r: TARGET[k][1], shade: SHADES[i], Icon: ICON[k]})),
+    ...RING2.map(([q, r], j) => ({q, r, shade: SHADES[(j + 2) % 6], Icon: null})),
+  ].map((c) => {
+    const a = axial(c.q, c.r);
+    return {...c, x: 960 + (a.x - 960) * spacing, y: 540 + (a.y - 540) * spacing};
+  });
+  const outline = (k: number) => outlinePath(HIVE_OUTLINE.map((p, i) => {
+    const q = MARK_OUTLINE[i];
+    return {x: 960 + lerp(p.x * CELL_R, q.x * MARK_R.whole, k) * give, y: 540 + lerp(p.y * CELL_R, q.y * MARK_R.whole, k) * give};
+  }));
 
   return (
     <AbsoluteFill>
@@ -440,12 +594,12 @@ export const Act1: React.FC = () => {
           const t = toWorld(axial(q, r));
           const ang = Math.atan2(t.y - CENTER.y, t.x - CENTER.x);
           const g = t01(f, HIVE + 64 + j * 2, HIVE + 100 + j * 2, easeInOut);
-          if (g <= 0) return null;
-          const x = lerp(t.x + Math.cos(ang) * 1400, t.x, g) + (t.x - CENTER.x) * release * 1.2;
-          const y = lerp(t.y + Math.sin(ang) * 900, t.y, g) + (t.y - CENTER.y) * release * 1.2;
+          if (g <= 0 || fused) return null;
+          const x = lerp(t.x + Math.cos(ang) * 1400, t.x, g);
+          const y = lerp(t.y + Math.sin(ang) * 900, t.y, g);
           return (
-            <div key={j} style={{position: 'absolute', left: x - HEX_W / 2, top: y - HEX_H / 2, width: HEX_W, height: HEX_H, filter: glowFilter,
-              opacity: Math.min(1, g * 2) * (1 - release), transform: `rotate(${(1 - g) * 60}deg) scale(${lerp(0.4, 1, g) * (1 - release * 0.4)})`}}>
+            <div key={j} style={{position: 'absolute', left: x - HEX_W / 2, top: y - HEX_H / 2, width: HEX_W, height: HEX_H,
+              opacity: Math.min(1, g * 2), transform: `rotate(${(1 - g) * 60}deg) scale(${lerp(0.4, 1, g)})`}}>
               <div style={{position: 'absolute', inset: 0, clipPath: HEX_CLIP, background: SHADES[(j + 2) % 6]}} />
             </div>
           );
@@ -485,13 +639,37 @@ export const Act1: React.FC = () => {
         </>
       ) : null}
 
-      {/* The centre cell, then the icon it becomes, on a light ground. */}
-      {f >= HIVE + 96 ? (
+      {/* The centre cell arrives; then the whole hive closes up into one piece and
+          its outline straightens into the mark, on a light ground. */}
+      {f >= FUSE.centre ? (
         <>
           <AbsoluteFill style={{clipPath: `circle(${light * 1300}px at 50% 50%)`}}><Bg mood="light" hex /></AbsoluteFill>
-          <CentreCell x={960 - shift * 420} y={540} r={lerp(HR * lerp(0.6, 1, centre), 150.5, grow) * (1 + 0.04 * Math.sin(Math.PI * t01(f, BRAAM + 20, BRAAM + 44)))}
-            hex={mix('#3f9a6b', '#17603f', t01(f, BRAAM - 4, BRAAM + 30))} draw={t01(f, BRAAM + 14, BRAAM + 48, easeInOut)}
-            opacity={Math.min(1, centre * 1.6)} glow={glow} shadow={t01(f, BRAAM + 10, BRAAM + 40)} />
+          {f < FUSE.m1 ? (
+            <svg width={1920} height={1080} style={{position: 'absolute', inset: 0, overflow: 'visible',
+              filter: glow > 0 ? `drop-shadow(0 0 ${30 * glow}px rgba(95,194,142,${0.6 * glow}))` : undefined}}>
+              {f < FUSE.m0 ? (
+                <>
+                  {close > 0.8 ? <path d={outline(0)} fill={FUSE.green} opacity={t01(close, 0.8, 1)} /> : null}
+                  {cells.map((c, n) => {
+                    if (n > 0 && !fused) return null;
+                    const col = mix(c.shade, FUSE.green, oneColour);
+                    const s = n === 0 && !fused ? lerp(0.6, 1, centre) : 1;
+                    const Icon = c.Icon;
+                    const icon = CELL_ICON * lerp(1, 0.5, iconsOut);
+                    return (
+                      <g key={n} opacity={n === 0 ? Math.min(1, centre * 1.6) : 1}>
+                        <polygon points={hexPoints(c.x, c.y, CELL_R * s)} fill={col} stroke={col} strokeWidth={1.6 * close} strokeLinejoin="round" />
+                        {Icon && iconsOut < 1 ? <Icon x={c.x - icon / 2} y={c.y - icon / 2} width={icon} height={icon} color="#fff" strokeWidth={1.6} opacity={0.92 * (1 - iconsOut)} /> : null}
+                      </g>
+                    );
+                  })}
+                </>
+              ) : <path d={outline(m)} fill={hexCol} />}
+            </svg>
+          ) : (
+            <Whole x={960 - shift * 420} y={540} r={lerp(MARK_R.whole, MARK_R.lockup, shift) * give} hex={hexCol} draw={t01(f, BRAAM + 12, BRAAM + 46, easeInOut)}
+              glow={glow} shadow={t01(f, BRAAM + 10, BRAAM + 40)} />
+          )}
           {f >= BRAAM + 40 ? (
             <div style={{position: 'absolute', left: 960 + 220 - shift * 420, top: 400, width: lerp(0, 860, shift), overflow: 'hidden', whiteSpace: 'nowrap'}}>
               <Kin text="Hivelet" at={BRAAM + 48} size={220} color={C.ink} stagger={0} ls="-0.055em" />

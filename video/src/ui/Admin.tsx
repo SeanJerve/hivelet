@@ -4,7 +4,7 @@
 // the app's own. The people and amounts are the same invented sample data the
 // capture harness uses.
 import React from 'react';
-import {Calendar, Check, ChevronDown, CreditCard, FileText, Inbox, Pencil, Plus, TriangleAlert, Wrench, X} from 'lucide-react';
+import {Calendar, Check, ChevronDown, CreditCard, FileText, Inbox, Mail, Pencil, Phone, Plus, Search, Send, TriangleAlert, UserPlus, Wrench, X, XCircle} from 'lucide-react';
 import {C, jakarta} from '../theme';
 import {count, lerp, peso, pop, t01} from '../anim';
 import {Btn, Field, IconBtn, Input, Pill, Tile} from './Kit';
@@ -18,7 +18,7 @@ export const OverviewHead: React.FC<{f: number; at?: number; press?: number}> = 
     <div>
       <div style={{fontSize: 14, color: C.inkSoft, opacity: t01(f, at, at + 10)}}>Tuesday, September 29, 2026</div>
       <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4, color: C.ink, opacity: t01(f, at + 4, at + 18), transform: `translateY(${(1 - t01(f, at + 4, at + 22)) * 10}px)`}}>
-        Good afternoon, Fe
+        Good afternoon, Michelle
       </div>
     </div>
     <div style={{display: 'flex', gap: 10}}>
@@ -360,15 +360,105 @@ export const NotePanel: React.FC<{unread: number; children: React.ReactNode; w?:
   </div>
 );
 
-// ---- Inquiries and Activity -------------------------------------------------------
-
-export const InquiryItem: React.FC<{name: string; when: string; unit: string; status: string; tone: 'verify' | 'neutral'; msg: string; active?: boolean; style?: React.CSSProperties}> = ({name, when, unit, status, tone, msg, active, style}) => (
-  <div style={{width: 470, boxSizing: 'border-box', padding: '20px 24px', background: active ? '#e6efe9' : C.tile, borderBottom: `1px solid ${C.line}`, fontFamily: jakarta, color: C.ink, ...style}}>
-    <div style={{display: 'flex', justifyContent: 'space-between'}}><span style={{fontSize: 16, fontWeight: 600}}>{name}</span><span style={{fontSize: 13, color: C.inkSoft}}>{when}</span></div>
-    <div style={{display: 'flex', gap: 10, alignItems: 'center', marginTop: 8}}><span style={{fontSize: 15, fontWeight: 600, color: C.brand}}>Unit {unit}</span><Pill tone={tone}>{status}</Pill></div>
-    <div style={{fontSize: 15, color: C.inkSoft, marginTop: 10, lineHeight: '22px'}}>{msg}</div>
+// ---- Inquiries ------------------------------------------------------------------
+// views/InquiriesView.vue at the xl layout: the inquiries on the left (a third),
+// the one being read on the right, with what was said and "Your answer" under it.
+// A new inquiry drops in at the top (`arrive`), is picked (`picked`), her answer
+// is typed, and "Save reply" puts it in the thread (`saved`), which also moves the
+// inquiry from Pending ("Waiting for an answer") to Contacted ("Answered"), as
+// routes/admin.ts does when she replies.
+export const INBOX = {w: 946, list: 330, gap: 16, detail: 600, head: 114, h: 666, detailHead: 216, thread: 206};
+type Lead = {name: string; date: string; unit: string; status: 'Pending' | 'Contacted' | 'Closed'; msg: string};
+const STATUS_WORD = {Pending: 'Waiting for an answer', Contacted: 'Answered', Closed: 'Nothing came of it'} as const;
+const STATUS_TONE = {Pending: 'verify', Contacted: 'neutral', Closed: 'neutral'} as const;
+const LeadRow: React.FC<{lead: Lead; active?: boolean}> = ({lead, active}) => (
+  <div style={{padding: 16, background: active ? C.brandSoft : C.tile, borderBottom: `1px solid ${C.line}`}}>
+    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8}}>
+      <span style={{fontSize: 14, fontWeight: 600}}>{lead.name}</span><span style={{fontSize: 12, color: C.inkFaint}}>{lead.date}</span>
+    </div>
+    <div style={{display: 'flex', alignItems: 'center', gap: 8, marginTop: 6}}>
+      <span style={{fontSize: 14, fontWeight: 600, color: C.brand}}>Unit {lead.unit}</span><Pill tone={STATUS_TONE[lead.status]}>{STATUS_WORD[lead.status]}</Pill>
+    </div>
+    <div style={{fontSize: 14, lineHeight: '24px', color: C.inkSoft, marginTop: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>{lead.msg}</div>
   </div>
 );
+const Bubble: React.FC<{mine?: boolean; who: string; when: string; text: string; p?: number}> = ({mine, who, when, text, p = 1}) => (
+  <div style={{display: 'flex', flexDirection: 'column', alignItems: mine ? 'flex-end' : 'flex-start', opacity: Math.min(1, p * 1.6), transform: `translateY(${(1 - p) * 12}px)`}}>
+    <div style={{fontSize: 12, color: C.inkFaint, marginBottom: 4, padding: '0 4px'}}><span style={{fontWeight: 600, color: C.inkSoft}}>{who}</span> · {when}</div>
+    <div style={{maxWidth: 448, borderRadius: 16, padding: '12px 16px', fontSize: 14, lineHeight: '24px', background: mine ? C.brand : C.tile, color: mine ? C.onBrand : C.ink,
+      transform: `scale(${lerp(0.9, 1, p)})`, transformOrigin: mine ? '100% 100%' : '0 100%'}}>{text}</div>
+  </div>
+);
+export const InquiryInbox: React.FC<{lead: Lead; others: Lead[]; arrive: number; picked: number; reply: string; replyFocus: boolean; replyText: string; saved: number; press?: number; refCode: string}> = ({
+  lead, others, arrive, picked, reply, replyFocus, replyText, saved, press = 0, refCode,
+}) => {
+  const answered = saved >= 0.5;
+  const now: Lead = {...lead, status: answered ? 'Contacted' : 'Pending'};
+  const count = others.length + (arrive > 0.5 ? 1 : 0);
+  return (
+    <div style={{width: INBOX.w, fontFamily: jakarta, color: C.ink}}>
+      <div style={{height: INBOX.head - 24}}>
+        <div style={{fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: C.inkFaint}}>ADMIN</div>
+        <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.25, marginTop: 4}}>Inquiries</div>
+        <div style={{fontSize: 14, lineHeight: '24px', color: C.inkSoft, marginTop: 4}}>Each inquiry, what they asked, and what you answered.</div>
+      </div>
+      <div style={{display: 'flex', gap: INBOX.gap, marginTop: 24, height: INBOX.h}}>
+        <div style={{width: INBOX.list, borderRadius: 24, background: C.tile, overflow: 'hidden'}}>
+          <div style={{padding: 16, borderBottom: `1px solid ${C.line}`}}>
+            <Input placeholder="Search" style={{paddingLeft: 44, position: 'relative'}} right={<Search size={16} color={C.inkFaint} style={{position: 'absolute', left: 16, top: 14}} />} />
+            <div style={{fontSize: 14, color: C.inkSoft, marginTop: 12}}>{count} {count === 1 ? 'inquiry' : 'inquiries'}</div>
+          </div>
+          <div style={{height: arrive * 138, overflow: 'hidden'}}><LeadRow lead={now} active={picked > 0.5} /></div>
+          {others.map((o) => <LeadRow key={o.name} lead={o} />)}
+        </div>
+        <div style={{width: INBOX.detail, borderRadius: 24, background: C.tile, overflow: 'hidden', position: 'relative'}}>
+          {picked < 1 ? (
+            <div style={{position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 48, opacity: 1 - picked}}>
+              <Inbox size={32} color={C.inkFaint} />
+              <div style={{fontSize: 16, fontWeight: 600, marginTop: 12}}>Nothing picked yet</div>
+              <div style={{fontSize: 14, lineHeight: '24px', color: C.inkSoft, marginTop: 4}}>Choose an inquiry to read it and answer.</div>
+            </div>
+          ) : null}
+          {picked > 0 ? (
+            <div style={{opacity: picked, transform: `translateY(${(1 - picked) * 10}px)`}}>
+              <div style={{height: INBOX.detailHead, boxSizing: 'border-box', padding: 24, borderBottom: `1px solid ${C.line}`}}>
+                <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                  <span style={{fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em'}}>{lead.name}</span><Pill tone={STATUS_TONE[now.status]}>{STATUS_WORD[now.status]}</Pill>
+                </div>
+                <div style={{display: 'flex', alignItems: 'center', columnGap: 16, marginTop: 8, fontSize: 14, color: C.inkSoft, minHeight: 44}}>
+                  <span style={{display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, color: C.ink, fontVariantNumeric: 'tabular-nums'}}><Phone size={14} />0918-555-0142</span>
+                  <span style={{display: 'inline-flex', alignItems: 'center', gap: 6}}><Mail size={14} />kaye.ordonez@email.com</span>
+                </div>
+                <div style={{fontSize: 14, color: C.inkSoft, marginTop: 8}}>
+                  Asking about unit <b style={{fontWeight: 600, color: C.ink}}>B3B</b>, which rents for <b style={{fontWeight: 600, color: C.ink}}>₱8,500</b> a month.
+                </div>
+                <div style={{display: 'flex', gap: 8, marginTop: 16}}>
+                  <Btn kind="plain" icon={<XCircle size={14} />}>Close inquiry</Btn>
+                  <Btn kind="brand" icon={<UserPlus size={16} />}>Move them in</Btn>
+                </div>
+              </div>
+              <div style={{height: INBOX.thread, boxSizing: 'border-box', background: C.canvas, padding: 24, display: 'flex', flexDirection: 'column', gap: 20}}>
+                <Bubble who={lead.name} when="Sep 29, 4:12 PM" text={lead.msg} />
+                {saved > 0 ? <Bubble mine who="You" when="Sep 29, 4:20 PM" text={replyText} p={saved} /> : null}
+              </div>
+              <div style={{borderTop: `1px solid ${C.line}`, padding: 24}}>
+                <Field label="Your answer"><Input area value={reply} placeholder="Opo, vacant pa po ang unit. Pwede po kayong mag-viewing bukas." focus={replyFocus} caret={replyFocus} /></Field>
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 12}}>
+                  <div style={{maxWidth: 400, fontSize: 13, lineHeight: '22px', color: C.inkSoft}}>
+                    {lead.name} reads this on their inquiry page and can write back here (reference {refCode}). No text or email is sent, so call if it is urgent.
+                  </div>
+                  <Btn kind="brand" press={press} icon={<Send size={16} />} style={{flexShrink: 0}}>Save reply</Btn>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ---- Activity -------------------------------------------------------------------
 
 export const ActivityRow: React.FC<{tag: string; when: string; on: string; id: string; style?: React.CSSProperties}> = ({tag, when, on, id, style}) => (
   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: 1054, boxSizing: 'border-box', padding: '22px 28px', background: C.tile,

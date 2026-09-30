@@ -136,3 +136,152 @@ export const PaymentReceived: React.FC<{check: number; style?: React.CSSProperti
     <X size={16} color={C.inkSoft} style={{flexShrink: 0, marginTop: 4}} />
   </div>
 );
+
+// ---- Your rent, month by month ----------------------------------------------------
+// components/overview/PaymentMonths.vue on the tenant's Payments page, drawn with
+// MonthCapsules.vue in the tenant's own words (PaymentMonths' `capsuleTerms`).
+// Seen on September 29, 2026, before she pays: October 2025 to September 2026,
+// each a verified receipt of ₱4,700 except March, which has nothing on record.
+// She is paid up to October 4; the next period is due October 5, which is
+// PaymentMonths' "Due soon" headline. (The app would also draw October as a
+// dashed Due month from a week before; the film stops at September, so no month
+// after the day the film is set in is on screen.)
+export type MonthKind = 'recorded' | 'unentered' | 'expected' | 'future';
+export const TENANT_TERMS: Record<MonthKind, string> = {recorded: 'Paid', unentered: 'Nothing recorded', expected: 'Due', future: 'Not due yet'};
+const MONTH_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+export const RENT_MONTHS: {short: string; long: string; kind: MonthKind; value: number | null}[] = Array.from({length: 12}, (_, i) => {
+  const idx = 2025 * 12 + 9 + i;
+  const month = idx % 12, year = Math.floor(idx / 12);
+  const nothing = month === 2 && year === 2026;
+  return {short: MONTH_LONG[month].slice(0, 3), long: `${MONTH_LONG[month]} ${year}`, kind: nothing ? 'unentered' : 'recorded', value: nothing ? null : 4700};
+});
+const pesoApp = (v: number, decimals = 0) => `₱${v.toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals})}`;
+// MonthCapsules' scale: the first round step at or above the largest value, and its ticks.
+const SCALE_MAX = (() => {
+  const top = Math.max(0, ...RENT_MONTHS.map((m) => (m.kind === 'recorded' || m.kind === 'expected' ? m.value ?? 0 : 0)));
+  const magnitude = 10 ** Math.floor(Math.log10(top));
+  for (const step of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (step * magnitude >= top) return step * magnitude;
+  return 10 * magnitude;
+})();
+const compact = (v: number) => (v >= 1000 ? `₱${Math.round(v / 1000).toLocaleString('en-PH')}k` : `₱${v}`);
+const HATCH = `repeating-linear-gradient(135deg, ${C.hatch} 0 1.5px, transparent 1.5px 7px)`;
+const PAID = RENT_MONTHS.filter((m) => m.kind === 'recorded');
+const NOTHING = RENT_MONTHS.filter((m) => m.kind === 'unentered');
+
+// `grow(i)` is how far capsule i has risen (0 to 1): the app's scaleY from the
+// baseline with no overshoot, so a money chart never shows a wrong height. A
+// month with nothing recorded has no height, so it settles in instead.
+// `wide` is the layout from the sm breakpoint up (month names, figures in a row).
+export const RentMonths: React.FC<{grow: (i: number) => number; figures?: number; wide?: boolean}> = ({grow, figures = 1, wide}) => {
+  const selected = RENT_MONTHS.length - 1;
+  const current = RENT_MONTHS[selected];
+  const paid = PAID.length * 4700;
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 16, fontFamily: jakarta, color: C.ink}}>
+      <div style={{display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 12, rowGap: 8, fontSize: 16, fontWeight: 600, lineHeight: '24px'}}>
+        <Pill tone="expected">Due soon</Pill>
+        <span>Paid up to October 4, 2026. The next month is due on October 5, 2026.</span>
+      </div>
+      <div style={{display: 'flex', gap: 12}}>
+        <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 192, paddingBottom: 28, boxSizing: 'border-box', fontSize: 12, lineHeight: '16px',
+          color: C.inkFaint, textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>
+          {[SCALE_MAX, SCALE_MAX / 2, 0].map((t) => <span key={t}>{compact(t)}</span>)}
+        </div>
+        <div style={{flex: 1, display: 'grid', height: 192, gap: wide ? 8 : 2, gridTemplateColumns: `repeat(${RENT_MONTHS.length}, minmax(0, 1fr))`}}>
+          {RENT_MONTHS.map((m, i) => {
+            const g = grow(i);
+            return (
+              <div key={m.long} style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%'}}>
+                <span style={{position: 'relative', display: 'flex', width: '100%', maxWidth: 44, flex: 1, alignItems: 'flex-end'}}>
+                  {m.kind === 'unentered' ? (
+                    <span style={{position: 'absolute', inset: 0, borderRadius: 999, backgroundImage: HATCH, border: `1px solid ${C.line}`, opacity: g, transform: `scale(${0.9 + 0.1 * g})`}} />
+                  ) : (
+                    <span style={{width: '100%', height: `max(28px, ${((m.value ?? 0) / SCALE_MAX) * 100}%)`, borderRadius: 999, transformOrigin: '50% 100%', transform: `scaleY(${g})`,
+                      background: i === selected ? C.brand : C.brandBright}} />
+                  )}
+                </span>
+                <span style={{fontSize: 12, lineHeight: '16px', fontWeight: i === selected ? 600 : 400, color: i === selected ? C.ink : C.inkSoft}}>{wide ? m.short : m.short.charAt(0)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', columnGap: 24, rowGap: 12}}>
+        <div>
+          <div style={{fontSize: 12, lineHeight: '16px', color: C.inkFaint}}>{current.long}</div>
+          <div style={{fontSize: 20, lineHeight: '28px', fontWeight: 600, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums'}}>{pesoApp(current.value ?? 0)} {TENANT_TERMS.recorded.toLowerCase()}</div>
+        </div>
+        <div style={{display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 16, rowGap: 8, fontSize: 12, color: C.inkSoft}}>
+          <span style={{display: 'flex', alignItems: 'center', gap: 6}}><span style={{width: 12, height: 12, borderRadius: 6, background: C.brandBright}} />{TENANT_TERMS.recorded}</span>
+          <span style={{display: 'flex', alignItems: 'center', gap: 6}}><span style={{width: 12, height: 12, borderRadius: 6, backgroundImage: HATCH, border: `1px solid ${C.line}`, boxSizing: 'border-box'}} />{TENANT_TERMS.unentered}</span>
+        </div>
+      </div>
+      <div style={{display: 'grid', gap: 16, borderTop: `1px solid ${C.line}`, paddingTop: 16, gridTemplateColumns: wide ? 'repeat(3, minmax(0, 1fr))' : '1fr'}}>
+        {[
+          ['Months paid', `${Math.round(PAID.length * figures)} of ${RENT_MONTHS.length}`, 'In the months shown'],
+          ['Paid in these months', pesoApp(Math.round((paid * figures) / 100) * 100, 2), 'From receipts the landlady verified'],
+          ['Due now', 'Nothing', null],
+        ].map(([dt, dd, note]) => (
+          <div key={dt}>
+            <div style={{fontSize: 12, lineHeight: '16px', color: C.inkFaint}}>{dt}</div>
+            <div style={{fontSize: 18, lineHeight: '28px', fontWeight: 600, fontVariantNumeric: 'tabular-nums'}}>{dd}</div>
+            {note ? <div style={{fontSize: 12, lineHeight: '16px', color: C.inkSoft}}>{note}</div> : null}
+          </div>
+        ))}
+      </div>
+      <div style={{fontSize: 14, lineHeight: '24px', color: C.inkSoft}}>
+        No payment is recorded for {NOTHING.map((m) => m.long).join(' and ')}. If you paid for it, ask the landlady to check her records.
+      </div>
+      <div style={{borderTop: `1px solid ${C.line}`, paddingTop: 12}}>
+        <span style={{display: 'inline-flex', minHeight: 44, alignItems: 'center', fontSize: 14, color: C.inkSoft, textDecoration: 'underline', textUnderlineOffset: 4, textDecorationColor: C.line}}>Show each month as a list</span>
+      </div>
+    </div>
+  );
+};
+
+// The whole tile, as OverviewTile draws it (p-5 on a phone, p-6 from sm up).
+export const RentMonthsTile: React.FC<{grow: (i: number) => number; figures?: number; wide?: boolean; style?: React.CSSProperties}> = ({grow, figures, wide, style}) => (
+  <Tile title="Your rent, month by month" style={{padding: wide ? 24 : 20, ...style}}>
+    <RentMonths grow={grow} figures={figures} wide={wide} />
+  </Tile>
+);
+
+// The tenant's Payments page (TenantPaymentsView.vue) on the phone, `scroll`
+// pixels down: its heading, the Due tile and Your rent as they read before she
+// pays (no bill raised yet, her records stop at October 4), then the months. The
+// top bar stays where it is.
+export const PaymentsPage: React.FC<{grow: (i: number) => number; figures?: number; scroll: number}> = ({grow, figures, scroll}) => (
+  <div style={{position: 'absolute', inset: 0, fontFamily: jakarta, color: C.ink, overflow: 'hidden'}}>
+    <div style={{position: 'absolute', left: 16, right: 16, top: 64, transform: `translateY(${-scroll}px)`, display: 'flex', flexDirection: 'column', gap: 20, paddingTop: 20}}>
+      <div>
+        <div style={{fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: C.inkFaint}}>MY ACCOUNT</div>
+        <div style={{fontSize: 30, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.25, marginTop: 4}}>Payments and billing</div>
+        <div style={{fontSize: 14, lineHeight: '20px', color: C.inkSoft, marginTop: 4}}>Pay a bill with GCash, and see what has been recorded against your unit.</div>
+        <div style={{display: 'inline-flex', minHeight: 44, alignItems: 'center', fontSize: 14, color: C.inkSoft, textDecoration: 'underline', textUnderlineOffset: 4, textDecorationColor: C.line}}>How paying online works</div>
+      </div>
+      <Tile tone="brand" title="Due" style={{padding: 20}}>
+        <div>
+          <div style={{fontSize: 36, lineHeight: 1, fontWeight: 600, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums'}}>₱4,700.00</div>
+          <div style={{fontSize: 14, lineHeight: '24px', color: C.onBrandSoft, marginTop: 8}}>
+            Your recorded payments cover rent up to October 4, 2026. Paying now covers October 5, 2026 to November 4, 2026.
+          </div>
+        </div>
+        <div><Btn kind="light" icon={<CreditCard size={16} />}>Pay with GCash</Btn></div>
+        <div style={{fontSize: 12, lineHeight: '20px', color: C.onBrandSoft}}>₱4,700.00 per period. Paid in person? It shows here once the landlady records the receipt.</div>
+      </Tile>
+      <Tile title="Your rent" style={{padding: 20}}>
+        <div style={{display: 'flex', flexDirection: 'column', fontSize: 14}}>
+          {[['Rent', '₱4,500.00', null], ['Water', '₱200.00', '1 registered occupant at ₱200 each'], ['Each month', '₱4,700.00', null]].map(([k, v, note], i) => (
+            <div key={k} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: i ? '10px 0' : '0 0 10px', borderTop: i ? `1px solid ${C.line}` : 'none'}}>
+              <span style={{fontWeight: i === 2 ? 600 : 400}}>{k}{note ? <span style={{display: 'block', fontSize: 12, color: C.inkFaint}}>{note}</span> : null}</span>
+              <span style={{fontWeight: 600, fontSize: i === 2 ? 18 : 14, fontVariantNumeric: 'tabular-nums'}}>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{fontSize: 14, lineHeight: '24px', color: C.inkSoft}}>Rent is due on the 5th of each month. It counts as overdue from the day after, with no grace period.</div>
+      </Tile>
+      <RentMonthsTile grow={grow} figures={figures} />
+    </div>
+    <div style={{position: 'absolute', left: 16, right: 16, top: 0, background: C.canvas}}><AppHeader phone initials="AV" unread={2} /></div>
+  </div>
+);

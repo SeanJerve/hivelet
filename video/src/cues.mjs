@@ -50,14 +50,19 @@ export function buildCues(tl) {
       [B3 + 55, 'msg-out', 0.16, "her reply, 'Noted po'"],
       [B3 + 71, 'msg-in', 0.16, "another tenant's message about a light"],
       [B4 + 39, 'msg-in', 0.18, 'a tenant asks what they owe'],
-      // Inquiries (at B5+26): social media at +12, a text at +26, the walk-in's note at +40.
-      [B5 + 39, 'msg-in', 0.15, 'a message arrives on social media'],
-      [B5 + 53, 'sms', 0.22, 'a text message arrives'],
-      [B5 + 67, 'note', 0.26, "the note about a walk-in is stuck down"],
+      // Inquiries (at B5+26): social media at +10, a text at +24; in person, the
+      // visitor walks up to the landlady from +40, a foot landing at +50 and +60
+      // (Act1.tsx IN_PERSON). What they say is only spoken, so it makes no sound.
+      [B5 + 37, 'msg-in', 0.15, 'a message arrives on social media'],
+      [B5 + 51, 'sms', 0.22, 'a text message arrives'],
+      [B5 + 76, 'step-a', 0.3, 'the visitor steps toward the landlady'],
+      [B5 + 86, 'step-b', 0.26, 'the visitor steps up and stops in front of her'],
       // Nothing connected: the links reach (CON+64..96), then break at CON+104.
       [CON + 104, 'snap', 0.12, 'the dashed links between the problems break'],
       // The hive: each problem bends into a hexagon from HIVE+4i and lands at about HIVE+80+4i;
-      // the outer twelve land at about HIVE+96+2j; the centre cell at HIVE+122.
+      // the outer twelve land at about HIVE+96+2j; the centre cell at HIVE+122. Then the
+      // cells close up and the whole straightens into the mark, whole on the brass hit
+      // in the score (BRAAM), so that part has no effect of its own.
       [HIVE + 14, 'glass', 0.16, 'the problems bend into hexagons'],
       ...range(6, (i) => [HIVE + 80 + 4 * i, i % 2 ? 'lock-b' : 'lock-a', 0.12, `problem ${i + 1} locks into the ring around the centre`]),
       ...range(12, (j) => [HIVE + 97 + 2 * j, j % 2 ? 'lock-a' : 'lock-b', 0.07, `outer cell ${j + 1} locks into the hive`]),
@@ -98,33 +103,43 @@ export function buildCues(tl) {
       [18, 'settle-deep', 0.45, 'the phone lands'],
       [28, 'settle-a', 0.22, 'the Amount due close-up lands'],
       [64, 'blip', 0.16, '"Due in 6 days" pops in'],
-      [100, 'tap', 0.15, 'Pay with GCash is tapped'],
-      // People.tsx T: the dialog opens the payment page at 106; back from GCash,
-      // "Payment received" at 138; then everything else is its v6 frame plus 70.
-      [107, 'open', 0.18, 'the Pay with GCash dialog opens the payment page'],
-      [139, 'bell', 0.12, '"Payment received": Adyen has confirmed it'],
-      [175, 'flick', 0.1, 'the ₱4,700.00 chip lifts off the phone'],
-      [196, 'settle-b', 0.33, "her attention tile lands, with Andrea's payment"],
-      [245, 'soft-click', 0.27, 'the pointer clicks Review payments'],
-      [269, 'chime', 0.06, 'the phone changes to Settled'],
-      [297, 'nav', 0.3, 'the phone moves to Repairs'],
-      [320, 'settle-c', 0.23, 'the form close-up lands'],
+      // Her rent, month by month (People.tsx T): the phone goes to Payments at 100,
+      // the close-up pops at 110, the months rise from 126 (one every 3 frames);
+      // the phone goes back to her Overview at 200.
+      [101, 'nav', 0.3, 'the phone moves to her Payments page'],
+      [122, 'settle-a', 0.22, 'the month-by-month close-up lands'],
+      [127, 'fill', 0.14, 'her months rise one by one, October to September'],
+      [201, 'nav', 0.3, 'the phone goes back to her Overview'],
+      // From the payment on, everything is its fifth-cut frame plus 132: the dialog
+      // opens the payment page at 238; back from GCash, "Payment received" at 270.
+      [232, 'tap', 0.15, 'Pay with GCash is tapped'],
+      [239, 'open', 0.18, 'the Pay with GCash dialog opens the payment page'],
+      [271, 'bell', 0.12, '"Payment received": Adyen has confirmed it'],
+      [307, 'flick', 0.1, 'the ₱4,700.00 chip lifts off the phone'],
+      [328, 'settle-b', 0.33, "her attention tile lands, with Andrea's payment"],
+      [377, 'soft-click', 0.27, 'the pointer clicks Review payments'],
+      [401, 'chime', 0.06, 'the phone changes to Settled'],
+      [429, 'nav', 0.3, 'the phone moves to Repairs'],
+      [452, 'settle-c', 0.23, 'the form close-up lands'],
       ...typing('title', 0.05, 'a letter of the repair title is typed'),
       ...typing('details', 0.04, 'a letter of the details is typed'),
-      // T: send 444, board 446, fly 450..476, s1 486..502, s2 506..522, note 528.
-      [444, 'tap', 0.15, 'Send request is tapped'],
-      [451, 'flick', 0.1, 'the repair card lifts off the phone'],
-      [456, 'settle-a', 0.22, 'her repairs board lands'],
-      [473, 'status-1', 0.26, 'the card lands in To dispatch'],
-      [487, 'card-slide', 0.27, 'the card slides toward In progress'],
-      [500, 'status-2', 0.15, 'the card lands in In progress'],
-      [507, 'card-slide', 0.27, 'the card slides toward Done'],
-      [520, 'status-3', 0.12, 'the card lands in Done'],
-      [529, 'bell', 0.11, '"Your repair is done" drops onto the phone'],
+      // T: send 576, board 578, fly 582..608, s1 618..634, s2 638..654, note 660.
+      [576, 'tap', 0.15, 'Send request is tapped'],
+      [583, 'flick', 0.1, 'the repair card lifts off the phone'],
+      [588, 'settle-a', 0.22, 'her repairs board lands'],
+      [605, 'status-1', 0.26, 'the card lands in To dispatch'],
+      [619, 'card-slide', 0.27, 'the card slides toward In progress'],
+      [632, 'status-2', 0.15, 'the card lands in In progress'],
+      [639, 'card-slide', 0.27, 'the card slides toward Done'],
+      [652, 'status-3', 0.12, 'the card lands in Done'],
+      [661, 'bell', 0.11, '"Your repair is done" drops onto the phone'],
     ],
     guests: [
       // People.tsx G: plan 26..72, chip 76, lift 104..134, drop 176..202, click 206,
-      // dialog 212, autofill 232/236/240, send 338, list 350, new item 368.
+      // dialog 212, autofill 232/236/240, send 338; the confirmation rises in from
+      // 359; the question lifts off at 400 and lands in her list at 428; she picks it
+      // at 446 and saves her answer at 554 (in the thread at 558); it lifts off her
+      // screen at 574 and lands on the visitor's page at 600; they send theirs at 666.
       [18, 'settle-a', 0.17, 'the B3B showcase lands'],
       [27, 'sketch', 0.22, 'the floor plan draws itself in'],
       [77, 'blip', 0.065, 'the B3B label pops onto the plan'],
@@ -137,9 +152,20 @@ export function buildCues(tl) {
       [240, 'tick-c', 0.14, 'the email address fills in'],
       ...typing('question', 0.045, 'a letter of the question is typed'),
       [338, 'soft-click', 0.18, 'the pointer clicks Send inquiry'],
-      [343, 'flick', 0.15, 'the question lifts off the dialog'],
-      [358, 'settle-a', 0.17, 'her Inquiries list lands'],
-      [370, 'bell', 0.14, "Kaye's inquiry lands at the top of Inquiries"],
+      [359, 'chime', 0.08, '"Your message about unit B3B is saved" rises in, with the link and the code'],
+      [401, 'flick', 0.15, 'the question lifts off the dialog'],
+      [419, 'settle-a', 0.17, 'her Inquiries lands'],
+      [430, 'bell', 0.14, "Kaye's inquiry lands at the top of her list"],
+      [446, 'soft-click', 0.18, "the pointer picks Kaye's inquiry"],
+      ...typing('reply', 0.045, 'a letter of her answer is typed'),
+      [554, 'soft-click', 0.18, 'the pointer clicks Save reply'],
+      [559, 'msg-out', 0.16, 'her answer appears in the thread, and the inquiry reads Answered'],
+      [575, 'flick', 0.15, 'her answer lifts off her screen'],
+      [590, 'settle-b', 0.2, "the visitor's conversation page lands"],
+      [601, 'bell', 0.14, "Michelle's answer lands on the visitor's page"],
+      ...typing('back', 0.045, 'a letter of their answer is typed'),
+      [666, 'soft-click', 0.18, 'the pointer clicks Send'],
+      [671, 'msg-out', 0.16, 'their answer appears under hers'],
     ],
     proof: [
       [40, 'settle-deep', 0.4, 'the income records count lands and runs to 937'],
