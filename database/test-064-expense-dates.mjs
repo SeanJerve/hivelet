@@ -4,10 +4,12 @@
 // Run from database/:  npm i --no-save @electric-sql/pglite && node test-064-expense-dates.mjs
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import xlsx from 'xlsx';
 import { parseExpenses, corrections } from './gen-expense-date-fix.mjs';
 process.env.TZ = 'UTC';
-const M = new URL('./migrations/', import.meta.url).pathname;
+// fileURLToPath, not .pathname: on Windows .pathname is /C:/..., which read as C:\C:\... (2026-09-30).
+const M = fileURLToPath(new URL('./migrations/', import.meta.url));
 const diag = readFileSync(M + 'DIAGNOSTIC_expense_dates_before_064.sql', 'utf8');
 const m064 = readFileSync(M + '064_expense_dates_as_she_wrote_them.sql', 'utf8');
 let pass = 0, fail = 0;

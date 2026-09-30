@@ -95,7 +95,11 @@ if (process.argv[1] && process.argv[1].endsWith('gen-expense-date-fix.mjs')) {
   const wb = xlsx.readFile(WORKBOOK);
   const rows = parseExpenses(xlsx.utils.sheet_to_json(wb.Sheets['Monthly Expenses'], { header: 1 }));
   const fix = corrections(rows);
-  const data = JSON.stringify(fix).replace(/'/g, "''");
+  // A semicolon is written as the JSON escape \u003b, which jsonb reads back as ';'.
+  // The Supabase SQL editor splits a script at every semicolon, even one inside a string,
+  // and her book has one ("Legazpi Commerial Buil;ding"): the diagnostic failed with
+  // 'relation "2026" does not exist' (Sean, 2026-09-30). The data itself is unchanged.
+  const data = JSON.stringify(fix).replace(/'/g, "''").replace(/;/g, '\\u003b');
   const moving = fix.filter((f) => f.o !== f.n).length;
   const tpl = (name) => fs.readFileSync(`./templates/${name}`, 'utf8')
     .replaceAll('__DATA__', () => data).replaceAll('__ROWS__', String(fix.length)).replaceAll('__MOVING__', String(moving));
