@@ -22,13 +22,58 @@
  * The wording claims nothing the property cannot honour: no show home, no
  * open-house hours, no promise of a reply by a channel this system does not
  * have. Viewings are arranged with the landlady, and that is what it says.
+ *
+ * THE VACANCY COUNT, AND WHEN IT IS NOT SHOWN
+ * -------------------------------------------
+ * The heading says how many units are vacant, from the listing the landing
+ * page already loads (`/public/rooms`, counted by the parent). It falls back
+ * to the original wording - "Viewings are by appointment" - whenever that
+ * number is not known to be current:
+ *
+ *   - while the listing is loading, and when it fails. The parent passes null
+ *     for both, because until it answers the unit list is the all-vacant seed.
+ *   - offline. The service worker answers `/api/public/*` from its cache for up
+ *     to an hour (vite.config.ts), so a count read offline is an old count
+ *     presented as "right now". Once the browser reports going offline the
+ *     count is withdrawn for the life of this prompt, not restored on
+ *     reconnect, because the list it came from may be that cached copy.
+ *
+ * Zero says "No units are vacant", not "all N are occupied": a unit under
+ * maintenance or reserved is neither, and the sentence would be false.
  */
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { isAuthenticated } from '@/lib/authStore';
 import { X } from 'lucide-vue-next';
 
+const props = defineProps<{
+  /** Published units whose status is Available. Null while unknown: loading, or failed. */
+  vacantCount: number | null;
+}>();
+
 const STORAGE_KEY = 'hivelet.viewingPromptDismissed';
+
+const offline = ref(typeof navigator !== 'undefined' && navigator.onLine === false);
+function onOffline() {
+  offline.value = true;
+}
+
+/** The count to state, or null to keep the original wording. */
+const shownCount = computed<number | null>(() => (offline.value ? null : props.vacantCount));
+
+const heading = computed(() => {
+  const n = shownCount.value;
+  if (n === null) return 'Viewings are by appointment';
+  if (n === 0) return 'No units are vacant right now';
+  return n === 1 ? '1 unit is vacant right now' : `${n} units are vacant right now`;
+});
+
+const detail = computed(() => {
+  const n = shownCount.value;
+  if (n === null) return 'Send the landlady a message to arrange one.';
+  if (n === 0) return 'Send the landlady a message to ask when one opens. Viewings are by appointment.';
+  return 'Viewings are by appointment. Send the landlady a message to arrange one.';
+});
 
 const router = useRouter();
 const dialogRef = ref<HTMLDialogElement | null>(null);
@@ -79,10 +124,12 @@ onMounted(() => {
   // A signed-in resident or the landlady is not a prospect; the router has
   // already restored the session before any page mounts.
   if (alreadyDismissed() || isAuthenticated.value) return;
+  window.addEventListener('offline', onOffline);
   dialogRef.value?.showModal();
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('offline', onOffline);
   if (dialogRef.value?.open) dialogRef.value.close();
 });
 </script>
@@ -105,16 +152,23 @@ onBeforeUnmount(() => {
         <X class="size-4" />
       </button>
 
-      <h2
-        id="viewing-prompt-title"
-        class="text-balance font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
-      >
-        Viewings are by appointment
-      </h2>
-      <!-- Was a second heading line, "Register your interest", over a button saying "Inquire now": two names for one action. -->
-      <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
-        Send the landlady a message to arrange one.
-      </p>
+      <!--
+        `aria-live`: the dialog opens before the listing answers, so the heading
+        can change from the fallback to the count while it is already open and
+        announced. Polite, so the change is read once rather than interrupting.
+      -->
+      <div aria-live="polite">
+        <h2
+          id="viewing-prompt-title"
+          class="text-balance font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
+        >
+          {{ heading }}
+        </h2>
+        <!-- Was a second heading line, "Register your interest", over a button saying "Inquire now": two names for one action. -->
+        <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
+          {{ detail }}
+        </p>
+      </div>
 
       <!--
         `px-6`, not `px-10`. `.pill-btn-brand` already sets `padding: 0

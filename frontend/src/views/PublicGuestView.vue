@@ -208,6 +208,29 @@ const cheapestRent = computed<number | null>(() => {
   return published.length === 0 ? null : Math.min(...published.map((u) => u.price));
 });
 
+/**
+ * How many published units are vacant, for the first-visit prompt.
+ *
+ * Counted the way `availableInCategory` counts a plate - Published, and
+ * `status === 'vacant'`, which `mapOperationalStatus` gives only to an
+ * `Available` unit - so the prompt and the plates below it cannot disagree.
+ * Reserved and Under Maintenance are not vacant to a prospect.
+ *
+ * Null until `unitsReady`, for the reason THREE STATES gives: before the
+ * listing answers, `liveUnits` is the seed, and the seed says all 33 are
+ * vacant. The prompt shows its original wording for null, never a zero.
+ *
+ * And null until THIS mount's fetch has settled (`isLoading`), because
+ * `unitsReady` alone is not enough on a return visit: `roomsLoaded` stays true
+ * from an earlier load, and `fetchRooms()` clears `roomsFetchFailed` as it
+ * starts, so if that earlier load had failed, the seed reads as ready for as
+ * long as the new request is in flight.
+ */
+const vacantUnitCount = computed<number | null>(() => {
+  if (isLoading.value || !unitsReady.value) return null;
+  return liveUnits.filter((u) => u.visibility === 'Published' && u.status === 'vacant').length;
+});
+
 const route = useRoute();
 
 onMounted(async () => {
@@ -271,7 +294,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
 <template>
   <div class="ws-focus flex-1 flex flex-col w-full bg-canvas">
-    <BookViewingPrompt />
+    <BookViewingPrompt :vacant-count="vacantUnitCount" />
     <!--
       Editorial full-bleed property hero.
 
