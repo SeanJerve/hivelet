@@ -73,7 +73,12 @@ thing did not work" is not.
   line is untouched. No suite was run against the live tenants before or after.
 - **Raised:** 2026-09-29 by Claude, on Loyd's machine, at Loyd's request
 
-### B-85 — after the testing day: remove the REHEARSAL tenant's bill (and anything else the walkthrough leaves)
+### B-85 — after the testing day: remove the REHEARSAL tenant's bill (and anything else the walkthrough leaves) · **DONE 2026-09-30: 061 applied**
+
+> **Applied by Sean at 09:06 Manila** after moving the rehearsal tenant out (a first run before that
+> stopped, as designed, and changed nothing). Checked afterwards: the PREVIEW reads 0 in every column;
+> one AUDIT_CORRECTION row (bills 1, everything else 0); PH Available at P30,000; 937 live receipts,
+> 32 active tenancies, 32 Occupied units, as before.
 
 > **061 written, NOT APPLIED** (`database/migrations/061_remove_the_testing_day_rehearsal_records.sql`).
 > The rehearsal tenant is **"REHERSAL TEST"** (spelled that way), moved into PH at 08:42 Manila on
