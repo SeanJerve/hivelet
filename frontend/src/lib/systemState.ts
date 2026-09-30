@@ -589,8 +589,8 @@ export const TECHNICIANS = [
  */
 export const LANDLADY = {
   name: "Michelle",
-  gcash: "09494150382",
-  phone: "09494150382",
+  gcash: "09274653938",
+  phone: "09274653938",
   property: "Fe Galang Da Silva Boarding House",
   address: "32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
 };

@@ -87,7 +87,7 @@ old one. A second run does nothing.
 
 **Also worth a word with you:** the phone number on every page, 09494150382, is also the GCash
 number. If it is Mrs. Da Silva's phone rather than Michelle's, tenants told to "call Michelle" will
-reach the wrong person; say which number to show and it is one line to change.
+reach the wrong person; say which number to show and it is one line to change. **Answered 2026-09-30 by Lloyd: the number is (0927) 465 3938; `LANDLADY.phone` and `.gcash` changed to 09274653938.**
 
 **Left as they are, on purpose:** "the landlady" as the word for the role (it names nobody), the
 boarding house's name everywhere, and the manuscript, which calls the client "the owner"
