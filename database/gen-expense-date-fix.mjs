@@ -99,7 +99,10 @@ if (process.argv[1] && process.argv[1].endsWith('gen-expense-date-fix.mjs')) {
   // The Supabase SQL editor splits a script at every semicolon, even one inside a string,
   // and her book has one ("Legazpi Commerial Buil;ding"): the diagnostic failed with
   // 'relation "2026" does not exist' (Sean, 2026-09-30). The data itself is unchanged.
-  const data = JSON.stringify(fix).replace(/'/g, "''").replace(/;/g, '\\u003b');
+  // The same for a double hyphen and /*: the editor strips comments before sending a
+  // script, and her book has "Al--Sur Trading bh rooftop" (line 1189); the stripper cut
+  // line 13 from there to its end, and the rest read as "relation 2026 does not exist".
+  const data = JSON.stringify(fix).replace(/'/g, "''").replace(/;/g, '\\u003b').replace(/--/g, '-\\u002d').replace(/\/\*/g, '/\\u002a');
   const moving = fix.filter((f) => f.o !== f.n).length;
   const tpl = (name) => fs.readFileSync(`./templates/${name}`, 'utf8')
     .replaceAll('__DATA__', () => data).replaceAll('__ROWS__', String(fix.length)).replaceAll('__MOVING__', String(moving));
