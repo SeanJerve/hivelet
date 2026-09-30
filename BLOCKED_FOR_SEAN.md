@@ -105,6 +105,32 @@ you.
   line is untouched. No suite was run against the live tenants before or after.
 - **Raised:** 2026-09-29 by Claude, on Loyd's machine, at Loyd's request
 
+### B-86 — the imported EXPENSE dates are wrong in two ways (1,262 entries), and one June bill differs from her workbook · **NEEDS A DECISION, then a migration**
+
+- **Found:** 2026-09-30 by Claude, while adding August 2026 from the owner's updated workbook
+  (migration 062, applied: 15 receipts and 34 expenses, additive only, nothing existing touched).
+- **Defect 1, typed dates one day early.** 032 found every imported `date_paid` a day early and
+  corrected income. The same importer wrote `expense_date` the same way and **it was never corrected**:
+  every expense whose Date cell holds a real date is stored the day before she wrote it. Matching the
+  workbook against the table needed "her date, or the day before" to pair them.
+- **Defect 2, blank dates filed on the 1st, and 2026 filed under 2025.** Her sheet leaves the Date blank
+  for further lines on the same day. The importer filed every blank-dated line on the 1st of the month,
+  and it does not recognise her `YEAR 2026` header, so blank-dated 2026 lines went under **2025**:
+  **647 entries sit on the 1st of a 2025 month**, 15 of them naming 2026 in their own text (for example
+  "Salaries (michelle) Jun.1-30,2026" dated 2025-06-01). Monthly Expenses therefore overstates 2025 and
+  understates 2026, month by month.
+- **The June electric bill:** "Electricbill (May26)" 2026-06-03 is stored as PHP 5,688.67 (Main House
+  only); her workbook now reads PHP 20,652.80 (Boarding House 14,964.13 + Main House 5,688.67). Either the
+  import dropped the Boarding House share or she added it since. Not added by 062 (it would double-count).
+- **What Sean needs to do:** decide, with the owner if needed, whether to correct the stored expense
+  dates. `database/import-ledger-update.mjs` already reads her convention properly (`_trueDate`: a blank
+  Date is the line above's day, `YEAR 2026` sets the year) and pairs every stored entry with its sheet
+  line, so a correcting migration can be generated from it the way 032 was. Check what
+  `check:reports` compares against first: it may be reproducing the same importer rules.
+- **How to know it worked:** no expense entry dated the 1st of a 2025 month whose sheet line is in a
+  2026 block; Monthly Expenses per month equals her workbook's monthly TOTALS rows.
+- **Raised:** 2026-09-30 by Claude
+
 ### B-85 — after the testing day: remove the REHEARSAL tenant's bill (and anything else the walkthrough leaves) · **DONE 2026-09-30: 061 applied**
 
 > **Applied by Sean at 09:06 Manila** after moving the rehearsal tenant out (a first run before that
