@@ -21,10 +21,11 @@
  * supported" from ESM output).
  */
 import { build } from 'esbuild';
+import { fileURLToPath } from 'node:url';
 
 await build({
-  entryPoints: [new URL('../src/server.ts', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')],
-  outfile: new URL('../dist/server.js', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'),
+  entryPoints: [fileURLToPath(new URL('../src/server.ts', import.meta.url))],
+  outfile: fileURLToPath(new URL('../dist/server.js', import.meta.url)),
   bundle: true,
   platform: 'node',
   format: 'esm',
