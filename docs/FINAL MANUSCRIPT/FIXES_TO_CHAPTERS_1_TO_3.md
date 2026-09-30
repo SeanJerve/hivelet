@@ -233,6 +233,40 @@ the work will be done by the time the paper is read; if the manuscript is submit
 > amounts are hidden in every figure in this paper, and faces appear only with consent. Recordings
 > and notes were kept by the research team and are deleted after the defense.
 
+**H4. What changed on the testing day itself (added 2026-09-30).** Three things were added to the
+plan on the day. Chapter 3 must say them, because Chapter 4 reports their results. Paste each only
+if it happened; strike what did not.
+
+*(a) The introduction every tester received. Add to "Data gathering" in H2, before "Each used
+their own account":*
+
+> Before using the system, every participant watched the same short video introducing Hivelet
+> ([LENGTH] minutes). No other demonstration or instruction was given.
+
+*(b) Observation without interviews, and how help was given. Add to "Data gathering" in H2, after
+"an observer completed the observation sheet":*
+
+> Testers were asked to think aloud, and were not interviewed during or after their tasks. When a
+> tester was stuck, help followed a fixed order: a neutral prompt after about thirty seconds
+> ("What are you looking for?"), then a hint about where to look, and only then a demonstration. A
+> task finished after the prompt counted as completed without help, one finished after the hint as
+> completed with help, and one that needed a demonstration as not completed.
+
+*(c) Prospective tenants, a fourth group. Add to "Participants" in H2, after the tenants' sentence:*
+
+> [NUMBER] prospective tenants, people looking for a room who do not live at the boarding house,
+> used the public website and the inquiry form on their own phones, without an account. The
+> reservation (booking) function was still in development and was not part of the test.
+
+*and change "a separate section for each respondent group" in "Instruments" to "a separate section
+for each of the four respondent groups (the owner or administrator, tenants, prospective tenants
+and technical evaluators)". The prospects' section has twelve items in English and Filipino on six
+characteristics; they did not rate Security or Maintainability, which a visitor cannot observe.*
+
+*(d) Who the administrator was. If the administrator who tested is not the owner (the admin account
+is Michelle's since migration 063), say "the administrator, who manages the boarding house for the
+owner" wherever H2 says "the owner, as the only administrator".*
+
 ## F. Optional improvements (not errors)
 
 - §2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would

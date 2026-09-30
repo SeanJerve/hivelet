@@ -586,6 +586,13 @@ failures as they happened.]
 > wording in the Google Form changes, change it here too. Section 3.3 must also name the
 > technical evaluators as a third group, or the Maintainability table has no respondents that
 > Chapter 3 accounts for (see `FIXES_TO_CHAPTERS_1_TO_3.md`).
+>
+> **TEAM NOTE (2026-09-30).** If prospective tenants answered the survey (its Section 5), they are a
+> fourth group: add them to the paragraph below ("...the owner, the tenants, prospective tenants who
+> used only the public website, and technical evaluators... Prospective tenants did not rate
+> Security or Maintainability, which a visitor cannot observe.") and keep their row in Table 12.
+> `scripts/survey/compute-survey.mjs` prints their rows in Tables 14 to 18 and 21. If none took
+> part, delete the row. Chapter 3 text: `FIXES_TO_CHAPTERS_1_TO_3.md` H4.
 
 The system was evaluated by three groups using a survey based on the ISO/IEC 25010 software
 quality model: the owner, the tenants, and technical evaluators (IT professionals, developers or IT
@@ -602,6 +609,7 @@ Maintainability, because judging it requires reading the source code and documen
 | Owner / administrator | | |
 | Tenants | | |
 | Technical evaluators | | |
+| Prospective tenants | | |
 | **Total** | | 100% |
 
 ### 4.4.2 Interpretation of Scores
