@@ -149,6 +149,16 @@ you.
 - **Proved:** `database/test-064-expense-dates.mjs` builds the table from her workbook as the
   importer stored it and runs the preview and 064 the way the SQL editor does: 14 of 14. Removing
   the count guard fails 3; removing the electric handling fails 1.
+- **Seen in her own download, 2026-09-30 15:00 (Claude, read-only).** The Monthly Expenses workbook
+  built by the route's own function (`buildExpenseReportWorkbook`, 2024 to 2026) was compared
+  month by month with her workbook's MONTH TOTAL(S) rows: **5 of 32 months agree, 27 differ.** Every
+  difference is B-86: 2024's year total matches to the centavo (only months move, the day-early
+  dates); **₱580,370.70 of 2026 spending sits in 2025** (Jan to Jul 2025 high, Jan to Jul 2026 low by
+  the same amounts, e.g. January ₱61,431.25 both ways); and the all-time gap is **₱14,964.13, the
+  June electric line**. So `check:reports` (548/0) is right that the export matches the database;
+  it is the database that does not match her book. **If she downloads Monthly Expenses during
+  testing (A-29) and compares a 2025 or 2026 month with her sheet, it will not match until 064 runs.**
+  Income was not compared this way (its dates were corrected by 032).
 - **What Sean needs to do:** `npm run backup`; run `DIAGNOSTIC_expense_dates_before_064.sql` and
   send the result (row 3 "paired" should be close to 1,261, rows 6-7 list what is left alone); then
   run 064. Afterwards the diagnostic's "will move" reads 0.
