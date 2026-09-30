@@ -159,7 +159,21 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
    */
   const isRead = method === 'GET';
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), isRead ? 25_000 : 45_000);
+  const limitMs = isRead ? 25_000 : 45_000;
+  const timer = setTimeout(() => controller.abort(), limitMs);
+  /**
+   * The timer alone arrived late on a phone. On the testing day (O-12, Infinix
+   * GT20, Chrome) the 45-second message came after 60 to 80 s; on an iPhone it
+   * came on time. Chrome slows the timers of a page that is not on screen, and a
+   * dead-signal test on a phone takes the tester out of the page (the settings,
+   * the lock screen). So the deadline is also a time on the clock, checked the
+   * moment the page is on screen again: past it, the wait ends at once.
+   */
+  const deadline = Date.now() + limitMs;
+  const onVisible = () => {
+    if (document.visibilityState === 'visible' && Date.now() >= deadline) controller.abort();
+  };
+  document.addEventListener('visibilitychange', onVisible);
 
   let response: Response;
   let text: string;
@@ -201,6 +215,7 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
     });
   } finally {
     clearTimeout(timer);
+    document.removeEventListener('visibilitychange', onVisible);
   }
 
   /**
