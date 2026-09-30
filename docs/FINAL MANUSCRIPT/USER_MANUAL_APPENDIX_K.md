@@ -147,7 +147,8 @@ expenses workbook.
   The list then shows who paid for each unit then, read from your receipts: the months they paid,
   or for one month what the receipt covered, when it was paid and its number. A name you wrote two
   ways in the same unit is shown once, with the other spelling under it; a tenant who moved units
-  says which other unit they rented. Choose **Now** to go back to your current tenants.
+  says which other unit they rented. **Download … for Excel** saves the same list as a workbook,
+  named like "Tenant History June 2025 - TH062025". Choose **Now** to go back to your current tenants.
 
 ### 6. Rooms and rates
 
