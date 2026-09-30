@@ -58,6 +58,27 @@ Mobile Performance across all four runs (30 Sep and 1 Oct): 85 to 88, LCP 3.4 to
 largest opportunities PageSpeed names: render-blocking CSS and Google Fonts (about 1.0 s), and
 the two home-page photos (about 183 KiB).
 
-**PF-10 has no screenshot yet.** It needs a signed-in session, so someone signed in must take it:
-DevTools > Lighthouse > Desktop > Analyze, screenshot, then Mobile > Analyze, screenshot. Save as
-`evidence/PF-10_lighthouse_desktop_<score>_<date>.png` and `..._mobile_...`.
+### PF-10 evidence: Lighthouse on the signed-in Overview, 1 Oct 2026
+
+The landlady's Overview (`/admin/overview`), signed in, in a fresh Chrome 154 profile with no
+extensions (the equivalent of an Incognito window), storage kept so the session stayed signed in.
+Lighthouse 13.5.0, simulated throttling, no run warnings.
+
+| Run | Captured | Mode | Scores | FCP | LCP | TBT | CLS | Speed Index |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| 1 (Sean, DevTools) | 1 Oct 2026, about 12:55 AM | Mobile (page picture is a phone) | 61 / 100 / 100 / 66 | 0.6 s | 0.9 s | 7,040 ms | 0.067 | (not in screenshot) |
+| 2 (Claude, Lighthouse 13.5.0) | 1 Oct 2026, 1:05 AM GMT+8 | Desktop | 85 / 100 / 100 / 66 | 0.3 s | 0.3 s | 160 ms | 0.221 | 0.7 s |
+| 3 (Claude, Lighthouse 13.5.0) | 1 Oct 2026, 1:05 AM GMT+8 | Mobile | 81 / 100 / 100 / 66 | 0.1 s | 0.9 s | 700 ms | 0.078 | 1.2 s |
+
+- **Run 1 is not comparable.** Lighthouse warned that stored data affected it: it was not an
+  Incognito window, and 7.7 s of the CPU time was "Unattributable" (browser extensions), against
+  about 1.2 s for Hivelet's own scripts. Runs 2 and 3 are the clean ones and agree with Eljohn's
+  30 Sep values (84 desktop, 82 mobile).
+- **SEO 66 is by design.** The only failed audit is "Page is blocked from indexing": the admin
+  pages carry a `noindex` meta tag and are disallowed in `robots.txt` so the owner's books never
+  appear in search results. The public pages score 100 (PF-09).
+- **What holds the Performance score down:** layout shift on desktop (CLS 0.221, the cards
+  settling as the figures arrive) and blocking time on the emulated phone (700 ms).
+- **Screenshots:** they show the owner's signed-in Overview with her figures, so they are **not
+  committed**. They were saved on Lloyd's laptop; a team member decides whether to add them here
+  (blur the figures first if they go in the manuscript).
