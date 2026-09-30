@@ -55,11 +55,14 @@ Research team member present: `______________________________`
 
 ## Form 2. Observation sheet (one per tester)
 
-Tester code: `T__` / Owner    Unit: `______`    Device and browser: `____________________`
+Tester code: `PR__` / `T__` / `L`    Unit: `______`    Device and browser: `____________________`
 Network: house wifi / mobile data    Observer: `____________`    Date: 30 Sep 2026
 
-Write what happened, not what should have happened. **Success**: P = done alone, PH = done with
-help, F = not done. **Errors**: wrong taps that led somewhere unintended.
+Video shown at: `________`    Write what happened, not what should have happened. **Success**: P = done
+alone (help level 0 or 1), PH = done with help (level 2), F = not done (level 3, gave up, or wrong
+result), NT = not tried. **Errors**: wrong taps that led somewhere unintended. **Help**: the level
+(1 prompt, 2 hint where, 3 shown) and the time. Tag each quote S slow, C confusing, N lost, E error,
++ liked (`docs/TESTING_DAY/OBSERVATION_PROTOCOL.md`).
 
 | Case | Start | End | Success | Errors | Help given (what, when) | What they said / did |
 | :-- | :-- | :-- | :-- | :-- | :--- | :--- |
@@ -82,7 +85,21 @@ help, F = not done. **Errors**: wrong taps that led somewhere unintended.
 | T-17 | | | | | | |
 | T-18 | | | | | | |
 
-For the owner, use the same columns with A-01 to A-35.
+For the landlady (`L`), use the same columns with A-01 to A-36.
+
+**Prospective tenants (PR1, PR2 ...)** use these rows instead of T-01 to T-18:
+
+| Case | Start | End | Success | Errors | Help given (what, when) | What they said / did |
+| :-- | :-- | :-- | :-- | :-- | :--- | :--- |
+| PR-01 | | | | | | |
+| PR-02 | | | | | | |
+| PR-03 | | | | | | |
+| PR-04 | | | | | | |
+| PR-05 | | | | | | |
+| PR-06 | | | | | | |
+| PR-07 | | | | | | |
+| PR-08 | | | | | | |
+| PR-09 | | | | | | |
 
 Overall impression, in the tester's own words:
 
@@ -152,13 +169,14 @@ Research team present: `________________________________________________________
 
 ## Form 6. Certification of system testing and acceptance
 
-*To be signed by the owner at the end of the day, only if she agrees with it. If she does not, do
+*To be signed by the landlady who used the system (Michelle, the administrator; see
+`docs/TESTING_DAY/README.md`), or by the owner, at the end of the day, only if she agrees with it. If she does not, do
 not ask her to sign; write down what she would need to see first.*
 
 > This is to certify that **Hivelet: A Web-Based Apartment Management System for Fe Galang Da
 > Silva Boarding House**, developed by Group 4, BS Information Technology, Bicol University College
 > of Science, was tested at the Fe Galang Da Silva Boarding House on **30 September 2026** by the
-> undersigned owner and by `____` tenants of the property, using the live system at
+> undersigned, by `____` tenants of the property and by `____` prospective tenants, using the live system at
 > `https://hivelet.vercel.app` with the property's own records.
 >
 > The system was used for the following during the test (tick):
@@ -175,8 +193,8 @@ not ask her to sign; write down what she would need to see first.*
 > `______________________________________________________________________`
 
 `______________________________`
-**Mrs. Fe Galang Da Silva**
-Owner, Fe Galang Da Silva Boarding House
+Name: `______________________________`
+Owner / administrator (circle one), Fe Galang Da Silva Boarding House
 Date: `____________`
 
 Witnessed by (research team): `______________________________`

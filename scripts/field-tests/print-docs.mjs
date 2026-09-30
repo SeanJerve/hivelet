@@ -8,6 +8,8 @@
  *   TESTING_DAY_FORMS_PRINT.html        every "## Form" starts on a new sheet
  *   TESTING_DAY_TEST_CASES_PRINT.html   every "## Part" starts on a new sheet, landscape
  *   TESTING_DAY_GUIDE_PRINT.html        the guide, portrait
+ * and, beside its source in docs/TESTING_DAY/:
+ *   OBSERVATION_PROTOCOL_PRINT.html     the facilitator's copy, task cards included
  *
  * The Markdown stays the one source: change it, then re-run this. Open a page in Chrome > Print.
  * Tables keep rows whole across a page break and repeat their header row on each page, and empty
@@ -25,6 +27,7 @@ const JOBS = [
   { src: 'TESTING_DAY_FORMS.md', out: 'TESTING_DAY_FORMS_PRINT.html', breakBefore: /^## Form /, landscape: false, title: 'Testing day forms' },
   { src: 'TESTING_DAY_TEST_CASES.md', out: 'TESTING_DAY_TEST_CASES_PRINT.html', breakBefore: /^## Part /, landscape: true, title: 'Testing day test cases' },
   { src: 'TESTING_DAY_GUIDE.md', out: 'TESTING_DAY_GUIDE_PRINT.html', breakBefore: /^## \d+\. /, landscape: false, title: 'Testing day guide' },
+  { src: '../TESTING_DAY/OBSERVATION_PROTOCOL.md', out: '../TESTING_DAY/OBSERVATION_PROTOCOL_PRINT.html', breakBefore: /^## 4\. /, landscape: false, title: 'Observation protocol' },
 ];
 
 const css = (landscape) => `
@@ -69,5 +72,5 @@ ${body}
 </main></body></html>
 `;
   fs.writeFileSync(path.join(dir, job.out), html, 'utf8');
-  console.log(`written: docs/FINAL MANUSCRIPT/${job.out}`);
+  console.log(`written: ${path.relative(path.resolve(dir, '..', '..'), path.join(dir, job.out)).split(path.sep).join('/')}`);
 }

@@ -70,10 +70,15 @@ pag-upa.</em></p>
 <div class="sheet-break"></div>
 
 <h2>Form 2. Observation sheet (one per tester)</h2>
-<p>Tester code: <code>T__</code> / Owner    Unit: <code>______</code>    Device and browser: <code>____________________</code>
+<p>Tester code: <code>PR__</code> / <code>T__</code> / <code>L</code>    Unit: <code>______</code>    Device and browser: <code>____________________</code>
 Network: house wifi / mobile data    Observer: <code>____________</code>    Date: 30 Sep 2026</p>
-<p>Write what happened, not what should have happened. <strong>Success</strong>: P = done alone, PH = done with
-help, F = not done. <strong>Errors</strong>: wrong taps that led somewhere unintended.</p>
+<p>Video shown at: <code>________</code>    Write what happened, not what should have happened. <strong>Success</strong>: P = done
+alone (help level 0 or 1), PH = done with help (level 2), F = not done (level 3, gave up, or wrong
+result), NT = not tried. <strong>Errors</strong>: wrong taps that led somewhere unintended. <strong>Help</strong>: the level
+(1 prompt, 2 hint where, 3 shown) and the time. Tag each quote S slow, C confusing, N lost, E error,</p>
+<ul>
+<li>liked (<code>docs/TESTING_DAY/OBSERVATION_PROTOCOL.md</code>).</li>
+</ul>
 <table>
 <thead>
 <tr>
@@ -249,7 +254,102 @@ help, F = not done. <strong>Errors</strong>: wrong taps that led somewhere unint
 <td align="left"></td>
 </tr>
 </tbody></table>
-<p>For the owner, use the same columns with A-01 to A-35.</p>
+<p>For the landlady (<code>L</code>), use the same columns with A-01 to A-36.</p>
+<p><strong>Prospective tenants (PR1, PR2 ...)</strong> use these rows instead of T-01 to T-18:</p>
+<table>
+<thead>
+<tr>
+<th align="left">Case</th>
+<th align="left">Start</th>
+<th align="left">End</th>
+<th align="left">Success</th>
+<th align="left">Errors</th>
+<th align="left">Help given (what, when)</th>
+<th align="left">What they said / did</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">PR-01</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-02</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-03</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-04</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-05</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-06</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-07</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-08</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-09</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
 <p>Overall impression, in the tester&#39;s own words:</p>
 <p><code>______________________________________________________________________________</code></p>
 <p><code>______________________________________________________________________________</code></p>
@@ -552,13 +652,14 @@ SEO <code>___</code> LCP <code>____ s</code></p>
 <div class="sheet-break"></div>
 
 <h2>Form 6. Certification of system testing and acceptance</h2>
-<p><em>To be signed by the owner at the end of the day, only if she agrees with it. If she does not, do
+<p><em>To be signed by the landlady who used the system (Michelle, the administrator; see
+<code>docs/TESTING_DAY/README.md</code>), or by the owner, at the end of the day, only if she agrees with it. If she does not, do
 not ask her to sign; write down what she would need to see first.</em></p>
 <blockquote>
 <p>This is to certify that <strong>Hivelet: A Web-Based Apartment Management System for Fe Galang Da
 Silva Boarding House</strong>, developed by Group 4, BS Information Technology, Bicol University College
 of Science, was tested at the Fe Galang Da Silva Boarding House on <strong>30 September 2026</strong> by the
-undersigned owner and by <code>____</code> tenants of the property, using the live system at
+undersigned, by <code>____</code> tenants of the property and by <code>____</code> prospective tenants, using the live system at
 <code>https://hivelet.vercel.app</code> with the property&#39;s own records.</p>
 <p>The system was used for the following during the test (tick):</p>
 <ul>
@@ -573,8 +674,8 @@ undersigned owner and by <code>____</code> tenants of the property, using the li
 <p><code>______________________________________________________________________</code></p>
 </blockquote>
 <p><code>______________________________</code>
-<strong>Mrs. Fe Galang Da Silva</strong>
-Owner, Fe Galang Da Silva Boarding House
+Name: <code>______________________________</code>
+Owner / administrator (circle one), Fe Galang Da Silva Boarding House
 Date: <code>____________</code></p>
 <p>Witnessed by (research team): <code>______________________________</code></p>
 
