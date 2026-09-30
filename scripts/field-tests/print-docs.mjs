@@ -8,6 +8,7 @@
  *   TESTING_DAY_FORMS_PRINT.html        every "## Form" starts on a new sheet
  *   TESTING_DAY_TEST_CASES_PRINT.html   every "## Part" starts on a new sheet, landscape
  *   TESTING_DAY_GUIDE_PRINT.html        the guide, portrait
+ *   CONSENT_FORM_PRINT.html             Form 1 alone, one per tester
  * and, beside its source in docs/TESTING_DAY/:
  *   OBSERVATION_PROTOCOL_PRINT.html     the facilitator's copy, task cards included
  *
@@ -27,6 +28,7 @@ const JOBS = [
   { src: 'TESTING_DAY_FORMS.md', out: 'TESTING_DAY_FORMS_PRINT.html', breakBefore: /^## Form /, landscape: false, title: 'Testing day forms' },
   { src: 'TESTING_DAY_TEST_CASES.md', out: 'TESTING_DAY_TEST_CASES_PRINT.html', breakBefore: /^## Part /, landscape: true, title: 'Testing day test cases' },
   { src: 'TESTING_DAY_GUIDE.md', out: 'TESTING_DAY_GUIDE_PRINT.html', breakBefore: /^## \d+\. /, landscape: false, title: 'Testing day guide' },
+  { src: 'TESTING_DAY_FORMS.md', out: 'CONSENT_FORM_PRINT.html', only: [/^## Form 1\./, /^## Form 2\./], breakBefore: /^$^/, landscape: false, title: 'Consent form' },
   { src: '../TESTING_DAY/OBSERVATION_PROTOCOL.md', out: '../TESTING_DAY/OBSERVATION_PROTOCOL_PRINT.html', breakBefore: /^## 4\. /, landscape: false, title: 'Observation protocol' },
 ];
 
@@ -54,7 +56,14 @@ hr { border: 0; border-top: 1px dashed #999; margin: 4mm 0; }
 `;
 
 for (const job of JOBS) {
-  const md = fs.readFileSync(path.join(dir, job.src), 'utf8');
+  let md = fs.readFileSync(path.join(dir, job.src), 'utf8');
+  // `only`: print one section on its own (from the first heading up to, not including, the second).
+  if (job.only) {
+    const ls = md.split(/\r?\n/);
+    const from = ls.findIndex((l) => job.only[0].test(l));
+    const to = ls.findIndex((l, i) => i > from && job.only[1].test(l));
+    md = ls.slice(from, to < 0 ? undefined : to).join('\n').replace(/\n---\s*$/, '\n');
+  }
   // Page breaks before each named section, except when it is the first thing on the page.
   const lines = md.split('\n');
   const withBreaks = lines.map((l, i) => (job.breakBefore.test(l) && i > 5 ? `<div class="sheet-break"></div>\n\n${l}` : l)).join('\n');

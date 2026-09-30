@@ -15,27 +15,31 @@ Fill in the blanks marked `______` before printing (the team members' names, the
 Group 4, BS Information Technology, Bicol University College of Science
 Adviser: `____________________`
 
-**What this is.** We are testing the Hivelet system with its real users: the owner and the tenants
-of the Fe Galang Da Silva Boarding House. You will use the system on your own phone for about 20 to
-30 minutes while a member of our team watches and takes notes, and then answer a short anonymous
-survey.
+**What this is.** We are testing the Hivelet system with the people who will use it: the landlady,
+the tenants, and people looking for a room at the Fe Galang Da Silva Boarding House. You will watch
+a short video about Hivelet, then use the system (on your own phone where possible) for about 10 to
+30 minutes, or longer for the landlady, while a member of our team watches and takes notes. Then you
+answer a short anonymous survey. We are testing the system, not you.
 
-*Sinusubukan namin ang sistemang Hivelet kasama ang mga tunay na gumagamit nito. Gagamitin ninyo
-ang sistema sa sarili ninyong cellphone nang mga 20 hanggang 30 minuto habang nagmamasid at
-nagsusulat ang isang miyembro ng aming grupo, at pagkatapos ay sasagot kayo ng maikling survey na
-walang pangalan.*
+*Sinusubukan namin ang sistemang Hivelet kasama ang mga gagamit nito: ang landlady, ang mga
+nangungupahan, at ang mga naghahanap ng kwarto. Manonood kayo ng maikling video tungkol sa Hivelet,
+at gagamitin ninyo ang sistema (sa sarili ninyong cellphone kung maaari) nang mga 10 hanggang 30
+minuto habang nagmamasid at nagsusulat ang isang miyembro ng aming grupo. Pagkatapos ay sasagot kayo
+ng maikling survey na walang pangalan. Ang sistema ang sinusubukan namin, hindi kayo.*
 
-**What we record.** Notes on what you do and how long it takes; with your permission, a recording
-of your phone's screen and photos of the session. Your survey answers are anonymous.
+**What we record.** Notes on what you do, what you say, and how long it takes; with your
+permission, a recording of your screen and photos of the session. In our notes you are a code (for
+example T2), never your name. Your survey answers are anonymous.
 
-**Your privacy (Data Privacy Act of 2012, RA 10173).** You use your own account, which shows only
-your own unit, bills, payments and requests. Anything we use in our paper has names, numbers,
-emails and amounts hidden. Recordings and notes are kept by the research team only and deleted
-after the defense. Taking part is voluntary. You may stop at any time, and it has no effect at all
-on your tenancy.
+**Your privacy (Data Privacy Act of 2012, RA 10173).** Tenants use their own account, which shows
+only their own unit, bills, payments and requests. People looking for a room use only the public
+website and need no account; an inquiry you send reaches the landlady like any real inquiry.
+Anything we use in our paper has names, numbers, emails and amounts hidden. Recordings and notes are
+kept by the research team only and deleted after the defense. Taking part is voluntary. You may stop
+at any time, and it has no effect at all on your tenancy or on any future application for a room.
 
 *Kusang-loob po ang paglahok. Maaari kayong tumigil anumang oras, at wala itong epekto sa inyong
-pag-upa.*
+pag-upa o sa anumang pag-aaplay ninyo ng kwarto.*
 
 Please tick / *Pakitsek*:
 
@@ -45,7 +49,9 @@ Please tick / *Pakitsek*:
 - [ ] My face may appear in the paper. / *Maaaring makita ang aking mukha sa papel.*
       (If not ticked, faces are blurred or cropped.)
 
-Name / *Pangalan*: `______________________________`  Unit: `______`
+I am / *Ako ay*:  [ ] the landlady / *ang landlady*   [ ] a tenant / *nangungupahan*   [ ] looking for a room / *naghahanap ng kwarto*
+
+Name / *Pangalan*: `______________________________`  Unit (tenants only): `______`
 
 Signature / *Lagda*: `______________________________`  Date: `____ September 2026`
 
