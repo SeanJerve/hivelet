@@ -102,7 +102,7 @@ function describeLoginFailure(err: unknown): string | null {
     case 'RATE_LIMITED':
       return err.message;
     case 'ACCOUNT_INACTIVE':
-      return `This account is no longer active. If you still live here, ask Mrs. ${LANDLADY.name} to look at it.`;
+      return `This account is no longer active. If you still live here, ask ${LANDLADY.name} to look at it.`;
     case 'VALIDATION_FAILED':
       return 'Enter the email address or phone number on your account, and your password.';
     case 'NETWORK_ERROR':
@@ -381,7 +381,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 Forgot your password?
               </button>
               <p v-show="showForgot" id="login-forgot" class="ws-reveal max-w-xl text-sm leading-6 text-ink-soft">
-                Ask Mrs. {{ LANDLADY.name }}. She can give you a new one-time password, and you
+                Ask {{ LANDLADY.name }}. She can give you a new one-time password, and you
                 choose your own the first time you sign in with it. Call
                 <a
                   :href="`tel:${LANDLADY.phone}`"
@@ -525,7 +525,7 @@ async function handleQuickLogin(account: DemoAccount) {
         tenant portal. Your payment records stay with the landlady.
       </p>
       <p class="text-sm leading-6 text-ink-soft">
-        If you think this is a mistake, call Mrs. {{ LANDLADY.name }} on
+        If you think this is a mistake, call {{ LANDLADY.name }} on
         <a
           :href="`tel:${LANDLADY.phone}`"
           class="font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"

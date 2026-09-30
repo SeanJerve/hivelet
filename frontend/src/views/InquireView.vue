@@ -128,7 +128,7 @@ async function submitInquiry() {
     if (!defaultRoom) {
       formError.value =
         'Your message was not sent: every unit is taken or reserved at the moment, so none ' +
-        `is open for inquiries. Please try again in a few days, or call Mrs. ${LANDLADY.name} ` +
+        `is open for inquiries. Please try again in a few days, or call ${LANDLADY.name} ` +
         `on ${LANDLADY.phone}.`;
       return;
     }
@@ -280,7 +280,7 @@ async function submitInquiry() {
             Your message is saved
           </h2>
           <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
-            Mrs. {{ LANDLADY.name }} reads every inquiry herself, and replies by phone or message
+            {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself, and replies by phone or message
             to <span class="text-ink break-all">{{ sentTo.phone }}</span> or
             <span class="text-ink break-all">{{ sentTo.email }}</span>. No automatic confirmation
             email or text is sent.
@@ -394,7 +394,7 @@ async function submitInquiry() {
                 2000 characters - see the validation above), and a one-line
                 box that scrolls its own text sideways does not invite one.
                 Full width for the same reason: this is the field that
-                decides whether Mrs. Da Silva has anything to answer.
+                decides whether Michelle has anything to answer.
               -->
               <textarea
                 id="iq-msg"
@@ -422,7 +422,7 @@ async function submitInquiry() {
           -->
           <!-- Both contact fields are required, so "include a number or address" asked for less than the form does. -->
           <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
-            Mrs. {{ LANDLADY.name }} replies by phone or email. Nothing is sent to you
+            {{ LANDLADY.name }}, who runs the boarding house, replies by phone or email. Nothing is sent to you
             automatically. See the
             <RouterLink to="/privacy" class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy</RouterLink>
             for what happens to this information.

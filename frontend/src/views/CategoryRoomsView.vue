@@ -1133,7 +1133,7 @@ async function submitInquiry() {
           Your message about unit {{ inquiryUnit.toUpperCase() }} is saved
         </h2>
         <p class="mt-4 max-w-md text-sm text-ink-soft leading-relaxed">
-          Mrs. {{ LANDLADY.name }} reads every inquiry herself, and replies by phone or message
+          {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself, and replies by phone or message
           to <span class="text-ink break-all">{{ inquirySentTo.phone }}</span> or
           <span class="text-ink break-all">{{ inquirySentTo.email }}</span>. No automatic
           confirmation email or text is sent.
@@ -1165,7 +1165,7 @@ async function submitInquiry() {
         </h2>
 
         <p class="mt-4 max-w-md text-xs text-ink-soft leading-relaxed">
-          Mrs. {{ LANDLADY.name }} reads these herself and replies by phone or email.
+          {{ LANDLADY.name }}, who runs the boarding house, reads these herself and replies by phone or email.
           Nothing is sent to you automatically. See the
           <!-- A new tab, so reading the policy does not throw away a half-typed question. -->
           <a href="/privacy" target="_blank" rel="noopener" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy<span class="sr-only"> (opens in a new tab)</span></a>

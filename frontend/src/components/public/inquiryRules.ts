@@ -115,14 +115,14 @@ export function serverFieldErrors(err: unknown): InquiryErrors {
  * written for her: the rate limit names the wait, and BR-006 names the unit.
  */
 export function inquiryFailureMessage(err: unknown): string {
-  const ring = `or call Mrs. ${LANDLADY.name} on ${LANDLADY.phone}.`;
+  const ring = `or call ${LANDLADY.name} on ${LANDLADY.phone}.`;
   if (!(err instanceof ApiRequestError)) {
     return `Your message was not sent. Please try again, ${ring}`;
   }
   // The one branch that must NOT say "not sent": the request left and no answer
   // came back, so it may well have arrived (see `lib/api.ts`, the deadline).
   if (err.code === 'TIMEOUT') {
-    return `We could not confirm your message arrived: the connection stopped answering. Please do not send it again yet. Call Mrs. ${LANDLADY.name} on ${LANDLADY.phone} to check.`;
+    return `We could not confirm your message arrived: the connection stopped answering. Please do not send it again yet. Call ${LANDLADY.name} on ${LANDLADY.phone} to check.`;
   }
   if (err.code === 'NETWORK_ERROR') {
     return `Your message was not sent because this page could not reach the boarding house. Check your connection and try again, ${ring}`;

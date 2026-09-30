@@ -576,8 +576,16 @@ export const TECHNICIANS = [
 
 
 
+/**
+ * `name` is the person tenants and visitors deal with, and the one signed in on
+ * the admin side: Michelle (Sean, 2026-09-30). The business is named for its
+ * owner, Mrs. Fe Galang Da Silva, and keeps that name (`property`), but she is
+ * not the person who runs it day to day, so no page asks anyone to contact her
+ * by name. A page a visitor may land on first introduces Michelle as the one
+ * "who runs the boarding house"; tenant pages use the name alone.
+ */
 export const LANDLADY = {
-  name: "Fe Galang Da Silva",
+  name: "Michelle",
   gcash: "09494150382",
   phone: "09494150382",
   property: "Fe Galang Da Silva Boarding House",

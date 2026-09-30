@@ -100,7 +100,7 @@ const PAGE_TITLES: Record<string, string> = {
  * below replace it on their page and it comes back everywhere else.
  */
 const PAGE_DESCRIPTIONS: Record<string, string> = {
-  Inquire: 'Send Mrs. Fe Galang Da Silva a question about a unit, or ask to arrange a viewing at the boarding house in Legazpi City.',
+  Inquire: 'Ask about a unit at the Fe Galang Da Silva Boarding House in Legazpi City, or ask to arrange a viewing.',
   PrivacyPolicy: 'What the Fe Galang Da Silva Boarding House website collects, why, who else receives it, and your rights under the Data Privacy Act of 2012.',
   Terms: 'How the boarding house website and tenant portal may be used, including paying online, refunds and deposits.',
 }

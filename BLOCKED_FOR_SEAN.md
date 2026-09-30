@@ -33,6 +33,38 @@ thing did not work" is not.
 
 ## Open
 
+### B-86 — the admin account is still named "Mrs. Fe Galang Da Silva"; run 062 to name it Michelle · **RUN 062**
+
+Sean, 2026-09-30: Mrs. Fe Galang Da Silva owns the business and the boarding house keeps her name,
+but the person who signs in and runs it is Michelle (Loyd's mother). Every page that asked people
+to contact "Mrs. Fe Galang Da Silva" or "Mrs. Da Silva" now says Michelle (commit after 1b0c7d5;
+`LANDLADY.name` in `frontend/src/lib/systemState.ts`); a visitor's first mention reads "Michelle,
+who runs the boarding house". The privacy policy now names the boarding house as the personal
+information controller, with Michelle as the contact, instead of saying she owns it.
+
+**What is left is the account's own name**, which is live data: the header, the Activity page and
+the repair-reply notice a tenant receives ("... commented on your request") all print it.
+
+1. Supabase > SQL editor: run the PREVIEW at the foot of
+   `database/migrations/062_the_admin_account_is_michelle.sql`. Expect one row: admin,
+   "Mrs. Fe Galang Da Silva", active.
+2. `npm run backup`.
+3. Run the whole file. "Success. No rows returned" means it ran. It changes only `full_name`;
+   she signs in exactly as before, with the same email, phone and password.
+4. Run the AFTER query in the same file: "Michelle", and one AUDIT_CORRECTION row saying why.
+
+It refuses to run, changing nothing, if there is not exactly one admin or if her name is not the
+old one. A second run does nothing.
+
+**Also worth a word with you:** the phone number on every page, 09494150382, is also the GCash
+number. If it is Mrs. Da Silva's phone rather than Michelle's, tenants told to "call Michelle" will
+reach the wrong person; say which number to show and it is one line to change.
+
+**Left as they are, on purpose:** "the landlady" as the word for the role (it names nobody), the
+boarding house's name everywhere, and the manuscript, which calls the client "the owner"
+throughout; whether Chapters 1 to 5 should name Michelle as the system's user is Vince's call with
+you.
+
 ### B-82 — every tenant account was reset on 2026-09-29; update your local credential files before your next `check:all` · **ACT BEFORE RUNNING THE SUITES**
 
 - **What happened:** before the first acceptance test with real tenants (2026-09-30), Loyd asked

@@ -73,7 +73,7 @@ const sections = Object.values(S);
     <template #lead>
       <p>
         These terms cover this website and its tenant portal, both run on Hivelet, the system
-        Mrs. {{ LANDLADY.name }} uses to manage the {{ LANDLADY.property }}. What happens to the
+        {{ LANDLADY.name }} uses to run the {{ LANDLADY.property }}. What happens to the
         information you give is set out in the
         <RouterLink to="/privacy">privacy policy</RouterLink>.
       </p>
@@ -83,7 +83,7 @@ const sections = Object.values(S);
       <h2 :id="S.about.id" tabindex="-1">{{ S.about.title }}</h2>
       <p>
         Using the site means accepting these terms. They cover the website only: your tenancy
-        itself is whatever you arrange with Mrs. Da Silva, and where the two differ, that
+        itself is whatever you arrange with {{ LANDLADY.name }}, and where the two differ, that
         arrangement comes first.
       </p>
     </section>
@@ -94,11 +94,11 @@ const sections = Object.values(S);
         The units, rates, photos and availability shown on this site are for information. A unit
         shown as available may already be taken, and a rate may have changed since it was last
         updated here. Nothing on the site is an offer or a reservation: confirm the unit and the
-        price with Mrs. Da Silva before you rely on either.
+        price with {{ LANDLADY.name }} before you rely on either.
       </p>
       <p>
         Viewings are by appointment. Registering your interest sends your details and your
-        question to Mrs. Da Silva and nothing more. It does not reserve a unit or hold a price,
+        question to {{ LANDLADY.name }} and nothing more. It does not reserve a unit or hold a price,
         and no automatic confirmation is sent, so leave a number or address she can reach you on.
       </p>
     </section>
@@ -106,7 +106,7 @@ const sections = Object.values(S);
     <section :aria-labelledby="S.accounts.id">
       <h2 :id="S.accounts.id" tabindex="-1">{{ S.accounts.title }}</h2>
       <p>
-        There is no public sign-up. Accounts are created by the landlady: Mrs. Da Silva sets one up
+        There is no public sign-up. Accounts are created by the landlady: {{ LANDLADY.name }} sets one up
         for a tenant when they move in, and makes it inactive when they move out, after which it
         can no longer sign in.
       </p>
@@ -122,7 +122,7 @@ const sections = Object.values(S);
         <li>On a phone or computer other people use, sign out when you finish.</li>
         <li>Five wrong passwords in a row lock the account for 15 minutes.</li>
         <li>
-          If you cannot sign in, or think someone else has used your account, tell Mrs. Da Silva.
+          If you cannot sign in, or think someone else has used your account, tell {{ LANDLADY.name }}.
         </li>
       </ul>
     </section>
@@ -148,10 +148,10 @@ const sections = Object.values(S);
           If she does not accept a payment, it is marked as not accepted, and the bill it was for
           is still owed.
         </li>
-        <li>You can also pay in person, by cash or bank transfer. Mrs. Da Silva records those herself.</li>
+        <li>You can also pay in person, by cash or bank transfer. {{ LANDLADY.name }} records those herself.</li>
         <li>The landlady issues bills as they fall due, not on a fixed date.</li>
         <li>
-          If what the portal shows does not match your own receipts, raise it with Mrs. Da Silva.
+          If what the portal shows does not match your own receipts, raise it with {{ LANDLADY.name }}.
         </li>
       </ul>
     </section>
@@ -170,14 +170,14 @@ const sections = Object.values(S);
           is returned to you.
         </li>
         <li>
-          <strong>If you paid twice, or paid too much,</strong> tell Mrs. Da Silva. A payment she does
+          <strong>If you paid twice, or paid too much,</strong> tell {{ LANDLADY.name }}. A payment she does
           not accept is marked as not accepted, and it is not paid back automatically. An online
           payment can only be refunded through Adyen, to the GCash account it came from; money
           paid in person is settled with her directly.
         </li>
       </ul>
       <p>
-        For anything about a refund, contact Mrs. Da Silva on
+        For anything about a refund, contact {{ LANDLADY.name }} on
         <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a>.
       </p>
     </section>
@@ -190,7 +190,7 @@ const sections = Object.values(S);
         photos of the problem, not of other people.
       </p>
       <p>
-        <strong>A ticket does not call or text anyone.</strong> It reaches Mrs. Da Silva inside
+        <strong>A ticket does not call or text anyone.</strong> It reaches {{ LANDLADY.name }} inside
         Hivelet, and she sees it when she next checks. For anything urgent or dangerous, phone her
         directly on
         <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a>.
@@ -207,7 +207,7 @@ const sections = Object.values(S);
         <li>give false information, or register interest in someone else's name; or</li>
         <li>use the site for anything unlawful.</li>
       </ul>
-      <p>Mrs. Da Silva may suspend an account that is misused.</p>
+      <p>{{ LANDLADY.name }} may suspend an account that is misused.</p>
     </section>
 
     <section :aria-labelledby="S.availability.id">
@@ -231,14 +231,14 @@ const sections = Object.values(S);
       <h2 :id="S.changes.id" tabindex="-1">{{ S.changes.title }}</h2>
       <p>
         When these terms change, the date at the top of the page changes with them. If you want to
-        know what changed, ask Mrs. Da Silva.
+        know what changed, ask {{ LANDLADY.name }}.
       </p>
     </section>
 
     <section :aria-labelledby="S.contact.id">
       <h2 :id="S.contact.id" tabindex="-1">{{ S.contact.title }}</h2>
       <address class="border-l-2 border-line pl-4">
-        <strong>Mrs. {{ LANDLADY.name }}</strong><br />
+        <strong>{{ LANDLADY.name }}</strong><br />
         {{ LANDLADY.property }}<br />
         {{ LANDLADY.address }}<br />
         <a :href="`tel:${LANDLADY.phone}`" class="press inline-flex min-h-11 items-center">{{ LANDLADY.phone }}</a>

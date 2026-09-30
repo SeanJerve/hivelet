@@ -43,7 +43,7 @@
  * WHAT IT DELIBERATELY DOES NOT SAY
  * ---------------------------------
  * No named data protection officer, no NPC registration, and no email address for requests.
- * Asked on 2026-09-24: the first two are unknown, and requests go to Mrs. Da Silva by phone or
+ * Asked on 2026-09-24: the first two are unknown, and requests go to {{ LANDLADY.name }} by phone or
  * in person, which is what the page says. It names nobody as a developer, and gives no date for
  * the developers' access ending, because that is undecided.
  *
@@ -79,8 +79,8 @@ const sections = Object.values(S);
   <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-29" :sections="sections">
     <template #lead>
       <p>
-        This policy explains what Hivelet, the system Mrs. {{ LANDLADY.name }} uses to run her
-        boarding house, collects about the people who visit this site, register their interest
+        This policy explains what Hivelet, the system {{ LANDLADY.name }} uses to run the
+        {{ LANDLADY.property }}, collects about the people who visit this site, register their interest
         in a unit, or live here; what it is used for; who else receives it; and what you can ask
         her to do about it. The Data Privacy Act of 2012 (Republic Act No. 10173) gives you
         rights over this information, and this page says how to use them.
@@ -94,12 +94,13 @@ const sections = Object.values(S);
     <section :aria-labelledby="S.who.id">
       <h2 :id="S.who.id" tabindex="-1">{{ S.who.title }}</h2>
       <p>
-        Mrs. {{ LANDLADY.name }}, who owns and runs the {{ LANDLADY.property }}, decides what
-        Hivelet collects and what it is used for. Under the Data Privacy Act she is the personal
-        information controller. For anything about your information, contact her directly:
+        The {{ LANDLADY.property }} decides what Hivelet collects and what it is used for.
+        Under the Data Privacy Act it is the personal information controller. {{ LANDLADY.name }}
+        runs the boarding house day to day; for anything about your information, contact her
+        directly:
       </p>
       <address class="mt-4 border-l-2 border-line pl-4">
-        <strong>Mrs. {{ LANDLADY.name }}</strong><br />
+        <strong>{{ LANDLADY.name }}</strong><br />
         {{ LANDLADY.property }}<br />
         {{ LANDLADY.address }}<br />
         <a :href="`tel:${LANDLADY.phone}`" class="press inline-flex min-h-11 items-center">{{ LANDLADY.phone }}</a>
@@ -119,7 +120,7 @@ const sections = Object.values(S);
 
       <h3>If you live here</h3>
       <p>
-        Mrs. Da Silva creates your account when you move in. It holds your name, the email
+        {{ LANDLADY.name }} creates your account when you move in. It holds your name, the email
         address or phone number you sign in with, your unit, your move-in date, the amount paid
         on moving in, and how many people live in the unit, because water is charged per person.
         On the My details screen you can add or change your phone number, an emergency contact's
@@ -133,14 +134,14 @@ const sections = Object.values(S);
       <h3>Bills and payments</h3>
       <p>
         Each bill, what it is for, and what has been paid against it: amounts, dates, how it was
-        paid, receipt or reference numbers, and whether Mrs. Da Silva has verified it. Cash and
+        paid, receipt or reference numbers, and whether {{ LANDLADY.name }} has verified it. Cash and
         bank transfers are recorded by her.
       </p>
 
       <h3>Maintenance tickets</h3>
       <p>
         What you report: a title, a description, a category, how urgent it is, a photo if you
-        attach one, and the messages you and Mrs. Da Silva exchange about it.
+        attach one, and the messages you and {{ LANDLADY.name }} exchange about it.
       </p>
 
       <h3>The activity record</h3>
@@ -161,7 +162,7 @@ const sections = Object.values(S);
         <li>To deal with the maintenance problems you report.</li>
         <li>To reach you, or the person you named, if something happens to you.</li>
         <li>
-          To keep the boarding house's income and expense records accurate. Mrs. Da Silva can
+          To keep the boarding house's income and expense records accurate. {{ LANDLADY.name }} can
           export them as a spreadsheet for her own bookkeeping.
         </li>
         <li>To keep the system secure: limiting sign-in attempts, and being able to tell who changed what.</li>
@@ -200,7 +201,7 @@ const sections = Object.values(S);
       <h2 :id="S.recipients.id" tabindex="-1">{{ S.recipients.title }}</h2>
       <p>
         Inside Hivelet, a tenant sees only their own account, bills, payments and tickets, and
-        only Mrs. Da Silva's account can open an inquiry. She sees every account, because running
+        only {{ LANDLADY.name }}'s account can open an inquiry. She sees every account, because running
         the property requires it. Outside Hivelet, these receive some of your information, and
         only for the purpose given:
       </p>
@@ -318,7 +319,7 @@ const sections = Object.values(S);
           month after move-out, and then removed.
         </li>
         <li>
-          <strong>Tenancy and payment history</strong> is kept for as long as Mrs. Da Silva keeps
+          <strong>Tenancy and payment history</strong> is kept for as long as {{ LANDLADY.name }} keeps
           the property's books, because her financial records depend on it, until she chooses to
           delete it.
         </li>
@@ -326,14 +327,14 @@ const sections = Object.values(S);
       </ul>
       <p>
         To ask for something of yours to be removed sooner, or to ask how long a particular record
-        will be kept, contact Mrs. Da Silva.
+        will be kept, contact {{ LANDLADY.name }}.
       </p>
     </section>
 
     <section :aria-labelledby="S.security.id">
       <h2 :id="S.security.id" tabindex="-1">{{ S.security.title }}</h2>
       <ul>
-        <li>Passwords are stored only in scrambled (hashed) form, so nobody, Mrs. Da Silva included, can read yours.</li>
+        <li>Passwords are stored only in scrambled (hashed) form, so nobody, {{ LANDLADY.name }} included, can read yours.</li>
         <li>Every new tenant account starts with a one-time password, which has to be replaced the first time it is used.</li>
         <li>Five wrong passwords in a row lock an account for 15 minutes.</li>
         <li>
@@ -344,7 +345,7 @@ const sections = Object.values(S);
         <li>The activity record shows who changed what, and cannot be edited.</li>
       </ul>
       <p>
-        If you think someone else has used your account, tell Mrs. Da Silva straight away.
+        If you think someone else has used your account, tell {{ LANDLADY.name }} straight away.
       </p>
     </section>
 
@@ -361,7 +362,7 @@ const sections = Object.values(S);
         <li>complain to the National Privacy Commission.</li>
       </ul>
       <p>
-        To use any of them, contact Mrs. Da Silva by phone on
+        To use any of them, contact {{ LANDLADY.name }} by phone on
         <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a> or in person at the address
         above. Tenants can already see their bills, payments and tickets in the portal, and
         correct their own phone number, emergency contact, occupation and Facebook page on the My
@@ -377,7 +378,7 @@ const sections = Object.values(S);
     <section :aria-labelledby="S.complaints.id">
       <h2 :id="S.complaints.id" tabindex="-1">{{ S.complaints.title }}</h2>
       <p>
-        If something about your information worries you, raise it with Mrs. Da Silva first. If that
+        If something about your information worries you, raise it with {{ LANDLADY.name }} first. If that
         does not settle it, you can complain to the National Privacy Commission, the government
         body that enforces the Data Privacy Act. Its website,
         <a href="https://privacy.gov.ph" target="_blank" rel="noopener noreferrer">privacy.gov.ph<span class="sr-only"> (opens in a new tab)</span></a>,
@@ -389,7 +390,7 @@ const sections = Object.values(S);
       <h2 :id="S.changes.id" tabindex="-1">{{ S.changes.title }}</h2>
       <p>
         When this policy changes, the date at the top of the page changes with it. If you want to
-        know what changed, ask Mrs. Da Silva.
+        know what changed, ask {{ LANDLADY.name }}.
       </p>
     </section>
   </LegalPage>
