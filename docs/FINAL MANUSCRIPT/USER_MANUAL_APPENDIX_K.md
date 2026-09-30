@@ -44,6 +44,20 @@ and it is not there yet, it appears once she records your receipt.
 
 - **Your rent**: the monthly rent, plus water at **₱200 per occupant per month**. *Tubig: ₱200 bawat
   nakatira bawat buwan.*
+- **Your rent, month by month**: your bills over time, up to the last 12 months.
+  *Ang inyong upa, buwan-buwan: hanggang sa huling 12 buwan.*
+  - One sentence says where you stand, for example **"Paid up to August 12, 2026. You are up to
+    date."** or how many months are due and how much in all. *Isang pangungusap ang nagsasabi kung
+    hanggang kailan kayo bayad at kung may dapat pang bayaran.*
+  - A bar for each month: **Paid**, **Due** (Due soon, Due today or Overdue), **Nothing recorded**
+    (no receipt for that month), or **Not due yet**. *Bawat buwan: Paid (bayad), Due (dapat bayaran),
+    Nothing recorded (walang naitalang resibo), Not due yet (hindi pa dapat bayaran).*
+  - **Months paid**, **Paid in these months** and **Due now**. Only receipts the landlady has
+    **verified** count; a cancelled (voided) receipt never counts. A GCash payment you sent shows as
+    **waiting** until she verifies it. *Ang mga resibong na-verify lang ng landlady ang binibilang.*
+  - **"Nothing recorded"** does not mean you owe that month. If you paid, ask the landlady to check
+    her records. *Kung "Nothing recorded" pero nagbayad kayo, ipasuri sa landlady.*
+  - **Show each month as a list** gives the same months as a table, with the receipt for each.
 - **Payment record**: every payment recorded for your unit, newest first.
 - **Pay with GCash**: online payment. **Until the landlady announces it, online payments do not
   charge real money; pay her in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
@@ -77,7 +91,10 @@ Tap your initials at the top right > **Sign out**. Always sign out on a phone th
 
 ---
 
-## Part 2. For the owner
+## Part 2. For the landlady (administrator)
+
+The administrator account is Michelle's; the business keeps the name Fe Galang Da Silva Boarding
+House. The greeting at the top follows the time of day.
 
 ### 1. Signing in and your password
 
@@ -92,6 +109,12 @@ The first screen: money collected this month and year, month by month, **Collect
 requests** and **Needs your attention**. Personal spending is shown beside operating costs and is
 not deducted from rental income. If a figure cannot be loaded, the tile shows **"—"**, never ₱0.00:
 refresh when the connection is back.
+
+**The bell** at the top shows a **dot** when you have unread notifications; open it to read them.
+**The numbers beside Inquiries and Repairs** in the side menu count what you have not looked at yet
+(new inquiries, and urgent repairs). They clear once you open that page, and come back if something
+changes: a visitor writes back, or a repair is made more urgent. They are remembered on this device
+only, so another phone or computer shows its own count.
 
 ### 3. Recording a payment (Monthly Income)
 
