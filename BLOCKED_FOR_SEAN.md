@@ -33,6 +33,28 @@ thing did not work" is not.
 
 ## Open
 
+### B-89 — after the testing day: garbage fee out, invoices not OR, tenants own contact details, live pages · **DONE 2026-09-30: 066, 067, 068 applied and verified**
+
+Sean's list, evening of 30 September. Code in 7fe465f; migrations applied through the Supabase
+connection straight after that deployed, each after `npm run backup` (backups/2026-09-30T15-20-50).
+
+- **066** garbage fee column gone (531 rows, PHP 10,620.00 recorded in its AUDIT_CORRECTION row);
+  invoice numbers INV#<n> (548 rewritten, 317 "N/A-..." placeholders now blank, every old value in
+  the audit row); invoice optional; `or_supplier` is `invoice_supplier`; both RPCs re-created and
+  locked to service_role. Total Remitted unchanged: PHP 8,222,900.00 before and after.
+- **067** all 32 active tenants have a placeholder email; at next sign-in each gives a real email and
+  confirms their phone (and sets a password if still on a starting one). Old emails in the audit row.
+  **Tenants now sign in with their phone number** (the email they used before is replaced).
+- **068** live_version(): every open page checks for changes every 5 s while visible.
+
+**Found, for Sean and Loyd:** `check:ledger` now reports **F2F has no payment for August 2026**
+(Brian Sesbreno on both sides). It appeared with the August load (062): either her workbook has no
+F2F August line, or the load missed it. Check her book.
+
+**Left for a person:** one end-to-end test on two devices - record a payment as Michelle with a
+different occupant count, and watch the tenant's page update by itself within about 5 seconds.
+`scripts/reset-tenant-accounts.mjs` would print placeholder emails on slips; use the phone number.
+
 ### B-88 — the visitor can now read Michelle's reply to an inquiry and write back; run 065 to switch it on · **DONE 2026-09-30: 065 applied by Sean and verified; feature pushed. Left: test cases P-06 and P-06b with real phones**
 
 Sean, 2026-09-30: an inquiry was one-way. Michelle's replies were saved in `inquiry_messages` and the

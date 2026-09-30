@@ -73,12 +73,13 @@ if (!URL_ || !KEY) {
  *
  * Nothing else here has been written to.
  */
+// Keys are the numbers as migration 066 wrote them (INV#, formerly OR#).
 const KNOWN = new Map([
-  ['OR#4726', 'One receipt number against two payment dates - 2024-06-28 and 2024-07-26. Unit 1b, Jade Marmol, two genuine consecutive months (29 Jun-28 Jul, 29 Jul-28 Aug); only the number on the second is wrong. Unused OR#4743 sits between receipts dated 2024-07-26 and 2024-07-28, which is exactly where a receipt paid 2024-07-26 belongs.'],
-  ['OR#4772', 'One receipt number against two payment dates - 2024-09-02 and 2024-09-25. Unit 2f, Sancueza France, two genuine consecutive months (10 Aug-9 Sep, 10 Sep-9 Oct); only the number on the second is wrong. Unused OR#4779 sits between receipts dated 2024-09-11 and 2024-09-26.'],
+  ['INV#4726', 'One receipt number against two payment dates - 2024-06-28 and 2024-07-26. Unit 1b, Jade Marmol, two genuine consecutive months (29 Jun-28 Jul, 29 Jul-28 Aug); only the number on the second is wrong. Unused OR#4743 sits between receipts dated 2024-07-26 and 2024-07-28, which is exactly where a receipt paid 2024-07-26 belongs.'],
+  ['INV#4772', 'One receipt number against two payment dates - 2024-09-02 and 2024-09-25. Unit 2f, Sancueza France, two genuine consecutive months (10 Aug-9 Sep, 10 Sep-9 Oct); only the number on the second is wrong. Unused OR#4779 sits between receipts dated 2024-09-11 and 2024-09-26.'],
   ['INV#5165', 'One receipt number against two payment dates - 2026-04-27 and 2026-06-02. Unit 1a, Lobby Toor, two genuine consecutive months (7 Apr-6 May, 7 May-6 Jun); only the number on the second is wrong. Unused INV#5189 sits between receipts dated 2026-06-01 and 2026-06-02, which is exactly where a receipt paid 2026-06-02 belongs.'],
-  ['OR#4774', 'Investigated 2026-09-19. Its 3g row is correct - Jayson Anonuevo, 31st anniversary, PHP 6,500, unbroken either side. Its 3f row is that row over again: same tenant, same PHP 6,500, same period, and 3f is Pallavi Ravichandran at PHP 6,000 on the 18th. It belongs to neither the room nor the rate it is filed under. Separately, 3f IS missing a month - Pallavi has no receipt for 18 Aug to 17 Sep 2024. Unused OR#4762 sits between receipts dated 2024-08-21 and 2024-08-28, which is where a receipt paid 2024-08-22 belongs. Needs her book: is the 3f row a duplicate, or Pallavi\'s missing month entered wrongly?'],
-  ['OR#4813', 'One receipt number against TWO DIFFERENT TENANTS on the same day - Ron Juliene Dominguino (2a, PHP 8,000) and M. Juselle Escuro (3a, PHP 9,000). Two people cannot share one official receipt. Investigated 2026-09-19: OR#4812 is UNUSED and sits immediately before it, between two receipts both dated 2024-11-01 - so one of these two rows is almost certainly 4812. Which one cannot be read from the data; both were paid the same day. Needs her book.'],
+  ['INV#4774', 'Investigated 2026-09-19. Its 3g row is correct - Jayson Anonuevo, 31st anniversary, PHP 6,500, unbroken either side. Its 3f row is that row over again: same tenant, same PHP 6,500, same period, and 3f is Pallavi Ravichandran at PHP 6,000 on the 18th. It belongs to neither the room nor the rate it is filed under. Separately, 3f IS missing a month - Pallavi has no receipt for 18 Aug to 17 Sep 2024. Unused OR#4762 sits between receipts dated 2024-08-21 and 2024-08-28, which is where a receipt paid 2024-08-22 belongs. Needs her book: is the 3f row a duplicate, or Pallavi\'s missing month entered wrongly?'],
+  ['INV#4813', 'One receipt number against TWO DIFFERENT TENANTS on the same day - Ron Juliene Dominguino (2a, PHP 8,000) and M. Juselle Escuro (3a, PHP 9,000). Two people cannot share one official receipt. Investigated 2026-09-19: OR#4812 is UNUSED and sits immediately before it, between two receipts both dated 2024-11-01 - so one of these two rows is almost certainly 4812. Which one cannot be read from the data; both were paid the same day. Needs her book.'],
 ]);
 
 let failures = 0;
@@ -170,6 +171,8 @@ for (const r of income) {
  */
 const byInvoice = new Map();
 for (const r of income) {
+  // A blank invoice is "no invoice" (066), not one shared number.
+  if (!r.invoice_number) continue;
   if (!byInvoice.has(r.invoice_number)) {
     byInvoice.set(r.invoice_number, { rooms: new Set(), dates: new Set() });
   }
