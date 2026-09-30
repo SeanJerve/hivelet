@@ -2530,12 +2530,13 @@ router.get(
  * shared `money` primitive is `.finite()` and rejects both. The PATCH route was
  * fixed earlier; this create route was still open.
  *
- * `invoiceNumber` was optional, and the handler substituted
- * `INV-<year>-<4 random digits>` when it was absent. That writes a receipt number
- * matching no receipt in the landlady's book, from a 9,000-value space that
- * collides at roughly even odds after a hundred entries. All 937 historical rows
- * carry a real OR number (`OR#4627` and so on), and the column is NOT NULL, so
- * the number is asked for rather than invented.
+ * `invoiceNumber` was optional, and the handler once substituted
+ * `INV-<year>-<4 random digits>` when it was absent. That wrote an invoice number
+ * matching nothing the landlady issued, from a 9,000-value space that collides
+ * at roughly even odds after a hundred entries. Since migration 066 (30 Sep) the
+ * invoice is optional in the database too, because not every payment has one:
+ * a blank is saved as no invoice (NULL), a typed one as `INV#<n>` by
+ * `normalizeInvoiceNumber`, and nothing is ever invented.
  */
 /**
  * Turns Postgres's unique-violation on `idx_one_receipt_per_unit_per_month`
@@ -2780,8 +2781,8 @@ router.post(
      * One span per month, because that is the shape her book keeps.
      *
      * A receipt covering several months is recorded as SEVERAL ROWS, one per
-     * month, each with one month of rent and one month of water - `OR#4895`
-     * across four rows, `OR#4896` across three. There is no row in the 937
+     * month, each with one month of rent and one month of water - `INV#4895`
+     * across four rows, `INV#4896` across three. There is no row in the 937
      * holding several months of rent, and the form used to produce exactly that.
      *
      * The spans run from whichever start won above: the supplied one when the
@@ -2850,7 +2851,7 @@ router.post(
      *
      * `monthly_income_records` has one constraint - a primary key on `id`. There
      * is no uniqueness on the invoice number, and there cannot be a simple one:
-     * `OR#4895` legitimately covers four consecutive months on four rows, one
+     * `INV#4895` legitimately covers four consecutive months on four rows, one
      * receipt settling arrears.
      *
      * The sibling path already guards. When a gateway payment is verified, the
@@ -2867,8 +2868,8 @@ router.post(
      * Matched on unit, receipt number, date, amount AND PERIOD - all six.
      *
      * The period is not optional, and the live ledger is why. Four receipts
-     * already appear on several rows each: `OR#4895` covers four consecutive
-     * months on four rows, `OR#4896` three, `OR#4920` and `OR#4952` two. One
+     * already appear on several rows each: `INV#4895` covers four consecutive
+     * months on four rows, `INV#4896` three, `INV#4920` and `INV#4952` two. One
      * receipt settling arrears, split across the months it pays for, which is
      * exactly right. A guard matching only the first four would have rejected
      * the next one of those as a duplicate.
@@ -2885,8 +2886,8 @@ router.post(
      *
      * `check:ledger` enforces exactly these two rules over the whole ledger, and
      * the write path did not, so the interface could create rows the check would
-     * then report forever. The historical ledger holds five of them - OR#4726,
-     * OR#4772, OR#4774, OR#4813 and INV#5165 - each a number mistyped as one
+     * then report forever. The historical ledger holds five of them - INV#4726,
+     * INV#4772, INV#4774, INV#4813 and INV#5165 - each a number mistyped as one
      * already in use, and each with its own number left unused in the book
      * (B-26). Every one would have passed the guard below, which only ever
      * refused an EXACT repeat of unit, receipt, date, amount, year and month.

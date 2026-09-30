@@ -329,8 +329,8 @@ export async function computeRentPeriod(
  *
  * `computeRentPeriod` above returns a SINGLE span covering all the months, which
  * is what a bill wants. The ledger wants something different, and her 937 rows
- * say so: a receipt settling arrears appears as **one row per month** - `OR#4895`
- * across four rows, `OR#4896` across three - each carrying one month of rent and
+ * say so: a receipt settling arrears appears as **one row per month** - `INV#4895`
+ * across four rows, `INV#4896` across three - each carrying one month of rent and
  * one month of water. There is no row anywhere in that book holding several
  * months of rent.
  *
