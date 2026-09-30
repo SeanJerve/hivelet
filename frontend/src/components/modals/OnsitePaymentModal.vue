@@ -478,11 +478,11 @@ const confirmAction = ref<(() => void) | null>(null);
  * and the team declined to widen it into a hard constraint because the
  * threat model is "one administrator at a counter," not a retrying webhook.
  *
- * It says nothing when the OR number or the amount differs but the unit and
+ * It says nothing when the invoice number or the amount differs but the unit and
  * the month being paid for is the same - which is exactly the shape of typing
  * a fresh receipt against a period that was already settled, whether that is
  * a genuine second payment (an arrears top-up, a remaining balance) or the
- * same visit recorded twice under two different receipt numbers by mistake.
+ * same visit recorded twice under two different invoice numbers by mistake.
  * Nothing before this warned about that gap at all.
  *
  * SS3.1 of the same document states the house posture for exactly this shape

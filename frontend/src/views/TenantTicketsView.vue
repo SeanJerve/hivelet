@@ -313,7 +313,7 @@ function closeTimeline() {
  * it returned rows, a ticket with no replies yet - the ordinary case - displayed
  * an invented reply from a real person indefinitely.
  *
- * That is the same defect as the invented OR numbers and the fabricated
+ * That is the same defect as the invented invoice numbers and the fabricated
  * emergency contacts this audit already removed: made-up data presented as real.
  *
  * What is left is derived from the ticket row itself and attributed to System,

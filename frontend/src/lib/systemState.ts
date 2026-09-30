@@ -565,13 +565,13 @@ export const TECHNICIANS = [
  * Both were fabricated data with no remaining reader. DEMO_TENANT described an
  * invented resident - "Samantha Cruz", an emergency contact named "Joyce
  * Mangubat" with a plausible mobile number, a 9,000 deposit and a stock photo.
- * PAYMENT_HISTORY held four invented receipts numbered OR-2026-1032 and up,
+ * PAYMENT_HISTORY held four invented receipts with made-up invoice numbers,
  * marked Verified.
  *
  * PAYMENT_HISTORY had already been unwired from the tenant portal earlier in
  * this audit; DEMO_TENANT was read by nothing at all. They are deleted rather
  * than left dormant because this project has now been bitten three times by
- * invented data reaching a real screen - the OR numbers, the emergency contacts,
+ * invented data reaching a real screen - the invoice numbers, the emergency contacts,
  * and the ticket replies signed in the owner's name. A realistic-looking
  * fixture sitting one import away from a view is how that keeps happening.
  *
@@ -1051,11 +1051,11 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
           rawDate: inc.date_paid || '',
           contact: inc.contact_name || 'Tenant',
           /**
-           * An OR number is a physical receipt in the landlady's book, so it is
-           * never composed here.
+           * An invoice number (INV#…) is one the landlady issued herself, or none
+           * at all, so it is never composed here.
            *
            * This built `INV-2026-09` out of the row's own year and month when
-           * the column was empty - a receipt number that matches nothing she
+           * the column was empty - an invoice number that matches nothing she
            * holds, printed on the screen she reconciles against. The write
            * paths were already corrected for exactly this (they used to invent
            * one from `Math.random()`); the READ path went on doing it.
