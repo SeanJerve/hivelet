@@ -13,12 +13,14 @@ commit and push** (pull first: five people are editing this folder). Codes only,
 | [`S_SECURITY_Sean.md`](S_SECURITY_Sean.md) | S. Security | S-01 to S-12 | **Sean** |
 | [`PF_TIMINGS_Eljohn.md`](PF_TIMINGS_Eljohn.md) | PF. Performance timings | PF-01 to PF-10 | **Eljohn** |
 | [`CO_BROWSERS_Eljohn.md`](CO_BROWSERS_Eljohn.md) | CO. Browsers and devices | CO-01 to CO-06 | **Eljohn** |
-| [`PR_PROSPECT_unassigned.md`](PR_PROSPECT_unassigned.md) | PR. Prospective tenant | PR-01 to PR-09 | **not assigned** (suggested: Kiel) |
-| [`N_NEW_TODAY_unassigned.md`](N_NEW_TODAY_unassigned.md) | N. Shipped on 30 Sep | N-01 to N-03 | **not assigned** (suggested: Kiel) |
+| [`PR_PROSPECT_unassigned.md`](PR_PROSPECT_unassigned.md) | PR. Prospective tenant | PR-01 to PR-09 | closed by Claude: **not recorded** (all NT) |
+| [`N_NEW_TODAY_unassigned.md`](N_NEW_TODAY_unassigned.md) | N. Shipped on 30 Sep | N-01 to N-03 | Claude (automated results; real phone NT) |
 
 **The one rule:** write what happened. A case that was not done is **NT**, not a pass. A time that
 was not measured stays blank ("not timed"), never estimated. Chapter 4 reports each part as it was
 actually done, and a small or partly done part is reported honestly as that.
+
+**Status, 1 Oct 2026:** every file is filled. T and C were corrected against the Activity log (read, never changed); each file says what was changed and why, and git keeps the versions as first pushed. `T_TABLE_11C.md` is Table 11C, computed from `T_observations.csv` (made from the T file by `scripts/survey/t-md-to-csv.mjs`).
 
 Not in this folder, still needed: **the survey export** (Google Form > Responses > Sheets icon > File >
 Download > CSV), the **defect log** (Form 3, a photo is fine), the **signed consent forms and Form 6**,

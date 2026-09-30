@@ -24,5 +24,7 @@
 | P-07 | US | none | Open `/privacy` and `/terms` | Both readable on a phone | Pass | Both readable and well-formatted on mobile screen. |
 | P-08 | RE | none | Open a made-up address, `/this-does-not-exist` | A friendly "not found" page with a way back | Pass | Page not found (404) friendly screen displayed with a return path. |
 
+**Checked against the records (Claude, 1 Oct, read-only):** consistent. Seven enquiries arrived on 30 Sep; the one at 2:09 PM has the full P-06b exchange (enquiry, the landlady's reply, the visitor's answer through their link, her second reply, all by 2:11 PM), and each enquiry from 1:46 PM on carries a reference code. Nothing changed in this table.
+
 **Do not send more than two enquiries from the same wifi in 15 minutes.** The limit is ten per
 connection, shared by everyone on the house wifi, and a hit blocks the real visitors too.
