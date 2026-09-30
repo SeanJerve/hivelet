@@ -130,10 +130,12 @@ Based on the summary and conclusions of the study, the following are recommended
     after five wrong passwords is kept in the database and survives a server restart; the count of
     attempts from one connection is kept in memory and does not, which could be moved to the
     database if the site grows.
-11. Make the public page appear faster on phones. On a simulated slow mobile connection its main
-    text appears after about five seconds, because the page is drawn in the browser after its code
-    arrives (Chapter 4, §4.3.6). Pre-rendering the page, loading the font stylesheet without
-    holding the page back, and sending phones smaller photographs would each shorten that.
+11. Make the public page appear faster on phones. On a simulated slow mobile connection the page
+    is drawn in the browser only after its code arrives (Chapter 4, §4.3.6). Phones were sent
+    smaller photographs on 30 September 2026, which brought its largest element from 5.3 to 3.5
+    seconds in PageSpeed Insights. Pre-rendering the page, and serving the two typefaces from the
+    site itself instead of from Google's font service, whose stylesheet holds the first paint for
+    about three quarters of a second, would shorten it further.
 
 **For future researchers**
 

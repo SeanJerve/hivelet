@@ -175,6 +175,28 @@ loading the Google Fonts stylesheet without blocking (822 ms), and smaller photo
 test. They are Chapter 5, recommendation 11. The mobile runs vary by a few points with the network
 (73 before, 70 after, all CLS 0); Table 11's real-phone timings are the measurement that counts.
 
+**The next morning, the photographs (5fd9b4d, 720ab23).** PageSpeed Insights had its quota back, so
+these are Google's runs (Lighthouse 13.5, emulated Moto G Power, slow 4G), mobile, `/`:
+
+| PageSpeed, mobile, 30 Sep | Performance | Accessibility | Best practices | SEO | FCP | LCP |
+| :--- | --: | --: | --: | --: | --: | --: |
+| Before | 76 | 100 | 100 | 100 | 2.6 s | 5.3 s |
+| Phones sent the part of each photo they show (10:15) | **86** | 100 | 100 | 100 | 2.6 s | **3.5 s** |
+| Service-worker script deferred (10:19) | 86 | 100 | 100 | 100 | 2.6 s | 3.5 s |
+
+An upright phone's hero shows only the middle of the 1,790-pixel building photo, so phones now get
+that middle, 600 pixels at full resolution (145 KB, was 290 KB), whenever the screen is narrower
+than 2:3; drawn at four phone sizes it differs from the full file by 2 levels in 255 on average,
+re-compression only. The gate gets an 800-pixel copy on narrow screens (136 KB, was 361 KB).
+Tablets and computers are unchanged. The deferred script took 510 ms out of the render-blocking
+list but moved no metric, because the Google Fonts stylesheet (750 ms) is the longer wait and is
+what remains; self-hosting the two typefaces changes the lettering on every screen and adds a
+package the other machine must install, so it waits until after testing day.
+
+Header scans the same morning, after the policy was enforced: **Mozilla HTTP Observatory A+, 115/100,
+12 of 12** (about 10:07); **securityheaders.com A+** (10:05). securityheaders notes that Vercel sends
+`access-control-allow-origin: *` on the static files; the API answers only the site's own origin.
+
 ## 8. Writing twice, and writing at the same time (read from the code)
 
 | Path | Guard |

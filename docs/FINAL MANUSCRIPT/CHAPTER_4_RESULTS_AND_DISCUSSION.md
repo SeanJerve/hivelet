@@ -513,7 +513,11 @@ an empty page and was pushed down when the page's content arrived, a layout shif
 needs is now held until it loads; after the change the live page measured a layout shift of 0 and
 a computer performance score of 95. On the simulated slow phone the score stayed about 70, because
 the page's main text appears only after its code has arrived and run, about five seconds on that
-connection (Chapter 5, recommendation 11). The real-device timings in Table 11 are the measurement
+connection. Later that morning phones were sent only the part of each photograph they show: the
+middle of the building photograph at full sharpness, half the file, and a smaller copy of the gate,
+a third of it. Google's PageSpeed Insights, which runs Lighthouse on Google's own servers, then
+scored the phone page 86 for performance with its largest element drawn at 3.5 seconds, against 76
+and 5.3 seconds in its run before the change (Chapter 5, recommendation 11). The real-device timings in Table 11 are the measurement
 that decides how fast the system is for the owner and tenants.
 
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants [DATA PENDING]

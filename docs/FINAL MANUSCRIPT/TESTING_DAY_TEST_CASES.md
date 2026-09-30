@@ -199,7 +199,7 @@ for are on screen.
 | PF-06 | Tenant Overview, first load | Tenant portal, first load | Cache cleared | | |
 | PF-07 | Tenant Payments | (supporting) | Stopwatch | | |
 | PF-08 | Send a repair request | (supporting) | Stopwatch from Send to confirmation | | |
-| PF-09 | PageSpeed Insights, mobile, `hivelet.vercel.app` | (supporting) | pagespeed.web.dev, note the four scores and LCP | | |
+| PF-09 | PageSpeed Insights, mobile, `hivelet.vercel.app` | (supporting) | pagespeed.web.dev, note the four scores and LCP. Expect about **86 / 100 / 100 / 100, LCP about 3.5 s** (30 Sep 10:15, after the phone photos); a few points either way is the network | | |
 | PF-10 | Lighthouse in DevTools on a signed-in page | (supporting) | DevTools > Lighthouse > Mobile > Analyze | | |
 
 ---
@@ -210,8 +210,8 @@ for are on screen.
 
 | ID | ISO | Req | Do | Should see | Result | Evidence |
 | :-- | :-- | :-- | :--- | :--- | :-- | :--- |
-| S-01 | SE | NFR-003 | Mozilla HTTP Observatory, `hivelet.vercel.app` | Grade (write it). The 30 Sep 00:04 run gave **B, 75/100, 11 of 12**, its one failure the Content Security Policy being report-only; the policy was switched to enforcing later that morning, so a run after about 09:30 should pass that test too. Write the grade you get and the time | | |
-| S-02 | SE | NFR-003 | securityheaders.com | Grade | | |
+| S-01 | SE | NFR-003 | Mozilla HTTP Observatory, `hivelet.vercel.app` | Grade (write it). The 30 Sep 00:04 run gave **B, 75/100, 11 of 12**, its one failure the Content Security Policy being report-only; the policy was switched to enforcing later that morning, and a scan at about 10:07 gave **A+, 115/100, 12 of 12**. Write the grade you get and the time | | |
+| S-02 | SE | NFR-003 | securityheaders.com | Grade. Expect **A+** (30 Sep 10:05) | | |
 | S-03 | SE | NFR-003 | SSL Labs, `hivelet.vercel.app` | Grade. Expect **A+** (run 30 Sep 00:10; one of two addresses A) | | |
 | S-04 | SE | FR-001 | Rehearsal tenant only: 5 wrong passwords | Locked for 15 minutes with a clear message. **Never on a real account** | | |
 | S-05 | SE | FR-002 | Tenant opens `/admin` (T-15) | Refused | | |
