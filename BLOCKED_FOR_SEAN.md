@@ -139,7 +139,19 @@ thing did not work" is not.
   NULL and no `end_date`.
 - **Raised:** 2026-09-28 by Claude
 
-### B-84 - website safety audit, 2026-09-29: what needs a person (filed as a second "B-81" by mistake; renumbered the same day) · **OPEN**
+### B-84 - website safety audit, 2026-09-29: what needs a person (filed as a second "B-81" by mistake; renumbered the same day) · **OPEN: CSP and the rate-limit call left**
+
+> **Settled with Sean on 2026-09-30, the testing morning** (answers and screenshots in the session):
+> **060 applied** by Sean in the SQL editor; checked from the catalogue afterwards: search_path
+> `pg_catalog, public`, EXECUTE held by `postgres` and `service_role` only (anon and authenticated
+> false), and the Supabase security advisor has no WARN left (only the 22 deliberate
+> "RLS enabled, no policy" INFO notices). **Spend caps: nothing to set** - Supabase is on the Free
+> plan and Vercel on Hobby, neither of which can charge. **Photos: taken by the team**, the owner is
+> fine with them. **DTI or permit number: not added** (Sean: unnecessary). **Refunds: nothing to
+> change** - the Terms section states only rules already settled (OD-03 no proration, BR-039 the
+> deposit remainder returned, CLIENT_MEETING_QUESTIONS 3d online refunds through Adyen).
+> **Still open:** CSP enforcement (checked during A-19) and whether to keep the in-memory
+> connection limiter.
 
 - **Apply migration `060`** (`database/migrations/060_record_income_for_months_is_the_servers_alone.sql`).
   Supabase advisor WARN: `record_income_for_months` has no fixed search_path and anon may EXECUTE it.
