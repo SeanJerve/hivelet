@@ -36,15 +36,15 @@ SELECT * FROM (
   UNION ALL SELECT 2, 'stored entries before Aug 2026', (SELECT count(*) FROM stored)::text, ''
   UNION ALL SELECT 3, 'paired with the workbook', (SELECT count(*) FROM pairs)::text, ''
   UNION ALL SELECT 4, 'will move to the date she wrote', (SELECT count(*) FROM moved)::text, ''
-  UNION ALL SELECT 5, 'of those, from 2025 into 2026', (SELECT count(*) FROM moved WHERE extract(year FROM old_date) = 2025 AND extract(year FROM new_date) = 2026)::text, ''
+  UNION ALL SELECT 5, 'of those, from 2025 into 2026', (SELECT count(*) FROM moved WHERE date_part('year', old_date) = 2025 AND date_part('year', new_date) = 2026)::text, ''
   UNION ALL SELECT 6, 'workbook lines with no stored match (left alone)', (SELECT count(*) FROM sheet_left)::text, ''
   UNION ALL SELECT 7, 'stored entries with no workbook match (left alone)', (SELECT count(*) FROM db_left)::text, ''
   UNION ALL SELECT 8, 'June electric bill as stored', coalesce((SELECT string_agg(e.expense_date || ' P' || e.total_expenses, ', ')
                 FROM monthly_expense_entries e WHERE e.or_supplier = 'Electricbill (May26)'), 'not found'), 'her workbook: 2026-06-04 P20652.80 (BH 14964.13 + MH 5688.67)'
   UNION ALL SELECT 9, 'year ' || y, cnt_before::text || ' entries now', 'after 064: ' || cnt_after
   FROM (SELECT y, sum(b) AS cnt_before, sum(a_) AS cnt_after FROM (
-          SELECT extract(year FROM s.o)::int AS y, 1 AS b, 0 AS a_ FROM stored s
-          UNION ALL SELECT extract(year FROM coalesce(m.new_date, s.o))::int, 0, 1 FROM stored s LEFT JOIN moved m ON m.id = s.id) q
+          SELECT date_part('year', s.o)::int AS y, 1 AS b, 0 AS a_ FROM stored s
+          UNION ALL SELECT date_part('year', coalesce(m.new_date, s.o))::int, 0, 1 FROM stored s LEFT JOIN moved m ON m.id = s.id) q
         GROUP BY y) yy
   UNION ALL SELECT * FROM (SELECT 10, 'workbook line ' || r || ', no match', o::text, left(s, 40) || ' P' || t FROM sheet_left ORDER BY r LIMIT 40) x
   UNION ALL SELECT * FROM (SELECT 11, 'stored, no match', o::text, left(s, 40) || ' P' || t FROM db_left ORDER BY o LIMIT 40) y
