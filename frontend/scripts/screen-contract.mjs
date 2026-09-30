@@ -101,6 +101,7 @@ const PURPOSE = new Map([
   ['GET /admin/reports/income.xlsx', "the owner's income workbook, in her own layout"],
   ['GET /admin/reports/expenses.xlsx', 'the expense workbook, in her own layout'],
   ['GET /admin/reports/audit.xlsx', 'the audit trail as a workbook'],
+  ['GET /admin/reports/tenants.xlsx', 'who paid for each unit in a year or month, from the receipts, as a workbook'],
 ]);
 
 function walk(dir, out = []) {
