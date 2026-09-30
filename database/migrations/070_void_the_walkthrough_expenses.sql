@@ -1,10 +1,11 @@
 -- =============================================================================
 -- 070 - void the two expenses the testing-day walkthrough left in her books
 -- =============================================================================
--- NOT APPLIED YET. Written 2026-10-01 01:40 Manila by Claude (Lloyd's machine)
--- from a read-only look at the live database; Sean approved it the same night.
--- This machine has no database connection: `npm run backup`, then paste this
--- file into the Supabase SQL editor and run it. B-91 in BLOCKED_FOR_SEAN.md.
+-- APPLIED 2026-10-01 07:40 Manila (23:40:41 UTC) by Claude on Lloyd's machine,
+-- through the Supabase MCP connection, after backups/2026-09-30T23-39-56.
+-- Verified: September 2026 live expenses 2 entries / PHP 100.00 before, 0 / 0
+-- after; both rows voided with the reason below; income unchanged at 953 live
+-- rows, Remitted PHP 8,222,900.00. B-91.
 --
 -- WHAT THEY ARE
 -- Part A, case A-28 (walkthrough step 22 and 22b): "Monthly Expenses: PHP 100

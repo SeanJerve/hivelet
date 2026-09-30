@@ -15,7 +15,7 @@ Read `CLAUDE.md` first. Its five rules apply to everything here.
 1. `git pull`. If `database/migrations/071_loydtest_is_the_evaluation_account.sql` is not in the tree,
    Sean's last commit did not get pushed. Ask Sean to push it. The migration is **already applied** to the
    live database. Only the file is missing.
-2. The next migration number is **072** (Lloyd's 070 voids the walkthrough expenses and is **not applied yet**, B-91). Check `database/migrations/` anyway.
+2. The next migration number is **072** (Lloyd's 070, voiding the walkthrough expenses, was **applied 1 Oct 07:40** through the Supabase MCP connection on Lloyd's machine, B-91). Check `database/migrations/` anyway.
 3. Lanes: `docs/` and `frontend/src/` are this machine's. `backend/src/` and `database/migrations/` are
    Sean's. If something below needs a backend change, keep it small, pull first, and commit it on its own.
 4. Do **not** run `check:all`, `check:api` or `check:relations`. They sign in as the owner and write to
@@ -72,8 +72,12 @@ is ready as it is.
 
 ### 3.1 A-30: Overview money tiles show ₱0 offline (testing-day FAIL)
 
-**Update 1 Oct (Lloyd's Claude): not reproduced locally** (B-90). Re-test on the owner's laptop and note which
-tile showed ₱0. If it recurs, the notes below still apply.
+**FIXED 1 Oct (Lloyd's Claude, commit af2aab9).** Cause: `fetchIncomeRecords` read `res?.data || []`, so
+an answer that was not a list became zero records with the failure flag still false; the other loaders
+already treat that as failed. Reproduced with the old line against a stub API (banner beside ₱0, exactly
+the testing-day picture) and gone with the fix. The other Overview figures, archive years and "Expected
+each month" are all guarded by their flags; the tenant pages throw on a failed request. Re-test A-30 on
+the owner's laptop once to close it.
 
 Test A-30 in `docs/TESTING_DAY/results/A_ADMIN_Lloyd.md`: with the Overview open, disconnect, reload.
 Expected: money tiles show "—", never ₱0. Seen: ₱0, plus the "Some figures could not be loaded. Try again"
@@ -164,9 +168,10 @@ actually owes are a different thing, and they keep their Due status.
 
 ### 3.8 Unfilled testing-day result files (needs people, not Claude)
 
-In `docs/TESTING_DAY/results/`: `C_TOGETHER_Kiel.md` (8 rows blank), `P_PUBLIC_Kiel.md` (9),
-`PR_PROSPECT_unassigned.md` (9), `N_NEW_TODAY_unassigned.md` (1). `T_TENANTS_Vince.md` has times but no
-Pass or Fail. Either the people who ran them fill them in, or they are run again. Don't make up results.
+**Update 1 Oct (Lloyd's Claude): all filled** and cross-checked against the Activity log (read-only); rows
+the log contradicted became NT, and each file says what changed. PR is NT throughout (nobody recorded
+the prospect); N-01 and the real-phone rows of N-02/N-03 are NT. Chapter 4 Tables 10, 11, 11C, 11D and
+§4.4.8 are filled from them. Don't make up results for the NT rows; re-run them if they are needed.
 
 ---
 

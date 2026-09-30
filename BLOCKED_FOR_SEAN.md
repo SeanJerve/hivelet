@@ -33,7 +33,11 @@ thing did not work" is not.
 
 ## Open
 
-### B-91 — two walkthrough expenses (₱60 + ₱40) still live in September; and a request declined · **OPEN**
+### B-91 — two walkthrough expenses (₱60 + ₱40) still live in September; and a request declined · **DONE 2026-10-01: 070 applied**
+
+> **Applied 07:40 Manila** through the Supabase MCP connection, after `npm run backup`
+> (backups/2026-09-30T23-39-56). September 2026 live expenses: ₱100.00 in 2 entries before, ₱0 after
+> (these two were the only September expenses entered). Income unchanged: 953 live rows, ₱8,222,900.00.
 
 - **Blocked on:** confirming the rows are the walkthrough's, then applying a migration (Sean's lane).
 - **What I was doing:** checking the testing-day results files against the Activity log (read-only)
