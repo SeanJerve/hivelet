@@ -7,6 +7,7 @@ import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFet
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
+import { copyText } from '@/lib/copyText';
 import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -65,18 +66,20 @@ async function confirmResetPassword() {
 
 async function copyTemporaryPassword() {
   if (!onboardedCredentials.value) return;
-  try {
-    await navigator.clipboard.writeText(onboardedCredentials.value.password);
+  // `copyText` falls back to the older copy when the modern call is refused,
+  // which is what "Could not copy automatically" was (Sean, 2026-09-30).
+  if (await copyText(onboardedCredentials.value.password)) {
     justCopiedPassword.value = true;
     setTimeout(() => {
       justCopiedPassword.value = false;
     }, 2000);
-  } catch {
-    // Clipboard access can be refused (permissions, insecure context). The
-    // password is still on screen in full either way, so nothing is lost -
-    // just tell her to copy it by hand instead of failing silently.
-    showToast('info', 'Could not copy automatically', 'Select the password above and copy it by hand.');
+    return;
   }
+  // Both refused. The password is still on screen in full, so nothing is lost:
+  // select it for her, so copying by hand is one keystroke.
+  const shown = document.querySelector<HTMLElement>('[data-one-time-password]');
+  if (shown) window.getSelection()?.selectAllChildren(shown);
+  showToast('info', 'Could not copy automatically', 'The password is selected: press Ctrl+C, or copy it by hand.');
 }
 
 function closeCredentialsReveal() {
@@ -384,6 +387,16 @@ const activeCount = computed(
 const vacatedCount = computed(
   () => tenants.filter(t => t.role === 'tenant' && (t.status === 'vacated' || t.status === 'notice')).length
 );
+
+// If the choice she was on disappears (the last moved-out tenant cleared, say),
+// go back to the current tenants rather than show an empty list with no filter.
+// Declared after the three counts on purpose: the watch reads `filterChips` at
+// once, and above them it threw "Cannot access 'activeCount' before
+// initialization" and the whole page failed to render (caught in the harness,
+// 2026-09-30; vue-tsc passed it).
+watch(filterChips, (chips) => {
+  if (!chips.some((c) => c.key === statusFilter.value)) statusFilter.value = 'active';
+});
 
 const rows = computed(() => {
   const query = q.value.toLowerCase().trim();
@@ -849,7 +862,10 @@ async function handleOnboard() {
       <!-- `sm:ml-auto` keeps the filter on the right edge even on the line it
            wraps onto, which is what `justify-between` did for it while it was
            the only thing over there. -->
-      <div class="flex items-center gap-2 sm:ml-auto">
+      <!-- Only when there is something to choose between. With nobody moved out
+           and no prospects it held one choice, "Living here", which Sean called
+           nonsense on the testing morning (2026-09-30). -->
+      <div v-if="filterChips.length > 1" class="flex items-center gap-2 sm:ml-auto">
         <PillSelect
           v-model="statusFilter"
           :options="filterChips"
@@ -1602,7 +1618,7 @@ async function handleOnboard() {
       </p>
 
       <div class="flex items-center gap-2 rounded-2xl border border-line bg-canvas px-4 py-3">
-        <code class="flex-1 select-all break-all font-mono text-base font-semibold tracking-wide text-ink">{{ onboardedCredentials.password }}</code>
+        <code data-one-time-password class="flex-1 select-all break-all font-mono text-base font-semibold tracking-wide text-ink">{{ onboardedCredentials.password }}</code>
         <button
           type="button"
           class="icon-btn shrink-0"
