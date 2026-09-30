@@ -66,34 +66,12 @@ setAuthFailureHandler((error) => {
 })
 
 /*
- * One tab title per page. Every page used to share index.html's single
- * title, so six open tabs of this app read identically in the tab strip,
- * in the history list, and to a screen reader announcing the new page after
- * a route change. The names match the sidebar's own labels (AppSidebar.vue)
- * so the tab says what the menu said. A route missing here falls back to
- * the plain product name rather than a wrong one.
+ * Every tab, and the installed app's window, reads "Hivelet" alone (Lloyd,
+ * 2026-09-30: the home-screen app showed "Hivelet for Fe Galang Da Silva
+ * Boarding House - Fe Galang Da Silva Boarding House, Legazpi City · Hivelet").
+ * Per-page titles ("Monthly Income · Hivelet") were removed with it; each page
+ * still announces itself through its own <h1>.
  */
-const PAGE_TITLES: Record<string, string> = {
-  InquiryThread: 'Your inquiries',
-  PublicGuest: 'Fe Galang Da Silva Boarding House, Legazpi City',
-  Inquire: 'Send an inquiry',
-  PrivacyPolicy: 'Privacy policy',
-  Terms: 'Terms of use',
-  Login: 'Sign in',
-  TenantOverview: 'Overview',
-  TenantPayments: 'Payments and billing',
-  TenantTickets: 'Repairs',
-  TenantProfile: 'My details',
-  AdminOverview: 'Overview',
-  RoomDirectory: 'Rooms and rates',
-  TenantManagement: 'Tenants',
-  IncomeCollections: 'Monthly Income',
-  ExpensesLedger: 'Monthly Expenses',
-  MaintenanceDispatch: 'Repairs',
-  Inquiries: 'Inquiries',
-  AdminAuditLogs: 'Activity',
-  NotFound: 'Page not found',
-}
 
 /*
  * What a search result shows under each public page's title. index.html carries
@@ -125,8 +103,7 @@ router.afterEach((to) => {
   const slug = typeof to.params.categorySlug === 'string' ? to.params.categorySlug : ''
   // "one-bedroom" -> "One-bedroom units", the category's own spelling on the page.
   const category = slug ? slug.charAt(0).toUpperCase() + slug.slice(1) + ' units' : ''
-  const page = category || PAGE_TITLES[String(to.name)] || ''
-  document.title = page ? `${page} · Hivelet` : 'Hivelet'
+  document.title = 'Hivelet'
 
   const categoryDescription = category
     ? `${category} at the Fe Galang Da Silva Boarding House in Legazpi City: their rates, which are vacant, and the floor plan of each.`

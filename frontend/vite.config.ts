@@ -149,7 +149,7 @@ const config: UserConfig = {
       // be blank there. The gate's 800-pixel copy stays out, like the gate.
       includeAssets: ['favicon.svg', 'fe-galang-building.webp', 'fe-galang-building-portrait.webp'],
       manifest: {
-        name: 'Hivelet for Fe Galang Da Silva Boarding House',
+        name: 'Hivelet',
         short_name: 'Hivelet',
         description: 'Rent, payments and repairs for Fe Galang Da Silva Boarding House.',
         // Was `#0c66e4` (`--primary` in `src/index.css`), a blue that appears
