@@ -21,7 +21,7 @@
 | S-03 | SE | NFR-003 | SSL Labs, `hivelet.vercel.app` | Grade. Expect **A+** (run 30 Sep 00:10; one of two addresses A) | Pass | **A+ and A** (the host's two addresses). Time of the scan: ______ (attach the screenshot). |
 | S-04 | SE | FR-001 | Rehearsal tenant only: 5 wrong passwords | Locked for 15 minutes with a clear message. **Never on a real account** | Pass | Rehearsal tenant only: after 5 wrong passwords the account locked for 15 minutes with a clear message. |
 | S-05 | SE | FR-002 | Tenant opens `/admin` (T-15) | Refused | Pass | Seen in the tenant session (T-15): typing /admin was refused. **Note: T_TENANTS_Vince.md has T-15 as NT for every tester; record there which tenant did it.** |
-| S-06 | SE | FR-002 | Signed out, open `/tenant` | Sent to sign-in | | **Not read out: confirm Pass/Fail/NT** (signed out, open /tenant, sent to sign-in?). |
+| S-06 | SE | FR-002 | Signed out, open `/tenant` | Sent to sign-in | Pass | Signed out, opening /tenant sent the browser to the sign-in page. |
 | S-07 | SE | FR-001 | Tenant signs out; Back button (T-16) | No data | Pass | Seen in the tenant session (T-16): after signing out, Back showed no personal data. |
 | S-08 | SE | FR-001 | Slip password after the tenant changed it (T-17) | Refused | Pass | Seen in the tenant session (T-17): the slip password was refused after the tenant chose their own; the password change itself worked. |
 | S-09 | SE | FR-029 | Activity shows today's password changes and admin actions, without any password in it | As described | Pass | Activity listed today's password changes and admin actions, with no password shown anywhere. |
