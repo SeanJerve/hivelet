@@ -143,6 +143,11 @@ expenses workbook.
   signed out.
 - **Move them out**: type the unit code to confirm. The tenant loses access at once, the unit
   becomes free to let, and **their records stay**.
+- **Who lived where before**: choose a **Year** (and a **Month** if you like) beside the search.
+  The list then shows who paid for each unit then, read from your receipts: the months they paid,
+  or for one month what the receipt covered, when it was paid and its number. A name you wrote two
+  ways in the same unit is shown once, with the other spelling under it; a tenant who moved units
+  says which other unit they rented. Choose **Now** to go back to your current tenants.
 
 ### 6. Rooms and rates
 
