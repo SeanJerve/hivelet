@@ -5,9 +5,9 @@
  * Run:  node scripts/survey/compute-uat.mjs <observations.csv>
  *
  * Type each observation sheet line into a copy of `uat-observations-template.csv` (same folder):
- *   tester      T1, T2, ... (never a name)
+ *   tester      T1, T2, ... for tenants; PR1, PR2, ... for prospects; L for the landlady (never a name)
  *   device      e.g. "Android Chrome", "iPhone Safari"
- *   case        T-01 ... T-18, as on the sheet
+ *   case        T-01 ... T-18, PR-01 ... PR-09, A-01 ... A-36, as on the sheet
  *   start, end  clock times, HH:MM or HH:MM:SS
  *   success     P (done alone), PH (done with help), F (not done), NT (not tried)
  *   errors      wrong taps that led somewhere unintended (a number; blank = 0)
@@ -65,6 +65,15 @@ const GROUPS = [
   ['Staying out of the owner\'s pages; signing out (T-15, T-16)', ['T-15', 'T-16']],
 ];
 
+// Prospective tenants (added 2026-09-30): public website only, docs/TESTING_DAY/OBSERVATION_PROTOCOL.md Part PR.
+const PR_GROUPS = [
+  ['Understanding what the place is (PR-01)', ['PR-01']],
+  ['Finding unit types, rates and availability (PR-02 to PR-04)', ['PR-02', 'PR-03', 'PR-04']],
+  ['Reading one unit\'s details (PR-05)', ['PR-05']],
+  ['Finding the water charge, location and contact (PR-06, PR-07)', ['PR-06', 'PR-07']],
+  ['Sending an inquiry (PR-08)', ['PR-08']],
+];
+
 function line(label, set) {
   const tried = set.filter((o) => o.ok && o.ok !== 'NT');
   const testers = new Set(tried.map((o) => o.tester)).size;
@@ -82,6 +91,14 @@ out.push('| Task | Tenants attempting | Completed without help | Completed with 
 out.push('| :--- | --: | --: | --: | --: | --: | --: | --: |');
 for (const [label, cases] of GROUPS) out.push(line(label, obs.filter((o) => cases.includes(o.c))));
 out.push(line('**All tasks**', obs.filter((o) => /^T-(0[1-9]|1[0-6])$/.test(o.c))));
+if (obs.some((o) => /^PR-/.test(o.c))) {
+  out.push('', '**Table 11E (proposed).** Prospective Tenant Task Results', '');
+  out.push('| Task | Prospects attempting | Completed without help | Completed with help | Not completed | Median time (s) | Mean wrong turns | Completion without help |');
+  out.push('| :--- | --: | --: | --: | --: | --: | --: | --: |');
+  for (const [label, cases] of PR_GROUPS) out.push(line(label, obs.filter((o) => cases.includes(o.c))));
+  out.push(line('**All tasks**', obs.filter((o) => /^PR-0[1-8]$/.test(o.c))));
+  out.push('', '> PR-09 (the open question) is not a task and is not counted. Chapter 4 has no Table 11E yet: the team decides whether to add it or report these lines in the §4.3 text.');
+}
 out.push('', '### Per case (supporting)', '', '| Case | Attempts | P | PH | F | Median time (s) | Mean wrong turns |', '| :-- | --: | --: | --: | --: | --: | --: |');
 for (const c of [...new Set(obs.map((o) => o.c))].sort()) {
   const s = obs.filter((o) => o.c === c && o.ok !== 'NT');
