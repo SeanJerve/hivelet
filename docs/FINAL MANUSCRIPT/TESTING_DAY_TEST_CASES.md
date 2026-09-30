@@ -20,6 +20,7 @@ the evidence file name in **Evidence**. A fail always gets a line in the defect 
 | PF. Performance timings | PF-01 to PF-10 | §4.3.5, Table 11 |
 | S. Security | S-01 to S-12 | §4.4.8 supporting evidence |
 | CO. Compatibility | CO-01 to CO-06 | §4.4.5 supporting evidence |
+| N. Shipped on 30 September | N-01 to N-03, with P-06 and P-06b | §4.2.3, §4.2.4 and §4.3.7 |
 
 **ISO/IEC 25010 characteristics used below:** FS Functional Suitability, PE Performance
 Efficiency, CO Compatibility, US Usability, RE Reliability, SE Security, MA Maintainability, PO
@@ -133,6 +134,19 @@ errors per task = mean.
 connection, shared by everyone on the house wifi, and a hit blocks the real visitors too.
 
 ---
+
+## Part N. Shipped on 30 September (team checks, on real phones)
+
+Four things went live on the testing day itself. **P-06 and P-06b** above cover the inquiry
+conversation (migration 065): run them with a team member's own name and number, Michelle replying
+from **Inquiries** (**Save reply**). The other three are below. Write the phone model and browser in
+Evidence.
+
+| ID | ISO | Req | Do | Should see | Result | Evidence |
+| :-- | :-- | :-- | :--- | :--- | :-- | :--- |
+| N-01 | FS, US | FR-011, FR-013 | On a tenant's own account (a testing tenant, with their permission, or during T-05): **Payments** > **Your rent, month by month** | A sentence "Paid up to …" with Up to date / Due soon / Overdue; a bar per month (Paid, Due, Nothing recorded, Not due yet); Months paid, Paid in these months, Due now; **Show each month as a list**. The months and amounts agree with the tenant's own receipts (ask them) | | |
+| N-02 | FS, RE | FR-003 | `/category/studio` (then one-bedroom, two-bedroom): tap units quickly one after another, across floors and on the same floor, then stop | The floor plan is always shown for the last unit tapped, never a blank box, without refreshing | Claude, 30 Sep 14:36, headless Chrome on the live site, 390 px and 1280 px, all four categories (33 units): every unit tapped 60 ms apart, two units alternated 40 ms apart, first then last at once; plan visible and loaded after all 20 rounds (20/20). **Real phone: pending** | |
+| N-03 | FS, RE | FR-003 | Open `hivelet.vercel.app/public`; read the pop-up | "1 unit is vacant right now" (only `PH` is vacant), then "Viewings are by appointment…" and **Inquire now**. With no signal: the old text, never a number | Claude, 30 Sep: the live pop-up said "1 unit is vacant right now", matching `/api/public/rooms` (32 Occupied, 1 Available, `PH`). **Real phone: pending** | |
 
 ## Part C. Simultaneous use (everyone at once)
 
