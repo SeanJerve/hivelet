@@ -15,8 +15,8 @@
  * other people's conversations.
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { ArrowLeft, RotateCw, Send } from 'lucide-vue-next';
+import { useRoute, useRouter } from 'vue-router';
+import { ArrowLeft, ArrowUpRight, RotateCw, Send } from 'lucide-vue-next';
 import { api, ApiRequestError, isUnconfirmed } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
 import { savedInquiries, rememberInquiry, forgetInquiry, type SavedInquiry } from '@/lib/myInquiries';
@@ -28,6 +28,7 @@ type Thread = {
 };
 
 const route = useRoute();
+const router = useRouter();
 
 const creds = ref<Creds | null>(null);
 const thread = ref<Thread | null>(null);
@@ -66,7 +67,7 @@ const when = (iso: string) =>
   });
 
 function tokenFromHash(): string | null {
-  const m = /(?:^#|&)t=([^&]+)/.exec(route.hash || window.location.hash || '');
+  const m = /(?:^#|&)t=([^&]+)/.exec(route.hash || '');
   return m ? decodeURIComponent(m[1]) : null;
 }
 
@@ -138,12 +139,35 @@ async function sendReply() {
   }
 }
 
-function backToList() {
+/**
+ * The address is the one source of truth for which conversation is open
+ * (Sean, 2026-09-30: "I cannot click it again to check my conversation, I need
+ * to refresh"). "Your inquiries" used to drop the #t= from the address behind
+ * the router's back, so the router still believed the conversation was open;
+ * clicking the same inquiry again was then a navigation to where it already
+ * was, which does nothing. Every way in and out now goes through the router,
+ * so opening, "Your inquiries", and the browser's own Back all agree.
+ */
+function showList() {
   thread.value = null;
   creds.value = null;
   loadError.value = null;
   saved.value = savedInquiries();
-  if (window.location.hash) history.replaceState(history.state, '', '/inquiry');
+}
+
+function backToList() {
+  if (tokenFromHash()) router.push({ path: '/inquiry' });
+  else showList(); // opened with the reference code: nothing in the address to undo
+}
+
+function syncWithAddress() {
+  const token = tokenFromHash();
+  if (!token) {
+    if (creds.value && 'token' in creds.value) showList();
+    return;
+  }
+  const open = thread.value && creds.value && 'token' in creds.value && creds.value.token === token;
+  if (!open) load({ token });
 }
 
 // A new reply is likelier to be seen when the visitor comes back to the tab.
@@ -153,19 +177,12 @@ function onVisible() {
 
 onMounted(() => {
   saved.value = savedInquiries();
-  const token = tokenFromHash();
-  if (token) load({ token });
+  syncWithAddress();
   document.addEventListener('visibilitychange', onVisible);
 });
 onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisible));
 
-watch(
-  () => route.hash,
-  () => {
-    const token = tokenFromHash();
-    if (token && !('token' in (creds.value ?? {}) && (creds.value as { token: string }).token === token)) load({ token });
-  }
-);
+watch(() => route.hash, syncWithAddress);
 </script>
 
 <template>
@@ -268,13 +285,17 @@ watch(
             <li v-for="s in saved" :key="s.token">
               <RouterLink
                 :to="`/inquiry#t=${encodeURIComponent(s.token)}`"
-                class="press flex min-h-14 items-center justify-between gap-4 py-3 text-sm text-ink hover:text-ink-soft"
+                class="group/goto press flex min-h-14 items-center justify-between gap-4 py-3 text-sm text-ink hover:text-ink-soft"
               >
                 <span>
                   Sent {{ when(s.sentAt) }}
                   <span class="block text-xs text-ink-soft">Reference {{ s.referenceCode }}</span>
                 </span>
-                <span aria-hidden="true">›</span>
+                <!-- The overview tiles' own arrow and hover nudge (components/overview/OverviewTile.vue). -->
+                <ArrowUpRight
+                  class="size-4 shrink-0 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+                  aria-hidden="true"
+                />
               </RouterLink>
             </li>
           </ul>

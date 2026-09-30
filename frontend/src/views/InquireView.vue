@@ -16,10 +16,10 @@
  * Adding the others is a schema change, not a design change.
  */
 import { ref, reactive, nextTick } from 'vue';
-import { Loader2, ArrowLeft, AlertCircle } from 'lucide-vue-next';
+import { Loader2, ArrowLeft, AlertCircle, ArrowUpRight } from 'lucide-vue-next';
 import { LANDLADY } from '@/lib/systemState';
 import { api } from '@/lib/api';
-import { rememberInquiry } from '@/lib/myInquiries';
+import { rememberInquiry, savedInquiries } from '@/lib/myInquiries';
 import InquiryConversationLink from '@/components/public/InquiryConversationLink.vue';
 import {
   validateInquiry,
@@ -63,6 +63,12 @@ async function focusFirstInvalid() {
  * What was sent, kept for the confirmation after the fields are cleared - so it
  * can say which number and address she will reply to.
  */
+/**
+ * The last inquiry this browser sent, so a visitor who comes back here - by the
+ * browser's Back from their conversation, or later - can reopen it in one tap
+ * (Sean, 2026-09-30). The confirmation that had the button is gone by then.
+ */
+const lastSaved = ref(savedInquiries()[0] ?? null);
 const sentTo = ref<{ phone: string; email: string } | null>(null);
 /** The visitor's way back in to read her reply (065); null before the migration ran. */
 const conversation = ref<{ token: string; referenceCode: string } | null>(null);
@@ -280,6 +286,19 @@ async function submitInquiry() {
           Focus moves to its heading, so a screen reader reads the outcome and
           a keyboard continues from here rather than from the top of the page.
         -->
+        <p v-if="!sentTo && lastSaved" class="mt-6 max-w-xl text-sm leading-relaxed text-ink-soft">
+          You sent an inquiry on {{ new Date(lastSaved.sentAt).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', day: 'numeric', month: 'short' }) }}.
+          <RouterLink
+            :to="`/inquiry#t=${encodeURIComponent(lastSaved.token)}`"
+            class="group/goto press inline-flex min-h-11 items-center gap-1 font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+          >
+            Open your conversation
+            <ArrowUpRight
+              class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+              aria-hidden="true"
+            />
+          </RouterLink>
+        </p>
         <div v-if="sentTo" class="ws-reveal mt-8 lg:mt-6 max-w-2xl">
           <h2
             ref="sentHeading"
