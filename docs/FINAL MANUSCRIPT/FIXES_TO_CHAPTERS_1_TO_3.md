@@ -279,6 +279,29 @@ business keeps the name Fe Galang Da Silva Boarding House. Wherever H2 says "the
 administrator", say "the administrator, who manages the boarding house for the owner", and name
 Michelle as the administrator if the paper names participants at all.*
 
+**H5. Two sources Chapter 4 now relies on (added 2026-09-30).** The course's Chapter 4 guide allows
+Chapter 4 to cite only what Chapter 2 or 3 already cites. §4.4.8 describes the inquiry link as a
+*capability URL* and compares its secret with OWASP's minimum. Add both sources before §4.4.8 cites
+them, or drop the two names from §4.4.8. *Add to §3.2.2 (system design), after the paragraph on
+role-based access:*
+
+> Visitors who send an enquiry are not given accounts. Each enquiry instead has its own private
+> link, following the practice the World Wide Web Consortium's Technical Architecture Group calls a
+> capability URL (Tennison, 2014): the link itself grants access to that one conversation, so its
+> secret must be long enough that it cannot be guessed. OWASP recommends at least 64 bits of
+> entropy for such identifiers (OWASP Foundation, n.d.).
+
+*and to the References:*
+
+> OWASP Foundation. (n.d.). *Session management cheat sheet*. OWASP Cheat Sheet Series.
+> https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+>
+> Tennison, J. (Ed.). (2014, February 18). *Good practices for capability URLs* (W3C First Public
+> Working Draft). World Wide Web Consortium. https://www.w3.org/TR/capability-urls/
+
+*Before pasting, open both pages and confirm the title, date and the 64-bit statement against the
+live page.* See also `GUIDE_ALIGNMENT_CH4_CH5.md` for the rest of the guide check.
+
 ## F. Optional improvements (not errors)
 
 - §2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would

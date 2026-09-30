@@ -5,6 +5,7 @@ now the source we write in**; the finished text is carried into the `.docx` at t
 
 | File | What it is | State (2026-09-28) |
 | :--- | :--- | :--- |
+| `GUIDE_ALIGNMENT_CH4_CH5.md` | **Chapters 4 and 5 checked against the IT 124 course guides** (30 Sep): what to decide with the adviser, what to fix now, the exhibits still missing, and Chapter 5's one-conclusion-per-objective rule | Read before pasting results |
 | `START_HERE_CHAPTERS_4_AND_5.md` | **Read first.** What is left in Chapters 4 and 5, what fills each pending part, and in what order | Current |
 | `Hivelet_Manuscript_as_of_2026-09-18.pdf` | The manuscript as it stood on 18 September. Kept only to compare against; **do not cite it as a description of the system** | Old version |
 | `FIXES_TO_CHAPTERS_1_TO_3.md` | Every error found in the front matter and Chapters 1 to 3, with paste-ready replacements | Ready to apply; second pass added section G |

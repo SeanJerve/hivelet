@@ -32,7 +32,7 @@ by the help ladder (Batch 2), and write down that you helped.
 
 ---
 
-## The eight rules for the whole day
+## The nine rules for the whole day
 
 1. **The system is live.** Everything saved is real. Tests use the vacant unit **PH** and names or
    messages starting **TEST** or **REHEARSAL**.
@@ -47,6 +47,8 @@ by the help ladder (Batch 2), and write down that you helped.
    more to Chapter 4 than a pass from memory.
 8. **Tester codes, never names**, on every sheet and file: PR1, PR2 ... (prospects), T1 to T5
    (tenants), L (landlady).
+9. **No team member answers the survey or acts as a tester.** The course guide requires evaluators
+   to be external to the development team; the panel asks this at almost every defense.
 
 ---
 
@@ -362,6 +364,9 @@ crawler or a password tester against the live site.
       becomes **NT**, never P.
 - [ ] A signed consent form for every name on the attendance sheet.
 - [ ] The survey's response count matches the number of testers; anyone missing gets the link now.
+- [ ] Write down, per group (landlady, tenants, prospects): how many were **asked**, how many
+      **took part**, how many **answered the survey**, and how many answers were **usable**. Chapter 4
+      needs these for its response-rate table ("instrument administration").
 - [ ] Every photo and recording is copied off the phones.
 - [ ] Form 6, if Michelle signed it.
 
