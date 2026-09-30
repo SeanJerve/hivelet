@@ -13,7 +13,6 @@ import { ref } from 'vue';
 import { Copy, Check, MessageSquare } from 'lucide-vue-next';
 import { copyText } from '@/lib/copyText';
 import { conversationUrl } from '@/lib/myInquiries';
-import { LANDLADY } from '@/lib/systemState';
 
 const props = defineProps<{ token: string; referenceCode: string }>();
 
@@ -32,8 +31,7 @@ async function copyLink() {
 <template>
   <div class="mt-6 max-w-xl border-l-2 border-brand pl-4">
     <p class="text-sm leading-relaxed text-ink">
-      {{ LANDLADY.name }} answers on your inquiry's own page. Open it any time to read her reply
-      and write back.
+      Open your inquiry page any time to read her reply and write back.
     </p>
     <div class="mt-4 flex flex-wrap items-center gap-3">
       <RouterLink :to="`/inquiry#t=${encodeURIComponent(token)}`" class="pill-btn-brand">
@@ -50,11 +48,11 @@ async function copyLink() {
       Copying did not work here. Keep this address instead: {{ conversationUrl(token) }}
     </p>
     <p class="mt-4 text-xs leading-relaxed text-ink-soft">
-      Your reference is
+      Your reference code is
       <strong class="font-medium text-ink tracking-[0.08em] text-sm">{{ referenceCode }}</strong>.
-      Write it down: with the phone number you gave, it opens the same page at
+      Write it down. If you lose the link, go to
       <RouterLink to="/inquiry" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">hivelet.vercel.app/inquiry</RouterLink>
-      if you lose the link.
+      and enter this code with your phone number.
     </p>
     <span class="sr-only" role="status" aria-live="polite">{{ copied ? 'Link copied' : '' }}</span>
   </div>

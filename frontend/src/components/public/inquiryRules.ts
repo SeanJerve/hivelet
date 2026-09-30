@@ -63,16 +63,16 @@ export function validateInquiry(input: InquiryInput): InquiryErrors {
 
   // `inquiries.prospect_email` is NOT NULL, so the address is asked for rather
   // than invented.
-  if (!email) errors.email = 'Please enter an email address she can reply to.';
+  if (!email) errors.email = 'Please enter an email address the landlady can reply to.';
   else if (!EMAIL_PATTERN.test(email))
     errors.email = 'That does not look like a complete email address, for example name@example.com.';
 
-  if (!phone) errors.phone = 'Please enter a number she can reach you on.';
+  if (!phone) errors.phone = 'Please enter a number the landlady can call.';
   else if (phone.length < 7) errors.phone = 'That number looks too short. Please include the whole number.';
   else if (phone.length > 30) errors.phone = 'That number is too long. Please enter one number only.';
 
   if (message.length < 5)
-    errors.message = 'Please write your question. A few words is enough; it is what she reads first.';
+    errors.message = 'Please write your question. A few words is enough.';
   else if (message.length > MESSAGE_MAX)
     errors.message = `Please keep your question under ${MESSAGE_MAX} characters. It is ${message.length} now.`;
 
@@ -98,7 +98,7 @@ export function serverFieldErrors(err: unknown): InquiryErrors {
   if (!(err instanceof ApiRequestError) || err.status !== 422 || !err.details) return {};
   const out: InquiryErrors = {};
   for (const [key, field] of Object.entries(SERVER_FIELD)) {
-    if (err.details[key]?.length) out[field] = 'Please check this. It was not accepted as written.';
+    if (err.details[key]?.length) out[field] = 'Please check this and try again.';
   }
   return out;
 }

@@ -1184,7 +1184,7 @@ async function submitInquiry() {
         </h2>
         <p class="mt-4 max-w-md text-sm text-ink-soft leading-relaxed">
           {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself.
-          <template v-if="inquiryConversation">She replies here, and may also call
+          <template v-if="inquiryConversation">She will reply on your inquiry page, and may also call
             <span class="text-ink break-all">{{ inquirySentTo.phone }}</span>.</template>
           <template v-else>She replies by phone or message to
             <span class="text-ink break-all">{{ inquirySentTo.phone }}</span> or

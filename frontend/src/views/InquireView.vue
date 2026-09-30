@@ -305,11 +305,11 @@ async function submitInquiry() {
             tabindex="-1"
             class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em] outline-none"
           >
-            Your message is saved
+            Your inquiry is sent
           </h2>
           <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
             {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself.
-            <template v-if="conversation">She replies here, and may also call
+            <template v-if="conversation">She will reply on your inquiry page, and may also call
               <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
             <template v-else>She replies by phone or message to
               <span class="text-ink break-all">{{ sentTo.phone }}</span> or
@@ -331,7 +331,7 @@ async function submitInquiry() {
               class="press inline-flex min-h-11 items-center text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
               @click="sendAnother"
             >
-              Send another message
+              Send another inquiry
             </button>
           </div>
         </div>
@@ -454,7 +454,7 @@ async function submitInquiry() {
           -->
           <!-- Both contact fields are required, so "include a number or address" asked for less than the form does. -->
           <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
-            {{ LANDLADY.name }}, who runs the boarding house, replies on your inquiry's own page, which
+            {{ LANDLADY.name }}, who runs the boarding house, replies on your inquiry page, which
             you can open once you send it. Nothing is sent to you by text or email. See the
             <RouterLink to="/privacy" class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy</RouterLink>
             for what happens to this information.

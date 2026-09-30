@@ -51,7 +51,7 @@ const STATUS_WORD: Record<string, string> = {
   Pending: 'Waiting for an answer',
   Contacted: 'Answered',
   Converted: 'Moved in',
-  Closed: 'Nothing came of it',
+  Closed: 'Closed',
 };
 
 function statusTone(status: string) {
@@ -92,13 +92,13 @@ function handleCloseLead() {
 
   showConfirm(
     'Close this inquiry?',
-    `${inq.name}, unit ${inq.unit.toUpperCase()}.\n\nIt stays on record and can still be read. It just stops waiting for an answer.`,
+    `${inq.name}, unit ${inq.unit.toUpperCase()}.\n\nYou can still read it, but they will no longer be able to write back.`,
     async () => {
       isSubmitting.value = true;
       try {
         await api.patch(`/admin/inquiries/${inq.id}`, { status: 'Closed' });
         await fetchInquiriesState();
-        showToast('success', 'Inquiry closed', `${inq.name} is no longer waiting for an answer.`);
+        showToast('success', 'Inquiry closed', `${inq.name}'s inquiry is closed.`);
       } catch (err: any) {
         showToast('error', failureTitle(err, 'Not closed'), err?.message || 'The inquiry was not updated.');
       } finally {
@@ -134,7 +134,7 @@ onMounted(async () => {
 useOpenFromQuery('inquiry', async (id) => {
   if (!inquiries.some((i) => i.id === id)) await fetchInquiriesState();
   if (inquiries.some((i) => i.id === id)) await selectInquiry(id);
-  else if (!inquiriesFetchFailed.value) showToast('info', 'Not found', 'That enquiry is no longer in the list.');
+  else if (!inquiriesFetchFailed.value) showToast('info', 'Not found', 'That inquiry is no longer in the list.');
 });
 
 const filteredInquiries = computed(() => {
@@ -495,7 +495,7 @@ async function handleSendReply() {
                 <!-- The rate she quotes a prospective resident. `rooms` is seeded, so a
                      failed refresh would have her quoting a figure up to ₱1,900 out. Better
                      to show no price than a wrong one. -->
-                Asking about unit
+                Filed under unit
                 <span class="font-semibold uppercase text-ink">{{ activeUnit.unitCode }}</span
                 ><template v-if="!roomsFetchFailed">, which rents for
                   <span class="tabular font-semibold text-ink">{{ peso(activeUnit.price) }}</span>
@@ -606,8 +606,8 @@ async function handleSendReply() {
               does reach them - in Hivelet, not by SMS or email. Older ones do not.
             -->
             <p v-if="activeInquiry.hasConversation" class="ws-hint max-w-md">
-              {{ activeInquiry.name }} reads this on their inquiry page and can write back
-              here<template v-if="activeInquiry.referenceCode"> (reference {{ activeInquiry.referenceCode }})</template>.
+              {{ activeInquiry.name }} can read this on their inquiry page and answer there;
+              the answer appears here<template v-if="activeInquiry.referenceCode"> (reference {{ activeInquiry.referenceCode }})</template>.
               No text or email is sent, so call if it is urgent.
             </p>
             <p v-else class="ws-hint max-w-md">

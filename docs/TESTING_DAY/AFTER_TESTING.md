@@ -34,7 +34,7 @@ The system is live. **Only test records are removed; real ones stay as real work
 | What | Where (admin side) | How |
 | :--- | :--- | :--- |
 | Repair requests with **TEST** in the title | **Repairs** | Open it, **Delete repair**, confirm. A tenant's real request stays: Michelle handles it as real work |
-| Inquiries with **TEST** in the message | **Inquiries** | Open it, **Close inquiry** (it stays on record as "Nothing came of it"; there is no delete, which is right) |
+| Inquiries with **TEST** in the message | **Inquiries** | Open it, **Close inquiry** (it stays on record as "Closed"; there is no delete, which is right) |
 | A GCash payment waiting for verification (someone finished one by mistake) | **Monthly Income**, the verification queue | **Reject**, confirm. Adyen's test account moved no money. Write it in the defect log |
 | Anything named **REHEARSAL**, and unit **PH** | Tenants, Monthly Income | Undo in the order of the guide §8 (vacate, never delete a profile; void the receipt; PH back to ₱30,000) |
 | The bill raised in **A-20** on PH, if that case was run | Nowhere on screen | Write down its date and amount (Activity page, "Bill created"). **Do not try to remove it**: no screen deletes a bill. Sean removes it later with a reviewed migration |

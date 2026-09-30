@@ -50,7 +50,7 @@ const lastFromYou = computed(() => thread.value?.messages.at(-1)?.from === 'you'
 
 const statusLine = computed(() => {
   const s = thread.value?.inquiry.status;
-  if (s === 'Converted') return 'This inquiry became a tenancy. Welcome to the boarding house.';
+  if (s === 'Converted') return 'You have moved in. Welcome to the boarding house.';
   if (s === 'Closed') return `${LANDLADY.name} has closed this inquiry.`;
   if (lastFromYou.value) return `Waiting for ${LANDLADY.name} to reply. Check back here.`;
   return `${LANDLADY.name} has replied.`;
@@ -130,7 +130,7 @@ async function sendReply() {
     await load(creds.value, { focus: false });
   } catch (err) {
     replyError.value = isUnconfirmed(err)
-      ? 'We could not confirm your message arrived. Press "Check for a reply" before sending it again, so it is not sent twice.'
+      ? 'We are not sure your message went through. Press "Check for a reply": if it shows above, it was sent.'
       : err instanceof ApiRequestError && err.status !== 0
         ? err.message
         : 'Your message was not sent. Check your connection and try again.';
@@ -276,7 +276,7 @@ watch(() => route.hash, syncWithAddress);
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
             {{ LANDLADY.name }}, who runs the boarding house, answers each inquiry on its own page.
-            Open yours to read her reply and write back.
+            Open yours to read her reply and answer.
           </p>
 
           <p v-if="loadError && !saved.length && !lookupError" class="mt-6 text-sm text-overdue" role="alert">{{ loadError }}</p>
@@ -303,7 +303,7 @@ watch(() => route.hash, syncWithAddress);
           <form class="mt-8 max-w-md" novalidate @submit.prevent="lookUp">
             <h2 class="text-sm font-medium text-ink">Open one with its reference code</h2>
             <p class="mt-1 text-xs leading-relaxed text-ink-soft">
-              The code was shown when you sent your inquiry. Use the phone number you gave with it.
+              The code was shown when you sent your inquiry. Enter it with the phone number you gave.
             </p>
             <label for="find-ref" class="mt-4 block text-xs text-ink-faint">Reference code</label>
             <input
@@ -336,9 +336,9 @@ watch(() => route.hash, syncWithAddress);
           </form>
 
           <p class="mt-10 text-xs leading-relaxed text-ink-soft">
-            Have not asked yet?
+            No inquiry yet?
             <RouterLink to="/inquire" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Send an inquiry</RouterLink>.
-            Sent one before 30 September 2026? {{ LANDLADY.name }} answers those by phone:
+            Sent one before September 30, 2026? {{ LANDLADY.name }} answers those by phone:
             <a :href="`tel:${LANDLADY.phone}`" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink">{{ LANDLADY.phone }}</a>.
           </p>
         </section>
