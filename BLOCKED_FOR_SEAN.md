@@ -33,13 +33,13 @@ thing did not work" is not.
 
 ## Open
 
-### B-90 — testing-day leftovers from 30 September: two bills to correct, two defects found · **OPEN**
+### B-90 — testing-day leftovers from 30 September: F2F's bill total, three defects · **OPEN** (the PH bill and repair: done by 069)
 
 Found by the team's walkthrough and tenant sessions (results in `docs/TESTING_DAY/results/`),
 checked read-only against the live database by Claude at 22:55 Manila. Nothing was changed.
 
-- **PH bill ₱30,200 (A-20).** Raised for the rehearsal tenant (profile `4d8876e6…`, now inactive),
-  period 30 Sep, status Due. Test record: remove with a reviewed migration, as 055/061 did.
+- ~~**PH bill ₱30,200 (A-20).**~~ **Done by Sean's 069** (applied the same evening), with the rehearsal
+  payments, the voided ACKNOWL1 row and the PH repair.
 - **F2F's September bill says ₱8,200, but the tenancy now has 4 occupants.** Raised at 19:35 while
   F2F had 1 occupant; Lloyd then set 4 and Michelle recorded the real cash receipt of **₱8,800**
   (₱8,000 + ₱800 water, created 19:53, edited 19:56). The bill is Paid, so nothing is owed, but its
@@ -54,7 +54,7 @@ checked read-only against the live database by Claude at 22:55 Manila. Nothing w
   guards). A real regression or a cached response: reproduce with DevTools Offline.
 - **Defect O-12 (Android): the 45-second save deadline fired after 60 to 80 s** on an Infinix GT20
   in Chrome (iPhone 15 Safari: within 45 s). `frontend/src/lib/api.ts`.
-- Also still open from before: the PH rehearsal repair (18:46) is Resolved but not deleted.
+- ~~The PH rehearsal repair (18:46)~~: removed by 069.
 
 ### B-89 — after the testing day: garbage fee out, invoices not OR, tenants own contact details, live pages · **DONE 2026-09-30: 066, 067, 068 applied and verified**
 
