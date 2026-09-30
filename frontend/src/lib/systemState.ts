@@ -990,7 +990,18 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
 
   try {
     const res = await api.get<any>('/admin/income-records');
-    const records = Array.isArray(res) ? res : res?.data || [];
+    /**
+     * A reply that is not a list is a failed load, not an empty ledger.
+     *
+     * This read `res?.data || []`, so any answer that was neither an array nor
+     * carried one became ZERO RECORDS with the failure flag still false - and
+     * every income tile on the Overview drew ₱0 as a fact. The expense, room,
+     * repair and tenant loaders below already fall through to "failed" on the
+     * same shape; income was the one that did not. Testing day A-30 (30 Sep):
+     * offline, the Overview showed the "could not be loaded" banner (other
+     * loaders failed) beside ₱0 money tiles (this one did not).
+     */
+    const records = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : null;
     if (Array.isArray(records)) {
       const mapped: IncomeRecord[] = records.map((inc: any) => {
         /**
