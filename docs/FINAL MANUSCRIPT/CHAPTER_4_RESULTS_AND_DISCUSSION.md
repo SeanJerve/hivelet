@@ -180,6 +180,15 @@ files in that layout. Income is filed under the month the rent is for, not the
 day it was paid, so a late payment still counts toward the right month. *Figure 6. The Monthly
 Income Ledger.* [SCREENSHOT PENDING]
 
+Tenants follow the same record from their side. The tenant's payments page shows **"Your rent,
+month by month"**: one sentence stating how far their payments reach ("Paid up to …") and what is
+due, a bar for each of the last twelve months marked Paid, Due, Nothing recorded or Not due yet,
+and the months paid, the amount paid and the amount due now. Only receipts the owner has verified
+count as paid, the same rule behind the "paid up to" date; a voided receipt never counts, and a GCash payment
+still awaiting verification is listed separately as waiting. A month before the latest receipt with
+no receipt of its own is shown as "Nothing recorded", never as owed, because the records do not
+establish that it is.
+
 The system does not handle electricity. Every unit has its own meter and the tenant pays the
 electric company directly, as the owner confirmed on 18 September 2026.
 
@@ -779,6 +788,15 @@ GCash checkout on the live site loaded Adyen with no report from the policy, and
 switched to enforcing; the Observatory figure above predates that switch (Chapter 5,
 recommendation 9). [DATA PENDING: securityheaders.com
 grade and PageSpeed Insights scores from the team's runs, with dates.]
+
+The conversation a visitor has about an enquiry (Section 4.2.3) is reached without an account, so
+its link is itself the credential, what the W3C Technical Architecture Group calls a capability
+URL (*Good Practices for Capability URLs*). Its secret is 256 bits, well above the 64 bits OWASP
+recommends for session identifiers; only its SHA-256 hash is stored; and it travels in the address's
+#fragment, which browsers do not send to a server, so it never reaches a server log. The shorter
+reference code opens the conversation only together with the phone number given in the enquiry.
+Look-ups are rate-limited (30 per 15 minutes from one address), and each link opens one
+conversation only.
 
 ### 4.4.9 Maintainability
 

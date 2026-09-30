@@ -137,13 +137,22 @@ Based on the summary and conclusions of the study, the following are recommended
     site itself instead of from Google's font service, whose stylesheet holds the first paint for
     about three quarters of a second, would shorten it further.
 
+12. Offer "Sign in with Google" to people who send more than one enquiry. Today an enquiry's
+    conversation is opened by its private link, or by its reference code with the phone number
+    given (Chapter 4, §4.2.3 and §4.4.8), so a visitor who asks about several units holds one link
+    per enquiry, remembered only in the browser they used, and one who loses both link and code
+    must send a new enquiry. Signing in with an
+    existing Google account would gather a returning inquirer's conversations in one place without
+    the property running a password system for visitors; the private link would stay for those
+    who have no Google account.
+
 **For future researchers**
 
-12. Use this study's approach of checking a system against its own real data, not only against
+13. Use this study's approach of checking a system against its own real data, not only against
     test cases. Several of the most important defects in this study would have passed ordinary
     testing.
-13. Study offline recording, so that a payment taken where there is no signal can be saved on the
+14. Study offline recording, so that a payment taken where there is no signal can be saved on the
     device and sent once the connection returns.
-14. Extend the evaluation over a longer period of real use, and measure whether the owner's time
+15. Extend the evaluation over a longer period of real use, and measure whether the owner's time
     spent on record-keeping actually falls after adoption.
-15. Study support for more than one property, for owners who manage several small buildings.
+16. Study support for more than one property, for owners who manage several small buildings.
