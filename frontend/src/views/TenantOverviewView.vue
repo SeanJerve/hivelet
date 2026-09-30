@@ -712,9 +712,9 @@ const statusTone = computed(() => {
           <!-- The unit's rate is a fact worth having. It is labelled as the
                rate, not printed in the shape of a bill. -->
           <p v-if="tenantData.unitRent" class="text-sm leading-6 text-ink-soft">
-            Your unit lets at
+            Your rent is
             <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent, 2) }}</strong>
-            a month. A bill appears here once one is raised.
+            a month. Your bill will show here when it is ready.
           </p>
         </div>
         <template v-else>

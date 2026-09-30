@@ -778,8 +778,8 @@ function refreshAll() {
           <template v-if="standing.paidThrough">
             Your recorded payments cover rent up to {{ formatDateOnly(standing.paidThrough, longDate) }}.
           </template>
-          <template v-else>No payment is on record for this tenancy yet.</template>
-          <template v-if="standing.periodsDue > 1"> {{ standing.periodsDue }} periods are unpaid since then.</template>
+          <template v-else>No payment is recorded yet.</template>
+          <template v-if="standing.periodsDue > 1"> {{ standing.periodsDue }} months are unpaid.</template>
           Paying now covers {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
           {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }}.
         </p>
@@ -800,7 +800,7 @@ function refreshAll() {
         Pay with GCash
       </button>
       <p class="text-xs leading-5 text-on-brand-soft">
-        {{ peso(standing.perPeriod.totalAmount, 2) }} per period. Paid in person? It shows here once the
+        {{ peso(standing.perPeriod.totalAmount, 2) }} a month. Paid in person? It shows here once the
         landlady records the receipt.
       </p>
     </OverviewTile>

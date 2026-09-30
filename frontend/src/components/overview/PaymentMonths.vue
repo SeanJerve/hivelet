@@ -77,7 +77,7 @@ const headline = computed(() => {
   }
   const next = st.owedPeriods[0]!;
   return {
-    text: `${through}. The next month is due on ${formatDateOnly(next.dueDate, longDate)}.`,
+    text: `${through}. Next rent is due on ${formatDateOnly(next.dueDate, longDate)}.`,
     tone: 'expected' as const,
     pill: 'Due soon',
   };
@@ -134,7 +134,7 @@ const rows = computed(() => [...months.value].reverse());
 
 <template>
   <div v-if="loading" class="flex flex-col gap-4" aria-busy="true">
-    <span class="sr-only" role="status">Loading your months</span>
+    <span class="sr-only" role="status">Loading your rent history</span>
     <Skeleton class-name="h-4 w-56 rounded-full" />
     <Skeleton class-name="h-48 w-full rounded-2xl" />
   </div>
