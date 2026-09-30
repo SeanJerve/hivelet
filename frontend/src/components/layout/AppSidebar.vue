@@ -53,11 +53,59 @@ const isTenantSection = computed(() => route.path.startsWith('/tenant'));
  * question. Duplicated rather than shared because that file is not exported
  * from - if it ever grows a shared module, this should follow it there.
  */
-const inquiriesCount = computed(
-  () => inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').length
+/**
+ * The badges clear once she has looked (Sean, 2026-09-30: "make sure it
+ * disappears when the user already sees it or clicked where it is"). They
+ * counted every open inquiry and every open urgent repair, so a number stayed
+ * on the sidebar however many times she opened the page. Now a badge counts
+ * only the ones she has not seen: opening Inquiries (or Repairs) marks what is
+ * there as seen. An item comes back if it changes in a way that asks for her
+ * again - its key carries its status, so an inquiry the visitor answered
+ * (Contacted -> Pending) counts anew, as does a repair whose priority rises.
+ *
+ * Kept in this browser's localStorage, the current keys only (so it never
+ * grows): a convenience, like the year she last chose. Another device starts
+ * with the full counts. Listed on the privacy page.
+ */
+const SEEN_KEY = 'hivelet_seen_badges';
+function readSeen(): Record<string, string[]> {
+  try {
+    const v = JSON.parse(localStorage.getItem(SEEN_KEY) ?? '{}');
+    return v && typeof v === 'object' ? v : {};
+  } catch {
+    return {};
+  }
+}
+const seen = ref<Record<string, string[]>>(readSeen());
+function markSeen(kind: 'inquiries' | 'tickets', keys: string[]) {
+  const before = seen.value[kind] ?? [];
+  if (before.length === keys.length && keys.every((k) => before.includes(k))) return;
+  seen.value = { ...seen.value, [kind]: keys };
+  try {
+    localStorage.setItem(SEEN_KEY, JSON.stringify(seen.value));
+  } catch {
+    /* storage unavailable: the badges simply show the full counts */
+  }
+}
+const openInquiryKeys = computed(() =>
+  inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').map((i) => `${i.id}:${i.status}`)
 );
-const urgentTicketsCount = computed(() =>
-  maintenanceTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed' && (t.priority === 'Emergency' || t.priority === 'High')).length
+const urgentTicketKeys = computed(() =>
+  maintenanceTickets
+    .filter(t => t.status !== 'Resolved' && t.status !== 'Closed' && (t.priority === 'Emergency' || t.priority === 'High'))
+    .map((t) => `${t.id}:${t.priority}`)
+);
+const inquiriesCount = computed(() => openInquiryKeys.value.filter((k) => !(seen.value.inquiries ?? []).includes(k)).length);
+const urgentTicketsCount = computed(() => urgentTicketKeys.value.filter((k) => !(seen.value.tickets ?? []).includes(k)).length);
+// While she is on the page, what is on it counts as seen - including anything
+// that arrives while she is looking.
+watch(
+  [() => route.path, openInquiryKeys, urgentTicketKeys],
+  () => {
+    if (/^\/(admin|basis)\/inquiries/.test(route.path)) markSeen('inquiries', openInquiryKeys.value);
+    if (/^\/(admin|basis)\/tickets/.test(route.path)) markSeen('tickets', urgentTicketKeys.value);
+  },
+  { immediate: true }
 );
 
 /**

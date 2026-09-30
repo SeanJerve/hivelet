@@ -272,6 +272,10 @@ const sections = Object.values(S);
           use, sign out when you finish.
         </li>
         <li>
+          <strong>On the landlady's screens:</strong> which inquiries and urgent repairs she has
+          already looked at, so the counts beside them clear.
+        </li>
+        <li>
           <strong>If you send an inquiry:</strong> its private link and reference code, and when it
           was sent, so the inquiry page can list it for you. Not your name, number or message.
         </li>

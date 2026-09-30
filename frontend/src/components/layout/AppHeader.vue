@@ -430,6 +430,12 @@ onUnmounted(() => {
                 both ways, exit quicker than entry: closing "Mark all read"
                 and watching the badge vanish is the reader confirming their
                 own action, not something worth lingering on.
+
+                A dot, not a number (Sean, 2026-09-30): the sidebar already
+                carries the counts, and two sets of numbers competed. How many
+                are unread is still in the button's label (notificationsLabel),
+                which is what a screen reader announces; the colour still marks
+                an emergency among them.
               -->
               <Transition
                 enter-active-class="transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]"
@@ -441,12 +447,10 @@ onUnmounted(() => {
               >
                 <span
                   v-if="unreadCount > 0"
-                  class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-xs font-semibold ring-2 ring-canvas"
-                  :class="hasEmergencyUnread ? 'bg-overdue text-white' : 'bg-brand text-on-brand'"
+                  class="absolute right-0.5 top-0.5 size-2.5 rounded-full ring-2 ring-canvas"
+                  :class="hasEmergencyUnread ? 'bg-overdue' : 'bg-brand'"
                   aria-hidden="true"
-                >
-                  {{ unreadCount > 99 ? '99+' : unreadCount }}
-                </span>
+                />
               </Transition>
             </button>
 
