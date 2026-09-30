@@ -1,8 +1,10 @@
 -- =============================================================================
 -- 065 - an enquiry can be followed, and answered, by the person who sent it
 -- =============================================================================
--- NOT APPLIED by the author. Run the PREVIEW at the foot first; then
--- `npm run backup`; then run this whole file in the Supabase SQL editor.
+-- APPLIED by Sean 2026-09-30, in two runs: the editor first received the file
+-- only up to the first ALTER, and the rest was run after. Verified against the
+-- catalogue: both columns, both partial unique indexes, the 2 existing
+-- inquiries untouched; database/live_schema.csv records them.
 -- It only ADDS two empty columns and two indexes: no existing row changes.
 --
 -- WHY

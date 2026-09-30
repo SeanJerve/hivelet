@@ -33,7 +33,7 @@ thing did not work" is not.
 
 ## Open
 
-### B-88 — the visitor can now read Michelle's reply to an inquiry and write back; run 065 to switch it on · **RUN 065**
+### B-88 — the visitor can now read Michelle's reply to an inquiry and write back; run 065 to switch it on · **DONE 2026-09-30: 065 applied by Sean and verified; feature pushed. Left: test cases P-06 and P-06b with real phones**
 
 Sean, 2026-09-30: an inquiry was one-way. Michelle's replies were saved in `inquiry_messages` and the
 person who asked never saw them, so she had to ring or text from her own phone, which is the problem

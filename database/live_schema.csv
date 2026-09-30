@@ -62,6 +62,7 @@ section,item,detail
 1. Columns,fixed_expense_categories.display_order,integer NOT NULL
 1. Columns,fixed_expense_categories.name,character varying(255) NOT NULL
 1. Columns,fixed_expense_categories.parent_code,character varying(20) NULL
+1. Columns,inquiries.access_token_hash,text NULL
 1. Columns,inquiries.converted_tenant_id,uuid NULL
 1. Columns,inquiries.created_at,timestamp with time zone NULL DEFAULT now()
 1. Columns,inquiries.id,uuid NOT NULL DEFAULT gen_random_uuid()
@@ -69,6 +70,7 @@ section,item,detail
 1. Columns,inquiries.prospect_email,character varying(255) NOT NULL
 1. Columns,inquiries.prospect_name,character varying(255) NOT NULL
 1. Columns,inquiries.prospect_phone,character varying(50) NOT NULL
+1. Columns,inquiries.reference_code,character varying(9) NULL
 1. Columns,inquiries.room_id,uuid NOT NULL
 1. Columns,inquiries.status,inquiry_status_type NOT NULL DEFAULT 'Pending'::inquiry_status_type
 1. Columns,inquiries.updated_at,timestamp with time zone NULL DEFAULT now()
@@ -367,7 +369,9 @@ section,item,detail
 5. Indexes,idx_single_active_assignment_per_room,CREATE UNIQUE INDEX idx_single_active_assignment_per_room ON public.room_assignments USING btree (room_id) WHERE (is_active = true)
 5. Indexes,idx_ticket_attachments_ticket,CREATE INDEX idx_ticket_attachments_ticket ON public.ticket_attachments USING btree (ticket_id)
 5. Indexes,idx_ticket_messages_ticket,CREATE INDEX idx_ticket_messages_ticket ON public.ticket_messages USING btree (ticket_id)
+5. Indexes,inquiries_access_token_hash_key,CREATE UNIQUE INDEX inquiries_access_token_hash_key ON public.inquiries USING btree (access_token_hash) WHERE (access_token_hash IS NOT NULL)
 5. Indexes,inquiries_pkey,CREATE UNIQUE INDEX inquiries_pkey ON public.inquiries USING btree (id)
+5. Indexes,inquiries_reference_code_key,CREATE UNIQUE INDEX inquiries_reference_code_key ON public.inquiries USING btree (reference_code) WHERE (reference_code IS NOT NULL)
 5. Indexes,inquiry_messages_pkey,CREATE UNIQUE INDEX inquiry_messages_pkey ON public.inquiry_messages USING btree (id)
 5. Indexes,maintenance_tickets_pkey,CREATE UNIQUE INDEX maintenance_tickets_pkey ON public.maintenance_tickets USING btree (id)
 5. Indexes,monthly_expense_entries_pkey,CREATE UNIQUE INDEX monthly_expense_entries_pkey ON public.monthly_expense_entries USING btree (id)
