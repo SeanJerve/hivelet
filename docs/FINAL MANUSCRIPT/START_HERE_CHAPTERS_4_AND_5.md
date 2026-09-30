@@ -21,6 +21,13 @@ the system as it stands that evening.
 > `build_survey_form.gs`, so it scores exactly what the form asked; it warns if a column is
 > missing. `--method=B` gives the other composite if the team chooses it (Q11).
 >
+> **The owner's walkthrough (Table 10):** type each step's result into a copy of
+> `scripts/survey/walkthrough-results-template.csv` (step number or A-case, Pass / Fail / Pass after
+> fix / Not done, what happened), then `node scripts/survey/fill-walkthrough.mjs results.csv`
+> (add `--write` to update the chapter). **Timings (Table 11):** `timings-template.csv`, then
+> `node scripts/survey/fill-timings.mjs timings.csv [--write]`, which reports the median of each
+> case's runs. Both leave rows with no data as pending and refuse to write on an unknown step.
+>
 > **Tenant task results (Table 11C) the same way:** type the observation sheets into a copy of
 > `scripts/survey/uat-observations-template.csv`, then `node scripts/survey/compute-uat.mjs
 > observations.csv`. It prints Table 11C, a per-case breakdown, the devices, and every note about
