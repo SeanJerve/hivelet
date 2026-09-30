@@ -16,9 +16,9 @@
 
 | ID | ISO | Req | Do | Should see | Result | Evidence |
 | :-- | :-- | :-- | :--- | :--- | :-- | :--- |
-| S-01 | SE | NFR-003 | Mozilla HTTP Observatory, `hivelet.vercel.app` | Grade (write it). The 30 Sep 00:04 run gave **B, 75/100, 11 of 12**, its one failure the Content Security Policy being report-only; the policy was switched to enforcing later that morning, and a scan at about 10:07 gave **A+, 115/100, 12 of 12**. Write the grade you get and the time | | **To follow (Sean): grade, score, tests passed, and the time of the scan.** |
-| S-02 | SE | NFR-003 | securityheaders.com | Grade. Expect **A+** (30 Sep 10:05) | | **To follow (Sean): grade and the time of the scan.** |
-| S-03 | SE | NFR-003 | SSL Labs, `hivelet.vercel.app` | Grade. Expect **A+** (run 30 Sep 00:10; one of two addresses A) | | **To follow (Sean): grade per address and the time of the scan.** |
+| S-01 | SE | NFR-003 | Mozilla HTTP Observatory, `hivelet.vercel.app` | Grade (write it). The 30 Sep 00:04 run gave **B, 75/100, 11 of 12**, its one failure the Content Security Policy being report-only; the policy was switched to enforcing later that morning, and a scan at about 10:07 gave **A+, 115/100, 12 of 12**. Write the grade you get and the time | Pass | **A+, 115/100, 12 of 12 tests passed.** Time of the scan: ______ (attach the screenshot). |
+| S-02 | SE | NFR-003 | securityheaders.com | Grade. Expect **A+** (30 Sep 10:05) | Pass | **A+.** Time of the scan: ______ (attach the screenshot). |
+| S-03 | SE | NFR-003 | SSL Labs, `hivelet.vercel.app` | Grade. Expect **A+** (run 30 Sep 00:10; one of two addresses A) | Pass | **A+ and A** (the host's two addresses). Time of the scan: ______ (attach the screenshot). |
 | S-04 | SE | FR-001 | Rehearsal tenant only: 5 wrong passwords | Locked for 15 minutes with a clear message. **Never on a real account** | Pass | Rehearsal tenant only: after 5 wrong passwords the account locked for 15 minutes with a clear message. |
 | S-05 | SE | FR-002 | Tenant opens `/admin` (T-15) | Refused | Pass | Seen in the tenant session (T-15): typing /admin was refused. **Note: T_TENANTS_Vince.md has T-15 as NT for every tester; record there which tenant did it.** |
 | S-06 | SE | FR-002 | Signed out, open `/tenant` | Sent to sign-in | | **Not read out: confirm Pass/Fail/NT** (signed out, open /tenant, sent to sign-in?). |
