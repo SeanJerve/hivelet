@@ -119,6 +119,12 @@ const config: UserConfig = {
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // The default injects `<script src="/registerSW.js">` into <head>
+      // without `defer`, so every page waited for it before drawing anything:
+      // PageSpeed's phone run measured it blocking the first paint for 510 ms
+      // (2026-09-30). All it does is wait for `load` and register the
+      // service worker, which a deferred script does just the same.
+      injectRegister: 'script-defer',
       // `property-map.png` was here and nothing rendered it. The Location
       // section became a live Google Maps embed, and the still image it
       // replaced stayed in this list - so the service worker kept downloading
