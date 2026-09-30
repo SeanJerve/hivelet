@@ -56,7 +56,16 @@
 >   (A-22, step 17). Test cases fixed where a pass would have been marked a fail: O-12 (use a
 >   60000 ms throttling profile, not Offline), A-25 / 19b (void twice from a second tab), T-11
 >   (the statuses are Submitted, In progress, Done). All live and checked in production.
-> - **No more pushes from this machine after 06:00 Manila on 30 September** (the guide's rule 5).
+> - **Later on 30 Sep, all pushed on Sean's say-so while he ran the owner's session himself** (so the
+>   guide's rule 5 was his call): the Overview has **Move someone in/out**; the Tenants filter shows
+>   only when there is a second choice; the one-time password **copy** falls back to the older copy
+>   method (`lib/copyText.ts`); a tenant signed out because they were **moved out** sees "You have
+>   moved out" on the sign-in page; the sign-in page says "Only tenants of the boarding house can
+>   sign in" and has a **Forgot your password?** note; `scripts/reset-owner-password.mjs` resets the
+>   owner's own; the **Content Security Policy is enforced** (revert `8d734e5` if a page ever shows
+>   "Refused to ..."); **060 and 061 applied** by Sean (061 removed the rehearsal tenant's bill,
+>   B-85). Decided: the map embed's removal was intended; no live Adyen money (B-24 stays a
+>   recommendation); no DTI number on the site; the in-memory limiter stays.
 
 > [!IMPORTANT]
 > **2026-09-29, Loyd's machine, the evening before the first test with the owner and real
