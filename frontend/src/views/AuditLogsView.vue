@@ -378,6 +378,10 @@ function entryLabel(log: { action: string; new_values?: unknown }): string {
   if (log.action.toUpperCase() === 'PAYMENT_RECORD' && values?.status === 'Confirmed On Return') {
     return 'Tenant back from GCash';
   }
+  // The Tenants page's history workbook is a download, but not of a ledger.
+  if (log.action.toUpperCase() === 'LEDGER_EXPORT' && values?.report === 'tenant history') {
+    return 'Tenant history downloaded';
+  }
   return actionLabel(log.action);
 }
 

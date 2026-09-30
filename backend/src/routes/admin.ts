@@ -36,6 +36,7 @@ import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthly
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
 import { buildAuditTrailWorkbook, type AuditCategory } from '../services/auditTrailExport.js';
+import { buildTenantHistoryWorkbook } from '../services/tenantHistoryExport.js';
 import { money, occupantCount, isoDate, shortText, unitCode, uuid, queryInt } from '../utils/validators.js';
 
 const router = Router();
@@ -2346,6 +2347,42 @@ router.get(
       entityType: 'AUDIT_LOG',
       entityId: category,
       newValues: { export: 'xlsx', trail: category, limit, rows: rowCount },
+    });
+
+    await workbook.xlsx.write(res);
+    res.end();
+  })
+);
+
+/**
+ * GET /api/admin/reports/tenants.xlsx?year=YYYY[&month=M]
+ *
+ * The Tenants page's history (Year, and Month when chosen) as a workbook: who
+ * paid for each unit then, from her receipts, with the same names the screen
+ * shows (services/tenantHistoryExport.ts, utils/tenantHistory.ts). Read-only,
+ * behind the income ledger's own permission because that is what it reads,
+ * and audited like the other three downloads (Sean, 2026-09-30).
+ */
+router.get(
+  '/admin/reports/tenants.xlsx',
+  requirePermission(PERMISSIONS.INCOME_LEDGER_READ),
+  asyncHandler(async (req, res) => {
+    const year = queryInt(req.query.year, { fieldName: 'year', min: 2000, max: 2100 }) ?? propertyParts(Date.now()).year;
+    const month = queryInt(req.query.month, { fieldName: 'month', min: 1, max: 12 }) ?? null;
+
+    const { workbook, rowCount } = await buildTenantHistoryWorkbook(year, month);
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader('Content-Disposition', attachmentHeader('tenants', year, month));
+
+    await auditFromRequest(req, {
+      action: 'LEDGER_EXPORT',
+      entityType: 'INCOME_RECORD',
+      entityId: String(year),
+      newValues: { export: 'xlsx', report: 'tenant history', year, month: month ?? 'all', rows: rowCount },
     });
 
     await workbook.xlsx.write(res);

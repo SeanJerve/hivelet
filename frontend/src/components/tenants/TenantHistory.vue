@@ -14,10 +14,12 @@ import {
   fetchIncomeRecords,
   tenants,
 } from '@/lib/systemState';
-import { buildTenantHistory, type HistoryPerson } from '@/lib/tenantHistory';
+import { buildTenantHistory, monthsLabel, type HistoryPerson } from '@/lib/tenantHistory';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import { downloadReport } from '@/lib/downloadReport';
+import { FileSpreadsheet } from 'lucide-vue-next';
 
 const props = defineProps<{
   year: number;
@@ -27,7 +29,6 @@ const props = defineProps<{
 }>();
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const loading = ref(false);
 
@@ -71,16 +72,22 @@ const shown = computed(() => {
 
 const periodLabel = computed(() => (props.month ? `${MONTHS[props.month - 1]} ${props.year}` : String(props.year)));
 
-/** "Jan to May", or "Jan, Mar to Apr" when there are gaps. */
-function monthsLabel(p: HistoryPerson): string {
-  const ms = [...p.months].sort((a, b) => a - b);
-  const runs: [number, number][] = [];
-  for (const m of ms) {
-    const last = runs[runs.length - 1];
-    if (last && m === last[1] + 1) last[1] = m;
-    else runs.push([m, m]);
+/** Shared with the workbook (lib/tenantHistory.ts), so the two print it alike. */
+const monthsFor = (p: HistoryPerson) => monthsLabel(p.months);
+
+/**
+ * The same period as a workbook, built by the server with the same rule and
+ * recorded on the Activity page like the other three downloads.
+ */
+const isExporting = ref(false);
+async function exportHistory() {
+  if (isExporting.value) return;
+  isExporting.value = true;
+  try {
+    await downloadReport('tenants', props.year, props.month ? { month: props.month } : {});
+  } finally {
+    isExporting.value = false;
   }
-  return runs.map(([a, b]) => (a === b ? SHORT[a - 1] : `${SHORT[a - 1]} to ${SHORT[b - 1]}`)).join(', ');
 }
 
 const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] : ['12%', '48%', '26%', '14%']));
@@ -88,11 +95,22 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
 
 <template>
   <div class="ws-reveal space-y-4">
-    <p class="max-w-3xl text-sm leading-6 text-ink-soft">
-      Who paid for each unit in {{ periodLabel }}, from the receipts in Monthly Income. Names are as
-      written on the receipts; when one person was written two ways in the same unit, they are shown
-      once, with the other spelling under their name.
-    </p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <p class="max-w-3xl text-sm leading-6 text-ink-soft">
+        Who paid for each unit in {{ periodLabel }}, from the receipts in Monthly Income. Names are as
+        written on the receipts; when one person was written two ways in the same unit, they are shown
+        once, with the other spelling under their name.
+      </p>
+      <button
+        type="button"
+        class="pill-btn w-full shrink-0 sm:w-auto"
+        :disabled="isExporting || loading"
+        @click="exportHistory"
+      >
+        <FileSpreadsheet :class="['size-4 text-ink-soft', isExporting && 'animate-pulse']" aria-hidden="true" />
+        <span>{{ isExporting ? 'Building the file' : `Download ${periodLabel} for Excel` }}</span>
+      </button>
+    </div>
 
     <SkeletonTable v-if="loading" :columns="month ? 5 : 4" :rows="6" />
 
@@ -146,7 +164,7 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
             <td class="tabular">{{ p.receiptNumbers.join(', ') }}</td>
           </template>
           <template v-else>
-            <td>{{ monthsLabel(p) }}</td>
+            <td>{{ monthsFor(p) }}</td>
             <td class="num tabular">{{ p.receipts }}</td>
           </template>
         </tr>
@@ -189,7 +207,7 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
             </div>
             <div class="col-span-2">
               <dt class="text-xs text-ink-faint">Months paid in {{ year }}</dt>
-              <dd class="text-ink">{{ monthsLabel(p) }}</dd>
+              <dd class="text-ink">{{ monthsFor(p) }}</dd>
             </div>
           </template>
         </dl>

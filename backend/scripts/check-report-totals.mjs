@@ -69,6 +69,10 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildIncomeReportWorkbook } from '../dist/services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../dist/services/expenseReportExport.js';
+import { buildTenantHistoryWorkbook } from '../dist/services/tenantHistoryExport.js';
+import { payersOn } from '../dist/utils/tenantHistory.js';
+import { reportFileName } from '../dist/utils/reportFileName.js';
+import { readFileSync } from 'node:fs';
 
 /**
  * `incomeReportExport.js` pulls in `config/db.js`, which loads the same root
@@ -498,6 +502,85 @@ for (const year of years) {
         console.log('');
         check(`${year} rent, all months`, sheetSum, dbSum);
       }
+    }
+  }
+}
+
+// ------------------------------------------------------------ tenants.xlsx --
+/**
+ * The Tenants page's history workbook (2026-09-30). It holds names, not money,
+ * so "agrees with the database" means: every receipt of the period is counted
+ * once against someone, every unit it names exists, a known spelling fold is
+ * there, and the file is named by the rule. Built by calling the function the
+ * route calls, like the two ledgers above, so no LEDGER_EXPORT row is written.
+ *
+ * And the rule itself exists twice - frontend/src/lib/tenantHistory.ts for the
+ * screen, backend/src/utils/tenantHistory.ts for this file, because the backend
+ * deploys alone - so the two must be the same bytes, or the screen and the
+ * download could fold names differently without anything failing.
+ */
+{
+  console.log('\n  tenants.xlsx');
+  const front = readFileSync(join(repo, 'frontend', 'src', 'lib', 'tenantHistory.ts'), 'utf8').replace(/\r\n/g, '\n');
+  const back = readFileSync(join(repo, 'backend', 'src', 'utils', 'tenantHistory.ts'), 'utf8').replace(/\r\n/g, '\n');
+  const twins = front === back;
+  twins ? pass++ : fail++;
+  console.log(`  ${twins ? 'OK  ' : 'FAIL'}  the name rule is one file in two places (frontend lib, backend utils)`);
+  if (!twins) console.log('          copy frontend/src/lib/tenantHistory.ts over backend/src/utils/tenantHistory.ts');
+
+  const named = [
+    [reportFileName('tenants', 2024), 'Tenant History 2024 - TH2024.xlsx'],
+    [reportFileName('tenants', 2025, '2026-09-30', 6), 'Tenant History June 2025 - TH062025.xlsx'],
+  ];
+  for (const [got, want] of named) {
+    const ok = got === want;
+    ok ? pass++ : fail++;
+    console.log(`  ${ok ? 'OK  ' : 'FAIL'}  file name ${got}${ok ? '' : `, want ${want}`}`);
+  }
+
+  const receipts = await sql(
+    'monthly_income_records?select=year,month,contact_name,rooms:room_id(room_number)&voided_at=is.null'
+  );
+  const units = new Set((await sql('rooms?select=room_number')).map((r) => String(r.room_number).toUpperCase()));
+
+  const readRows = (sheet) => {
+    const headers = [];
+    sheet.getRow(1).eachCell((c, i) => (headers[i] = String(c.value ?? '')));
+    const rows = [];
+    sheet.eachRow((row, n) => {
+      if (n === 1) return;
+      const o = {};
+      headers.forEach((h, i) => h && (o[h] = row.getCell(i).value ?? ''));
+      rows.push(o);
+    });
+    return rows;
+  };
+
+  for (const year of years) {
+    const ofYear = receipts.filter((r) => Number(r.year) === year);
+    const payerCount = (list) => list.reduce((n, r) => n + payersOn(r.contact_name ?? '').length, 0);
+
+    const { workbook } = await buildTenantHistoryWorkbook(year, null);
+    const rows = readRows(workbook.worksheets[0]);
+    check(`${year} receipts counted`, rows.reduce((n, r) => n + Number(r.Receipts || 0), 0), payerCount(ofYear));
+    const unknown = rows.filter((r) => !units.has(String(r.Unit).toUpperCase()));
+    check(`${year} units that exist`, rows.length - unknown.length, rows.length);
+
+    if (year === 2024) {
+      const folded = rows.some(
+        (r) => String(r.Unit) === '2F' && r.Tenant === 'France Sacueza' && String(r['Also written as']).includes('Sancueza France')
+      );
+      folded ? pass++ : fail++;
+      console.log(`  ${folded ? 'OK  ' : 'FAIL'}  2024: 2F France Sacueza shows "Sancueza France" as another spelling`);
+    }
+
+    for (let month = 1; month <= 12; month++) {
+      const ofMonth = ofYear.filter((r) => Number(r.month) === month);
+      if (!ofMonth.length) continue;
+      const { workbook: wb } = await buildTenantHistoryWorkbook(year, month);
+      const mrows = readRows(wb.worksheets[0]);
+      const listed = mrows.reduce((n, r) => n + String(r.Receipt || '').split(', ').filter(Boolean).length, 0);
+      check(`${MONTHS[month - 1].slice(0, 3)} ${year} receipts`, listed, payerCount(ofMonth));
     }
   }
 }
