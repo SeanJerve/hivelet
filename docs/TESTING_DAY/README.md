@@ -38,6 +38,7 @@ her book.
 
 | # | File | Why | Time |
 | :-- | :--- | :--- | :-- |
+| 0 | [`INSTRUCTIONS FOR TESTING.md`](INSTRUCTIONS%20FOR%20TESTING.md) | **The whole day in order, batch by batch, with tick boxes.** Follow this on the day | 15 min |
 | 1 | This page | The flow and the rules | 5 min |
 | 2 | [`OBSERVATION_PROTOCOL.md`](OBSERVATION_PROTOCOL.md) | **How to observe instead of interview**, what to write, when to help, and the task cards for all three groups (prospects new here) | 15 min |
 | 3 | [`../FINAL MANUSCRIPT/TESTING_DAY_GUIDE.md`](../FINAL%20MANUSCRIPT/TESTING_DAY_GUIDE.md) | The full guide: seats, the night-before checklist, accounts and first sign-in, consent, evidence naming, what to do if something goes wrong | 20 min |
