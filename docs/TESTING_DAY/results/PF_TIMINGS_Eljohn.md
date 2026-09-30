@@ -50,9 +50,11 @@ later, do. Chapter 4 cites these.
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | 1 (Sean) | 1 Oct 2026, 12:36 AM GMT+8 | Mobile (Moto G Power, slow 4G) | 87 / 100 / 100 / 100 | 2.4 s | 3.6 s | 0 ms | 0.014 | 2.4 s | [`PF-09_pagespeed_mobile_87_2026-10-01_0036_fullreport.pdf`](evidence/PF-09_pagespeed_mobile_87_2026-10-01_0036_fullreport.pdf) |
 | 2 (Claude) | 1 Oct 2026, 12:40 AM GMT+8 | Mobile (Moto G Power, slow 4G) | 86 / 100 / 100 / 100 | 2.6 s | 3.6 s | 0 ms | 0.014 | 2.6 s | [`PF-09_pagespeed_mobile_86_2026-10-01_0040.png`](evidence/PF-09_pagespeed_mobile_86_2026-10-01_0040.png) |
-| 3 (Claude) | 1 Oct 2026, 12:40 AM GMT+8 | Desktop | 95 / 100 / 100 / 100 | 0.7 s | 0.9 s | 0 ms | 0 | 2.0 s | [`PF-09_pagespeed_desktop_95_2026-10-01_0040.png`](evidence/PF-09_pagespeed_desktop_95_2026-10-01_0040.png) |
+| 3 (Sean) | 1 Oct 2026, 12:37 AM GMT+8 | Desktop | 98 / 100 / 100 / 100 | 0.7 s | 1.1 s | 0 ms | 0.003 | 0.8 s | [`PF-09_pagespeed_desktop_98_2026-10-01_0037_fullreport.pdf`](evidence/PF-09_pagespeed_desktop_98_2026-10-01_0037_fullreport.pdf) |
+| 4 (Claude) | 1 Oct 2026, 12:40 AM GMT+8 | Desktop | 95 / 100 / 100 / 100 | 0.7 s | 0.9 s | 0 ms | 0 | 2.0 s | [`PF-09_pagespeed_desktop_95_2026-10-01_0040.png`](evidence/PF-09_pagespeed_desktop_95_2026-10-01_0040.png) |
 
-Mobile Performance across all four runs (30 Sep and 1 Oct): 85 to 88, LCP 3.4 to 3.6 s. The
+Mobile Performance across all four runs (30 Sep and 1 Oct): 85 to 88, LCP 3.4 to 3.6 s. Desktop:
+95 and 98, LCP 0.9 and 1.1 s. Accessibility, Best Practices and SEO are 100 in every run. The
 largest opportunities PageSpeed names: render-blocking CSS and Google Fonts (about 1.0 s), and
 the two home-page photos (about 183 KiB).
 
