@@ -89,6 +89,12 @@ const portalRoute = computed(() => {
                 Inquire now
               </RouterLink>
             </li>
+            <li v-if="!isAuthenticated">
+              <!-- 065: where someone who already asked reads Michelle's reply. -->
+              <RouterLink to="/inquiry" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+                Your inquiries
+              </RouterLink>
+            </li>
             <li>
               <RouterLink
                 v-if="!isAuthenticated"

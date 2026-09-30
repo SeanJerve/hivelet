@@ -19,6 +19,8 @@ import { ref, reactive, nextTick } from 'vue';
 import { Loader2, ArrowLeft, AlertCircle } from 'lucide-vue-next';
 import { LANDLADY } from '@/lib/systemState';
 import { api } from '@/lib/api';
+import { rememberInquiry } from '@/lib/myInquiries';
+import InquiryConversationLink from '@/components/public/InquiryConversationLink.vue';
 import {
   validateInquiry,
   serverFieldErrors,
@@ -62,10 +64,13 @@ async function focusFirstInvalid() {
  * can say which number and address she will reply to.
  */
 const sentTo = ref<{ phone: string; email: string } | null>(null);
+/** The visitor's way back in to read her reply (065); null before the migration ran. */
+const conversation = ref<{ token: string; referenceCode: string } | null>(null);
 const sentHeading = ref<HTMLElement | null>(null);
 
 async function sendAnother() {
   sentTo.value = null;
+  conversation.value = null;
   await nextTick();
   document.getElementById('iq-name')?.focus();
 }
@@ -133,7 +138,7 @@ async function submitInquiry() {
       return;
     }
 
-    await api.post('/public/inquiries', {
+    const saved = await api.post<{ conversation?: { token: string; referenceCode: string } | null; room_id?: string }>('/public/inquiries', {
       roomId: defaultRoom.id,
       prospectName: inquiryName.value.trim(),
       // Sent blank when blank. This used to substitute 'prospect@hivelet.ph',
@@ -154,6 +159,10 @@ async function submitInquiry() {
      * did not say is what happens next. The panel says who reads it, how she
      * replies (the privacy page's own wording), and to which number and address.
      */
+    conversation.value = saved?.conversation ?? null;
+    if (conversation.value) {
+      rememberInquiry({ ...conversation.value, unit: null, sentAt: new Date().toISOString() });
+    }
     sentTo.value = { phone: inquiryPhone.value.trim(), email: inquiryEmail.value.trim() };
     inquiryName.value = '';
     inquiryPhone.value = '';
@@ -280,11 +289,15 @@ async function submitInquiry() {
             Your message is saved
           </h2>
           <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
-            {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself, and replies by phone or message
-            to <span class="text-ink break-all">{{ sentTo.phone }}</span> or
-            <span class="text-ink break-all">{{ sentTo.email }}</span>. No automatic confirmation
-            email or text is sent.
+            {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself.
+            <template v-if="conversation">She replies here, and may also call
+              <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
+            <template v-else>She replies by phone or message to
+              <span class="text-ink break-all">{{ sentTo.phone }}</span> or
+              <span class="text-ink break-all">{{ sentTo.email }}</span>.</template>
+            No automatic confirmation email or text is sent.
           </p>
+          <InquiryConversationLink v-if="conversation" :token="conversation.token" :reference-code="conversation.referenceCode" />
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
             If it is urgent, call her on
             <a
@@ -293,7 +306,7 @@ async function submitInquiry() {
             >{{ LANDLADY.phone }}</a>.
           </p>
           <div class="mt-8 flex flex-wrap items-center gap-6">
-            <RouterLink to="/public" class="pill-btn-brand px-8">Back to the property</RouterLink>
+            <RouterLink to="/public" :class="[conversation ? 'pill-btn' : 'pill-btn-brand', 'px-8']">Back to the property</RouterLink>
             <button
               type="button"
               class="press inline-flex min-h-11 items-center text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
@@ -422,10 +435,14 @@ async function submitInquiry() {
           -->
           <!-- Both contact fields are required, so "include a number or address" asked for less than the form does. -->
           <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
-            {{ LANDLADY.name }}, who runs the boarding house, replies by phone or email. Nothing is sent to you
-            automatically. See the
+            {{ LANDLADY.name }}, who runs the boarding house, replies on your inquiry's own page, which
+            you can open once you send it. Nothing is sent to you by text or email. See the
             <RouterLink to="/privacy" class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy</RouterLink>
             for what happens to this information.
+          </p>
+          <p class="mt-3 max-w-xl text-xs leading-relaxed text-ink-soft">
+            Already sent one?
+            <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Read the reply</RouterLink>
           </p>
 
           <!--

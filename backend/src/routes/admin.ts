@@ -1575,7 +1575,14 @@ router.get(
       .order('created_at', { ascending: false });
 
     if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+    // `*` is kept so this reads the same before and after 065; the hash of the
+    // visitor's link secret is dropped here, since nothing on her screen needs it.
+    // `has_conversation` says whether the visitor can read her replies in Hivelet.
+    const rows = (data ?? []).map(({ access_token_hash, ...rest }: any) => ({
+      ...rest,
+      has_conversation: Boolean(access_token_hash),
+    }));
+    res.status(200).json({ success: true, data: rows });
   })
 );
 

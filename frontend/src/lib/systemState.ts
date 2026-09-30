@@ -287,6 +287,9 @@ export interface Inquiry {
    * happen - which is why the inbox showed a hardcoded badge instead of the real status.
    */
   status: string;
+  /** True when the visitor can read her replies in Hivelet: sent after migration 065. */
+  hasConversation?: boolean;
+  referenceCode?: string;
 }
 
 export const activeRole = ref<'admin' | 'tenant' | 'guest'>('admin');
@@ -1275,7 +1278,9 @@ export async function fetchInquiries(): Promise<Inquiry[]> {
           // 'Submitted', which is not one of them - it is a `ticket_status_type` value. The
           // column is NOT NULL so the fallback never fired, but a default that the enum
           // cannot hold is a wrong answer waiting for its turn.
-          status: i.status || 'Pending'
+          status: i.status || 'Pending',
+          hasConversation: Boolean(i.has_conversation),
+          referenceCode: i.reference_code || undefined,
         };
       });
 

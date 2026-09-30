@@ -335,6 +335,7 @@ const ACTION_WORDS: Record<string, string> = {
   INQUIRY_CREATE: 'Inquiry received',
   INQUIRY_STATUS_CHANGE: 'Inquiry status changed',
   INQUIRY_MESSAGE_SEND: 'Inquiry reply sent',
+  INQUIRY_VISITOR_REPLY: 'Visitor replied to an inquiry',
   BILL_CREATE: 'Bill raised',
   BILL_UPDATE: 'Bill edited',
   PAYMENT_RECORD: 'Payment recorded',

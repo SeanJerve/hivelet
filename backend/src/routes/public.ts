@@ -30,6 +30,7 @@ import {
 import { applyNotificationItem } from '../services/adyenWebhookHandler.js';
 import { config } from '../config/env.js';
 import { notificationService } from '../services/notificationService.js';
+import { issueCredentials, findThreadInquiry, readThreadMessages } from '../services/inquiryThread.js';
 import QRCode from 'qrcode';
 
 const router = Router();
@@ -216,7 +217,134 @@ router.post(
       relatedEntityId: data.id,
     });
 
-    res.status(201).json({ success: true, data });
+    // The visitor's way back in to read Michelle's reply and answer it
+    // (services/inquiryThread.ts). Null before migration 065 has run; the
+    // enquiry is saved either way, and the page then says she will call.
+    const credentials = await issueCredentials(data.id);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        ...data,
+        conversation: credentials
+          ? { token: credentials.token, referenceCode: credentials.referenceCode }
+          : null,
+      },
+    });
+  })
+);
+
+/**
+ * Credentials for one enquiry's conversation: the secret from its private link,
+ * or its reference code with the phone number it was sent with. Sent in the
+ * body of a POST, never in a URL, so they do not reach a request log.
+ */
+const threadCredentialsSchema = z.union([
+  z.object({ token: z.string().min(20).max(100) }),
+  z.object({ reference: z.string().min(8).max(20), phone: z.string().min(7).max(30) }),
+]);
+
+/**
+ * POST /api/public/inquiries/thread - the visitor reads their enquiry and its
+ * conversation with Michelle (065). Guessing is the attack: the secret is 256
+ * bits, the code 40 bits and useless without the matching phone number, and
+ * this is limited to thirty tries a quarter-hour from one address.
+ */
+router.post(
+  '/public/inquiries/thread',
+  rateLimit({ max: 30, windowMs: 15 * 60 * 1000, what: 'enquiry look-ups' }),
+  optionalAuth,
+  requirePermission(PERMISSIONS.INQUIRY_THREAD_OWN),
+  asyncHandler(async (req, res) => {
+    const parsed = threadCredentialsSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.notFound('No inquiry matches that. Check the link, or the reference code and phone number.');
+    }
+    const inquiry = await findThreadInquiry(parsed.data);
+    const messages = await readThreadMessages(inquiry.id);
+    res.status(200).json({
+      success: true,
+      data: {
+        inquiry: {
+          referenceCode: inquiry.reference_code,
+          unit: inquiry.room_number,
+          status: inquiry.status,
+          name: inquiry.prospect_name,
+          sentAt: inquiry.created_at,
+        },
+        messages,
+      },
+    });
+  })
+);
+
+const threadReplySchema = z.intersection(
+  threadCredentialsSchema,
+  z.object({ message: z.string().trim().min(1, 'Write a message first.').max(2000) })
+);
+
+/**
+ * POST /api/public/inquiries/thread/messages - the visitor answers Michelle.
+ * Saved to the same thread she replies in, and she is notified. A closed or
+ * converted enquiry takes no more messages: the conversation is over, and a
+ * new question is a new enquiry.
+ */
+router.post(
+  '/public/inquiries/thread/messages',
+  rateLimit({ max: 10, windowMs: 15 * 60 * 1000, what: 'enquiry replies' }),
+  optionalAuth,
+  requirePermission(PERMISSIONS.INQUIRY_THREAD_OWN),
+  asyncHandler(async (req, res) => {
+    const parsed = threadReplySchema.safeParse(req.body);
+    if (!parsed.success) {
+      const message = (req.body?.message ?? '').toString().trim();
+      if (!message) throw ApiError.validation('Write a message first.', { message: ['required'] });
+      throw ApiError.notFound('No inquiry matches that. Check the link, or the reference code and phone number.');
+    }
+    const inquiry = await findThreadInquiry(parsed.data);
+    if (inquiry.status === 'Closed' || inquiry.status === 'Converted') {
+      throw ApiError.conflict(
+        'This inquiry is closed, so it takes no more messages. To ask something new, send a new inquiry.'
+      );
+    }
+
+    const { data: saved, error } = await db
+      .from('inquiry_messages')
+      .insert({
+        inquiry_id: inquiry.id,
+        sender_id: null,
+        sender_name: inquiry.prospect_name,
+        message_body: parsed.data.message,
+      })
+      .select('id, sent_at')
+      .single();
+    if (error) throw ApiError.internal(error.message);
+
+    // Answered once, and now asked again: back on her list of enquiries to answer.
+    if (inquiry.status === 'Contacted') {
+      warnIfWriteFailed(
+        await db.from('inquiries').update({ status: 'Pending', updated_at: new Date().toISOString() }).eq('id', inquiry.id),
+        'Inquiry back to Pending after a visitor reply'
+      );
+    }
+
+    await auditFromRequest(req, {
+      action: 'INQUIRY_VISITOR_REPLY',
+      entityType: 'INQUIRY',
+      entityId: inquiry.id,
+      newValues: { unit: inquiry.room_number, characters: parsed.data.message.length },
+    });
+
+    await notificationService.notify({
+      title: 'Reply to an enquiry',
+      message: `${inquiry.prospect_name} replied about unit ${(inquiry.room_number ?? '').toUpperCase()}.`,
+      type: 'Inquiry',
+      priority: 'Medium',
+      relatedEntityType: 'INQUIRY',
+      relatedEntityId: inquiry.id,
+    });
+
+    res.status(201).json({ success: true, data: { id: saved.id, sentAt: saved.sent_at } });
   })
 );
 

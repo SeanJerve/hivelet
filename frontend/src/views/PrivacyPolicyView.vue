@@ -117,6 +117,12 @@ const sections = Object.values(S);
         has no field for anything else. The system also notes when the inquiry arrived, and the
         network (IP) address it came from, in the activity record described below.
       </p>
+      <p>
+        You are given a private link and a reference code for your inquiry, so you can read
+        {{ LANDLADY.name }}'s reply and write back. The link's secret is stored only in scrambled
+        (hashed) form, like a password. Anyone who has your link, or your reference code together
+        with your phone number, can read that conversation, so keep them to yourself.
+      </p>
 
       <h3>If you live here</h3>
       <p>
@@ -264,6 +270,10 @@ const sections = Object.values(S);
           and a copy of your name, email address and role, so the portal can still open on a
           phone with no signal. Signing out removes both. On a phone or computer other people
           use, sign out when you finish.
+        </li>
+        <li>
+          <strong>If you send an inquiry:</strong> its private link and reference code, and when it
+          was sent, so the inquiry page can list it for you. Not your name, number or message.
         </li>
         <li>
           <strong>If you close the viewing invitation</strong> on the home page: a note that you

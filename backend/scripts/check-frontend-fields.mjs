@@ -162,6 +162,7 @@ for (const [table, def] of Object.entries(defs)) {
  * produced, so this list can be checked rather than trusted.
  */
 const API_COMPUTED = new Map([
+  ['has_conversation', 'admin.ts GET /admin/inquiries - Boolean(access_token_hash), the hash itself dropped (065)'],
   ['effective_status', 'admin.ts + tenant.ts — isOverdue() overlay on a bill'],
   ['amount_paid', 'tenant.ts — summed from payments against the bill'],
   ['amount_outstanding', 'tenant.ts — bill total less amount_paid'],

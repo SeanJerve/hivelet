@@ -23,6 +23,7 @@ import { getStoredToken } from '@/lib/api';
  */
 const PublicGuestView = () => import('@/views/PublicGuestView.vue');
 const InquireView = () => import('@/views/InquireView.vue');
+const InquiryThreadView = () => import('@/views/InquiryThreadView.vue');
 const PrivacyPolicyView = () => import('@/views/PrivacyPolicyView.vue');
 const TermsView = () => import('@/views/TermsView.vue');
 const CategoryRoomsView = () => import('@/views/CategoryRoomsView.vue');
@@ -53,6 +54,8 @@ const routes: RouteRecordRaw[] = [
   { path: '/', name: 'Home', redirect: '/public' },
   { path: '/public', name: 'PublicGuest', component: PublicGuestView },
   { path: '/inquire', name: 'Inquire', component: InquireView },
+  // The sender of an enquiry reads Michelle's reply and answers it, without an account (065).
+  { path: '/inquiry', name: 'InquiryThread', component: InquiryThreadView },
   { path: '/privacy', name: 'PrivacyPolicy', component: PrivacyPolicyView },
   { path: '/terms', name: 'Terms', component: TermsView },
   { path: '/category/:categorySlug', name: 'CategoryRooms', component: CategoryRoomsView },

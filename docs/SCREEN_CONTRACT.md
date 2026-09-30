@@ -90,6 +90,15 @@ before the redesign started.
 | **writes** | `PATCH /admin/inquiries/:id` | advance or close an enquiry |
 | **writes** | `POST /admin/inquiries/:id/messages` | reply to a prospect |
 
+### `views/InquiryThreadView.vue`
+
+2 call(s), **2 of them write**.
+
+| | Endpoint | What it is for |
+| :--- | :--- | :--- |
+| **writes** | `POST /public/inquiries/thread` | the sender of an inquiry opens its conversation, by its link or reference code and phone (reads only) |
+| **writes** | `POST /public/inquiries/thread/messages` | the sender of an inquiry writes back to Michelle |
+
 ### `views/MaintenanceDispatchView.vue`
 
 5 call(s), **4 of them write**.
@@ -237,4 +246,4 @@ before the redesign started.
 
 ---
 
-**20 files make 72 distinct calls, 32 of which write.** Generated 2026-09-30.
+**21 files make 74 distinct calls, 34 of which write.** Generated 2026-09-30.

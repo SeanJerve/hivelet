@@ -302,6 +302,7 @@ const AUDITED_ELSEWHERE = new Map([
   ['/admin/notifications/:id/read',          'marking a message read is not a financial or security fact'],
   ['/admin/notifications/mark-all-read',     'as above'],
   ['/tenant/my-notifications/:id/read',      'as above'],
+  ['/public/inquiries/thread',               'a READ: POST only so the link secret travels in the body, never a URL (065); writes nothing'],
   ['/tenant/my-notifications/mark-all-read', 'as above'],
 ]);
 

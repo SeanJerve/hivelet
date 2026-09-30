@@ -45,6 +45,13 @@ export const PERMISSIONS = {
   INQUIRY_READ_ALL: 'inquiry:read:all',
   INQUIRY_MANAGE: 'inquiry:manage',
   INQUIRY_CONVERT: 'inquiry:convert',
+  /**
+   * Read and answer ONE enquiry's conversation, proven by the secret in its
+   * private link or by its reference code with the phone number it was sent
+   * with - not by an account (065, Sean 2026-09-30). Held by guests, because
+   * the person who sent an enquiry has no account.
+   */
+  INQUIRY_THREAD_OWN: 'inquiry:thread:own',
 
   // ---- Rooms (FR-007, FR-008) ---------------------------------------------
   ROOM_READ_ALL: 'room:read:all',
@@ -128,6 +135,7 @@ const GUEST_PERMISSIONS: readonly Permission[] = [
   P.PROPERTY_VIEW_PUBLIC,
   P.ROOM_VIEW_PUBLIC,
   P.INQUIRY_CREATE,
+  P.INQUIRY_THREAD_OWN,
 ];
 
 /**

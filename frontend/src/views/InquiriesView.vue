@@ -600,9 +600,19 @@ async function handleSendReply() {
               in the system sends anything to anybody. The landlady was being
               told her answer had gone out when it had not left the building.
             -->
-            <p class="ws-hint max-w-md">
-              Saved here as a record only. It is not sent to {{ activeInquiry.name }},
-              so call or text them too.
+            <!--
+              065: an enquiry sent since 30 Sep 2026 comes with a private page the
+              visitor opens to read this and write back, so for those the reply
+              does reach them - in Hivelet, not by SMS or email. Older ones do not.
+            -->
+            <p v-if="activeInquiry.hasConversation" class="ws-hint max-w-md">
+              {{ activeInquiry.name }} reads this on their inquiry page and can write back
+              here<template v-if="activeInquiry.referenceCode"> (reference {{ activeInquiry.referenceCode }})</template>.
+              No text or email is sent, so call if it is urgent.
+            </p>
+            <p v-else class="ws-hint max-w-md">
+              Saved here as a record only. This inquiry came before replies could be read
+              online, so call or text {{ activeInquiry.name }} too.
             </p>
 
             <button

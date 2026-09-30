@@ -66,6 +66,8 @@ import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable
 import { LANDLADY, floorLabelFor, buildingNameFor } from '@/lib/systemState';
 import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
 import { api } from '@/lib/api';
+import { rememberInquiry } from '@/lib/myInquiries';
+import InquiryConversationLink from '@/components/public/InquiryConversationLink.vue';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
 import {
   validateInquiry,
@@ -412,6 +414,8 @@ const inquiryForm = ref<HTMLFormElement | null>(null);
 const inquiryErrors = reactive<InquiryErrors>({});
 const inquiryFormError = ref<string | null>(null);
 const inquirySentTo = ref<{ phone: string; email: string } | null>(null);
+/** The visitor's way back in to read her reply (065); null before the migration ran. */
+const inquiryConversation = ref<{ token: string; referenceCode: string } | null>(null);
 const inquirySentHeading = ref<HTMLElement | null>(null);
 
 function setInquiryErrors(next: InquiryErrors) {
@@ -427,6 +431,7 @@ async function focusFirstInvalidInquiryField() {
 async function openInquiry(unitCode: string) {
   inquiryUnit.value = unitCode || activeUnit.value?.room_number || '';
   inquirySentTo.value = null;
+  inquiryConversation.value = null;
   inquiryFormError.value = null;
   setInquiryErrors({});
   // The form has to be back in the dialog BEFORE it opens: `showModal()` places
@@ -490,7 +495,7 @@ async function submitInquiry() {
 
   isSubmitting.value = true;
   try {
-    await api.post(
+    const saved = await api.post<{ conversation?: { token: string; referenceCode: string } | null }>(
       '/public/inquiries',
       {
         roomId: matchedRoom.id,
@@ -508,6 +513,10 @@ async function submitInquiry() {
      * "Mrs. Da Silva has your message" - a claim about her inbox, when what the
      * system knows is that the enquiry is saved for her portal.
      */
+    inquiryConversation.value = saved?.conversation ?? null;
+    if (inquiryConversation.value) {
+      rememberInquiry({ ...inquiryConversation.value, unit: matchedRoom.room_number ?? null, sentAt: new Date().toISOString() });
+    }
     inquirySentTo.value = { phone: inquiryPhone.value.trim(), email: inquiryEmail.value.trim() };
     inquiryName.value = '';
     inquiryPhone.value = '';
@@ -1133,11 +1142,19 @@ async function submitInquiry() {
           Your message about unit {{ inquiryUnit.toUpperCase() }} is saved
         </h2>
         <p class="mt-4 max-w-md text-sm text-ink-soft leading-relaxed">
-          {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself, and replies by phone or message
-          to <span class="text-ink break-all">{{ inquirySentTo.phone }}</span> or
-          <span class="text-ink break-all">{{ inquirySentTo.email }}</span>. No automatic
-          confirmation email or text is sent.
+          {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself.
+          <template v-if="inquiryConversation">She replies here, and may also call
+            <span class="text-ink break-all">{{ inquirySentTo.phone }}</span>.</template>
+          <template v-else>She replies by phone or message to
+            <span class="text-ink break-all">{{ inquirySentTo.phone }}</span> or
+            <span class="text-ink break-all">{{ inquirySentTo.email }}</span>.</template>
+          No automatic confirmation email or text is sent.
         </p>
+        <InquiryConversationLink
+          v-if="inquiryConversation"
+          :token="inquiryConversation.token"
+          :reference-code="inquiryConversation.referenceCode"
+        />
         <button type="button" class="pill-btn-brand mt-10 px-5" @click="closeInquiry">Done</button>
       </div>
 

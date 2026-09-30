@@ -98,8 +98,9 @@ const sections = Object.values(S);
       </p>
       <p>
         Viewings are by appointment. Registering your interest sends your details and your
-        question to {{ LANDLADY.name }} and nothing more. It does not reserve a unit or hold a price,
-        and no automatic confirmation is sent, so leave a number or address she can reach you on.
+        question to {{ LANDLADY.name }} and nothing more. It does not reserve a unit or hold a price.
+        She answers on your inquiry's own page, which you open with the link or reference code you
+        are given when you send it; no text or email is sent, so leave a number she can call too.
       </p>
     </section>
 
