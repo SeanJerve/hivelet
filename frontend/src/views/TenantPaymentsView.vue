@@ -19,6 +19,8 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import PaymentMonths from '@/components/overview/PaymentMonths.vue';
+import type { ReceiptInput } from '@/lib/tenantPaymentMonths';
 
 const sortOrderOptions = [
   { value: 'latest', label: 'Newest first' },
@@ -275,6 +277,14 @@ const historyLoadFailed = ref(false);
  * `loadingBills` does: nothing is requested until `onMounted` gets that far.
  */
 const loadingHistory = ref(true);
+
+/**
+ * The same two reads, kept as they came, for "Your rent, month by month".
+ * Receipts as the record; payments only for what is sent and not yet verified.
+ */
+const rawReceipts = ref<ReceiptInput[]>([]);
+const waitingPayments = ref<{ amount: number }[]>([]);
+const today = propertyToday();
 
 const availableYears = computed(() => {
   const years = new Set<number>();
@@ -645,6 +655,11 @@ async function fetchPaymentHistory() {
       });
 
     paymentHistory.value = [...paymentRows, ...receiptRows];
+    rawReceipts.value = receipts ?? [];
+    // Rejected is not waiting: that money was not accepted and does not count.
+    waitingPayments.value = (payments ?? [])
+      .filter((p) => p.verification_status === 'Pending Verification')
+      .map((p) => ({ amount: Number(p.amount) || 0 }));
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
     historyLoadFailed.value = true;
@@ -906,6 +921,21 @@ function refreshAll() {
       </p>
     </OverviewTile>
     </section>
+
+    <!-- The tenant's own months, drawn like the landlady's collections chart.
+         Needs both the receipts and the standing, so it waits for, and fails
+         with, either. -->
+    <OverviewTile title="Your rent, month by month">
+      <PaymentMonths
+        :receipts="rawReceipts"
+        :waiting="waitingPayments"
+        :standing="standing"
+        :today="today"
+        :loading="loadingHistory || loadingBills"
+        :failed="historyLoadFailed || billsLoadFailed"
+        @retry="refreshAll"
+      />
+    </OverviewTile>
 
     <!-- Payment record -->
     <OverviewTile title="Payment record">

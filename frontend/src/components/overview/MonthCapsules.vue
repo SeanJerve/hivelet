@@ -10,12 +10,29 @@
  */
 import { computed, ref, watch, nextTick } from 'vue';
 import { peso } from '@/lib/canonicalUnits';
-import type { CapsuleMonth } from './types';
+import type { CapsuleMonth, MonthKind } from './types';
 
-const props = defineProps<{
-  months: CapsuleMonth[];
-  label: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    months: CapsuleMonth[];
+    label: string;
+    /**
+     * The words for each kind, where a screen needs its own. The tenant's
+     * payments page says "Paid" and "Nothing recorded" where the landlady's
+     * ledger says "Recorded" and "Not entered yet"; the marks stay the same.
+     */
+    terms?: Partial<Record<MonthKind, string>>;
+  }>(),
+  { terms: () => ({}) }
+);
+
+const DEFAULT_TERMS: Record<MonthKind, string> = {
+  recorded: 'Recorded',
+  unentered: 'Not entered yet',
+  expected: 'Expected',
+  future: 'Nothing to estimate from',
+};
+const term = (kind: MonthKind) => props.terms[kind] ?? DEFAULT_TERMS[kind];
 
 function defaultIndex(list: CapsuleMonth[]) {
   for (let i = list.length - 1; i >= 0; i--) if (list[i].kind === 'recorded') return i;
@@ -46,16 +63,9 @@ function compact(value: number) {
 }
 
 function describe(m: CapsuleMonth) {
-  switch (m.kind) {
-    case 'recorded':
-      return `${peso(m.value ?? 0)} recorded`;
-    case 'unentered':
-      return 'Not entered yet';
-    case 'expected':
-      return `${peso(m.value ?? 0)} expected`;
-    default:
-      return 'Nothing to estimate from';
-  }
+  // Amount kinds read "₱4,700 recorded"; the other two are their term alone.
+  if (m.kind === 'recorded' || m.kind === 'expected') return `${peso(m.value ?? 0)} ${term(m.kind).toLowerCase()}`;
+  return term(m.kind);
 }
 
 const buttons = ref<HTMLButtonElement[]>([]);
@@ -162,10 +172,10 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <span class="block text-xl leading-7 font-semibold tabular tracking-tight text-ink">{{ describe(current) }}</span>
       </p>
       <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft">
-        <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />Recorded</li>
-        <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />Not entered yet</li>
-        <li v-if="kindsShown.has('expected')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />Expected</li>
-        <li v-if="kindsShown.has('future')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border border-dashed border-hatch" />Nothing to estimate from</li>
+        <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />{{ term('recorded') }}</li>
+        <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />{{ term('unentered') }}</li>
+        <li v-if="kindsShown.has('expected')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />{{ term('expected') }}</li>
+        <li v-if="kindsShown.has('future')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border border-dashed border-hatch" />{{ term('future') }}</li>
       </ul>
     </div>
   </div>
