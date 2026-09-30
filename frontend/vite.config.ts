@@ -223,6 +223,15 @@ const config: UserConfig = {
         ]
       },
       workbox: {
+        // Stated, not left to the plugin. vite-plugin-pwa turns these on for
+        // 'autoUpdate' only while `injectRegister` is 'auto'; setting it to
+        // 'script-defer' above (720ab23) silently turned them off, and every
+        // new version then waited, unused, until the person closed every
+        // Hivelet tab or the installed app: a copy fix pushed on 30 Sep was
+        // still showing the old wording after reloads. With both on, a new
+        // worker takes over the moment it has installed, as it did before.
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // The floor plans are 1.27 MB across ten files and a visitor sees at
         // most one of them, after choosing a unit and opening its row. Swept
