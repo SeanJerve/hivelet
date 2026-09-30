@@ -33,6 +33,9 @@ const route = useRoute();
 const email = ref('');
 const password = ref('');
 const showPassword = ref(false);
+// "Forgot your password?" opens the answer in place: there is no email or SMS reset, by
+// design, so the answer is who to ask (B-83's Reset password, or the team for the owner).
+const showForgot = ref(false);
 
 /**
  * Only a path inside this application. `//evil.example` starts with a slash and
@@ -343,6 +346,31 @@ async function handleQuickLogin(account: DemoAccount) {
                   </span>
                 </button>
               </div>
+              <!--
+                No email or SMS reset, on purpose (2026-09-30): many tenants have no
+                email, SMS needs a paid provider, and everyone concerned sees the
+                landlady. A forgotten password is reset in person: a tenant's by her,
+                from Tenants > Edit > Reset password (B-83); hers by the team
+                (scripts/reset-owner-password.mjs). This says so where people look.
+              -->
+              <button
+                type="button"
+                class="press mt-1 inline-flex min-h-11 items-center text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
+                :aria-expanded="showForgot"
+                aria-controls="login-forgot"
+                @click="showForgot = !showForgot"
+              >
+                Forgot your password?
+              </button>
+              <p v-show="showForgot" id="login-forgot" class="ws-reveal max-w-xl text-sm leading-6 text-ink-soft">
+                Ask Mrs. {{ LANDLADY.name }}. She can give you a new one-time password, and you
+                choose your own the first time you sign in with it. Call
+                <a
+                  :href="`tel:${LANDLADY.phone}`"
+                  class="font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+                >{{ LANDLADY.phone }}</a>.
+                If this is the landlady's own account, the Hivelet team resets it.
+              </p>
             </div>
           </div>
 
