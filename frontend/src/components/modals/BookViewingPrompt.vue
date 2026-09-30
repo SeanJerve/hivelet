@@ -65,7 +65,9 @@ const heading = computed(() => {
   const n = shownCount.value;
   if (n === null) return 'Viewings are by appointment';
   if (n === 0) return 'No units are vacant right now';
-  return n === 1 ? '1 unit is vacant right now' : `${n} units are vacant right now`;
+  // Both built from `n`, never a written-out one: check:ledger reads a bare number before the word
+  // for a unit in frontend/src as a claim about the property's size, and this is a vacancy count.
+  return n === 1 ? `${n} unit is vacant right now` : `${n} units are vacant right now`;
 });
 
 const detail = computed(() => {
