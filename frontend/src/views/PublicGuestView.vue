@@ -299,16 +299,34 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           so it is the page's LCP. It is fetched eagerly and at high priority,
           and it carries its intrinsic size so the box is reserved before the
           bytes land rather than after.
+
+          A phone held upright sees only the middle of this wide photograph:
+          the hero is at least a screen tall, so the picture is scaled to that
+          height and its sides fall off. The portrait file is that middle, the
+          centre 600 of its 1,790 pixels at full resolution (2026-09-30), so a
+          phone downloads half as much and shows the same pixels. The rule
+          only switches on while the screen is narrower than 2:3, where the
+          visible part is under 586 pixels wide and fits inside the crop with
+          room to spare; a wider screen, a tablet or a phone on its side, gets
+          the whole photograph as before.
         -->
-        <img
-          src="/fe-galang-building.webp"
-          alt="The boarding house seen from the courtyard"
-          class="w-full h-full object-cover object-center"
-          width="1790"
-          height="879"
-          fetchpriority="high"
-          decoding="async"
-        />
+        <picture>
+          <source
+            media="(max-aspect-ratio: 2/3)"
+            srcset="/fe-galang-building-portrait.webp"
+            width="600"
+            height="879"
+          />
+          <img
+            src="/fe-galang-building.webp"
+            alt="The boarding house seen from the courtyard"
+            class="w-full h-full object-cover object-center"
+            width="1790"
+            height="879"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </picture>
         <!--
           The scrim is the brand's own dark, not plain black. `--night` is
           #0f1b15 - a green-black - so the photograph sits under the same
@@ -598,10 +616,17 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           tells you that you are at the right one. It sits between the address
           and the map for that reason, and it is lazy because it is well below
           the fold.
+
+          On a phone it is a card about 343 pixels wide, so the 800-pixel copy
+          is sharp there and a third of the size; `sizes` is the page column
+          (ws-page ws-content) at each breakpoint, so a wide screen still
+          fetches the full photograph.
         -->
         <figure class="m-0 mt-12">
           <img
             src="/fe-galang-gate.webp"
+            srcset="/fe-galang-gate-800.webp 800w, /fe-galang-gate.webp 1790w"
+            sizes="(min-width: 1280px) 1168px, (min-width: 1024px) calc(100vw - 7rem), (min-width: 640px) calc(100vw - 3rem), calc(100vw - 2rem)"
             alt="The blue gate of Galang's Compound, lettered GALANG COMPOUND"
             class="block w-full rounded-tile border border-line object-cover"
             width="1790"

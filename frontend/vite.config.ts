@@ -135,7 +135,13 @@ const config: UserConfig = {
       // `galang-compound.jpg` and `galang-building.jpg` were deleted the same
       // day: nothing referenced either once the new pair landed, and leaving
       // them precached is the 471 KB `property-map.png` mistake again.
-      includeAssets: ['favicon.svg', 'fe-galang-building.webp'],
+      //
+      // `fe-galang-building-portrait.webp` (2026-09-30) is the hero as an
+      // upright phone draws it (PublicGuestView.vue, <picture>). The app
+      // installs with start_url '/', so an installed phone opening offline
+      // lands on that hero; without its own file precached the picture would
+      // be blank there. The gate's 800-pixel copy stays out, like the gate.
+      includeAssets: ['favicon.svg', 'fe-galang-building.webp', 'fe-galang-building-portrait.webp'],
       manifest: {
         name: 'Hivelet for Fe Galang Da Silva Boarding House',
         short_name: 'Hivelet',
