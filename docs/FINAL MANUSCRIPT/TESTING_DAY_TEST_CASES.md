@@ -124,7 +124,8 @@ errors per task = mean.
 | P-03 | SE | FR-003 | Open any occupied unit | No tenant name, phone or email anywhere | | |
 | P-04 | US | FR-004 | Enquiry form: press Send with everything empty | Each missing field says what it needs | | |
 | P-05 | US | FR-004 | Type a bad email and a short phone number | Plain messages under the fields; nothing sent | | |
-| P-06 | FS | FR-004 | Send one real-looking enquiry (a team member's own details) | Confirmation; the owner sees it in Inquiries (A-26) | | |
+| P-06 | FS | FR-004 | Send one real-looking enquiry (a team member's own details) | Confirmation with **Open your conversation**, **Copy the link** and a reference code; the owner sees it in Inquiries (A-26) | | |
+| P-06b | FS | FR-004 | After the owner replies to P-06: open the link on the same phone, then on another phone open `/inquiry` and type the reference code and the phone number used | Her reply shows in both; write back once and it appears in her conversation, with a notification. A wrong code or wrong phone says only "No inquiry matches that" | | |
 | P-07 | US | none | Open `/privacy` and `/terms` | Both readable on a phone | | |
 | P-08 | RE | none | Open a made-up address, `/this-does-not-exist` | A friendly "not found" page with a way back | | |
 

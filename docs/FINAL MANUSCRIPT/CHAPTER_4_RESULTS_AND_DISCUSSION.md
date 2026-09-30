@@ -152,7 +152,11 @@ runs inside the database, a rate cannot be changed through any path without bein
 
 The public site lists the units with their rates, read live from the database. A visitor sends an
 enquiry about a specific unit without needing an account. The enquiry appears in the owner's inbox,
-and when accepted it becomes a tenancy that stays linked to the enquiry it came from. A reserved
+and when accepted it becomes a tenancy that stays linked to the enquiry it came from. The owner
+answers inside the system, and the visitor reads the answer there too: on sending, they are given a
+private link and a short reference code, and either one (the code together with the phone number
+they gave) opens their conversation, where they can write back. No account is created and nothing
+is sent by text or email; the link's secret is stored only in hashed form, like a password. A reserved
 unit stays visible but accepts no new enquiries. The public site never shows a tenant's name; this
 is checked on every verification run against all 33 published units. *Figure 5. Public Unit
 Catalogue and Enquiry Form.* [SCREENSHOT PENDING]

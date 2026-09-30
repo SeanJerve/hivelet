@@ -33,6 +33,35 @@ thing did not work" is not.
 
 ## Open
 
+### B-88 — the visitor can now read Michelle's reply to an inquiry and write back; run 065 to switch it on · **RUN 065**
+
+Sean, 2026-09-30: an inquiry was one-way. Michelle's replies were saved in `inquiry_messages` and the
+person who asked never saw them, so she had to ring or text from her own phone, which is the problem
+the booking module is meant to solve. Decided with Sean: **no sign-up.** On sending, the visitor gets a
+private link (`/inquiry#t=...`) and a reference code (e.g. K7QM-3XRD). Either opens their conversation
+(the code only together with the phone number they gave); they read her replies and write back there.
+Public sign-up would need a password reset without email or SMS, which the system cannot offer.
+
+Built (routes/public.ts, services/inquiryThread.ts, views/InquiryThreadView.vue, both inquiry forms,
+the Inquiries page, privacy and terms): the link secret is stored only as SHA-256; the look-up says
+"No inquiry matches that" whichever part is wrong and allows 30 tries a quarter-hour per address; a
+closed or converted inquiry takes no more messages; a visitor's reply notifies her and puts an
+answered inquiry back to Pending.
+
+1. Supabase > SQL editor: run the PREVIEW at the foot of
+   `database/migrations/065_an_enquiry_can_be_followed_by_the_person_who_sent_it.sql` (expect no rows).
+2. `npm run backup`.
+3. Run the whole file. It adds two empty columns and two indexes; no row changes.
+4. Tell Claude. It re-runs `check:columns` and `check:fields` (both wait on those columns) and
+   pushes the feature. The code works either way: before 065, inquiries still send, with no link.
+
+**Then test it** (test cases P-06 and P-06b): send one inquiry with a team member's own details,
+answer it from Inquiries, open the link, and write back.
+
+**For the manuscript (Loyd / Vince):** `FIXES_TO_CHAPTERS_1_TO_3.md` says the reservation (booking)
+function "was still in development". Chapter 4 §4.2.3 now describes the conversation; whether the
+prospects' test includes it is your call once 065 is live.
+
 ### B-87 (filed as a second "B-86" by mistake; renumbered the same day) — the admin account is still named "Mrs. Fe Galang Da Silva"; run 062 to name it Michelle · **DONE 2026-09-30: applied by Sean and verified (name Michelle, one AUDIT_CORRECTION row); file renumbered 063, Loyd's August load is 062**
 
 Sean, 2026-09-30: Mrs. Fe Galang Da Silva owns the business and the boarding house keeps her name,

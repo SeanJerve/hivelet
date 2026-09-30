@@ -168,6 +168,12 @@ removes a request made by mistake.
 Messages from people asking about a unit. Reply (**Save reply**), **Close inquiry** when settled, or
 **Move them in** to start a tenancy with the details already filled in.
 
+The person who asked reads your reply on their inquiry's own page, and can write back there: when
+they send an inquiry they are given a link and a reference code for it (the code is shown beside your
+reply box). Their answers appear in the same conversation, and a notification tells you.
+No text or email is sent, so call them if it is urgent. Inquiries from before 30 September 2026 have
+no such page: call or text those people as before.
+
 ### 9. Activity
 
 Everything done in the system, by whom and when: **Everything on record**, **Done to the records**,
