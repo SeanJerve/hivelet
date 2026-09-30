@@ -95,14 +95,18 @@ if (process.argv[1] && process.argv[1].endsWith('gen-expense-date-fix.mjs')) {
   const wb = xlsx.readFile(WORKBOOK);
   const rows = parseExpenses(xlsx.utils.sheet_to_json(wb.Sheets['Monthly Expenses'], { header: 1 }));
   const fix = corrections(rows);
-  // A semicolon is written as the JSON escape \u003b, which jsonb reads back as ';'.
-  // The Supabase SQL editor splits a script at every semicolon, even one inside a string,
-  // and her book has one ("Legazpi Commerial Buil;ding"): the diagnostic failed with
-  // 'relation "2026" does not exist' (Sean, 2026-09-30). The data itself is unchanged.
-  // The same for a double hyphen and /*: the editor strips comments before sending a
-  // script, and her book has "Al--Sur Trading bh rooftop" (line 1189); the stripper cut
-  // line 13 from there to its end, and the rest read as "relation 2026 does not exist".
-  const data = JSON.stringify(fix).replace(/'/g, "''").replace(/;/g, '\\u003b').replace(/--/g, '-\\u002d').replace(/\/\*/g, '/\\u002a');
+  // Written so the Supabase SQL editor cannot misread it (Sean, 2026-09-30; the diagnostic
+  // failed three times with 'relation "2026" does not exist' while the same SQL runs in
+  // Postgres). Every script that ran in that editor had lines of about 300 characters; this
+  // carried all 1,261 workbook lines as ONE line of 157,000. So:
+  //   - one workbook line per text line (about 150 characters each; a string may span lines);
+  //   - no ";", "--" or "/*" inside the data, which an editor can take for the end of a
+  //     statement or the start of a comment: her book has "Legazpi Commerial Buil;ding" and
+  //     "Al--Sur Trading bh rooftop". Each is written as its JSON escape (\u003b, -\u002d,
+  //     /\u002a), which jsonb reads back unchanged, so the data is exactly hers.
+  const esc = (json) => json.replace(/'/g, "''").replace(/;/g, '\\u003b').replace(/--/g, '-\\u002d').replace(/\/\*/g, '/\\u002a');
+  const data = '[' + fix.map((r) => esc(JSON.stringify(r))).join(',' + String.fromCharCode(10)) + ']';
+
   const moving = fix.filter((f) => f.o !== f.n).length;
   const tpl = (name) => fs.readFileSync(`./templates/${name}`, 'utf8')
     .replaceAll('__DATA__', () => data).replaceAll('__ROWS__', String(fix.length)).replaceAll('__MOVING__', String(moving));
