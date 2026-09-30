@@ -10,7 +10,7 @@ Only the administrator (landlady) creates or edits this report (BR-048), and it 
 
 ## 1. Purpose
 
-The landlady currently tracks rent, water, garbage, and deposits per unit per month in a spreadsheet, organized by property cluster, with running totals. Hivelet must let her enter a payment once, through a guided form, and produce the same report layout automatically — without requiring her to compute anything by hand.
+The landlady currently tracks rent, water and deposits per unit per month in a spreadsheet (her workbook also had a garbage-fee column, removed from the system on 2026-09-30, see Column 9), organized by property cluster, with running totals. Hivelet must let her enter a payment once, through a guided form, and produce the same report layout automatically — without requiring her to compute anything by hand.
 
 ---
 
@@ -54,13 +54,13 @@ Whether the very bottom figures on a report page represent a single month's tota
 | --- | --- | --- | --- |
 | 1 | Rm # | Dropdown from the Canonical Unit List | Identifies the unit. One row per payment per month. |
 | 2 | Date Paid | `D-MMM-YY` | Date the payment was actually received, picked via calendar control. |
-| 3 | Contact + Invoice # | Text + number | Tenant/contact name; invoice number is tenant-supplied and rendered in red to distinguish it from the name. |
+| 3 | Contact + Invoice # | Text + number | Tenant/contact name; the invoice number is the one the landlady issued, written `INV#<n>`, rendered in red to distinguish it from the name. **Optional**: not every payment has an invoice, and a blank is saved as none (migration 066, 2026-09-30). Never "OR". |
 | 4 | Rent For | `MMM.D-D/YY` (e.g. `Jun.26-Jul.25/26`) | The billing period covered by this payment. Derived automatically from the tenant's Anniversary Date (Column 11) and the current cycle — the landlady does not type this. |
 | 5 | Rent Amount | Currency | Total rent charged for the period. Entered by the landlady. Column total appears in the cluster/grand subtotal rows. |
 | 6 | 50% Share | Currency | Exactly half of Column 5. Calculated automatically, never entered. |
 | 7 | Occupants | Integer | Number of people in the unit. Carried forward from the previous month for the same tenant (editable), so the landlady only touches it when occupancy changes. Column total appears in subtotal rows. |
-| 8 | Water Payment | Currency | Must equal Occupants (Col 7) × **the configured rate** — `system_settings.water_rate_per_occupant`, seeded at ₱200 and **currently ₱200**, but the landlady's to change (BR-014). Never hardcode the figure; read the setting. The system validates this and warns rather than silently accepting a mismatch (BR-036). A unit with 0 registered occupants shows `-`. Column total appears in subtotal rows. |
-| 9 | GBG (Garbage) | Currency | PHP 20 per unit per month, entered by hand (BR-037). Blank where none was collected — which is every month from July 2025 onward. |
+| 8 | Water Payment | Currency | Occupants (Col 7) × **the configured rate** — `system_settings.water_rate_per_occupant`, seeded at ₱200 and **currently ₱200**, but the landlady's to change (BR-014). Never hardcode the figure; read the setting. **Since 2026-09-30 it is computed from the occupants and never typed**, so a mismatch cannot be entered (BR-036). A unit with 0 registered occupants shows `-`. Column total appears in subtotal rows. |
+| 9 | ~~GBG (Garbage)~~ | — | **Removed 2026-09-30 (migration 066, BR-037 retired).** The column is gone from the database, the form and the workbook, which now has **11 columns**. The 531 historical fees (₱10,620.00) are kept in 066's audit row. The other columns keep their numbers so that references to Column 10 and 12 stay valid. |
 | 10 | Remitted Amount | Currency | = Column 5 (Rent Amount) + Column 8 (Water Payment) (BR-038). Calculated automatically. Column total appears in subtotal rows. |
 | 11 | Anniv Date | `MMM D/YY` | The tenant's original move-in / billing-anchor date for this unit. Entered once, at onboarding, and reused every month to derive Column 4. Not re-entered on each payment. |
 | 12 | Deposit | Currency | Equal to the Rent Amount at the time the tenant moved in (BR-039). Entered once, at onboarding. |
@@ -81,20 +81,24 @@ To keep the monthly entry screen uncluttered, fields are split by when they are 
 - Date Paid (Column 2)
 - Contact + Invoice # (Column 3)
 - Rent Amount (Column 5)
-- Occupants (Column 7) — pre-filled from last month, editable
-- Water Payment (Column 8) — validated against Occupants
+- Occupants (Column 7) — pre-filled from last month, editable; the count recorded with the latest payment becomes the tenancy's own
+- Invoice # — optional
 
 **Derived automatically, never typed:**
 - Rent For (Column 4)
 - 50% Share (Column 6)
+- Water Payment (Column 8), from Occupants
 - Remitted Amount (Column 10)
-
-**Captured once per year, attached to whichever monthly entry it's paid with:**
-- GBG (Column 9)
 
 ---
 
 ## 6. Linda's Units — Special Billing (LF, LB)
+
+> **Superseded in part (BR-040 errata, 2026-09-20).** The fixed water charge below never existed:
+> Linda's units pay water at the same ₱200 per occupant as every other unit, and the flat
+> electricity charge was retired on 2026-09-13. What stays separate is the **money**: Linda's
+> charges are recorded in their own columns and kept out of the grand subtotal and Remitted.
+> The list below is kept as the record of what was first written.
 
 Linda's two units (LF, LB) do not follow the standard rent/water model. Instead:
 
@@ -117,8 +121,8 @@ When the landlady records a payment, the panel must guide her through this seque
 4. **Rent For (auto)** — system computes the billing period from the unit's stored Anniv Date and the current cycle; not editable as free text, but the landlady can review it.
 5. **Enter Rent Amount** — system immediately computes and displays 50% Share.
 6. **Occupants (auto-filled, editable)** — pre-filled from the same tenant's prior month entry. The landlady only edits it when someone moves in or out.
-7. **Enter Water Payment** — system checks `Water Payment == Occupants × waterRatePerOccupant`, the rate read from `system_settings` (seeded 200, currently 200) rather than a literal. If it doesn't match, block save or show a clear warning (landlady must confirm before proceeding) rather than silently accepting a mismatched figure (BR-036).
-8. **GBG** — only prompted once per unit per year; hidden/blank otherwise.
+7. **Water Payment (auto)** — computed as `Occupants × waterRatePerOccupant`, the rate read from `system_settings` (seeded 200, currently 200) rather than a literal, and shown read-only (since 2026-09-30; BR-036 is met by construction).
+8. ~~**GBG**~~ — removed 2026-09-30 (migration 066).
 9. **Remitted Amount (auto)** — computed as Rent Amount + Water Payment, read-only.
 10. **Anniv Date / Deposit** — only shown/editable during onboarding of a new tenant on a unit, not on the recurring monthly form.
 
@@ -144,6 +148,6 @@ For Linda's units (LF, LB), the panel must switch to the fixed-rate flow in Sect
 These are not resolved by this document and must not be silently assumed during implementation:
 
 1. **Running totals**: the source spreadsheet's bottom-of-page total (e.g. `1,179,150`) is far larger than a single month's grand subtotal (e.g. `232,350`), implying it may be a year-to-date running total across all months on the sheet rather than a per-month figure. Confirm with the landlady whether Hivelet's report should show per-month totals only, year-to-date totals, or both.
-2. **GBG timing**: confirm what determines *which* month's entry the annual garbage fee is attached to (fixed calendar month vs. anniversary month vs. landlady's discretion).
+2. ~~**GBG timing**~~ — **closed 2026-09-30**: the garbage fee is removed from the system (migration 066, BR-037 retired).
 3. **Mid-cycle vacancy**: confirm how Rent Amount/Water Payment/Remitted Amount are handled when a tenant vacates partway through a billing period.
 4. **Deposit refund**: confirm whether/how a deposit is reconciled or refunded when a tenant with a stored Column 12 deposit vacates (ties to BR-025 tenant deactivation).

@@ -211,7 +211,7 @@ A foundational requirement of Hivelet is that **a failed network request must ne
 
 ### 4.4 Load-Bearing Modals (`frontend/src/components/modals/`)
 - **`AdyenPaymentModal.vue`**: Mounts the Adyen Web Drop-in Component. Initiates payment sessions with Adyen, renders the GCash QR code/redirect flow, and handles transaction completion callbacks.
-- **`OnsitePaymentModal.vue`**: Enables the administrator to record manual cash or direct bank payments. Enforces the inclusion of the required **Garbage Fee (GBG)** and validates payment amounts against live room billing balances.
+- **`OnsitePaymentModal.vue`**: Enables the administrator to record manual cash or direct bank payments. Takes the occupants (water is computed from them, never typed) and an optional invoice number (`INV#<n>`), and validates payment amounts against live room billing balances. It has had no garbage-fee field since 2026-09-30 (migration 066).
 - **`AdminEditUnitModal.vue`**: Allows the administrator to adjust unit configurations, update base pricing (which automatically appends an entry to `room_price_history`), and modify room status.
 - **`ChangePasswordModal.vue`**: Secure dialog for tenants and administrators to update authentication passwords with confirmation checks.
 
@@ -358,16 +358,16 @@ sequenceDiagram
     participant API as Express API (/admin)
     participant DB as PostgreSQL
 
-    Tenant->>Admin: Hands physical cash for monthly rent & garbage fee
+    Tenant->>Admin: Hands physical cash for monthly rent & water
     Admin->>Modal: Open On-Site Payment Dialog
     Modal->>API: GET /api/admin/bills/:tenantId/current
     API-->>Modal: Return live outstanding balance
-    Admin->>Modal: Enter Cash Received & mandatory GBG Fee
+    Admin->>Modal: Enter occupants (water computed) & optional invoice #
     Modal->>API: POST /api/admin/payments/onsite
     API->>DB: Execute settle_verified_payment with payment_method='Cash'
-    DB->>DB: Set bill status 'Paid', log GBG collection
+    DB->>DB: Set bill status 'Paid'
     DB->>DB: INSERT audit_log (actor: Admin, action: CASH_PAYMENT)
-    API-->>Modal: Return success & transaction receipt number
+    API-->>Modal: Return success & the recorded payment
 ```
 
 ---
@@ -387,8 +387,8 @@ sequenceDiagram
 ### 7.3 Total Property Room Count
 - The property consists of **exactly 33 units** distributed across 3 building floors (32 active tenant leases currently occupied). It must never be described as `"32 units"` or `"32 rooms"`.
 
-### 7.4 Garbage Collection Fee (GBG)
-- The garbage collection fee is a mandatory operational cost. On the on-site cash payment collection form (`OnsitePaymentModal.vue`), the GBG input field is `required` and strictly factored into the cash settlement calculation.
+### 7.4 Garbage Collection Fee (GBG): removed
+- The garbage fee was removed on 2026-09-30 by migration 066; BR-037 retired. The column, the form field and the workbook column are gone; the 531 historical fees (₱10,620.00) are kept in the migration's audit row. Nothing in the system charges, records or reports a garbage fee.
 
 ### 7.5 Rate Management & Price History
 - There is **no automatic annual rate escalation**. All room prices are updated manually by the property administrator.

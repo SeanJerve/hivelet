@@ -30,8 +30,8 @@ Queued as **B-04**. **0 of 26 steps are ticked.**
 - ☐ `npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"` — record the result **before** starting
 - ☐ Work `TESTING_REHEARSAL.md` top to bottom. It runs on unit **PH**, the only vacant one, with a
   made-up tenant, so no real resident, receipt or expense is touched
-- ☐ **Step 18** — type a **non-zero** garbage fee. Until 17 Sep that figure was collected, added to
-  the total, printed on the receipt and recorded as ₱0.00. Nobody has ever entered one
+- ☑ **Step 18** — done on 30 Sep: the collection was recorded and the bill settled. The garbage fee
+  was removed from the system the same day (migration 066)
 - ☐ **Step 19** — record the same receipt twice. It must be **refused**
 - ☐ **Step 23b** — stop the backend, reload the dashboard. Money tiles must show **em dashes**,
   never ₱0.00, and Net Operating Income must not equal Gross Inflow

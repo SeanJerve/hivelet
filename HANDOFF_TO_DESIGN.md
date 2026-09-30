@@ -109,9 +109,8 @@ A blank state is a claim. `₱0` is a claim. An empty list is a claim.
 
 **Two more in the same family, easy to lose:**
 
-- The **GBG / garbage fee input** on the on-site payment form is `required` and is added to the
-  total the resident is asked to hand over. Until 17 Sep it was recorded as ₱0.00. It is wired
-  now. Do not make it optional or hide it.
+- ~~The GBG / garbage fee input~~: **removed 2026-09-30** (migration 066, Sean's instruction). Do not
+  bring a garbage fee back anywhere.
 - The **CSV exports** escape quotes RFC-4180 style. A resident named `Jose "Jojo" Cruz` would
   otherwise shift every column of the owner's income ledger.
 

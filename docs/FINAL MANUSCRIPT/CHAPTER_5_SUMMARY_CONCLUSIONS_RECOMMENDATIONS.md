@@ -22,10 +22,10 @@ property near Bicol University. Based on the objectives of the study, the follow
 accomplished:
 
 1. **The existing practices were analyzed and the requirements established.** The owner managed
-   the property with a two-sheet spreadsheet workbook on removable storage, a paper receipt book,
+   the property with a two-sheet spreadsheet workbook on removable storage, a paper invoice book,
    cash collection on site, and requests sent by messaging application or in person. Transferring
    her records into the system showed the weaknesses of this approach: 43% of the 937 income rows
-   lacked an anniversary date and deposit, and five receipt numbers had each been used for two
+   lacked an anniversary date and deposit, and five invoice numbers had each been used for two
    payments. The analysis produced 44 functional requirements and 49 business rules. Each
    requirement is graded against the code in a traceability matrix: 25 are implemented as worded,
    15 in part, 1 in the interface only, and 3 not as worded, although what those three describe is
@@ -72,7 +72,7 @@ Based on the results of the study, the following conclusions were drawn:
    small-scale apartment management.
 
 2. **An integrated system can be built to fit a small, cash-based property without forcing it to
-   change how it works.** Hivelet keeps the owner's own report layout, her paper receipt numbers
+   change how it works.** Hivelet keeps the owner's own report layout, her own invoice numbers
    and cash as the main way to pay, and treats online payment as optional and subject to her
    approval. Adopting the system therefore required no change to the owner's accounting practice.
 
@@ -98,7 +98,7 @@ Based on the summary and conclusions of the study, the following are recommended
 
 **For the owner of the Fe Galang Da Silva Boarding House**
 
-1. Keep the five flagged receipt numbers in mind when reading older records. They stay exactly as
+1. Keep the five flagged invoice numbers in mind when reading older records. They stay exactly as
    she wrote them, and the system lists them on every verification run so that they are never
    mistaken for its own errors.
 2. Answer the questions that remain about how her records are kept, collected in one list for a

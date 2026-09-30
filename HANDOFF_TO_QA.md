@@ -36,7 +36,7 @@ Three steps matter more than the rest:
 | :--- | :--- |
 | **19** | Records the same receipt twice. It must be **refused**. If it accepts, the ledger can double-count and the duplicate guard is broken |
 | **23b** | With the dashboard open, **stop the backend** and reload. Every money tile must show **—**, never ₱0.00, and Net Operating Income must not equal Gross Inflow. Before 17 Sep it showed a whole year's takings as profit |
-| **18** | Records an on-site collection. **Type a non-zero garbage fee.** Until 17 Sep that number was collected, added to the total, printed on the receipt and recorded as ₱0.00. It is wired now and nobody has ever entered one |
+| **18** | Records an on-site collection. Set the **occupants** and check the water is occupants × ₱200 (it is computed, not typed); the invoice number is optional. The garbage fee was removed on 30 Sep (066) |
 
 **Read "What this rehearsal cannot tell you" at the end.** It is the honest list of what forty
 minutes does not cover — concurrency, volume, and a completed GCash payment.
@@ -138,8 +138,8 @@ specific message, not the exit code.**
 > system's own errors. The mechanism below is unchanged; only the "waiting for an answer" is gone.
 
 `check:ledger` found seven entries in the owner's books that **cannot be right as written** — two
-impossible dates, three rent periods ending the day before they start, two receipt numbers used
-twice. It pins them by receipt number and prints all seven on every run.
+impossible dates, three rent periods ending the day before they start, two invoice numbers used
+twice. It pins them by invoice number and prints all seven on every run.
 
 Its header says why: *"correcting one means knowing what it should say, which is hers to tell us,
 not ours to infer."*

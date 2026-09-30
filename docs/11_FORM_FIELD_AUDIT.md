@@ -64,7 +64,7 @@
 > | §3.5 Room status | "no way to set `Reserved`... no way to set `Under Maintenance`" | **Fixed.** `AdminEditUnitModal.vue:44-45` offers both as selectable options. |
 > | §3.6 Payment method | "UI emits `Cash`/`Online`... Maya has no enum value" | **Fixed.** `OnsitePaymentModal.vue:30-34` offers exactly `Cash`/`GCash`/`Bank Transfer` — the DB enum minus `Adyen Online`, which only the gateway can write. No `Online`, no Maya. |
 > | §3.7 Ticket status | "admin 'Close Ticket' button... collapses" Resolved and Closed | **Fixed.** `MaintenanceDispatchView.vue:48-49,66-67` list `Resolved` and `Closed` as distinct, separately selectable statuses. |
-> | §5 BR-037 | "GBG fee absent from every form" | **Fixed.** `OnsitePaymentModal.vue:51,767` has a required GBG fee input; `IncomeCollectionsView.vue` and `TenantOverviewView.vue` also carry it. (The backend side of this same fix is `9ff46e0`/`9808317`, 2026-09-17/20 — see `PHASE1_OPEN_DECISIONS_REGISTER.md` OD-02, corrected in the same pass as this file.) |
+> | §5 BR-037 | "GBG fee absent from every form" | **Superseded 2026-09-30: the fee and its field were removed on 2026-09-30 by migration 066; BR-037 retired.** Before that: **Fixed.** `OnsitePaymentModal.vue:51,767` has a required GBG fee input; `IncomeCollectionsView.vue` and `TenantOverviewView.vue` also carry it. (The backend side of this same fix is `9ff46e0`/`9808317`, 2026-09-17/20 — see `PHASE1_OPEN_DECISIONS_REGISTER.md` OD-02, corrected in the same pass as this file.) |
 > | §5 BR-038 | "`OnsitePaymentModal` runs the formula backwards: `rent = amount - 400`" | **Fixed.** `rentAmount` and `waterAmount` are independent fields (`OnsitePaymentModal.vue:45-50`), populated by a watcher from the room's actual price; the comments at those lines describe fixing exactly this bug, not the bug itself. |
 > | §7.1 Tenant email | "profiles.email is NOT NULL... needs your call" | **Closed**, and by a different document: `database/migrations/006_profiles_optional_login.sql` made it nullable, matching OD-09's resolution in `PHASE1_OPEN_DECISIONS_REGISTER.md` §2. |
 >
@@ -348,7 +348,7 @@ Item 5 is a **decision, not a defect** — see §7.
 | BR-034 | Occupant count does not carry forward from the previous month | `BillingPaymentsView` |
 | BR-033 | Rent period hardcoded to the literal string `'Current Period'` | `BillingPaymentsView.vue:57` |
 | BR-035 | 50% share is correctly derived in the UI, but must be **recomputed server-side** — the client value cannot be trusted | all payment forms |
-| BR-037 | GBG fee absent from every form | — |
+| BR-037 | GBG fee absent from every form | Retired 2026-09-30 (066): the fee is no longer part of the system |
 | BR-040 | No Linda fixed-billing flow; LF/LB use the standard per-occupant path | `BillingPaymentsView` |
 | BR-044 | Split allocation impossible (see §2, F-06) | `ExpensesLedgerView` |
 | BR-021 | `Low` priority missing from the tenant dropdown | `TenantPortalView.vue:643` |

@@ -235,7 +235,21 @@ The "50% Share" figure on a monthly payment is always exactly half of the Rent A
 
 Water Payment must equal Occupants × ₱200 (BR-014). If the administrator enters a mismatched value, the system must warn before saving rather than silently accepting the discrepancy.
 
+> **Met by construction since 2026-09-30.** The Record payment form no longer takes a typed water
+> figure: the administrator enters the **occupants**, and water is worked out from them
+> (occupants × ₱200) and shown read-only (`OnsitePaymentModal.vue`, "Water is never typed"). A
+> mismatched value can therefore not be entered, so there is nothing left to warn about. The
+> occupants recorded with the latest payment also become the tenancy's own count (Sean, 30 Sep).
+
 ## BR-037 — Garbage Fee Frequency
+
+> **RETIRED 2026-09-30 by migration 066 (Sean's instruction: the garbage fee is removed from the
+> system entirely).** The `gbg_fee` column is gone from `monthly_income_records`, the field from
+> the Record payment form, and the column from the Monthly Income workbook (now 11 columns). The
+> 531 historical rows that carried a fee, **₱10,620.00** in all, are recorded in 066's
+> AUDIT_CORRECTION row, and Remitted was unchanged by the removal (₱8,222,900.00 before and
+> after), because Remitted never included the fee (BR-038). The text below is kept as the record
+> of what the rule was.
 
 The garbage (GBG) fee is **PHP 20 per unit per month**, entered by hand at the counter. It
 is not derived from anything and the system never adds it on its own.

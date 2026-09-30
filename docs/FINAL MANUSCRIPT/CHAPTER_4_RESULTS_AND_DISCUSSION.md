@@ -47,7 +47,7 @@ the owner on 13 September 2026 and are checked against the live records on every
 
 Before Hivelet, the owner ran the business from a spreadsheet workbook with two sheets, a Monthly
 Income Report and a Monthly Expenses Report, kept on removable storage, together with a physical
-official receipt book. Rent was collected in cash on site. Tenant concerns and maintenance
+invoice book. Rent was collected in cash on site. Tenant concerns and maintenance
 requests arrived by messaging application or in person. Table 5 compares each practice with the
 problem it caused.
 
@@ -56,7 +56,7 @@ problem it caused.
 | Area | Existing practice | Problem identified |
 | :--- | :--- | :--- |
 | Tenant management | Tenant details kept in the income sheet and in the owner's memory | No single record of who lives in which unit, since when, or how many occupants |
-| Financial tracking | Income and expense sheets typed by hand; official receipts written in a paper book | Totals depend on manual arithmetic; nothing checks a receipt number against the book; one file on removable storage is the only copy |
+| Financial tracking | Income and expense sheets typed by hand; invoices written in a paper book | Totals depend on manual arithmetic; nothing checks an invoice number against the book; one file on removable storage is the only copy |
 | Communication | Requests sent by messaging application or said in person | Requests are not recorded, so there is no way to follow a request to completion |
 | Booking | [CONFIRM WITH THE OWNER: how enquiries arrived before the system, for example walk-in, referral or phone] | No record of enquiries or which unit an enquiry was about |
 
@@ -65,8 +65,8 @@ transferred into the system (937 income rows and 1,327 expense allocations), the
 problems that had gone unnoticed in the spreadsheet:
 
 - **402 of the 937 income rows (43%)** had no anniversary date and no deposit recorded.
-- **Five official receipt numbers** were each used for two different payments. In one case, a
-  single receipt number was used for two different tenants on the same day. Each case is recorded
+- **Five invoice numbers** were each used for two different payments. In one case, a
+  single invoice number was used for two different tenants on the same day. Each case is recorded
   in the system and reported on every verification run. None has been changed: the team decided
   on 26 September 2026 that historical records stay exactly as the owner wrote them, as the record
   of what happened. The standard the system is held to is that every record it produces itself is
@@ -101,7 +101,7 @@ became a requirement and a module.
 | :--- | :--- | :--- |
 | No single tenant and unit record | Keep one record per unit and per tenant, with occupancy and move-in dates | Tenant and Room Management (4.2.2) |
 | Enquiries not recorded | Let the public view units and send an enquiry about a specific unit | Booking and Reservation (4.2.3) |
-| Manual arithmetic and unchecked receipts | Compute charges, record payments against real receipt numbers, reproduce the owner's reports | Financial Tracking (4.2.4) |
+| Manual arithmetic and unchecked receipts | Compute charges, record payments against the owner's own invoice numbers, reproduce the owner's reports | Financial Tracking (4.2.4) |
 | Cash only, no digital option | Offer an optional online payment that the owner verifies before it counts | Financial Tracking (4.2.4) |
 | Requests not followed to completion | Record each request and its status until the owner closes it | Maintenance Ticketing and Notification (4.2.5) |
 | Anyone with the file sees everything | Give the owner and each tenant access to only what their role needs | Role-Based Access Control (4.2.6) |
@@ -175,8 +175,8 @@ a rate the owner can change in the settings, currently ₱200 per occupant. The 
 charged a fixed water amount instead and are kept out of the property's grand totals, as in the
 owner's own workbook. A bill is overdue from the day after its due date, as the owner confirmed.
 
-Cash payments are recorded by the owner with the official receipt number from her receipt book.
-The system never makes up a receipt number. Online payments go through Adyen with GCash: a payment
+Cash payments are recorded by the owner with the number of the invoice she issued, written INV#,
+or with none, since not every payment has an invoice. The system never makes up an invoice number. Online payments go through Adyen with GCash: a payment
 made this way enters a **Pending Verification** state and changes nothing on the tenant's bill
 until the owner verifies it. Before the owner records a payment, the system warns her if the same
 tenant already has a payment for that month, including one still waiting for verification.
@@ -370,7 +370,7 @@ audit. Table 9 shows the result.
 | Screen | What was compared | Result |
 | :--- | :--- | :--- |
 | Owner overview | Collections for each month of 2026, the year's total, occupancy, rent per cluster, expected monthly income, operating and personal costs | Matched to the peso |
-| Monthly Income | Totals for rent, water and garbage; collections by cluster | Matched after one defect was fixed |
+| Monthly Income | Totals for rent and water (and a garbage fee, removed on 30 September); collections by cluster | Matched after one defect was fixed |
 | Monthly Expenses | Total spent, split by kind and by area | Matched; one layout defect fixed |
 | Rooms and rates | Rent and number of occupants for each unit | Matched |
 | Tenants | Number of tenants per cluster; move-in dates | Counts matched; one defect fixed |
@@ -454,8 +454,8 @@ what was done.
 | 15b | On-demand billing generation | Bill generated on demand matching unit rate plus ₱200/occupant water | A bill of ₱30,200 was raised (₱30,000 rent and ₱200 water for one occupant); removed after the test. | Pass |
 | 16 | Notification state management | Notification marked as read; unread badge counter decrements | As expected. | Pass |
 | 17 | Cross-tenant authorization perimeter | Accessing foreign ticket ID returns HTTP 404 (Not Found), not 403 | As expected. | Pass |
-| 18 | On-site cash collection recording | Collection recorded against receipt REHEARSAL-001; bill marked settled | The collection of ₱30,200 was recorded and the bill settled. Water is worked out from the number of occupants and cannot be typed, so a wrong water amount could not be entered. | Pass |
-| 19 | Duplicate receipt prevention | Re-submitting identical receipt number is blocked with explicit alert | As expected. | Pass |
+| 18 | On-site cash collection recording | Collection recorded against invoice REHEARSAL-001; bill marked settled | The collection of ₱30,200 was recorded and the bill settled. Water is worked out from the number of occupants and cannot be typed, so a wrong water amount could not be entered. | Pass |
+| 19 | Duplicate invoice prevention | Re-submitting an identical invoice number is blocked with an explicit alert | As expected. | Pass |
 | 19b | Receipt voiding and double-void guard | First void reverses ledger entry; second void attempt is rejected | The first void worked. The second window refreshed itself and no longer showed the receipt, so a second void could not be attempted; the refusal message was therefore not seen. | Pass |
 | 20 | Enquiry processing and resolution | Administrator reply sent; enquiry status marked Closed | As expected. | Pass |
 | 21 | Maintenance resolution and notification | Ticket advanced to Resolved; tenant receives resolution notification | Moved to In Progress, then Resolved; the tenant was notified that the repair was done. | Pass |
@@ -469,7 +469,7 @@ what was done.
 
 Of the 30 rows of the walkthrough, 24 passed the first time, 1 failed and 5 were not performed as
 written. Every function a tenant uses passed, as did the owner's onboarding, the duplicate guards
-for phone numbers and receipts, voiding, enquiry replies, repair handling, the workbook export and
+for phone numbers and invoice numbers, voiding, enquiry replies, repair handling, the workbook export and
 moving a tenant out. In step 18 the collection was recorded and the bill settled; the test also
 asked for a wrong water amount to be typed first, but since 30 September water is worked out from the
 number of occupants and cannot be typed, so no wrong amount could be entered. The one failure was

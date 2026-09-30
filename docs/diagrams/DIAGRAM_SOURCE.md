@@ -550,7 +550,7 @@ erDiagram
     MONTHLY_EXPENSE_ENTRIES {
         uuid id PK "Surrogate key"
         date expense_date "Date on the receipt"
-        text or_supplier "Official receipt number or supplier name"
+        text invoice_supplier "Invoice number or supplier name (renamed from or_supplier by 066)"
         varchar category_code FK "Exactly one category per entry, BR-042"
         numeric total_expenses "DERIVED. Maintained by trigger from the allocations, BR-045"
         uuid created_by FK "Administrator who entered the row, BR-048"

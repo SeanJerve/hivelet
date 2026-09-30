@@ -116,7 +116,7 @@ npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"
 
 `check:ledger` already re-derives the whole ledger — every `remitted_amount` and every 50%
 figure against its formula, on all 937 rows. It found seven entries that **cannot be right as
-written**, and rather than silencing them it **pins them by receipt number** and prints all seven
+written**, and rather than silencing them it **pins them by invoice number** and prints all seven
 on every run.
 
 Its own header says why:
@@ -129,13 +129,13 @@ with the receipt book.
 
 | Receipt | What is wrong |
 | :--- | :--- |
-| **OR#4839** | `date_paid` is **1900-01-17** — the Excel epoch, so the source cell never parsed. Its year/month (2024-12) also disagree with its rent period. Room 2g, ₱6,500 |
+| **INV#4839** | `date_paid` is **1900-01-17** — the Excel epoch, so the source cell never parsed. Its year/month (2024-12) also disagree with its rent period. Room 2g, ₱6,500 |
 | **INVOICE#5120** | `date_paid` is **2027-02-26**, a year in the future, against a 2026 rent period. Reads as a mistyped year. Room 1c, ₱8,000 |
-| **OR#4757** | rent period ends the day before it starts: 2024-08-03 → 2024-08-02. Room 1h |
-| **OR#4775** | same shape: 2024-08-30 → 2024-08-29. Room 2b |
-| **OR#4872** | same shape: 2025-02-03 → 2025-02-02. Room 1h |
-| **OR#4774** | one receipt number against **two rooms** (3f and 3g), same tenant, paid twelve days apart |
-| **OR#4813** | one receipt number against **two different tenants** on the same day — Ron Juliene Dominguino (2a, ₱8,000) and M. Juselle Escuro (3a, ₱9,000). Two people cannot share one official receipt |
+| **INV#4757** | rent period ends the day before it starts: 2024-08-03 → 2024-08-02. Room 1h |
+| **INV#4775** | same shape: 2024-08-30 → 2024-08-29. Room 2b |
+| **INV#4872** | same shape: 2025-02-03 → 2025-02-02. Room 1h |
+| **INV#4774** | one invoice number against **two rooms** (3f and 3g), same tenant, paid twelve days apart |
+| **INV#4813** | one invoice number against **two different tenants** on the same day — Ron Juliene Dominguino (2a, ₱8,000) and M. Juselle Escuro (3a, ₱9,000). Two people cannot share one official receipt |
 
 ### The workflow, and why the last step matters
 
@@ -147,7 +147,7 @@ with the receipt book.
    what the paper receipt says, and who confirmed it. That header is the audit trail.
 4. **Apply it**, then run `npm run check:ledger`.
 5. **It will FAIL** — and that failure is the confirmation you want:
-   `OR#4757 is pinned as anomalous but now reads clean - remove its entry`.
+   `INV#4757 is pinned as anomalous but now reads clean - remove its entry`.
    The row stopped being wrong, so its pin is stale. Delete that line from `KNOWN` in
    `backend/scripts/check-ledger-integrity.mjs` and commit it with the migration.
 6. **If it does *not* fail**, your correction did not land, or did not fix what you thought.

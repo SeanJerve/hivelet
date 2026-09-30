@@ -196,7 +196,7 @@ Back to the administrator.
 
 | # | Do | Should see | ✍ |
 | :-- | :--- | :--- | :-- |
-| 18 | **Record an on-site collection** for `PH`. Receipt number **`REHEARSAL-001`** so it is findable. | Written to the ledger, bills settled against it. **This is the path no real collection has ever taken.** | ✍ |
+| 18 | **Record an on-site collection** for `PH`. Invoice number **`REHEARSAL-001`** so it is findable (the invoice is optional; this one is typed so the row can be found). | Written to the ledger, bills settled against it. **This is the path no real collection has ever taken.** | ✍ |
 | 19 | Record **the exact same receipt again** — same unit, number, date and amount. | Refused: *"Receipt REHEARSAL-001 is already recorded for unit PH on …"* If it accepts it, the duplicate guard is broken and the ledger can double-count. | |
 | 19b | **Void the `REHEARSAL-001` record, then try to void it a second time.** On screen a void is **Edit > Delete payment**, and the row then leaves the list, so open Monthly Income in a second tab first and make the second attempt there without refreshing. | The first void succeeds. The second is **refused**: *"That income record was already voided on …"* ⚠ Until 2026-09-20 the second void **succeeded silently and overwrote who voided it first** — the one thing a soft delete exists to record. 35 rows were in that state. Verified against the live API as a no-op; this confirms it on the path a person actually uses. | ✍ |
 | 20 | Open **Inquiries**. Reply to the enquiry from step 3, then close it. | Message posts; status moves to **Closed**. | ✍ |

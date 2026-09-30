@@ -46,7 +46,7 @@ unexercised by a person — on 2026-09-22 the tenant checkout raised a real bill
 correct to the centavo (B-54 in `BLOCKED_FOR_SEAN.md`). That is one path out of many, so the
 rehearsal still matters just as much.
 
-Three steps matter most: **18** (type a non-zero garbage fee), **19** (same receipt twice must be
+Three steps matter most: **18** (the water follows the occupants; the garbage fee was removed on 30 Sep), **19** (same receipt twice must be
 refused), **23b** (stop the backend, reload — money tiles must show em dashes, never ₱0.00).
 
 **And new: step 24b.** Run `npm run check:relations` right after the vacate step. The pinned count

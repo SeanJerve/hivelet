@@ -39,44 +39,44 @@ figure is, from her own receipt book.
 
 | Receipt | Unit | Recorded date | Amount | The problem |
 | :--- | :--- | :--- | ---: | :--- |
-| `OR#4839` | **2g** | **17 Jan 1900** | ₱6,500 | 1900 is what Excel shows when a date cell never read properly. Its rent period says **9 Dec 2025 – 8 Jan 2026**, but the row is filed under **December 2024**. |
+| `INV#4839` | **2g** | **17 Jan 1900** | ₱6,500 | 1900 is what Excel shows when a date cell never read properly. Its rent period says **9 Dec 2025 – 8 Jan 2026**, but the row is filed under **December 2024**. |
 | `INVOICE#5120` | **1c** | **26 Feb 2027** | ₱8,000 | A year in the future. The rent period says **26 Feb – 25 Mar 2026**, so this looks like `2027` typed where `2026` was meant. |
 
 **What we need:** the real payment date on each.
 
-- `OR#4839` actual date paid: ____________________  and is it **Dec 2024** or **Dec 2025**? ____________
+- `INV#4839` actual date paid: ____________________  and is it **Dec 2024** or **Dec 2025**? ____________
 - `INVOICE#5120` actual date paid: ____________________
 
 ### 1b. Three rent periods that end the day before they start
 
 | Receipt | Unit | Period as recorded | Amount |
 | :--- | :--- | :--- | ---: |
-| `OR#4757` | **1h** | 3 Aug 2024 → **2 Aug 2024** | ₱6,000 |
-| `OR#4775` | **2b** | 30 Aug 2024 → **29 Aug 2024** | ₱8,000 |
-| `OR#4872` | **1h** | 3 Feb 2025 → **2 Feb 2025** | ₱6,000 |
+| `INV#4757` | **1h** | 3 Aug 2024 → **2 Aug 2024** | ₱6,000 |
+| `INV#4775` | **2b** | 30 Aug 2024 → **29 Aug 2024** | ₱8,000 |
+| `INV#4872` | **1h** | 3 Feb 2025 → **2 Feb 2025** | ₱6,000 |
 
 Each covers **minus one day**. Almost certainly the end date should be a month later —
-`OR#4757` would run to **2 Sep 2024** — but that is us guessing, and this is her ledger.
+`INV#4757` would run to **2 Sep 2024** — but that is us guessing, and this is her ledger.
 
 **What we need:** confirm the end date should be one month after the start on all three.
 ☐ Yes, one month later   ☐ No — correct dates: ____________________
 
-### 1c. Two receipt numbers used twice
+### 1c. Two invoice numbers used twice
 
 | Receipt | Used for | Amounts | Why it matters |
 | :--- | :--- | ---: | :--- |
-| `OR#4774` | **Unit 3f** paid 22 Aug 2024, and **unit 3g** paid 3 Sep 2024 | ₱6,500 each | Same resident, two units, **twelve days apart**. One of the two numbers is likely a transcription slip. |
-| `OR#4813` | **Unit 2a** and **unit 3a**, both on 1 Nov 2024 | ₱8,000 and ₱9,000 | **Two different residents, same day, one receipt number.** Two people cannot share one official receipt. |
+| `INV#4774` | **Unit 3f** paid 22 Aug 2024, and **unit 3g** paid 3 Sep 2024 | ₱6,500 each | Same resident, two units, **twelve days apart**. One of the two numbers is likely a transcription slip. |
+| `INV#4813` | **Unit 2a** and **unit 3a**, both on 1 Nov 2024 | ₱8,000 and ₱9,000 | **Two different residents, same day, one receipt number.** Two people cannot share one official receipt. |
 
-`OR#4813` is the one to settle first — it is ₱17,000 across two households.
+`INV#4813` is the one to settle first — it is ₱17,000 across two households.
 
-**What we need:** the correct receipt number for whichever entry is wrong.
+**What we need:** the correct invoice number for whichever entry is wrong.
 
-- `OR#4774` — which unit keeps the number? ☐ 3f ☐ 3g. The other's real number: ____________
-- `OR#4813` — which unit keeps it? ☐ 2a (₱8,000) ☐ 3a (₱9,000). The other's real number: ____________
+- `INV#4774` — which unit keeps the number? ☐ 3f ☐ 3g. The other's real number: ____________
+- `INV#4813` — which unit keeps it? ☐ 2a (₱8,000) ☐ 3a (₱9,000). The other's real number: ____________
 
 > **Note:** a receipt covering several months of arrears on several rows is **normal and correct** —
-> `OR#4895` legitimately covers four months. We checked, and built the duplicate guard around it, so
+> `INV#4895` legitimately covers four months. We checked, and built the duplicate guard around it, so
 > the system will not reject her arrears settlements. The seven above are different: the same number
 > against **different tenants or different units on unrelated dates**.
 

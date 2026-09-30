@@ -60,4 +60,5 @@ This document records the official decisions made for the Hivelet Apartment Mana
 ## 9. Additional Monthly Income & Expense Ledger Notes
 - ~~Monthly Income Report running totals, GBG garbage fee timing, and deposit reconciliation workflows are implemented according to `09_MONTHLY_INCOME_REPORT.md` and `10_MONTHLY_EXPENSES_REPORT.md`.~~
 - **STRUCK — this defers three unanswered questions to a document that explicitly declines to answer them.** All three are listed in `09_MONTHLY_INCOME_REPORT.md` **Section 8, "Open Questions"** — running totals at `:133`, GBG timing at `:134`, deposit reconciliation at `:136` — under the preamble *"These are not resolved by this document and must not be silently assumed during implementation."*
+- **Update 2026-09-30:** OD-02 (GBG timing) is closed: the garbage fee was removed on 2026-09-30 by migration 066; BR-037 retired.
 - **They are open client decisions, carried as OD-01, OD-02 and OD-04** in `docs/claude_pipeline/outputs/PHASE1_OPEN_DECISIONS_REGISTER.md`, which is the authoritative list of what is genuinely unresolved. **OD-04 requires a schema migration once answered.** Read that register, not this section.
