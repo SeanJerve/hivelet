@@ -105,8 +105,9 @@ at `hivelet.vercel.app`.
 | PR-08 | "Ask the landlady about a unit you like. Use your own name and number, and write 'TEST' in the message." *"Magtanong sa landlady tungkol sa unit na gusto ninyo. Gamitin ang sariling pangalan at numero, at isulat ang 'TEST' sa mensahe."* | "Ask about unit" or Inquire now; the confirmation appears; empty or wrong fields say what to fix | Functional, Usability |
 | PR-09 | "Was anything slow, confusing or missing?" *"May mabagal, nakakalito, o kulang po ba?"* | Write their words exactly; result code **NT** (it is a question, not a task) | (survey context) |
 
-At most **two inquiries from the same wifi in 15 minutes** (the site limits it); after that, use
-mobile data. Each inquiry reaches Michelle's Inquiries list: close the TEST ones at clean-up.
+At most **two inquiries from the same wifi in 15 minutes**, then use mobile data. The site allows ten
+per connection per 15 minutes, shared by everyone on the house wifi; the team keeps well under it so
+a real visitor is never blocked. Each inquiry reaches Michelle's Inquiries list: close the TEST ones at clean-up.
 
 ### Current tenants (T): their own account
 

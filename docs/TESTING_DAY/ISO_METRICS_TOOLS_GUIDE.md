@@ -27,7 +27,7 @@ does. Never run an "active" scan, a crawler that fills in forms, or a password t
 | Characteristic | People (testing day) | The team's own measurement | Independent website | Already measured (29-30 Sep) |
 | :--- | :--- | :--- | :--- | :--- |
 | Functional suitability | Task success, Parts A, T, PR | Walkthrough (Table 10); 20 check suites | none needed | 18/18 suites pass; screens match the database |
-| Performance efficiency | "Slow" comments (code S) | Timings on real devices (Table 11) | PageSpeed Insights; Lighthouse | Desktop 95, phone about 70; 0 errors with 12 users |
+| Performance efficiency | "Slow" comments (code S) | Timings on real devices (Table 11) | PageSpeed Insights; Lighthouse | Desktop 95; phone 86 on PageSpeed (LCP 3.5 s); 0 errors with 12 users |
 | Compatibility | Which phones and browsers they used | Browser matrix CO-01 to CO-06 | BrowserStack (optional) | Chrome only, so far |
 | Usability | Task success, time, wrong turns, help needed | Table 11C | WAVE; Lighthouse Accessibility | 0 WCAG A/AA violations on 15 screens |
 | Reliability | Errors seen (code E) | Offline cases O-01 to O-12 | UptimeRobot | Offline 20/20; site up all morning |
@@ -67,9 +67,11 @@ without help."
    only shows real-user data for busy sites. That is normal; report the lab figures.
 5. Screenshot each tab.
 
-What to expect (measured 30 Sep with Lighthouse 12.8, the same engine): desktop performance about 95,
-phone about 70 (the phone test simulates a slow connection; the main text waits for the page's code).
-Accessibility, Best Practices and SEO 100. If the page says "quota exceeded", use 2b.
+What to expect (30 Sep, Chapter 4 §4.3.6 and case PF-09): **Mobile about 86 / 100 / 100 / 100, LCP
+about 3.5 s** (PageSpeed at 10:15, after the phone photos were made smaller); desktop performance
+about 95. Lighthouse run on the laptop with its slow-phone setting scored the phone page about 70
+earlier that morning, before the photo change; the two are different runs, so report which tool
+and time each number came from. A few points either way is the network. If the page says "quota exceeded", use 2b.
 
 ### 2b. Lighthouse in Chrome (also works on signed-in screens)
 
