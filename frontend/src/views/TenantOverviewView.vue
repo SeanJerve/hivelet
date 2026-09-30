@@ -121,6 +121,13 @@ interface ResidentStanding {
 }
 /** One sentence under the amount: how far her records reach, and what paying now covers. */
 const owedSummary = ref('');
+/**
+ * The amount tile is showing periods worked out from the ledger alone - no bill was raised. A
+ * past one of those is "not entered yet", never "overdue": the landlady may simply not have
+ * entered a payment (Sean, 2026-10-01). A real bill keeps its own Due / Overdue status.
+ */
+const fromLedgerOnly = ref(false);
+const standingStatus = ref('');
 const loading = ref(true);
 /**
  * Whether the unit photo has actually painted, so it can fade in rather than
@@ -242,6 +249,9 @@ const dueDateCountdown = computed(() => {
   const due = new Date(`${raw.slice(0, 10)}T00:00:00+08:00`);
   const today = new Date(`${propertyToday()}T00:00:00+08:00`);
   const diff = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff < 0 && fromLedgerOnly.value) {
+    return { daysLeft: diff, label: 'Not entered yet', severity: 'warning' as const };
+  }
   if (diff < 0) {
     return { daysLeft: diff, label: `Overdue by ${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'}`, severity: 'overdue' as const };
   }
@@ -405,6 +415,7 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
     tenantData.value.verifiedAt = '';
     tenantData.value.activeBillPaid = 0;
     owedSummary.value = '';
+    fromLedgerOnly.value = false;
 
     if (unpaidBill) {
       // A bill that has actually been raised comes first: it is the debt as issued.
@@ -437,7 +448,9 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
         standing.totalDue > 0 ? standing.totalDue : standing.perPeriod.totalAmount;
       tenantData.value.dueDate = formatDateOnly(first.dueDate, longDate);
       tenantData.value.dueDateRaw = first.dueDate;
-      tenantData.value.dueBadgeText = standing.status === 'overdue' ? 'OVERDUE' : 'DUE';
+      fromLedgerOnly.value = true;
+      standingStatus.value = standing.status;
+      tenantData.value.dueBadgeText = standing.status === 'overdue' ? 'NOT ENTERED' : 'DUE';
       tenantData.value.dueDaysRemaining = 'Awaiting payment';
       tenantData.value.nextDueDateDisplay = '';
       const periods = standing.periodsDue;
@@ -445,8 +458,9 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
         (standing.paidThrough
           ? `Your recorded payments cover rent up to ${tenantData.value.paidThroughDisplay}. `
           : 'No payment is on record for this tenancy yet. ') +
-        (periods > 1
-          ? `${periods} periods are unpaid since then. `
+        (standing.status === 'overdue'
+          ? `${periods > 1 ? `${periods} months after that are` : 'The month after that is'} not entered yet. ` +
+            'If you have paid the landlady, it appears here once she enters it. '
           : '') +
         `Paying now covers ${formatDateOnly(first.start, longDate)} to ` +
         `${formatDateOnly(first.end, longDate)} (${peso(standing.perPeriod.totalAmount, 2)}).`;
@@ -602,7 +616,7 @@ const statusTone = computed(() => {
            cascade - 30ms apart, same rhythm as any other first-load list in
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
-      <OverviewTile tone="brand" title="Amount due" class="list-reveal-item order-1 md:order-none md:col-span-2 xl:col-span-5" style="animation-delay: 0ms">
+      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" class="list-reveal-item order-1 md:order-none md:col-span-2 xl:col-span-5" style="animation-delay: 0ms">
         <template v-if="!tenantDataLoadFailed && !isSettled" #actions>
           <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
         </template>

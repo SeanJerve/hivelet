@@ -189,12 +189,13 @@ Income Ledger.* [SCREENSHOT PENDING]
 
 Tenants follow the same record from their side. The tenant's payments page shows **"Your rent,
 month by month"**: one sentence stating how far their payments reach ("Paid up to …") and what is
-due, a bar for each of the last twelve months marked Paid, Due, Nothing recorded or Not due yet,
+due, a bar for each of the last twelve months marked Paid, Due, Not entered or Not due yet,
 and the months paid, the amount paid and the amount due now. Only receipts the owner has verified
 count as paid, the same rule behind the "paid up to" date; a voided receipt never counts, and a GCash payment
-still awaiting verification is listed separately as waiting. A month before the latest receipt with
-no receipt of its own is shown as "Nothing recorded", never as owed, because the records do not
-establish that it is.
+still awaiting verification is listed separately as waiting. A month with no payment entered, whether
+between two payments or after the last one, is shown as "Not entered", never as owed or overdue,
+because the records alone cannot tell an unpaid month from one the owner has not entered yet; only
+a bill actually raised is shown as due.
 
 The system does not handle electricity. Every unit has its own meter and the tenant pays the
 electric company directly, as the owner confirmed on 18 September 2026.

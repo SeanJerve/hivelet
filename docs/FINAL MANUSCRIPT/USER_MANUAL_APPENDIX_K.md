@@ -49,14 +49,15 @@ and it is not there yet, it appears once she records your receipt.
   - One sentence says where you stand, for example **"Paid up to August 12, 2026. You are up to
     date."** or how many months are due and how much in all. *Isang pangungusap ang nagsasabi kung
     hanggang kailan kayo bayad at kung may dapat pang bayaran.*
-  - A bar for each month: **Paid**, **Due** (Due soon, Due today or Overdue), **Nothing recorded**
-    (no receipt for that month), or **Not due yet**. *Bawat buwan: Paid (bayad), Due (dapat bayaran),
-    Nothing recorded (walang naitalang resibo), Not due yet (hindi pa dapat bayaran).*
+  - A bar for each month: **Paid**, **Due** (Due soon or Due today), **Not entered** (no payment
+    entered for that month yet), or **Not due yet**. *Bawat buwan: Paid (bayad), Due (dapat bayaran),
+    Not entered (wala pang naitalang bayad), Not due yet (hindi pa dapat bayaran).*
   - **Months paid**, **Paid in these months** and **Due now**. Only receipts the landlady has
     **verified** count; a cancelled (voided) receipt never counts. A GCash payment you sent shows as
     **waiting** until she verifies it. *Ang mga resibong na-verify lang ng landlady ang binibilang.*
-  - **"Nothing recorded"** does not mean you owe that month. If you paid, ask the landlady to check
-    her records. *Kung "Nothing recorded" pero nagbayad kayo, ipasuri sa landlady.*
+  - **"Not entered"** does not mean you owe that month: the landlady may not have entered your
+    payment yet. If you paid, it appears once she enters it, or ask her to check her records.
+    *Kung "Not entered" pero nagbayad kayo, lalabas ito kapag naitala na ng landlady.*
   - **Show each month as a list** gives the same months as a table, with the receipt for each.
 - **Payment record**: every payment recorded for your unit, newest first.
 - **Pay with GCash**: online payment. **Until the landlady announces it, online payments do not

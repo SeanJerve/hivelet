@@ -47,6 +47,9 @@ const monthName = (m: PaymentMonth) => `${MONTH_LONG[m.month - 1]} ${m.year}`;
 const capsules = computed<CapsuleMonth[]>(() =>
   months.value.map((m) => {
     const base = { short: MONTH_LONG[m.month - 1]!.slice(0, 3), long: monthName(m) };
+    // A past period with no payment entered is "Not entered", never an amount owed: the ledger
+    // alone cannot tell unpaid from not yet entered (Sean, 2026-10-01).
+    if (m.duePeriod && m.state === 'overdue') return { ...base, value: null, kind: 'unentered' };
     if (m.duePeriod) return { ...base, value: m.due, kind: 'expected' };
     if (m.state === 'paid') return { ...base, value: m.paid, kind: 'recorded' };
     if (m.state === 'ahead') return { ...base, value: null, kind: 'future' };
@@ -54,7 +57,7 @@ const capsules = computed<CapsuleMonth[]>(() =>
   })
 );
 
-const capsuleTerms = { recorded: 'Paid', unentered: 'Nothing recorded', expected: 'Due', future: 'Not due yet' };
+const capsuleTerms = { recorded: 'Paid', unentered: 'Not entered', expected: 'Due', future: 'Not due yet' };
 
 const paidMonths = computed(() => months.value.filter((m) => m.paid > 0));
 const nothingMonths = computed(() => months.value.filter((m) => m.state === 'nothing'));
@@ -67,12 +70,22 @@ const headline = computed(() => {
   if (!st) return null;
   const through = st.paidThrough ? `Paid up to ${formatDateOnly(st.paidThrough, longDate)}` : 'No payment recorded yet';
   if (st.owedPeriods.length === 0) return { text: `${through}. You are up to date.`, tone: 'paid' as const, pill: 'Up to date' };
+  if (st.periodsDue > 0 && st.status === 'overdue') {
+    // From the ledger alone: months after the last payment entered. Not "overdue" - the
+    // landlady may not have entered a payment yet (Sean, 2026-10-01).
+    const months = st.periodsDue === 1 ? '1 month after that is' : `${st.periodsDue} months after that are`;
+    return {
+      text: `${through}. ${months} not entered yet. If you have paid the landlady, it appears here once she enters it.`,
+      tone: 'unentered' as const,
+      pill: 'Not entered',
+    };
+  }
   if (st.periodsDue > 0) {
     const months = st.periodsDue === 1 ? '1 month is' : `${st.periodsDue} months are`;
     return {
       text: `${through}. ${months} due, ${peso(st.totalDue, 2)} in all.`,
       tone: 'overdue' as const,
-      pill: st.status === 'overdue' ? 'Overdue' : 'Due today',
+      pill: 'Due today',
     };
   }
   const next = st.owedPeriods[0]!;
@@ -99,7 +112,7 @@ function stateLabel(m: PaymentMonth): { tone: 'paid' | 'overdue' | 'expected' | 
     case 'paid':
       return { tone: 'paid', text: 'Paid' };
     case 'overdue':
-      return { tone: 'overdue', text: 'Overdue' };
+      return { tone: 'unentered', text: 'Not entered' };
     case 'due-today':
       return { tone: 'overdue', text: 'Due today' };
     case 'due-soon':
@@ -107,7 +120,7 @@ function stateLabel(m: PaymentMonth): { tone: 'paid' | 'overdue' | 'expected' | 
     case 'ahead':
       return { tone: 'neutral', text: 'Not due yet' };
     default:
-      return { tone: 'unentered', text: 'Nothing recorded' };
+      return { tone: 'unentered', text: 'Not entered' };
   }
 }
 
@@ -123,6 +136,7 @@ function monthDetail(m: PaymentMonth): string {
 }
 
 function monthAmount(m: PaymentMonth): string {
+  if (m.duePeriod && m.state === 'overdue') return '';
   if (m.duePeriod) return `${peso(m.due, 2)} due`;
   if (m.paid > 0) return peso(m.paid, 2);
   return '';
@@ -146,7 +160,7 @@ const rows = computed(() => [...months.value].reverse());
   />
 
   <div v-else-if="months.length === 0" class="flex flex-col gap-1">
-    <p class="text-lg font-semibold tracking-tight">Nothing recorded yet</p>
+    <p class="text-lg font-semibold tracking-tight">Nothing entered yet</p>
     <p class="text-sm leading-6 text-ink-soft">
       Each month appears here once the landlady records a payment for it, or once rent falls due.
     </p>
@@ -176,12 +190,12 @@ const rows = computed(() => [...months.value].reverse());
         <dd class="text-xs text-ink-soft">From payments the landlady verified</dd>
       </div>
       <div>
-        <dt class="text-xs text-ink-faint">Due now</dt>
+        <dt class="text-xs text-ink-faint">{{ standing?.status === 'overdue' ? 'Not entered yet' : 'Due now' }}</dt>
         <dd class="text-lg font-semibold tabular">
           {{ standing && standing.totalDue > 0 ? peso(standing.totalDue, 2) : standing ? 'Nothing' : 'Not known' }}
         </dd>
         <dd v-if="standing && standing.periodsDue > 0" class="text-xs text-ink-soft">
-          {{ standing.periodsDue }} {{ standing.periodsDue === 1 ? 'month' : 'months' }}
+          {{ standing.periodsDue }} {{ standing.periodsDue === 1 ? 'month' : 'months' }}<template v-if="standing.status === 'overdue'"> at today's rate</template>
         </dd>
       </div>
     </dl>
@@ -190,7 +204,7 @@ const rows = computed(() => [...months.value].reverse());
       {{ peso(waitingTotal, 2) }} you sent is waiting for the landlady to verify it. It counts here once she does.
     </p>
     <p v-if="nothingMonths.length > 0" class="text-sm leading-6 text-ink-soft">
-      No payment is recorded for {{ nameList(nothingMonths) }}. If you paid for
+      No payment is entered for {{ nameList(nothingMonths) }}. If you paid for
       {{ nothingMonths.length === 1 ? 'it' : 'them' }}, ask the landlady to check her records.
     </p>
 

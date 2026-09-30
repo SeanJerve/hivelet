@@ -771,7 +771,7 @@ function refreshAll() {
       v-else-if="outstandingBills.length === 0 && standing && standingOwes"
       tone="brand"
       class="ws-reveal"
-      :title="standing.status === 'overdue' ? 'Overdue' : 'Due'"
+      :title="standing.status === 'overdue' ? 'Not entered yet' : 'Due'"
     >
       <div>
         <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">
@@ -782,7 +782,10 @@ function refreshAll() {
             Your recorded payments cover rent up to {{ formatDateOnly(standing.paidThrough, longDate) }}.
           </template>
           <template v-else>No payment is recorded yet.</template>
-          <template v-if="standing.periodsDue > 1"> {{ standing.periodsDue }} months are unpaid.</template>
+          <template v-if="standing.status === 'overdue'">
+            {{ standing.periodsDue > 1 ? `${standing.periodsDue} months after that are` : 'The month after that is' }} not entered
+            yet. If you have paid the landlady, it appears here once she enters it.
+          </template>
           Paying now covers {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
           {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }}.
         </p>

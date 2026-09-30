@@ -1184,15 +1184,18 @@ if (live.length) {
    * entered; a blank means nothing was entered. What makes it answerable is the
    * receipt-number sequence: across the 106 consecutive numbers 5030-5135,
    * exactly THREE are unused, and each falls on the date unit 2f would have
-   * paid. Three missing months, three unused numbers, right dates. That points
+   * paid. Three months not entered, three unused numbers, right dates. That points
    * at three receipts written and never transcribed, not at three months of
    * unpaid rent - but only her book can settle it.
    */
   const gapKey = (unit, ym) => unit + ' ' + ym;
   const KNOWN_GAPS = new Map([
-    [gapKey('2f', '2025-11'), 'unused receipt 5063 sits between receipts dated 1 and 3 Dec 2025'],
-    [gapKey('2f', '2025-12'), 'unused receipt 5090 sits between receipts dated 14 and 15 Jan 2026'],
-    [gapKey('2f', '2026-01'), 'unused receipt 5106 sits between receipts dated 30 Jan and 2 Feb 2026'],
+    [gapKey('2f', '2025-11'), 'unused invoice number 5063 sits between payments dated 1 and 3 Dec 2025'],
+    [gapKey('2f', '2025-12'), 'unused invoice number 5090 sits between payments dated 14 and 15 Jan 2026'],
+    [gapKey('2f', '2026-01'), 'unused invoice number 5106 sits between payments dated 30 Jan and 2 Feb 2026'],
+    // B-89, decided by Sean 2026-10-01: F2F's August is not entered yet. It appeared with the August
+    // load (062). A missing payment always means "not entered", never unpaid.
+    [gapKey('F2F', '2026-08'), 'not entered yet (B-89, Sean 2026-10-01): her August entry for F2F is still to be entered'],
   ]);
 
   const byRoomMonth = new Map();
@@ -1222,9 +1225,9 @@ if (live.length) {
         if (before && after && before.name === after.name) {
           const k = gapKey(unit, ym);
           if (KNOWN_GAPS.has(k)) {
-            console.log('        ' + k + ' - no receipt, same resident either side. ' + KNOWN_GAPS.get(k));
+            console.log('        ' + k + ' - not entered, same tenant either side. ' + KNOWN_GAPS.get(k));
           } else {
-            unexplainedGaps.push(k + ' - no receipt, and ' + before.name + ' is on both sides of it');
+            unexplainedGaps.push(k + ' - not entered, and ' + before.name + ' is on both sides of it');
           }
         }
       }
@@ -1234,7 +1237,7 @@ if (live.length) {
   }
 
   for (const g of unexplainedGaps) console.log('        ' + g);
-  check('a month missing for a continuing resident', unexplainedGaps.length,
+  check('a month not entered for a continuing tenant', unexplainedGaps.length,
     KNOWN_GAPS.size + ' known gap(s), listed above and awaiting her book; no others');
 
   /**
@@ -1243,7 +1246,7 @@ if (live.length) {
    *
    * Migration 040 rescopes two unique indexes on `transaction_reference` so
    * they apply to Adyen rows only. Unscoped, they forbid the shape her book is
-   * built on: one receipt number across several rows (OR#4895 across four), and
+   * built on: one invoice number across several rows (INV#4895 across four), and
    * one payment split into a bill row plus an advance row. The unscoped version
    * fails an overpayment PARTWAY, with the income row saved and only part of the
    * money applied.
