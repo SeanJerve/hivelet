@@ -80,7 +80,8 @@ const norm = (s) => String(s).replace(/\s+/g, ' ').trim();
 // item's own words. The team's hand-built form (30 Sep) has one multiple-choice grid per
 // characteristic, so a header reads "Usability [13. I can tell what each screen is for ...]": the
 // row text, numbered. Both reduce to the item's words, so both match the same item.
-const itemKey = (h) => { const m = norm(h).match(/\[(.*)\]$/); return norm(m ? m[1] : h).replace(/^\d+\.\s*/, '').toLowerCase(); };
+// A row written "English / Filipino" keys on its English half (no item contains " / ").
+const itemKey = (h) => { const m = norm(h).match(/\[(.*)\]$/); return norm(m ? m[1] : h).split(' / ')[0].replace(/^\d+\.\s*/, '').trim().toLowerCase(); };
 const columnsFor = (title) => header.map((h, i) => [itemKey(h), i]).filter(([h]) => h === itemKey(title)).map(([, i]) => i);
 const q1Col = header.findIndex((h) => norm(h).startsWith('Q1.') || /which best describes you/i.test(h));
 if (q1Col < 0) { console.error('No "Q1." or "Which best describes you" column: is this the export of the Hivelet survey?'); process.exit(1); }
