@@ -3,7 +3,8 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, roomsLoaded, tenantsFetchFailed, showToast, asListedUnitCode, waterChargeFor, type TenantRecord } from '@/lib/systemState';
+import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, roomsLoaded, tenantsFetchFailed, showToast, asListedUnitCode, waterChargeFor, incomeRecords, fetchIncomeRecords, type TenantRecord } from '@/lib/systemState';
+import TenantHistory from '@/components/tenants/TenantHistory.vue';
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
@@ -320,7 +321,32 @@ async function fetchTenants() {
 onMounted(() => {
   fetchTenants();
   checkInquiryConversion();
+  // The Year filter lists the years her receipts cover (TenantHistory).
+  if (incomeRecords.length === 0) fetchIncomeRecords();
 });
+
+/**
+ * Now, or a past year and month. "Now" is the tenant accounts, as this page
+ * always was. A year shows who paid for each unit then, read from her receipts
+ * (components/tenants/TenantHistory.vue, lib/tenantHistory.ts), because the
+ * accounts' move-in dates are the import's placeholder and tenants who left
+ * before the system have no account at all (Sean, 2026-09-30).
+ */
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const historyYear = ref('now');
+const historyMonth = ref('all');
+const showingHistory = computed(() => historyYear.value !== 'now');
+const historyYearOptions = computed(() => {
+  const years = new Set<number>(incomeRecords.map((r) => Number(r.year)).filter(Boolean));
+  return [
+    { value: 'now', label: 'Now' },
+    ...[...years].sort((a, b) => b - a).map((y) => ({ value: String(y), label: String(y) })),
+  ];
+});
+const historyMonthOptions = [
+  { value: 'all', label: 'All months' },
+  ...MONTH_NAMES.map((m, i) => ({ value: String(i + 1), label: m })),
+];
 
 watch(newUnit, syncDepositToUnit);
 
@@ -657,7 +683,8 @@ async function handleOnboard() {
     const finalOccupants = 1 + finalRoommateQty;
 
     const created = await api.post<{ id: string; temporaryPassword: string | null }>('/admin/tenants', {
-      fullName: newName.value.trim(),
+      // Spaces tidied, as the server also does: one name, one spelling.
+      fullName: newName.value.replace(/\s+/g, ' ').trim(),
       email: newEmail.value.trim(),
       phone: newPhone.value.trim(),
       roomNumber: newUnit.value.toUpperCase(),
@@ -826,8 +853,10 @@ async function handleOnboard() {
           />
         </div>
 
-        <!-- By cluster / As a list switcher, same treatment as the Units directory -->
+        <!-- By cluster / As a list switcher, same treatment as the Units directory.
+             Not for a past year: that is one list by unit, from the receipts. -->
         <div
+          v-if="!showingHistory"
           class="min-h-[2.75rem] h-11 inline-flex w-full items-center rounded-full bg-tile border border-line p-1 shadow-xs sm:w-auto sm:shrink-0"
           role="group"
           aria-label="How to show the tenants"
@@ -865,15 +894,38 @@ async function handleOnboard() {
       <!-- Only when there is something to choose between. With nobody moved out
            and no prospects it held one choice, "Living here", which Sean called
            nonsense on the testing morning (2026-09-30). -->
-      <div v-if="filterChips.length > 1" class="flex items-center gap-2 sm:ml-auto">
+      <!-- Two to a row on a phone, a row of their own from `sm`. Year is always
+           there; Month only once a year is chosen; standing only for "Now". -->
+      <div class="grid grid-cols-2 gap-3 sm:ml-auto sm:flex sm:items-center">
         <PillSelect
+          v-if="filterChips.length > 1 && !showingHistory"
           v-model="statusFilter"
           :options="filterChips"
           aria-label="Filter by standing"
           widthClass="w-full sm:w-52"
         />
+        <PillSelect
+          v-model="historyYear"
+          :options="historyYearOptions"
+          aria-label="Year"
+          widthClass="w-full sm:w-32"
+        />
+        <PillSelect
+          v-if="showingHistory"
+          v-model="historyMonth"
+          :options="historyMonthOptions"
+          aria-label="Month"
+          widthClass="w-full sm:w-44"
+        />
       </div>
     </div>
+
+    <TenantHistory
+      v-if="showingHistory"
+      :year="Number(historyYear)"
+      :month="historyMonth === 'all' ? null : Number(historyMonth)"
+      :query="q"
+    />
 
     <!--
       Shaped like whichever view mode is about to render, not always the flat
@@ -884,7 +936,7 @@ async function handleOnboard() {
       shape "grouped" actually is; RoomDirectoryView does the same swap
       between its own two view modes.
     -->
-    <div v-if="showSkeleton && viewMode === 'grouped'" class="space-y-6">
+    <div v-else-if="showSkeleton && viewMode === 'grouped'" class="space-y-6">
       <SkeletonTable :columns="6" :rows="3" />
       <SkeletonTable :columns="6" :rows="3" />
     </div>
