@@ -255,17 +255,29 @@ their own account":*
 *(c) Prospective tenants, a fourth group. Add to "Participants" in H2, after the tenants' sentence:*
 
 > [NUMBER] prospective tenants, people looking for a room who do not live at the boarding house,
-> used the public website and the inquiry form on their own phones, without an account. The
-> reservation (booking) function was still in development and was not part of the test.
+> used the public website on their own phones, without an account: they browsed the units and
+> rates and sent an enquiry about a unit. On sending, each was given a private link and a reference
+> code for that enquiry; the administrator replied from her Inquiries page, and the prospect read
+> the reply through the link and wrote back in the same conversation. An enquiry that the
+> administrator accepts becomes a tenancy linked to it; the system takes no online reservation or
+> deposit.
+
+*Updated 2026-09-30 (for Vince): the earlier sentence here said the reservation (booking) function
+"was still in development and was not part of the test". That is no longer true. Since migration
+065 (B-88), live on 30 September, an enquiry is a two-way conversation without sign-up (Chapter 4,
+§4.2.3; the manual Part 2 §8; test cases P-06 and P-06b). Keep the sentences about the reply only
+if the team ran P-06b with the prospects; otherwise end the paragraph after "sent an enquiry about
+a unit" and add "The administrator's reply was tested separately by the team (P-06b)."*
 
 *and change "a separate section for each respondent group" in "Instruments" to "a separate section
 for each of the four respondent groups (the owner or administrator, tenants, prospective tenants
 and technical evaluators)". The prospects' section has twelve items in English and Filipino on six
 characteristics; they did not rate Security or Maintainability, which a visitor cannot observe.*
 
-*(d) Who the administrator was. If the administrator who tested is not the owner (the admin account
-is Michelle's since migration 063), say "the administrator, who manages the boarding house for the
-owner" wherever H2 says "the owner, as the only administrator".*
+*(d) Who the administrator was. The administrator account is Michelle's (migration 063); the
+business keeps the name Fe Galang Da Silva Boarding House. Wherever H2 says "the owner, as the only
+administrator", say "the administrator, who manages the boarding house for the owner", and name
+Michelle as the administrator if the paper names participants at all.*
 
 ## F. Optional improvements (not errors)
 
