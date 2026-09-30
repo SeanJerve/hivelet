@@ -75,6 +75,15 @@ thing did not work" is not.
 
 ### B-85 — after the testing day: remove the REHEARSAL tenant's bill (and anything else the walkthrough leaves)
 
+> **061 written, NOT APPLIED** (`database/migrations/061_remove_the_testing_day_rehearsal_records.sql`).
+> The rehearsal tenant is **"REHERSAL TEST"** (spelled that way), moved into PH at 08:42 Manila on
+> 30 Sep; the GCash checkout raised its bill (P30,200, Due) at 08:46. 061 removes that profile's
+> bills, payments, ledger rows, repair requests and the notifications about them, keeps the
+> profile, its ended tenancy and the audit trail, and **stops, changing nothing, while the tenant
+> still lives in PH**. Its PREVIEW query (foot of the file) was run read-only at 08:55: one profile,
+> still in PH, 1 bill, nothing else yet. **After A-31:** run the PREVIEW, `npm run backup`, then
+> the file; set PH back to P30,000 through the screen (step 26).
+
 - **Blocked on:** the testing day happening (30 September), then a migration
 - **What I found:** walkthrough step 15b (test case A-20) raises a real bill for the REHEARSAL
   tenant on `PH`. Step 18 settles it, step 19b voids that receipt (and migration 054 reverses the
@@ -156,11 +165,14 @@ thing did not work" is not.
 > SMS, by decision** - the sign-in page now has a "Forgot your password?" link that sends a tenant
 > to the owner (B-83's Reset password), and `scripts/reset-owner-password.mjs` resets hers
 > (read-only without `--confirm`; Sean runs it). Both held locally until testing ends.
-> **Still open:** CSP enforcement, checked during A-19. The public page has no third-party frame
-> any more (the Google Maps embed went in 4b62945 on 21 Sep, with an "Open in Google Maps" link in
-> its place), so only the payment dialog needs checking. **Ask Sean whether removing the map
-> embed was intended**: the commit message does not mention it, and the section's comments still
-> describe a live map.
+> **Map: removed on purpose** (Sean, 30 Sep): the Google Maps embed went in 4b62945 on 21 Sep, with
+> an "Open in Google Maps" link in its place; the stale comments describing a live map are corrected.
+> **CSP checked at A-19, 30 Sep 08:47 Manila:** the rehearsal tenant opened Pay with GCash on the
+> live site; Adyen loaded from `checkoutshopper-test.adyen.com`, `checkoutshopper-test.cdn.adyen.com`
+> and `checkoutanalytics-test.adyen.com`, fonts from Google, and the console showed **no
+> Content-Security-Policy report**. Closed without paying. **Still open:** switch
+> `Content-Security-Policy-Report-Only` to `Content-Security-Policy` in vercel.json after the
+> sessions (a deploy), then open the pay dialog once more.
 
 - **Apply migration `060`** (`database/migrations/060_record_income_for_months_is_the_servers_alone.sql`).
   Supabase advisor WARN: `record_income_for_months` has no fixed search_path and anon may EXECUTE it.
@@ -1831,7 +1843,11 @@ the untested half of BR-024, and they only become testable after a person has us
   read against the migration that caused it.
 - **Raised:** 2026-09-19
 
-### B-24 — going live on Adyen needs a merchant prefix nobody has yet
+### B-24 — going live on Adyen needs a merchant prefix nobody has yet · **DECIDED 2026-09-30: stays a recommendation**
+
+> **Sean, 30 Sep:** the system will not take real money through Adyen in this project. A live
+> account needs documents the owner has not agreed to provide, so the live move stays in Chapter 5,
+> recommendation 5, and the test-account notices on the site stay.
 
 - **Blocked on:** nothing today. This is a note for whenever real money is meant to move, so
   the switch is not thrown by someone who thinks one line in `.env` does it.
