@@ -5,6 +5,11 @@ Chapters 4 and 5?"** Written 2026-09-28 by Sean's session, after reviewing both 
 the system as it stands that evening.
 
 > [!IMPORTANT]
+> **2026-09-30: the one folder for the day is `docs/TESTING_DAY/`** (README first). It adds the
+> prospective tenants as a fourth group, the observation protocol the adviser asked for, the ISO
+> metrics tools guide, and `AFTER_TESTING.md`, which says what the results become in these chapters.
+
+> [!IMPORTANT]
 > **2026-09-29: the testing day with the owner and tenants is 30 September.** Run it from
 > `TESTING_DAY_GUIDE.md` (with `TESTING_DAY_TEST_CASES.md` and `TESTING_DAY_FORMS.md`). It produces
 > the data for Tables 10, 11, 11C, 11D and 12 to 22 in one day. Chapter 4 gained §4.3.6 (measured
