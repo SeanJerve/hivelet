@@ -33,6 +33,29 @@ thing did not work" is not.
 
 ## Open
 
+### B-91 — two walkthrough expenses (₱60 + ₱40) still live in September; and a request declined · **OPEN**
+
+- **Blocked on:** confirming the rows are the walkthrough's, then applying a migration (Sean's lane).
+- **What I was doing:** checking the testing-day results files against the Activity log (read-only)
+  before they go into Chapter 4.
+- **What I found:** A-28 ("₱100 REHEARSAL, edit, split 60/40, delete") was entered as **two
+  separate expenses at 22:50** (₱60 "0r551", ₱40 "0r555", 30 Sep) and never edited or deleted. Both
+  are live: September's Operating expenses read ₱100 high. Also: **no rate change was recorded on
+  30 Sep**, so A-11 (PH to ₱30,500) and A-32 (back to ₱30,000) did not happen; PH is ₱30,000, as it
+  should be, so nothing to undo there.
+- **What I already did:** wrote `database/migrations/070_void_the_walkthrough_expenses.sql`
+  (**not applied**: this machine has no database connection): **voids** exactly those two ids, as the Delete button would, and stops if either is not what was read. Reversible. Sean approved applying it on 1 Oct. Part A's
+  file now says what the log shows.
+- **What Sean needs to do:** `npm run backup`, paste 070 into the Supabase SQL editor, run it.
+- **How to know it worked:** September 2026 expenses ₱100 lower; `check:ledger` income unchanged.
+- **Declined (for the team to know):** on 1 Oct Sean asked Claude to remove the Activity log
+  (`audit_logs` and the Activity page) entirely before the technical evaluators review the accounts.
+  Claude did not: it is the owner's record of who changed her books (FR-029, NFR-009, Security in
+  Chapter 4), deleting it is irreversible, and removing it so evaluators cannot compare it with the
+  test results would misrepresent the evaluation. The results files were corrected to agree with
+  it instead, so there is nothing in it that contradicts them now.
+- **Raised:** 2026-10-01 by Claude (Lloyd's machine)
+
 ### B-90 — testing-day leftovers from 30 September: F2F's bill total, three defects · **OPEN** (the PH bill and repair: done by 069)
 
 Found by the team's walkthrough and tenant sessions (results in `docs/TESTING_DAY/results/`),

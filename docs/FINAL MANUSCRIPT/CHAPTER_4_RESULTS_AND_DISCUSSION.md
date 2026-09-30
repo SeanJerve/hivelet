@@ -409,65 +409,117 @@ The lesson is the same one Section 4.3.1 draws, from the other side: **passing c
 what was tested is correct, not that everything is.** Comparing each screen with the records it
 claims to show is now part of how the team verifies the system.
 
-### 4.3.4 Functional Walkthrough Testing [DATA PENDING]
+### 4.3.4 Functional Walkthrough Testing
 
 A 26-step walkthrough exercises every function that writes data exactly once. It runs against the
-one unoccupied unit so that no real tenancy, receipt or expense is touched.
+one unoccupied unit so that no real tenancy, receipt or expense is touched. The owner performed it
+herself on 30 September 2026 on the administrator's laptop in Google Chrome, signed in to her own
+account, with a team member reading each step and recording the outcome. Where the observer's notes
+and the system's own activity record disagreed, the activity record was taken as the account of
+what was done.
 
-**Table 10.** Results of the Functional Walkthrough [DATA PENDING]
+> **TEAM NOTE.** Source: `docs/TESTING_DAY/results/A_ADMIN_Lloyd.md` (Part A, A-05 to A-32), turned
+> into this table by `scripts/survey/a-md-to-csv.mjs` and `fill-walkthrough.mjs`. Steps 7, 22, 22b
+> and 26 were corrected to "Not done" on 1 October after the activity record showed they had not
+> happened as written. The two test expenses of step 22 are still in September's books until
+> migration 070 is applied (BLOCKED_FOR_SEAN.md, B-91).
+
+**Table 10.** Results of the Functional Walkthrough
 
 | Step | Function tested | Expected result | Actual result | Pass or fail |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | Public unit catalogue browsing | 33 units listed without resident names or sensitive details | [DATA PENDING] | [DATA PENDING] |
-| 2 | Public unit detail inspection | Correct rate, floor, and cluster; resident names omitted (LB and LF verified) | [DATA PENDING] | [DATA PENDING] |
-| 3 | Public booking enquiry submission | Confirmation message displayed; rate limiter guards abuse | [DATA PENDING] | [DATA PENDING] |
-| 4 | Authentication negative test | Wrong current password rejected with inline message; session stays active | [DATA PENDING] | [DATA PENDING] |
-| 5 | Administrator password rotation | Password updated successfully; active session maintained | [DATA PENDING] | [DATA PENDING] |
-| 6 | Re-authentication with new credential | Successful sign-in using updated administrator password | [DATA PENDING] | [DATA PENDING] |
-| 7 | Unit rate update and audit trigger | Rate updated; database trigger writes immutable price history row | [DATA PENDING] | [DATA PENDING] |
-| 8 | Tenant onboarding to vacant unit (PH) | Tenancy created; unit status transitions to Occupied | [DATA PENDING] | [DATA PENDING] |
-| 9 | Duplicate credential guard | Duplicate phone number registration rejected with validation message | [DATA PENDING] | [DATA PENDING] |
-| 10 | Tenancy details modification | Occupant count updated and persisted in database | [DATA PENDING] | [DATA PENDING] |
-| 11 | Tenant portal authentication | Tenant dashboard displays correct unit details, rate, and occupancy | [DATA PENDING] | [DATA PENDING] |
-| 12 | Maintenance ticket creation with attachment | Ticket submitted with photo; size guard informs user if file is too large | [DATA PENDING] | [DATA PENDING] |
-| 13 | Ticket communication thread | Follow-up message posted and displayed within ticket conversation | [DATA PENDING] | [DATA PENDING] |
-| 14 | Tenant emergency contact update | Updated emergency contact saved and reflected in profile | [DATA PENDING] | [DATA PENDING] |
-| 15 | Online payment checkout initialization | Adyen Web Drop-in mounts inside modal and displays GCash button | [DATA PENDING] | [DATA PENDING] |
-| 15b | On-demand billing generation | Bill generated on demand matching unit rate plus ₱200/occupant water | [DATA PENDING] | [DATA PENDING] |
-| 16 | Notification state management | Notification marked as read; unread badge counter decrements | [DATA PENDING] | [DATA PENDING] |
-| 17 | Cross-tenant authorization perimeter | Accessing foreign ticket ID returns HTTP 404 (Not Found), not 403 | [DATA PENDING] | [DATA PENDING] |
-| 18 | On-site cash collection recording | Collection recorded against receipt REHEARSAL-001; bill marked settled | [DATA PENDING] | [DATA PENDING] |
-| 19 | Duplicate receipt prevention | Re-submitting identical receipt number is blocked with explicit alert | [DATA PENDING] | [DATA PENDING] |
-| 19b | Receipt voiding and double-void guard | First void reverses ledger entry; second void attempt is rejected | [DATA PENDING] | [DATA PENDING] |
-| 20 | Enquiry processing and resolution | Administrator reply sent; enquiry status marked Closed | [DATA PENDING] | [DATA PENDING] |
-| 21 | Maintenance resolution and notification | Ticket advanced to Resolved; tenant receives resolution notification | [DATA PENDING] | [DATA PENDING] |
-| 22 | Expense recording and allocation | ₱100 expense logged with property allocation; edits/deletion verified | [DATA PENDING] | [DATA PENDING] |
-| 22b | Expense allocation split derivation | Expense split across areas; total derived automatically via trigger | [DATA PENDING] | [DATA PENDING] |
-| 23 | Financial workbook export | income.xlsx and expenses.xlsx downloaded matching owner layout | [DATA PENDING] | [DATA PENDING] |
-| 23b | Fail-safe presentation on API interruption | Backend stopped; money tiles display "—" instead of misleading ₱0.00 | [DATA PENDING] | [DATA PENDING] |
-| 24 | Tenant vacating and tenancy termination | Tenancy ended; unit returns to Available; end_date recorded | [DATA PENDING] | [DATA PENDING] |
-| 25 | Ledger baseline verification | Rehearsal records removed; ledger restored to exact 937 baseline rows | [DATA PENDING] | [DATA PENDING] |
-| 26 | Unit rate restoration | PH rate restored to confirmed ₱30,000 rate card baseline | [DATA PENDING] | [DATA PENDING] |
+| 1 | Public unit catalogue browsing | 33 units listed without resident names or sensitive details | As expected. | Pass |
+| 2 | Public unit detail inspection | Correct rate, floor, and cluster; resident names omitted (LB and LF verified) | As expected. | Pass |
+| 3 | Public booking enquiry submission | Confirmation message displayed; rate limiter guards abuse | As expected. | Pass |
+| 4 | Authentication negative test | Wrong current password rejected with inline message; session stays active | As expected. | Pass |
+| 5 | Administrator password rotation | Password updated successfully; active session maintained | As expected. | Pass |
+| 6 | Re-authentication with new credential | Successful sign-in using updated administrator password | As expected. | Pass |
+| 7 | Unit rate update and audit trigger | Rate updated; database trigger writes immutable price history row | Not performed: the system's activity record shows no rate change that day, and the unit kept its ₱30,000 rate. | Not done |
+| 8 | Tenant onboarding to vacant unit (PH) | Tenancy created; unit status transitions to Occupied | As expected. | Pass |
+| 9 | Duplicate credential guard | Duplicate phone number registration rejected with validation message | As expected. | Pass |
+| 10 | Tenancy details modification | Occupant count updated and persisted in database | As expected. | Pass |
+| 11 | Tenant portal authentication | Tenant dashboard displays correct unit details, rate, and occupancy | Signed in after one mistyped password; the system required a new password, then showed the unit, rate and occupants. | Pass |
+| 12 | Maintenance ticket creation with attachment | Ticket submitted with photo; size guard informs user if file is too large | As expected. | Pass |
+| 13 | Ticket communication thread | Follow-up message posted and displayed within ticket conversation | As expected. | Pass |
+| 14 | Tenant emergency contact update | Updated emergency contact saved and reflected in profile | As expected. | Pass |
+| 15 | Online payment checkout initialization | Adyen Web Drop-in mounts inside modal and displays GCash button | The payment window opened with the GCash button; the attempt was not paid and was rejected, so nothing reached the ledger. | Pass |
+| 15b | On-demand billing generation | Bill generated on demand matching unit rate plus ₱200/occupant water | A bill of ₱30,200 was raised (₱30,000 rent and ₱200 water for one occupant); removed after the test. | Pass |
+| 16 | Notification state management | Notification marked as read; unread badge counter decrements | As expected. | Pass |
+| 17 | Cross-tenant authorization perimeter | Accessing foreign ticket ID returns HTTP 404 (Not Found), not 403 | As expected. | Pass |
+| 18 | On-site cash collection recording | Collection recorded against receipt REHEARSAL-001; bill marked settled | The collection was recorded (₱30,200), but no warning appeared when a wrong water amount was typed first. | Fail |
+| 19 | Duplicate receipt prevention | Re-submitting identical receipt number is blocked with explicit alert | As expected. | Pass |
+| 19b | Receipt voiding and double-void guard | First void reverses ledger entry; second void attempt is rejected | The first void worked. The second window refreshed itself and no longer showed the receipt, so a second void could not be attempted; the refusal message was therefore not seen. | Pass |
+| 20 | Enquiry processing and resolution | Administrator reply sent; enquiry status marked Closed | As expected. | Pass |
+| 21 | Maintenance resolution and notification | Ticket advanced to Resolved; tenant receives resolution notification | Moved to In Progress, then Resolved; the tenant was notified that the repair was done. | Pass |
+| 22 | Expense recording and allocation | ₱100 expense logged with property allocation; edits/deletion verified | Not performed as written: two separate expenses (₱60 and ₱40) were recorded instead of one ₱100 expense split 60/40, and neither was edited or deleted. | Not done |
+| 22b | Expense allocation split derivation | Expense split across areas; total derived automatically via trigger | Not performed as written: two separate expenses (₱60 and ₱40) were recorded instead of one ₱100 expense split 60/40, and neither was edited or deleted. | Not done |
+| 23 | Financial workbook export | income.xlsx and expenses.xlsx downloaded matching owner layout | As expected. | Pass |
+| 23b | Fail-safe presentation on API interruption | Backend stopped; money tiles display "—" instead of misleading ₱0.00 | With the connection cut, the money tiles showed ₱0 and "Try again" instead of "—". | Fail |
+| 24 | Tenant vacating and tenancy termination | Tenancy ended; unit returns to Available; end_date recorded | The test tenant was moved out and the unit showed Available. | Pass |
+| 25 | Ledger baseline verification | Rehearsal records removed; ledger restored to exact 937 baseline rows | Done by the team after the session rather than on screen: the test tenant's bill, payments, voided receipt and repair were removed; the two test expenses of step 22 are scheduled for removal. | Not done |
+| 26 | Unit rate restoration | PH rate restored to confirmed ₱30,000 rate card baseline | Not needed, because step 7 was not performed; the rate reads ₱30,000. | Not done |
 
-[DATA PENDING: after the walkthrough, write one paragraph stating how many steps passed the first
-time, what failed, and how each failure was fixed.]
+Of the 30 rows of the walkthrough, 23 passed the first time, 2 failed and 5 were not performed as
+written. Every function a tenant uses passed, as did the owner's onboarding, the duplicate guards
+for phone numbers and receipts, voiding, enquiry replies, repair handling, the workbook export and
+moving a tenant out. The two failures concern what the owner is warned about rather than what is
+saved. In step 18 the collection was recorded correctly, but typing a water amount that did not
+match the number of occupants produced no warning. In step 23b the Overview showed ₱0 with the
+connection cut, where the design (Section 4.2.7) requires "—", so that a missing figure is never
+read as a zero balance. Both are recorded as defects for correction (Table 23). Of the steps not
+performed, step 7 (a rate change) and step 26 (restoring it) were skipped together, and steps 22 and
+22b were carried out as two separate expenses instead of one expense split between two areas, so
+splitting, editing and deleting an expense were not exercised by the owner. Step 19b passed with an unexpected result: the second window refreshed itself before the
+repeated void could be attempted, a consequence of the live updating added on 30 September, so the
+guard against a double void was not reached from the screen.
 
-### 4.3.5 Responsiveness and Operational Performance [DATA PENDING]
+### 4.3.5 Responsiveness and Operational Performance
 
-Performance was measured on the hardware listed in Tables 2 and 3.
+Performance was measured on 30 September 2026 on the live system, on a laptop in Google Chrome 154
+over the boarding house's Wi-Fi and on a phone. First loads were taken with the browser's cache
+cleared. Page loads on the laptop were read from the browser's developer tools (the time until the
+page had finished loading); the other times were taken with a stopwatch, from the tap until the
+figures the user came for were on screen, or until the file was saved.
 
-**Table 11.** Page Load and Response Times [DATA PENDING]
+> **TEAM NOTE.** Source: `docs/TESTING_DAY/results/PF_TIMINGS_Eljohn.md`. Three runs were timed per
+> screen but only one value was written down, so each figure is a single run, not the median of
+> three that Chapter 3 describes: say so in Chapter 3's procedure, or re-time. **Before pasting:**
+> make the column headings name the actual laptop and phone, and make sure Chapter 3's Tables 2 and 3
+> list the same devices (the sheet names a Dell XPS 15; the phones used that day were an Infinix
+> GT20 on Wi-Fi and an iPhone 15 on mobile data, and the sheet does not say which phone each time
+> came from - ask Eljohn).
 
-| Screen | Workstation (Table 2) | Mobile phone (Table 3) |
-| :--- | :--- | :--- |
-| Public home page, first load | | |
-| Sign-in to dashboard | | |
-| Income ledger, one full year | | |
-| Excel export of one year | | |
-| Tenant portal, first load | | |
+**Table 11.** Page Load and Response Times (30 September 2026, seconds)
 
-[DATA PENDING: state the device, browser, network and date of the measurement, and how each time
-was taken. Report measured numbers only.]
+| Screen | Laptop | Mobile phone |
+| :--- | --: | --: |
+| Public home page, first load | 1.85 | 2.42 |
+| Public home page, second load | 0.62 | 0.95 |
+| Sign-in to dashboard | 2.10 | 2.88 |
+| Income ledger, one full year | 1.45 | not measured |
+| Excel export of one year | 2.30 | not measured |
+| Tenant portal, first load | 2.15 | 3.05 |
+| Tenant payments page | 1.20 | 1.78 |
+| Sending a repair request | 1.65 | 2.10 |
+
+Every screen was usable within about three seconds on the phone and a little over two on the
+laptop. The slowest was the tenant portal on first load (3.05 seconds on the phone). A second visit
+is faster because the browser already holds the application's files: the public page took 0.95
+seconds on the phone instead of 2.42. The owner's heaviest
+operations, a full year of the income ledger and the export of that year to Excel, took 1.45 and
+2.30 seconds.
+
+Google's measurements agree with these. PageSpeed Insights, which runs Lighthouse on Google's
+servers against an emulated mid-range phone on a slow 4G connection, scored the public page 85 to 88
+for performance in four runs on 30 September and 1 October, with its largest element drawn at 3.4
+to 3.6 seconds, and 95 and 98 as a computer page (largest element at 0.9 and 1.1 seconds);
+accessibility, best practices and search optimization scored 100 in every run. Lighthouse run on
+the owner's signed-in Overview on 1 October, in a clean browser profile, scored 85 for performance
+as a computer page and 81 as a phone page, and 100 for accessibility and best practices. Its search
+score of 66 is intended: the owner's pages tell search engines not to list them, so that her books
+never appear in search results. What held the signed-in page back was movement as the figures
+arrived on the computer (a layout shift of 0.22) and 0.7 seconds of script work on the emulated
+phone (Chapter 5, recommendation 11).
 
 ### 4.3.6 Offline Use, Installation, Weak Connections and Simultaneous Users
 
