@@ -65,7 +65,7 @@ const GROUPS = [
   ['Staying out of the owner\'s pages; signing out (T-15, T-16)', ['T-15', 'T-16']],
 ];
 
-// Prospective tenants (added 2026-09-30): public website only, docs/TESTING_DAY/OBSERVATION_PROTOCOL.md Part PR.
+// Prospective tenants (added 2026-09-30): public website only, docs/FINAL MANUSCRIPT/TESTING_DAY_TEST_CASES.md Part PR.
 const PR_GROUPS = [
   ['Understanding what the place is (PR-01)', ['PR-01']],
   ['Finding unit types, rates and availability (PR-02 to PR-04)', ['PR-02', 'PR-03', 'PR-04']],

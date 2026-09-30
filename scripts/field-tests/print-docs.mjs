@@ -7,10 +7,7 @@
  * Writes, beside each source in docs/FINAL MANUSCRIPT/:
  *   TESTING_DAY_FORMS_PRINT.html        every "## Form" starts on a new sheet
  *   TESTING_DAY_TEST_CASES_PRINT.html   every "## Part" starts on a new sheet, landscape
- *   TESTING_DAY_GUIDE_PRINT.html        the guide, portrait
  *   CONSENT_FORM_PRINT.html             Form 1 alone, one per tester
- * and, beside its source in docs/TESTING_DAY/:
- *   OBSERVATION_PROTOCOL_PRINT.html     the facilitator's copy, task cards included
  *
  * The Markdown stays the one source: change it, then re-run this. Open a page in Chrome > Print.
  * Tables keep rows whole across a page break and repeat their header row on each page, and empty
@@ -27,9 +24,7 @@ const dir = path.resolve(here, '..', '..', 'docs', 'FINAL MANUSCRIPT');
 const JOBS = [
   { src: 'TESTING_DAY_FORMS.md', out: 'TESTING_DAY_FORMS_PRINT.html', breakBefore: /^## Form /, landscape: false, title: 'Testing day forms' },
   { src: 'TESTING_DAY_TEST_CASES.md', out: 'TESTING_DAY_TEST_CASES_PRINT.html', breakBefore: /^## Part /, landscape: true, title: 'Testing day test cases' },
-  { src: 'TESTING_DAY_GUIDE.md', out: 'TESTING_DAY_GUIDE_PRINT.html', breakBefore: /^## \d+\. /, landscape: false, title: 'Testing day guide' },
   { src: 'TESTING_DAY_FORMS.md', out: 'CONSENT_FORM_PRINT.html', only: [/^## Form 1\./, /^## Form 2\./], breakBefore: /^$^/, landscape: false, title: 'Consent form' },
-  { src: '../TESTING_DAY/OBSERVATION_PROTOCOL.md', out: '../TESTING_DAY/OBSERVATION_PROTOCOL_PRINT.html', breakBefore: /^## 4\. /, landscape: false, title: 'Observation protocol' },
 ];
 
 const css = (landscape) => `

@@ -6,7 +6,8 @@ worth doing it.
 
 > [!IMPORTANT]
 > **2026-09-29: tasks 1, 2, 3, 4 and 5 are now one day, 30 September**, run from
-> `TESTING_DAY_GUIDE.md`. That guide supersedes the order below where they differ: the owner
+> `docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md` (it replaced `TESTING_DAY_GUIDE.md`). Those instructions supersede tasks 1 to 5 below
+> where they differ: the owner
 > session carries the walkthrough, the tenant sessions and the survey follow, and the scans and
 > timings fit around them.
 

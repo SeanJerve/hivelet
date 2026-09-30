@@ -190,7 +190,7 @@ const TECH_OPEN = [
 /**
  * Prospective tenants rate only what a visitor meets: the public website and the inquiry form.
  * No Security or Maintainability items (a visitor cannot see either). Added 2026-09-30 for the
- * testing day's third group (docs/TESTING_DAY/OBSERVATION_PROTOCOL.md, Part PR).
+ * testing day's third group (docs/FINAL MANUSCRIPT/TESTING_DAY_TEST_CASES.md, Part PR).
  */
 const PROSPECT_ITEMS = [
   ['Functional Suitability', [

@@ -42,7 +42,7 @@ does. Never run an "active" scan, a crawler that fills in forms, or a password t
 **Evidence:** the landlady's 26-step walkthrough (**Table 10**), task results of tenants and
 prospects (**Table 11C**), and the automated suites (**Table 8**).
 
-- On the day, fill Parts A, T and PR on the observation sheets (`OBSERVATION_PROTOCOL.md`).
+- On the day, fill Parts A, T and PR on the observation sheets (`INSTRUCTIONS FOR TESTING.md`, Batch 2).
 - Correctness of money is proven by the suites, not by a website: `check:ledger` re-derives all 952
   income rows; `check:reports` compares the Excel exports with the database month by month (548/0 on
   30 Sep). **Do not run `check:all` on the testing day** (it signs in as the landlady).
@@ -249,15 +249,12 @@ none) and shows the icons; **Service workers**: status *activated and is running
 
 ## 9. The survey: turning answers into Tables 12 to 22
 
-1. **Build the Google Form** with `docs/chapter 4 tenative/build_survey_form.gs` (two minutes; steps at
-   the top of the file). It includes the groups: landlady (owner/administrator), tenants,
-   **prospective tenants** (Section 5, added 30 Sep: 12 bilingual items on six characteristics, no
-   Security or Maintainability because a visitor cannot see either), technical evaluators.
-   **If the form was built before 30 Sep 2026, it has no prospects section.** Running the script
-   again makes a *new* form (new links and QR code, empty responses); do that before anyone answers.
-   If people have already answered the old form, keep it and add Section 5 by hand from
-   `ISO_25010_SURVEY_INSTRUMENT.md` (the Q1 choice must be typed exactly as written there, or the
-   scoring script will not recognise the group).
+1. **The form.** The live Google Form was built by hand by the team; fix it as
+   `SURVEY_FORM_REVIEW.md` says (`INSTRUCTIONS FOR TESTING.md`, Batch 0.1) and keep its link. Its
+   groups: landlady (owner/administrator), tenants, **prospective tenants** (12 bilingual items on six
+   characteristics; no Security or Maintainability, which a visitor cannot see) and technical
+   evaluators. `docs/chapter 4 tenative/build_survey_form.gs` builds an equivalent form only if a new
+   one is ever needed.
 2. **Each item** is rated 1 (Strongly Disagree) to 5 (Strongly Agree).
 3. **Weighted mean** per item: WM = Σ(f × w) / N; interpreted with Table 13: 4.21 to 5.00 Very High
    Quality; 3.41 to 4.20 High; 2.61 to 3.40 Moderate; 1.81 to 2.60 Low; 1.00 to 1.80 Very Low.

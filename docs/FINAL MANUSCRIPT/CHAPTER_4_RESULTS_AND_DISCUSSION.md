@@ -546,7 +546,7 @@ that decides how fast the system is for the owner and tenants.
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants [DATA PENDING]
 
 > **TEAM NOTE.** Filled from the testing day of 30 September 2026. The procedure is
-> `TESTING_DAY_GUIDE.md`, the cases `TESTING_DAY_TEST_CASES.md`, the forms
+> `docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md`, the cases `TESTING_DAY_TEST_CASES.md`, the forms
 > `TESTING_DAY_FORMS.md`. Send Claude the observation sheets, the defect log and the survey export.
 
 The owner and [DATA PENDING: number] tenants used the live system for their own tasks on 30

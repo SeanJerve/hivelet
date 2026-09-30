@@ -76,15 +76,15 @@
 >   `check:reports` fails if the copies differ and checks every month of the workbook against the ledger.
 
 > [!IMPORTANT]
-> **2026-09-30, testing day: everything for it is in one folder, `docs/TESTING_DAY/`.** Start at its
-> `README.md` (the day's flow for prospects, tenants and the landlady, all after the video), then
-> `OBSERVATION_PROTOCOL.md` (observe, do not interview; the task cards), `ISO_METRICS_TOOLS_GUIDE.md`
-> (the eight characteristics and how to use each scanning website) and `AFTER_TESTING.md` (clean-up,
-> typing up, and what to hand Claude). The survey form now has a prospective-tenants section.
+> **2026-09-30, testing day: the one set of instructions is `docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md`**, batch by batch
+> from preparing the papers to the evening hand-over. It replaced the testing-day guide, the folder
+> README, the observation protocol and the after-testing page (deleted the same day to end
+> contradictions; the prospects' task cards moved into `TESTING_DAY_TEST_CASES.md`, Part PR). Reference
+> files beside it: `ISO_METRICS_TOOLS_GUIDE.md` and `SURVEY_FORM_REVIEW.md`.
 
 > [!IMPORTANT]
 > **2026-09-29, Loyd's machine, the evening before the first test with the owner and real
-> tenants (30 September).** Read `docs/FINAL MANUSCRIPT/TESTING_DAY_GUIDE.md` if you are on the
+> tenants (30 September).** Read `docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md` (it replaced the testing-day guide) if you are on the
 > team tomorrow, and **B-82 in `BLOCKED_FOR_SEAN.md` before your next `check:all`**.
 >
 > - **Every tenant account was reset, live, at Loyd's request** (after `npm run backup`): 32/32

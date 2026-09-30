@@ -519,7 +519,7 @@ Which aspect most needs improvement, and what would you change?
 # SECTION 5 — Prospective tenants *(added 2026-09-30; bilingual)*
 
 For people looking for a room, who used only the public website and the inquiry form on the
-testing day (`docs/TESTING_DAY/OBSERVATION_PROTOCOL.md`, Part PR). Q1 gets a fourth choice:
+testing day (`docs/FINAL MANUSCRIPT/TESTING_DAY_TEST_CASES.md`, Part PR). Q1 gets a fourth choice:
 
 ```
 Looking for a room (not living here yet) / Naghahanap ng kwarto (hindi pa nakatira dito)

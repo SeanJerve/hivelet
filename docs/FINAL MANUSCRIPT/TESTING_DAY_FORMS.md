@@ -1,6 +1,6 @@
 # Testing Day Forms
 
-**Written 2026-09-29.** Print these for 30 September (`TESTING_DAY_GUIDE.md` §3, step 11). Signed
+**Written 2026-09-29.** Print these for 30 September (`docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md`, Batch 0.2). Signed
 and filled copies are scanned into the evidence folder and become appendices. How many to print:
 consent, one per tester plus the owner; observation sheet, one per tester; the rest, two copies
 each.
@@ -68,7 +68,7 @@ Video shown at: `________`    Write what happened, not what should have happened
 alone (help level 0 or 1), PH = done with help (level 2), F = not done (level 3, gave up, or wrong
 result), NT = not tried. **Errors**: wrong taps that led somewhere unintended. **Help**: the level
 (1 prompt, 2 hint where, 3 shown) and the time. Tag each quote S slow, C confusing, N lost, E error,
-+ liked (`docs/TESTING_DAY/OBSERVATION_PROTOCOL.md`).
++ liked (`docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md`, Batch 2).
 
 | Case | Start | End | Success | Errors | Help given (what, when) | What they said / did |
 | :-- | :-- | :-- | :-- | :-- | :--- | :--- |
@@ -175,8 +175,7 @@ Research team present: `________________________________________________________
 
 ## Form 6. Certification of system testing and acceptance
 
-*To be signed by the landlady who used the system (Michelle, the administrator; see
-`docs/TESTING_DAY/README.md`), or by the owner, at the end of the day, only if she agrees with it. If she does not, do
+*To be signed by the landlady who used the system (Michelle, the administrator), or by the owner, at the end of the day, only if she agrees with it. If she does not, do
 not ask her to sign; write down what she would need to see first.*
 
 > This is to certify that **Hivelet: A Web-Based Apartment Management System for Fe Galang Da
