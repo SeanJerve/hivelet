@@ -40,7 +40,7 @@ import {
 } from '../services/contactDetails.js';
 import { auditFromRequest, withoutCredentials } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
-import { normalizeInvoiceNumber } from '../utils/invoiceNumber.js';
+import { isAcknowledgementReceipt, normalizeInvoiceNumber } from '../utils/invoiceNumber.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom, toCentavos, MONEY_DUST } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
@@ -2895,7 +2895,10 @@ router.post(
      * Both are warnings about the piece of paper, not about the money, so they
      * are 409s naming the row they collide with rather than silent corrections.
      */
-    if (invoiceNumber) {
+    // An acknowledgement receipt is a kind of slip, not a number: many units get
+    // one, on many days, so "one number, one unit, one day" does not apply to it.
+    // The exact-repeat guard below still does (Sean, 2026-10-01).
+    if (invoiceNumber && !isAcknowledgementReceipt(invoiceNumber)) {
       const { data: sameNumber, error: sameNumberError } = await db
         .from('monthly_income_records')
         .select('id, date_paid, room_id, rooms:room_id (room_number)')

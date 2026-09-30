@@ -127,8 +127,9 @@ only, so another phone or computer shows its own count.
 3. **Occupants** starts at the number on record. Change it if more or fewer people live there now:
    **Water** is worked out from it (₱200 a person) and cannot be typed. **Rent** fills in from the
    unit's rate.
-4. **Invoice number (if any)**: type the number on the invoice you issued, or leave it blank if
-   there was none. "4726" or "INV 4726" is saved as INV#4726.
+4. **Invoice or acknowledgement receipt (if any)**: type the number on the invoice you issued, or
+   pick **Acknowledgement receipt** from the list when you gave a slip with no number. Leave it blank
+   if there was neither. "4726" or "INV 4726" is saved as INV#4726.
 5. Save, and check the summary that appears: the months, rent, water, total, and, if you changed
    the occupants, that the tenant's record now shows the new number (their water from then on).
    **See it in Monthly Income** opens that month with the payment marked.

@@ -923,7 +923,8 @@ function refreshAll() {
         </div>
       </dl>
       <p class="text-sm leading-6 text-ink-soft">
-        Rent is due {{ rentFacts.dueDay }}. It counts as overdue from the day after, with no grace period.
+        Rent is due {{ rentFacts.dueDay }}. The landlady usually enters payments a week or two after
+        she receives them, so a month you have paid can show "Not entered" for a while.
       </p>
     </OverviewTile>
     </section>

@@ -21,7 +21,7 @@ import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
-import { normalizeInvoiceNumber } from '@/lib/invoiceNumber';
+import { ACKNOWLEDGEMENT_RECEIPT, isAcknowledgementReceipt, normalizeInvoiceNumber } from '@/lib/invoiceNumber';
 
 const router = useRouter();
 
@@ -852,7 +852,7 @@ function triggerRecord() {
       <p class="flex items-start gap-2 text-sm leading-6 text-ink">
         <CheckCircle2 class="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
         <span>
-          Unit <strong>{{ recorded.unit }}</strong> is in the ledger<template v-if="recorded.invoice">, invoice
+          Unit <strong>{{ recorded.unit }}</strong> is in the ledger<template v-if="recorded.invoice && isAcknowledgementReceipt(recorded.invoice)">, with an acknowledgement receipt</template><template v-else-if="recorded.invoice">, invoice
           <strong class="font-mono">{{ recorded.invoice }}</strong></template><template v-else>, with no invoice</template>.
         </span>
       </p>
@@ -964,11 +964,30 @@ function triggerRecord() {
             </span>
           </label>
 
+          <!--
+            Typed OR picked (Sean, 2026-10-01): an invoice number, or
+            "Acknowledgement receipt" from the list when the slip has no number
+            (the "--" in her sheets). A native datalist: a text box that also
+            drops down, on a phone as well as a computer.
+          -->
           <label class="ws-field">
-            Invoice number (if any)
-            <input v-model="invoiceNum" type="text" placeholder="INV#4627" class="ws-input w-full font-mono" autocomplete="off" />
+            Invoice or acknowledgement receipt (if any)
+            <input
+              v-model="invoiceNum"
+              type="text"
+              list="onsite-invoice-kinds"
+              placeholder="INV#4627"
+              class="ws-input w-full font-mono"
+              autocomplete="off"
+            />
+            <datalist id="onsite-invoice-kinds">
+              <option :value="ACKNOWLEDGEMENT_RECEIPT" />
+            </datalist>
             <span v-if="invoicePreview && invoicePreview !== invoiceNum.trim()" class="ws-reveal ws-hint">
               Saved as {{ invoicePreview }}
+            </span>
+            <span v-else-if="!invoiceNum.trim()" class="ws-hint">
+              Type the invoice number, or pick Acknowledgement receipt if the slip has no number.
             </span>
           </label>
         </div>

@@ -33,6 +33,31 @@ thing did not work" is not.
 
 ## Open
 
+### B-93 — apply migration 072 (acknowledgement receipts) · **OPEN**
+
+- **Blocked on:** applying a schema change. Claude on Lloyd's machine ran the backup
+  (backups/2026-09-30T23-55-45) but its permission check refused running 072 through the Supabase
+  connection (an index is dropped and recreated).
+- **What it is:** Sean's 1 Oct request. Some units get only an **acknowledgement receipt** (no
+  number, the "--" in her sheets). The invoice field on Record payment and on Edit now offers
+  "Acknowledgement receipt" in a dropdown beside a typed number; any "ack…" is saved as exactly
+  `Acknowledgement receipt` (both `invoiceNumber.ts` twins), and the backend's "one number, one unit,
+  one day" guards skip it (the exact-repeat guard still applies). `check:ledger` skips it in the
+  shared-number check.
+- **072 does:** rewrites the one hand-typed `ACKNOWL` row (F2F, ₱8,800, 30 Sep) to the standard
+  words, with an AUDIT_CORRECTION row; recreates `idx_one_invoice_per_unit_per_month` so it no longer
+  covers acknowledgement receipts. Until then, a **second** acknowledgement receipt for the **same
+  unit and month** is refused as a duplicate; everything else works.
+- **What Sean needs to do:** paste `database/migrations/072_acknowledgement_receipts.sql` into the SQL
+  editor (the backup above is from minutes before), or tell Claude on Lloyd's machine to run it.
+- **How to know it worked:** `select count(*) from monthly_income_records where invoice_number ~* '^ack'
+  and invoice_number <> 'Acknowledgement receipt'` → 0; the index definition ends with
+  `invoice_number IS DISTINCT FROM 'Acknowledgement receipt'`.
+- **For the owner (Lloyd asks his mother):** are the 317 payments with no invoice (the importer's
+  `N/A-…`, blanked by 066) acknowledgement receipts? If yes, a later migration labels them; nothing
+  is inferred until she says so.
+- **Raised:** 2026-10-01 by Claude (Lloyd's machine)
+
 ### B-91 — two walkthrough expenses (₱60 + ₱40) still live in September; and a request declined · **DONE 2026-10-01: 070 applied**
 
 > **Applied 07:40 Manila** through the Supabase MCP connection, after `npm run backup`

@@ -3,6 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { periodEnd, propertyToday, formatDateOnly, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
+import { ACKNOWLEDGEMENT_RECEIPT } from '@/lib/invoiceNumber';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { useRoute, useRouter } from 'vue-router';
@@ -1970,10 +1971,22 @@ async function exportExcel() {
             </label>
           </div>
 
-          <!-- Invoice number: optional, because not every payment has one. -->
+          <!-- Invoice number: optional, because not every payment has one. Typed,
+               or "Acknowledgement receipt" from the list for a slip with no
+               number (Sean, 2026-10-01), as on the Record payment form. -->
           <label class="ws-field">
-            Invoice number (if any)
-            <input v-model="editInvoice" type="text" placeholder="INV#4627" class="ws-input w-full font-mono" />
+            Invoice or acknowledgement receipt (if any)
+            <input
+              v-model="editInvoice"
+              type="text"
+              list="edit-invoice-kinds"
+              placeholder="INV#4627"
+              class="ws-input w-full font-mono"
+              autocomplete="off"
+            />
+            <datalist id="edit-invoice-kinds">
+              <option :value="ACKNOWLEDGEMENT_RECEIPT" />
+            </datalist>
           </label>
 
           <!-- Payment Method & Online Reference Number Row -->

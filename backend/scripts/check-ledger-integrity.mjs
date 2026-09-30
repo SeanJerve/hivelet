@@ -171,8 +171,9 @@ for (const r of income) {
  */
 const byInvoice = new Map();
 for (const r of income) {
-  // A blank invoice is "no invoice" (066), not one shared number.
-  if (!r.invoice_number) continue;
+  // A blank invoice is "no invoice" (066), not one shared number. An
+  // acknowledgement receipt has no number either (072): many units get one.
+  if (!r.invoice_number || /^ack/i.test(r.invoice_number)) continue;
   if (!byInvoice.has(r.invoice_number)) {
     byInvoice.set(r.invoice_number, { rooms: new Set(), dates: new Set() });
   }
@@ -182,12 +183,12 @@ for (const r of income) {
 }
 for (const [inv, e] of byInvoice) {
   if (e.rooms.size > 1) {
-    findings.push({ ref: inv, what: `one receipt number against ${e.rooms.size} different rooms` });
+    findings.push({ ref: inv, what: `one invoice number against ${e.rooms.size} different rooms` });
   }
   if (e.dates.size > 1) {
     findings.push({
       ref: inv,
-      what: `one receipt number against ${e.dates.size} different payment dates (${[...e.dates].sort().join(', ')}) - one receipt cannot be written on two days`,
+      what: `one invoice number against ${e.dates.size} different payment dates (${[...e.dates].sort().join(', ')}) - one receipt cannot be written on two days`,
     });
   }
 }
