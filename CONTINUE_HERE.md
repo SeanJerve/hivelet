@@ -66,6 +66,11 @@
 >   "Refused to ..."); **060 and 061 applied** by Sean (061 removed the rehearsal tenant's bill,
 >   B-85). Decided: the map embed's removal was intended; no live Adyen money (B-24 stays a
 >   recommendation); no DTI number on the site; the in-memory limiter stays.
+> - **Tenants page, Year and Month** (same morning): who paid for each unit in any year or month,
+>   read from her receipts because the accounts' move-in dates are placeholders. One person written
+>   two ways in the same unit is shown once with "Also written as"; nothing in her records changes
+>   (`lib/tenantHistory.ts` has the rule; Jade and Jana Marmol stay two people). Names typed at
+>   move-in now have their spaces tidied, on the form and the server.
 
 > [!IMPORTANT]
 > **2026-09-29, Loyd's machine, the evening before the first test with the owner and real
