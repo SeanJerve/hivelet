@@ -143,10 +143,10 @@ export const Mark: React.FC<{size: number; draw?: number; fill?: number; hex?: s
   return (
     <svg width={size} height={size} viewBox="0 0 512 512">
       <path d={HEX_PATH} fill={hex} opacity={fill} />
-      <path d="M146 226 L256 136 L366 226" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0, 0.45))} opacity={draw > 0 ? 1 : 0} />
-      <path d="M186 254 V376" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.35, 0.65))} opacity={draw > 0.35 ? 1 : 0} />
-      <path d="M326 254 V376" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.45, 0.75))} opacity={draw > 0.45 ? 1 : 0} />
-      <path d="M186 314 H326" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.7, 1))} opacity={draw > 0.7 ? 1 : 0} />
+      <path d="M146 216 L256 126 L366 216" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0, 0.45))} opacity={draw > 0 ? 1 : 0} />
+      <path d="M186 244 V366" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.35, 0.65))} opacity={draw > 0.35 ? 1 : 0} />
+      <path d="M326 244 V366" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.45, 0.75))} opacity={draw > 0.45 ? 1 : 0} />
+      <path d="M186 304 H326" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.7, 1))} opacity={draw > 0.7 ? 1 : 0} />
     </svg>
   );
 };

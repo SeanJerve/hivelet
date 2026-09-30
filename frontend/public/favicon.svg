@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <path d="M217.89 34 Q256 12 294.11 34 L429.21 112 Q467.31 134 467.31 178 L467.31 334 Q467.31 378 429.21 400 L294.11 478 Q256 500 217.89 478 L82.79 400 Q44.69 378 44.69 334 L44.69 178 Q44.69 134 82.79 112 Z" fill="#17603f" />
   <g fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M146 226 L256 136 L366 226" />
-    <path d="M186 254 V376 M326 254 V376 M186 314 H326" />
+    <path d="M146 216 L256 126 L366 216" />
+    <path d="M186 244 V366 M326 244 V366 M186 304 H326" />
   </g>
 </svg>
