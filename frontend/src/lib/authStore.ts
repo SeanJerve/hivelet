@@ -69,6 +69,15 @@ export const mustChangePassword = computed(() => state.user?.mustChangePassword 
  */
 export const PASSWORD_CHANGED_FLAG = 'hivelet_password_changed';
 
+/**
+ * Set when a signed-in page's session is refused as ACCOUNT_INACTIVE, which in
+ * this system means the tenant was moved out (Move them out, or Edit >
+ * Standing > Moved out; `account_status_type` is only active or inactive).
+ * The sign-in page reads it once and says why they are there, instead of the
+ * tenant landing on a bare sign-in form (Sean, 2026-09-30).
+ */
+export const MOVED_OUT_FLAG = 'hivelet_moved_out';
+
 export function clearMustChangePassword(): void {
   if (state.user) state.user.mustChangePassword = false;
 }

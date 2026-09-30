@@ -9,10 +9,11 @@ import type { DemoAccount } from '@/lib/demoAccounts.dev';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import { LogIn, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next';
-import { login, authError, isAuthenticating, homeRouteForRole } from '@/lib/authStore';
+import { login, authError, isAuthenticating, homeRouteForRole, MOVED_OUT_FLAG } from '@/lib/authStore';
 import { showToast, LANDLADY } from '@/lib/systemState';
 import { ApiRequestError } from '@/lib/api';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import WsModal from '@/components/ui/WsModal.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -116,8 +117,24 @@ function describeLoginFailure(err: unknown): string | null {
 
 const shownError = computed(() => (authError.value ? loginFailure.value ?? authError.value : null));
 
+/**
+ * Shown once when a tenant arrives here because their account was closed on
+ * moving out (MOVED_OUT_FLAG, set in main.ts). The owner's Move them out ends
+ * their access at once, even mid-use, and landing on a bare sign-in form said
+ * nothing about why (Sean, 2026-09-30).
+ */
+const showMovedOut = ref(false);
+
 onMounted(() => {
   authError.value = null;
+  try {
+    if (sessionStorage.getItem(MOVED_OUT_FLAG)) {
+      sessionStorage.removeItem(MOVED_OUT_FLAG);
+      showMovedOut.value = true;
+    }
+  } catch {
+    // Storage blocked: no note, and nothing else changes.
+  }
 });
 
 async function handleSubmit() {
@@ -496,5 +513,27 @@ async function handleQuickLogin(account: DemoAccount) {
         </p>
       </div>
     </section>
+
+    <WsModal
+      v-if="showMovedOut"
+      title="You have moved out"
+      size="sm"
+      @close="showMovedOut = false"
+    >
+      <p class="text-sm leading-6 text-ink-soft">
+        Your tenancy at the boarding house has ended, so this account no longer has access to the
+        tenant portal. Your payment records stay with the landlady.
+      </p>
+      <p class="text-sm leading-6 text-ink-soft">
+        If you think this is a mistake, call Mrs. {{ LANDLADY.name }} on
+        <a
+          :href="`tel:${LANDLADY.phone}`"
+          class="font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+        >{{ LANDLADY.phone }}</a>.
+      </p>
+      <template #actions>
+        <button type="button" class="pill-btn-brand" @click="showMovedOut = false">OK</button>
+      </template>
+    </WsModal>
   </div>
 </template>

@@ -3,7 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { setAuthFailureHandler } from './lib/api'
-import { handleAuthFailure } from './lib/authStore'
+import { handleAuthFailure, MOVED_OUT_FLAG } from './lib/authStore'
 import './index.css'
 
 /**
@@ -32,10 +32,27 @@ import './index.css'
  * notifications heartbeat, say) does not stomp a redirect target that is
  * already correct or reset a login the person is mid-typing.
  */
-setAuthFailureHandler(() => {
+setAuthFailureHandler((error) => {
   handleAuthFailure()
   const current = router.currentRoute.value
   if (current.path === '/login') return
+  // Moved out (ACCOUNT_INACTIVE): the sign-in page explains it once
+  // (MOVED_OUT_FLAG). Only from a signed-in page, or the very first load, which
+  // the router guard then sends to /login; not from a public page, where there
+  // is nothing to explain.
+  if (error.code === 'ACCOUNT_INACTIVE' && (current.matched.length === 0 || current.meta.roles)) {
+    try {
+      sessionStorage.setItem(MOVED_OUT_FLAG, '1')
+    } catch {
+      // Storage blocked: they still reach sign-in, just without the note.
+    }
+    // No `redirect`: "Please sign in to access your payments" under the note
+    // would contradict it. There is nothing to come back to.
+    if (current.meta.roles) {
+      router.push('/login')
+      return
+    }
+  }
   // Only a page that needs a sign-in sends you to one. A stale token on a public
   // page, or on the very first load (no route resolved yet, so no `meta.roles`),
   // just clears the session; the router's own guard still sends anyone headed

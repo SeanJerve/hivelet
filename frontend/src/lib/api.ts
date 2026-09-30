@@ -107,9 +107,11 @@ export function setStoredToken(token: string | null): void {
   }
 }
 
-let onAuthFailure: (() => void) | null = null;
+// Handed the refusal itself, so the handler can tell a moved-out account
+// (ACCOUNT_INACTIVE) from an expired session.
+let onAuthFailure: ((error: ApiRequestError) => void) | null = null;
 
-export function setAuthFailureHandler(handler: () => void): void {
+export function setAuthFailureHandler(handler: (error: ApiRequestError) => void): void {
   onAuthFailure = handler;
 }
 
@@ -239,7 +241,7 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
     });
     // Same handling a parseable failure gets. A 401 is a dead session whether or
     // not whatever answered it could be read.
-    if (unreadable.isAuthFailure) onAuthFailure?.();
+    if (unreadable.isAuthFailure) onAuthFailure?.(unreadable);
     throw unreadable;
   }
 
@@ -250,7 +252,7 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
     };
     const apiError = new ApiRequestError(response.status, error);
 
-    if (apiError.isAuthFailure) onAuthFailure?.();
+    if (apiError.isAuthFailure) onAuthFailure?.(apiError);
     throw apiError;
   }
 

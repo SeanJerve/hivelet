@@ -25,10 +25,11 @@
  *   back from Adyen          adyenWebhookHandler.ts payment insert: amount, method, reference
  *   Google Fonts             frontend/index.html stylesheet link
  *   browser storage          lib/api.ts (token), lib/authStore.ts (session snapshot, cleared on
- *                            sign-out), BookViewingPrompt.vue (dismissal flag), and two
+ *                            sign-out), BookViewingPrompt.vue (dismissal flag), and three
  *                            sessionStorage entries: lib/yearScope.ts (the year picked on the
- *                            admin screens) and authStore.ts PASSWORD_CHANGED_FLAG (read once
- *                            after a forced password change), rechecked 2026-09-29; no
+ *                            admin screens), authStore.ts PASSWORD_CHANGED_FLAG (read once
+ *                            after a forced password change) and MOVED_OUT_FLAG (read once by
+ *                            the sign-in page, added 2026-09-30), rechecked 2026-09-30; no
  *                            `document.cookie` in frontend/src, no `res.cookie` in backend/src,
  *                            no analytics script anywhere
  *   offline cache            frontend/vite.config.ts workbox: static files, fonts, and
@@ -269,8 +270,9 @@ const sections = Object.values(S);
         </li>
         <li>
           <strong>While a tab is open:</strong> on the landlady's screens, the year she chose to
-          look at; and, after you set a new password, a one-time note so the confirmation still
-          shows once the page reloads. Both are gone when the tab closes.
+          look at; after you set a new password, a one-time note so the confirmation still
+          shows once the page reloads; and, if your account was closed when you moved out, a
+          one-time note so the sign-in page can say so. All are gone when the tab closes.
         </li>
         <li>
           <strong>An offline copy of the site.</strong> Hivelet installs a small helper in your
