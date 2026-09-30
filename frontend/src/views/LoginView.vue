@@ -351,7 +351,8 @@ async function handleQuickLogin(account: DemoAccount) {
                 email, SMS needs a paid provider, and everyone concerned sees the
                 landlady. A forgotten password is reset in person: a tenant's by her,
                 from Tenants > Edit > Reset password (B-83); hers by the team
-                (scripts/reset-owner-password.mjs). This says so where people look.
+                (scripts/reset-owner-password.mjs). The note speaks to tenants only;
+                the owner's route is not advertised on a public page (Sean, 2026-09-30).
               -->
               <button
                 type="button"
@@ -369,7 +370,6 @@ async function handleQuickLogin(account: DemoAccount) {
                   :href="`tel:${LANDLADY.phone}`"
                   class="font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
                 >{{ LANDLADY.phone }}</a>.
-                If this is the landlady's own account, the Hivelet team resets it.
               </p>
             </div>
           </div>
@@ -394,8 +394,7 @@ async function handleQuickLogin(account: DemoAccount) {
           </button>
 
           <p class="mt-8 max-w-xl text-xs leading-relaxed text-ink-soft">
-            Accounts are created by the landlady. If you live here and have no account, or
-            cannot sign in, ask Mrs. {{ LANDLADY.name }}.
+            Only tenants of the boarding house can sign in.
           </p>
           <!--
             Signing in is where a resident starts using the portal, so the rules
