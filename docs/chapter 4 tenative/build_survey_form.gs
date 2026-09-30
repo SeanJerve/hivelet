@@ -21,6 +21,8 @@
 const OWNER = 'Property owner or administrator / May-ari o administrador ng apartment';
 const TENANT = 'Tenant of the boarding house / Nangungupahan sa boarding house';
 const TECH = 'Technical evaluator (IT professional, developer, or IT faculty) / Technical evaluator';
+// Added 2026-09-30: people looking for a room, who use only the public website (no account).
+const PROSPECT = 'Looking for a room (not living here yet) / Naghahanap ng kwarto (hindi pa nakatira dito)';
 
 const DESCRIPTION = [
   'Thank you for helping us evaluate Hivelet, a web-based apartment management system developed for the Fe Galang Da Silva Boarding House by Group 4, BS Information Technology, Bicol University College of Science.',
@@ -185,6 +187,42 @@ const TECH_OPEN = [
   'Which aspect most needs improvement, and what would you change?',
 ];
 
+/**
+ * Prospective tenants rate only what a visitor meets: the public website and the inquiry form.
+ * No Security or Maintainability items (a visitor cannot see either). Added 2026-09-30 for the
+ * testing day's third group (docs/TESTING_DAY/OBSERVATION_PROTOCOL.md, Part PR).
+ */
+const PROSPECT_ITEMS = [
+  ['Functional Suitability', [
+    ['I could find which kinds of units the boarding house has and how much they cost.', 'Nakita ko kung anong mga uri ng unit ang mayroon at kung magkano ang mga ito.'],
+    ['I could see enough about a unit (its floor, how many people can stay, its floor plan) to decide whether to ask about it.', 'Nakita ko ang sapat na detalye ng isang unit (palapag, ilang tao ang puwede, floor plan) para magpasya kung magtatanong ako.'],
+    ['I could send an inquiry about a unit without difficulty.', 'Nakapagpadala ako ng tanong tungkol sa isang unit nang walang hirap.'],
+  ]],
+  ['Usability', [
+    ['I could tell what each part of the website is for without being taught.', 'Nauunawaan ko kung para saan ang bawat bahagi ng website kahit walang nagturo sa akin.'],
+    ['The words used on the website are easy to understand.', 'Madaling maintindihan ang mga salitang ginamit sa website.'],
+    ['When I made a mistake in the inquiry form, the message told me what to fix.', 'Kapag nagkamali ako sa inquiry form, sinabi ng mensahe kung ano ang dapat ayusin.'],
+  ]],
+  ['Performance Efficiency', [
+    ['The website opens quickly.', 'Mabilis magbukas ang website.'],
+    ['The pages respond without delay when I move around the website.', 'Mabilis tumugon ang mga pahina kapag lumilipat ako sa website.'],
+  ]],
+  ['Reliability', [
+    ['The information shown (units, rates, availability) looks correct and up to date.', 'Mukhang tama at napapanahon ang impormasyong ipinapakita (mga unit, presyo, bakante).'],
+  ]],
+  ['Compatibility', [
+    ['The website works correctly in the browser I normally use.', 'Gumagana nang maayos ang website sa browser na karaniwan kong ginagamit.'],
+  ]],
+  ['Portability', [
+    ['The website works on my own phone.', 'Gumagana ang website sa sarili kong cellphone.'],
+    ['I did not need to install anything to use it.', 'Hindi ko kinailangang mag-install ng kahit ano para magamit ito.'],
+  ]],
+];
+const PROSPECT_OPEN = [
+  ['What did you find most useful on the website?', 'Ano ang pinakanakatulong sa iyo sa website?'],
+  ['What was difficult, confusing, or missing?', 'Ano ang nahirapan kang gawin, nakalito sa iyo, o kulang sa website?'],
+];
+
 function scale(form, title, help, low, high) {
   const item = form.addScaleItem().setTitle(title).setBounds(1, 5).setLabels(low, high).setRequired(true);
   if (help) item.setHelpText(help);
@@ -244,15 +282,29 @@ function buildHiveletSurvey() {
   }
   for (const t of TECH_OPEN) form.addParagraphTextItem().setTitle(t).setRequired(false);
 
+  // Section 5 - Prospective tenants (bilingual). Going on from Section 4 submits.
+  const pProspect = form.addPageBreakItem()
+    .setTitle('Section 5 — Looking for a room / Naghahanap ng kwarto')
+    .setHelpText('5 — Lubos na Sumasang-ayon (Strongly Agree)\n4 — Sumasang-ayon (Agree)\n3 — Walang Kinikilingan (Neutral)\n2 — Hindi Sumasang-ayon (Disagree)\n1 — Lubos na Hindi Sumasang-ayon (Strongly Disagree)')
+    .setGoToPage(FormApp.PageNavigationType.SUBMIT);
+  for (const [heading, items] of PROSPECT_ITEMS) {
+    form.addSectionHeaderItem().setTitle(heading);
+    for (const [en, fil] of items) {
+      scale(form, en, fil, 'Lubos na Hindi Sumasang-ayon (Strongly Disagree)', 'Lubos na Sumasang-ayon (Strongly Agree)');
+    }
+  }
+  for (const [en, fil] of PROSPECT_OPEN) form.addParagraphTextItem().setTitle(en).setHelpText(fil).setRequired(false);
+
   // Branching on Q1, set last because it needs the page breaks to exist.
   q1.setChoices([
     q1.createChoice(OWNER, pOwner),
     q1.createChoice(TENANT, pTenant),
     q1.createChoice(TECH, pTech),
+    q1.createChoice(PROSPECT, pProspect),
   ]);
 
-  const counts = [OWNER_ITEMS, TENANT_ITEMS, TECH_ITEMS].map((g) => g.reduce((n, [, items]) => n + items.length, 0));
-  Logger.log('Rated items - owner %s, tenants %s, technical evaluators %s (instrument: 28, 18, 33)', counts[0], counts[1], counts[2]);
+  const counts = [OWNER_ITEMS, TENANT_ITEMS, TECH_ITEMS, PROSPECT_ITEMS].map((g) => g.reduce((n, [, items]) => n + items.length, 0));
+  Logger.log('Rated items - owner %s, tenants %s, technical evaluators %s, prospects %s (instrument: 28, 18, 33, 12)', counts[0], counts[1], counts[2], counts[3]);
   Logger.log('EDIT (keep private): %s', form.getEditUrl());
   Logger.log('SEND TO RESPONDENTS: %s', form.shortenFormUrl(form.getPublishedUrl()));
 }

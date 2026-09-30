@@ -8,7 +8,7 @@
  *   --method=A      composite = mean of the group means (Chapter 4 §4.4.2's recommendation, default)
  *   --method=B      composite = mean of every individual answer to that characteristic's items
  *
- * WHY: 79 rated items, three groups, eight characteristics. Every mean, group mean, composite and
+ * WHY: 91 rated items, four groups (prospective tenants added 2026-09-30), eight characteristics. Every mean, group mean, composite and
  * verbal interpretation in Chapter 4 comes from these responses, and computing them by hand is
  * hours of spreadsheet work where one mis-dragged range changes a result the panel reads.
  *
@@ -42,13 +42,14 @@ const gsFile = path.join(root, 'docs', 'chapter 4 tenative', 'build_survey_form.
 const ctx = {};
 vm.createContext(ctx);
 const def = vm.runInContext(
-  fs.readFileSync(gsFile, 'utf8') + '\n({ OWNER, TENANT, TECH, OWNER_ITEMS, TENANT_ITEMS, TECH_ITEMS, OWNER_OPEN, TENANT_OPEN, TECH_OPEN })',
+  fs.readFileSync(gsFile, 'utf8') + '\n({ OWNER, TENANT, TECH, OWNER_ITEMS, TENANT_ITEMS, TECH_ITEMS, OWNER_OPEN, TENANT_OPEN, TECH_OPEN, PROSPECT, PROSPECT_ITEMS, PROSPECT_OPEN })',
   ctx
 );
 const GROUPS = [
   { key: 'owner', label: 'Owner', table: 'Owner / administrator', answer: def.OWNER, items: def.OWNER_ITEMS, open: def.OWNER_OPEN },
   { key: 'tenant', label: 'Tenants', table: 'Tenants', answer: def.TENANT, items: def.TENANT_ITEMS.map(([h, list]) => [h, list.map(([en]) => en)]), open: def.TENANT_OPEN.map(([en]) => en) },
   { key: 'tech', label: 'Technical', table: 'Technical evaluators', answer: def.TECH, items: def.TECH_ITEMS, open: def.TECH_OPEN },
+  { key: 'prospect', label: 'Prospects', table: 'Prospective tenants', answer: def.PROSPECT, items: def.PROSPECT_ITEMS.map(([h, list]) => [h, list.map(([en]) => en)]), open: def.PROSPECT_OPEN.map(([en]) => en) },
 ];
 const ORDER = ['Functional Suitability', 'Performance Efficiency', 'Compatibility', 'Usability', 'Reliability', 'Security', 'Maintainability', 'Portability'];
 const TABLE_NO = { 'Functional Suitability': 14, 'Performance Efficiency': 15, Compatibility: 16, Usability: 17, Reliability: 18, Security: 19, Maintainability: 20, Portability: 21 };
@@ -127,7 +128,7 @@ for (const characteristic of ORDER) {
     }
     const gm = mean(itemMeans);
     if (gm != null) groupMeans.push(gm);
-    out.push(`| **${g.label === 'Technical' ? 'Technical evaluator' : g.label === 'Tenants' ? 'Tenant' : g.label} mean** | | **${f2(gm)}** | | ${interpret(gm)} |`);
+    out.push(`| **${g.label === 'Technical' ? 'Technical evaluator' : g.label === 'Tenants' ? 'Tenant' : g.label === 'Prospects' ? 'Prospective tenant' : g.label} mean** | | **${f2(gm)}** | | ${interpret(gm)} |`);
   }
   const composite = method === 'A' ? mean(groupMeans) : mean(everyAnswer);
   out.push(`| **Composite mean** | | **${f2(composite)}** | | **${interpret(composite)}** |`);

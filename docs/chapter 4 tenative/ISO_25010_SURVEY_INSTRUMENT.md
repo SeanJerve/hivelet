@@ -30,6 +30,7 @@ exports — linear scale gives one clean column per item.
 | **Owner / administrator** | 7 — everything except Maintainability | She uses every function daily. She cannot judge whether the code is maintainable |
 | **Residents** | 5 — Usability, Reliability, Performance Efficiency, Compatibility, Portability, plus 3 tenant-facing functional items | They only ever see the resident portal. Asking them about admin billing produces noise, not data |
 | **Technical evaluators** | All 8, and they are the only source for Maintainability and the security internals | This is what they are for |
+| **Prospective tenants** *(added 2026-09-30)* | 6: Functional Suitability (3 public-site items), Usability, Performance Efficiency, Reliability, Compatibility, Portability | They see only the public website and the inquiry form, with no account. They cannot judge Security or Maintainability |
 
 **Item counts:** owner ~30, residents ~20, technical evaluators ~34. Residents should finish in
 under five minutes or your completion rate suffers.
@@ -43,7 +44,9 @@ Script: sections, branching on Q1, every rated item as a required 1-to-5 scale, 
 tenant section, and the settings in step 2. Paste it at script.google.com, run
 `buildHiveletSurvey`, and read the links from the log. Checked against a stand-in for Google's
 form API: 28 owner, 18 tenant and 33 technical items, each word for word as Chapter 4 prints it.
-**Walk the three branches in preview anyway (step 8).** The manual steps below remain the
+Since 2026-09-30 it also builds **Section 5, prospective tenants** (12 bilingual items; see the
+section of that name below), which the manual steps do not cover.
+**Walk the four branches in preview anyway (step 8).** The manual steps below remain the
 reference if it cannot be used.
 
 # How to build it — step by step
@@ -509,6 +512,64 @@ Which aspect of the system is strongest, from a technical standpoint?
 ```
 Which aspect most needs improvement, and what would you change?
 ```
+
+
+---
+
+# SECTION 5 — Prospective tenants *(added 2026-09-30; bilingual)*
+
+For people looking for a room, who used only the public website and the inquiry form on the
+testing day (`docs/TESTING_DAY/OBSERVATION_PROTOCOL.md`, Part PR). Q1 gets a fourth choice:
+
+```
+Looking for a room (not living here yet) / Naghahanap ng kwarto (hindi pa nakatira dito)
+```
+
+→ **Section 5**. Every item is a required 1-to-5 linear scale; the Filipino line is the help text.
+`build_survey_form.gs` (the `PROSPECT_ITEMS` array) is the authority for the wording; this copy is
+for reading.
+
+### Functional Suitability → Table 14
+1. I could find which kinds of units the boarding house has and how much they cost.
+   *Nakita ko kung anong mga uri ng unit ang mayroon at kung magkano ang mga ito.*
+2. I could see enough about a unit (its floor, how many people can stay, its floor plan) to decide whether to ask about it.
+   *Nakita ko ang sapat na detalye ng isang unit (palapag, ilang tao ang puwede, floor plan) para magpasya kung magtatanong ako.*
+3. I could send an inquiry about a unit without difficulty.
+   *Nakapagpadala ako ng tanong tungkol sa isang unit nang walang hirap.*
+
+### Usability → Table 17
+4. I could tell what each part of the website is for without being taught.
+   *Nauunawaan ko kung para saan ang bawat bahagi ng website kahit walang nagturo sa akin.*
+5. The words used on the website are easy to understand.
+   *Madaling maintindihan ang mga salitang ginamit sa website.*
+6. When I made a mistake in the inquiry form, the message told me what to fix.
+   *Kapag nagkamali ako sa inquiry form, sinabi ng mensahe kung ano ang dapat ayusin.*
+
+### Performance Efficiency → Table 15
+7. The website opens quickly. *Mabilis magbukas ang website.*
+8. The pages respond without delay when I move around the website.
+   *Mabilis tumugon ang mga pahina kapag lumilipat ako sa website.*
+
+### Reliability → Table 18
+9. The information shown (units, rates, availability) looks correct and up to date.
+   *Mukhang tama at napapanahon ang impormasyong ipinapakita (mga unit, presyo, bakante).*
+
+### Compatibility → Table 16
+10. The website works correctly in the browser I normally use.
+    *Gumagana nang maayos ang website sa browser na karaniwan kong ginagamit.*
+
+### Portability → Table 21
+11. The website works on my own phone. *Gumagana ang website sa sarili kong cellphone.*
+12. I did not need to install anything to use it.
+    *Hindi ko kinailangang mag-install ng kahit ano para magamit ito.*
+
+### Open comments (optional)
+- What did you find most useful on the website? *Ano ang pinakanakatulong sa iyo sa website?*
+- What was difficult, confusing, or missing? *Ano ang nahirapan kang gawin, nakalito sa iyo, o kulang sa website?*
+
+`scripts/survey/compute-survey.mjs` scores this group as a fourth row block ("Prospective tenant
+mean") in Tables 14 to 18 and 21, and adds a row to Table 12. Under method A (mean of group means)
+a characteristic's composite then averages four groups instead of three: **say so in §4.4.2**.
 
 ---
 
