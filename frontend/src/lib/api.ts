@@ -271,7 +271,18 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
     throw apiError;
   }
 
+  if (!isRead) lastOwnWriteAt = Date.now();
   return { data: payload.data as T, meta: payload.meta as M | undefined };
+}
+
+/**
+ * When THIS device last saved something. `lib/live.ts` pings when a change
+ * arrives from someone else, and a change that follows one's own save by a few
+ * seconds is one's own - it already had its success sound.
+ */
+let lastOwnWriteAt = 0;
+export function msSinceOwnWrite(): number {
+  return Date.now() - lastOwnWriteAt;
 }
 
 /** The common case: just the rows. */

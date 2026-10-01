@@ -20,6 +20,7 @@ import { ArrowLeft, ArrowUpRight, RotateCw, Send } from 'lucide-vue-next';
 import { api, ApiRequestError, isUnconfirmed } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
 import { savedInquiries, rememberInquiry, forgetInquiry, type SavedInquiry } from '@/lib/myInquiries';
+import { playSound } from '@/lib/sounds';
 
 type Creds = { token: string } | { reference: string; phone: string };
 type Thread = {
@@ -76,6 +77,11 @@ async function load(next: Creds, { focus = true } = {}) {
   loadError.value = null;
   try {
     const data = await api.post<Thread>('/public/inquiries/thread', next, false);
+    // The ping when a new reply from the landlady arrives in the conversation
+    // already open (Sean, 2026-10-01: the same ping for chats).
+    const before = thread.value?.messages.filter((m) => m.from === 'landlady').length;
+    const after = data.messages.filter((m) => m.from === 'landlady').length;
+    if (before !== undefined && after > before) playSound('notify');
     creds.value = next;
     thread.value = data;
     if ('token' in next && data.inquiry.referenceCode) {
@@ -175,12 +181,27 @@ function onVisible() {
   if (document.visibilityState === 'visible' && thread.value) refresh();
 }
 
+/**
+ * Checks for a reply by itself while the conversation is open and on screen.
+ * Every 90 s, not faster: look-ups are limited to 30 a quarter-hour per
+ * connection (routes/public.ts), shared by everyone on the house wifi, so this
+ * uses 10 of them and leaves room for other visitors and the code form.
+ */
+const POLL_MS = 90_000;
+let poll: ReturnType<typeof setInterval> | undefined;
+
 onMounted(() => {
   saved.value = savedInquiries();
   syncWithAddress();
   document.addEventListener('visibilitychange', onVisible);
+  poll = setInterval(() => {
+    if (document.visibilityState === 'visible' && thread.value && !closed.value && !loading.value && !sending.value) refresh();
+  }, POLL_MS);
 });
-onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisible));
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', onVisible);
+  if (poll) clearInterval(poll);
+});
 
 watch(() => route.hash, syncWithAddress);
 </script>

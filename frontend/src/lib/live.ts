@@ -16,7 +16,8 @@
  * admin lists (their loaders return at once for a non-admin).
  */
 import { onBeforeUnmount, onMounted } from 'vue';
-import { api } from './api';
+import { api, msSinceOwnWrite } from './api';
+import { playSound } from './sounds';
 import { isAuthenticated, isAdmin } from './authStore';
 import {
   fetchIncomeRecords,
@@ -31,7 +32,13 @@ import { fetchNotifications } from './notificationsStore';
 type Refresher = () => unknown;
 type LiveVersion = { version: string | null };
 
-const INTERVAL_MS = 5000;
+/**
+ * Every 2 s while visible (was 5 s; Sean, 2026-10-01: "it should be faster").
+ * The check is one small request answered from one SQL function, measured at
+ * 22 ms for the landlady and 8 ms for a tenant on the live database, so a change
+ * made on one device now shows on another within about 2 to 3 seconds.
+ */
+const INTERVAL_MS = 2000;
 const pageRefreshers = new Set<Refresher>();
 let lastVersion: string | null = null;
 let timer: ReturnType<typeof setInterval> | undefined;
@@ -58,7 +65,13 @@ async function check() {
   try {
     const res = await api.get<LiveVersion>('/live/version');
     const version = res?.version ?? null;
-    if (version && lastVersion && version !== lastVersion) await refreshEverything();
+    if (version && lastVersion && version !== lastVersion) {
+      // The ping, for something that came from someone else: a payment, a
+      // repair, a reply on a repair or an inquiry, a notification (Sean,
+      // 2026-10-01). Not for one's own save, which had its success sound.
+      if (msSinceOwnWrite() > 4000) playSound('notify');
+      await refreshEverything();
+    }
     if (version) lastVersion = version;
   } catch {
     // Offline, or signing out: the next check tries again. Never a toast.
