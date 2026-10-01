@@ -430,6 +430,18 @@
 }
 
 /*
+ * A plain pill that floats over the page (`shadow-lift`: the Overview's
+ * action button's choices) is lifted by its shadow in light. A shadow barely
+ * shows on a dark page, and a tile-coloured pill over a tile disappeared into
+ * it, so in dark it is lifted the dark-theme way instead: a lighter surface
+ * and a lighter edge.
+ */
+[data-theme='dark'] .pill-btn.shadow-lift {
+  background-color: #27312c;
+  border-color: #3a4741;
+}
+
+/*
  * The floor plans are black line drawings on white PNGs. On a dark page that
  * is a white sheet glaring out of the panel, so they are drawn inverted: light
  * walls on a dark ground a shade off the tile. `hue-rotate` turns any colour
