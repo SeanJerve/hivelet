@@ -9,6 +9,8 @@
 import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { api } from '@/lib/api';
+import { currentUser } from '@/lib/authStore';
+import { loadWithOfflineCopy, onBackOnline } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
@@ -19,6 +21,7 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
+import SavedCopyNote from '@/components/overview/SavedCopyNote.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import PaymentMonths from '@/components/overview/PaymentMonths.vue';
 import type { ReceiptInput } from '@/lib/tenantPaymentMonths';
@@ -159,8 +162,10 @@ const standing = ref<ResidentStanding | null>(null);
 const waterRatePerOccupant = ref<number | null>(null);
 async function loadWaterRate() {
   try {
-    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
-    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+    await loadWithOfflineCopy(currentUser.value, async (get) => {
+      const r = await get<{ waterRatePerOccupant: number }>('/public/rates');
+      waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+    });
   } catch {
     // Left null: the tile then states the water figure without the rate behind it.
   }
@@ -224,6 +229,17 @@ const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
  * the person who owes the money. A resident could read it and not pay.
  */
 const billsLoadFailed = ref(false);
+/**
+ * When the bills and the history on screen were saved, if either is the copy kept on this phone
+ * rather than a live read; `null` when live. Offline, a tenant sees her balance and record instead
+ * of "could not be loaded", with no Pay button (Sean, 2026-10-01; lib/offlineCache.ts).
+ */
+const billsSavedAt = ref<number | null>(null);
+const historySavedAt = ref<number | null>(null);
+const offlineSavedAt = computed(() => {
+  const times = [billsSavedAt.value, historySavedAt.value].filter((t): t is number => t !== null);
+  return times.length ? Math.min(...times) : null;
+});
 /**
  * Starts true, because the page renders before the fetch is even started.
  *
@@ -498,7 +514,7 @@ onMounted(async () => {
     const target = outstandingBills.value.find((b: any) => b.id === payBillId);
     // Not while a payment on it waits for verification: the checkout refuses
     // that with a 409, and the bill's own tile already says why (B-61).
-    if (target && billPayableNow(target) > 0) openAdyenModal(target);
+    if (target && billPayableNow(target) > 0 && offlineSavedAt.value === null) openAdyenModal(target);
   }
 });
 
@@ -569,14 +585,19 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
   try {
     // Read together: with no open bill, the standing is what decides between
     // "Nothing is due" and an amount owed, so a failure of either is a failure.
-    const [data, st] = await Promise.all([
-      api.get<any[]>('/tenant/my-bills'),
-      api.get<ResidentStanding | null>('/tenant/my-standing'),
-    ]);
-    outstandingBills.value = (data ?? []).filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid');
-    standing.value = st ?? null;
+    // With no connection, the copy saved at this tenant's last load (lib/offlineCache.ts).
+    const { savedAt } = await loadWithOfflineCopy(currentUser.value, async (get) => {
+      const [data, st] = await Promise.all([
+        get<any[]>('/tenant/my-bills'),
+        get<ResidentStanding | null>('/tenant/my-standing'),
+      ]);
+      outstandingBills.value = (data ?? []).filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid');
+      standing.value = st ?? null;
+    });
+    billsSavedAt.value = savedAt;
   } catch (err: any) {
     console.error('Failed to load bills:', err?.message || err);
+    billsSavedAt.value = null;
     // "No bills" and "we could not read your bills" are different sentences, and
     // only one of them is safe to say to someone who may owe rent.
     billsLoadFailed.value = true;
@@ -606,15 +627,27 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
  */
 // Kept current while the page is open, without a skeleton (lib/live.ts).
 useLiveRefresh(() => Promise.all([fetchOutstandingBills({ quiet: true }), fetchPaymentHistory({ quiet: true })]));
+// The saved copy is only for while there is no connection: reload the moment it is back.
+onBackOnline(() => {
+  if (offlineSavedAt.value !== null || billsLoadFailed.value || historyLoadFailed.value) {
+    fetchOutstandingBills({ quiet: true });
+    fetchPaymentHistory({ quiet: true });
+  }
+});
 
 async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
   if (!opts.quiet) loadingHistory.value = true;
   historyLoadFailed.value = false;
   try {
-    const [payments, receipts] = await Promise.all([
-      api.get<any[]>('/tenant/my-payments'),
-      api.get<any[]>('/tenant/my-income-records'),
-    ]);
+    let payments: any[] = [];
+    let receipts: any[] = [];
+    const { savedAt } = await loadWithOfflineCopy(currentUser.value, async (get) => {
+      [payments, receipts] = await Promise.all([
+        get<any[]>('/tenant/my-payments'),
+        get<any[]>('/tenant/my-income-records'),
+      ]);
+    });
+    historySavedAt.value = savedAt;
 
     const receiptRows = (receipts ?? []).map((r) => {
       const period =
@@ -665,6 +698,7 @@ async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
       .map((p) => ({ amount: Number(p.amount) || 0 }));
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
+    historySavedAt.value = null;
     historyLoadFailed.value = true;
   } finally {
     loadingHistory.value = false;
@@ -738,6 +772,8 @@ function refreshAll() {
       </button>
     </div>
 
+    <SavedCopyNote v-if="offlineSavedAt !== null" :saved-at="offlineSavedAt" />
+
     <!-- `tabindex="-1"`: where focus lands when the dialog closes and its Pay
          button is gone. See `payTrigger`. -->
     <!-- The bill on the left, "Your rent" beside it from md up. The bill tile
@@ -797,7 +833,9 @@ function refreshAll() {
         `line-height: 1` and zero vertical padding left them touching its edges.
         Same shape as the overview's amount-due tile now.
       -->
+      <!-- Not from the saved copy: paying needs the connection it lacks. -->
       <button
+        v-if="offlineSavedAt === null"
         type="button"
         class="pill-btn-light mt-auto self-start"
         @click="openAdyenModalForCurrentPeriod"
@@ -873,15 +911,18 @@ function refreshAll() {
           </div>
         </dl>
 
-        <button
-          v-if="billPayableNow(bill) > 0"
-          type="button"
-          class="pill-btn-light mt-auto self-start"
-          @click="openAdyenModal(bill)"
-        >
-          <CreditCard class="size-4" aria-hidden="true" />
-          Pay with GCash
-        </button>
+        <!-- Payable, but not from the saved copy: paying needs a connection. -->
+        <template v-if="billPayableNow(bill) > 0">
+          <button
+            v-if="offlineSavedAt === null"
+            type="button"
+            class="pill-btn-light mt-auto self-start"
+            @click="openAdyenModal(bill)"
+          >
+            <CreditCard class="size-4" aria-hidden="true" />
+            Pay with GCash
+          </button>
+        </template>
         <p v-else class="mt-auto text-sm text-on-brand-soft">
           {{ peso(billPending(bill), 2) }} has already been sent for this bill and is waiting for
           the landlady to check it. You have not been charged twice.

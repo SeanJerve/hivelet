@@ -10,7 +10,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
-import { api } from '@/lib/api';
+import { loadWithOfflineCopy, onBackOnline, type TenantGet } from '@/lib/offlineCache';
 import { floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
@@ -19,6 +19,7 @@ import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
+import SavedCopyNote from '@/components/overview/SavedCopyNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
 import { CreditCard, Wrench, X, CheckCircle2, Home } from 'lucide-vue-next';
@@ -107,6 +108,12 @@ const tenantData = ref({
  * the amount due can no longer disagree about whether anything loaded.
  */
 const tenantDataLoadFailed = ref(false);
+/**
+ * When the figures on screen were saved, if they are the copy kept on this phone rather than a
+ * live read; `null` when live. Offline, a tenant sees her balance instead of "could not be
+ * loaded", but cannot pay from it (Sean, 2026-10-01; lib/offlineCache.ts).
+ */
+const offlineSavedAt = ref<number | null>(null);
 
 /** `GET /tenant/my-standing` - see `computeStanding` in backend/src/services/billingService.ts. */
 interface ResidentStanding {
@@ -270,8 +277,10 @@ const waterRatePerOccupant = ref<number | null>(null);
 
 async function loadWaterRate() {
   try {
-    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
-    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+    await loadWithOfflineCopy(currentUser.value, async (get) => {
+      const r = await get<{ waterRatePerOccupant: number }>('/public/rates');
+      waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+    });
   } catch {
     // Left null; the bill then states the amount without quoting a rate.
   }
@@ -297,6 +306,10 @@ onMounted(async () => {
 
 // Kept current while the page is open, without a skeleton (lib/live.ts).
 useLiveRefresh(() => fetchTenantData({ quiet: true }));
+// The saved copy is only for while there is no connection: reload the moment it is back.
+onBackOnline(() => {
+  if (offlineSavedAt.value !== null || tenantDataLoadFailed.value) fetchTenantData({ quiet: true });
+});
 
 async function fetchTenantData(opts: { quiet?: boolean } = {}) {
   if (!opts.quiet) {
@@ -304,209 +317,216 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
     unitPhotoLoaded.value = false;
   }
   try {
-    const data = await api.get<any[]>('/tenant/my-rooms');
-    if (data && data.length > 0) {
-      const activeRoom = data.find((r: any) => r.is_active) || data[0];
-      if (activeRoom) {
-        const roomNum = activeRoom.rooms?.room_number || activeRoom.room_number || '';
-        tenantData.value.room = roomNum ? `Unit ${String(roomNum).toUpperCase()}` : '';
-        tenantData.value.roomDetails = activeRoom.rooms?.room_type || '';
-        tenantData.value.roomType = activeRoom.rooms?.cluster_code || '';
-        tenantData.value.floor = activeRoom.rooms?.floor || 0;
-        tenantData.value.occupants = activeRoom.occupant_count || 0;
-
-        // `rooms` has no photo of its own; photos live in `room_photos`, with
-        // `is_primary` picking the one to lead with.
-        const primaryPhoto =
-          activeRoom.rooms?.room_photos?.find((p: any) => p.is_primary)?.file_url ||
-          activeRoom.rooms?.room_photos?.[0]?.file_url;
-        if (primaryPhoto) tenantData.value.photoUrl = primaryPhoto;
-
-        if (activeRoom.rooms?.current_price) {
-          tenantData.value.unitRent = Number(activeRoom.rooms.current_price);
-        }
-      }
-    }
-
-    // `my-standing` is in the same all-or-nothing batch on purpose: a failed read
-    // of it must land in the "could not be loaded" state, never in "Settled".
-    const [billsData, paymentsData, incomeData, standing] = await Promise.all([
-      api.get<any[]>('/tenant/my-bills'),
-      api.get<any[]>('/tenant/my-payments'),
-      api.get<any[]>('/tenant/my-income-records'),
-      api.get<ResidentStanding | null>('/tenant/my-standing'),
-    ]);
-
-    pendingOnlinePayments.value = (paymentsData ?? [])
-      .filter((p: any) => p.verification_status === 'Pending Verification')
-      .map((p: any) => ({
-        id: String(p.id),
-        amount: Number(p.amount) || 0,
-        date: shortDate(p.paid_at || p.created_at, true),
-        method: methodLabel(p.payment_method) || 'Online payment',
-        at: String(p.paid_at || p.created_at || ''),
-      }));
-
-    rejectedPayments.value = (paymentsData ?? [])
-      .filter((p: any) => p.verification_status === 'Rejected')
-      .map((p: any) => ({
-        id: String(p.id),
-        amount: Number(p.amount) || 0,
-        date: shortDate(p.paid_at || p.created_at, true),
-        method: methodLabel(p.payment_method) || 'Online payment',
-        at: String(p.paid_at || p.created_at || ''),
-      }));
-
-    // All of them, not the first four: the tile picks the newest few across
-    // every kind of payment (`PAYMENT_ROWS`). Its arrow opens the full record.
-    recordedReceipts.value = (incomeData ?? []).map((inc: any) => ({
-      id: String(inc.id),
-      at: String(inc.date_paid || ''),
-      // Rent plus water: the whole payment (`remitted_amount`).
-      amount: Number(inc.remitted_amount) || 0,
-      date: shortDate(inc.date_paid, true),
-      method: methodLabel(inc.payment_method),
-      period:
-        inc.rent_period_start && inc.rent_period_end
-          ? `${shortDate(inc.rent_period_start)} to ${shortDate(inc.rent_period_end, true)}`
-          : '',
-      verified: inc.verification_status === 'Verified',
-    }));
-
-    /**
-     * THE 25th OF THE MONTH WAS INVENTED, AND IT HID REAL DEBT.
-     *
-     * This once read every verified payment, guessed that it covered rent up to
-     * the 25th of the month it was paid in, and filtered bills out of the unpaid
-     * list on that guess. Nothing in this business bills on the 25th. Bills now
-     * use the API's `amount_outstanding` (BR-013), and everything else comes
-     * from `/tenant/my-standing`.
-     *
-     * SETTLED MEANS HER RECORDS COVER TODAY (2026-09-24). This screen used to
-     * work out a paid-through date itself and, with no open bill, show
-     * "Settled" or "Not billed yet" - with a Pay button either way. Bills are
-     * raised on demand, so no open bill never meant paid: that day every
-     * resident's records ended in July or August and every one of them was
-     * owed at least a period, while none was shown owing. The API now works out
-     * which periods her receipts do not cover (`computeStanding`), and the
-     * checkout charges the oldest of them.
-     */
-
-    // Taken from the response itself, not inferred from the amounts afterwards.
-    tenantData.value.hasBill = (billsData?.length ?? 0) > 0;
-
-    const unpaidBill = billsData?.find((b: any) => {
-      // `effective_status` is the API's derived value. Anything not settled counts,
-      // including 'Partially Paid' (BR-013).
-      if (b.status === 'Paid') return false;
-      if ((b.effective_status ?? b.status) === 'Paid') return false;
-      // BR-013: the balance the API derived from verified payments, not a date
-      // guessed from when a payment happened to be made.
-      if (Number(b.amount_outstanding ?? b.total_amount ?? 0) <= 0) return false;
-      return true;
-    });
-
-    const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
-    tenantData.value.paidThroughDisplay = standing?.paidThrough
-      ? formatDateOnly(standing.paidThrough, longDate)
-      : '';
-    tenantData.value.unbilledFromDisplay = '';
-    tenantData.value.billPeriodDisplay = '';
-    tenantData.value.verifiedAt = '';
-    tenantData.value.activeBillPaid = 0;
-    owedSummary.value = '';
-    fromLedgerOnly.value = false;
-
-    if (unpaidBill) {
-      // A bill that has actually been raised comes first: it is the debt as issued.
-      activeBillId.value = unpaidBill.id;
-      tenantData.value.baseRent = unpaidBill.rent_amount;
-      tenantData.value.waterFee = unpaidBill.water_amount;
-      // The balance, not the debt as issued: they differ once a bill is partly
-      // paid. `amount_outstanding` is derived by the API (BR-013).
-      tenantData.value.totalAmountDue = unpaidBill.amount_outstanding ?? unpaidBill.total_amount;
-      tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
-      tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
-      tenantData.value.dueDaysRemaining = 'Awaiting payment';
-      tenantData.value.dueDateRaw = unpaidBill.due_date;
-      tenantData.value.nextDueDateDisplay = '';
-      tenantData.value.activeBillPending = Number(unpaidBill.amount_pending) || 0;
-      tenantData.value.activeBillPaid = Number(unpaidBill.amount_paid) || 0;
-      if (unpaidBill.billing_period_start && unpaidBill.billing_period_end) {
-        tenantData.value.billPeriodDisplay =
-          `${shortDate(unpaidBill.billing_period_start)} to ${shortDate(unpaidBill.billing_period_end, true)}`;
-      }
-    } else if (standing && standing.owedPeriods.length > 0) {
-      // Owed, but no bill raised yet. The checkout raises the OLDEST owed period.
-      const first = standing.owedPeriods[0]!;
-      activeBillId.value = null;
-      tenantData.value.activeBillPending = 0;
-      tenantData.value.baseRent = standing.perPeriod.rentAmount;
-      tenantData.value.waterFee = standing.perPeriod.waterAmount;
-      // What is owed today; a period opening within the week is payable, not yet owed.
-      tenantData.value.totalAmountDue =
-        standing.totalDue > 0 ? standing.totalDue : standing.perPeriod.totalAmount;
-      // A past period with no payment entered shows the period it is for, not a
-      // "Due" date already gone by (Sean, 2026-10-01: less to read).
-      tenantData.value.dueDate = standing.status === 'overdue' ? '' : formatDateOnly(first.dueDate, longDate);
-      tenantData.value.billPeriodDisplay = `${shortDate(first.start)} to ${shortDate(first.end, true)}`;
-      tenantData.value.dueDateRaw = first.dueDate;
-      fromLedgerOnly.value = true;
-      standingStatus.value = standing.status;
-      tenantData.value.dueBadgeText = standing.status === 'overdue' ? 'NOT ENTERED' : 'DUE';
-      tenantData.value.dueDaysRemaining = 'Awaiting payment';
-      tenantData.value.nextDueDateDisplay = '';
-      const periods = standing.periodsDue;
-      owedSummary.value =
-        standing.status === 'overdue'
-          ? (standing.paidThrough
-              ? `Payments entered up to ${tenantData.value.paidThroughDisplay}${periods > 1 ? ` (${periods} months since)` : ''}. `
-              : 'No payment entered yet. ') +
-            'If you have paid, it shows here once the landlady enters it.'
-          : standing.paidThrough
-            ? `Payments entered up to ${tenantData.value.paidThroughDisplay}.`
-            : 'No payment entered yet.';
-    } else if (standing) {
-      // Settled: her records reach past today and the next period is more than
-      // a week off. Nothing to pay, so no Pay button.
-      activeBillId.value = null;
-      tenantData.value.activeBillPending = 0;
-      const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
-      tenantData.value.baseRent = paidBill ? paidBill.rent_amount : 0;
-      tenantData.value.waterFee = paidBill ? paidBill.water_amount : 0;
-      tenantData.value.totalAmountDue = 0;
-      tenantData.value.dueBadgeText = 'PAID';
-      tenantData.value.dueDaysRemaining = 'Settled';
-      tenantData.value.dueDate = '';
-      tenantData.value.dueDateRaw = '';
-      tenantData.value.nextDueDateDisplay = formatDateOnly(standing.nextPeriodStart, longDate);
-
-      const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
-      tenantData.value.verifiedAt = linkedPayment?.verified_at
-        ? new Date(linkedPayment.verified_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE })
-        : '';
-    } else {
-      /**
-       * No active tenancy, so no standing to compute. `dueBadgeText` stays
-       * 'PAID' only because it keeps a confident ₱0.00 off the tile; the words
-       * say nothing has been billed, not that nothing is owed.
-       */
-      activeBillId.value = null;
-      tenantData.value.activeBillPending = 0;
-      tenantData.value.dueBadgeText = 'PAID';
-      tenantData.value.dueDaysRemaining = 'Not billed yet';
-      tenantData.value.totalAmountDue = 0;
-      tenantData.value.dueDate = '';
-      tenantData.value.dueDateRaw = '';
-      tenantData.value.nextDueDateDisplay = '';
-    }
-
+    // Live first; with no connection, the copy saved at this tenant's last load.
+    const { savedAt } = await loadWithOfflineCopy(currentUser.value, applyTenantData);
+    offlineSavedAt.value = savedAt;
     tenantDataLoadFailed.value = false;
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
+    offlineSavedAt.value = null;
     tenantDataLoadFailed.value = true;
   } finally {
     loading.value = false;
+  }
+}
+
+/** Reads through `get` (lib/offlineCache.ts), so the same code draws a live load and a saved one. */
+async function applyTenantData(get: TenantGet) {
+  const data = await get<any[]>('/tenant/my-rooms');
+  if (data && data.length > 0) {
+    const activeRoom = data.find((r: any) => r.is_active) || data[0];
+    if (activeRoom) {
+      const roomNum = activeRoom.rooms?.room_number || activeRoom.room_number || '';
+      tenantData.value.room = roomNum ? `Unit ${String(roomNum).toUpperCase()}` : '';
+      tenantData.value.roomDetails = activeRoom.rooms?.room_type || '';
+      tenantData.value.roomType = activeRoom.rooms?.cluster_code || '';
+      tenantData.value.floor = activeRoom.rooms?.floor || 0;
+      tenantData.value.occupants = activeRoom.occupant_count || 0;
+
+      // `rooms` has no photo of its own; photos live in `room_photos`, with
+      // `is_primary` picking the one to lead with.
+      const primaryPhoto =
+        activeRoom.rooms?.room_photos?.find((p: any) => p.is_primary)?.file_url ||
+        activeRoom.rooms?.room_photos?.[0]?.file_url;
+      if (primaryPhoto) tenantData.value.photoUrl = primaryPhoto;
+
+      if (activeRoom.rooms?.current_price) {
+        tenantData.value.unitRent = Number(activeRoom.rooms.current_price);
+      }
+    }
+  }
+
+  // `my-standing` is in the same all-or-nothing batch on purpose: a failed read
+  // of it must land in the "could not be loaded" state, never in "Settled".
+  const [billsData, paymentsData, incomeData, standing] = await Promise.all([
+    get<any[]>('/tenant/my-bills'),
+    get<any[]>('/tenant/my-payments'),
+    get<any[]>('/tenant/my-income-records'),
+    get<ResidentStanding | null>('/tenant/my-standing'),
+  ]);
+
+  pendingOnlinePayments.value = (paymentsData ?? [])
+    .filter((p: any) => p.verification_status === 'Pending Verification')
+    .map((p: any) => ({
+      id: String(p.id),
+      amount: Number(p.amount) || 0,
+      date: shortDate(p.paid_at || p.created_at, true),
+      method: methodLabel(p.payment_method) || 'Online payment',
+      at: String(p.paid_at || p.created_at || ''),
+    }));
+
+  rejectedPayments.value = (paymentsData ?? [])
+    .filter((p: any) => p.verification_status === 'Rejected')
+    .map((p: any) => ({
+      id: String(p.id),
+      amount: Number(p.amount) || 0,
+      date: shortDate(p.paid_at || p.created_at, true),
+      method: methodLabel(p.payment_method) || 'Online payment',
+      at: String(p.paid_at || p.created_at || ''),
+    }));
+
+  // All of them, not the first four: the tile picks the newest few across
+  // every kind of payment (`PAYMENT_ROWS`). Its arrow opens the full record.
+  recordedReceipts.value = (incomeData ?? []).map((inc: any) => ({
+    id: String(inc.id),
+    at: String(inc.date_paid || ''),
+    // Rent plus water: the whole payment (`remitted_amount`).
+    amount: Number(inc.remitted_amount) || 0,
+    date: shortDate(inc.date_paid, true),
+    method: methodLabel(inc.payment_method),
+    period:
+      inc.rent_period_start && inc.rent_period_end
+        ? `${shortDate(inc.rent_period_start)} to ${shortDate(inc.rent_period_end, true)}`
+        : '',
+    verified: inc.verification_status === 'Verified',
+  }));
+
+  /**
+   * THE 25th OF THE MONTH WAS INVENTED, AND IT HID REAL DEBT.
+   *
+   * This once read every verified payment, guessed that it covered rent up to
+   * the 25th of the month it was paid in, and filtered bills out of the unpaid
+   * list on that guess. Nothing in this business bills on the 25th. Bills now
+   * use the API's `amount_outstanding` (BR-013), and everything else comes
+   * from `/tenant/my-standing`.
+   *
+   * SETTLED MEANS HER RECORDS COVER TODAY (2026-09-24). This screen used to
+   * work out a paid-through date itself and, with no open bill, show
+   * "Settled" or "Not billed yet" - with a Pay button either way. Bills are
+   * raised on demand, so no open bill never meant paid: that day every
+   * resident's records ended in July or August and every one of them was
+   * owed at least a period, while none was shown owing. The API now works out
+   * which periods her receipts do not cover (`computeStanding`), and the
+   * checkout charges the oldest of them.
+   */
+
+  // Taken from the response itself, not inferred from the amounts afterwards.
+  tenantData.value.hasBill = (billsData?.length ?? 0) > 0;
+
+  const unpaidBill = billsData?.find((b: any) => {
+    // `effective_status` is the API's derived value. Anything not settled counts,
+    // including 'Partially Paid' (BR-013).
+    if (b.status === 'Paid') return false;
+    if ((b.effective_status ?? b.status) === 'Paid') return false;
+    // BR-013: the balance the API derived from verified payments, not a date
+    // guessed from when a payment happened to be made.
+    if (Number(b.amount_outstanding ?? b.total_amount ?? 0) <= 0) return false;
+    return true;
+  });
+
+  const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
+  tenantData.value.paidThroughDisplay = standing?.paidThrough
+    ? formatDateOnly(standing.paidThrough, longDate)
+    : '';
+  tenantData.value.unbilledFromDisplay = '';
+  tenantData.value.billPeriodDisplay = '';
+  tenantData.value.verifiedAt = '';
+  tenantData.value.activeBillPaid = 0;
+  owedSummary.value = '';
+  fromLedgerOnly.value = false;
+
+  if (unpaidBill) {
+    // A bill that has actually been raised comes first: it is the debt as issued.
+    activeBillId.value = unpaidBill.id;
+    tenantData.value.baseRent = unpaidBill.rent_amount;
+    tenantData.value.waterFee = unpaidBill.water_amount;
+    // The balance, not the debt as issued: they differ once a bill is partly
+    // paid. `amount_outstanding` is derived by the API (BR-013).
+    tenantData.value.totalAmountDue = unpaidBill.amount_outstanding ?? unpaidBill.total_amount;
+    tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
+    tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
+    tenantData.value.dueDaysRemaining = 'Awaiting payment';
+    tenantData.value.dueDateRaw = unpaidBill.due_date;
+    tenantData.value.nextDueDateDisplay = '';
+    tenantData.value.activeBillPending = Number(unpaidBill.amount_pending) || 0;
+    tenantData.value.activeBillPaid = Number(unpaidBill.amount_paid) || 0;
+    if (unpaidBill.billing_period_start && unpaidBill.billing_period_end) {
+      tenantData.value.billPeriodDisplay =
+        `${shortDate(unpaidBill.billing_period_start)} to ${shortDate(unpaidBill.billing_period_end, true)}`;
+    }
+  } else if (standing && standing.owedPeriods.length > 0) {
+    // Owed, but no bill raised yet. The checkout raises the OLDEST owed period.
+    const first = standing.owedPeriods[0]!;
+    activeBillId.value = null;
+    tenantData.value.activeBillPending = 0;
+    tenantData.value.baseRent = standing.perPeriod.rentAmount;
+    tenantData.value.waterFee = standing.perPeriod.waterAmount;
+    // What is owed today; a period opening within the week is payable, not yet owed.
+    tenantData.value.totalAmountDue =
+      standing.totalDue > 0 ? standing.totalDue : standing.perPeriod.totalAmount;
+    // A past period with no payment entered shows the period it is for, not a
+    // "Due" date already gone by (Sean, 2026-10-01: less to read).
+    tenantData.value.dueDate = standing.status === 'overdue' ? '' : formatDateOnly(first.dueDate, longDate);
+    tenantData.value.billPeriodDisplay = `${shortDate(first.start)} to ${shortDate(first.end, true)}`;
+    tenantData.value.dueDateRaw = first.dueDate;
+    fromLedgerOnly.value = true;
+    standingStatus.value = standing.status;
+    tenantData.value.dueBadgeText = standing.status === 'overdue' ? 'NOT ENTERED' : 'DUE';
+    tenantData.value.dueDaysRemaining = 'Awaiting payment';
+    tenantData.value.nextDueDateDisplay = '';
+    const periods = standing.periodsDue;
+    owedSummary.value =
+      standing.status === 'overdue'
+        ? (standing.paidThrough
+            ? `Payments entered up to ${tenantData.value.paidThroughDisplay}${periods > 1 ? ` (${periods} months since)` : ''}. `
+            : 'No payment entered yet. ') +
+          'If you have paid, it shows here once the landlady enters it.'
+        : standing.paidThrough
+          ? `Payments entered up to ${tenantData.value.paidThroughDisplay}.`
+          : 'No payment entered yet.';
+  } else if (standing) {
+    // Settled: her records reach past today and the next period is more than
+    // a week off. Nothing to pay, so no Pay button.
+    activeBillId.value = null;
+    tenantData.value.activeBillPending = 0;
+    const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
+    tenantData.value.baseRent = paidBill ? paidBill.rent_amount : 0;
+    tenantData.value.waterFee = paidBill ? paidBill.water_amount : 0;
+    tenantData.value.totalAmountDue = 0;
+    tenantData.value.dueBadgeText = 'PAID';
+    tenantData.value.dueDaysRemaining = 'Settled';
+    tenantData.value.dueDate = '';
+    tenantData.value.dueDateRaw = '';
+    tenantData.value.nextDueDateDisplay = formatDateOnly(standing.nextPeriodStart, longDate);
+
+    const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
+    tenantData.value.verifiedAt = linkedPayment?.verified_at
+      ? new Date(linkedPayment.verified_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE })
+      : '';
+  } else {
+    /**
+     * No active tenancy, so no standing to compute. `dueBadgeText` stays
+     * 'PAID' only because it keeps a confident ₱0.00 off the tile; the words
+     * say nothing has been billed, not that nothing is owed.
+     */
+    activeBillId.value = null;
+    tenantData.value.activeBillPending = 0;
+    tenantData.value.dueBadgeText = 'PAID';
+    tenantData.value.dueDaysRemaining = 'Not billed yet';
+    tenantData.value.totalAmountDue = 0;
+    tenantData.value.dueDate = '';
+    tenantData.value.dueDateRaw = '';
+    tenantData.value.nextDueDateDisplay = '';
   }
 }
 
@@ -599,6 +619,8 @@ const statusTone = computed(() => {
       </button>
     </div>
 
+    <SavedCopyNote v-if="offlineSavedAt !== null && !loading" :saved-at="offlineSavedAt" />
+
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>
       <div
@@ -660,7 +682,8 @@ const statusTone = computed(() => {
             <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand">
               {{ awaitingVerificationLine }}
             </p>
-            <button v-else type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
+            <!-- Not from the saved copy: paying needs the connection it lacks. -->
+            <button v-else-if="offlineSavedAt === null" type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
               <CreditCard class="size-4" aria-hidden="true" />
               {{ payingOnline ? 'Opening the payment page' : 'Pay with GCash' }}
             </button>

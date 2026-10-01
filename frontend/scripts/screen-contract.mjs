@@ -154,6 +154,16 @@ const RAW = /API_BASE\}(\/[^`'"]+)/g;
 const INDIRECT_CALL = /fetch\(\s*`\$\{API_BASE\}\$\{/;
 const INDIRECT_PATH = /['"`](\/(?:admin|tenant|public|auth)\/[^'"`\s]+)['"`]/g;
 
+/**
+ * The tenant Overview and Payments pages read through `loadWithOfflineCopy`
+ * (lib/offlineCache.ts, 2026-10-01): `get<T>('/tenant/my-bills')`, where `get`
+ * is the reader it hands them, still a GET to the API when online. Without this
+ * those reads vanished from the contract, which is the exact signal it exists
+ * to raise. Scoped to files that use it, as INDIRECT_PATH is.
+ */
+const OFFLINE_COPY = /\bloadWithOfflineCopy\(/;
+const OFFLINE_GET = /(?<![.\w])get(?:<[^>]*>)?\(\s*['"`](\/[^'"`]+)/g;
+
 /** `${...}` → `:id`, and a trailing query string dropped. */
 const tidy = (p) =>
   p.replace(/\$\{[^}]*\}/g, ':id').replace(/\?.*$/, '').replace(/\/$/, '');
@@ -178,6 +188,9 @@ for (const file of walk(SRC)) {
   for (const m of src.matchAll(CALL)) {
     const verb = m[1] === 'getWithMeta' ? 'GET' : m[1].toUpperCase();
     calls.add(`${verb} ${tidy(m[2])}`);
+  }
+  if (OFFLINE_COPY.test(src)) {
+    for (const m of src.matchAll(OFFLINE_GET)) calls.add(`GET ${tidy(m[1])}`);
   }
   for (const m of src.matchAll(RAW)) calls.add(`GET ${tidy(m[1])}`);
   if (INDIRECT_CALL.test(src)) {

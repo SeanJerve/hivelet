@@ -4,6 +4,7 @@
  */
 import { computed, reactive, readonly, ref } from 'vue';
 import { api, setStoredToken, getStoredToken, ApiRequestError } from './api';
+import { clearTenantOfflineCache } from './offlineCache';
 
 export type Role = 'guest' | 'prospect' | 'tenant' | 'admin';
 
@@ -126,6 +127,9 @@ function readCachedSessionSnapshot(): { user: SessionUser; permissions: string[]
 }
 
 function applySession(payload: { user: SessionUser; permissions: string[] }): void {
+  // A tenant's saved figures (lib/offlineCache.ts) belong to that tenant alone:
+  // anyone else signing in on this phone wipes them first.
+  clearTenantOfflineCache(payload.user.profileId);
   state.user = payload.user;
   state.permissions = payload.permissions ?? [];
   cacheSessionSnapshot(payload);
@@ -136,6 +140,10 @@ function clearSession(): void {
   state.permissions = [];
   state.profile = null;
   setStoredToken(null);
+  // Signing out, an expired or refused session, a moved-out account: every one
+  // ends here, so the next person to pick up a shared phone does not see this
+  // tenant's balance offline (lib/offlineCache.ts; Sean, 2026-10-01).
+  clearTenantOfflineCache();
   try {
     localStorage.removeItem(CACHED_SESSION_KEY);
   } catch {
