@@ -1199,13 +1199,13 @@ html:has(> body[style*='overflow: hidden']) {
 
   /*
    * The actions beside a page title (Sean, 2026-10-01): Record payment,
-   * Record expense, Move someone in, the Excel download, the year.
+   * Record expense, Move someone in, the Excel download.
    *
-   * Two sizes and no more. Every action is the same width as its neighbour -
-   * equal halves on a phone, at least 11rem from 640px, so "Download" and
-   * "Record payment" read as a pair rather than a long and a short button.
-   * `.ws-action-compact` is the second size, for a control that only shows a
-   * value (the Overview's year): as wide as its text, never stretched.
+   * Every action is the same width as its neighbour - equal halves on a
+   * phone, at least 11rem from 640px, so "Download" and "Record payment" read
+   * as a pair rather than a long and a short button. (The Overview's year was
+   * a second, compact size here; it is a word on the date line now, Sean,
+   * 2026-10-01, and `.ws-action-compact` went with it.)
    *
    * The primary action is last in the row, so it sits at the right edge on a
    * desktop and in the right half on a phone.
@@ -1220,12 +1220,7 @@ html:has(> body[style*='overflow: hidden']) {
   .ws-page-actions > * {
     flex: 1 1 calc(50% - 0.25rem);
   }
-  /* Grows only into what is left over, so beside a full-size action it stays
-     about as wide as its value, and alone on a 320px row it is not a stub. */
-  .ws-page-actions > .ws-action-compact {
-    flex: 1 0 auto;
-  }
-  /* A wrapper (the year menu's anchor) passes its width to the button in it. */
+  /* A wrapper (a menu's anchor) passes its width to the button in it. */
   .ws-page-actions > div > :is(.pill-btn, .pill-btn-brand) {
     width: 100%;
   }
@@ -1239,10 +1234,6 @@ html:has(> body[style*='overflow: hidden']) {
     .ws-page-actions > * {
       flex: 0 0 auto;
       min-width: 11rem;
-    }
-    .ws-page-actions > .ws-action-compact {
-      flex: 0 0 auto;
-      min-width: 0;
     }
     .ws-page-actions > :is(.pill-btn, .pill-btn-brand, .pill-btn-night) {
       padding-inline: 1.125rem;
@@ -1921,9 +1912,43 @@ html:has(> body[style*='overflow: hidden']) {
 .ws-fade-leave-to {
   opacity: 0;
 }
+/*
+ * The Overview's floating actions on a phone (components/overview/
+ * QuickActionsFab.vue, Sean, 2026-10-01): each pill rises 8px and fades in,
+ * the one nearest the button first, 40ms apart (`--i` is set per item). Out
+ * is quicker and all at once - the reader has already chosen. The
+ * <Transition> carries an explicit `:duration`, since the list itself has no
+ * transition for Vue to time. Reduced motion keeps the fade and its stagger.
+ */
+.ws-dial-enter-active > * {
+  transition:
+    opacity 0.18s var(--ease-out),
+    translate 0.18s var(--ease-out),
+    scale 0.18s var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 40ms);
+}
+.ws-dial-leave-active > * {
+  transition:
+    opacity 0.12s var(--ease-out-soft),
+    translate 0.12s var(--ease-out-soft);
+}
+.ws-dial-leave-active {
+  pointer-events: none;
+}
+.ws-dial-enter-from > *,
+.ws-dial-leave-to > * {
+  opacity: 0;
+  translate: 0 8px;
+  scale: 0.96;
+}
+.ws-dial-leave-to > * {
+  scale: 1;
+}
 @media (prefers-reduced-motion: reduce) {
   .ws-pop-enter-from,
-  .ws-pop-leave-to {
+  .ws-pop-leave-to,
+  .ws-dial-enter-from > *,
+  .ws-dial-leave-to > * {
     scale: none;
     translate: none;
   }
@@ -2007,7 +2032,8 @@ html:has(> body[style*='overflow: hidden']) {
 }
 
 /* ----------------------------------------------------------------- reveal --
- * Content that appears when a disclosure opens: a unit row, an FAQ answer.
+ * Content that appears when a disclosure opens: a unit row. (The FAQ answer
+ * moved to `.ws-collapse` below, which also eases its height.)
  *
  * The row itself still takes its height instantly, and that is deliberate -
  * animating the height of a table row means animating layout, which is the one
@@ -2041,6 +2067,65 @@ html:has(> body[style*='overflow: hidden']) {
     .ws-reveal {
       translate: none;
     }
+  }
+}
+
+/* --------------------------------------------------------------- collapse --
+ * A disclosure whose panel opens AND closes with its height: the FAQ on the
+ * public page (Sean, 2026-10-01: "the FAQ dropdown has no subtle animation").
+ * `.ws-reveal` above only faded the answer in; the page below still jumped by
+ * the answer's height on open and the answer vanished on the same frame on
+ * close.
+ *
+ * The height is a grid track going 0fr -> 1fr rather than `height: auto`,
+ * which cannot be transitioned without measuring it in script. The panel is a
+ * one-row grid and its only child clips (`min-height: 0` lets the track shrink
+ * below the content). Grid track transitions ship in Chrome 107 and Safari 16,
+ * so Chrome Android and iOS Safari both animate; an older browser just snaps
+ * open, which is what it did before.
+ *
+ * Use: `<Transition name="ws-collapse">` around a `v-if` element with class
+ * `ws-collapse` and ONE child; padding goes on the child, not the panel, or
+ * it would stay behind when the track is 0. The answer leaves the DOM when
+ * closed, so the button's aria-expanded and the reading order are unchanged.
+ *
+ * Reduced motion: no height movement, only the opacity fades - in at full
+ * height on open, out at full height on close, and then the space closes in
+ * one step (the track stays 1fr, so a closing answer is still readable while
+ * it fades instead of being clipped to nothing on the first frame).
+ */
+.ws-collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.ws-collapse > * {
+  min-height: 0;
+  overflow: hidden;
+}
+.ws-collapse-enter-active {
+  transition:
+    grid-template-rows 0.22s var(--ease-out-soft),
+    opacity 0.22s var(--ease-out-soft);
+}
+.ws-collapse-leave-active {
+  transition:
+    grid-template-rows 0.18s var(--ease-out-soft),
+    opacity 0.14s var(--ease-out-soft);
+  pointer-events: none;
+}
+.ws-collapse-enter-from,
+.ws-collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-collapse-enter-active,
+  .ws-collapse-leave-active {
+    transition: opacity 0.18s var(--ease-out-soft);
+  }
+  .ws-collapse-enter-from,
+  .ws-collapse-leave-to {
+    grid-template-rows: 1fr;
   }
 }
 

@@ -1,3 +1,5 @@
+import type { Component } from 'vue';
+
 export interface Segment {
   label: string;
   value: number;
@@ -26,4 +28,12 @@ export interface ArcUnit {
   code: string;
   cluster: string;
   occupied: boolean;
+}
+
+/** One of the Overview's actions: a header button from 768px, a floating one below (QuickActionsFab). */
+export interface QuickAction {
+  to: string;
+  label: string;
+  icon: Component;
+  primary?: boolean;
 }
