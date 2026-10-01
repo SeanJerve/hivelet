@@ -119,7 +119,35 @@ router.afterEach((to) => {
   canonicalTag.href = SITE + (to.path === '/' ? '/public' : to.path)
 })
 
+/*
+ * The first-load loader in index.html (Sean, 2026-10-01) leaves once the first
+ * page has actually rendered: `router.isReady()` waits for the first route's
+ * own code and guards, and the frame after that is the page painted. Taking it
+ * down at `app.mount` alone would uncover the empty placeholder App.vue holds
+ * open while the route's chunk downloads - the same blank wait it is covering.
+ *
+ * It goes whichever way the first navigation ends: a rejected one (a route
+ * chunk that failed to download) or a script error during start-up still
+ * uncovers the page rather than leaving the loader over it. If this file never
+ * runs at all, index.html's own `splash-giveup` animation clears it at 15s.
+ */
+function dismissSplash() {
+  const splash = document.getElementById('app-splash')
+  if (!splash || splash.classList.contains('is-leaving')) return
+  splash.classList.add('is-leaving')
+  const remove = () => splash.remove()
+  splash.addEventListener('transitionend', remove, { once: true })
+  // `transitionend` never fires when there is nothing to animate (a background
+  // tab, the 15s fallback already run), so the node goes on a timer as well.
+  window.setTimeout(remove, 400)
+}
+window.addEventListener('error', dismissSplash, { once: true })
+
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.mount('#app')
+router
+  .isReady()
+  .catch(() => {})
+  .finally(() => requestAnimationFrame(dismissSplash))
