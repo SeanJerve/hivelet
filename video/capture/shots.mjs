@@ -40,7 +40,6 @@ export const SHOTS = [
     steps: [{ click: 'header button[aria-label^="Notification"], header button[aria-label*="otification"]', wait: 700, snap: '' }],
   },
   { name: 'admin-inquiries', route: '/admin/inquiries' },
-  { name: 'admin-activity', route: '/admin/audit-logs' },
 
   // The tenant, on a phone
   { name: 'tenant-overview', role: 'tenant', route: '/tenant', device: 'phone' },

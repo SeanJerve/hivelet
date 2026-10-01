@@ -30,7 +30,6 @@ import {
   Home,
   CreditCard,
   UserCheck,
-  ShieldCheck,
   Globe
 } from 'lucide-vue-next';
 
@@ -175,6 +174,8 @@ onBeforeUnmount(() => {
   }
 });
 
+// No Activity entry (Sean, 2026-10-01): the adviser ruled the audit trail a
+// developer's record, not part of the site. The server still writes every row.
 const ADMIN_NAV = computed(() => [
   { to: '/admin/overview', aliases: ['/basis/overview'], label: 'Overview', icon: LayoutDashboard, badge: null, badgeColor: '' },
   { to: '/admin/directory', aliases: ['/basis/directory'], label: 'Rooms and rates', icon: Building2, badge: null, badgeColor: '' },
@@ -183,7 +184,6 @@ const ADMIN_NAV = computed(() => [
   { to: '/admin/expenses', aliases: ['/basis/expenses'], label: 'Monthly Expenses', icon: ReceiptText, badge: null, badgeColor: '' },
   { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Repairs', icon: Wrench, badge: urgentTicketsCount.value > 0 ? urgentTicketsCount.value : null, badgeColor: 'bg-overdue text-white' },
   { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Inquiries', icon: Inbox, badge: inquiriesCount.value > 0 ? inquiriesCount.value : null, badgeColor: 'bg-brand text-on-brand' },
-  { to: '/admin/audit-logs', aliases: ['/admin/audit'], label: 'Activity', icon: ShieldCheck, badge: null, badgeColor: '' },
 ]);
 
 const TENANT_NAV = computed(() => [
