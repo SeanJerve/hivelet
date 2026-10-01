@@ -16,6 +16,7 @@
 import { computed } from 'vue';
 import { LANDLADY } from '@/lib/systemState';
 import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
+import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
 // The year on the copyright line follows the calendar rather than being typed
 // in, so it does not go stale every January.
@@ -167,6 +168,10 @@ const portalRoute = computed(() => {
               <RouterLink to="/privacy#browser" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Cookies
               </RouterLink>
+            </li>
+            <!-- Light or dark, for a visitor with no account menu to set it in (Sean, 2026-10-01). -->
+            <li>
+              <ThemeToggle class="-ml-2.5 text-on-night-soft hover:bg-white/10 hover:text-on-night" />
             </li>
           </ul>
         </nav>

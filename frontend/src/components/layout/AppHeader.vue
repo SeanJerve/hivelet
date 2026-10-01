@@ -48,6 +48,7 @@ import NotificationPopover from './NotificationPopover.vue';
 import { Menu, LogOut, LogIn, User, Bell, ChevronDown, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { realEmail } from '@/lib/contactDetails';
+import ThemeChoice from '@/components/ui/ThemeChoice.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -538,6 +539,11 @@ onUnmounted(() => {
                       {{ isTenant ? 'Tenant' : 'Owner' }}
                     </p>
                   </div>
+                </div>
+
+                <!-- System, Light or Dark (Sean, 2026-10-01). -->
+                <div class="border-b border-line px-5 py-4">
+                  <ThemeChoice name="account-theme" />
                 </div>
 
                 <div class="space-y-1 p-3">

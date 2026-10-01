@@ -14,6 +14,7 @@ import { showToast, LANDLADY } from '@/lib/systemState';
 import { ApiRequestError } from '@/lib/api';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import WsModal from '@/components/ui/WsModal.vue';
+import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -432,6 +433,8 @@ async function handleQuickLogin(account: DemoAccount) {
             >
               Privacy policy
             </RouterLink>
+            <!-- Light or dark: this page has no footer to carry it (Sean, 2026-10-01). -->
+            <ThemeToggle class="-ml-2.5" />
           </p>
         </form>
       </div>
