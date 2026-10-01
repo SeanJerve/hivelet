@@ -382,52 +382,42 @@ onBeforeUnmount(() => {
     </aside>
 
     <!--
-      Mobile Drawer Sheet with Smooth Slide Transition
+      Mobile drawer: a scrim and a panel, as SIBLINGS, each with its own
+      `v-if` and its own transition (Sean, 2026-10-01: "when I click the
+      sidebar it just pops from the left, no sidebar animation").
 
-      The backdrop used Tailwind's bare `ease-out` keyword, the one curve this
-      workspace deliberately does not use - it is weaker than the tokened
-      curve every other transition in the app accelerates with, so this drawer
-      alone would have answered a fraction softer than the one it sits beside
-      in AppHeader.
+      The panel used to be a child of the scrim, slid by an inner
+      `<Transition appear>`. That opened correctly, but closing removed the
+      SCRIM, and a child removed with its parent never runs its own leave:
+      measured in Chrome, the panel stayed at `translate: none` until the
+      scrim's fade took both away. The slide out had never played. As
+      siblings, each leaves on its own.
+
+      And the slide was `motion-safe:` only, so on a phone with Android's
+      "Remove animations" (which reports `prefers-reduced-motion: reduce`)
+      the panel appeared and vanished in one frame. It now fades there
+      instead of sliding - a fade is not vestibular motion. The timing, the
+      keyframes and that reduced-motion path are `.ws-drawer` and
+      `.ws-scrim` in index.css.
     -->
-    <Transition
-      enter-active-class="transition-opacity duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
+    <Transition name="ws-scrim">
       <div
         v-if="isMobileSidebarOpen"
-        class="ws-glass fixed inset-0 z-50 flex lg:hidden bg-black/40 backdrop-blur-xs"
+        class="ws-glass fixed inset-0 z-50 lg:hidden bg-black/40 backdrop-blur-xs"
         style="--ws-glass-solid: var(--night)"
-        @click.self="closeMobileNav"
-      >
-        <!--
-          The slide itself is gated with `motion-safe:` rather than the global
-          `.ws-focus` reduced-motion rule - this drawer is not nested under a
-          `.ws-focus` root, so nothing was catching its `translate-x` for a
-          reader who has asked for less motion. The backdrop's opacity fade
-          above is left unconditional: a fade is not vestibular motion, only
-          the drawer sliding across the screen is.
-        -->
-        <Transition
-          appear
-          enter-active-class="motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
-          enter-from-class="-translate-x-full"
-          enter-to-class="translate-x-0"
-          leave-active-class="motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
-          leave-from-class="translate-x-0"
-          leave-to-class="-translate-x-full"
-        >
+        aria-hidden="true"
+        @click="closeMobileNav"
+      />
+    </Transition>
+    <Transition name="ws-drawer">
           <div
+            v-if="isMobileSidebarOpen"
             id="workspace-mobile-nav"
             ref="drawerPanel"
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            class="w-72 bg-tile h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto overscroll-contain"
+            class="fixed inset-y-0 left-0 z-50 w-72 max-w-[calc(100vw-3rem)] bg-tile shadow-2xl p-5 flex flex-col justify-between overflow-y-auto overscroll-contain lg:hidden"
           >
             <div class="space-y-6">
               <div class="flex items-center justify-between pb-4 border-b border-line">
@@ -513,8 +503,6 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
-        </Transition>
-      </div>
     </Transition>
   </div>
 </template>

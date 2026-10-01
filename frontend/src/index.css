@@ -1408,6 +1408,55 @@ html:has(> body[style*='overflow: hidden']) {
   }
 }
 
+/* ----------------------------------------------------------- drawer, scrim --
+ * The phone navigation drawer in AppSidebar.vue (Sean, 2026-10-01: "it just
+ * pops from the left"). The panel slides in from the left edge over 280ms
+ * while the scrim fades in behind it, and slides back out over 200ms.
+ *
+ * Keyframes rather than transitions for the reason `.page-move` gives: a tap
+ * on a drawer link closes the drawer AND starts mounting the next page, and a
+ * transition's start waits for a frame that the mount holds up. An animation
+ * starts in the frame its class lands and runs on the compositor.
+ *
+ * `pointer-events: none` while leaving: for those 200ms the panel and scrim
+ * are only a picture of a closed drawer, and a tap on the page behind them
+ * should land on the page.
+ *
+ * Reduced motion: both fade; the panel does not travel.
+ */
+.ws-drawer-enter-active {
+  animation: ws-drawer-in 0.28s var(--ease-out-soft) both;
+}
+.ws-drawer-leave-active {
+  animation: ws-drawer-out 0.2s var(--ease-out-soft) forwards;
+  pointer-events: none;
+}
+.ws-scrim-enter-active {
+  animation: ws-fade-in 0.28s var(--ease-out-soft) both;
+}
+.ws-scrim-leave-active {
+  animation: ws-fade-out 0.2s var(--ease-out-soft) forwards;
+  pointer-events: none;
+}
+@keyframes ws-drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes ws-drawer-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-drawer-enter-active {
+    animation-name: ws-fade-in;
+  }
+  .ws-drawer-leave-active {
+    animation-name: ws-fade-out;
+  }
+}
+
 /* ------------------------------------------------------------- list-reveal --
  * A short stagger for a group of same-shaped things appearing together - a
  * page of table rows on first load, a grid of unit cards, a list of
