@@ -1504,10 +1504,22 @@ html:has(> body[style*='overflow: hidden']) {
   }
 }
 
+/*
+ * At rest `none`, not `1` and `0 0` (audit 2026-10-01). Any value of `scale` or
+ * `translate` other than `none` - the identity values included - makes the
+ * panel the containing block for `position: fixed` inside it, and
+ * OnsitePaymentModal opens its "Record this payment?" confirmation as a WsModal
+ * INSIDE this panel. That confirmation's "full-screen" overlay was therefore
+ * only as big as the form behind it and scrolled with it: on a 320px phone its
+ * title and X sat above the top of the screen, and in landscape the figures
+ * she is asked to check were out of sight. `none` still animates from the
+ * starting style below (it interpolates as the identity), so the opening is
+ * unchanged; once it settles, a nested dialog covers the screen again.
+ */
 .ws-modal-panel {
   opacity: 1;
-  scale: 1;
-  translate: 0 0;
+  scale: none;
+  translate: none;
   transition:
     opacity 0.2s var(--ease-out),
     scale 0.2s var(--ease-out),

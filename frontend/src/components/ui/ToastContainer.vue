@@ -32,11 +32,25 @@ const iconTone: Record<string, string> = {
     aria-label="Messages"
     aria-live="polite"
   >
+    <!--
+      A tap anywhere on a toast dismisses it, not only on its X (audit
+      2026-10-01). On a phone the stack is full width across the top of the
+      screen, above every dialog (z-60), so for its four seconds a toast sits
+      exactly over the menu button, the bell, the account menu and the X of
+      whatever dialog is open. A tap there landed on the toast's body and did
+      nothing at all, which is how "I closed it and the buttons stopped working"
+      reads from the outside: after a refused save, the dialog's X and then the
+      menu were measured as covered and dead until the toast timed out. Now the
+      first tap clears the toast, visibly, and the next one reaches what was
+      under it. The X stays for the keyboard and for screen readers; this
+      handler is the pointer's way out and adds no tab stop.
+    -->
     <TransitionGroup name="toast">
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        class="on-dark pointer-events-auto flex w-full items-start gap-3 rounded-2xl bg-night p-4 text-on-night shadow-lift"
+        class="on-dark pointer-events-auto flex w-full cursor-pointer items-start gap-3 rounded-2xl bg-night p-4 text-on-night shadow-lift"
+        @click="dismissToast(toast.id)"
       >
         <span class="mt-0.5 shrink-0" aria-hidden="true">
           <CheckCircle2 v-if="toast.type === 'success'" :class="['size-5', iconTone.success]" />
@@ -54,7 +68,7 @@ const iconTone: Record<string, string> = {
           type="button"
           class="icon-btn icon-btn-on-dark size-9 shrink-0"
           aria-label="Dismiss this message"
-          @click="dismissToast(toast.id)"
+          @click.stop="dismissToast(toast.id)"
         >
           <X class="size-4" aria-hidden="true" />
         </button>
