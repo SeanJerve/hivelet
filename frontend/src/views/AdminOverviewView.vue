@@ -891,7 +891,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       </OverviewTile>
 
       <OverviewTile
-        :title="`Collected in ${MONTH_LONG[CURRENT_MONTH - 1]}`"
+        :title="`Rent and water for ${MONTH_LONG[CURRENT_MONTH - 1]}`"
         to="/admin/income"
         to-label="Open the income ledger"
         class="xl:col-span-4"
@@ -922,11 +922,12 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             -->
             <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl">{{ peso(currentMonthRevenue) }}</p>
             <p class="mt-2 text-sm text-ink-soft">
-              {{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'collection' : 'collections' }} entered this month
+              {{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }} entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }} so far.
+              Payments are usually entered a week or two after they are received.
             </p>
           </div>
           <div class="mt-auto flex items-baseline justify-between gap-3 border-t border-line pt-4 text-sm">
-            <span class="text-ink-soft">{{ CURRENT_YEAR }} so far</span>
+            <span class="text-ink-soft">Rent and water entered for {{ CURRENT_YEAR }}</span>
             <span class="font-semibold tabular">{{ peso(monthlyRevenue) }}</span>
           </div>
         </template>
@@ -951,7 +952,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       </OverviewTile>
 
       <OverviewTile
-        :title="`Collections in ${CURRENT_YEAR}`"
+        :title="`Rent and water by month, ${CURRENT_YEAR}`"
         to="/admin/income"
         to-label="Open the income ledger"
         class="md:col-span-2 xl:col-span-8"
@@ -965,10 +966,10 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" />
           <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
             <div>
-              <dt class="text-xs text-ink-faint">Entered so far</dt>
+              <dt class="text-xs text-ink-faint">Rent and water entered</dt>
               <dd class="text-lg font-semibold tabular">{{ peso(monthlyRevenue) }}</dd>
               <dd class="text-xs text-ink-soft">
-                Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}
+                Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}, all units, Linda's included
               </dd>
             </div>
             <div>
@@ -1050,7 +1051,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                 { label: 'Operating expenses', value: liveLatestCashMonth.expenses, tone: 'night' },
                 { label: 'Net operating income', value: liveLatestCashMonth.noi, tone: 'bright' },
               ]"
-              :label="`Of ${peso(liveLatestCashMonth.grossIncome)} collected, ${peso(liveLatestCashMonth.expenses)} went to operating expenses and ${peso(liveLatestCashMonth.noi)} remained.`"
+              :label="`Of ${peso(liveLatestCashMonth.grossIncome)} in rent and water, ${peso(liveLatestCashMonth.expenses)} went to operating expenses and ${peso(liveLatestCashMonth.noi)} remained.`"
             />
             <ul class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-soft">
               <li class="flex items-center gap-1.5">
@@ -1080,7 +1081,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             <thead>
               <tr>
                 <th scope="col">Month</th>
-                <th scope="col" class="num">Collected</th>
+                <th scope="col" class="num">Rent and water</th>
                 <th scope="col" class="num">Operating</th>
                 <th scope="col" class="num">Net</th>
               </tr>
@@ -1159,7 +1160,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
      * Archive year
      * ================================================================== -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <OverviewTile tone="brand" title="Collected" class="xl:col-span-3">
+      <OverviewTile tone="brand" title="Rent and water entered" class="xl:col-span-3">
         <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
@@ -1202,18 +1203,19 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           >
             {{ peso(historicalAnnualNOI) }}
           </p>
-          <p class="mt-2 text-sm text-ink-soft">Collected minus operating expenses</p>
+          <p class="mt-2 text-sm text-ink-soft">Rent and water entered, minus operating expenses</p>
         </div>
       </OverviewTile>
 
-      <OverviewTile :title="`Collections in ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-8">
+      <OverviewTile :title="`Rent and water by month, ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-8">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <template v-else>
           <MonthCapsules :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
           <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
             <div>
-              <dt class="text-xs text-ink-faint">Total</dt>
+              <dt class="text-xs text-ink-faint">Rent and water entered</dt>
               <dd class="text-lg font-semibold tabular">{{ peso(historicalAnnualGrossTotal) }}</dd>
+              <dd class="text-xs text-ink-soft">All units, Linda's included</dd>
             </div>
             <div>
               <dt class="text-xs text-ink-faint">Average entered month</dt>
@@ -1228,7 +1230,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Collected by cluster" class="xl:col-span-4">
+      <OverviewTile title="Rent and water by cluster" class="xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <ul v-else class="flex flex-col gap-4">
           <li
@@ -1271,7 +1273,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             <thead>
               <tr>
                 <th scope="col">Month</th>
-                <th scope="col" class="num">Collected</th>
+                <th scope="col" class="num">Rent and water</th>
                 <th scope="col" class="num">Operating expenses</th>
                 <th scope="col" class="num">Net operating income</th>
                 <th scope="col" class="num">Personal, not deducted</th>
@@ -1366,7 +1368,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                     <th scope="col" class="px-4 py-3 text-left font-medium">Cluster</th>
                     <th scope="col" class="px-4 py-3 text-right font-medium">Payments</th>
                     <th scope="col" class="px-4 py-3 text-left font-medium">Months paid</th>
-                    <th scope="col" class="px-4 py-3 text-right font-medium">Total</th>
+                    <th scope="col" class="px-4 py-3 text-right font-medium">Rent and water paid</th>
                     <th scope="col" class="px-4 py-3 text-left font-medium">Invoice no., first found</th>
                   </tr>
                 </thead>
@@ -1417,7 +1419,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                   <th scope="col" class="px-4 py-3 text-left font-medium">Floor</th>
                   <th scope="col" class="px-4 py-3 text-right font-medium">Entries</th>
                   <th scope="col" class="px-4 py-3 text-right font-medium">Average entry</th>
-                  <th scope="col" class="px-4 py-3 text-right font-medium">Total</th>
+                  <th scope="col" class="px-4 py-3 text-right font-medium">Rent and water entered</th>
                 </tr>
               </thead>
               <tbody>
@@ -1544,7 +1546,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Invoice or supplier</th>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Category</th>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Split across areas</th>
-                      <th scope="col" class="px-4 py-3 text-right font-medium">Total</th>
+                      <th scope="col" class="px-4 py-3 text-right font-medium">Amount spent</th>
                     </tr>
                   </thead>
                   <tbody>
