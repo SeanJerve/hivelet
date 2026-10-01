@@ -122,9 +122,14 @@ No text below 12 px.
   - `pill-btn-light` sits on a brand or night tile.
   - `pill-btn-night` exists for a dark action on a light tile.
   - `icon-btn` is a 44 px circle that needs an `aria-label`. On a dark tile add
-    `icon-btn-on-dark`.
-- **Chips** narrow a list: `chip`, with `aria-pressed` for the selected one and `chip-count` for
-  the number it carries. Every filter on every screen uses these. Do not build a segmented control.
+    `icon-btn-on-dark`. **Since 2026-10-01 only the X (close) and ArrowUpRight (go to) wear it;**
+    every other icon-only button (pencil, eye, bin, copy) is `icon-btn-plain`, 44 px with no ring.
+  - `pill-btn-compact` is the one smaller size. Dialog footers use `ws-actions`; page-title
+    actions use `ws-page-actions` (`HANDOFF_TO_DESIGN.md` §0).
+- **Lists are narrowed by `ListToolbar`** (since 2026-10-01): view switch, search, and one
+  **Filters** button opening `FilterSheet`, applied on **Apply filters**. Do not put a row of
+  selects or chips above a list. `chip` and `chip-count` are still defined in `index.css`, but no
+  screen uses them now (checked 2026-10-01).
 - **Fields** are `ws-field` wrapping the control, so the label names it without needing `for`.
   `ws-input`, `ws-select`, `ws-textarea` for the box; `ws-hint` for the sentence underneath, which
   reads at 13 px because it is prose and gets read.
@@ -173,7 +178,9 @@ Two things about those two classes are load-bearing, and both are commented in `
   means restating the colour transitions too, which is what the extra lines in that rule are.
 
 - **Curves are tokens.** `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)` for anything a person just
-  did; `--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)` for something moving across the screen.
+  did; `--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)` for something moving across the screen;
+  since 2026-10-01 `--ease-out-soft: cubic-bezier(0.33, 1, 0.68, 1)` for anything that arrives (a
+  page, a dialog, the drawer, a menu), because on the quint an entrance read as a cut.
   The built-in CSS easings are too weak to read as intentional.
 - **Never `ease-in`.** It starts slow, which reads as the interface hesitating — worst at the exact
   moment the reader is watching hardest.

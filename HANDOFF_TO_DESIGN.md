@@ -17,6 +17,35 @@ mark beside the wordmark was tried and taken out, so do not add it back.
 
 ---
 
+## 0. New shared pieces, 1 October 2026 (Sean's requests; on `main` at `ed54996`)
+
+Use these instead of building a screen's own version. Each file's header comment has the reasoning.
+
+| Piece | Where | The rule |
+| :--- | :--- | :--- |
+| **`ListToolbar`** | `components/ui/ListToolbar.vue`, types in `listToolbar.ts` | The one toolbar on every list (Rooms and rates, Tenants, Monthly Income, Monthly Expenses, Repairs, Inquiries, tenant Payments, tenant Repairs): the "By cluster / As a list" switch on top (full width on a phone), then search with one **Filters** button in line. The count of filters in use rides on the button's corner so the button never changes width. Under it, a short "2025 · BH" line with **Clear**. **The screen keeps its own refs**; the toolbar only emits `apply`, so URL queries and exports keep reading the same state |
+| **`FilterSheet`** | `components/ui/FilterSheet.vue` | Every filter for a list, in a `WsModal` with `PillSelect`s. The choices are a **draft**: nothing behind the dialog changes until **Apply filters**; X, Escape or the backdrop discard it; **Reset** resets the draft only. A filter with one option is not shown. Even a list with one filter (Repairs' status) puts it here, for consistency |
+| **`QuickActionsFab`** | `components/overview/QuickActionsFab.vue` | Below 768 px (`md:hidden`), the Overview's Record payment / Record expense / Move someone in/out open from a green **+** pill at the bottom right; from 768 px they are header buttons. Both read one `quickActions` list in `AdminOverviewView.vue`, so they cannot drift. Teleported to `<body>` (`.page-move` animates `transform`, which would pin a `fixed` child to the page); `z-30`, under the header (40), dialogs (50) and toasts (60) |
+| **`.icon-btn-plain`** | `index.css` | Borderless 44 px icon button, ink tint on hover and press: the pencil, the eye, a bin, a copy button. **Only two icons keep the ringed `.icon-btn`: X (close) and ArrowUpRight (go to).** A pencil wearing the X's ring read as a second way to close |
+| **`.ws-actions`** | `index.css`, used by `WsModal`'s footer | Dialog footers. Phone: equal halves, a button too wide for half takes the row, Save lands on top; `.ws-action-apart` (Delete payment, Move them out) gets its own row at the bottom. From 640 px: one right-aligned line, primary last, the apart action at the far left. One height |
+| **`.ws-page-actions`** | `index.css` | Actions beside a page title: equal halves on a phone, at least 11rem each from 640 px, primary last. `.pill-btn-compact` is the one smaller pill size |
+| **`PullToRefresh`** | `components/layout/PullToRefresh.vue`, `lib/pullToRefresh.ts` | Installed app (`display: standalone`) only; a browser tab keeps its own. Rubber-band pull, the icon makes a full turn by the threshold, then a full reload |
+| **First-load loader** | `frontend/index.html`, `public/boot.js`, `main.ts` | The green hexagon turning under the still house and H. Shown on a first visit and on public pages; a signed-in reload gets the page's skeletons instead (`no-splash`). 8 s safety cap |
+
+**Motion tokens** (`index.css` `:root`), the only curves to use:
+
+- `--ease-out` (quint) for a control answering a press: it should feel instant.
+- `--ease-out-soft` (cubic) for anything that **arrives**: a page, a dialog, the drawer, a menu.
+  On the quint a 200 ms dialog was 93% there at 89 ms and read as a cut.
+- `--ease-in-out` for something moving across the screen; `--ease-bounce` only for data arriving
+  on first paint (a bar growing), never for a control.
+- Shared transitions: `ws-pop` (menus and `PillSelect`: 200 ms in, 140 ms out, scale 0.96 and 6 px),
+  `ws-fade` (scrims), `ws-dial` (the + button's actions, 40 ms apart), `page-move` (220 ms in,
+  100 ms out). Out is always quicker than in. Under reduced motion the fades stay and the movement
+  goes.
+
+---
+
 ## 1. Your remit, and its edges
 
 **You own the visual layer.** Look, layout, typography, spacing, colour, motion, component
