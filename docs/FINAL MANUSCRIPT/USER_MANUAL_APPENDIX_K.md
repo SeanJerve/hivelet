@@ -60,7 +60,8 @@ and it is not there yet, it appears once she records your receipt.
     payment yet. If you paid, it appears once she enters it, or ask her to check her records.
     *Kung "Not entered" pero nagbayad kayo, lalabas ito kapag naitala na ng landlady.*
   - **Show each month as a list** gives the same months as a table, with the receipt for each.
-- **Payment record**: every payment recorded for your unit, newest first.
+- **Payment record**: every payment recorded for your unit, newest first. Search it, or tap
+  **Filters** to pick another **Year** or the **Order**, then **Apply filters**.
 - **Pay with GCash**: online payment. **Until the landlady announces it, online payments do not
   charge real money; pay her in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
 
@@ -71,6 +72,7 @@ and it is not there yet, it appears once she records your receipt.
 2. **Add a photo** if you can. A normal phone photo is fine; it is made smaller before sending.
 3. Press **Send request**. It goes straight to the landlady and appears in **Your requests**.
 4. Open a request to follow it and to **add a note**. You get a notification when it is done.
+   **Filters** above your requests shows only **Open** or **Done** ones.
 
 ### 5. My details / Aking detalye
 
@@ -83,10 +85,13 @@ email. Your name can only be changed by the landlady.
 - **Android (Chrome):** menu **⋮** > **Install app** (or **Add to Home screen**).
 - **iPhone (Safari):** **Share** > **Add to Home Screen**.
 
-It then opens from its own icon. **Without signal**, it still opens and says **"No connection"**.
-**Overview** and **Payments and billing** show your bill, balance and payments as last loaded, with
-the time they were saved; nothing can be sent or paid until the signal returns. They are kept on
-your phone for your account only, and **signing out removes them**.
+It then opens from its own icon. **Pull down from the top** of a page to reload it.
+*Hilahin pababa mula sa itaas para i-reload.*
+
+**Without signal**, it still opens and says **"No connection"**. **Overview** and **Payments and
+billing** show your bill, balance and payments as last loaded, under **"Saved figures from"** and
+the time; **Pay with GCash** is hidden until the signal returns, and nothing can be sent. They are
+kept on your phone for your account only, and **signing out removes them**.
 If sending stalls on a weak signal, wait: after about 45 seconds it tells you whether to check
 before sending again. *Kapag walang signal, makikita pa rin ang huling na-load na singil at bayad, pero hindi makakapagpadala o makakabayad.*
 
@@ -102,6 +107,20 @@ it also removes the bill and payments kept on the phone for viewing without sign
 The administrator account is Michelle's; the business keeps the name Fe Galang Da Silva Boarding
 House. The greeting at the top follows the time of day.
 
+**Every list** (Rooms and rates, Tenants, Monthly Income, Monthly Expenses, Repairs, Inquiries)
+has the same bar at the top:
+
+- **By cluster / As a list** (where a list has both) changes how the rows are shown.
+- **Search** narrows the list as you type.
+- **Filters** opens a window with every filter for that list (cluster, month, year, status, kind).
+  Nothing changes until you press **Apply filters**; **Reset** puts the choices back. The filters in
+  use are named under the bar; **Clear** removes them.
+
+**Also on every screen:** a short ping means something was saved, or someone else's change has
+arrived. Tap a message at the top of the screen to close it. The phone's **Back** button goes back a
+page and closes any window that was open on it. In the installed app, **pull down from the top** of a
+page to reload it.
+
 ### 1. Signing in and your password
 
 Sign in with your email or phone number and your password. To change it: your initials at the top
@@ -110,13 +129,21 @@ as good as that.
 
 ### 2. Overview
 
-The first screen: money collected this month and year, month by month, **Collected by cluster**,
-**Operating expenses**, **Net operating income**, **Occupancy** (32 of 33 today), **Open repair
-requests** and **Needs your attention**. Personal spending is shown beside operating costs and is
-not deducted from rental income. If a figure cannot be loaded, the tile shows **"—"**, never ₱0.00:
-refresh when the connection is back.
+The first screen: **Needs your attention** (how many payments wait to be verified, and how many
+urgent repairs are open), **Rent and water** for this month, **Occupancy** (32 of 33 today), **Rent
+and water by month**, **Units by cluster**, **Operating cash flow** and **Open repair requests**.
+Personal spending is shown beside operating costs and is not deducted from rental income. If a
+figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
+
+- **Record payment**, **Record expense** and **Move someone in/out** are at the top. **On a phone**,
+  tap the green **+** at the bottom right to show them; tap it again to hide them.
+- **Another year:** tap the year beside the date (for example **2026 ⌄**) and choose one.
+  **Back to 2026** returns to this year.
 
 **The bell** at the top shows a **dot** when you have unread notifications; open it to read them.
+The **filter icon** beside the title shows only **Unread**, **Payments**, **Repairs** or
+**Inquiries** (or **All**); the **refresh icon** checks for new ones; **X** closes. **Mark all
+read** is at the bottom.
 **The numbers beside Inquiries and Repairs** in the side menu count what you have not looked at yet
 (new inquiries, and urgent repairs). They clear once you open that page, and come back if something
 changes: a visitor writes back, or a repair is made more urgent. They are remembered on this device
@@ -150,8 +177,8 @@ system's own record (section 9) keeps that it existed and who removed it.
 arrived, then verify it, or reject it. A payment is only counted once you verify it. **Until online
 payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
 
-**Download {year} for Excel** gives the income workbook in your own layout (month blocks, cluster
-subtotals, Linda separate).
+**Download** gives the income workbook for the year shown, in your own layout (month blocks,
+cluster subtotals, Linda separate).
 
 ### 4. Recording an expense (Monthly Expenses)
 
@@ -162,8 +189,8 @@ subtotals, Linda separate).
    be given once, so two amounts for the same area go in as one.
 4. **Add another expense** records the next one without closing the form.
 
-Editing and **Delete expense** work as for payments. **Download {year} for Excel** gives the
-expenses workbook.
+Editing and **Delete expense** work as for payments. **Download** gives the expenses workbook for
+the year shown.
 
 ### 5. Tenants
 
@@ -178,16 +205,17 @@ expenses workbook.
   their phone is signed out. The login ID is also on their record (Edit), under **Login ID**.
 - **Move them out**: type the unit code to confirm. The tenant loses access at once, the unit
   becomes free to let, and **their records stay**.
-- **Who lived where before**: choose a **Year** (and a **Month** if you like) beside the search.
-  The list then shows who paid for each unit then, read from your receipts: the months they paid,
+- **Who lived where before**: **Filters** > choose a **Year** (and a **Month** if you like) >
+  **Apply filters**. The list then shows who paid for each unit then, read from your receipts: the months they paid,
   or for one month what the receipt covered, when it was paid and its number. A name you wrote two
   ways in the same unit is shown once, with the other spelling under it; a tenant who moved units
-  says which other unit they rented. **Download … for Excel** saves the same list as a workbook,
-  named like "Tenant History June 2025 - TH062025". Choose **Now** to go back to your current tenants.
+  says which other unit they rented. **Download** saves the same list as a workbook, named like
+  "Tenant History June 2025 - TH062025". **Clear** (under the search) goes back to your current
+  tenants.
 
 ### 6. Rooms and rates
 
-Every unit **By cluster** or **As a list**. **Edit** a unit to change its rate, status, description
+Every unit **By cluster** or **As a list**; **Filters** narrows them by status or cluster. **Edit** a unit to change its rate, status, description
 or photo. Every rate change is kept in the unit's price history automatically; the system never
 raises a rate by itself.
 
@@ -196,12 +224,13 @@ raises a rate by itself.
 New requests from tenants appear here, marked by urgency. Open one (**Manage this repair**) to reply,
 **Send technician**, move it to **In Progress**, or **Mark resolved** (the tenant is notified). **Log
 a repair** records one you were told about in person, or one for an empty unit. **Delete repair**
-removes a request made by mistake.
+removes a request made by mistake. **Filters** > **Status** shows one stage only.
 
 ### 8. Inquiries
 
 Messages from people asking about a unit. Reply (**Save reply**), **Close inquiry** when settled, or
-**Move them in** to start a tenancy with the details already filled in.
+**Move them in** to start a tenancy with the details already filled in. **Filters** > **Status**
+shows only those **Waiting for an answer**, **Answered**, **Moved in** or **Closed**.
 
 The person who asked reads your reply on their inquiry's own page, and can write back there: when
 they send an inquiry they are given a link and a reference code for it (the code is shown beside your
