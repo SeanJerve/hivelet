@@ -76,7 +76,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
       <Transition name="ws-fade">
         <div
           v-if="isOpen"
-          class="fixed inset-0 z-30 bg-night/20"
+          class="fixed inset-0 z-30 bg-dim/20"
           aria-hidden="true"
           data-testid="quick-actions-scrim"
           @click="close(true)"

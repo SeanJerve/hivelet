@@ -26,7 +26,7 @@ const toneClass = computed(
     ({
       plain: 'bg-tile text-ink',
       soft: 'bg-brand-soft text-ink',
-      brand: 'bg-brand text-on-brand on-dark',
+      brand: 'ws-brand-tile bg-brand text-on-brand on-dark',
       night: 'bg-night text-on-night on-dark',
     })[props.tone]
 );

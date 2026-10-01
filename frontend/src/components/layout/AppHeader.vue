@@ -48,6 +48,7 @@ import NotificationPopover from './NotificationPopover.vue';
 import { Menu, LogOut, LogIn, User, Bell, ChevronDown, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { realEmail } from '@/lib/contactDetails';
+import ThemeChoice from '@/components/ui/ThemeChoice.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -540,6 +541,11 @@ onUnmounted(() => {
                   </div>
                 </div>
 
+                <!-- System, Light or Dark (Sean, 2026-10-01). -->
+                <div class="border-b border-line px-5 py-4">
+                  <ThemeChoice name="account-theme" />
+                </div>
+
                 <div class="space-y-1 p-3">
                   <router-link
                     v-if="isTenant"
@@ -605,7 +611,7 @@ onUnmounted(() => {
             to="/login"
             class="pill-btn-brand"
           >
-            <LogIn class="size-3.5 text-white" />
+            <LogIn class="size-3.5 text-on-brand" />
             <span>Sign in</span>
           </router-link>
         </template>

@@ -120,7 +120,16 @@ if (cssFiles.length === 0) {
 const css = cssFiles.map((f) => fs.readFileSync(path.join(assetDir, f), 'utf8')).join('\n');
 
 // `:root` values, so `var(--x)` can be followed to a hex.
-const vars = Object.fromEntries([...css.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
+//
+// The FIRST declaration of each, which is the `:root` one. The dark theme
+// (Sean, 2026-10-01) declares every colour token a second time under
+// `[data-theme='dark']`, later in the bundle, and `Object.fromEntries` keeps
+// the last of a repeated key - so this read the dark values and failed every
+// row against the light hex it was written to hold.
+const vars = {};
+for (const m of css.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})/g)) {
+  if (!(m[1] in vars)) vars[m[1]] = m[2];
+}
 
 let fail = 0;
 

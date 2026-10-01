@@ -967,8 +967,8 @@ async function handleEditExpense() {
                     'size-3 shrink-0 rounded-full',
                     a.tone === 'brand' && 'bg-brand',
                     a.tone === 'bright' && 'bg-brand-bright',
-                    a.tone === 'night' && 'bg-night',
-                    a.tone === 'soft' && 'bg-brand-soft',
+                    a.tone === 'night' && 'bg-series-night',
+                    a.tone === 'soft' && 'bg-series-soft',
                     a.tone === 'hatch' && 'hatch border border-line',
                     a.tone === 'faint' && 'bg-ink-faint',
                   ]"
