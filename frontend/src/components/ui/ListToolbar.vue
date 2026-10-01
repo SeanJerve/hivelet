@@ -148,7 +148,7 @@ function clearFilters() {
         <button
           v-if="offered.length"
           type="button"
-          :class="['pill-btn shrink-0', !searchLabel && 'ml-auto', active.length && 'border-brand text-brand']"
+          :class="['pill-btn relative shrink-0', !searchLabel && 'ml-auto', active.length && 'border-brand text-brand']"
           :aria-label="filterButtonLabel"
           aria-haspopup="dialog"
           :aria-expanded="sheetOpen"
@@ -156,9 +156,12 @@ function clearFilters() {
         >
           <SlidersHorizontal class="size-4" aria-hidden="true" />
           <span>{{ filterTitle }}</span>
+          <!-- On the corner rather than inline, so the button keeps its width when
+               a filter is applied: inline it took 28px from the search box,
+               which left a 320px phone's tenant search showing "Searc". -->
           <span
             v-if="active.length"
-            class="tabular inline-flex size-5 items-center justify-center rounded-full bg-brand text-xs font-semibold text-on-brand"
+            class="tabular absolute -right-1 -top-1 inline-flex size-5 items-center justify-center rounded-full bg-brand text-xs font-semibold text-on-brand ring-2 ring-tile"
             aria-hidden="true"
           >{{ active.length }}</span>
         </button>
