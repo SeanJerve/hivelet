@@ -95,6 +95,9 @@ kept on your phone for your account only, and **signing out removes them**.
 If sending stalls on a weak signal, wait: after about 45 seconds it tells you whether to check
 before sending again. *Kapag walang signal, makikita pa rin ang huling na-load na singil at bayad, pero hindi makakapagpadala o makakabayad.*
 
+**Light or dark:** tap your initials at the top right > **Appearance** > **System**, **Light** or
+**Dark**. **System** follows your phone's own setting. *Piliin ang Light o Dark sa Appearance.*
+
 ### 7. Signing out / Pag-sign out
 
 Tap your initials at the top right > **Sign out**. Always sign out on a phone that is not yours:
@@ -119,7 +122,9 @@ has the same bar at the top:
 **Also on every screen:** a short ping means something was saved, or someone else's change has
 arrived. Tap a message at the top of the screen to close it. The phone's **Back** button goes back a
 page and closes any window that was open on it. In the installed app, **pull down from the top** of a
-page to reload it.
+page to reload it. **Light or dark:** your initials > **Appearance** > **System**, **Light** or
+**Dark** (System follows the phone or computer). On the public pages it is the sun/moon button at
+the foot of the page.
 
 ### 1. Signing in and your password
 

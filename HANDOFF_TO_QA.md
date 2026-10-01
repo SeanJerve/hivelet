@@ -46,6 +46,7 @@ only writes are the ones the steps name.
 | **Toast tap** | Cause any message (a refused save, Signed in) | One tap on the message closes it, and the next tap reaches the button that was under it |
 | **Notifications** | The bell | One header line: filter icon, refresh icon, X; **Mark all read** at the bottom |
 | **Ping** | Save something; have a second device change something | One ping per save, one per change from the other device; none for Signed in |
+| **Dark mode** (added 2 Oct) | Initials > Appearance > Dark, then reload; set System and switch the phone's own dark setting; public pages: sun/moon at the foot | Dark from the first frame (no white flash, loader dark too); the choice survives a reload; System follows the phone without a reload; every screen and dialog readable |
 
 **B-94 first.** Since about 22:30 on 1 Oct every request to `hivelet.vercel.app`, `/api`
 included, can land on Vercel's **"We're verifying your browser"** checkpoint (`BLOCKED_FOR_SEAN.md`
