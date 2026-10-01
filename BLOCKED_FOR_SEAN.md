@@ -33,6 +33,25 @@ thing did not work" is not.
 
 ## Open
 
+### B-94 — Vercel "Security Checkpoint" challenges every visitor, `/api` included · **OPEN, needs the Vercel owner**
+
+- **What:** since some time on 2026-10-01 (seen 22:30 PHT) every request to
+  `https://hivelet.vercel.app` (`/public`, `/`, `/api/public/rates`) answers **403** with
+  `x-vercel-mitigated: challenge` unless it is a browser that passes the "We're verifying your
+  browser" page (a few seconds, then the site loads). That is Vercel Firewall's Attack Challenge Mode
+  or a challenge rule, switched on by someone or by Vercel's automatic mitigation.
+- **Why it matters before Saturday:** (1) every first visit, the evaluators' included, starts on a
+  Vercel checkpoint page, and PageSpeed/Lighthouse runs measure that page; (2) **the Adyen webhook**
+  (`/api/public/payments/adyen/webhook`) is a server-to-server POST that cannot solve a browser
+  challenge — if Adyen is not on Vercel's allowed list, GCash payments are paid at Adyen but never
+  recorded here (B-68 looks the same). The last webhook row in `payments` is 2026-09-30 11:36 UTC,
+  so there is no evidence either way yet.
+- **To do (Vercel dashboard → project → Firewall):** turn Attack Challenge Mode off, or remove the
+  challenge rule; if it must stay, add a bypass rule for path `/api/public/payments/adyen/webhook`.
+  Then in Adyen (Developers → Webhooks) check the last deliveries succeeded. Claude has no access to
+  Vercel's settings and does not change security settings.
+- **Raised:** 2026-10-01 by Claude, found while confirming the evening's deploy
+
 ### 2026-10-01 — Activity screen removed from the site (done; a record, nothing to do)
 
 - **What:** Sean's request, on the adviser's ruling that the audit trail is for the programming
