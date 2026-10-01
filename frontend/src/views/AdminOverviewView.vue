@@ -696,10 +696,18 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         <p v-else-if="ledgerNote" class="mt-1 text-sm text-ink-soft">{{ ledgerNote }}</p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- Last on a phone, so the two actions share the first row instead of one
-             of them wrapping onto a row of its own. -->
-        <div ref="yearMenuRoot" class="relative order-last sm:order-none" @keydown.escape="closeYearMenu(true)">
+      <!--
+        `.ws-page-actions` (index.css), the header row every admin page shares
+        (Sean, 2026-10-01: "fix Record payment, Record expense, Move someone
+        in/out and the year select so they're arranged better"). The `order-*`
+        classes arrange without moving the markup: on a phone the two Record
+        buttons are equal halves of the first row and the year (compact, as wide
+        as its value) leads the second with Move someone in/out filling the
+        rest; from 640px the year comes first and Record payment, the primary,
+        last at the right edge, as on Monthly Income.
+      -->
+      <div class="ws-page-actions">
+        <div ref="yearMenuRoot" class="ws-action-compact relative order-3 sm:order-1" @keydown.escape="closeYearMenu(true)">
           <button
             ref="yearButton"
             type="button"
@@ -766,11 +774,11 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
 
         <template v-if="!isHistoricalMode">
-          <router-link to="/admin/income?openPayment=1" class="pill-btn-brand">
+          <router-link to="/admin/income?openPayment=1" class="pill-btn-brand order-2 sm:order-4">
             <Plus class="size-4" aria-hidden="true" />
             Record payment
           </router-link>
-          <router-link to="/admin/expenses?openExpense=1" class="pill-btn">
+          <router-link to="/admin/expenses?openExpense=1" class="pill-btn order-1 sm:order-3">
             <ReceiptText class="size-4 text-ink-soft" aria-hidden="true" />
             Record expense
           </router-link>
@@ -780,7 +788,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             start there: "Move someone in" is at its top, and moving out needs
             the list to choose who (Edit > Move them out).
           -->
-          <router-link to="/admin/tenants" class="pill-btn">
+          <router-link to="/admin/tenants" class="pill-btn order-4 sm:order-2">
             <DoorOpen class="size-4 text-ink-soft" aria-hidden="true" />
             Move someone in/out
           </router-link>
