@@ -1578,28 +1578,15 @@ html:has(> body[style*='overflow: hidden']) {
  * it reads as a jump rather than as something opening - the reader loses where
  * it came from and has to re-find the page behind it.
  *
- * ENTRY ONLY FOR `WsModal`, AND THAT IS A CONSTRAINT RATHER THAN A CHOICE.
- * Every screen mounts it with `v-if`, so the component is gone from the tree
- * the moment it closes; a Vue <Transition> inside it would never get to run a
- * leave. `@starting-style` needs no wrapper and no change to the twelve
- * screens that open one. The native <dialog> prompts below DO get both
- * directions, because `allow-discrete` keeps them rendered while they leave.
+ * `WsModal` opens and closes from WsModal.vue, with Web Animations (Sean,
+ * 2026-10-01: "the modals just pop up"). It was `@starting-style` rules here,
+ * and they did run in Chrome - but on the quint `--ease-out` from a 0.97
+ * start, so the panel was 93% open 89ms in and the whole thing read as a pop;
+ * and `@starting-style` skips every iPhone before Safari 17.5. One set of
+ * numbers for every dialog, there and below: 240ms in on `--ease-out-soft`,
+ * rising 12px from 0.96 - not from scale(0), which looks like it came out of
+ * a point - and 160ms back out.
  *
- * 200ms in, and it starts from 0.97 and 8px rather than from nothing: an
- * element that grows from scale(0) looks like it came out of a point, and
- * nothing does.
- */
-.ws-modal-overlay {
-  opacity: 1;
-  transition: opacity 0.2s var(--ease-out);
-}
-@starting-style {
-  .ws-modal-overlay {
-    opacity: 0;
-  }
-}
-
-/*
  * At rest `none`, not `1` and `0 0` (audit 2026-10-01). Any value of `scale` or
  * `translate` other than `none` - the identity values included - makes the
  * panel the containing block for `position: fixed` inside it, and
@@ -1607,25 +1594,13 @@ html:has(> body[style*='overflow: hidden']) {
  * INSIDE this panel. That confirmation's "full-screen" overlay was therefore
  * only as big as the form behind it and scrolled with it: on a 320px phone its
  * title and X sat above the top of the screen, and in landscape the figures
- * she is asked to check were out of sight. `none` still animates from the
- * starting style below (it interpolates as the identity), so the opening is
- * unchanged; once it settles, a nested dialog covers the screen again.
+ * she is asked to check were out of sight. The same is true of `transform`,
+ * which is why WsModal's opening animation keeps no `fill`: once it finishes
+ * the panel carries no transform, and a nested dialog covers the screen again.
  */
 .ws-modal-panel {
-  opacity: 1;
   scale: none;
   translate: none;
-  transition:
-    opacity 0.2s var(--ease-out),
-    scale 0.2s var(--ease-out),
-    translate 0.2s var(--ease-out);
-}
-@starting-style {
-  .ws-modal-panel {
-    opacity: 0;
-    scale: 0.97;
-    translate: 0 8px;
-  }
 }
 
 /*
@@ -1633,39 +1608,44 @@ html:has(> body[style*='overflow: hidden']) {
  * `display` and `overlay` is what lets the closing frame render at all -
  * without it the element is removed before any of this can play.
  *
- * 0.2s, matching `.ws-modal-panel`/`.ws-modal-overlay` just above - same job
- * (a modal arriving over a backdrop), so it gets the same weight rather than
- * the 0.15s it shipped with, which sat below emil-design-eng's 200-500ms
- * modal range entirely rather than just at the fast end of it.
+ * The same motion as WsModal, so a dialog opens the same way on the public
+ * site as in the workspace. The 160ms sits on the closed state because that is
+ * the state a closing dialog transitions TO; `[open]` sets the 240ms opening.
  */
 dialog.ws-dialog {
   opacity: 0;
-  scale: 0.97;
+  scale: 0.96;
+  translate: 0 12px;
   transition:
-    opacity 0.2s var(--ease-out),
-    scale 0.2s var(--ease-out),
-    overlay 0.2s allow-discrete,
-    display 0.2s allow-discrete;
+    opacity 0.16s var(--ease-out-soft),
+    scale 0.16s var(--ease-out-soft),
+    translate 0.16s var(--ease-out-soft),
+    overlay 0.16s allow-discrete,
+    display 0.16s allow-discrete;
 }
 dialog.ws-dialog[open] {
   opacity: 1;
   scale: 1;
+  translate: 0 0;
+  transition-duration: 0.24s;
 }
 @starting-style {
   dialog.ws-dialog[open] {
     opacity: 0;
-    scale: 0.97;
+    scale: 0.96;
+    translate: 0 12px;
   }
 }
 dialog.ws-dialog::backdrop {
   opacity: 0;
   transition:
-    opacity 0.2s var(--ease-out),
-    overlay 0.2s allow-discrete,
-    display 0.2s allow-discrete;
+    opacity 0.16s var(--ease-out-soft),
+    overlay 0.16s allow-discrete,
+    display 0.16s allow-discrete;
 }
 dialog.ws-dialog[open]::backdrop {
   opacity: 1;
+  transition-duration: 0.24s;
 }
 @starting-style {
   dialog.ws-dialog[open]::backdrop {
@@ -1676,19 +1656,15 @@ dialog.ws-dialog[open]::backdrop {
 /* Reduced motion keeps the fade and drops the travel, the same bargain the
    press makes. A fade is not vestibular motion; a slide is. */
 @media (prefers-reduced-motion: reduce) {
-  .ws-modal-panel,
   dialog.ws-dialog,
   dialog.ws-dialog[open] {
     scale: none;
     translate: none;
   }
   @starting-style {
-    .ws-modal-panel {
-      scale: none;
-      translate: none;
-    }
     dialog.ws-dialog[open] {
       scale: none;
+      translate: none;
     }
   }
 }
