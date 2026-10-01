@@ -182,7 +182,7 @@ const ADMIN_NAV = computed(() => [
   { to: '/admin/tenants', aliases: ['/basis/tenants'], label: 'Tenants', icon: Users, badge: null, badgeColor: '' },
   { to: '/admin/income', aliases: ['/basis/income'], label: 'Monthly Income', icon: Wallet, badge: null, badgeColor: '' },
   { to: '/admin/expenses', aliases: ['/basis/expenses'], label: 'Monthly Expenses', icon: ReceiptText, badge: null, badgeColor: '' },
-  { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Repairs', icon: Wrench, badge: urgentTicketsCount.value > 0 ? urgentTicketsCount.value : null, badgeColor: 'bg-overdue text-white' },
+  { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Repairs', icon: Wrench, badge: urgentTicketsCount.value > 0 ? urgentTicketsCount.value : null, badgeColor: 'bg-overdue text-on-overdue' },
   { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Inquiries', icon: Inbox, badge: inquiriesCount.value > 0 ? inquiriesCount.value : null, badgeColor: 'bg-brand text-on-brand' },
 ]);
 

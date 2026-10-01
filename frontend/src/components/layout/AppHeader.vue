@@ -605,7 +605,7 @@ onUnmounted(() => {
             to="/login"
             class="pill-btn-brand"
           >
-            <LogIn class="size-3.5 text-white" />
+            <LogIn class="size-3.5 text-on-brand" />
             <span>Sign in</span>
           </router-link>
         </template>

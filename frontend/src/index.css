@@ -87,8 +87,9 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
 
-  --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.05), 0 8px 24px -12px rgba(28, 25, 23, 0.08);
-  --shadow-lift: 0 2px 4px rgba(28, 25, 23, 0.04), 0 18px 42px -18px rgba(28, 25, 23, 0.16);
+  /* Values in :root (--elev-*), so the dark theme can deepen them. */
+  --shadow-card: var(--elev-card);
+  --shadow-lift: var(--elev-lift);
 
   /* Workspace system (docs/DESIGN_GUIDELINE.md). Screens move onto these one at a
      time; the roles above stay until nothing reads them. */
@@ -113,6 +114,9 @@
   --color-verify-soft: var(--verify-soft);
   --color-overdue: var(--overdue);
   --color-overdue-soft: var(--overdue-soft);
+  --color-on-overdue: var(--on-overdue);
+  --color-overdue-strong: var(--overdue-strong);
+  --color-scrim: var(--scrim);
   --radius-tile: 1.5rem;
 
   /* Motion.
@@ -234,8 +238,207 @@
   --verify-soft: #fcefd6;
   --overdue: #b3261e;
   --overdue-soft: #fde6e3;
+  /* The label on a solid `--overdue` fill, and that fill's hover. They were
+     `#ffffff` and `#8f1e17` written into `.pill-btn-danger`; a token so the
+     dark theme can turn the label dark on its lighter red (Sean, 2026-10-01). */
+  --on-overdue: #ffffff;
+  --overdue-strong: #8f1e17;
 
+  /* What dims the page behind a dialog. `bg-ink/40` did this, and in the dark
+     theme `--ink` is the LIGHT text colour, so the scrim washed the page grey
+     instead of dimming it (Sean, 2026-10-01). The light value is the same
+     ink at 40%, so nothing changes in the light theme. */
+  --scrim: rgb(16 23 19 / 0.4);
+
+  /* Elevation. The values `--shadow-card` and `--shadow-lift` always had; they
+     moved here from `@theme` so the dark theme can deepen them. */
+  --elev-card: 0 1px 2px rgba(28, 25, 23, 0.05), 0 8px 24px -12px rgba(28, 25, 23, 0.08);
+  --elev-lift: 0 2px 4px rgba(28, 25, 23, 0.04), 0 18px 42px -18px rgba(28, 25, 23, 0.16);
+
+  /* The page scrollbar, which sits beside every screen. */
+  --scrollbar-track: #f5f5f4;
+  --scrollbar-thumb: #d6d3d1;
+  --scrollbar-thumb-hover: #a8a29e;
+
+  /* The chevron drawn inside every <select>: `--ink-soft`, URL-encoded,
+     because a data URI cannot read a custom property. */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2345524a' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  color-scheme: light;
   font-family: var(--font-sans);
+}
+
+/* ------------------------------------------------------------- dark theme --
+ * Sean, 2026-10-01: "If we can implement a complete working dark mode, that
+ * would be good."
+ *
+ * `data-theme="dark"` on <html>, set before the first paint by
+ * public/theme-init.js and kept current by src/lib/theme.ts. There is no
+ * `prefers-color-scheme` query in this file on purpose: the script resolves
+ * "System" to light or dark itself, so the CSS reads one attribute and cannot
+ * disagree with the control in the account menu.
+ *
+ * Every colour in the interface is one of these tokens, so this block IS the
+ * dark theme; the few component rules after it cover what a token alone
+ * cannot (a brand-filled tile, a light pill on a dark tile).
+ *
+ * The idea, so the next change keeps to it:
+ *   - Surfaces are green-tinted near-blacks, the dark of the same grey-green
+ *     the light canvas is, never #000. Higher is lighter: canvas, then tile,
+ *     then the night tile; borders are a hairline a step above the tile.
+ *   - `--brand` becomes a light green. Text, icons, chart bars and small fills
+ *     (an avatar, a count, the primary pill) all read it, and a light green
+ *     carries text on a dark surface where the light theme's deep green could
+ *     not; `--on-brand`, the label on those fills, turns near-black to match.
+ *     A whole brand-filled TILE stays deep green with light text instead
+ *     (`.ws-brand-tile` below) - a panel that size in light green glares.
+ *   - Status colours keep their hue and lighten; their `-soft` fills darken.
+ *
+ * Contrast, measured with the page's own colours in Chrome (normal text needs
+ * 4.5:1): ink on tile 13.7, ink-soft 8.6, ink-faint 5.9; brand on tile 7.3,
+ * on brand-soft 5.9; the label on a brand fill 8.4; verify on its fill 7.1,
+ * overdue on its fill 6.7; on-night-soft on the night tile 6.9.
+ */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --background: #131916;
+  --foreground: #e6ece8;
+  --surface: #1a211d;
+  --card: #1a211d;
+  --card-foreground: #e6ece8;
+  --popover: #1a211d;
+  --popover-foreground: #e6ece8;
+  --primary: #5ea2f5;
+  --primary-strong: #82b6f7;
+  --primary-foreground: #0b1220;
+  --primary-soft: #14243d;
+  --neutral-dark: #2e3a4d;
+  --neutral-dark-strong: #3a4860;
+  --secondary: #212a25;
+  --secondary-foreground: #e6ece8;
+  --muted: #212a25;
+  --muted-foreground: #a3ada7;
+  --muted-foreground-soft: #7f8a84;
+  --foreground-soft: #c2cbc5;
+  --ink-navy: #c9d6ea;
+  --surface-sunken: #161c19;
+  --accent: #f5b33d;
+  --accent-foreground: #f2c77c;
+  --accent-ink: #e9b35a;
+  --destructive: #ff8f80;
+  --destructive-foreground: #2a0d0a;
+  --border: #2b3530;
+  --border-strong: #36423b;
+  --input: #2b3530;
+  --ring: #f5b33d;
+
+  --success: #4fd1a0;
+  --success-foreground: #8de0bd;
+  --success-soft: #133126;
+  --warning: #f5b33d;
+  --warning-foreground: #f2c77c;
+  --warning-soft: #33270f;
+  --danger: #ff8f80;
+  --danger-foreground: #ffb3a8;
+  --danger-soft: #3f1e1a;
+  --info: #5ab8f0;
+  --info-foreground: #9ed3f5;
+  --info-soft: #10283a;
+  --neutral-soft: #212a25;
+  --neutral-strong: #b3bfb7;
+
+  --sidebar: #1a211d;
+  --sidebar-foreground: #b3bfb7;
+  --sidebar-primary: #e6ece8;
+  --sidebar-primary-foreground: #101713;
+  --sidebar-accent: #2a2417;
+  --sidebar-accent-foreground: #f2c77c;
+  --sidebar-border: #2b3530;
+
+  --canvas: #0f1412;
+  --tile: #1a211d;
+  --ink: #e6ece8;
+  --ink-soft: #b3bfb7;
+  --ink-faint: #929f97;
+  --line: #2b3530;
+  --brand: #5ec08d;
+  --brand-strong: #7fd0a5;
+  --brand-soft: #1a3527;
+  --brand-bright: #2f8a5c;
+  --on-brand: #07140d;
+  --on-brand-soft: #1a3f2c;
+  --night: #24332b;
+  --night-raised: #2e3f36;
+  --on-night: #eef5f0;
+  --on-night-soft: #aebfb4;
+  --hatch: #66766c;
+  --verify: #e9b35a;
+  --verify-soft: #3a2d15;
+  --overdue: #ff8f80;
+  --overdue-soft: #3f1e1a;
+  --on-overdue: #2a0d0a;
+  --overdue-strong: #ffab9f;
+
+  --scrim: rgb(0 0 0 / 0.6);
+  --elev-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  --elev-lift: 0 2px 4px rgba(0, 0, 0, 0.35), 0 18px 42px -18px rgba(0, 0, 0, 0.7);
+
+  --scrollbar-track: #0f1412;
+  --scrollbar-thumb: #33403a;
+  --scrollbar-thumb-hover: #4a5a51;
+  /* `--ink-soft` in this theme (#b3bfb7). */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b3bfb7' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/*
+ * A brand-filled tile (OverviewTile `tone="brand"`: what is due, what was
+ * entered) keeps the light theme's arrangement in the dark one - deep green,
+ * light text - by redefining the brand roles for itself and everything in it.
+ * With the dark theme's light green it would be a glaring mint panel, and the
+ * `on-dark` pieces inside it (a translucent white status pill, a light focus
+ * ring, the ringed arrow) are drawn for a dark field.
+ */
+[data-theme='dark'] .ws-brand-tile {
+  --brand: #1d6142;
+  --brand-strong: #17523a;
+  --on-brand: #f2f8f4;
+  --on-brand-soft: #c5e2d0;
+}
+
+/*
+ * `.pill-btn-light` is the white pill on the brand and night tiles. Those
+ * tiles stay dark in the dark theme, and `--tile` does not stay white, so it
+ * would have become a dark pill on a dark tile. It keeps its light theme
+ * colours instead: the same light pill on the same dark field.
+ */
+[data-theme='dark'] .pill-btn-light {
+  background-color: var(--on-night);
+  border-color: var(--on-night);
+  color: #101713;
+}
+[data-theme='dark'] .pill-btn-light:hover:not(:disabled) {
+  background-color: #d3e8db;
+}
+
+/*
+ * The two native <dialog> prompts on the public pages dim the page with
+ * `backdrop:bg-night/70`. `--night` is a raised green-grey in the dark theme,
+ * so that read as a grey haze over a dark page rather than a dimming.
+ */
+[data-theme='dark'] dialog.ws-dialog::backdrop {
+  background-color: rgb(0 0 0 / 0.7);
+}
+
+/*
+ * The floor plans are black line drawings on white PNGs. On a dark page that
+ * is a white sheet glaring out of the panel, so they are drawn inverted: light
+ * walls on a dark ground a shade off the tile. `hue-rotate` turns any colour
+ * in a drawing back to its own hue after the inversion. The unit marker is a
+ * separate element over the image, so it keeps its brand fill.
+ */
+[data-theme='dark'] img[src*='/floorplans/'] {
+  filter: invert(0.88) hue-rotate(180deg);
 }
 
 /*
@@ -311,21 +514,21 @@ html:has(> body[style*='overflow: hidden']) {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f5f5f4;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
+  background: var(--scrollbar-thumb-hover);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #d6d3d1 #f5f5f4;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 /**
@@ -818,12 +1021,12 @@ html:has(> body[style*='overflow: hidden']) {
   }
   .pill-btn-danger {
     background-color: var(--overdue);
-    color: #ffffff;
+    color: var(--on-overdue);
     border: 1px solid var(--overdue);
   }
   .pill-btn-danger:hover:not(:disabled) {
-    background-color: #8f1e17;
-    border-color: #8f1e17;
+    background-color: var(--overdue-strong);
+    border-color: var(--overdue-strong);
   }
   .pill-btn-danger-quiet {
     background-color: var(--tile);
@@ -1148,7 +1351,7 @@ html:has(> body[style*='overflow: hidden']) {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2345524a' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-image: var(--select-chevron);
     background-repeat: no-repeat;
     background-position: right 1.125rem center;
     background-size: 1rem 1rem;
