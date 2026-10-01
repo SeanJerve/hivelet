@@ -31,7 +31,6 @@ import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
-import SegmentBar from '@/components/overview/SegmentBar.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import type { CapsuleMonth } from '@/components/overview/types';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -570,15 +569,6 @@ const collectionsByMonth = computed<CapsuleMonth[]>(() => {
 
 const showMonthChart = computed(() => filterMonth.value === 'All' && rows.value.length > 0);
 
-/**
- * What the money on screen is made of. A true part-to-whole: rent and water add
- * up to what was collected (the Remitted column), so a bar is honest here.
- */
-const collectionParts = computed(() => [
-  { label: 'Rent', value: totalRent.value, tone: 'brand' as const },
-  { label: 'Water', value: totalWater.value, tone: 'bright' as const },
-]);
-
 // Rent plus water: the same figure as the Remitted column's total, so the page
 // shows one "collected" number, not two that differ (Sean, 2026-09-30).
 const collectedAltogether = computed(() => totalRent.value + totalWater.value);
@@ -1081,7 +1071,7 @@ async function exportExcel() {
     -->
     <p v-if="!incomeRecordsFetchFailed" class="text-sm leading-6 text-ink-soft">{{ figuresScope }}</p>
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <OverviewTile title="Collected altogether" tone="night">
+      <OverviewTile title="Rent and water received" tone="night">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
@@ -1138,49 +1128,18 @@ async function exportExcel() {
     </div>
 
     <!--
-      What came in, month by month, and what it was made of. The same two
-      components the overview and the expenses ledger draw with, because a
-      second chart language on a third screen is how a system stops being one.
+      What came in, month by month - the same capsules the overview and the
+      expenses ledger draw. "What it was made of" (a rent/water bar and the two
+      figures) stood beside it and repeated the Rent and Water tiles above word
+      for word; removed for less on screen (Sean, 2026-10-01).
     -->
-    <div v-if="rows.length > 0" class="grid gap-4 xl:grid-cols-5">
+    <div v-if="rows.length > 0 && showMonthChart">
       <OverviewTile
-        v-if="showMonthChart"
-        :title="`Collected each month${filterYear !== 'All' ? ` in ${filterYear}` : ''}`"
-        class="xl:col-span-3"
+        :title="`Rent and water by month${filterYear !== 'All' ? `, ${filterYear}` : ''}`"
       >
-        <MonthCapsules :months="collectionsByMonth" label="Collections by month" />
+        <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" />
       </OverviewTile>
 
-      <!--
-        The month chart beside this one hides itself when there are no rows
-        (`showMonthChart` requires `rows.length > 0`), so a failed load never
-        draws an empty capsule strip. This tile had no such guard and drew the
-        whole breakdown at zero: a part-to-whole bar with no parts, "Rent ₱0,
-        Water ₱0", and the spreadsheet's own line at ₱0 under it.
-      -->
-      <OverviewTile title="What it was made of" :class="showMonthChart ? 'xl:col-span-2' : 'xl:col-span-5'">
-        <UnavailableNote
-          v-if="incomeRecordsFetchFailed"
-          message="The collections could not be loaded, so there is nothing to break down."
-          @retry="fetchIncome"
-        />
-        <template v-else>
-        <SegmentBar
-          :segments="collectionParts"
-          label="Rent and water as parts of what was collected"
-        />
-        <dl class="mt-4 space-y-2 text-sm">
-          <div
-            v-for="part in collectionParts"
-            :key="part.label"
-            class="flex items-baseline justify-between gap-3"
-          >
-            <dt class="text-ink-soft">{{ part.label }}</dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(part.value) }}</dd>
-          </div>
-        </dl>
-        </template>
-      </OverviewTile>
     </div>
 
     <!--
