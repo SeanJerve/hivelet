@@ -378,6 +378,28 @@ const totalJuly = computed(() =>
   filtered.value.reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0)
 );
 
+/**
+ * What the figures below add up, in one plain line - the twin of Monthly
+ * Income's (Sean, 2026-10-01: the landlady could not tell what a big figure was
+ * for). Every area is counted, personal spending included, which the Overview
+ * keeps apart from operating costs.
+ */
+const figuresScope = computed(() => {
+  const y = filterYear.value;
+  const m = monthsList.find((x) => x.val === filterMonth.value)?.label ?? '';
+  const years = yearsList.value.filter((v) => v !== 'All');
+  let period: string;
+  if (y === 'All' && filterMonth.value === 'All') {
+    period = years.length > 1 ? `every expense from ${years.at(-1)} to ${years[0]}` : `every expense in ${years[0] ?? 'the ledger'}`;
+  } else if (y === 'All') period = `${m} of every year`;
+  else if (filterMonth.value === 'All') period = `all of ${y}`;
+  else period = `${m} ${y}`;
+  const narrowed = [selectedCategory.value !== 'All' ? 'of the kind picked' : '', q.value.trim() ? 'matching your search' : '']
+    .filter(Boolean)
+    .join(' and ');
+  return `These figures are for ${period}${narrowed ? `, ${narrowed}` : ''}: every area, personal spending included.`;
+});
+
 const utilitiesTotal = computed(() =>
   filtered.value
     .filter((e) => e.category.toLowerCase().includes('water') || e.category.toLowerCase().includes('light') || e.category.toLowerCase().includes('util'))
@@ -850,6 +872,7 @@ async function handleEditExpense() {
     </div>
 
     <!-- What was spent, and where it landed -->
+    <p v-if="!expenseRecordsFetchFailed" class="text-sm leading-6 text-ink-soft">{{ figuresScope }}</p>
     <div class="grid gap-4 xl:grid-cols-12">
       <!--
         The one dark tile on this screen, and the one figure the screen exists
@@ -877,7 +900,7 @@ async function handleEditExpense() {
         which is the dark-tile idiom already in AdminOverviewView, not a new
         colour.
       -->
-      <OverviewTile title="Spent in this view" tone="night" class="xl:col-span-4">
+      <OverviewTile title="Spent" tone="night" class="xl:col-span-4">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           dark
