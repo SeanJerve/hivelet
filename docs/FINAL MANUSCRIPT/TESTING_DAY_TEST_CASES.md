@@ -199,7 +199,9 @@ Session 3 of the guide. Write down: start time, number of tenants, the owner, an
 At least one Android phone with Chrome and one iPhone with Safari. The system is designed so that
 **the app itself opens offline, public unit information is shown from the phone's memory, and
 personal and financial data is never kept on the phone** (Chapter 4, §4.2.7; the delimitation in
-§1.4). These cases check exactly that promise, no more.
+§1.4). These cases check exactly that promise, no more. *Since 1 October 2026 (after this test):
+a signed-in tenant's own last-loaded figures are kept for offline viewing and removed at sign-out
+(§4.2.7).*
 
 | ID | ISO | Req | Do | Should see | Android | iPhone | Evidence |
 | :-- | :-- | :-- | :--- | :--- | :-- | :-- | :--- |

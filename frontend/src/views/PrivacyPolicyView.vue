@@ -30,7 +30,10 @@
  *                            sessionStorage entries: lib/yearScope.ts (the year picked on the
  *                            admin screens), authStore.ts PASSWORD_CHANGED_FLAG (read once
  *                            after a forced password change) and MOVED_OUT_FLAG (read once by
- *                            the sign-in page, added 2026-09-30), rechecked 2026-09-30; no
+ *                            the sign-in page, added 2026-09-30), lib/offlineCache.ts (a
+ *                            tenant's own last-loaded bills, payments, standing and unit, for
+ *                            viewing with no signal; tenants only, keyed to that tenant, wiped at
+ *                            sign-out; Sean, 2026-10-01), rechecked 2026-10-01; no
  *                            `document.cookie` in frontend/src, no `res.cookie` in backend/src,
  *                            no analytics script anywhere
  *   offline cache            frontend/vite.config.ts workbox: static files, fonts, and
@@ -77,7 +80,7 @@ const sections = Object.values(S);
 </script>
 
 <template>
-  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-30" :sections="sections">
+  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-10-01" :sections="sections">
     <template #lead>
       <p>
         This policy explains what Hivelet, the system {{ LANDLADY.name }} uses to run the
@@ -273,6 +276,11 @@ const sections = Object.values(S);
           and a copy of your name, email address and role, so the portal can still open on a
           phone with no signal. Signing out removes both. On a phone or computer other people
           use, sign out when you finish.
+        </li>
+        <li>
+          <strong>If you are a tenant:</strong> the bills, balance, payments and unit details your
+          pages last loaded, so you can see what you owe with no signal. They are kept for your
+          account only, and signing out removes them.
         </li>
         <li>
           <strong>On the landlady's screens:</strong> which inquiries and urgent repairs she has

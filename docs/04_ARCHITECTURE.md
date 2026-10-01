@@ -195,7 +195,9 @@ Financial calculations must be based on server-side authoritative data. The fron
 
 **Offline capability is moderate and read-oriented. Do not permit offline financial mutations that can later create conflicting transactions.**
 
-The implemented scope is precise and narrow. `frontend/vite.config.ts:32-79` precaches build assets (`:33`) and defines three runtime rules: Google Fonts (`:36`), Google Static Fonts (`:50`), and one API rule matching `/api/public` and `/api/health` only (`:64`), under `NetworkFirst` with a one-hour expiry. Tenant statements (`/api/tenant`) and administrative data (`/api/admin`) are mounted at `backend/src/routes/index.ts:30-31` and match no cache rule, so they are never available offline. Offline capability is not claimed beyond this.
+The implemented scope is precise and narrow. `frontend/vite.config.ts:32-79` precaches build assets (`:33`) and defines three runtime rules: Google Fonts (`:36`), Google Static Fonts (`:50`), and one API rule matching `/api/public` and `/api/health` only (`:64`), under `NetworkFirst` with a one-hour expiry. Tenant statements (`/api/tenant`) and administrative data (`/api/admin`) are mounted at `backend/src/routes/index.ts:30-31` and match no cache rule, so the service worker never serves them offline.
+
+One read-only exception since 2026-10-01 (Sean): `frontend/src/lib/offlineCache.ts` keeps a signed-in tenant's own last successful reads of `/tenant/my-rooms`, `my-bills`, `my-payments`, `my-income-records`, `my-standing` and `/public/rates` in `localStorage`, keyed to that tenant's profile id. The tenant Overview and Payments pages draw from it only when a read fails with `NETWORK_ERROR`, under a notice giving the time it was saved, and offer no Pay button while they do (BR-031: it never overrides a server answer). Admin reads are never kept. `authStore.clearSession` wipes it on sign-out and on any refused session, and a different profile id wipes it rather than reading it. Offline capability is not claimed beyond this.
 
 ### 4.4 Payment secrets stay behind the boundary
 

@@ -321,6 +321,11 @@ const config: UserConfig = {
              *
              * Widening this for offline support would be an easy, well-meant
              * change with no visible symptom.
+             *
+             * A tenant's own balance IS viewable offline since 2026-10-01 (Sean),
+             * but not from here: lib/offlineCache.ts keeps it in localStorage under
+             * her own profile id and authStore wipes it at sign-out, which this
+             * cache could do neither of.
              */
             urlPattern: /\/api\/(public|health)/i,
             handler: 'NetworkFirst',
