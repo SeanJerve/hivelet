@@ -238,7 +238,8 @@ Other security measures in the system:
 - Every administrator action is written to an audit trail. The database refuses to let the
   application edit or delete its entries. The only change ever made to it was deliberate and
   reviewed: when test accounts were deleted, the name on their entries was removed and every entry
-  kept.
+  kept. On the capstone adviser's advice the trail is kept in the database for the developers and
+  is not shown in the application: its Activity screen was removed on 1 October 2026.
 - Messages from the payment gateway are accepted only with a valid HMAC signature.
 - A check for committed passwords and keys runs before every commit.
 

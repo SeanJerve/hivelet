@@ -8,7 +8,7 @@ const creds = readFileSync(new URL('../../credentials/creds.txt', import.meta.ur
 const email = creds.match(/Email:\s*(\S+)/)[1];
 const password = creds.match(/Password:\s*(\S+)/)[1];
 const axe = readFileSync(new URL('./node_modules/axe-core/axe.min.js', import.meta.url), 'utf8');
-const PAGES = ['/admin/overview', '/admin/directory', '/admin/tenants', '/admin/income', '/admin/expenses', '/admin/tickets', '/admin/inquiries', '/admin/audit-logs'];
+const PAGES = ['/admin/overview', '/admin/directory', '/admin/tenants', '/admin/income', '/admin/expenses', '/admin/tickets', '/admin/inquiries'];
 const b = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe' });
 const blocked = [];
 for (const w of (process.env.WIDTHS ?? '360,390,768,1366').split(',').map(Number)) {

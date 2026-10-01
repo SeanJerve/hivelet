@@ -12,17 +12,19 @@ import { api } from '@/lib/api';
 import { currentUser } from '@/lib/authStore';
 import { loadWithOfflineCopy, onBackOnline } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
+import { playSound } from '@/lib/sounds';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
-import { CreditCard, Search, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
+import { CreditCard, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SavedCopyNote from '@/components/overview/SavedCopyNote.vue';
-import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { FilterDraft, ToolbarFilter } from '@/components/ui/listToolbar';
 import PaymentMonths from '@/components/overview/PaymentMonths.vue';
 import type { ReceiptInput } from '@/lib/tenantPaymentMonths';
 
@@ -316,6 +318,16 @@ const yearOptions = computed(() =>
   availableYears.value.map((y) => ({ value: y, label: String(y) }))
 );
 
+/** The toolbar's filters (components/ui/ListToolbar.vue); the refs above stay the state. */
+const paymentFilters = computed<ToolbarFilter[]>(() => [
+  { key: 'year', label: 'Year', value: selectedYear.value, defaultValue: currentYear, options: yearOptions.value },
+  { key: 'sort', label: 'Order', value: sortOrder.value, defaultValue: 'latest', options: sortOrderOptions },
+]);
+function applyPaymentFilters(v: FilterDraft) {
+  selectedYear.value = Number(v.year);
+  sortOrder.value = v.sort === 'oldest' ? 'oldest' : 'latest';
+}
+
 const filteredPayments = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   const filtered = paymentHistory.value.filter((p) => {
@@ -412,6 +424,10 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
     );
 
     if (res?.confirmed) {
+      // A confirmed payment pings like any major action (Sean, 2026-10-01).
+      // Arriving back from GCash is a page load, so the browser may hold the
+      // sound until the first tap (lib/sounds.ts); it is never forced.
+      playSound('notify');
       /**
        * `recorded` is not decoration on the response type - it is the one field
        * that says whether the webhook's payment row has landed yet
@@ -475,6 +491,7 @@ onMounted(async () => {
   await handleGatewayReturn(params);
 
   if (statusParam === 'success') {
+    playSound('notify');
     gatewayNotice.value = {
       tone: 'success',
       title: 'Payment submitted',
@@ -731,10 +748,10 @@ function refreshAll() {
     <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div class="min-w-0">
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
+        <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Payments and billing
         </h1>
-        <p class="mt-1 text-sm text-ink-soft">Pay a bill with GCash, and see what has been recorded against your unit.</p>
         <!-- Here, not inside the payment dialog: leaving the page from there
              drops the checkout session. -->
         <RouterLink
@@ -820,7 +837,7 @@ function refreshAll() {
           <template v-else>No payment is recorded yet.</template>
           <template v-if="standing.status === 'overdue'">
             {{ standing.periodsDue > 1 ? `${standing.periodsDue} months after that are` : 'The month after that is' }} not entered
-            yet. If you have paid the landlady, it appears here once she enters it.
+            yet.
           </template>
           Paying now covers {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
           {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }}.
@@ -844,8 +861,7 @@ function refreshAll() {
         Pay with GCash
       </button>
       <p class="text-xs leading-5 text-on-brand-soft">
-        {{ peso(standing.perPeriod.totalAmount, 2) }} a month. Paid in person? It shows here once the
-        landlady records the payment.
+        Paid in person? It shows here once the landlady records it.
       </p>
     </OverviewTile>
 
@@ -964,8 +980,8 @@ function refreshAll() {
         </div>
       </dl>
       <p class="text-sm leading-6 text-ink-soft">
-        Rent is due {{ rentFacts.dueDay }}. The landlady usually enters payments a week or two after
-        she receives them, so a month you have paid can show "Not entered" for a while.
+        Rent is due {{ rentFacts.dueDay }}. A month you have paid can show "Not entered" until the
+        landlady enters it.
       </p>
     </OverviewTile>
     </section>
@@ -987,43 +1003,15 @@ function refreshAll() {
 
     <!-- Payment record -->
     <OverviewTile title="Payment record">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="relative w-full sm:w-80 shrink-0">
-          <!-- left-4/pl-11: the one inset every search box in the workspace
-               uses. -->
-          <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-          <label for="tenant-payment-search" class="sr-only">Search by reference, method or status</label>
-          <input
-            id="tenant-payment-search"
-            v-model="searchQuery"
-            type="search"
-            placeholder="Search"
-            class="ws-input w-full pl-11"
-          />
-        </div>
-        <!--
-          No `shrink-0`. Sized at max-content (2 x 13rem plus the gap = 424px)
-          this row ran to x=472 against a tile ending at 327 on a 375px phone,
-          clipped rather than reachable by `body`'s `overflow-x: hidden`, so a
-          resident could not change the order of their own payment history.
-          Below `sm` the two selects now share one full-width row, half each.
-        -->
-        <div class="flex w-full items-center gap-2 sm:w-auto">
-          <PillSelect
-            v-model="selectedYear"
-            :options="yearOptions"
-            aria-label="Filter by year"
-            width-class="min-w-0 flex-1 sm:w-52 sm:flex-none"
-          />
-          <PillSelect
-            v-model="sortOrder"
-            :options="sortOrderOptions"
-            aria-label="Sort order"
-            align="right"
-            width-class="min-w-0 flex-1 sm:w-52 sm:flex-none"
-          />
-        </div>
-      </div>
+      <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
+           Sean, 2026-10-01): search, and the filter button beside it holding
+           the year and the order. -->
+      <ListToolbar
+        v-model:search="searchQuery"
+        search-label="Search by reference, method or status"
+        :filters="paymentFilters"
+        @apply="applyPaymentFilters"
+      />
 
       <UnavailableNote
         v-if="historyLoadFailed"

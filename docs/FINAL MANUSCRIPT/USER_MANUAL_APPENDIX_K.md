@@ -105,8 +105,8 @@ House. The greeting at the top follows the time of day.
 ### 1. Signing in and your password
 
 Sign in with your email or phone number and your password. To change it: your initials at the top
-right > **Change password**. Only you should know it; the system's records of who did what (the
-**Activity** page) are only as good as that.
+right > **Change password**. Only you should know it; the system's record of who did what is only
+as good as that.
 
 ### 2. Overview
 
@@ -144,7 +144,7 @@ cannot be recorded twice for the same unit and month.
 
 **To correct a payment:** open it with **Edit** > change > **Save changes**. **To remove one**
 recorded by mistake: **Edit** > **Delete payment**. It leaves the ledger and totals at once; the
-Activity page keeps the record that it existed and who removed it.
+system's own record (section 9) keeps that it existed and who removed it.
 
 **Online (GCash) payments** appear under **To verify** / **Payments to verify**. Check the money
 arrived, then verify it, or reject it. A payment is only counted once you verify it. **Until online
@@ -209,11 +209,12 @@ reply box). Their answers appear in the same conversation, and a notification te
 No text or email is sent, so call them if it is urgent. Inquiries from before 30 September 2026 have
 no such page: call or text those people as before.
 
-### 9. Activity
+### 9. The record of who did what
 
-Everything done in the system, by whom and when: **Everything on record**, **Done to the records**,
-**Sign-ins and refusals**, and downloads. Entries cannot be changed or deleted by anyone through the
-system. **Download for Excel** exports it.
+The system writes every payment, correction, tenant change, repair, sign-in and download to a
+permanent record: who did it, when, and what changed. Nobody can change or delete an entry. Since
+1 October 2026 this record is **kept in the database for the developers and is not shown in the
+app**. Ask the team if you need to know who changed something.
 
 ### 10. When the connection is weak or gone
 

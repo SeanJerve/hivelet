@@ -45,7 +45,6 @@ const RUNS = 5;
 const ENDPOINTS = [
   ['/admin/income-records', "the owner's income ledger"],
   ['/admin/expense-entries', 'the expense ledger'],
-  ['/admin/audit-logs?limit=100', 'the audit trail, newest 100'],
   ['/admin/tenants', 'the resident directory'],
   ['/admin/rooms', 'the unit directory'],
   ['/admin/payments', 'payments awaiting verification'],

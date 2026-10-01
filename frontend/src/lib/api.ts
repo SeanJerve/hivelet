@@ -278,7 +278,7 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
 /**
  * When THIS device last saved something. `lib/live.ts` pings when a change
  * arrives from someone else, and a change that follows one's own save by a few
- * seconds is one's own - it already had its success sound.
+ * seconds is one's own - it already pinged, once (lib/useToast.ts).
  */
 let lastOwnWriteAt = 0;
 export function msSinceOwnWrite(): number {
@@ -293,8 +293,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 export const api = {
   get: <T>(path: string, auth = true) => request<T>(path, { method: 'GET', auth }),
   /**
-   * For endpoints that report totals alongside the rows - the audit log says how
-   * many events exist in the whole table, which a 100-row window cannot tell you.
+   * For endpoints that report totals alongside the rows - the notification list
+   * says how many are unread, which a page of rows cannot tell you.
    */
   getWithMeta: <T, M = Record<string, unknown>>(path: string, auth = true) =>
     requestEnvelope<T, M>(path, { method: 'GET', auth }),

@@ -77,7 +77,7 @@ const monthsFor = (p: HistoryPerson) => monthsLabel(p.months);
 
 /**
  * The same period as a workbook, built by the server with the same rule and
- * recorded on the Activity page like the other three downloads.
+ * written to the audit record like the other downloads.
  */
 const isExporting = ref(false);
 async function exportHistory() {

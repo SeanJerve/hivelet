@@ -10,7 +10,7 @@ import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
-import { Plus, Search, X, Loader2, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
+import { Plus, X, Loader2, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -18,6 +18,8 @@ import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { FilterDraft, ToolbarFilter } from '@/components/ui/listToolbar';
 
 interface ApiExpense {
   id: string;
@@ -205,6 +207,18 @@ watch(isLoading, (loading) => {
 watch(filterYear, (year) => {
   pickedYear.value = year;
 }, { flush: 'sync' });
+
+/** The toolbar's filters (components/ui/ListToolbar.vue); the refs above stay the state. */
+const expenseFilters = computed<ToolbarFilter[]>(() => [
+  { key: 'kind', label: 'Kind of expense', value: selectedCategory.value, defaultValue: 'All', options: expenseCategoryOptions.value },
+  { key: 'month', label: 'Month', value: filterMonth.value, defaultValue: 'All', options: monthsList },
+  { key: 'year', label: 'Year', value: filterYear.value, defaultValue: 'All', options: yearOptions.value },
+]);
+function applyExpenseFilters(v: FilterDraft) {
+  selectedCategory.value = String(v.kind);
+  filterMonth.value = String(v.month);
+  filterYear.value = String(v.year);
+}
 
 // New Expense Form Entries (At least one default entry)
 // The property's today, not UTC's - see lib/propertyDate.
@@ -843,12 +857,10 @@ async function handleEditExpense() {
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <!-- No subtitle: it described the columns below (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Monthly Expenses
         </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          What was spent, what kind of thing it was, and which part of the property it belongs to.
-        </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
@@ -966,64 +978,22 @@ async function handleEditExpense() {
             </li>
           </ul>
           <p class="text-xs leading-5 text-ink-faint">
-            Main House and Other are your own costs. They are recorded here but not taken out of rental income.
+            Main House and Other are personal: not taken out of rental income.
           </p>
         </template>
       </OverviewTile>
     </div>
 
-    <!-- Narrowing the ledger -->
-    <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div class="relative w-full sm:w-80 shrink-0">
-        <Search
-          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-          aria-hidden="true"
-        />
-        <label for="expense-search" class="sr-only">Search the ledger</label>
-        <input
-          id="expense-search"
-          v-model="q"
-          type="search"
-          placeholder="Search"
-          class="ws-input w-full pl-11"
-        />
-      </div>
-
-      <!--
-        Three filters, not two, so the room directory's own even split of two
-        does not carry over unchanged. Kind is the one that changes what the
-        reader is even looking at; Month and Year both narrow WHEN, so they
-        read as one decision in two parts and pair together the way the room
-        directory already pairs its two. Kind sits alone above them, full
-        width - not because it needs the room, but because grouping it with
-        either of the other two would claim a relationship that is not there.
-      -->
-      <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        <PillSelect
-          v-model="selectedCategory"
-          :options="expenseCategoryOptions"
-          aria-label="Kind of expense"
-          widthClass="w-full sm:w-52"
-        />
-
-        <div class="flex items-center gap-2">
-          <PillSelect
-            v-model="filterMonth"
-            :options="monthsList"
-            aria-label="Month"
-            widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
-          />
-
-          <PillSelect
-            v-model="filterYear"
-            :options="yearOptions"
-            aria-label="Year"
-            align="right"
-            widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
-          />
-        </div>
-      </div>
-    </div>
+    <!-- Narrowing the ledger: the list toolbar every screen shares
+         (components/ui/ListToolbar.vue, Sean, 2026-10-01). No switch - the
+         ledger has one way of being drawn - so search, with the filter button
+         beside it holding Kind, Month and Year. -->
+    <ListToolbar
+      v-model:search="q"
+      search-label="Search the ledger"
+      :filters="expenseFilters"
+      @apply="applyExpenseFilters"
+    />
 
     <!-- `SkeletonTable` is `aria-hidden="true"` throughout (it is a purely visual
          placeholder), so without this a screen reader was told nothing while the
@@ -1036,13 +1006,11 @@ async function handleEditExpense() {
     <div v-else-if="groupedExpenses.length === 0" class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center">
       <p class="text-base font-semibold text-ink">
         <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
-        <template v-else>Nothing here</template>
+        <template v-else>Nothing matches</template>
       </p>
-      <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-        <template v-if="expenseRecordsFetchFailed">
-          This is not the same as there being no expenses. Reload the page to try again.
-        </template>
-        <template v-else>No expense matches what you have asked for.</template>
+      <!-- The heading says it when nothing matches; the failure keeps its line. -->
+      <p v-if="expenseRecordsFetchFailed" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+        This is not the same as there being no expenses. Reload the page to try again.
       </p>
     </div>
 

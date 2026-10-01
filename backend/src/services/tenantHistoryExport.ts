@@ -17,7 +17,7 @@ import { db } from '../config/db.js';
 import { ApiError } from '../utils/ApiError.js';
 import { buildTenantHistory, monthsLabel, type HistoryReceipt, type HistoryPerson } from '../utils/tenantHistory.js';
 
-/** The same header ink and hairline as the other workbooks (auditTrailExport.ts). */
+/** The same header ink and hairline as the other workbooks (incomeReportExport.ts, expenseReportExport.ts). */
 const INK = 'FF1F2430';
 const RULE = 'FFD8DCE3';
 

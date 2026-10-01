@@ -84,7 +84,6 @@ const PURPOSE = new Map([
   ['PATCH /admin/inquiries/:id', 'advance or close an enquiry'],
   ['POST /admin/inquiries/:id/messages', 'reply to a prospect'],
   ['GET /admin/inquiries/:id/messages', 'what has already been said to a prospect'],
-  ['GET /admin/audit-logs', 'the audit trail'],
   ['GET /admin/notifications', "the administrator's notifications"],
   ['GET /tenant/my-rooms', 'my unit'],
   ['GET /tenant/my-bills', 'my bills'],
@@ -103,7 +102,6 @@ const PURPOSE = new Map([
   ['GET /admin/tickets/:id/messages', 'read a ticket thread'],
   ['GET /admin/reports/income.xlsx', "the owner's income workbook, in her own layout"],
   ['GET /admin/reports/expenses.xlsx', 'the expense workbook, in her own layout'],
-  ['GET /admin/reports/audit.xlsx', 'the audit trail as a workbook'],
   ['GET /admin/reports/tenants.xlsx', 'who paid for each unit in a year or month, from the receipts, as a workbook'],
 ]);
 
