@@ -213,12 +213,12 @@ const slips = issued
   <p class="unit">Unit ${esc(t.units || 'not assigned')}</p>
   <table>
     <tr><th>Website</th><td>${SITE}</td></tr>
-    <tr><th>Sign in with</th><td>${esc(t.phone_number)}<br><span>or</span> ${esc(t.email)}</td></tr>
+    <tr><th>Sign in with</th><td>${esc(t.phone_number)}</td></tr>
     <tr><th>Starting password</th><td class="pw">${esc(t.password)}</td></tr>
   </table>
   <ol>
-    <li>Open the website and sign in with your phone number (or email) and the starting password above.</li>
-    <li>You will be asked to choose your own password straight away: at least 10 characters, with a letter and a number.</li>
+    <li>Open the website and sign in with your phone number and the starting password above.</li>
+    <li>You will be asked straight away for your own email address and your own password: at least 10 characters, with a letter and a number. You can change both, and your phone number, any time under My details.</li>
     <li>This starting password stops working once you change it. Keep this slip private, and tear it up afterwards.</li>
     <li>Five wrong tries locks the account for 15 minutes. Ask the owner if you are stuck.</li>
   </ol>
