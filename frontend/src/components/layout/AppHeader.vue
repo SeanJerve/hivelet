@@ -398,11 +398,19 @@ onUnmounted(() => {
               the one header control a resident taps from a phone. `relative`
               is the load-bearing part - the unread badge is positioned
               against this button.
+
+              `z-50` (audit 2026-10-01): above the popover's z-40 phone backdrop.
+              The backdrop covered the bell, so on a touch screen tapping the bell
+              to close the panel hit the backdrop - whose pointerdown closed it -
+              and the click that follows a tap then landed on the bell, now
+              uncovered, and opened it again. The panel never closed from the
+              bell. Above the backdrop, the bell is excluded from that pointerdown
+              and its own toggle closes the panel.
             -->
             <button
               data-notifications-trigger
               @click="toggleNotifications"
-              class="icon-btn relative transition-colors border-transparent bg-transparent hover:border-transparent"
+              class="icon-btn relative z-50 transition-colors border-transparent bg-transparent hover:border-transparent"
               :class="[
                 // The bell is its icon alone, no circle and no fill (Sean,
                 // 2026-09-29): the circle crowded the account menu beside it.

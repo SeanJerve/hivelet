@@ -93,6 +93,25 @@ const ticketError = ref('');
 const ticketErrorField = ref<'ticket-title' | 'ticket-desc' | null>(null);
 const submitting = ref(false);
 
+/**
+ * Says what went wrong where the resident can see it (audit 2026-10-01).
+ *
+ * The message sits at the top of the form and Send request at the bottom. On a
+ * 375px phone a refused send put it 286px above the screen, with focus dropped
+ * on `<body>`: the button was pressed and nothing visibly happened, which reads
+ * as "Send does not work". The message is now scrolled into view (`nearest`, so
+ * it does not jump when already showing), and focus goes to the field it is
+ * about or, for a failure that is not about a field, to the message itself.
+ */
+async function showTicketError(message: string, field: 'ticket-title' | 'ticket-desc' | null = null) {
+  ticketError.value = message;
+  ticketErrorField.value = field;
+  await nextTick();
+  const el = document.getElementById('ticket-error');
+  el?.scrollIntoView({ block: 'nearest' });
+  (field ? document.getElementById(field) : el)?.focus({ preventScroll: true });
+}
+
 // ---- Ticket list state ----------------------------------------------------
 const tickets = ref<TicketRow[]>([]);
 /**
@@ -209,6 +228,8 @@ const timelineNotes = ref<TicketNote[]>([]);
 const timelineError = ref<string | null>(null);
 const newNoteText = ref('');
 const savingNote = ref(false);
+/** Why the last note did not go, shown under the box (see `postNote`). */
+const noteError = ref('');
 
 /**
  * The 5-stage progress timeline for every maintenance ticket.
@@ -268,6 +289,7 @@ async function openTimeline(ticket: TicketRow) {
   activeTimelineTicket.value = ticket;
   timelineNotes.value = seedNotesForTicket(ticket);
   newNoteText.value = '';
+  noteError.value = '';
   isTimelineOpen.value = true;
 
   timelineError.value = null;
@@ -356,6 +378,7 @@ async function postNote() {
   // twice before the first request even returned, each posting the same note.
   if (!text || !activeTimelineTicket.value || savingNote.value) return;
   savingNote.value = true;
+  noteError.value = '';
   try {
     const res = await api.post<any>(`/tenant/tickets/${activeTimelineTicket.value.id}/messages`, {
       message: text,
@@ -369,11 +392,18 @@ async function postNote() {
     newNoteText.value = '';
   } catch (err: any) {
     console.error('Failed to post ticket comment:', err);
+    /**
+     * Said under the note box, not in a toast (audit 2026-10-01). On a phone the
+     * toast stack spans the top of the screen, which is exactly where this
+     * dialog's X sits: for four seconds after a failed send, a tap on X landed
+     * on the toast and the dialog would not close. Here the message is also
+     * beside the text it is about.
+     */
     // A TIMEOUT is the one failure that may have been saved (`lib/api.ts`, the
     // deadline): saying "not sent" there invites the duplicate this handler
     // exists to prevent. The text stays in the box either way.
     if (err?.code === 'TIMEOUT') {
-      showToast('error', 'Could not confirm your note was sent', err.message);
+      noteError.value = `We could not confirm your note was sent. ${err.message}`;
       return;
     }
     // The only visible change used to be the button label flicking from "…" back
@@ -382,11 +412,7 @@ async function postNote() {
     // unsaved in exactly the same way a successful post that failed to render
     // would. Residents press again: the successes duplicate and the failures
     // stay silent. The text is deliberately still in the box to send again.
-    showToast(
-      'error',
-      'Your note was not sent',
-      `It is still in the box, so you can send it again. ${err?.message || err}`
-    );
+    noteError.value = `Your note was not sent. It is still in the box to send again. ${err?.message || err}`;
   } finally {
     savingNote.value = false;
   }
@@ -521,10 +547,12 @@ const handlePhotoSelect = async (event: Event) => {
     ticketPhotoUrl.value = null;
     ticketPhotoName.value = '';
     target.value = '';
-    ticketError.value =
+    // Through `showTicketError`: the picker is at the foot of the form and the
+    // message at its head, out of sight on a phone (audit 2026-10-01).
+    await showTicketError(
       `That photo is ${(file.size / 1024 / 1024).toFixed(1)} MB, and the largest this can send ` +
-      `is about ${Math.round(MAX_PHOTO_BYTES / 1024)} KB. File the request without it and reply ` +
-      `to it with the photo, or send a smaller one.`;
+        `is about ${Math.round(MAX_PHOTO_BYTES / 1024)} KB. Send the request without it, or choose a smaller one.`
+    );
     return;
   }
 
@@ -553,22 +581,18 @@ async function handleTicketSubmit() {
   ticketErrorField.value = null;
 
   if (!ticketTitle.value.trim() || ticketTitle.value.trim().length < 3) {
-    ticketError.value = 'Say what needs fixing in at least 3 characters.';
-    ticketErrorField.value = 'ticket-title';
-    document.getElementById('ticket-title')?.focus();
+    await showTicketError('Say what needs fixing in at least 3 characters.', 'ticket-title');
     return;
   }
   if (!ticketDescription.value.trim() || ticketDescription.value.trim().length < 5) {
-    ticketError.value = 'Add a few more words to the details.';
-    ticketErrorField.value = 'ticket-desc';
-    document.getElementById('ticket-desc')?.focus();
+    await showTicketError('Add a few more words to the details.', 'ticket-desc');
     return;
   }
 
   submitting.value = true;
   try {
     if (!activeRoomId.value) {
-      ticketError.value = 'You have no active unit, so a request cannot be raised. Contact the administrator.';
+      await showTicketError('You have no active unit, so a request cannot be raised. Ask the landlady.');
       return;
     }
 
@@ -609,7 +633,11 @@ async function handleTicketSubmit() {
   } catch (err: any) {
     // Not "Submission failed" on a TIMEOUT: the request may have arrived, and
     // the message itself says to check the list before sending it again.
-    ticketError.value = err?.code === 'TIMEOUT' ? err.message : `Submission failed: ${err?.message || err}`;
+    // "Your request was not sent", not "Submission failed:" - a resident is not
+    // submitting anything, they are asking for a repair (audit 2026-10-01).
+    await showTicketError(
+      err?.code === 'TIMEOUT' ? err.message : `Your request was not sent. ${err?.message || err}`
+    );
   } finally {
     submitting.value = false;
   }
@@ -696,12 +724,22 @@ function formatDateTime(iso: string) {
           </div>
 
           <!-- `p-5 sm:p-6`, matching the header strip directly above it. -->
-          <form @submit.prevent="handleTicketSubmit" class="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+          <!--
+            `novalidate` (audit 2026-10-01): the browser's own "Please fill out
+            this field" bubble answered an empty title before `handleTicketSubmit`
+            could, and some in-app phone browsers show no bubble at all, so Send
+            request appeared to do nothing. The page's own check covers both
+            fields, in its own words, the way `/inquire` already does.
+          -->
+          <form novalidate @submit.prevent="handleTicketSubmit" class="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
             <div class="space-y-4">
+              <!-- `tabindex` and `scroll-mt-24`: `showTicketError` focuses it and
+                   scrolls it clear of the sticky 64px header. -->
               <div
                 v-if="ticketError"
                 id="ticket-error"
-                class="ws-reveal flex items-start gap-2.5 rounded-2xl bg-overdue-soft p-4"
+                tabindex="-1"
+                class="ws-reveal flex scroll-mt-24 items-start gap-2.5 rounded-2xl bg-overdue-soft p-4 outline-none"
                 role="alert"
               >
                 <AlertTriangle class="mt-0.5 size-4 shrink-0 text-overdue" aria-hidden="true" />
@@ -1190,25 +1228,33 @@ function formatDateTime(iso: string) {
               This request is closed, so it cannot take new notes. If the problem has come back, report
               it again from this page.
             </p>
-            <div v-else class="flex gap-2">
-              <label for="ticket-note" class="sr-only">Add a note for the landlady</label>
-              <input
-                id="ticket-note"
-                v-model="newNoteText"
-                type="text"
-                placeholder="Add a note"
-                @keydown.enter.prevent="postNote"
-                class="ws-input min-w-0 flex-1"
-              />
-              <button
-                @click="postNote"
-                :disabled="!newNoteText.trim() || savingNote"
-                class="pill-btn-brand shrink-0"
-              >
-                <MessageSquarePlus class="size-3.5" aria-hidden="true" />
-                <span>{{ savingNote ? '…' : 'Send' }}</span>
-              </button>
-            </div>
+            <template v-else>
+              <div class="flex gap-2">
+                <label for="ticket-note" class="sr-only">Add a note for the landlady</label>
+                <input
+                  id="ticket-note"
+                  v-model="newNoteText"
+                  type="text"
+                  placeholder="Add a note"
+                  :aria-invalid="noteError ? 'true' : undefined"
+                  :aria-describedby="noteError ? 'ticket-note-error' : undefined"
+                  @keydown.enter.prevent="postNote"
+                  class="ws-input min-w-0 flex-1"
+                />
+                <button
+                  @click="postNote"
+                  :disabled="!newNoteText.trim() || savingNote"
+                  class="pill-btn-brand shrink-0"
+                >
+                  <MessageSquarePlus class="size-3.5" aria-hidden="true" />
+                  <span>{{ savingNote ? '…' : 'Send' }}</span>
+                </button>
+              </div>
+              <!-- In place of a toast that covered this dialog's X on a phone (audit 2026-10-01). -->
+              <p v-if="noteError" id="ticket-note-error" role="alert" class="ws-reveal mt-2 text-sm leading-6 text-overdue break-words">
+                {{ noteError }}
+              </p>
+            </template>
           </div>
         </div>
       </WsModal>

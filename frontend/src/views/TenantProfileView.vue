@@ -16,7 +16,7 @@
   There is no photo here, and the comment in the template says why.
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { Save, CheckCircle2, AlertTriangle, X, RotateCcw, KeyRound } from 'lucide-vue-next';
 import { currentUser, restoreSession } from '@/lib/authStore';
 import { api, ApiRequestError } from '@/lib/api';
@@ -183,7 +183,10 @@ async function handleSave() {
   const sendPhone = phoneChanged.value;
   if (emailChanged) emailError.value = emailProblem(form.value.email);
   if (sendPhone) phoneError.value = phoneProblem(form.value.phone_number);
-  if (emailError.value || phoneError.value) return;
+  if (emailError.value || phoneError.value) {
+    await focusFirstInvalid();
+    return;
+  }
 
   saving.value = true;
   try {
@@ -228,6 +231,7 @@ async function handleSave() {
       phoneError.value = err.details.phone_number?.[0] ?? '';
       if (emailError.value || phoneError.value) {
         errorNotice.value = 'Nothing was saved. Check the field marked below.';
+        await focusFirstInvalid();
         return;
       }
     }
@@ -243,6 +247,18 @@ async function handleSave() {
   } finally {
     saving.value = false;
   }
+}
+
+/**
+ * Focus, and so scroll to, the field whose note just appeared (audit 2026-10-01).
+ * Save is at the foot of the form and the email field near its head: on a
+ * 320x640 phone the note "Enter a full email address" rendered 48px above the
+ * screen while focus stayed on Save, so pressing Save appeared to do nothing.
+ * The same move `/inquire` makes with `focusFirstInvalid`.
+ */
+async function focusFirstInvalid() {
+  await nextTick();
+  document.getElementById(emailError.value ? 'email' : 'phone')?.focus();
 }
 
 function handleReset() {
