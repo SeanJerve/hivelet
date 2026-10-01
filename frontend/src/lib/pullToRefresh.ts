@@ -45,14 +45,62 @@
  */
 import { onMounted, onUnmounted, ref } from 'vue';
 
-/** Indicator travel per pixel of finger travel: the pull feels weighted. */
-export const PULL_RESISTANCE = 0.5;
-/** The indicator stops here however far the finger goes. */
-export const PULL_MAX = 80;
-/** Indicator travel at which letting go reloads (128px of finger travel). */
+/*
+ * THE FEEL (Sean, 2026-10-01: "make it smooth like Facebook and Instagram -
+ * when you pull it doesn't get stuck, it just keeps going down as you pull").
+ * The indicator used to follow at half the finger's speed and then stop dead
+ * at 80px, so the rest of a long pull did nothing visible. It now follows a
+ * rubber band: almost 1:1 at first, then giving less and less ground the
+ * further it goes, approaching PULL_MAX without ever reaching it, so it is
+ * still moving under the finger at any distance a thumb can travel.
+ *
+ *   distance = PULL_MAX * (1 - e^(-dy * PULL_RESISTANCE / PULL_MAX))
+ *
+ * Finger travel -> indicator travel: 50 -> 27, 139 -> 64 (the threshold),
+ * 150 -> 68, 300 -> 105, 500 -> 130.
+ */
+/** Indicator travel per pixel of finger travel at the start of a pull. */
+export const PULL_RESISTANCE = 0.6;
+/** What the rubber band approaches; never actually reached. */
+export const PULL_MAX = 150;
+/** Indicator travel at which letting go reloads (about 139px of finger travel). */
 export const PULL_THRESHOLD = 64;
+/** Where the indicator settles and spins once released past the threshold. */
+export const PULL_REST = 56;
+/**
+ * The icon turns with the pull: one full turn by the threshold, where the
+ * arrow becomes the refresh icon, which keeps turning at the same rate (Sean,
+ * 2026-10-01: "the refresh icon really spins in proportion to how far you
+ * pull"). Half a turn was tried first and read as a slow drift, not a spin.
+ * About 5.6 degrees per pixel of indicator travel.
+ */
+export const PULL_ROTATE_PER_PX = 360 / PULL_THRESHOLD;
+/** The settle after letting go (PullToRefresh.vue's transition), in ms. */
+export const PULL_SETTLE_MS = 300;
 /** Finger travel before the gesture's direction is decided. */
 const DECIDE_AFTER = 10;
+
+/** Finger travel (px, downward) to indicator travel, with resistance. */
+export function rubberBand(dy: number): number {
+  if (dy <= 0) return 0;
+  return PULL_MAX * (1 - Math.exp((-dy * PULL_RESISTANCE) / PULL_MAX));
+}
+
+/**
+ * A light tick as the pull crosses the threshold, where the phone supports it
+ * (Android; iOS Safari has no Vibration API). Chrome refuses `vibrate` until
+ * the page has had a tap and logs a warning when asked before then, so it is
+ * not asked.
+ */
+function hapticTick() {
+  try {
+    const activation = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+    if (activation && !activation.hasBeenActive) return;
+    navigator.vibrate?.(10);
+  } catch {
+    // No vibration is fine; the icon change says the same thing.
+  }
+}
 
 /** Is this page running as the installed, home-screen app? */
 export function isStandaloneDisplay(): boolean {
@@ -87,7 +135,7 @@ function startsInScrolledElement(target: EventTarget | null): boolean {
 }
 
 export function usePullToRefresh() {
-  /** How far the indicator has travelled, in px (0 to PULL_MAX). */
+  /** How far the indicator has travelled, in px (0 up to, never at, PULL_MAX). */
   const distance = ref(0);
   /** A finger is down and pulling: the indicator tracks it with no easing. */
   const dragging = ref(false);
@@ -99,12 +147,37 @@ export function usePullToRefresh() {
   let pulling = false; // direction decided: this is a pull
   let startX = 0;
   let startY = 0;
+  let latest = 0; // indicator travel for the most recent touchmove
+  let frame = 0; // pending requestAnimationFrame, 0 if none
+  let wasArmed = false; // past the threshold as of the last drawn frame
   let previousOverscroll = '';
   let attached = false;
 
+  /*
+   * touchmove can fire more than once per frame (120Hz touch sampling on a
+   * 60Hz screen). Each one only records where the finger is; the indicator is
+   * redrawn at most once per frame, with the newest value, so Vue re-renders
+   * it at the screen's rate and not the digitiser's.
+   */
+  function draw() {
+    frame = 0;
+    distance.value = latest;
+    const armed = latest >= PULL_THRESHOLD;
+    if (armed && !wasArmed) hapticTick();
+    wasArmed = armed;
+  }
+
+  function cancelFrame() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+  }
+
   function reset() {
+    cancelFrame();
     candidate = false;
     pulling = false;
+    wasArmed = false;
+    latest = 0;
     dragging.value = false;
     distance.value = 0;
   }
@@ -144,6 +217,7 @@ export function usePullToRefresh() {
         return;
       }
       pulling = true;
+      wasArmed = false;
       dragging.value = true;
     }
 
@@ -153,8 +227,11 @@ export function usePullToRefresh() {
       reset();
       return;
     }
+    // Synchronous, unlike the redraw: preventDefault only counts inside the
+    // event's own dispatch.
     if (event.cancelable) event.preventDefault();
-    distance.value = Math.min(PULL_MAX, dy * PULL_RESISTANCE);
+    latest = rubberBand(dy);
+    if (!frame) frame = requestAnimationFrame(draw);
   }
 
   function onTouchEnd(event: TouchEvent) {
@@ -162,9 +239,13 @@ export function usePullToRefresh() {
       candidate = false;
       return;
     }
-    const release = event.type === 'touchend' && distance.value >= PULL_THRESHOLD;
+    // `latest`, not `distance`: the last move may not have been drawn yet.
+    const release = event.type === 'touchend' && latest >= PULL_THRESHOLD;
+    cancelFrame();
     candidate = false;
     pulling = false;
+    wasArmed = false;
+    latest = 0;
     dragging.value = false;
     if (!release) {
       // Below the threshold (or the touch was cancelled): spring back.
@@ -172,10 +253,13 @@ export function usePullToRefresh() {
       return;
     }
     refreshing.value = true;
-    distance.value = PULL_THRESHOLD;
-    // Two frames so the spinner and the "Refreshing" status are on screen
-    // before the page goes, rather than the reload looking like a flicker.
-    requestAnimationFrame(() => requestAnimationFrame(() => window.location.reload()));
+    distance.value = PULL_REST;
+    // The indicator eases up to where it rests and the refresh icon spins
+    // there before the page goes, so the reload reads as the end of the
+    // gesture rather than a flicker (and the "Refreshing" status is on screen
+    // well before it). index.html's own loader takes over once the new page
+    // starts loading.
+    window.setTimeout(() => window.location.reload(), PULL_SETTLE_MS);
   }
 
   onMounted(() => {
@@ -196,6 +280,7 @@ export function usePullToRefresh() {
   });
 
   onUnmounted(() => {
+    cancelFrame();
     if (!attached) return;
     window.removeEventListener('touchstart', onTouchStart);
     window.removeEventListener('touchmove', onTouchMove);

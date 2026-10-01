@@ -65,9 +65,61 @@
       was still downloading it.
     -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!--
+      Loader for the first load and every full reload, pull-to-refresh included
+      (Sean, 2026-10-01: "it just waits, then boom, the site appears"; "on
+      refresh the website just goes white and you see the headers"). The
+      hexagon of the Hivelet mark, in brand green with the mark's own rounded
+      corners and round joins, turns slowly, speeding up and slowing down each
+      turn (--ease-in-out); the house and H inside it stay still. It covers the
+      whole screen, opaque, so neither the white page nor the header drawn over
+      an empty page ever shows.
+
+      Plain HTML and CSS in this file, because it has to be on screen before any
+      script has arrived - and because vercel.json's Content-Security-Policy is
+      `script-src 'self'`, which blocks an inline script anyway. main.ts fades it
+      out over 200ms and removes it once the first page has rendered.
+
+      Colours are the brand tokens written out (src/index.css has not loaded yet):
+      `--brand` #17603f and `--background` #fafaf9, which is also the manifest's
+      `background_color`, so the installed app's own launch screen hands over to
+      this one with no change of colour. There is no dark variant on purpose: the
+      app has no dark theme, so a dark loader would flash dark-then-light on
+      every load in dark mode - exactly the jump this is here to remove.
+
+      Never in the way:
+        - the mark is painted at full opacity from the first frame. It used to
+          fade in after 120ms, so a fast load would not show it, but Chrome does
+          not count opacity-0 content as a first contentful paint: Lighthouse
+          mobile FCP went from 1.95s to 2.50s with the fade-in, and to 1.7s
+          without it (same build, 4 runs each, 2026-10-01);
+        - main.ts takes it down at 8s whatever the page is doing, and if
+          main.ts never runs (a failed download) the `splash-giveup` animation
+          hides it by itself at 8s instead of leaving it up;
+        - reduced motion: the hexagon breathes in place instead of turning.
+    -->
+    <style>
+      #app-splash{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#fafaf9;transition:opacity .2s cubic-bezier(.23,1,.32,1);animation:splash-giveup .2s 8s forwards}
+      #app-splash.is-leaving{opacity:0;pointer-events:none}
+      #app-splash svg{width:72px;height:72px;overflow:visible}
+      #app-splash .hex{transform-origin:256px 256px;animation:splash-spin 1.8s cubic-bezier(.77,0,.175,1) infinite}
+      #app-splash .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+      @keyframes splash-spin{to{transform:rotate(360deg)}}
+      @keyframes splash-giveup{to{opacity:0;visibility:hidden}}
+      @keyframes splash-breathe{50%{opacity:.35}}
+      @media (prefers-reduced-motion:reduce){#app-splash .hex{animation:splash-breathe 2.4s ease-in-out infinite}}
+    </style>
   </head>
   <body class="bg-[#fafaf9] text-[#1c1917] antialiased selection:bg-[#f59e0b]/20 selection:text-[#1c1917]">
     <div id="app"></div>
+    <!-- Outside #app: Vue empties #app on mount, which would cut the loader off without its fade. -->
+    <div id="app-splash" role="status">
+      <svg viewBox="0 0 512 512" aria-hidden="true" fill="none" stroke="#17603f" stroke-linecap="round" stroke-linejoin="round">
+        <path class="hex" stroke-width="28" d="M217.89 34Q256 12 294.11 34L429.21 112Q467.31 134 467.31 178L467.31 334Q467.31 378 429.21 400L294.11 478Q256 500 217.89 478L82.79 400Q44.69 378 44.69 334L44.69 178Q44.69 134 82.79 112Z"/>
+        <path stroke-width="36" d="M146 216L256 126L366 216M186 244V366M326 244V366M186 304H326"/>
+      </svg>
+      <span class="sr">Loading Hivelet</span>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
