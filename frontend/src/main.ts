@@ -13,7 +13,7 @@ import './index.css'
 // navigation instead of going dead (lib/staleVersion.ts).
 installStaleVersionRecovery(router)
 
-// Dark mode: public/theme-init.js set the theme before the first paint; this
+// Dark mode: public/boot.js set the theme before the first paint; this
 // keeps it following the OS and the Appearance control (lib/theme.ts).
 installTheme()
 

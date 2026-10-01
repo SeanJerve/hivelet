@@ -1170,7 +1170,7 @@ async function submitInquiry() {
     <dialog
       ref="inquiryDialog"
       aria-labelledby="inquiry-dialog-title"
-      class="ws-dialog m-auto max-h-[calc(100dvh-2rem)] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-night/70"
+      class="ws-dialog m-auto max-h-[calc(100dvh-2rem)] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-dim/70"
       @keydown.esc="closeInquiry"
     >
       <div v-if="inquirySentTo" class="relative px-6 py-10 sm:px-12 sm:py-14">

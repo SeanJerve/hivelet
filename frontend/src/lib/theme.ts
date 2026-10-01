@@ -2,7 +2,7 @@
  * The colour theme: System (the default), Light or Dark (Sean, 2026-10-01:
  * "a complete working dark mode").
  *
- * public/theme-init.js applies the stored choice before the first paint; this
+ * public/boot.js applies the stored choice before the first paint; this
  * module takes over once the app is running. It owns three things:
  *
  *   - the choice, in localStorage under `hivelet.theme`, shared by every
@@ -23,7 +23,7 @@ export type Theme = 'light' | 'dark';
 
 export const THEME_STORAGE_KEY = 'hivelet.theme';
 
-/** `--brand` in light, `--canvas` in dark. The same pair is in public/theme-init.js. */
+/** `--brand` in light, `--canvas` in dark. The same pair is in public/boot.js. */
 const THEME_COLOR: Record<Theme, string> = { light: '#17603f', dark: '#0f1412' };
 
 function readChoice(): ThemeChoice {

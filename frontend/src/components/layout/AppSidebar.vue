@@ -404,7 +404,7 @@ onBeforeUnmount(() => {
       <div
         v-if="isMobileSidebarOpen"
         class="ws-glass fixed inset-0 z-50 lg:hidden bg-black/40 backdrop-blur-xs"
-        style="--ws-glass-solid: var(--night)"
+        style="--ws-glass-solid: var(--dim)"
         aria-hidden="true"
         @click="closeMobileNav"
       />

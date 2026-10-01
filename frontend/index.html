@@ -49,11 +49,10 @@
     <link rel="canonical" href="https://hivelet.vercel.app/public">
     <meta name="apple-mobile-web-app-title" content="Hivelet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Dark mode before the first paint, the loader included (public/theme-init.js; Sean, 2026-10-01). After the theme-color meta, which it rewrites. -->
-    <script src="/theme-init.js"></script>
     <title>Hivelet</title>
     <!--
-      Decides before the first paint whether the loader below is drawn: on a
+      Sets the colour theme (dark mode), then decides before the first paint
+      whether the loader below is drawn: on a
       first visit and on pages without a skeleton it is; on a later load of a
       signed-in page or a category page it is not (Sean, 2026-10-01: "on
       refresh of the dashboard, skeleton only"). Ahead of the stylesheets on
@@ -99,9 +98,9 @@
       Colours are the brand tokens written out (src/index.css has not loaded yet):
       `--brand` #17603f and `--background` #fafaf9, which is also the manifest's
       `background_color`, so the installed app's own launch screen hands over to
-      this one with no change of colour. There is no dark variant on purpose: the
-      app has no dark theme, so a dark loader would flash dark-then-light on
-      every load in dark mode - exactly the jump this is here to remove.
+      this one with no change of colour. In the dark theme it is --canvas #0f1412
+      instead (the last rule below): public/boot.js sets data-theme before this
+      is drawn, so a dark-mode reader never sees a light loader (Sean, 2026-10-01).
 
       Never in the way:
         - the mark is painted at full opacity from the first frame. It used to
@@ -117,7 +116,6 @@
     <style>
       #app-splash{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#fafaf9;transition:opacity .2s cubic-bezier(.23,1,.32,1);animation:splash-giveup .2s 8s forwards}
       #app-splash.is-leaving{opacity:0;pointer-events:none}
-      [data-theme="dark"] #app-splash{background:#0f1412}
       #app-splash svg{width:72px;height:72px;overflow:visible}
       #app-splash .hex{transform-origin:256px 256px;animation:splash-spin 1.8s cubic-bezier(.77,0,.175,1) infinite}
       #app-splash .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -126,6 +124,7 @@
       @keyframes splash-breathe{50%{opacity:.7}}
       @media (prefers-reduced-motion:reduce){#app-splash .hex{animation:splash-breathe 2.4s ease-in-out infinite}}
       .no-splash #app-splash{display:none}
+      [data-theme="dark"] #app-splash{background:#0f1412}
     </style>
   </head>
   <body class="bg-[#fafaf9] text-[#1c1917] antialiased selection:bg-[#f59e0b]/20 selection:text-[#1c1917]">

@@ -117,6 +117,7 @@
   --color-on-overdue: var(--on-overdue);
   --color-overdue-strong: var(--overdue-strong);
   --color-scrim: var(--scrim);
+  --color-dim: var(--dim);
   --radius-tile: 1.5rem;
 
   /* Motion.
@@ -249,6 +250,12 @@
      instead of dimming it (Sean, 2026-10-01). The light value is the same
      ink at 40%, so nothing changes in the light theme. */
   --scrim: rgb(16 23 19 / 0.4);
+  /* The dark the lighter scrims are mixed from (`bg-dim/20` behind the
+     Overview's action button, `/30` behind the phone notifications panel,
+     `backdrop:bg-dim/70` on the public dialogs). They read `bg-night/…`, and
+     the dark theme's night tile is a raised green-grey, so they lightened the
+     page instead of dimming it. In light this is `--night` exactly. */
+  --dim: #0f1b15;
 
   /* Elevation. The values `--shadow-card` and `--shadow-lift` always had; they
      moved here from `@theme` so the dark theme can deepen them. */
@@ -273,7 +280,7 @@
  * would be good."
  *
  * `data-theme="dark"` on <html>, set before the first paint by
- * public/theme-init.js and kept current by src/lib/theme.ts. There is no
+ * public/boot.js and kept current by src/lib/theme.ts. There is no
  * `prefers-color-scheme` query in this file on purpose: the script resolves
  * "System" to light or dark itself, so the CSS reads one attribute and cannot
  * disagree with the control in the account menu.
@@ -381,6 +388,7 @@
   --overdue-strong: #ffab9f;
 
   --scrim: rgb(0 0 0 / 0.6);
+  --dim: #000000;
   --elev-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
   --elev-lift: 0 2px 4px rgba(0, 0, 0, 0.35), 0 18px 42px -18px rgba(0, 0, 0, 0.7);
 
@@ -422,15 +430,6 @@
 }
 
 /*
- * The two native <dialog> prompts on the public pages dim the page with
- * `backdrop:bg-night/70`. `--night` is a raised green-grey in the dark theme,
- * so that read as a grey haze over a dark page rather than a dimming.
- */
-[data-theme='dark'] dialog.ws-dialog::backdrop {
-  background-color: rgb(0 0 0 / 0.7);
-}
-
-/*
  * The floor plans are black line drawings on white PNGs. On a dark page that
  * is a white sheet glaring out of the panel, so they are drawn inverted: light
  * walls on a dark ground a shade off the tile. `hue-rotate` turns any colour
@@ -438,7 +437,7 @@
  * separate element over the image, so it keeps its brand fill.
  */
 [data-theme='dark'] img[src*='/floorplans/'] {
-  filter: invert(0.88) hue-rotate(180deg);
+  filter: invert(0.9) hue-rotate(180deg);
 }
 
 /*

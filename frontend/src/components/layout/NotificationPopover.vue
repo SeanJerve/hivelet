@@ -293,7 +293,7 @@ onUnmounted(() => {
     <!-- `h-dvh`, not `inset-0`: the blurred header is this fixed layer's
          containing block, so `inset-0` dimmed only the 64px header strip. -->
     <Transition name="ws-fade">
-      <div v-if="isPopoverOpen" class="fixed inset-x-0 top-0 z-40 h-dvh bg-night/30 sm:hidden" aria-hidden="true" />
+      <div v-if="isPopoverOpen" class="fixed inset-x-0 top-0 z-40 h-dvh bg-dim/30 sm:hidden" aria-hidden="true" />
     </Transition>
 
     <!--
