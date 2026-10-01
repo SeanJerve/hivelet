@@ -13,7 +13,7 @@
 >   HV-48213, the phones typed in for them were cleared, and all 33 must give their own email, phone
 >   and password at next sign-in); 075 loydtest into PH (applied). All applied through the Supabase MCP
 >   connection after a backup, on Sean's standing instruction. Next number: 076.
-> - **Live updates.** Every open page checks `GET /api/live/version` every 5 s while visible and
+> - **Live updates.** Every open page checks `GET /api/live/version` every 2 s while visible and
 >   reloads only what changed (`lib/live.ts`); one ping for new notifications, others' changes and
 >   each major save (1 Oct: the separate success sound is gone), a low tone on errors
 >   (`lib/sounds.ts`). Not yet proven on two real devices (handoff 3.6).
@@ -36,6 +36,28 @@
 >   `AuditLogsView.vue`, `GET /admin/audit-logs` and `GET /admin/reports/audit.xlsx` are gone.
 >   **`audit_logs` and every write to it are unchanged**; read it in the database (Supabase). Older
 >   notes below that mention "the owner's Activity page" describe the site before that day.
+>
+> **1 Oct evening (all on `main` at `ed54996`, frontend only; Appendix K, `HANDOFF_TO_QA.md` §0a and
+> `HANDOFF_TO_DESIGN.md` §0 describe it):**
+>
+> - **One list toolbar** (`ListToolbar` + `FilterSheet`) on Rooms and rates, Tenants, Monthly
+>   Income, Monthly Expenses, Repairs, Inquiries, tenant Payments and tenant Repairs: the "By
+>   cluster / As a list" switch where a screen has two views, a search box, and a **Filters** button
+>   whose dialog applies only on **Apply filters** (Reset, then a "2025 · BH" line with Clear).
+>   Inquiries gained a status filter.
+> - **Overview:** below 768 px Record payment / Record expense / Move someone in/out sit behind a
+>   green **+** at the bottom right (`QuickActionsFab`); wider, they are header buttons. The year is
+>   a word ("2026 ⌄") on the date line. Fewer words: no "Nothing is waiting for verification", no
+>   "entered a week or two after", no peso amounts in the cash-flow key.
+> - Monthly Income / Expenses export button reads **Download** (year in its tooltip).
+> - **Notifications** panel: one header line with a filter icon, a refresh icon ("Check again" to a
+>   screen reader) and X; **Mark all read** in the footer.
+> - **Installed app:** pull down from the top to reload (standalone only). First-load loader (the
+>   green hexagon) on a first visit and on public pages; a signed-in reload shows skeletons.
+> - Toasts close with a tap; the phone's Back closes a dialog or drawer with the page it belongs to;
+>   the ping plays on each major save and on others' live changes.
+> - **Needs a person:** B-94 (Vercel's Security Checkpoint challenges every request, the Adyen
+>   webhook included) and the phone re-tests in `HANDOFF_TO_QA.md` §0a.
 
 > [!NOTE]
 > **2026-09-29 evening, Sean's machine, all pushed and deploying before testing day.** What
