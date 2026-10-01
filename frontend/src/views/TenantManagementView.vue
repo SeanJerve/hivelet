@@ -35,7 +35,7 @@ const isOnboardModalOpen = ref(false);
  * is not dismissible by accident (Escape/backdrop) so an admin cannot lose
  * it to a stray keypress before it is copied or written down.
  */
-const onboardedCredentials = ref<{ name: string; password: string; reason: 'onboarded' | 'reset' } | null>(null);
+const onboardedCredentials = ref<{ name: string; loginId: string | null; password: string; reason: 'onboarded' | 'reset' } | null>(null);
 const justCopiedPassword = ref(false);
 
 /**
@@ -56,9 +56,9 @@ async function confirmResetPassword() {
   if (!t || isSubmitting.value) return;
   isSubmitting.value = true;
   try {
-    const result = await api.post<{ temporaryPassword: string }>(`/admin/tenants/${t.id}/reset-password`);
+    const result = await api.post<{ temporaryPassword: string; loginId?: string | null }>(`/admin/tenants/${t.id}/reset-password`);
     resetModalTenant.value = null;
-    onboardedCredentials.value = { name: t.name, password: result.temporaryPassword, reason: 'reset' };
+    onboardedCredentials.value = { name: t.name, loginId: result.loginId ?? null, password: result.temporaryPassword, reason: 'reset' };
   } catch (err: any) {
     showToast('error', failureTitle(err, 'Password not reset'), err?.message || 'Nothing was changed.');
   } finally {
@@ -683,11 +683,13 @@ async function handleOnboard() {
     const finalRoommateQty = newHasRoommates.value === 'yes' ? Number(newRoommateQty.value) || 1 : 0;
     const finalOccupants = 1 + finalRoommateQty;
 
-    const created = await api.post<{ id: string; temporaryPassword: string | null }>('/admin/tenants', {
+    const created = await api.post<{ id: string; login_id?: string | null; temporaryPassword: string | null }>('/admin/tenants', {
       // Spaces tidied, as the server also does: one name, one spelling.
       fullName: newName.value.replace(/\s+/g, ' ').trim(),
+      // Only an enquiry's own address, carried in by "Move them in", so the
+      // server can turn that enquirer's record into the tenant (BR-009). No
+      // phone: the tenant gives their own at first sign-in (073).
       email: newEmail.value.trim(),
-      phone: newPhone.value.trim(),
       roomNumber: newUnit.value.toUpperCase(),
       moveInDate: newMoveIn.value,
       // A blank field is sent blank. The API takes all three as optional and
@@ -765,7 +767,7 @@ async function handleOnboard() {
       // The credential reveal modal below is the confirmation - a toast
       // would say the same thing and then take the one thing she needs
       // with it when it auto-dismisses.
-      onboardedCredentials.value = { name: onboardedName, password: created.temporaryPassword, reason: 'onboarded' };
+      onboardedCredentials.value = { name: onboardedName, loginId: created.login_id ?? null, password: created.temporaryPassword, reason: 'onboarded' };
     } else {
       // Only reachable if onboarding somehow ran with neither an email nor
       // a phone number - the form requires phone, so nothing generates
@@ -1282,6 +1284,10 @@ async function handleOnboard() {
 
           <dl class="mt-4 grid grid-cols-2 gap-x-5 gap-y-4 text-sm sm:grid-cols-3">
             <div>
+              <dt class="text-xs text-ink-faint">Login ID</dt>
+              <dd class="tabular mt-0.5 font-mono text-ink">{{ editModalTenant.loginId }}</dd>
+            </div>
+            <div>
               <dt class="text-xs text-ink-faint">Phone</dt>
               <dd class="tabular mt-0.5 text-ink">{{ editModalTenant.phone }}</dd>
             </div>
@@ -1525,38 +1531,15 @@ async function handleOnboard() {
             />
           </div>
           <!--
-            Email is optional; the phone number is not.
-
-            OD-09, client-confirmed 2026-09-13: "Do tenants need an email address to exist in
-            the system? No." `profiles.email` has been nullable since migration 006 and the
-            API schema stopped demanding one in 43c4608 - but this field kept `required`, so
-            the administrator still could not submit the form without an address. The rule
-            the database actually enforces is `profiles_login_identifier_required`: a profile
-            holding a password must have an email OR a phone number. Phone stays required, so
-            every tenant onboarded here has one identifier and can sign in.
+            No email or phone here (Sean, 2026-10-01; migration 073). The numbers once
+            typed in for tenants were often not theirs, so nothing personal is assumed:
+            the system issues a login ID and a one-time password, and the tenant gives
+            their own email, phone and password at first sign-in. The name is hers.
           -->
-          <div class="ws-field">
-            <label for="new-email">Email, if they have one</label>
-            <input
-              id="new-email"
-              v-model="newEmail"
-              type="email"
-              placeholder="you@email.com"
-              class="ws-input w-full"
-            />
-            <p class="ws-hint">If left blank, they add their own when they first sign in.</p>
-          </div>
-          <div class="ws-field">
-            <label for="new-phone">Phone</label>
-            <input
-              id="new-phone"
-              v-model="newPhone"
-              placeholder="0917-000-0000"
-              class="ws-input w-full"
-              required
-            />
-            <p class="ws-hint">This is what they sign in with.</p>
-          </div>
+          <p class="ws-hint sm:col-span-2">
+            They get a login ID and a one-time password to sign in with. They add their own email and
+            phone number the first time they sign in.
+          </p>
           <div class="ws-field">
             <label for="new-unit">Unit</label>
             <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" aria-label="Unit" placeholder="Choose a unit" widthClass="w-full" />
@@ -1670,16 +1653,24 @@ async function handleOnboard() {
     <WsModal
       v-if="onboardedCredentials"
       :title="onboardedCredentials.reason === 'reset' ? 'Password reset' : 'Moved in'"
-      :subtitle="`A one-time password for ${onboardedCredentials.name}.`"
+      :subtitle="`How ${onboardedCredentials.name} signs in.`"
       size="sm"
       :dismissible="false"
       @close="closeCredentialsReveal"
     >
       <p class="text-sm leading-6 text-ink-soft">
-        This is the only time it will be shown. Copy it or write it down now, then relay it to
-        {{ onboardedCredentials.name }} in person. They will be asked to set their own password
-        the first time they sign in, and this one stops working once they do.
+        Write both down now and give them to {{ onboardedCredentials.name }} in person. The password
+        is shown only this once. When they first sign in they choose their own password and add their
+        own email and phone number.
       </p>
+
+      <div v-if="onboardedCredentials.loginId" class="flex flex-col gap-1">
+        <p class="text-xs text-ink-faint">Login ID</p>
+        <div class="rounded-2xl border border-line bg-canvas px-4 py-3">
+          <code data-login-id class="select-all font-mono text-base font-semibold tracking-wide text-ink">{{ onboardedCredentials.loginId }}</code>
+        </div>
+      </div>
+      <p class="text-xs text-ink-faint">One-time password</p>
 
       <div class="flex items-center gap-2 rounded-2xl border border-line bg-canvas px-4 py-3">
         <code data-one-time-password class="flex-1 select-all break-all font-mono text-base font-semibold tracking-wide text-ink">{{ onboardedCredentials.password }}</code>
