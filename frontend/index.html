@@ -106,7 +106,7 @@
       #app-splash .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
       @keyframes splash-spin{to{transform:rotate(360deg)}}
       @keyframes splash-giveup{to{opacity:0;visibility:hidden}}
-      @keyframes splash-breathe{50%{opacity:.35}}
+      @keyframes splash-breathe{50%{opacity:.7}}
       @media (prefers-reduced-motion:reduce){#app-splash .hex{animation:splash-breathe 2.4s ease-in-out infinite}}
     </style>
   </head>
@@ -114,9 +114,12 @@
     <div id="app"></div>
     <!-- Outside #app: Vue empties #app on mount, which would cut the loader off without its fade. -->
     <div id="app-splash" role="status">
-      <svg viewBox="0 0 512 512" aria-hidden="true" fill="none" stroke="#17603f" stroke-linecap="round" stroke-linejoin="round">
-        <path class="hex" stroke-width="28" d="M217.89 34Q256 12 294.11 34L429.21 112Q467.31 134 467.31 178L467.31 334Q467.31 378 429.21 400L294.11 478Q256 500 217.89 478L82.79 400Q44.69 378 44.69 334L44.69 178Q44.69 134 82.79 112Z"/>
-        <path stroke-width="36" d="M146 216L256 126L366 216M186 244V366M326 244V366M186 304H326"/>
+      <!-- The app icon itself (public/favicon.svg): a solid green hexagon that turns, the white
+           house and H still on top of it (Sean, 2026-10-01: "filled in green, the icon white,
+           the hexagon spinning but the icon inside is not"). -->
+      <svg viewBox="0 0 512 512" aria-hidden="true">
+        <path class="hex" fill="#17603f" d="M217.89 34Q256 12 294.11 34L429.21 112Q467.31 134 467.31 178L467.31 334Q467.31 378 429.21 400L294.11 478Q256 500 217.89 478L82.79 400Q44.69 378 44.69 334L44.69 178Q44.69 134 82.79 112Z"/>
+        <path fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" d="M146 216L256 126L366 216M186 244V366M326 244V366M186 304H326"/>
       </svg>
       <span class="sr">Loading Hivelet</span>
     </div>
