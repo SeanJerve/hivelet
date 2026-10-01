@@ -1112,11 +1112,13 @@ function formatDateTime(iso: string) {
                       `min-h-9 h-9` forced `.pill-btn` down from 2.75rem to 36px -
                       measured 74x36. It is the only way into a request's own
                       history, and it sits at the end of a wrapping row of pills,
-                      which is where a thumb is least accurate.
+                      which is where a thumb is least accurate. `pill-btn-compact`
+                      is the one smaller size (Sean, 2026-10-01) and keeps 44px
+                      under a finger, as this did.
                     -->
                     <button
                       @click.stop="openTimeline(ticket)"
-                      class="pill-btn ml-auto text-xs px-3"
+                      class="pill-btn pill-btn-compact ml-auto"
                     >
                       <ListChecks class="size-3.5 text-brand" aria-hidden="true" />
                       <span>Progress and notes</span>
