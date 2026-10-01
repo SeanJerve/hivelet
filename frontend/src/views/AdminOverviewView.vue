@@ -681,7 +681,10 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
     <!-- ================================================================== *
      * Header
      * ================================================================== -->
-    <header class="flex flex-col xl:flex-row xl:items-end justify-between gap-4">
+    <!-- Beside the greeting only from 2xl (Sean, 2026-10-01). At 1366 the four
+         actions shared ~650px with "Good afternoon, Michelle" and Record
+         payment fell onto a line of its own; under the title they are one row. -->
+    <header class="flex flex-col 2xl:flex-row 2xl:items-end justify-between gap-4">
       <div class="min-w-0">
         <p class="text-sm text-ink-faint">{{ todayLabel }}</p>
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
