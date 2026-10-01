@@ -8,6 +8,7 @@ import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { Check, Loader2, Upload, ImageOff } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import { useRoute } from 'vue-router';
 
 const VISIBILITY_OPTIONS = [
   { value: 'Published', label: 'Listed, and open to enquiries' },
@@ -219,6 +220,15 @@ watch(
 function closeModal() {
   isAdminEditUnitModalOpen.value = false;
 }
+
+// Mounted once in App.vue, not by Rooms and rates, so leaving the page did not
+// close it: the phone's Back left the unit editor open over the Overview, with
+// the page behind it changed (audit 2026-10-01). A dialog belongs to its page,
+// as every dialog a page mounts itself already does.
+const route = useRoute();
+watch(() => route.path, () => {
+  if (isAdminEditUnitModalOpen.value) closeModal();
+});
 
 function triggerFileInput() {
   fileInputRef.value?.click();

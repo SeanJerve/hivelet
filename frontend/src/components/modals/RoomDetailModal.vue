@@ -4,10 +4,19 @@ import { isRoomDetailModalOpen, activeRoomDetail, roomsFetchFailed } from '@/lib
 import { peso } from '@/lib/canonicalUnits';
 import WsModal from '@/components/ui/WsModal.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import { useRoute } from 'vue-router';
 
 function closeModal() {
   isRoomDetailModalOpen.value = false;
 }
+
+// Mounted once in App.vue, not by the page that opens it, so leaving the page
+// did not close it: the phone's Back left this dialog over the Overview, with
+// the page behind it changed (audit 2026-10-01). A dialog belongs to its page.
+const route = useRoute();
+watch(() => route.path, () => {
+  if (isRoomDetailModalOpen.value) closeModal();
+});
 
 /** Same reasoning as AdminEditUnitModal's photo: fade in on `@load` rather
  *  than pop in the instant the `src` is set, reset whenever the unit shown
