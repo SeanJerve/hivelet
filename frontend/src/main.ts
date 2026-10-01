@@ -4,7 +4,12 @@ import App from './App.vue'
 import router from './router'
 import { setAuthFailureHandler } from './lib/api'
 import { handleAuthFailure, MOVED_OUT_FLAG } from './lib/authStore'
+import { installStaleVersionRecovery } from './lib/staleVersion'
 import './index.css'
+
+// An open page that outlived a deploy loads the new version on its next
+// navigation instead of going dead (lib/staleVersion.ts).
+installStaleVersionRecovery(router)
 
 /**
  * A dead session now redirects on its own.
