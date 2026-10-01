@@ -1,9 +1,10 @@
-import { createApp, nextTick } from 'vue'
+import { createApp, nextTick, watch } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { setAuthFailureHandler } from './lib/api'
-import { handleAuthFailure, MOVED_OUT_FLAG } from './lib/authStore'
+import { currentRole, handleAuthFailure, MOVED_OUT_FLAG } from './lib/authStore'
+import { warmRoutes } from './lib/warmRoutes'
 import { installStaleVersionRecovery } from './lib/staleVersion'
 import './index.css'
 
@@ -120,8 +121,8 @@ router.afterEach((to) => {
 })
 
 /*
- * The loader in index.html (Sean, 2026-10-01), shown on the first load and
- * every full reload, pull-to-refresh included, leaves once the first page has
+ * The loader in index.html (Sean, 2026-10-01), shown on the first load and on
+ * full reloads of pages without a skeleton (public/boot.js), leaves once the first page has
  * actually rendered: `router.isReady()` waits for the first route's own code
  * and guards, `nextTick` for RouterView to have rendered that page into the
  * DOM, and the frame after that is it painted. Taking it down at `app.mount`
@@ -138,6 +139,11 @@ const SPLASH_CAP_MS = 8000
 function dismissSplash() {
   const splash = document.getElementById('app-splash')
   if (!splash || splash.classList.contains('is-leaving')) return
+  // Never drawn (public/boot.js's `no-splash`): there is no fade to wait for.
+  if (document.documentElement.classList.contains('no-splash')) {
+    splash.remove()
+    return
+  }
   splash.classList.add('is-leaving')
   const remove = () => splash.remove()
   splash.addEventListener('transitionend', remove, { once: true })
@@ -152,8 +158,35 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.mount('#app')
+/*
+ * After the first page has rendered: remember that this browser has seen
+ * Hivelet, so public/boot.js leaves the loader off a later load of a page with
+ * its own skeleton (Sean, 2026-10-01: "the main spinner should show only the
+ * first time"); then, once idle, fetch the code of the pages this person is
+ * likely to open next (lib/warmRoutes.ts), and again if they sign in or out.
+ * Set only on success: a first load whose route failed keeps the loader for
+ * next time.
+ */
+const SEEN_FLAG = 'hivelet.seen'
+function firstPageRendered() {
+  try {
+    localStorage.setItem(SEEN_FLAG, '1')
+  } catch {
+    // Storage blocked (private mode): every load counts as a first one.
+  }
+  warmRoutes(router, currentRole.value)
+  watch(currentRole, (role) => warmRoutes(router, role))
+}
+
 router
   .isReady()
-  .catch(() => {})
-  .then(() => nextTick())
-  .finally(() => requestAnimationFrame(dismissSplash))
+  .then(
+    () =>
+      nextTick().then(() =>
+        requestAnimationFrame(() => {
+          dismissSplash()
+          firstPageRendered()
+        }),
+      ),
+    () => requestAnimationFrame(dismissSplash),
+  )
