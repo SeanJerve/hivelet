@@ -26,7 +26,7 @@ import { afterArrival } from '@/lib/afterArrival';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
 import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
-import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, ChevronDown } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -37,6 +37,8 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
 
 const route = useRoute();
 const router = useRouter();
@@ -449,7 +451,7 @@ onMounted(() => {
  * for January into the other year from the Overview and the Excel export, and
  * left a row whose date would not parse in every month at once (FINAL_REVIEW F3).
  */
-function matchesExceptCluster(r: IncomeRecord): boolean {
+function matchesExceptCluster(r: IncomeRecord, year = filterYear.value, month = filterMonth.value): boolean {
   const query = q.value.toLowerCase().trim();
   if (
     query &&
@@ -461,7 +463,7 @@ function matchesExceptCluster(r: IncomeRecord): boolean {
   }
 
   // The month the rent is for, as the Overview and the Excel export count it.
-  return incomeRowInPeriod(r, filterYear.value, filterMonth.value);
+  return incomeRowInPeriod(r, year, month);
 }
 
 const rows = computed(() =>
@@ -483,9 +485,13 @@ const rows = computed(() =>
  * Counted over everything the OTHER filters already allow, so a chip reading
  * 12 gives twelve rows when pressed. Counting the whole ledger instead would
  * promise rows that the month and year in force would then withhold.
+ *
+ * "In force" is the filter dialog's draft while it is open (Sean, 2026-10-01:
+ * filters apply on "Apply filters"), so picking 2025 there re-counts the
+ * clusters for 2025 before anything behind the dialog changes.
  */
-const clusterChips = computed(() => {
-  const inScope = incomeRecords.filter(matchesExceptCluster);
+function clusterChipsFor(year: string, month: string) {
+  const inScope = incomeRecords.filter((r) => matchesExceptCluster(r, year, month));
   return [
     { key: 'All', label: 'All clusters', count: inScope.length },
     ...CLUSTERS.map((c) => ({
@@ -494,7 +500,29 @@ const clusterChips = computed(() => {
       count: inScope.filter((r) => r.cluster === c).length,
     })),
   ];
-});
+}
+
+/** The toolbar's switch and filters (components/ui/ListToolbar.vue); the refs above stay the state. */
+const incomeViews: ToolbarView<'grouped' | 'flat'>[] = [
+  { value: 'grouped', label: 'By cluster', icon: LayoutGrid },
+  { value: 'flat', label: 'As a list', icon: TableIcon },
+];
+const incomeFilters = computed<ToolbarFilter[]>(() => [
+  {
+    key: 'cluster',
+    label: 'Cluster',
+    value: selectedCluster.value,
+    defaultValue: 'All',
+    options: (d) => clusterChipsFor(String(d.year), String(d.month)),
+  },
+  { key: 'month', label: 'Month', value: filterMonth.value, defaultValue: 'All', options: monthsList },
+  { key: 'year', label: 'Year', value: filterYear.value, defaultValue: 'All', options: yearOptions.value },
+]);
+function applyIncomeFilters(v: FilterDraft) {
+  selectedCluster.value = String(v.cluster);
+  filterMonth.value = String(v.month);
+  filterYear.value = String(v.year);
+}
 
 const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
 /**
@@ -1149,164 +1177,65 @@ async function exportExcel() {
     </div>
 
     <!--
-      The toolbar, in two rows. The tabs and the cluster/list switcher on the
-      first; search and the three filters on the second, only on the ledger.
-
-      It was one wrapping row whose left group was `flex-1`, a flex-basis of
-      zero, so it never wrapped: measured at 375 the left group was 80px wide,
-      the search box 80px, and the switcher overlapped the Cluster filter; at
-      768 the search box overlapped Cluster and Month.
-
-      The filters keep their own pairing (see the note below): Cluster alone,
-      Month and Year sharing a row on a phone.
+      The tabs, then the list toolbar every screen shares (components/ui/
+      ListToolbar.vue, Sean, 2026-10-01): the By cluster / As a list switch -
+      the same one, the same width, as on Tenants; it was a narrower copy here
+      that did not fill a phone - then search with the filter button beside it.
+      Cluster, Month and Year are in the filter dialog, only on the ledger.
     -->
     <div class="flex flex-col gap-3">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <!-- Tabs: Ledger or To verify -->
-        <div role="tablist" aria-label="Income view" class="flex items-center gap-5 shrink-0">
-          <button
-            id="income-tab-ledger"
-            type="button"
-            role="tab"
-            :aria-selected="activeTab === 'ledger'"
-            aria-controls="income-panel"
-            :tabindex="activeTab === 'ledger' ? 0 : -1"
-            :class="[
-              'press text-sm cursor-pointer py-1 whitespace-nowrap',
-              activeTab === 'ledger' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
-            ]"
-            @click="activeTab = 'ledger'"
-            @keydown.right.prevent="activeTab = 'verify'"
-          >
-            Ledger
-          </button>
-          <button
-            id="income-tab-verify"
-            type="button"
-            role="tab"
-            :aria-selected="activeTab === 'verify'"
-            aria-controls="income-panel"
-            :tabindex="activeTab === 'verify' ? 0 : -1"
-            :class="[
-              'press flex items-center gap-2 text-sm cursor-pointer py-1 whitespace-nowrap',
-              activeTab === 'verify' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
-            ]"
-            @click="activeTab = 'verify'"
-            @keydown.left.prevent="activeTab = 'ledger'"
-          >
-            <span>To verify</span>
-            <span
-              v-if="pendingPayments.length > 0"
-              class="rounded-full bg-brand-soft text-brand px-2 py-0.5 text-xs tabular font-semibold"
-            >
-              {{ pendingPayments.length }}
-            </span>
-          </button>
-        </div>
-
-        <!-- By cluster / All together switcher -->
-        <div
-          v-if="activeTab === 'ledger'"
-          class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-xs shrink-0"
-          role="group"
-          aria-label="How to show the ledger"
+      <!-- Tabs: Ledger or To verify -->
+      <div role="tablist" aria-label="Income view" class="flex items-center gap-5 shrink-0">
+        <button
+          id="income-tab-ledger"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'ledger'"
+          aria-controls="income-panel"
+          :tabindex="activeTab === 'ledger' ? 0 : -1"
+          :class="[
+            'press text-sm cursor-pointer py-1 whitespace-nowrap',
+            activeTab === 'ledger' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
+          ]"
+          @click="activeTab = 'ledger'"
+          @keydown.right.prevent="activeTab = 'verify'"
         >
-          <button
-            type="button"
-            :class="[
-              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
-              viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-            ]"
-            :aria-pressed="viewMode === 'grouped'"
-            @click="viewMode = 'grouped'"
+          Ledger
+        </button>
+        <button
+          id="income-tab-verify"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'verify'"
+          aria-controls="income-panel"
+          :tabindex="activeTab === 'verify' ? 0 : -1"
+          :class="[
+            'press flex items-center gap-2 text-sm cursor-pointer py-1 whitespace-nowrap',
+            activeTab === 'verify' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
+          ]"
+          @click="activeTab = 'verify'"
+          @keydown.left.prevent="activeTab = 'ledger'"
+        >
+          <span>To verify</span>
+          <span
+            v-if="pendingPayments.length > 0"
+            class="rounded-full bg-brand-soft text-brand px-2 py-0.5 text-xs tabular font-semibold"
           >
-            <FileSpreadsheet class="size-4" aria-hidden="true" />
-            <span>By cluster</span>
-          </button>
-          <button
-            type="button"
-            :class="[
-              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
-              viewMode === 'flat' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-            ]"
-            :aria-pressed="viewMode === 'flat'"
-            @click="viewMode = 'flat'"
-          >
-            <TableIcon class="size-4" aria-hidden="true" />
-            <span>As a list</span>
-          </button>
-        </div>
+            {{ pendingPayments.length }}
+          </span>
+        </button>
       </div>
 
-      <div v-if="activeTab === 'ledger'" class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <!-- Standalone Pill Search Bar -->
-        <div class="relative w-full sm:w-80">
-          <Search
-            class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-            aria-hidden="true"
-          />
-          <label for="income-search" class="sr-only">Search the ledger</label>
-          <input
-            id="income-search"
-            v-model="q"
-            type="search"
-            placeholder="Search"
-            class="ws-input w-full pl-11"
-          />
-        </div>
-
-        <!--
-          Filters: Cluster, Month, Year.
-
-          `shrink-0` is gone, and it was defeating the `flex-wrap` beside it.
-          A flex item that cannot shrink is sized at its max-content width, and
-          for a wrapping row that is every child on ONE line: 3 x 13rem plus the
-          gaps = 640px. So the wrapper never got narrow enough to wrap, and it
-          did not shrink either.
-
-          Measured in the running app at a 375px viewport: this row ran to
-          x=664 against a content column ending at 351, putting the Month and
-          Year filters completely off screen - and `body` carries
-          `overflow-x: hidden`, so they were clipped rather than reachable by
-          scrolling. Two of the three ways of narrowing this ledger could not be
-          used on a phone.
-
-          Fixed once already by stacking all three - functionally correct, and
-          the client called three full-width pills in a column messy. Three
-          filters do not divide evenly the way the room directory's two do, so
-          this keeps the same even pairing that already worked there rather
-          than inventing a new ratio: Month and Year are both narrowing WHEN,
-          which makes them one decision in two parts, and they share a row.
-          Cluster changes WHAT the reader is looking at, a different kind of
-          question, and sits alone above them at full width rather than being
-          paired with either.
-        -->
-        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <PillSelect
-            v-model="selectedCluster"
-            :options="clusterChips"
-            aria-label="Cluster"
-            widthClass="w-full sm:w-52"
-          />
-
-          <div class="flex items-center gap-2">
-            <PillSelect
-              v-model="filterMonth"
-              :options="monthsList"
-              aria-label="Month"
-              widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
-            />
-
-            <PillSelect
-              v-model="filterYear"
-              :options="yearOptions"
-              aria-label="Year"
-              align="right"
-              widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
-            />
-          </div>
-        </div>
-      </div>
+      <ListToolbar
+        v-if="activeTab === 'ledger'"
+        v-model:view="viewMode"
+        v-model:search="q"
+        :views="incomeViews"
+        view-label="How to show the ledger"
+        search-label="Search the ledger"
+        :filters="incomeFilters"
+        @apply="applyIncomeFilters"
+      />
     </div>
 
     <!--
