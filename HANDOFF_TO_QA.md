@@ -22,11 +22,37 @@ Michelle runs them as the administrator. There is no staging copy.
     actually raised is Due.
   - Invoice numbers read `INV#…`, or **Acknowledgement receipt** for a slip with no number.
   - Water is worked out from the occupants and never typed.
-  - Pages update within about 5 seconds without a refresh.
+  - Pages update within a few seconds without a refresh (they check every 2 s while visible).
 - **GCash** runs on Adyen's test account: no real money moves. Reject any GCash payment in the
   To verify queue.
 - **Do not** run active scanners, password guessing or form-filling spiders against the live site.
   It holds real records, and five wrong passwords lock an account for 15 minutes.
+
+## 0a. Re-test on a real phone: the 1 Oct evening changes
+
+All of it is frontend, on `main` at `ed54996`, and was checked only in headless Chrome with touch
+emulation (375×812, 320×640). **None of it has been tried on a real phone.** Read-only checks; the
+only writes are the ones the steps name.
+
+| What | How to check it | Pass |
+| :--- | :--- | :--- |
+| **Overview + button** (`QuickActionsFab`) | Admin Overview on a phone, below 768 px wide | A green **+** sits bottom right; tap it: Record payment, Record expense, Move someone in/out rise above it and the + turns to an X. Tap outside, the X, or pick one: it closes. The last tile is not hidden under it. From 768 px there is no + and the three are header buttons |
+| **Year word** | Tap "2026 ⌄" beside the date | The year menu opens fully on screen; picking 2025 shows the archive and **Back to 2026** |
+| **Filters** | Each list: Rooms and rates, Tenants, Monthly Income, Monthly Expenses, Repairs, Inquiries, tenant Payments, tenant Repairs | Changing a choice in the dialog changes nothing behind it until **Apply filters**; X or the backdrop throws the choice away; **Reset** only resets the dialog. After Apply, the button shows a count and the line under the bar names the filters, with **Clear**. Search still works at 320 px |
+| **Pull to refresh** | Installed app (home-screen icon) only, at the top of a page | Pulling down shows a turning icon; past the threshold, release reloads. Not inside an open dialog, not on a sideways table swipe. In a browser tab, the browser's own pull-down is used instead |
+| **Offline** (tenant) | Installed app, load Overview and Payments, then airplane mode and reopen | "No connection" bar; **"Saved figures from <time>"**; no **Pay with GCash**. Signing out removes the saved copy |
+| **First-load loader** | Clear site data, open the site | The green hexagon turns while the first page loads; a signed-in reload afterwards shows skeletons, not the loader. Public pages keep the loader |
+| **Back button** | Open Record payment (or the unit editor, or the phone menu), press the phone's Back | The page goes back and the dialog or drawer is gone with it; the page scrolls normally |
+| **Toast tap** | Cause any message (a refused save, Signed in) | One tap on the message closes it, and the next tap reaches the button that was under it |
+| **Notifications** | The bell | One header line: filter icon, refresh icon, X; **Mark all read** at the bottom |
+| **Ping** | Save something; have a second device change something | One ping per save, one per change from the other device; none for Signed in |
+
+**B-94 first.** Since about 22:30 on 1 Oct every request to `hivelet.vercel.app`, `/api`
+included, can land on Vercel's **"We're verifying your browser"** checkpoint (`BLOCKED_FOR_SEAN.md`
+B-94). A tester's first visit will show it for a few seconds; that is Vercel, not Hivelet, and it
+is not a finding against the system. **The risk is the Adyen webhook**, which cannot pass a browser
+check: until the Vercel owner turns the challenge off or exempts the webhook path, do not treat a
+GCash payment that never reaches To verify as a Hivelet defect. Note the time and tell Sean.
 
 ---
 
