@@ -1557,7 +1557,7 @@ async function exportExcel() {
                      ("Water, 2 heads"); a column of its own made the ledger
                      scroll sideways at 1280. -->
                 <th scope="col" class="num">Water</th>
-                <th scope="col" class="num">Remitted</th>
+                <th scope="col" class="num">Remitted<span class="block text-xs font-normal text-ink-faint">rent + water</span></th>
                 <th scope="col"><span class="sr-only">Actions</span></th>
               </tr>
             </template>
@@ -1748,7 +1748,7 @@ async function exportExcel() {
           <th scope="col" class="num">Rent</th>
           <th scope="col" class="num">Heads</th>
           <th scope="col" class="num">Water</th>
-          <th scope="col" class="num">Remitted</th>
+          <th scope="col" class="num">Remitted<span class="block text-xs font-normal text-ink-faint">rent + water</span></th>
           <th scope="col"><span class="sr-only">Actions</span></th>
         </tr>
       </template>
