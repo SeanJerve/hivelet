@@ -83,14 +83,17 @@ email. Your name can only be changed by the landlady.
 - **Android (Chrome):** menu **⋮** > **Install app** (or **Add to Home screen**).
 - **iPhone (Safari):** **Share** > **Add to Home Screen**.
 
-It then opens from its own icon. **Without signal**, it still opens and says **"No connection"**:
-you can read what was already on screen, but nothing can be sent or paid until the signal returns.
+It then opens from its own icon. **Without signal**, it still opens and says **"No connection"**.
+**Overview** and **Payments and billing** show your bill, balance and payments as last loaded, with
+the time they were saved; nothing can be sent or paid until the signal returns. They are kept on
+your phone for your account only, and **signing out removes them**.
 If sending stalls on a weak signal, wait: after about 45 seconds it tells you whether to check
-before sending again. *Kapag walang signal, magbubukas pa rin ito pero hindi makakapagpadala.*
+before sending again. *Kapag walang signal, makikita pa rin ang huling na-load na singil at bayad, pero hindi makakapagpadala o makakabayad.*
 
 ### 7. Signing out / Pag-sign out
 
-Tap your initials at the top right > **Sign out**. Always sign out on a phone that is not yours.
+Tap your initials at the top right > **Sign out**. Always sign out on a phone that is not yours:
+it also removes the bill and payments kept on the phone for viewing without signal.
 
 ---
 
