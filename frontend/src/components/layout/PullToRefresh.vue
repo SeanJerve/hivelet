@@ -11,9 +11,9 @@
  * THE ICON (Sean, 2026-10-01: "I like the arrow that turns into a spinning
  * refresh icon at a certain point - keep that - but I want the refresh icon to
  * also rotate relative to how far you pull"). It turns with the finger the
- * whole way down: the arrow from pointing down to pointing up by the
- * threshold, then the refresh icon that replaces it carries on turning at the
- * same rate for as long as the pull continues. Crossing the threshold is the
+ * whole way down: the arrow one full turn by the threshold, then the refresh
+ * icon that replaces it carries on turning at the same rate for as long as the
+ * pull continues. Crossing the threshold is the
  * one discrete cue - grey to brand green, a slight grow, and a haptic tick
  * where the phone has one - and letting go there sets it spinning on its own.
  */

@@ -68,12 +68,13 @@ export const PULL_THRESHOLD = 64;
 /** Where the indicator settles and spins once released past the threshold. */
 export const PULL_REST = 56;
 /**
- * The icon turns with the pull: half a turn by the threshold, so the arrow,
- * which starts pointing down, points up exactly as letting go starts to mean
- * "reload" - the cue the arrow's flip used to give, now reached gradually. The
- * refresh icon that replaces it keeps turning at the same rate.
+ * The icon turns with the pull: one full turn by the threshold, where the
+ * arrow becomes the refresh icon, which keeps turning at the same rate (Sean,
+ * 2026-10-01: "the refresh icon really spins in proportion to how far you
+ * pull"). Half a turn was tried first and read as a slow drift, not a spin.
+ * About 5.6 degrees per pixel of indicator travel.
  */
-export const PULL_ROTATE_PER_PX = 180 / PULL_THRESHOLD;
+export const PULL_ROTATE_PER_PX = 360 / PULL_THRESHOLD;
 /** The settle after letting go (PullToRefresh.vue's transition), in ms. */
 export const PULL_SETTLE_MS = 300;
 /** Finger travel before the gesture's direction is decided. */
