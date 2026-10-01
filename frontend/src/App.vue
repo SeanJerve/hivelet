@@ -12,6 +12,7 @@ import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
 import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
+import PullToRefresh from '@/components/layout/PullToRefresh.vue';
 import { startLiveUpdates, stopLiveUpdates } from '@/lib/live';
 
 // Every open page stays current while someone is signed in (lib/live.ts).
@@ -238,6 +239,8 @@ const hidesGlobalHeader = computed(() =>
     
     <!-- Global Modals & Notifications -->
     <ToastContainer />
+    <!-- Pull down to reload, installed app only (Sean, 2026-10-01; lib/pullToRefresh.ts). -->
+    <PullToRefresh />
     <AdminEditUnitModal />
     <RoomDetailModal />
     <OnsitePaymentModal />
