@@ -70,6 +70,21 @@ is ready as it is.
 
 ## 3. Left to do, in this order
 
+> **Status, 1 Oct 2026 (Lloyd's Claude; each item's commit says what it was checked against):**
+>
+> | Item | State |
+> | :--- | :--- |
+> | 3.1 A-30 | **Fixed** (af2aab9): income loader's silent-empty path; reproduced and fixed against a stub API. Re-test once on the owner's laptop |
+> | 3.2 Readability and totals | **Done for the labels**: Overview totals say "Rent and water …", for which month or year, Linda's included; Monthly Income's Remitted says rent + water; Monthly Income and Expenses each open with one line naming the period and the units counted. Totals checked against SQL per year (2024 3,211,000; 2025 3,048,400; 2026 1,963,500, all equal). Layout at 375 px: no overflow. A deeper "less on screen" redesign is not done |
+> | 3.3 O-12 | **Mitigated** (70713f0). Re-test on the Infinix GT20 |
+> | 3.4 Garbage fee and OR in docs | **Done** (8516cd5): BR-037 retired, BR-036 met by construction, 09 report 11 columns, live docs and Chapters 4/5 say invoice. History files untouched |
+> | 3.5 OR in comments | **Done** (80eb831), backend comments committed on their own |
+> | 3.6 Live updates on two devices | **Needs people** |
+> | 3.7 Leftovers | **Done**: slips say phone sign-in (7588048), SCREEN_CONTRACT regenerated, CONTINUE_HERE 0.0 and HANDOFF_TO_QA §0 written |
+> | 3.7b Not entered | **Done** (f1e99be): tenant screens, check:ledger (F2F August listed per B-89), manual, Chapter 4 |
+> | New: acknowledgement receipts | **Done in code** (dd9e305); **migration 072 not applied** (B-93) |
+> | 070 | **Applied** 1 Oct 07:40 (B-91) |
+
 ### 3.1 A-30: Overview money tiles show ₱0 offline (testing-day FAIL)
 
 **FIXED 1 Oct (Lloyd's Claude, commit af2aab9).** Cause: `fetchIncomeRecords` read `res?.data || []`, so
