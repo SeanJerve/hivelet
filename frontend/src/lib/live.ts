@@ -68,7 +68,7 @@ async function check() {
     if (version && lastVersion && version !== lastVersion) {
       // The ping, for something that came from someone else: a payment, a
       // repair, a reply on a repair or an inquiry, a notification (Sean,
-      // 2026-10-01). Not for one's own save, which had its success sound.
+      // 2026-10-01). Not for one's own save, which pinged once already (lib/useToast.ts).
       if (msSinceOwnWrite() > 4000) playSound('notify');
       await refreshEverything();
     }

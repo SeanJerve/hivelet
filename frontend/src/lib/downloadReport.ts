@@ -100,7 +100,8 @@ export async function downloadReport(
     a.remove();
     URL.revokeObjectURL(url);
 
-    showToast('success', 'Report downloaded', `Saved as ${fileName}`);
+    // A download is not a change, so no ping (Sean, 2026-10-01: major actions only).
+    showToast('success', 'Report downloaded', `Saved as ${fileName}`, { sound: false });
   } catch (err: unknown) {
     showToast(
       'error',

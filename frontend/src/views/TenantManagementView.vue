@@ -678,7 +678,8 @@ async function confirmVacate() {
     await api.post(`/admin/tenants/${vacateModalTenant.value.id}/vacate`);
     await fetchTenants();
     await fetchRooms();
-    showToast('warning', 'Moved out', `${vacateModalTenant.value.unitCode} is free to let again.`);
+    // Amber, but a completed move-out, so it pings like the rest (Sean, 2026-10-01).
+    showToast('warning', 'Moved out', `${vacateModalTenant.value.unitCode} is free to let again.`, { sound: true });
     vacateModalTenant.value = null;
   } catch (err: any) {
     showToast('error', failureTitle(err, 'Could not move them out'), err?.message || 'Nothing was changed.');

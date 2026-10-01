@@ -4,10 +4,18 @@
  * (Sean, 2026-09-30: the admin's notification chime, applied on both sides and
  * not only to notifications).
  *
- *   notify   - something new arrived: a notification (admin and tenant alike)
- *   success  - what you just did was saved: a payment recorded, a repair sent,
- *              a reply saved, a tenant moved in (every success toast)
+ *   notify   - the ping. Something new arrived (a notification, a change made
+ *              by someone else - lib/live.ts), or a major action of one's own
+ *              was saved: a payment recorded, a repair sent, a reply saved, a
+ *              tenant moved in or out (Sean, 2026-10-01: "I like the ping sound;
+ *              apply it on major actions and real-time updates"). For one's own
+ *              action it comes from the success toast (lib/useToast.ts), or
+ *              from the screen when the confirmation is not a toast.
  *   problem  - what you just did did not go through (every error toast)
+ *
+ * There was a third, 'success', a different two-note "done" for every success
+ * toast. One sound for "it happened" is easier to learn than two, so it went
+ * (Sean, 2026-10-01).
  *
  * Soft sine tones from the Web Audio API, no files to download. ONE audio
  * context, created on the first tap or key press: browsers refuse sound before
@@ -57,7 +65,7 @@ function tone(c: AudioContext, freq: number, start: number, length: number, volu
   osc.stop(c.currentTime + start + length + 0.02);
 }
 
-export type SoundKind = 'notify' | 'success' | 'problem';
+export type SoundKind = 'notify' | 'problem';
 
 export function playSound(kind: SoundKind): void {
   const now = Date.now();
@@ -70,10 +78,6 @@ export function playSound(kind: SoundKind): void {
       // The admin's original chime: E5 then A5.
       tone(c, 659.25, 0, 0.25, 0.08);
       tone(c, 880, 0.08, 0.27, 0.08);
-    } else if (kind === 'success') {
-      // Up a fifth, quick and light: "done".
-      tone(c, 587.33, 0, 0.18, 0.06);
-      tone(c, 880, 0.07, 0.24, 0.06);
     } else {
       // Down, low and short: "that did not go through".
       tone(c, 392, 0, 0.18, 0.06);

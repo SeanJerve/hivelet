@@ -145,7 +145,8 @@ async function handleSubmit() {
     const user = await login(email.value.trim(), password.value);
     password.value = '';
 
-    showToast('success', 'Signed In', `Welcome back, ${user.fullName}.`);
+    // Signing in is not one of the actions that ping (Sean, 2026-10-01).
+    showToast('success', 'Signed In', `Welcome back, ${user.fullName}.`, { sound: false });
 
     const fallback = homeRouteForRole(user.role);
     const target = redirectPath.value ?? fallback;

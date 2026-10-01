@@ -14,7 +14,8 @@
 >   and password at next sign-in); 075 loydtest into PH (applied). All applied through the Supabase MCP
 >   connection after a backup, on Sean's standing instruction. Next number: 076.
 > - **Live updates.** Every open page checks `GET /api/live/version` every 5 s while visible and
->   reloads only what changed (`lib/live.ts`); sounds on new notifications, success and errors
+>   reloads only what changed (`lib/live.ts`); one ping for new notifications, others' changes and
+>   each major save (1 Oct: the separate success sound is gone), a low tone on errors
 >   (`lib/sounds.ts`). Not yet proven on two real devices (handoff 3.6).
 > - **Invoices.** The owner issues invoices, written `INV#4726`, optional. For a slip with no number
 >   the invoice field offers **Acknowledgement receipt** in its dropdown. Never "OR".

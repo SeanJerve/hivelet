@@ -12,6 +12,7 @@ import { api } from '@/lib/api';
 import { currentUser } from '@/lib/authStore';
 import { loadWithOfflineCopy, onBackOnline } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
+import { playSound } from '@/lib/sounds';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
@@ -412,6 +413,10 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
     );
 
     if (res?.confirmed) {
+      // A confirmed payment pings like any major action (Sean, 2026-10-01).
+      // Arriving back from GCash is a page load, so the browser may hold the
+      // sound until the first tap (lib/sounds.ts); it is never forced.
+      playSound('notify');
       /**
        * `recorded` is not decoration on the response type - it is the one field
        * that says whether the webhook's payment row has landed yet
@@ -475,6 +480,7 @@ onMounted(async () => {
   await handleGatewayReturn(params);
 
   if (statusParam === 'success') {
+    playSound('notify');
     gatewayNotice.value = {
       tone: 'success',
       title: 'Payment submitted',

@@ -17,6 +17,7 @@ import { api } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { shrinkPhoto } from '@/lib/shrinkPhoto';
+import { playSound } from '@/lib/sounds';
 import {
   Send,
   CheckCircle2,
@@ -390,6 +391,9 @@ async function postNote() {
       timestamp: new Date().toISOString(),
     });
     newNoteText.value = '';
+    // Confirmed in the thread, not by a toast, so the ping is played here
+    // (Sean, 2026-10-01: major actions ping).
+    playSound('notify');
   } catch (err: any) {
     console.error('Failed to post ticket comment:', err);
     /**
@@ -620,6 +624,8 @@ async function handleTicketSubmit() {
     ticketNotice.value = created?.attachmentWarning
       ? `"${ticketTitle.value.trim()}" was sent to the landlady. ${created.attachmentWarning}`
       : `"${ticketTitle.value.trim()}" was sent to the landlady.`;
+    // The notice above is the confirmation, not a toast, so it pings here (Sean, 2026-10-01).
+    playSound('notify');
     ticketTitle.value = '';
     ticketDescription.value = '';
     ticketCategory.value = 'Plumbing';
