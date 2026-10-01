@@ -1457,6 +1457,66 @@ html:has(> body[style*='overflow: hidden']) {
   }
 }
 
+/* ---------------------------------------------------------------- ws-pop --
+ * A menu that drops from the control that opened it: the account menu and the
+ * notifications panel in the header, and the notifications filter list.
+ * `<Transition name="ws-pop">` plus an `origin-*` class on the menu naming the
+ * corner it grows from.
+ *
+ * ONE RULE FOR BOTH HEADER MENUS, AND THAT IS THE FIX (Sean, 2026-10-01: "the
+ * user dropdown and the notification dropdown don't appear the same way").
+ * They were written separately and had drifted: the notifications panel grew
+ * from 0.96 over 180ms with `@starting-style`, and the account menu's
+ * `transition-[opacity,transform]` named `transform` while its utilities
+ * (`scale-95`, `-translate-y-2`) set the individual `scale` and `translate`
+ * properties - so only its opacity ever moved. Measured per frame in Chrome:
+ * one panel grew, the other only faded.
+ *
+ * Transitions, not keyframes: both menus sit inside a `.ws-focus` root, whose
+ * reduced-motion rule cuts every keyframe animation to 0.01ms but keeps
+ * opacity transitions - so the fade survives there, and the scale and the
+ * 6px drop are removed below instead. Out is quicker than in, and takes no
+ * pointer events, so a tap just after closing lands on the page.
+ */
+.ws-pop-enter-active {
+  transition:
+    opacity 0.2s var(--ease-out-soft),
+    scale 0.2s var(--ease-out-soft),
+    translate 0.2s var(--ease-out-soft);
+}
+.ws-pop-leave-active {
+  transition:
+    opacity 0.14s var(--ease-out-soft),
+    scale 0.14s var(--ease-out-soft),
+    translate 0.14s var(--ease-out-soft);
+  pointer-events: none;
+}
+.ws-pop-enter-from,
+.ws-pop-leave-to {
+  opacity: 0;
+  scale: 0.96;
+  translate: 0 -6px;
+}
+/* A plain fade, for what sits behind a menu (the notifications scrim). */
+.ws-fade-enter-active {
+  transition: opacity 0.2s var(--ease-out-soft);
+}
+.ws-fade-leave-active {
+  transition: opacity 0.14s var(--ease-out-soft);
+  pointer-events: none;
+}
+.ws-fade-enter-from,
+.ws-fade-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-pop-enter-from,
+  .ws-pop-leave-to {
+    scale: none;
+    translate: none;
+  }
+}
+
 /* ------------------------------------------------------------- list-reveal --
  * A short stagger for a group of same-shaped things appearing together - a
  * page of table rows on first load, a grid of unit cards, a list of

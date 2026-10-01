@@ -11,6 +11,14 @@
  * and closing returns focus to the bell, so nobody is left at the top of the
  * page. The filters are a pressed-state group, not tabs: they narrow one list
  * rather than swapping panels.
+ *
+ * The header is one line - title, filter, refresh, close (Sean, 2026-10-01:
+ * the row of All / Unread / Payments / Repairs / Inquiries chips "is so
+ * clogged"). The choices moved into a small list behind a filter icon, and a
+ * filter other than All shows as a removable label under the header, so a
+ * narrowed list never looks like the whole inbox. "Check again" is a refresh
+ * icon beside the X, named "Check again" for a screen reader, spinning while
+ * it loads. "Mark all read" moved to the footer the text button left.
  */
 import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
@@ -25,12 +33,14 @@ import {
   fetchNotifications,
   notificationsFetchFailed,
   type NotificationItem,
+  type NotificationFilter,
 } from '@/lib/notificationsStore';
 import { isAdmin } from '@/lib/authStore';
 import { notificationTarget } from '@/lib/openFromQuery';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import {
+  Check,
   CheckCheck,
   X,
   CreditCard,
@@ -39,6 +49,8 @@ import {
   AlertTriangle,
   Inbox,
   MessageSquare,
+  ListFilter,
+  RefreshCw,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -47,36 +59,60 @@ const panel = ref<HTMLElement | null>(null);
 /**
  * Whether the stream should still stagger its rows in.
  *
- * The panel mounts fresh every time it opens - it is a bare `v-if` with
- * nothing above it - so this starts `true` on every open and is exactly the
- * "first load" the rows should animate for. It is tied to `isLoading` rather
- * than to mount time, because the fetch this panel waits on can still be in
- * flight when it opens: gating on a timer from mount would have the reveal
- * fire against an empty list and never play against the real one. Once the
- * rows have had time to finish, this flips off for good, so clicking a filter
- * tab restyles the same list rather than restarting the stagger on it.
+ * On every open. This used to say the panel "mounts fresh every time it
+ * opens", and only the panel did: this component stays mounted in AppHeader
+ * for the whole session, so the flag went false 500ms after the first load
+ * and the rows never staggered again (Sean, 2026-10-01). It is set again in
+ * the `isPopoverOpen` watcher below. It still waits on `isLoading` rather
+ * than a timer from opening, because the fetch can be in flight when the
+ * panel opens: a timer from then would have the reveal fire against an empty
+ * list and never play against the real one. Once the rows have had time to
+ * finish, it flips off, so choosing a filter restyles the same list rather
+ * than restarting the stagger on it.
  */
 const revealRows = ref(true);
 let revealTimer: ReturnType<typeof setTimeout> | null = null;
+function settleRevealSoon() {
+  if (revealTimer !== null) clearTimeout(revealTimer);
+  revealTimer = setTimeout(() => {
+    revealRows.value = false;
+    revealTimer = null;
+  }, 500);
+}
 watch(
   isLoading,
   (loading) => {
-    if (!loading && revealRows.value && revealTimer === null) {
-      revealTimer = setTimeout(() => {
-        revealRows.value = false;
-      }, 500);
-    }
+    if (!loading && revealRows.value) settleRevealSoon();
   },
   { immediate: true }
 );
 
-const ALL_FILTERS = [
+/** The filter list behind the filter icon. */
+const isFilterOpen = ref(false);
+const filterRoot = ref<HTMLElement | null>(null);
+const filterButton = ref<HTMLButtonElement | null>(null);
+const activeFilterLabel = computed(
+  () => ALL_FILTERS.find((f) => f.key === activeFilter.value)?.label ?? 'All'
+);
+
+function chooseFilter(key: NotificationFilter) {
+  activeFilter.value = key;
+  isFilterOpen.value = false;
+  filterButton.value?.focus();
+}
+
+/** "Check again". Not disabled while loading: a focused button that disables itself drops focus to the page. */
+function checkAgain() {
+  if (!isLoading.value) fetchNotifications();
+}
+
+const ALL_FILTERS: ReadonlyArray<{ key: NotificationFilter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'unread', label: 'Unread' },
   { key: 'payments', label: 'Payments' },
   { key: 'maintenance', label: 'Repairs' },
   { key: 'inquiries', label: 'Inquiries' },
-] as const;
+];
 
 // Prospect inquiries reach the administrator only; a resident never has one.
 const FILTERS = computed(() =>
@@ -157,7 +193,10 @@ async function handleNotificationClick(item: NotificationItem) {
 let openedFrom: HTMLElement | null = null;
 
 watch(isPopoverOpen, async (open) => {
+  isFilterOpen.value = false;
   if (open) {
+    revealRows.value = true;
+    if (!isLoading.value) settleRevealSoon();
     openedFrom = document.activeElement as HTMLElement | null;
     await nextTick();
     panel.value?.focus();
@@ -181,6 +220,13 @@ watch(isPopoverOpen, async (open) => {
  * the page.
  */
 function onKeyDown(e: KeyboardEvent) {
+  // The filter list is the innermost layer, so Escape closes it first.
+  if (e.key === 'Escape' && isFilterOpen.value) {
+    e.stopPropagation();
+    isFilterOpen.value = false;
+    filterButton.value?.focus();
+    return;
+  }
   if (e.key === 'Escape' && isPopoverOpen.value) {
     e.stopPropagation();
     isPopoverOpen.value = false;
@@ -222,6 +268,7 @@ function onKeyDown(e: KeyboardEvent) {
 function onDocumentPointerDown(e: PointerEvent) {
   if (!isPopoverOpen.value) return;
   const target = e.target as Node;
+  if (isFilterOpen.value && !filterRoot.value?.contains(target)) isFilterOpen.value = false;
   if (panel.value?.contains(target)) return;
   // The bell toggles on its own. Closing here too would reopen it on one click.
   const el = target instanceof Element ? target : target.parentElement;
@@ -242,37 +289,57 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isPopoverOpen" class="ws-focus">
+  <div>
     <!-- `h-dvh`, not `inset-0`: the blurred header is this fixed layer's
          containing block, so `inset-0` dimmed only the 64px header strip. -->
-    <div class="notif-backdrop fixed inset-x-0 top-0 z-40 h-dvh bg-night/30 sm:hidden" aria-hidden="true" />
+    <Transition name="ws-fade">
+      <div v-if="isPopoverOpen" class="fixed inset-x-0 top-0 z-40 h-dvh bg-night/30 sm:hidden" aria-hidden="true" />
+    </Transition>
 
     <!--
-      This panel opened and closed as a hard `v-if` cut, the one surface the
-      owner named directly as "notifications" and asked to see move. Entry
-      only, via `@starting-style` in the style block below - the same
-      constraint WsModal's own panel answers to: this is a bare `v-if` with no
-      wrapper to hang a Vue `<Transition>` leave on. It scales from its top
-      right corner rather than from centre, because unlike a modal this is
-      anchored to the bell that opened it.
-    -->
-    <!--
+      This panel opened and closed as a hard `v-if` cut, then (from
+      2026-09-30) opened through `@starting-style` and still vanished on
+      close. It is a real `<Transition>` now, both ways, and the SAME one as
+      the account menu beside it - `ws-pop` in index.css, growing from the
+      top-right corner it hangs from (Sean, 2026-10-01: "the user dropdown and
+      the notification dropdown don't appear the same way").
+
       `inset-x-2`, not `right-2` with a `100vw` width. The header's backdrop
       blur makes IT the containing block for this fixed panel, and `100vw`
       counts a scrollbar the header does not, so the panel came out wider than
       its box and sat 2px from the left edge at 375px (B-61). Pinning both
       sides to the box gives an even 8px gutter whichever box it is.
+
+      `top-[4.125rem]` on a phone and `top-[calc(100%+0.75rem)]` from `sm`
+      are the same line: 12px under the 44px bell, which sits centred in the
+      64px header row (10 + 44 + 12 = 66px). The account menu hangs from the
+      same 12px, so both menus start at the same height (Sean, 2026-10-01).
     -->
+    <Transition name="ws-pop">
     <div
+      v-if="isPopoverOpen"
       ref="panel"
       tabindex="-1"
       role="dialog"
       aria-label="Notifications"
-      class="notif-panel fixed inset-x-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-14 sm:w-[420px]"
+      class="ws-focus fixed inset-x-2 top-[4.125rem] z-50 flex max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-[calc(100%+0.75rem)] sm:w-[420px]"
     >
-      <!-- Header -->
-      <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-        <div class="flex min-w-0 items-baseline gap-2">
+      <!--
+        Header: title, filter, refresh, close, on one line.
+
+        `pointer-coarse:` 44px on every control here, as PillSelect does: they
+        were 28px (36px for the X) under a finger (B-61), and the compact size
+        stays for a mouse. `.press` on each, so a tap answers on a touch screen.
+
+        Only the X keeps the circle (`icon-btn`): Sean, 2026-10-01, only close
+        buttons and the up-right arrow buttons wear one. The filter and refresh
+        are the icon alone, with a soft fill on hover and while open.
+
+        The title and count may wrap onto two lines at 320px rather than push
+        the three buttons out of the panel.
+      -->
+      <div class="flex items-center gap-2 border-b border-line py-2 pl-4 pr-2">
+        <div class="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2">
           <h2 class="text-sm font-semibold text-ink">Notifications</h2>
           <span v-if="unreadCount > 0" class="text-xs font-semibold text-brand">
             {{ unreadCount }} unread
@@ -283,26 +350,73 @@ onUnmounted(() => {
           <span v-else-if="!notificationsFetchFailed" class="text-xs text-ink-faint">All read</span>
         </div>
 
-        <div class="flex shrink-0 items-center gap-1">
+        <div class="flex shrink-0 items-center gap-0.5">
           <!--
-            `.press` on this button, the filter tabs, the notification rows
-            and "Check again" below: none of them are `.pill-btn` or `.chip`,
-            so none of them picked up the scale-on-press every other control
-            in the workspace answers with. On a touch screen there is no
-            hover, so a tap on one of these read as not having landed.
-
-            `pointer-coarse:` 44px on every control here, as PillSelect does:
-            they were 28px (36px for the X) under a finger (B-61), and the
-            compact size stays for a mouse.
+            The filter. A disclosure that opens a short list of the same
+            choices the chip row had, the current one checked. Each choice keeps
+            `aria-pressed` - the list narrows one stream, it does not swap
+            panels - and the button's own name says which one is in force.
           -->
+          <div ref="filterRoot" class="relative">
+            <button
+              ref="filterButton"
+              type="button"
+              :class="[
+                'press relative grid size-9 place-items-center rounded-full text-ink-soft hover:bg-canvas hover:text-ink pointer-coarse:size-11',
+                (isFilterOpen || activeFilter !== 'all') && 'text-ink',
+                isFilterOpen && 'bg-canvas',
+              ]"
+              :aria-label="activeFilter === 'all' ? 'Filter notifications' : `Filter notifications, showing ${activeFilterLabel}`"
+              :aria-expanded="isFilterOpen"
+              aria-controls="notifications-filter"
+              @click="isFilterOpen = !isFilterOpen"
+            >
+              <ListFilter class="size-4" aria-hidden="true" />
+              <span
+                v-if="activeFilter !== 'all'"
+                class="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-tile"
+                aria-hidden="true"
+              />
+            </button>
+            <Transition name="ws-pop">
+              <div
+                v-if="isFilterOpen"
+                id="notifications-filter"
+                role="group"
+                aria-label="Show only"
+                class="absolute right-0 top-[calc(100%+0.25rem)] z-10 w-44 origin-top-right rounded-2xl border border-line bg-tile p-1.5 shadow-lift"
+              >
+                <button
+                  v-for="tab in FILTERS"
+                  :key="tab.key"
+                  type="button"
+                  :aria-pressed="activeFilter === tab.key"
+                  :class="[
+                    'press flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm pointer-coarse:min-h-11',
+                    activeFilter === tab.key
+                      ? 'bg-brand-soft font-semibold text-brand'
+                      : 'text-ink hover:bg-canvas',
+                  ]"
+                  @click="chooseFilter(tab.key)"
+                >
+                  <span>{{ tab.label }}</span>
+                  <Check v-if="activeFilter === tab.key" class="size-4 shrink-0" aria-hidden="true" />
+                </button>
+              </div>
+            </Transition>
+          </div>
+
+          <!-- "Check again", as an icon beside the X. It spins while a load is
+               in flight; under reduced motion it holds still and the list's own
+               loading rows say the same thing. -->
           <button
-            v-if="unreadCount > 0"
             type="button"
-            class="press inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft pointer-coarse:min-h-11"
-            @click="markAllAsRead"
+            class="press grid size-9 place-items-center rounded-full text-ink-soft hover:bg-canvas hover:text-ink pointer-coarse:size-11"
+            aria-label="Check again"
+            :aria-busy="isLoading"
+            @click="checkAgain"
           >
-            <CheckCheck class="size-3.5" aria-hidden="true" />
-            Mark all read
+            <RefreshCw :class="['size-4', isLoading && 'motion-safe:animate-spin']" aria-hidden="true" />
           </button>
 
           <button
@@ -316,26 +430,17 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Filters -->
-      <div
-        class="flex items-center gap-1.5 overflow-x-auto border-b border-line px-3 py-2"
-        role="group"
-        aria-label="Show only"
-      >
+      <!-- The filter in force, when it is not All, as a label that removes it. -->
+      <div v-if="activeFilter !== 'all'" class="flex items-center gap-2 border-b border-line px-4 py-2 text-xs">
+        <span class="text-ink-soft">Showing</span>
         <button
-          v-for="tab in FILTERS"
-          :key="tab.key"
           type="button"
-          :aria-pressed="activeFilter === tab.key"
-          :class="[
-            'press whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold pointer-coarse:min-h-11',
-            activeFilter === tab.key
-              ? 'bg-ink text-canvas'
-              : 'text-ink-soft hover:bg-canvas hover:text-ink',
-          ]"
-          @click="activeFilter = tab.key"
+          class="press inline-flex items-center gap-1.5 rounded-full bg-ink py-1 pl-2.5 pr-2 font-semibold text-canvas pointer-coarse:py-2"
+          :aria-label="`Showing ${activeFilterLabel} only. Show all notifications`"
+          @click="activeFilter = 'all'"
         >
-          {{ tab.label }}
+          {{ activeFilterLabel }}
+          <X class="size-3" aria-hidden="true" />
         </button>
       </div>
 
@@ -455,68 +560,22 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Footer. Not under the failed state, which has its own "Try again". -->
+      <!-- Footer: "Mark all read", when there is anything to mark. Not under the
+           failed state, which has its own "Try again". -->
       <div
-        v-if="!(notificationsFetchFailed && filteredNotifications.length === 0 && !isLoading)"
-        class="flex items-center justify-end gap-3 border-t border-line px-4 py-3 text-xs"
+        v-if="unreadCount > 0 && !(notificationsFetchFailed && filteredNotifications.length === 0 && !isLoading)"
+        class="flex items-center justify-end gap-3 border-t border-line px-4 py-2 text-xs"
       >
         <button
           type="button"
-          class="press rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft pointer-coarse:min-h-11"
-          @click="fetchNotifications"
+          class="press inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft pointer-coarse:min-h-11"
+          @click="markAllAsRead"
         >
-          Check again
+          <CheckCheck class="size-3.5" aria-hidden="true" />
+          Mark all read
         </button>
       </div>
     </div>
+    </Transition>
   </div>
 </template>
-
-<style scoped>
-/*
- * Entry only, both of these - see the template comment above the panel for
- * why. Sitting inside `.ws-focus`, so the reduced-motion rule in index.css
- * already strips `scale`/`translate` from what transitions here and leaves
- * opacity in place, the same bargain every other dialog in the workspace
- * makes.
- */
-.notif-backdrop {
-  opacity: 1;
-  transition: opacity 0.15s var(--ease-out);
-}
-@starting-style {
-  .notif-backdrop {
-    opacity: 0;
-  }
-}
-
-.notif-panel {
-  opacity: 1;
-  scale: 1;
-  translate: 0 0;
-  transition:
-    opacity 0.18s var(--ease-out),
-    scale 0.18s var(--ease-out),
-    translate 0.18s var(--ease-out);
-}
-@starting-style {
-  .notif-panel {
-    opacity: 0;
-    scale: 0.96;
-    translate: 4px -4px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .notif-panel {
-    scale: none;
-    translate: none;
-  }
-  @starting-style {
-    .notif-panel {
-      scale: none;
-      translate: none;
-    }
-  }
-}
-</style>

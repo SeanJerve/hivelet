@@ -470,7 +470,14 @@ onUnmounted(() => {
           <!-- The account menu. Opens on click; see the note in the script. -->
           <!-- A disclosure, not `aria-haspopup`: that promises an ARIA menu
                with arrow-key movement, and these are plain links and buttons. -->
-          <div ref="profileMenu" class="ws-focus relative py-1" @focusout="onProfileFocusOut">
+          <!--
+            No `py-1` (Sean, 2026-10-01: both header menus "sit at the same top
+            offset"). It made this box 52px against the bell's 44, so the same
+            `top` put the account menu 4px higher than the notifications panel.
+            Both boxes are now the 44px of their button, centred in the same
+            64px row, and both menus hang 12px below them.
+          -->
+          <div ref="profileMenu" class="ws-focus relative" @focusout="onProfileFocusOut">
             <button
               data-account-trigger
               @click="isProfilePopoverOpen = !isProfilePopoverOpen"
@@ -497,24 +504,19 @@ onUnmounted(() => {
             </button>
 
             <!--
-              Named properties rather than `all`, so nothing but opacity and
-              transform is animated, and ease-out both ways. `ease-in` on the
-              way out starts slow, which reads as the menu being reluctant to
-              close. The exit is also shorter than the entrance: a person
-              closing a menu has already decided.
+              `ws-pop` (index.css), the same transition, origin and offset as
+              the notifications panel beside it (Sean, 2026-10-01). This had
+              its own classes, and `transition-[opacity,transform]` never
+              reached `scale-95`/`-translate-y-2`, which set the separate
+              `scale` and `translate` properties: it only ever faded, while the
+              bell's panel grew. Ease-out both ways and a shorter exit, as
+              before - a person closing a menu has already decided.
             -->
-            <Transition
-              enter-active-class="transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]"
-              enter-from-class="opacity-0 -translate-y-2 scale-95"
-              enter-to-class="opacity-100 translate-y-0 scale-100"
-              leave-active-class="transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]"
-              leave-from-class="opacity-100 translate-y-0 scale-100"
-              leave-to-class="opacity-0 -translate-y-2 scale-95"
-            >
+            <Transition name="ws-pop">
               <div
                 v-if="isProfilePopoverOpen"
                 id="account-menu"
-                class="absolute right-0 top-14 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
+                class="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
               >
                 <!-- Who is signed in, read left to right like everything else. -->
                 <div class="flex items-center gap-3 border-b border-line p-5">
@@ -628,12 +630,15 @@ onUnmounted(() => {
       menu was a `v-if` popping open with no transition of any kind, the exact
       gap this pass was asked to close. Real `<Transition>` now, matching the
       curve and asymmetric timing every other menu in this file uses.
+      `[opacity,translate]`, not `[opacity,transform]`: Tailwind 4's
+      `-translate-y-2` sets the `translate` property, so naming `transform`
+      left the drop un-animated (the account menu's bug, Sean, 2026-10-01).
     -->
     <Transition
-      enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-200 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+      enter-active-class="motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
       enter-from-class="opacity-0 -translate-y-2"
       enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+      leave-active-class="motion-safe:transition-[opacity,translate] motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2"
     >
