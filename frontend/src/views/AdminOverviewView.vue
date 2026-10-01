@@ -1082,7 +1082,10 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               <tr>
                 <th scope="col">Month</th>
                 <th scope="col" class="num">Rent and water</th>
-                <th scope="col" class="num">Operating</th>
+                <!-- On a phone the four columns did not fit 303px and Net, the figure
+                     she reads this for, sat off-screen behind a sideways scroll. There
+                     the spending moves under Rent and water as a second line. -->
+                <th scope="col" class="num hidden sm:table-cell">Operating</th>
                 <th scope="col" class="num">Net</th>
               </tr>
             </thead>
@@ -1094,11 +1097,16 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
                 <th scope="row">{{ d.month }}</th>
-                <td class="num">{{ peso(d.grossIncome) }}</td>
+                <td class="num">
+                  {{ peso(d.grossIncome) }}
+                  <span class="block text-xs font-normal text-ink-faint sm:hidden">
+                    {{ d.hasExpenses ? `spent ${peso(d.expenses)}` : 'spending not entered' }}
+                  </span>
+                </td>
                 <!-- A month with no expense entries is not entered, the same as a
                      month with no collections: "P0" read as a month that cost
                      nothing, and its Net as pure profit. -->
-                <td class="num text-ink-soft">
+                <td class="num text-ink-soft hidden sm:table-cell">
                   <StatusPill v-if="!d.hasExpenses" tone="unentered">Not entered</StatusPill>
                   <template v-else>{{ peso(d.expenses) }}</template>
                 </td>
