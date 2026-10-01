@@ -355,16 +355,14 @@ onBeforeUnmount(() => {
       `ease-in` on the leave was the sharper problem: it starts slow, which is
       wrong on an exit nobody is watching closely, and it is the one curve
       emil-design-eng's framework names outright as never right for UI. Both
-      directions now use the same `--ease-out` token every other popover,
-      dialog and reveal in this file already uses, so a PillSelect opening
-      feels like the same product as everything around it, not a component
-      that arrived from somewhere else.
+      directions use one ease-out curve, the same one the other menus use, so
+      a PillSelect opening feels like the same product as everything around
+      it, not a component that arrived from somewhere else.
 
       220ms/160ms rather than 150ms/100ms - asked for directly, still inside
-      emil-design-eng's 150-250ms dropdown range, just at the slow end of it
-      rather than the fast end, so this and every other dropdown in the app
-      (every PillSelect instance) reads as a deliberate motion rather than a
-      snap.
+      emil-design-eng's 150-250ms dropdown range - then 200ms/140ms on the
+      softer `--ease-out-soft` (see below), which keeps more of the motion on
+      screen than the longer quint did.
 
       `origin-top-left`/`origin-top-right` (matching `align`, the same edge
       the `left-0`/`right-0` below already pins to the trigger) - every other
@@ -372,15 +370,16 @@ onBeforeUnmount(() => {
       here, NotificationPopover, AppHeader's profile menu) already scales
       from that corner rather than its own centre; this was the one dropdown
       left on the default centre origin despite being the most-reused one.
+
+      Since 2026-10-01 it is `ws-pop` in index.css, the transition the two
+      header menus share (200ms in, 140ms out, on `--ease-out-soft`), so
+      every dropdown in the product opens the same way (Sean: "make it feel
+      premium and subtle"). The list is `w-full` of its trigger and pinned to
+      one of its edges, so it cannot run off a phone screen: every PillSelect
+      on every page was opened at 375 and 320px and measured under its
+      trigger, inside the viewport.
     -->
-    <Transition
-      enter-active-class="transition duration-[220ms] ease-[var(--ease-out)]"
-      enter-from-class="transform scale-95 opacity-0 -translate-y-1"
-      enter-to-class="transform scale-100 opacity-100 translate-y-0"
-      leave-active-class="transition duration-[160ms] ease-[var(--ease-out)]"
-      leave-from-class="transform scale-100 opacity-100 translate-y-0"
-      leave-to-class="transform scale-95 opacity-0 -translate-y-1"
-    >
+    <Transition name="ws-pop">
       <div
         v-if="isOpen"
         :id="listboxId"

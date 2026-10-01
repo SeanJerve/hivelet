@@ -167,6 +167,7 @@ onMounted(async () => {
    */
   lockBodyScroll();
   document.addEventListener('keydown', onDocumentKeydown);
+  enterMotion();
   await nextTick();
   /**
    * Focus goes to the dialog itself, which is named by its heading, not to its
@@ -183,6 +184,45 @@ onMounted(async () => {
 });
 
 /**
+ * The opening: the backdrop fades in and the panel rises 12px and grows from
+ * 0.96 as it fades, 240ms (Sean, 2026-10-01: "when clicking actions the modals
+ * just pop up").
+ *
+ * It was `@starting-style` in index.css, and in Chrome it did run - but on
+ * `--ease-out`, a quint, the panel was 93% of the way there 89ms in, from a
+ * 0.97 start: two frames of a 3% change, which reads as no animation at all.
+ * Older iPhones never ran it (`@starting-style` arrived in Safari 17.5). Web
+ * Animations from here run everywhere, and start in the first frame the
+ * dialog is drawn because this runs before that frame.
+ *
+ * No `fill`: once finished the panel goes back to no transform at all. A
+ * transform left in place would make it the containing block for the
+ * "Record this payment?" confirmation OnsitePaymentModal opens INSIDE it - see
+ * the note on `.ws-modal-panel` in index.css. Reduced motion keeps the fades
+ * and drops the movement, the same bargain as the close below.
+ */
+const ENTER = { duration: 240, easing: 'cubic-bezier(0.33, 1, 0.68, 1)' };
+function enterMotion(): void {
+  const el = overlay.value;
+  if (!el || typeof el.animate !== 'function') return;
+  try {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.animate([{ opacity: 0 }, { opacity: 1 }], ENTER);
+    panel.value?.animate(
+      reduce
+        ? [{ opacity: 0 }, { opacity: 1 }]
+        : [
+            { opacity: 0, transform: 'translateY(12px) scale(0.96)' },
+            { opacity: 1, transform: 'none' },
+          ],
+      ENTER
+    );
+  } catch {
+    // Decoration: a dialog that cannot animate still opens.
+  }
+}
+
+/**
  * A closing dialog fades instead of vanishing.
  *
  * Every caller removes this component with `v-if`, so it is gone before a
@@ -193,11 +233,14 @@ onMounted(async () => {
  * itself. It is visual only: focus, scroll lock and every handler belong to
  * the real dialog, which is already gone.
  *
- * The snapshot has its transitions switched off, because the opening fade is
- * `@starting-style` and would otherwise replay IN on the copy. It keeps typed
- * text and the scroll position so the frame does not change as it fades, and
- * its ids are stripped so nothing can find it by id. Under reduced motion it
- * fades without the scale, the same bargain the opening makes.
+ * The snapshot has its CSS transitions switched off so nothing on it animates
+ * but the closing below. It keeps typed text and the scroll position so the
+ * frame does not change as it fades, and its ids are stripped so nothing can
+ * find it by id. Under reduced motion it fades without the scale, the same
+ * bargain the opening makes.
+ *
+ * 160ms, the opening run backwards and quicker (Sean, 2026-10-01: "close with
+ * a quick reverse"): it sinks the same 12px and shrinks to the same 0.96.
  */
 function leaveGhost(): void {
   const el = overlay.value;
@@ -220,10 +263,10 @@ function leaveGhost(): void {
     ghost.scrollTop = el.scrollTop;
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const timing = { duration: 150, easing: 'cubic-bezier(0.23, 1, 0.32, 1)', fill: 'forwards' as const };
+    const timing = { duration: 160, easing: 'cubic-bezier(0.33, 1, 0.68, 1)', fill: 'forwards' as const };
     ghost.animate([{ opacity: 1 }, { opacity: 0 }], timing);
     if (ghostPanel && !reduce) {
-      ghostPanel.animate([{ transform: 'none' }, { transform: 'translateY(8px) scale(0.97)' }], timing);
+      ghostPanel.animate([{ transform: 'none' }, { transform: 'translateY(12px) scale(0.96)' }], timing);
     }
     // A timer, not `finished`: a hidden tab can pause the animation and the
     // copy must never outlive it.
