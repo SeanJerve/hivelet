@@ -583,6 +583,26 @@ const collectionParts = computed(() => [
 // shows one "collected" number, not two that differ (Sean, 2026-09-30).
 const collectedAltogether = computed(() => totalRent.value + totalWater.value);
 
+/**
+ * What the figures below add up, in one plain line (Sean, 2026-10-01). On the
+ * testing day the landlady saw "₱8,222,900" with no idea it was every payment
+ * since 2024, and asked whether the Penthouse was in a cluster figure. The page
+ * opens on All years / All months, so this names the period and the units.
+ */
+const figuresScope = computed(() => {
+  const y = filterYear.value;
+  const m = monthsList.find((x) => x.val === filterMonth.value)?.label ?? '';
+  const years = yearsList.value.filter((v) => v !== 'All');
+  let period: string;
+  if (y === 'All' && filterMonth.value === 'All') {
+    period = years.length > 1 ? `every payment from ${years.at(-1)} to ${years[0]}` : `every payment in ${years[0] ?? 'the ledger'}`;
+  } else if (y === 'All') period = `${m} of every year`;
+  else if (filterMonth.value === 'All') period = `all of ${y}`;
+  else period = `${m} ${y}`;
+  const searching = q.value.trim() ? ', matching your search' : '';
+  return `These figures are for ${period}${searching}: all units, the Penthouse and Linda's units included.`;
+});
+
 // Grouped rows matching Excel's 5 physical sub-sections
 const clusterGroups = computed(() => {
   const definitions = [
@@ -1059,6 +1079,7 @@ async function exportExcel() {
       the data - read it in none, which is the same shape as the dispatch board
       that claimed zero repairs.
     -->
+    <p v-if="!incomeRecordsFetchFailed" class="text-sm leading-6 text-ink-soft">{{ figuresScope }}</p>
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <OverviewTile title="Collected altogether" tone="night">
         <UnavailableNote
