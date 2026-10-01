@@ -32,7 +32,7 @@
  * are hidden and `PUT /tenant/my-profile` takes the two. The rules are in
  * `lib/contactDetails.ts`, the server's in `services/contactDetails.ts`.
  */
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { api, ApiRequestError, setStoredToken } from '@/lib/api';
 import { showToast } from '@/lib/systemState';
@@ -208,7 +208,17 @@ async function submit() {
   if (needsContact.value) {
     emailError.value = emailProblem(email.value);
     phoneError.value = phoneProblem(phone.value);
-    if (emailError.value || phoneError.value) return;
+    if (emailError.value || phoneError.value) {
+      /**
+       * To the field with the note (audit 2026-10-01). On a 320x640 phone the
+       * set-up step is taller than the screen and its button is in the footer:
+       * the email note rendered above the visible part of the dialog while
+       * focus stayed on the button.
+       */
+      await nextTick();
+      document.querySelector<HTMLElement>('#change-password-form [aria-invalid="true"]')?.focus();
+      return;
+    }
   }
 
   isSubmitting.value = true;
