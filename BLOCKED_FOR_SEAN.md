@@ -33,7 +33,15 @@ thing did not work" is not.
 
 ## Open
 
-### B-93 — apply migration 072 (acknowledgement receipts) · **OPEN**
+### B-93 — apply migration 072 (acknowledgement receipts) · **DONE 2026-10-01: 072 and 074 applied**
+
+> **Applied by Claude through the Supabase MCP connection on Sean's standing instruction** (1 Oct:
+> "apply them directly, just record it"), after backups/2026-10-01T00-09-17. 072: the one `ACKNOWL` row
+> standardised, the index recreated without acknowledgement receipts. 074: the owner confirmed "--"
+> means an acknowledgement receipt, so the 317 importer `N/A-…` rows (named from 066's audit row) now
+> read `Acknowledgement receipt`; 318 in all, 0 blank. Income unchanged (953 rows, ₱8,222,900.00).
+> Same day: **073** (tenant login IDs, phones cleared, all 33 active tenants must give their own email,
+> phone and password) and **075** (loydtest, HV-86225, into PH) applied. Next migration: 076.
 
 - **Blocked on:** applying a schema change. Claude on Lloyd's machine ran the backup
   (backups/2026-09-30T23-55-45) but its permission check refused running 072 through the Supabase

@@ -8,7 +8,11 @@
 >   068 `live_version()` for live pages (applied); 069 second rehearsal tenant's records removed
 >   (applied); 070 the two walkthrough expenses voided (applied 1 Oct through the Supabase MCP
 >   connection, after a backup); 071 `loydtest` switched back on as the **evaluation account**
->   (applied); **072 acknowledgement receipts: written, NOT applied** (B-93). Next number: 073.
+>   (applied); 072 acknowledgement receipts and 074 the old "--" payments as acknowledgement receipts
+>   (applied); **073 tenant login IDs** (applied: every tenant signs in first with a login ID such as
+>   HV-48213, the phones typed in for them were cleared, and all 33 must give their own email, phone
+>   and password at next sign-in); 075 loydtest into PH (applied). All applied through the Supabase MCP
+>   connection after a backup, on Sean's standing instruction. Next number: 076.
 > - **Live updates.** Every open page checks `GET /api/live/version` every 5 s while visible and
 >   reloads only what changed (`lib/live.ts`); sounds on new notifications, success and errors
 >   (`lib/sounds.ts`). Not yet proven on two real devices (handoff 3.6).
@@ -21,8 +25,11 @@
 > - **Testing-day fixes:** A-30 (₱0 offline: the income loader's silent-empty path, fixed and
 >   proven both ways) and O-12 (late Android save message: deadline re-checked on visibility).
 >   Both need one re-test on the real devices.
-> - **The evaluation account** is `loydtest` (tenant). It has no unit yet: a person moves it into
->   `PH` from Tenants (B-92). See `HANDOFF_TO_QA.md`.
+> - **The evaluation account** is `loydtest` (tenant), login ID **HV-86225**, in `PH` since 1 Oct (075).
+>   See `HANDOFF_TO_QA.md`.
+> - **Move in** takes the name and tenancy only and shows the login ID with the one-time password;
+>   Reset password shows both; the tenant's record shows the login ID. Live checks every 2 s, with a
+>   ping for changes from someone else.
 
 > [!NOTE]
 > **2026-09-29 evening, Sean's machine, all pushed and deploying before testing day.** What

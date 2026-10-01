@@ -20,11 +20,12 @@ computer, and it can be installed on a phone's home screen (Part 1, step 6).
 ### 1. Signing in for the first time / Unang pag-sign in
 
 1. Open **hivelet.vercel.app** and tap **Sign in**. *Buksan ang hivelet.vercel.app at pindutin ang Sign in.*
-2. Type your **phone number** (or email) and the **starting password** on the slip the landlady
-   gave you. *I-type ang inyong numero (o email) at ang starting password na nasa slip.*
-3. A window asks you to **set your own password**. Type the starting password again, then your new
-   one twice. It must have **at least 10 characters, a letter and a number**. *Gumawa ng sariling
-   password: hindi bababa sa 10 character, may letra at numero.*
+2. Type your **login ID** (for example HV-48213) and the **starting password** the landlady gave
+   you. *I-type ang inyong login ID at ang starting password na ibinigay ng landlady.*
+3. A window asks for **your own email, your own mobile number and your own password**. Type the
+   starting password again, then your new one twice. It must have **at least 10 characters, a
+   letter and a number**. Your name stays as the landlady recorded it. *Ilagay ang sariling email,
+   numero at password: hindi bababa sa 10 character, may letra at numero.*
 4. Keep your password to yourself. The slip stops working once you have your own.
    *Huwag ibahagi ang password.*
 
@@ -73,8 +74,9 @@ and it is not there yet, it appears once she records your receipt.
 
 ### 5. My details / Aking detalye
 
-Keep your phone number and the person to call **If something happens to you** up to date, then
-press **Save**. Your name can only be changed by the landlady.
+Keep your email, phone number and the person to call **If something happens to you** up to date,
+then press **Save**. After your first sign-in you can sign in with your login ID, phone number or
+email. Your name can only be changed by the landlady.
 
 ### 6. Install it on your phone / I-install sa cellphone
 
@@ -162,14 +164,15 @@ expenses workbook.
 
 ### 5. Tenants
 
-- **Move someone in**: name, phone (their sign-in), email if any, unit, move-in date, occupants,
-  emergency contact. Press **Move them in**. A **one-time password** is shown **once**: copy it or
-  write it down, and give it to the tenant in person. They choose their own at first sign-in.
+- **Move someone in**: name, unit, move-in date, occupants, emergency contact. No phone or email:
+  the tenant gives their own. Press **Move them in**. Their **login ID** and a **one-time password**
+  are shown: write both down and give them to the tenant in person (the password is shown only
+  once). At first sign-in they choose their own password and add their own email and phone.
 - **Edit** (pencil on a tenant): change their details, unit or number of occupants, then **Save
   changes**. The water charge follows the number of occupants.
 - **Reset password** (in the same window): for a tenant who forgot theirs or lost the slip. Confirm,
-  and a new one-time password is shown once. Their old password stops working and their phone is
-  signed out.
+  and their login ID and a new one-time password are shown. Their old password stops working and
+  their phone is signed out. The login ID is also on their record (Edit), under **Login ID**.
 - **Move them out**: type the unit code to confirm. The tenant loses access at once, the unit
   becomes free to let, and **their records stay**.
 - **Who lived where before**: choose a **Year** (and a **Month** if you like) beside the search.
@@ -228,7 +231,7 @@ look at the list before recording it again, so it is not recorded twice.
 | Question | Answer |
 | :--- | :--- |
 | A tenant says their balance is wrong | Check that their receipts since the date shown are recorded (Monthly Income, their unit) |
-| A tenant cannot sign in | Five wrong tries lock it for 15 minutes. If they forgot it: Tenants > Edit > **Reset password** |
+| A tenant cannot sign in | They sign in with the login ID on their record (Tenants > Edit). Five wrong tries lock it for 15 minutes. If they forgot the password: **Reset password** |
 | A figure shows "—" | It could not be loaded. Refresh when the connection is back |
 | "Too many attempts from this connection" | Everyone on the house wifi shares one counter; wait 15 minutes or use mobile data |
 | A GCash payment appeared | Until online payment goes live no real money arrives: reject it under **To verify** |

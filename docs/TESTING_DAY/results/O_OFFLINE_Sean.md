@@ -39,6 +39,9 @@ again: it works, once")**: the log has one note from the test tenant's account t
 **one** phone; which one is not recorded. **O-11**: the owner's note on the PH repair at 18:47 fits
 a laptop send. Chapter 4 reports O-07 as confirmed once. Nothing in the table was changed.
 
+**Re-test, 1 Oct 2026 (reported by Sean):** after the deadline fix (commit 70713f0), the re-test was
+successful and fast, with no errors. Recorded as Sean reported it; the row above keeps the 30 Sep result.
+
 O-12 depends on the request deadline added on 29 September (`frontend/src/lib/api.ts`). If that
 change is not live yet, a save on a dead connection spins until the browser gives up; record what
 happens either way.

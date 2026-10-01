@@ -82,8 +82,12 @@ is ready as it is.
 > | 3.6 Live updates on two devices | **Needs people** |
 > | 3.7 Leftovers | **Done**: slips say phone sign-in (7588048), SCREEN_CONTRACT regenerated, CONTINUE_HERE 0.0 and HANDOFF_TO_QA §0 written |
 > | 3.7b Not entered | **Done** (f1e99be): tenant screens, check:ledger (F2F August listed per B-89), manual, Chapter 4 |
-> | New: acknowledgement receipts | **Done in code** (dd9e305); **migration 072 not applied** (B-93) |
+> | New: acknowledgement receipts | **Done**: code (dd9e305), 072 and 074 applied (318 rows, 0 blank) |
 > | 070 | **Applied** 1 Oct 07:40 (B-91) |
+> | New: login IDs (073) | **Done and applied**: 33 tenants HV-#####, phones cleared, own email/phone/password at next sign-in (e7bbf53) |
+> | 3.6 faster live + ping | **Done** (cc57148): 2 s checks, ping on changes from others, visitor thread every 90 s. Two-device proof still with people |
+> | A-30 / O-12 re-tests | **Reported successful by Sean**, 1 Oct (recorded in the results files) |
+> | loydtest in PH | **Done** (075): HV-86225 |
 
 ### 3.1 A-30: Overview money tiles show ₱0 offline (testing-day FAIL)
 

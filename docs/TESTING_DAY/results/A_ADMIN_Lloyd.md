@@ -60,6 +60,10 @@ table is the sheet to fill.
 
 **Checked against the Activity log (Claude, 1 Oct 2026, read-only).** Every other write in this part is in the log at the right time: the rehearsal tenant created 18:41 (A-12), a tenant edit 19:57 (A-14), the rehearsal tenant's sign-in, password, GCash, repair and message 18:43 to 18:48 (A-15 to A-19), the enquiry reply and close 13:47 to 13:48 (A-26), the repair status changes 18:47 (A-27), ACKNOWL1 recorded and voided 22:47 (A-23, A-25), the workbook download 22:51 (A-29), the move-out 22:55 (A-31). A-11, A-28 and A-32 were corrected to NT above; the other cases (refusals, reading a screen) leave no entry to check. Totals: **32 Pass, 1 Fail, 3 NT** (A-23 reclassified, see its row).
 
+**A-30 re-test, 1 Oct 2026 (reported by Sean):** after the income-loader fix (commit af2aab9), the
+re-test was successful and fast, with no errors. Recorded as Sean reported it; the row above keeps the
+30 Sep result.
+
 *A-23 (real)*: if the owner records a **real** collection today, add it as its own line: receipt
 number, unit, amount, and whether the ledger and the tenant's own Payments screen both show it.
 That single real entry is stronger evidence than the rehearsal.

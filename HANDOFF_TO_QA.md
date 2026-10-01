@@ -12,11 +12,11 @@ Michelle runs them as the administrator. There is no staging copy.
 
 ## 0. For the professional testers and technical evaluators (2026-10-01)
 
-- **Tenant account for evaluation: `loydtest`.** It is a real tenant account kept for this purpose
-  (migration 071). At first sign-in it asks for an email and a new password: that is the feature
-  (every tenant must set their own), not a fault. Until a person moves it into unit `PH` from
-  Tenants (B-92), its Overview has no unit. The admin account is Michelle's and is used only with
-  her or the team present.
+- **Tenant account for evaluation: `loydtest`**, login ID **HV-86225**, in unit `PH` (migrations 071,
+  073, 075). The team hands over its one-time password (Tenants > Edit > Reset password shows a new
+  one). At first sign-in it asks for an email, a mobile number and a new password: that is the
+  feature (every tenant gives their own), not a fault. The admin account is Michelle's and is used
+  only with her or the team present.
 - **What a tester will see:**
   - Payments: a month with no payment entered reads **Not entered**, never overdue. Only a bill
     actually raised is Due.
