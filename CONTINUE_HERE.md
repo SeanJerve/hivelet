@@ -30,6 +30,11 @@
 > - **Move in** takes the name and tenancy only and shows the login ID with the one-time password;
 >   Reset password shows both; the tenant's record shows the login ID. Live checks every 2 s, with a
 >   ping for changes from someone else.
+> - **No Activity screen (1 Oct, Sean, on the adviser's ruling).** The audit trail is a developer's
+>   record, not part of the site: `/admin/audit-logs` is the not-found page, the sidebar entry,
+>   `AuditLogsView.vue`, `GET /admin/audit-logs` and `GET /admin/reports/audit.xlsx` are gone.
+>   **`audit_logs` and every write to it are unchanged**; read it in the database (Supabase). Older
+>   notes below that mention "the owner's Activity page" describe the site before that day.
 
 > [!NOTE]
 > **2026-09-29 evening, Sean's machine, all pushed and deploying before testing day.** What
