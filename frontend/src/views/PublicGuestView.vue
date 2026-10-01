@@ -585,9 +585,18 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               </button>
             </dt>
 
-            <dd v-if="openFaqIndex === idx" :id="`faq-panel-${idx}`" class="ws-reveal pb-7 pr-10 max-w-3xl text-xs sm:text-sm text-ink-soft leading-relaxed">
-              {{ faq.a }}
-            </dd>
+            <!-- Opens and closes with its height (`ws-collapse`, index.css;
+                 Sean, 2026-10-01), the padding on the inner block so it
+                 folds away with the text. -->
+            <Transition name="ws-collapse">
+              <dd v-if="openFaqIndex === idx" :id="`faq-panel-${idx}`" class="ws-collapse">
+                <div>
+                  <p class="pb-7 pr-10 max-w-3xl text-xs sm:text-sm text-ink-soft leading-relaxed">
+                    {{ faq.a }}
+                  </p>
+                </div>
+              </dd>
+            </Transition>
           </div>
         </dl>
 
