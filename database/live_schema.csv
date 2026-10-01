@@ -166,6 +166,7 @@ section,item,detail
 1. Columns,profiles.id,uuid NOT NULL DEFAULT gen_random_uuid()
 1. Columns,profiles.last_login_at,timestamp with time zone NULL
 1. Columns,profiles.locked_until,timestamp with time zone NULL
+1. Columns,profiles.login_id,character varying(20) NULL
 1. Columns,profiles.must_change_password,boolean NOT NULL DEFAULT false
 1. Columns,profiles.occupation,character varying(100) NULL
 1. Columns,profiles.password_changed_at,timestamp with time zone NULL
@@ -261,7 +262,7 @@ section,item,detail
 2. CHECK constraints,monthly_income_records.monthly_income_records_rent_amount_check,CHECK ((rent_amount >= (0)::numeric))
 2. CHECK constraints,monthly_income_records.monthly_income_records_water_payment_che,CHECK ((water_payment >= (0)::numeric))
 2. CHECK constraints,payments.payments_amount_check,CHECK ((amount > (0)::numeric))
-2. CHECK constraints,profiles.profiles_login_identifier_required,CHECK (((password_hash IS NULL) OR (email IS NOT NULL) OR (phone_number IS NOT NULL)))
+2. CHECK constraints,profiles.profiles_login_identifier_required,CHECK (((password_hash IS NULL) OR (email IS NOT NULL) OR (phone_number IS NOT NULL) OR (login_id IS NOT NULL)))
 2. CHECK constraints,room_assignments.room_assignments_deposit_amount_check,CHECK ((deposit_amount >= (0)::numeric))
 2. CHECK constraints,room_assignments.room_assignments_occupant_count_check,CHECK ((occupant_count >= 1))
 2. CHECK constraints,room_price_history.room_price_history_new_price_check,CHECK ((new_price >= (0)::numeric))
@@ -352,12 +353,13 @@ section,item,detail
 5. Indexes,idx_maintenance_tickets_room,CREATE INDEX idx_maintenance_tickets_room ON public.maintenance_tickets USING btree (room_id)
 5. Indexes,idx_maintenance_tickets_tenant,CREATE INDEX idx_maintenance_tickets_tenant ON public.maintenance_tickets USING btree (tenant_profile_id)
 5. Indexes,idx_notifications_recipient,"CREATE INDEX idx_notifications_recipient ON public.notifications USING btree (recipient_profile_id, is_read)"
-5. Indexes,idx_one_invoice_per_unit_per_month,"CREATE UNIQUE INDEX idx_one_invoice_per_unit_per_month ON public.monthly_income_records USING btree (room_id, invoice_number, year, month) WHERE (voided_at IS NULL)"
+5. Indexes,idx_one_invoice_per_unit_per_month,"CREATE UNIQUE INDEX idx_one_invoice_per_unit_per_month ON public.monthly_income_records USING btree (room_id, invoice_number, year, month) WHERE ((voided_at IS NULL) AND ((invoice_number)::text IS DISTINCT FROM 'Acknowledgement receipt'::text))"
 5. Indexes,idx_payments_bill,CREATE INDEX idx_payments_bill ON public.payments USING btree (bill_id)
 5. Indexes,idx_payments_room,CREATE INDEX idx_payments_room ON public.payments USING btree (room_id)
 5. Indexes,idx_payments_tenant,CREATE INDEX idx_payments_tenant ON public.payments USING btree (tenant_profile_id)
 5. Indexes,idx_price_history_room,CREATE INDEX idx_price_history_room ON public.room_price_history USING btree (room_id)
 5. Indexes,idx_profiles_email_lower,CREATE UNIQUE INDEX idx_profiles_email_lower ON public.profiles USING btree (lower((email)::text)) WHERE (email IS NOT NULL)
+5. Indexes,idx_profiles_login_id,"CREATE UNIQUE INDEX idx_profiles_login_id ON public.profiles USING btree (upper(regexp_replace((login_id)::text, '[^A-Za-z0-9]'::text, ''::text, 'g'::text))) WHERE (login_id IS NOT NULL)"
 5. Indexes,idx_profiles_phone_login,CREATE UNIQUE INDEX idx_profiles_phone_login ON public.profiles USING btree (normalize_ph_phone((phone_number)::text)) WHERE ((phone_number IS NOT NULL) AND (password_hash IS NOT NULL))
 5. Indexes,idx_profiles_role_status,"CREATE INDEX idx_profiles_role_status ON public.profiles USING btree (role, account_status)"
 5. Indexes,idx_room_assignments_room_active,"CREATE INDEX idx_room_assignments_room_active ON public.room_assignments USING btree (room_id, is_active)"

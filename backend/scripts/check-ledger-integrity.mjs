@@ -994,8 +994,19 @@ if (live.length) {
    * answers; every step down is a step that can never be silently undone.
    */
   const anniv = await rows(
-    'room_assignments?is_active=eq.true&select=room_id,anniversary_date,occupant_count'
+    'room_assignments?is_active=eq.true&select=room_id,start_date,anniversary_date,occupant_count'
   );
+  /**
+   * Only a ledger month inside THIS tenancy says anything about it. The ledger is
+   * keyed by unit, and a unit's newest month can predate the tenancy holding it
+   * now: on 2026-10-01 loydtest moved into PH (075), whose newest month is a
+   * former occupant's 2024 receipt, and both checks below counted that as the new
+   * tenancy's drift. Not keyed by tenant instead: 354 live rows carry none.
+   * Imported tenancies start on the 2026-07-01 placeholder, so their August and
+   * September months are still compared.
+   */
+  const ledgerIsThisTenancys = (a, led) =>
+    !a.start_date || led.key >= String(a.start_date).slice(0, 7);
   const newestPeriod = new Map();
   for (const r of income) {
     if (!r.room_id || !r.rent_period_start) continue;
@@ -1014,7 +1025,7 @@ if (live.length) {
   const drifted = [];
   for (const a of anniv) {
     const led = newestPeriod.get(a.room_id);
-    if (!led || !a.anniversary_date) continue;
+    if (!led || !a.anniversary_date || !ledgerIsThisTenancys(a, led)) continue;
     const systemDay = Number(String(a.anniversary_date).slice(8, 10));
     if (systemDay !== led.day) {
       const unit = rooms.find((r) => r.id === a.room_id)?.room_number ?? a.room_id;
@@ -1066,7 +1077,7 @@ if (live.length) {
   const occDrift = [];
   for (const a of anniv) {
     const led = newestPeriod.get(a.room_id);
-    if (!led || !Number.isFinite(led.occupants) || a.occupant_count == null) continue;
+    if (!led || !Number.isFinite(led.occupants) || a.occupant_count == null || !ledgerIsThisTenancys(a, led)) continue;
     if (Number(a.occupant_count) !== led.occupants) {
       const unit = rooms.find((r) => r.id === a.room_id)?.room_number ?? a.room_id;
       occDrift.push(
