@@ -49,7 +49,7 @@ import {
   AlertTriangle,
   Inbox,
   MessageSquare,
-  ListFilter,
+  SlidersHorizontal,
   RefreshCw,
 } from 'lucide-vue-next';
 
@@ -356,6 +356,11 @@ onUnmounted(() => {
             choices the chip row had, the current one checked. Each choice keeps
             `aria-pressed` - the list narrows one stream, it does not swap
             panels - and the button's own name says which one is in force.
+
+            SlidersHorizontal, the icon on every list's Filters button
+            (components/ui/ListToolbar.vue). It was ListFilter, a different
+            glyph for the same idea (Sean, 2026-10-01: "the filter icon is
+            different from the icon used on the dashboards").
           -->
           <div ref="filterRoot" class="relative">
             <button
@@ -371,7 +376,7 @@ onUnmounted(() => {
               aria-controls="notifications-filter"
               @click="isFilterOpen = !isFilterOpen"
             >
-              <ListFilter class="size-4" aria-hidden="true" />
+              <SlidersHorizontal class="size-4" aria-hidden="true" />
               <span
                 v-if="activeFilter !== 'all'"
                 class="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-tile"
