@@ -41,6 +41,7 @@ import {
 import { auditFromRequest, withoutCredentials } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { isAcknowledgementReceipt, normalizeInvoiceNumber } from '../utils/invoiceNumber.js';
+import { generateLoginId, LOGIN_ID_INDEX } from '../utils/loginId.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom, toCentavos, MONEY_DUST } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
@@ -539,7 +540,7 @@ router.get(
     const { data, error } = await db
       .from('profiles')
       .select(
-        'id, email, full_name, phone_number, emergency_contact_name, emergency_contact_phone, ' +
+        'id, email, full_name, phone_number, login_id, emergency_contact_name, emergency_contact_phone, ' +
           'occupation, facebook_url, role, account_status, last_login_at, created_at, ' +
           'room_assignments (id, is_active, start_date, end_date, anniversary_date, deposit_amount, occupant_count, rooms (id, room_number))'
       )
@@ -778,13 +779,16 @@ router.post(
      * administrator to relay in person; `must_change_password` (migration
      * 048) is what makes that handoff safe to be one-time.
      */
-    let passwordHash: string | null = null;
-    let temporaryPassword: string | null = null;
-    if (normalizedEmail || normalizedPhone) {
-      temporaryPassword = generateTemporaryPassword();
-      const bcrypt = (await import('bcryptjs')).default;
-      passwordHash = await bcrypt.hash(temporaryPassword, 12);
-    }
+    /**
+     * EVERY TENANT GETS A SIGN-IN NOW, WHETHER OR NOT AN EMAIL OR PHONE IS GIVEN
+     * (Sean, 2026-10-01; migration 073). The landlady moves someone in with
+     * their name; the login ID generated below is what they first sign in with,
+     * and they give their own email, phone and password at that first sign-in.
+     * Phone and email stay optional here and are no longer assumed to be theirs.
+     */
+    const temporaryPassword: string = generateTemporaryPassword();
+    const bcrypt = (await import('bcryptjs')).default;
+    const passwordHash: string = await bcrypt.hash(temporaryPassword, 12);
 
     /**
      * The unit is resolved BEFORE the person is created.
@@ -853,8 +857,11 @@ router.post(
     const newProfileId = randomUUID();
     const profileValues = {
       email: normalizedEmail ?? placeholderEmailFor(newProfileId),
-      must_change_password: passwordHash !== null,
+      must_change_password: true,
       password_hash: passwordHash,
+      // The first sign-in name the landlady hands over (073). A clash with
+      // another tenant's ID is retried below with a fresh one.
+      login_id: generateLoginId(),
       full_name: fullName,
       phone_number: normalizedPhone,
       emergency_contact_name: emergencyContactName || null,
@@ -877,19 +884,31 @@ router.post(
      * row, and `.maybeSingle()` returns null rather than a wrong success. That
      * is the double-click again, which this file has now met four times.
      */
-    const { data: profile, error: insertError } = promoteProfileId
-      ? await db
-          .from('profiles')
-          .update({ ...profileValues, updated_at: new Date().toISOString() })
-          .eq('id', promoteProfileId)
-          .eq('role', 'prospect')
-          .select('*')
-          .maybeSingle()
-      : await db
-          .from('profiles')
-          .insert({ id: newProfileId, ...profileValues })
-          .select('*')
-          .single();
+    let profile: any = null;
+    let insertError: { code?: string; message: string } | null = null;
+    for (let attempt = 0; ; attempt++) {
+      const result = promoteProfileId
+        ? await db
+            .from('profiles')
+            .update({ ...profileValues, updated_at: new Date().toISOString() })
+            .eq('id', promoteProfileId)
+            .eq('role', 'prospect')
+            .select('*')
+            .maybeSingle()
+        : await db
+            .from('profiles')
+            .insert({ id: newProfileId, ...profileValues })
+            .select('*')
+            .single();
+      profile = result.data;
+      insertError = result.error;
+      // Another tenant already holds this login ID: draw again (rare, 90,000 IDs).
+      if (uniqueViolationOn(insertError, LOGIN_ID_INDEX) && attempt < 5) {
+        profileValues.login_id = generateLoginId();
+        continue;
+      }
+      break;
+    }
 
     if (promoteProfileId && !insertError && !profile) {
       throw ApiError.conflict(
@@ -1451,7 +1470,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const { data: profile, error: profileError } = await db
       .from('profiles')
-      .select('id, full_name, role, account_status, email, phone_number')
+      .select('id, full_name, role, account_status, email, phone_number, login_id')
       .eq('id', req.params.profileId)
       .maybeSingle<{
         id: string;
@@ -1460,6 +1479,7 @@ router.post(
         account_status: string;
         email: string | null;
         phone_number: string | null;
+        login_id: string | null;
       }>();
 
     if (profileError) throw ApiError.internal(profileError.message);
@@ -1478,13 +1498,9 @@ router.post(
           'Set the account back to active first if they are living here again.'
       );
     }
-    // A placeholder email (migration 067) is not something to sign in with.
-    if (isPlaceholderEmail(profile.email) && !profile.phone_number) {
-      throw ApiError.badRequest(
-        `${profile.full_name} has no email or phone number on file, so there is nothing to sign in with. ` +
-          'Add a phone number to their record first.'
-      );
-    }
+    // Every tenant signs in with a login ID (073); one without gets one here,
+    // so a reset never fails for want of something to sign in with.
+    let loginId = profile.login_id ?? generateLoginId();
 
     const temporaryPassword = generateTemporaryPassword();
     const bcrypt = (await import('bcryptjs')).default;
@@ -1494,20 +1510,32 @@ router.post(
     // `.eq('role', 'tenant')` again on the write: the read above and this update
     // are separate statements, and the guard is what keeps a role change in
     // between from turning this into a reset of something else.
-    const { data: updated, error: updateError } = await db
-      .from('profiles')
-      .update({
-        password_hash: passwordHash,
-        must_change_password: true,
-        password_changed_at: now,
-        failed_login_count: 0,
-        locked_until: null,
-        updated_at: now,
-      })
-      .eq('id', profile.id)
-      .eq('role', 'tenant')
-      .select('id')
-      .maybeSingle();
+    let updated: { id: string } | null = null;
+    let updateError: { code?: string; message: string } | null = null;
+    for (let attempt = 0; ; attempt++) {
+      const result = await db
+        .from('profiles')
+        .update({
+          password_hash: passwordHash,
+          must_change_password: true,
+          password_changed_at: now,
+          failed_login_count: 0,
+          locked_until: null,
+          login_id: loginId,
+          updated_at: now,
+        })
+        .eq('id', profile.id)
+        .eq('role', 'tenant')
+        .select('id')
+        .maybeSingle();
+      updated = result.data as { id: string } | null;
+      updateError = result.error;
+      if (!profile.login_id && uniqueViolationOn(updateError, LOGIN_ID_INDEX) && attempt < 5) {
+        loginId = generateLoginId();
+        continue;
+      }
+      break;
+    }
 
     if (updateError) throw ApiError.internal(updateError.message);
     if (!updated) {
@@ -1534,6 +1562,8 @@ router.post(
       data: {
         profileId: profile.id,
         fullName: profile.full_name,
+        // What they sign in with, to hand over with the password (073).
+        loginId,
         // The only place this plaintext value ever exists outside memory.
         temporaryPassword,
       },
