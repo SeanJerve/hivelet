@@ -177,6 +177,30 @@ const yearButton = ref<HTMLButtonElement | null>(null);
 const yearOptions = computed(() => [String(CURRENT_YEAR), ...availableHistoricalYears.value]);
 const shownYear = computed(() => (isHistoricalMode.value ? selectedArchiveYear.value : String(CURRENT_YEAR)));
 
+/**
+ * Which edge of the year button the menu hangs from (Sean, 2026-10-01: on a
+ * phone "the menu is under the year but aligned too far right").
+ *
+ * It always hung from the button's left edge. On a 375px phone the button
+ * wraps to the right of the second row, so the 160px menu ran from x=227 to
+ * 387, off the screen by 12px; at 320px the same button sits at the left and
+ * the left edge is right. So it is measured on open: the left edge when the
+ * menu fits that way, otherwise the right edge, under the button either way.
+ * `flush: 'post'` measures the menu as rendered, before it is painted.
+ */
+const yearMenuAlignEnd = ref(false);
+watch(
+  isYearMenuOpen,
+  (open) => {
+    if (!open) return;
+    const button = yearButton.value?.getBoundingClientRect();
+    const menu = document.getElementById('overview-year-menu');
+    if (!button || !menu) return;
+    yearMenuAlignEnd.value = button.left + menu.offsetWidth > document.documentElement.clientWidth - 8;
+  },
+  { flush: 'post' }
+);
+
 function closeYearMenu(returnFocus = false) {
   isYearMenuOpen.value = false;
   if (returnFocus) yearButton.value?.focus();
@@ -736,19 +760,19 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             PillSelect's timing when it was written and was left behind at
             the old numbers when PillSelect moved; same shape, same trigger,
             so it gets the same fix.
+
+            Now `ws-pop` (index.css), the one transition PillSelect and both
+            header menus share, so it cannot drift from them again (Sean,
+            2026-10-01). Reduced motion keeps its fade there too.
           -->
-          <Transition
-            enter-active-class="transition duration-[220ms] ease-[var(--ease-out)]"
-            enter-from-class="motion-safe:scale-95 opacity-0 motion-safe:-translate-y-1"
-            enter-to-class="motion-safe:scale-100 opacity-100 motion-safe:translate-y-0"
-            leave-active-class="transition duration-[160ms] ease-[var(--ease-out)]"
-            leave-from-class="motion-safe:scale-100 opacity-100 motion-safe:translate-y-0"
-            leave-to-class="motion-safe:scale-95 opacity-0 motion-safe:-translate-y-1"
-          >
+          <Transition name="ws-pop">
             <div
               v-if="isYearMenuOpen"
               id="overview-year-menu"
-              class="absolute left-0 top-full z-30 mt-2 min-w-40 origin-top-left rounded-2xl bg-tile p-1.5 shadow-lift border border-line"
+              :class="[
+                'absolute top-full z-30 mt-2 min-w-40 rounded-2xl bg-tile p-1.5 shadow-lift border border-line',
+                yearMenuAlignEnd ? 'right-0 origin-top-right' : 'left-0 origin-top-left',
+              ]"
             >
               <button
                 v-for="y in yearOptions"
