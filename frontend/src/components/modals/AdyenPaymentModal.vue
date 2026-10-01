@@ -17,6 +17,7 @@ import { AdyenCheckout, Dropin } from '@adyen/adyen-web';
 import type { PaymentCompletedData, PaymentFailedData } from '@adyen/adyen-web';
 import '@adyen/adyen-web/styles/adyen.css';
 import { api, ApiRequestError } from '@/lib/api';
+import { playSound } from '@/lib/sounds';
 import {
   ShieldCheck,
   X,
@@ -331,6 +332,8 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     // from still being recorded.
     isCompleted.value = true;
     isRecorded.value = Boolean(res.recorded);
+    // The panel is the confirmation, so the ping is here (Sean, 2026-10-01).
+    playSound('notify');
     emit('success', sessionId);
   } catch (err: unknown) {
     errorMessage.value =

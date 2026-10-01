@@ -17,6 +17,7 @@ import { api } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { shrinkPhoto } from '@/lib/shrinkPhoto';
+import { playSound } from '@/lib/sounds';
 import {
   Send,
   CheckCircle2,
@@ -28,12 +29,13 @@ import {
   ChevronDown,
   MessageSquarePlus,
   ListChecks,
-  Search,
 } from 'lucide-vue-next';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { ToolbarFilter } from '@/components/ui/listToolbar';
 import { useToast } from '@/lib/useToast';
 
 const { showToast } = useToast();
@@ -151,10 +153,13 @@ function isTicketExpanded(ticketId: string): boolean {
 
 /** The room the ticket is filed against — derived server-side data, never typed by the tenant. */
 const activeRoomId = ref<string | null>(null);
-const activeRoomNumber = ref<string>('');
 
 // Status filter chips. 'All' is the default so nothing is hidden on first paint.
 const statusFilter = ref<'All' | 'Open' | 'Resolved'>('All');
+/** The toolbar's one filter (components/ui/ListToolbar.vue); `statusFilter` stays the state. */
+const ticketFilters = computed<ToolbarFilter[]>(() => [
+  { key: 'status', label: 'Show', value: statusFilter.value, defaultValue: 'All', options: ticketFilterOptions },
+]);
 /**
  * A repair goes Submitted, then In progress once a technician is attending it,
  * then Done. The resident sees where theirs has got to rather than one word.
@@ -390,6 +395,9 @@ async function postNote() {
       timestamp: new Date().toISOString(),
     });
     newNoteText.value = '';
+    // Confirmed in the thread, not by a toast, so the ping is played here
+    // (Sean, 2026-10-01: major actions ping).
+    playSound('notify');
   } catch (err: any) {
     console.error('Failed to post ticket comment:', err);
     /**
@@ -460,7 +468,6 @@ async function fetchActiveRoom() {
        * was the case it could not see.
        */
       activeRoomId.value = activeRoom.rooms?.id ?? '';
-      activeRoomNumber.value = activeRoom.rooms?.room_number ?? '';
     }
   } catch (err: any) {
     console.error('Failed to resolve active room:', err?.message || err);
@@ -620,6 +627,8 @@ async function handleTicketSubmit() {
     ticketNotice.value = created?.attachmentWarning
       ? `"${ticketTitle.value.trim()}" was sent to the landlady. ${created.attachmentWarning}`
       : `"${ticketTitle.value.trim()}" was sent to the landlady.`;
+    // The notice above is the confirmation, not a toast, so it pings here (Sean, 2026-10-01).
+    playSound('notify');
     ticketTitle.value = '';
     ticketDescription.value = '';
     ticketCategory.value = 'Plumbing';
@@ -681,13 +690,10 @@ function formatDateTime(iso: string) {
       <!-- Page header -->
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
+        <!-- No subtitle that restates the page (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Repairs
         </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          Tell the landlady what is wrong<span v-if="activeRoomNumber"> in unit {{ activeRoomNumber }}</span>, and
-          follow what happens next.
-        </p>
       </div>
 
       <div
@@ -718,9 +724,6 @@ function formatDateTime(iso: string) {
         <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-5">
           <div class="border-b border-line p-5 sm:p-6">
             <h2 class="text-base font-semibold text-ink">Report it</h2>
-            <p class="mt-1 text-sm leading-6 text-ink-soft">
-              This goes straight to the landlady.
-            </p>
           </div>
 
           <!-- `p-5 sm:p-6`, matching the header strip directly above it. -->
@@ -903,30 +906,15 @@ function formatDateTime(iso: string) {
             </p>
           </div>
 
-          <!-- Wraps rather than sitting in one fixed row: at `lg` this panel is
-               7 of 12 columns, and a fixed 20rem search plus a 13rem select ran
-               66px past its right edge at 1024. -->
-          <div class="flex flex-wrap items-center gap-3 border-b border-line px-5 py-4 sm:px-6">
-            <div class="relative min-w-0 flex-1 basis-60">
-              <!-- left-4/pl-11, which is what the comment above claims: the
-                   dispatch board's search box uses that inset, and this one was
-                   2px off it. -->
-              <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-              <label for="ticket-search" class="sr-only">Search your requests</label>
-              <input
-                id="ticket-search"
-                v-model="searchQuery"
-                type="search"
-                placeholder="Search"
-                class="ws-input w-full pl-11 pr-4 sm:text-sm"
-              />
-            </div>
-
-            <PillSelect
-              v-model="statusFilter"
-              :options="ticketFilterOptions"
-              aria-label="Show which requests"
-              width-class="w-full sm:w-52"
+          <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
+               Sean, 2026-10-01): search, and the filter button beside it
+               holding which requests to show. -->
+          <div class="border-b border-line px-5 py-4 sm:px-6">
+            <ListToolbar
+              v-model:search="searchQuery"
+              search-label="Search your requests"
+              :filters="ticketFilters"
+              @apply="(v) => (statusFilter = v.status === 'Open' || v.status === 'Resolved' ? v.status : 'All')"
             />
           </div>
 
@@ -973,11 +961,10 @@ function formatDateTime(iso: string) {
               <p class="text-sm font-semibold text-ink">
                 {{ tickets.length === 0 ? 'No requests yet' : 'Nothing to show' }}
               </p>
-              <p class="text-sm text-ink-soft break-words">
+              <!-- "No requests yet" needs no second line telling her to use the form beside it. -->
+              <p v-if="tickets.length > 0" class="text-sm text-ink-soft break-words">
                 {{
-                  tickets.length === 0
-                    ? 'Send one with the form and it will appear here.'
-                    : searchQuery.trim()
+                  searchQuery.trim()
                       ? `Nothing matches "${searchQuery.trim()}".`
                       : statusFilter === 'Resolved'
                         ? 'None of your requests is done yet.'

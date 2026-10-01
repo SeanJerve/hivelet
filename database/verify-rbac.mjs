@@ -207,7 +207,6 @@ async function testGuest() {
     ['admin tenant directory', '/admin/tenants'],
     ['admin income ledger (BR-048)', '/admin/income-records'],
     ['admin expense ledger (BR-048)', '/admin/expense-entries'],
-    ['admin audit logs', '/admin/audit-logs'],
     ['tenant bills', '/tenant/my-bills'],
     ['tenant tickets', '/tenant/my-tickets'],
   ]) {
@@ -251,7 +250,6 @@ async function testTenant() {
     ['all payments', '/admin/payments'],
     ['income ledger (BR-048)', '/admin/income-records'],
     ['expense ledger (BR-048)', '/admin/expense-entries'],
-    ['audit logs', '/admin/audit-logs'],
     ['all tickets', '/admin/tickets'],
     ['inquiry inbox', '/admin/inquiries'],
   ]) {
@@ -320,7 +318,6 @@ async function testAdmin() {
     ['expense categories', '/admin/expense-categories'],
     ['tickets', '/admin/tickets'],
     ['inquiries', '/admin/inquiries'],
-    ['audit logs', '/admin/audit-logs'],
   ]) {
     const result = await apiCall(endpoint, { token });
     check(`admin CAN read ${label}`, result.status === 200, `got HTTP ${result.status}`);
@@ -332,9 +329,9 @@ async function testAdmin() {
     tenants.payload.data.some((t) => 'password_hash' in t);
   check('admin payload never exposes password_hash', !leaksHash);
 
-  const audit = await apiCall('/admin/audit-logs?limit=5', { token });
-  check('login was written to the audit trail (FR-029)',
-    Array.isArray(audit.payload?.data) && audit.payload.data.length > 0);
+  // "login was written to the audit trail" went with GET /admin/audit-logs
+  // (Sean, 2026-10-01): the Activity screen and its endpoint were removed from
+  // the site. The row is still written; it is read in the database, not here.
 }
 
 async function testBadTokens() {
@@ -348,7 +345,7 @@ async function testBadTokens() {
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
     'eyJzdWIiOiIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiLCJyb2xlIjoiYWRtaW4ifQ.' +
     'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-  const forgedAdmin = await apiCall('/admin/audit-logs', { token: wrongSecret });
+  const forgedAdmin = await apiCall('/admin/income-records', { token: wrongSecret });
   check('token signed with a foreign secret rejected', forgedAdmin.status === 401,
     `got HTTP ${forgedAdmin.status}`);
 }

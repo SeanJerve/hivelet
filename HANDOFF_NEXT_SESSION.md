@@ -19,7 +19,7 @@ Read `CLAUDE.md` first. Its five rules apply to everything here.
 3. Lanes: `docs/` and `frontend/src/` are this machine's. `backend/src/` and `database/migrations/` are
    Sean's. If something below needs a backend change, keep it small, pull first, and commit it on its own.
 4. Do **not** run `check:all`, `check:api` or `check:relations`. They sign in as the owner and write to
-   her Activity log. Run the suites that do not sign in: `check:canon`, `check:rules`, `check:endpoints`,
+   her audit log (kept in the database; the Activity screen was removed on 1 Oct). Run the suites that do not sign in: `check:canon`, `check:rules`, `check:endpoints`,
    `check:writes`, `check:fields`, `check:columns`, `check:ledger`, plus the frontend build.
 5. Claude cannot type passwords or sign in. Anything that needs a signed-in person goes to a person. Say
    exactly what to click.

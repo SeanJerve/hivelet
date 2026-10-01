@@ -101,7 +101,8 @@ broke.
 
 **Screen names below are the ones in the sidebar**, read from `AppSidebar.vue` on 2026-09-28
 rather than remembered: *Overview, Rooms and rates, Tenants, Monthly Income, Monthly Expenses,
-Repairs, Inquiries, Activity* — and for a resident, *Overview, Payments and billing, Repairs, My
+Repairs, Inquiries* (Activity was removed on 1 October 2026; the audit trail is kept in the
+database for the developers) — and for a resident, *Overview, Payments and billing, Repairs, My
 details*. **If the redesign
 renames any of them, these steps need renaming with it.**
 
