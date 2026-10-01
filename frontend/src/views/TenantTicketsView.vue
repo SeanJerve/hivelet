@@ -28,12 +28,13 @@ import {
   ChevronDown,
   MessageSquarePlus,
   ListChecks,
-  Search,
 } from 'lucide-vue-next';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { ToolbarFilter } from '@/components/ui/listToolbar';
 import { useToast } from '@/lib/useToast';
 
 const { showToast } = useToast();
@@ -155,6 +156,10 @@ const activeRoomNumber = ref<string>('');
 
 // Status filter chips. 'All' is the default so nothing is hidden on first paint.
 const statusFilter = ref<'All' | 'Open' | 'Resolved'>('All');
+/** The toolbar's one filter (components/ui/ListToolbar.vue); `statusFilter` stays the state. */
+const ticketFilters = computed<ToolbarFilter[]>(() => [
+  { key: 'status', label: 'Show', value: statusFilter.value, defaultValue: 'All', options: ticketFilterOptions },
+]);
 /**
  * A repair goes Submitted, then In progress once a technician is attending it,
  * then Done. The resident sees where theirs has got to rather than one word.
@@ -903,30 +908,15 @@ function formatDateTime(iso: string) {
             </p>
           </div>
 
-          <!-- Wraps rather than sitting in one fixed row: at `lg` this panel is
-               7 of 12 columns, and a fixed 20rem search plus a 13rem select ran
-               66px past its right edge at 1024. -->
-          <div class="flex flex-wrap items-center gap-3 border-b border-line px-5 py-4 sm:px-6">
-            <div class="relative min-w-0 flex-1 basis-60">
-              <!-- left-4/pl-11, which is what the comment above claims: the
-                   dispatch board's search box uses that inset, and this one was
-                   2px off it. -->
-              <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-              <label for="ticket-search" class="sr-only">Search your requests</label>
-              <input
-                id="ticket-search"
-                v-model="searchQuery"
-                type="search"
-                placeholder="Search"
-                class="ws-input w-full pl-11 pr-4 sm:text-sm"
-              />
-            </div>
-
-            <PillSelect
-              v-model="statusFilter"
-              :options="ticketFilterOptions"
-              aria-label="Show which requests"
-              width-class="w-full sm:w-52"
+          <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
+               Sean, 2026-10-01): search, and the filter button beside it
+               holding which requests to show. -->
+          <div class="border-b border-line px-5 py-4 sm:px-6">
+            <ListToolbar
+              v-model:search="searchQuery"
+              search-label="Search your requests"
+              :filters="ticketFilters"
+              @apply="(v) => (statusFilter = v.status === 'Open' || v.status === 'Resolved' ? v.status : 'All')"
             />
           </div>
 
