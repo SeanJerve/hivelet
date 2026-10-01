@@ -118,6 +118,8 @@
   --color-overdue-strong: var(--overdue-strong);
   --color-scrim: var(--scrim);
   --color-dim: var(--dim);
+  --color-series-night: var(--series-night);
+  --color-series-soft: var(--series-soft);
   --radius-tile: 1.5rem;
 
   /* Motion.
@@ -256,6 +258,12 @@
      the dark theme's night tile is a raised green-grey, so they lightened the
      page instead of dimming it. In light this is `--night` exactly. */
   --dim: #0f1b15;
+  /* Two chart series (SegmentBar, the expenses key): `--night` and
+     `--brand-soft` exactly in light. They were those two tokens, and in the
+     dark theme both are dark surfaces, so a segment drawn in either all but
+     vanished into the tile under it (Sean, 2026-10-01). */
+  --series-night: #0f1b15;
+  --series-soft: #e2f0e7;
 
   /* Elevation. The values `--shadow-card` and `--shadow-lift` always had; they
      moved here from `@theme` so the dark theme can deepen them. */
@@ -389,6 +397,9 @@
 
   --scrim: rgb(0 0 0 / 0.6);
   --dim: #000000;
+  /* Lightest first: near-white, pale mint, then --brand, --brand-bright. */
+  --series-night: #d5dfd9;
+  --series-soft: #a3d9bc;
   --elev-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
   --elev-lift: 0 2px 4px rgba(0, 0, 0, 0.35), 0 18px 42px -18px rgba(0, 0, 0, 0.7);
 

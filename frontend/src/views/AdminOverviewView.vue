@@ -1123,7 +1123,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                  gives Net, and the table the expenses (Sean, 2026-10-01). -->
             <ul class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-soft">
               <li class="flex items-center gap-1.5">
-                <span aria-hidden="true" class="size-2.5 rounded-full bg-night" />
+                <span aria-hidden="true" class="size-2.5 rounded-full bg-series-night" />
                 Operating expenses
               </li>
               <li class="flex items-center gap-1.5">
