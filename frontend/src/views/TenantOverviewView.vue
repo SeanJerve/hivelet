@@ -446,7 +446,10 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
       // What is owed today; a period opening within the week is payable, not yet owed.
       tenantData.value.totalAmountDue =
         standing.totalDue > 0 ? standing.totalDue : standing.perPeriod.totalAmount;
-      tenantData.value.dueDate = formatDateOnly(first.dueDate, longDate);
+      // A past period with no payment entered shows the period it is for, not a
+      // "Due" date already gone by (Sean, 2026-10-01: less to read).
+      tenantData.value.dueDate = standing.status === 'overdue' ? '' : formatDateOnly(first.dueDate, longDate);
+      tenantData.value.billPeriodDisplay = `${shortDate(first.start)} to ${shortDate(first.end, true)}`;
       tenantData.value.dueDateRaw = first.dueDate;
       fromLedgerOnly.value = true;
       standingStatus.value = standing.status;
@@ -455,15 +458,14 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
       tenantData.value.nextDueDateDisplay = '';
       const periods = standing.periodsDue;
       owedSummary.value =
-        (standing.paidThrough
-          ? `Your recorded payments cover rent up to ${tenantData.value.paidThroughDisplay}. `
-          : 'No payment is on record for this tenancy yet. ') +
-        (standing.status === 'overdue'
-          ? `${periods > 1 ? `${periods} months after that are` : 'The month after that is'} not entered yet. ` +
-            'If you have paid the landlady, it appears here once she enters it. '
-          : '') +
-        `Paying now covers ${formatDateOnly(first.start, longDate)} to ` +
-        `${formatDateOnly(first.end, longDate)} (${peso(standing.perPeriod.totalAmount, 2)}).`;
+        standing.status === 'overdue'
+          ? (standing.paidThrough
+              ? `Payments entered up to ${tenantData.value.paidThroughDisplay}${periods > 1 ? ` (${periods} months since)` : ''}. `
+              : 'No payment entered yet. ') +
+            'If you have paid, it shows here once the landlady enters it.'
+          : standing.paidThrough
+            ? `Payments entered up to ${tenantData.value.paidThroughDisplay}.`
+            : 'No payment entered yet.';
     } else if (standing) {
       // Settled: her records reach past today and the next period is more than
       // a week off. Nothing to pay, so no Pay button.
@@ -617,7 +619,7 @@ const statusTone = computed(() => {
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
       <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" class="list-reveal-item order-1 md:order-none md:col-span-2 xl:col-span-5" style="animation-delay: 0ms">
-        <template v-if="!tenantDataLoadFailed && !isSettled" #actions>
+        <template v-if="!tenantDataLoadFailed && !isSettled && !(fromLedgerOnly && standingStatus === 'overdue')" #actions>
           <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
         </template>
         <UnavailableNote
@@ -728,9 +730,14 @@ const statusTone = computed(() => {
           <!-- The unit's rate is a fact worth having. It is labelled as the
                rate, not printed in the shape of a bill. -->
           <p v-if="tenantData.unitRent" class="text-sm leading-6 text-ink-soft">
-            Your rent is
-            <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent, 2) }}</strong>
-            a month. Your bill will show here when it is ready.
+            <template v-if="tenantData.waterFee > 0">
+              Rent {{ peso(tenantData.unitRent, 2) }} and water {{ peso(tenantData.waterFee, 2) }}:
+              <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent + tenantData.waterFee, 2) }}</strong> a month.
+            </template>
+            <template v-else>
+              Your rent is <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent, 2) }}</strong> a month.
+            </template>
+            A bill shows here when one is raised.
           </p>
         </div>
         <template v-else>
