@@ -128,6 +128,15 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
+  /* The curve for things that ARRIVE - a page, a dialog, the drawer, a
+     header menu (Sean, 2026-10-01: "everything feels so instant").
+     `--ease-out` above is a quint: measured in Chrome, a 200ms dialog on it was
+     93% of the way there 89ms in, so every entrance read as a two-frame cut.
+     This is the cubic: 58% at a quarter of the time, 88% at half, so the
+     second half of the motion is still on screen. Controls answering a press
+     keep `--ease-out`; that SHOULD be instant. */
+  --ease-out-soft: cubic-bezier(0.33, 1, 0.68, 1);
+
   /* The named "easeOutBack" curve (easings.dev) - overshoots the target by
      design before settling, rather than approaching it and stopping. Reserved
      for a chart or figure arriving on first paint (a bar growing to its
@@ -1311,29 +1320,49 @@ html:has(> body[style*='overflow: hidden']) {
 /* -------------------------------------------------------------- page-move --
  * `App.vue`'s `<RouterView>` used to swap pages with no transition, so every
  * navigation - Login to Overview, one admin section to the next - was a
- * single-frame jump cut. This is the crossfade that replaces it: opacity
- * only, both directions at once rather than one waiting for the other,
- * because an Operate surface is explicitly told not to make a reader wait
- * through page-load choreography on a navigation they do dozens of times a
- * session. 110ms in, 80ms out - the exit is the faster of the two, same
- * asymmetry as everything else in this file, because nobody is looking at
- * the page they are leaving.
+ * single-frame jump cut. This is the crossfade that replaces it, both
+ * directions at once rather than one waiting for the other, because an
+ * Operate surface is explicitly told not to make a reader wait through
+ * page-load choreography on a navigation they do dozens of times a session.
+ * 220ms in, 100ms out - the exit is the faster of the two, same asymmetry as
+ * everything else in this file, because nobody is looking at the page they
+ * are leaving.
  *
- * `position: absolute` on the leaving page only, for the ~80ms it is still
+ * `position: absolute` on the leaving page only, for the ~100ms it is still
  * on screen. Vue mounts the entering page into normal flow immediately
  * without waiting for the leave to finish, so without this the two pages'
  * heights stack for a moment and the layout jumps. Absolute positioning
  * takes the leaving one out of flow so only the entering page's height
  * counts.
- */
-/*
- * 200ms/140ms, not the original 110ms/80ms - asked for directly, after
- * confirming live that the faster pair read as an instant cut rather than a
- * crossfade at normal viewing distance. Same enter-slower-than-leave ratio,
- * still both under emil-design-eng's 300ms UI ceiling.
+ *
+ * WHY IT STILL LOOKED LIKE A JUMP CUT (Sean, 2026-10-01: "the Overview arrow
+ * to Monthly Income goes instantly"). Measured with a screencast of Overview
+ * to Monthly Income at 1366px:
+ *
+ *   1. The crossfade was a pair of CSS TRANSITIONS, and Vue starts a
+ *      transition by swapping classes on the next animation frame. Mounting
+ *      the new page is 200-450ms of main-thread work (long tasks at +3, +269
+ *      and +355ms after the click), so that frame did not come until the work
+ *      was done: the old page sat at full opacity, the new one at zero, and
+ *      then both changed at once.
+ *   2. When the frame did come, `--ease-out` (a quint) finished 90% of a
+ *      200ms fade in about two frames.
+ *   3. `inset-inline: 0` put the leaving page at `<main>`'s padding edge, so
+ *      at `lg` it jumped 24px left for the whole of (1).
+ *
+ * So: KEYFRAME ANIMATIONS, which start in the very frame the class lands and
+ * run on the compositor while the main thread is busy mounting; the softer
+ * `--ease-out-soft`; and App.vue's `pinLeavingPage` holds the leaving page
+ * exactly where it was drawn. The new page fades in and rises 8px, the old
+ * one fades out quickly underneath. No `out-in`: that would add the two
+ * durations together on every navigation, and `scrollToHash` in the router
+ * needs the new page in the document when it runs.
+ *
+ * Not on the very first load: App.vue switches CSS on only after the first
+ * page is drawn, so opening the app does not fade in from nothing.
  */
 .page-move-enter-active {
-  transition: opacity 0.2s var(--ease-out);
+  animation: ws-page-in 0.22s var(--ease-out-soft) backwards;
 }
 /*
  * The leaving page comes out of flow so the two pages crossfade in place
@@ -1345,20 +1374,37 @@ html:has(> body[style*='overflow: hidden']) {
  * initial containing block, jumped to the top-left of the viewport, and faded
  * out over the header and sidebar. The rule was correct and the precondition
  * it rested on was not supplied, which is this project's recurring shape.
+ * Its `top`, `left` and `width` are set inline by `pinLeavingPage`.
+ *
+ * `forwards`, so it stays invisible for the frame between the animation
+ * ending and Vue removing it, instead of flashing back in.
  */
 .page-move-leave-active {
-  transition: opacity 0.14s var(--ease-out);
+  animation: ws-fade-out 0.1s var(--ease-out-soft) forwards;
   position: absolute;
-  inset-inline: 0;
+  pointer-events: none;
 }
-.page-move-enter-from,
-.page-move-leave-to {
-  opacity: 0;
+@keyframes ws-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
+@keyframes ws-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ws-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+/* Reduced motion keeps the fade and drops the rise. A fade is not vestibular
+   motion; it is also what tells the reader the page changed at all. */
 @media (prefers-reduced-motion: reduce) {
-  .page-move-enter-active,
-  .page-move-leave-active {
-    transition: none;
+  .page-move-enter-active {
+    animation-name: ws-fade-in;
   }
 }
 
@@ -1693,7 +1739,7 @@ dialog.ws-dialog[open]::backdrop {
  * A per-row control - the edit pencils on every register - that stays out of
  * the way until you reach for it.
  *
- * ⚠ THE HIDING IS GATED ON THE POINTER, AND THAT GATE IS THE WHOLE POINT.
+ * âš  THE HIDING IS GATED ON THE POINTER, AND THAT GATE IS THE WHOLE POINT.
  *
  * These were written as `opacity-0 group-hover:opacity-100`, which is correct
  * on a desktop and **removes the control entirely on a phone**: a touch screen
