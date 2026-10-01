@@ -5,11 +5,16 @@ import router from './router'
 import { setAuthFailureHandler } from './lib/api'
 import { handleAuthFailure, MOVED_OUT_FLAG } from './lib/authStore'
 import { installStaleVersionRecovery } from './lib/staleVersion'
+import { installTheme } from './lib/theme'
 import './index.css'
 
 // An open page that outlived a deploy loads the new version on its next
 // navigation instead of going dead (lib/staleVersion.ts).
 installStaleVersionRecovery(router)
+
+// Dark mode: public/theme-init.js set the theme before the first paint; this
+// keeps it following the OS and the Appearance control (lib/theme.ts).
+installTheme()
 
 /**
  * A dead session now redirects on its own.
