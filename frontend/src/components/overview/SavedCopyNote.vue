@@ -18,6 +18,11 @@ const when = computed(() => savedAtLabel(props.savedAt));
     class="ws-reveal flex items-start gap-2.5 rounded-tile bg-verify-soft p-4 text-sm font-medium leading-6 text-verify"
   >
     <WifiOff class="mt-1 size-4 shrink-0" aria-hidden="true" />
-    <span>Offline. Showing what was saved on {{ when }}. Paying and other actions need a connection.</span>
+    <!--
+      Only the time. App.vue's "No connection" bar above already says nothing can be saved or
+      paid, and saying it twice was the clutter Sean asked to cut (2026-10-01). Pay is hidden
+      while this shows, so nothing here invites a tap that cannot work.
+    -->
+    <span>Saved figures from {{ when }}.</span>
   </p>
 </template>
