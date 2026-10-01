@@ -128,6 +128,15 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
+  /* The curve for things that ARRIVE - a page, a dialog, the drawer, a
+     header menu (Sean, 2026-10-01: "everything feels so instant").
+     `--ease-out` above is a quint: measured in Chrome, a 200ms dialog on it was
+     93% of the way there 89ms in, so every entrance read as a two-frame cut.
+     This is the cubic: 58% at a quarter of the time, 88% at half, so the
+     second half of the motion is still on screen. Controls answering a press
+     keep `--ease-out`; that SHOULD be instant. */
+  --ease-out-soft: cubic-bezier(0.33, 1, 0.68, 1);
+
   /* The named "easeOutBack" curve (easings.dev) - overshoots the target by
      design before settling, rather than approaching it and stopping. Reserved
      for a chart or figure arriving on first paint (a bar growing to its
@@ -1311,29 +1320,49 @@ html:has(> body[style*='overflow: hidden']) {
 /* -------------------------------------------------------------- page-move --
  * `App.vue`'s `<RouterView>` used to swap pages with no transition, so every
  * navigation - Login to Overview, one admin section to the next - was a
- * single-frame jump cut. This is the crossfade that replaces it: opacity
- * only, both directions at once rather than one waiting for the other,
- * because an Operate surface is explicitly told not to make a reader wait
- * through page-load choreography on a navigation they do dozens of times a
- * session. 110ms in, 80ms out - the exit is the faster of the two, same
- * asymmetry as everything else in this file, because nobody is looking at
- * the page they are leaving.
+ * single-frame jump cut. This is the crossfade that replaces it, both
+ * directions at once rather than one waiting for the other, because an
+ * Operate surface is explicitly told not to make a reader wait through
+ * page-load choreography on a navigation they do dozens of times a session.
+ * 220ms in, 100ms out - the exit is the faster of the two, same asymmetry as
+ * everything else in this file, because nobody is looking at the page they
+ * are leaving.
  *
- * `position: absolute` on the leaving page only, for the ~80ms it is still
+ * `position: absolute` on the leaving page only, for the ~100ms it is still
  * on screen. Vue mounts the entering page into normal flow immediately
  * without waiting for the leave to finish, so without this the two pages'
  * heights stack for a moment and the layout jumps. Absolute positioning
  * takes the leaving one out of flow so only the entering page's height
  * counts.
- */
-/*
- * 200ms/140ms, not the original 110ms/80ms - asked for directly, after
- * confirming live that the faster pair read as an instant cut rather than a
- * crossfade at normal viewing distance. Same enter-slower-than-leave ratio,
- * still both under emil-design-eng's 300ms UI ceiling.
+ *
+ * WHY IT STILL LOOKED LIKE A JUMP CUT (Sean, 2026-10-01: "the Overview arrow
+ * to Monthly Income goes instantly"). Measured with a screencast of Overview
+ * to Monthly Income at 1366px:
+ *
+ *   1. The crossfade was a pair of CSS TRANSITIONS, and Vue starts a
+ *      transition by swapping classes on the next animation frame. Mounting
+ *      the new page is 200-450ms of main-thread work (long tasks at +3, +269
+ *      and +355ms after the click), so that frame did not come until the work
+ *      was done: the old page sat at full opacity, the new one at zero, and
+ *      then both changed at once.
+ *   2. When the frame did come, `--ease-out` (a quint) finished 90% of a
+ *      200ms fade in about two frames.
+ *   3. `inset-inline: 0` put the leaving page at `<main>`'s padding edge, so
+ *      at `lg` it jumped 24px left for the whole of (1).
+ *
+ * So: KEYFRAME ANIMATIONS, which start in the very frame the class lands and
+ * run on the compositor while the main thread is busy mounting; the softer
+ * `--ease-out-soft`; and App.vue's `pinLeavingPage` holds the leaving page
+ * exactly where it was drawn. The new page fades in and rises 8px, the old
+ * one fades out quickly underneath. No `out-in`: that would add the two
+ * durations together on every navigation, and `scrollToHash` in the router
+ * needs the new page in the document when it runs.
+ *
+ * Not on the very first load: App.vue switches CSS on only after the first
+ * page is drawn, so opening the app does not fade in from nothing.
  */
 .page-move-enter-active {
-  transition: opacity 0.2s var(--ease-out);
+  animation: ws-page-in 0.22s var(--ease-out-soft) backwards;
 }
 /*
  * The leaving page comes out of flow so the two pages crossfade in place
@@ -1345,20 +1374,146 @@ html:has(> body[style*='overflow: hidden']) {
  * initial containing block, jumped to the top-left of the viewport, and faded
  * out over the header and sidebar. The rule was correct and the precondition
  * it rested on was not supplied, which is this project's recurring shape.
+ * Its `top`, `left` and `width` are set inline by `pinLeavingPage`.
+ *
+ * `forwards`, so it stays invisible for the frame between the animation
+ * ending and Vue removing it, instead of flashing back in.
  */
 .page-move-leave-active {
-  transition: opacity 0.14s var(--ease-out);
+  animation: ws-fade-out 0.1s var(--ease-out-soft) forwards;
   position: absolute;
-  inset-inline: 0;
+  pointer-events: none;
 }
-.page-move-enter-from,
-.page-move-leave-to {
+@keyframes ws-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes ws-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ws-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+/* Reduced motion keeps the fade and drops the rise. A fade is not vestibular
+   motion; it is also what tells the reader the page changed at all. */
+@media (prefers-reduced-motion: reduce) {
+  .page-move-enter-active {
+    animation-name: ws-fade-in;
+  }
+}
+
+/* ----------------------------------------------------------- drawer, scrim --
+ * The phone navigation drawer in AppSidebar.vue (Sean, 2026-10-01: "it just
+ * pops from the left"). The panel slides in from the left edge over 280ms
+ * while the scrim fades in behind it, and slides back out over 200ms.
+ *
+ * Keyframes rather than transitions for the reason `.page-move` gives: a tap
+ * on a drawer link closes the drawer AND starts mounting the next page, and a
+ * transition's start waits for a frame that the mount holds up. An animation
+ * starts in the frame its class lands and runs on the compositor.
+ *
+ * `pointer-events: none` while leaving: for those 200ms the panel and scrim
+ * are only a picture of a closed drawer, and a tap on the page behind them
+ * should land on the page.
+ *
+ * Reduced motion: both fade; the panel does not travel.
+ */
+.ws-drawer-enter-active {
+  animation: ws-drawer-in 0.28s var(--ease-out-soft) both;
+}
+.ws-drawer-leave-active {
+  animation: ws-drawer-out 0.2s var(--ease-out-soft) forwards;
+  pointer-events: none;
+}
+.ws-scrim-enter-active {
+  animation: ws-fade-in 0.28s var(--ease-out-soft) both;
+}
+.ws-scrim-leave-active {
+  animation: ws-fade-out 0.2s var(--ease-out-soft) forwards;
+  pointer-events: none;
+}
+@keyframes ws-drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes ws-drawer-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-drawer-enter-active {
+    animation-name: ws-fade-in;
+  }
+  .ws-drawer-leave-active {
+    animation-name: ws-fade-out;
+  }
+}
+
+/* ---------------------------------------------------------------- ws-pop --
+ * A menu that drops from the control that opened it: the account menu and the
+ * notifications panel in the header, and the notifications filter list.
+ * `<Transition name="ws-pop">` plus an `origin-*` class on the menu naming the
+ * corner it grows from.
+ *
+ * ONE RULE FOR BOTH HEADER MENUS, AND THAT IS THE FIX (Sean, 2026-10-01: "the
+ * user dropdown and the notification dropdown don't appear the same way").
+ * They were written separately and had drifted: the notifications panel grew
+ * from 0.96 over 180ms with `@starting-style`, and the account menu's
+ * `transition-[opacity,transform]` named `transform` while its utilities
+ * (`scale-95`, `-translate-y-2`) set the individual `scale` and `translate`
+ * properties - so only its opacity ever moved. Measured per frame in Chrome:
+ * one panel grew, the other only faded.
+ *
+ * Transitions, not keyframes: both menus sit inside a `.ws-focus` root, whose
+ * reduced-motion rule cuts every keyframe animation to 0.01ms but keeps
+ * opacity transitions - so the fade survives there, and the scale and the
+ * 6px drop are removed below instead. Out is quicker than in, and takes no
+ * pointer events, so a tap just after closing lands on the page.
+ */
+.ws-pop-enter-active {
+  transition:
+    opacity 0.2s var(--ease-out-soft),
+    scale 0.2s var(--ease-out-soft),
+    translate 0.2s var(--ease-out-soft);
+}
+.ws-pop-leave-active {
+  transition:
+    opacity 0.14s var(--ease-out-soft),
+    scale 0.14s var(--ease-out-soft),
+    translate 0.14s var(--ease-out-soft);
+  pointer-events: none;
+}
+.ws-pop-enter-from,
+.ws-pop-leave-to {
+  opacity: 0;
+  scale: 0.96;
+  translate: 0 -6px;
+}
+/* A plain fade, for what sits behind a menu (the notifications scrim). */
+.ws-fade-enter-active {
+  transition: opacity 0.2s var(--ease-out-soft);
+}
+.ws-fade-leave-active {
+  transition: opacity 0.14s var(--ease-out-soft);
+  pointer-events: none;
+}
+.ws-fade-enter-from,
+.ws-fade-leave-to {
   opacity: 0;
 }
 @media (prefers-reduced-motion: reduce) {
-  .page-move-enter-active,
-  .page-move-leave-active {
-    transition: none;
+  .ws-pop-enter-from,
+  .ws-pop-leave-to {
+    scale: none;
+    translate: none;
   }
 }
 
@@ -1483,28 +1638,15 @@ html:has(> body[style*='overflow: hidden']) {
  * it reads as a jump rather than as something opening - the reader loses where
  * it came from and has to re-find the page behind it.
  *
- * ENTRY ONLY FOR `WsModal`, AND THAT IS A CONSTRAINT RATHER THAN A CHOICE.
- * Every screen mounts it with `v-if`, so the component is gone from the tree
- * the moment it closes; a Vue <Transition> inside it would never get to run a
- * leave. `@starting-style` needs no wrapper and no change to the twelve
- * screens that open one. The native <dialog> prompts below DO get both
- * directions, because `allow-discrete` keeps them rendered while they leave.
+ * `WsModal` opens and closes from WsModal.vue, with Web Animations (Sean,
+ * 2026-10-01: "the modals just pop up"). It was `@starting-style` rules here,
+ * and they did run in Chrome - but on the quint `--ease-out` from a 0.97
+ * start, so the panel was 93% open 89ms in and the whole thing read as a pop;
+ * and `@starting-style` skips every iPhone before Safari 17.5. One set of
+ * numbers for every dialog, there and below: 240ms in on `--ease-out-soft`,
+ * rising 12px from 0.96 - not from scale(0), which looks like it came out of
+ * a point - and 160ms back out.
  *
- * 200ms in, and it starts from 0.97 and 8px rather than from nothing: an
- * element that grows from scale(0) looks like it came out of a point, and
- * nothing does.
- */
-.ws-modal-overlay {
-  opacity: 1;
-  transition: opacity 0.2s var(--ease-out);
-}
-@starting-style {
-  .ws-modal-overlay {
-    opacity: 0;
-  }
-}
-
-/*
  * At rest `none`, not `1` and `0 0` (audit 2026-10-01). Any value of `scale` or
  * `translate` other than `none` - the identity values included - makes the
  * panel the containing block for `position: fixed` inside it, and
@@ -1512,25 +1654,13 @@ html:has(> body[style*='overflow: hidden']) {
  * INSIDE this panel. That confirmation's "full-screen" overlay was therefore
  * only as big as the form behind it and scrolled with it: on a 320px phone its
  * title and X sat above the top of the screen, and in landscape the figures
- * she is asked to check were out of sight. `none` still animates from the
- * starting style below (it interpolates as the identity), so the opening is
- * unchanged; once it settles, a nested dialog covers the screen again.
+ * she is asked to check were out of sight. The same is true of `transform`,
+ * which is why WsModal's opening animation keeps no `fill`: once it finishes
+ * the panel carries no transform, and a nested dialog covers the screen again.
  */
 .ws-modal-panel {
-  opacity: 1;
   scale: none;
   translate: none;
-  transition:
-    opacity 0.2s var(--ease-out),
-    scale 0.2s var(--ease-out),
-    translate 0.2s var(--ease-out);
-}
-@starting-style {
-  .ws-modal-panel {
-    opacity: 0;
-    scale: 0.97;
-    translate: 0 8px;
-  }
 }
 
 /*
@@ -1538,39 +1668,44 @@ html:has(> body[style*='overflow: hidden']) {
  * `display` and `overlay` is what lets the closing frame render at all -
  * without it the element is removed before any of this can play.
  *
- * 0.2s, matching `.ws-modal-panel`/`.ws-modal-overlay` just above - same job
- * (a modal arriving over a backdrop), so it gets the same weight rather than
- * the 0.15s it shipped with, which sat below emil-design-eng's 200-500ms
- * modal range entirely rather than just at the fast end of it.
+ * The same motion as WsModal, so a dialog opens the same way on the public
+ * site as in the workspace. The 160ms sits on the closed state because that is
+ * the state a closing dialog transitions TO; `[open]` sets the 240ms opening.
  */
 dialog.ws-dialog {
   opacity: 0;
-  scale: 0.97;
+  scale: 0.96;
+  translate: 0 12px;
   transition:
-    opacity 0.2s var(--ease-out),
-    scale 0.2s var(--ease-out),
-    overlay 0.2s allow-discrete,
-    display 0.2s allow-discrete;
+    opacity 0.16s var(--ease-out-soft),
+    scale 0.16s var(--ease-out-soft),
+    translate 0.16s var(--ease-out-soft),
+    overlay 0.16s allow-discrete,
+    display 0.16s allow-discrete;
 }
 dialog.ws-dialog[open] {
   opacity: 1;
   scale: 1;
+  translate: 0 0;
+  transition-duration: 0.24s;
 }
 @starting-style {
   dialog.ws-dialog[open] {
     opacity: 0;
-    scale: 0.97;
+    scale: 0.96;
+    translate: 0 12px;
   }
 }
 dialog.ws-dialog::backdrop {
   opacity: 0;
   transition:
-    opacity 0.2s var(--ease-out),
-    overlay 0.2s allow-discrete,
-    display 0.2s allow-discrete;
+    opacity 0.16s var(--ease-out-soft),
+    overlay 0.16s allow-discrete,
+    display 0.16s allow-discrete;
 }
 dialog.ws-dialog[open]::backdrop {
   opacity: 1;
+  transition-duration: 0.24s;
 }
 @starting-style {
   dialog.ws-dialog[open]::backdrop {
@@ -1581,19 +1716,15 @@ dialog.ws-dialog[open]::backdrop {
 /* Reduced motion keeps the fade and drops the travel, the same bargain the
    press makes. A fade is not vestibular motion; a slide is. */
 @media (prefers-reduced-motion: reduce) {
-  .ws-modal-panel,
   dialog.ws-dialog,
   dialog.ws-dialog[open] {
     scale: none;
     translate: none;
   }
   @starting-style {
-    .ws-modal-panel {
-      scale: none;
-      translate: none;
-    }
     dialog.ws-dialog[open] {
       scale: none;
+      translate: none;
     }
   }
 }
@@ -1693,7 +1824,7 @@ dialog.ws-dialog[open]::backdrop {
  * A per-row control - the edit pencils on every register - that stays out of
  * the way until you reach for it.
  *
- * ⚠ THE HIDING IS GATED ON THE POINTER, AND THAT GATE IS THE WHOLE POINT.
+ * âš  THE HIDING IS GATED ON THE POINTER, AND THAT GATE IS THE WHOLE POINT.
  *
  * These were written as `opacity-0 group-hover:opacity-100`, which is correct
  * on a desktop and **removes the control entirely on a phone**: a touch screen

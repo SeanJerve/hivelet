@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
-import { useRoute, RouterView } from 'vue-router';
+import { useRoute, useRouter, RouterView } from 'vue-router';
 import { WifiOff } from 'lucide-vue-next';
 import { useToast } from '@/lib/useToast';
 import { isAuthenticated, mustChangePassword, mustCompleteContact, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
@@ -19,7 +19,40 @@ import { startLiveUpdates, stopLiveUpdates } from '@/lib/live';
 watch(isAuthenticated, (signedIn) => (signedIn ? startLiveUpdates() : stopLiveUpdates()), { immediate: true });
 
 const route = useRoute();
+const router = useRouter();
 const { showToast } = useToast();
+
+/**
+ * Page transitions run from the second page on, never on opening the app
+ * (Sean, 2026-10-01). The first page replaces the placeholder below, which the
+ * `<Transition>` would otherwise treat as a navigation and fade in from
+ * nothing - a slower first paint for no reason. CSS goes on one frame after
+ * the first navigation has settled, by which point that swap has happened.
+ */
+const animatePages = ref(false);
+router.isReady().then(() => requestAnimationFrame(() => (animatePages.value = true)));
+
+/**
+ * Hold the leaving page exactly where it was drawn while it fades.
+ *
+ * `.page-move-leave-active` takes it out of flow with `position: absolute`,
+ * and an absolute box with no offsets of its own lands on `<main>`'s padding
+ * edge: at `lg` (`pl-6`) the old page jumped 24px left for as long as the new
+ * one took to mount - measured up to 400ms with a screencast, Sean 2026-10-01.
+ * Measured before the class lands, so this is the in-flow position. Margins
+ * are subtracted because `left`/`top` place the margin edge, not the border.
+ */
+function pinLeavingPage(el: Element) {
+  const page = el as HTMLElement;
+  const host = page.offsetParent ?? page.parentElement;
+  if (!host) return;
+  const p = page.getBoundingClientRect();
+  const h = host.getBoundingClientRect();
+  const cs = getComputedStyle(page);
+  page.style.top = `${p.top - h.top - (parseFloat(cs.marginTop) || 0)}px`;
+  page.style.left = `${p.left - h.left - (parseFloat(cs.marginLeft) || 0)}px`;
+  page.style.width = `${p.width}px`;
+}
 
 // Offline network status tracking (BR-031, FR-030)
 const isOffline = ref(!navigator.onLine);
@@ -186,8 +219,9 @@ const hidesGlobalHeader = computed(() =>
           entering, which is the "page-load choreography" Operate surfaces
           are told to avoid - every navigation would cost the sum of both
           durations instead of the longer of the two. This crossfades both
-          ways at once, opacity only. See `.page-move` in index.css for the
-          timing and the reduced-motion path.
+          ways at once, and the new page rises 8px as it arrives (Sean,
+          2026-10-01). See `.page-move` in index.css for the timing, why it
+          is keyframes rather than transitions, and the reduced-motion path.
 
           ⚠ `relative` ON `<main>` ABOVE IS LOAD-BEARING, AND ITS ABSENCE IS
           WHAT MADE NAVIGATION LOOK BROKEN.
@@ -227,7 +261,7 @@ const hidesGlobalHeader = computed(() =>
           page renders; later navigations always have a component.
         -->
         <RouterView v-slot="{ Component }">
-          <Transition name="page-move">
+          <Transition name="page-move" :css="animatePages" @before-leave="pinLeavingPage">
             <component :is="Component" v-if="Component" />
             <div v-else class="min-h-screen supports-[min-height:100dvh]:min-h-dvh" aria-hidden="true" />
           </Transition>
