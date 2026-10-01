@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, nextTick } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
@@ -120,17 +120,21 @@ router.afterEach((to) => {
 })
 
 /*
- * The first-load loader in index.html (Sean, 2026-10-01) leaves once the first
- * page has actually rendered: `router.isReady()` waits for the first route's
- * own code and guards, and the frame after that is the page painted. Taking it
- * down at `app.mount` alone would uncover the empty placeholder App.vue holds
- * open while the route's chunk downloads - the same blank wait it is covering.
+ * The loader in index.html (Sean, 2026-10-01), shown on the first load and
+ * every full reload, pull-to-refresh included, leaves once the first page has
+ * actually rendered: `router.isReady()` waits for the first route's own code
+ * and guards, `nextTick` for RouterView to have rendered that page into the
+ * DOM, and the frame after that is it painted. Taking it down at `app.mount`
+ * alone would uncover the header over the empty placeholder App.vue holds open
+ * while the route's chunk downloads - the "white page and the headers" it is
+ * there to cover.
  *
- * It goes whichever way the first navigation ends: a rejected one (a route
- * chunk that failed to download) or a script error during start-up still
- * uncovers the page rather than leaving the loader over it. If this file never
- * runs at all, index.html's own `splash-giveup` animation clears it at 15s.
+ * It can never trap anyone: it also goes if the first navigation fails (a
+ * route chunk that did not download), on a script error during start-up, and
+ * at 8s regardless (SPLASH_CAP_MS). If this file never runs at all,
+ * index.html's own `splash-giveup` animation hides it at 8s too.
  */
+const SPLASH_CAP_MS = 8000
 function dismissSplash() {
   const splash = document.getElementById('app-splash')
   if (!splash || splash.classList.contains('is-leaving')) return
@@ -138,10 +142,11 @@ function dismissSplash() {
   const remove = () => splash.remove()
   splash.addEventListener('transitionend', remove, { once: true })
   // `transitionend` never fires when there is nothing to animate (a background
-  // tab, the 15s fallback already run), so the node goes on a timer as well.
+  // tab, index.html's 8s fallback already run), so the node goes on a timer as well.
   window.setTimeout(remove, 400)
 }
 window.addEventListener('error', dismissSplash, { once: true })
+window.setTimeout(dismissSplash, SPLASH_CAP_MS)
 
 const app = createApp(App)
 app.use(createPinia())
@@ -150,4 +155,5 @@ app.mount('#app')
 router
   .isReady()
   .catch(() => {})
+  .then(() => nextTick())
   .finally(() => requestAnimationFrame(dismissSplash))
