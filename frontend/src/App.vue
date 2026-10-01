@@ -76,7 +76,8 @@ function updateOnlineStatus() {
    * a reader would take most literally if it mattered to them.
    */
   if (wasOffline && !isOffline.value) {
-    showToast('success', 'Back online', 'You are connected again. Reload the page if what you see looks out of date.');
+    // Not an action of hers, so no ping (Sean, 2026-10-01).
+    showToast('success', 'Back online', 'You are connected again. Reload the page if what you see looks out of date.', 4000, { sound: false });
   }
 }
 

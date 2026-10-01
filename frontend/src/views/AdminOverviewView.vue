@@ -714,10 +714,9 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </template>
           <template v-else>{{ selectedArchiveYear }} archive</template>
         </h1>
-        <p v-if="isHistoricalMode" class="mt-1 text-sm text-ink-soft">
-          Every entry recorded for January to December {{ selectedArchiveYear }}.
-        </p>
-        <p v-else-if="ledgerNote" class="mt-1 text-sm text-ink-soft">{{ ledgerNote }}</p>
+        <!-- No "Every entry recorded for January to December" under an archive
+             year: the heading says it (Sean, 2026-10-01, fewer words). -->
+        <p v-if="!isHistoricalMode && ledgerNote" class="mt-1 text-sm text-ink-soft">{{ ledgerNote }}</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
@@ -871,6 +870,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
             </span>
           </p>
+          <!-- No "Nothing is waiting for verification" under a 0: the count
+               is the answer (Sean, 2026-10-01: figures at a glance). -->
           <ul v-if="pendingPreview.length" class="mt-4 divide-y divide-white/10">
             <li
               v-for="(p, i) in pendingPreview"
@@ -887,7 +888,6 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               <span class="text-sm font-semibold tabular">{{ peso(p.amount, 2) }}</span>
             </li>
           </ul>
-          <p v-else class="mt-2 text-sm text-on-night-soft">Nothing is waiting for verification.</p>
           <router-link v-if="pendingCount > 0" to="/admin/income?tab=verify" class="pill-btn-light mt-4">
             Review payments
           </router-link>
@@ -945,9 +945,10 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               it is a small integer, not a peso figure.
             -->
             <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl">{{ peso(currentMonthRevenue) }}</p>
+            <!-- The count only; "usually entered a week or two after" was
+                 explanation she does not need on her own screen (Sean, 2026-10-01). -->
             <p class="mt-2 text-sm text-ink-soft">
-              {{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }} entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }} so far.
-              Payments are usually entered a week or two after they are received.
+              {{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }} entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }} so far
             </p>
           </div>
           <div class="mt-auto flex items-baseline justify-between gap-3 border-t border-line pt-4 text-sm">
@@ -1077,14 +1078,16 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               ]"
               :label="`Of ${peso(liveLatestCashMonth.grossIncome)} in rent and water, ${peso(liveLatestCashMonth.expenses)} went to operating expenses and ${peso(liveLatestCashMonth.noi)} remained.`"
             />
+            <!-- A key, not a second set of figures: the heading above already
+                 gives Net, and the table the expenses (Sean, 2026-10-01). -->
             <ul class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-soft">
               <li class="flex items-center gap-1.5">
                 <span aria-hidden="true" class="size-2.5 rounded-full bg-night" />
-                Operating expenses {{ peso(liveLatestCashMonth.expenses) }}
+                Operating expenses
               </li>
               <li class="flex items-center gap-1.5">
                 <span aria-hidden="true" class="size-2.5 rounded-full bg-brand-bright" />
-                Net {{ peso(liveLatestCashMonth.noi) }}
+                Net
               </li>
             </ul>
           </template>
@@ -1140,8 +1143,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </table>
           </div>
           <p class="text-xs leading-5 text-ink-faint">
-            Personal costs for the Main House and Other are not subtracted. This year so far:
-            {{ peso(livePersonalTotal) }}.
+            Personal costs (Main House, Other), not subtracted: {{ peso(livePersonalTotal) }} this year
           </p>
         </template>
       </OverviewTile>
@@ -1218,8 +1220,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualExpenseTotal) }}</p>
           <p class="mt-2 text-sm text-ink-soft">
-            {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}.
-            Leaves out {{ peso(historicalAnnualPersonalTotal) }} of personal costs for the Main House and Other.
+            {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }},
+            not counting {{ peso(historicalAnnualPersonalTotal) }} personal (Main House, Other)
           </p>
         </div>
       </OverviewTile>

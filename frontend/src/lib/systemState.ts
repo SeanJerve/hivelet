@@ -17,7 +17,7 @@ import {
 } from './canonicalUnits';
 import { api } from './api';
 import { isAdmin, isAuthenticated } from './authStore';
-import { useToast } from './useToast';
+import { useToast, type ToastOptions } from './useToast';
 import { formatDateOnly } from './propertyDate';
 import { realEmail } from './contactDetails';
 
@@ -617,8 +617,13 @@ export const isOnsitePaymentModalOpen = ref(false);
 // "Mark resolved" action called `resolveTicket()`, which wrote to the in-memory array and to
 // nothing else; it is gone too.
 
-export function showToast(type: 'success' | 'warning' | 'error' | 'info', title: string, message: string) {
-  triggerToast(type, title, message);
+export function showToast(
+  type: 'success' | 'warning' | 'error' | 'info',
+  title: string,
+  message: string,
+  options: ToastOptions = {}
+) {
+  triggerToast(type, title, message, undefined, options);
 }
 
 export function updateRoomRate(unitCode: string, newRate: number, maxOccupants: number, desc?: string, occupants?: number, type?: string, billingRule?: string, amenitiesStr?: string) {

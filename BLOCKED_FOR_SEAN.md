@@ -33,6 +33,25 @@ thing did not work" is not.
 
 ## Open
 
+### 2026-10-01 — Activity screen removed from the site (done; a record, nothing to do)
+
+- **What:** Sean's request, on the adviser's ruling that the audit trail is for the programming
+  side. Removed: route `/admin/audit-logs` (now the not-found page), the sidebar's **Activity**
+  entry, `frontend/src/views/AuditLogsView.vue`, the Activity Log workbook in
+  `lib/downloadReport.ts`, and the backend `GET /admin/audit-logs`, `GET /admin/reports/audit.xlsx`
+  and `services/auditTrailExport.ts` (nothing else called them).
+- **Kept:** the `audit_logs` table, its data, migration 002's revoke, and every audit write.
+  `PERMISSIONS.AUDIT_READ` stays in `config/rbac.ts`, unused.
+- **Also changed:** `check:api` lost its audit-trail block (5 checks + meta totals) and the
+  audit-logs entries in its admin and no-token lists; `verify-rbac` lost "login was written to the
+  audit trail" and its forged-token probe now uses `/admin/income-records`. **Expect check:api's
+  pass count to drop by 8** (1 admin read, 5 category checks, 1 totals check, 1 no-token check).
+  Neither was run here (live database). Appendix K §9, Chapter 4 §4.2.6, CONTINUE_HERE 0.0 and
+  the judgement log §3.9 say the trail is kept in the database for the developers.
+- **Not changed:** dated records (testing-day results, test cases A-33 and S-09, Table 9) and the
+  promo video's own Activity scene in `video/src` (only its capture shot was dropped).
+- **Raised:** 2026-10-01 by Claude for Sean
+
 ### B-93 — apply migration 072 (acknowledgement receipts) · **DONE 2026-10-01: 072 and 074 applied**
 
 > **Applied by Claude through the Supabase MCP connection on Sean's standing instruction** (1 Oct:

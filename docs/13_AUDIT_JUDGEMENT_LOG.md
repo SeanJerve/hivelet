@@ -2175,6 +2175,21 @@ harvesting and the trade inverts. The change is one line: return
 check below the password compare; that is a different change and it is the wrong
 one.
 
+### 3.9 The audit trail is written but not shown (1 October 2026)
+
+The Activity screen (`/admin/audit-logs`), its sidebar entry, `GET /admin/audit-logs` and
+`GET /admin/reports/audit.xlsx` were **removed on purpose** (Sean, 2026-10-01). The capstone
+adviser ruled the trail a development record that panelists would flag on the site; it belongs to
+the programming side.
+
+**What did not change:** `audit_logs`, migration 002's `REVOKE UPDATE, DELETE`, and every
+`auditFromRequest` / `recordAudit` write. The record of who did what is as complete as before; the
+developers read it in the database. FR-029 and BR-028 are still met by the writing, not by a screen.
+
+**Do not** stop writing audit rows because nothing displays them, and do not re-add the screen
+without the adviser's say. If it ever comes back, it comes back with its endpoint (`check:endpoints`
+fails a route nothing calls), and the old screen is in the parent of the commit "Remove the Activity screen from the site".
+
 ---
 
 ## 4. Traps that cost real time

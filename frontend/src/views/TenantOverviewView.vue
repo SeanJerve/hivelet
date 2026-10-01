@@ -15,6 +15,7 @@ import { floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
+import { playSound } from '@/lib/sounds';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -294,7 +295,9 @@ onMounted(async () => {
 
   if (statusParam === 'success' && refParam) {
     submissionNotice.value = `Your GCash payment (reference ${refParam}) was submitted. It counts as paid once the landlady verifies it.`;
-    showToast('success', 'Payment submitted', `GCash payment ${refParam} is waiting for verification.`);
+    // The notice above says it, and stays; a toast saying the same thing
+    // beside it went (Sean, 2026-10-01). The ping is still the confirmation.
+    playSound('notify');
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (statusParam === 'cancelled') {
     showToast('info', 'Payment cancelled', 'The online payment was cancelled before it was completed.');
@@ -760,7 +763,6 @@ const statusTone = computed(() => {
             <template v-else>
               Your rent is <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent, 2) }}</strong> a month.
             </template>
-            A bill shows here when one is raised.
           </p>
         </div>
         <template v-else>
@@ -807,9 +809,8 @@ const statusTone = computed(() => {
       </OverviewTile>
 
       <OverviewTile tone="night" title="Repairs" class="list-reveal-item order-2 md:order-none xl:col-span-3" style="animation-delay: 60ms">
-        <p class="text-sm leading-6 text-on-night-soft">
-          Tell the landlady what needs fixing in your unit, then follow the request until it is done.
-        </p>
+        <!-- The button says it; the sentence above it explained the obvious
+             (Sean, 2026-10-01, fewer words). -->
         <router-link to="/tenant/tickets" class="pill-btn-light mt-auto self-start">
           <Wrench class="size-4" aria-hidden="true" />
           Request a repair

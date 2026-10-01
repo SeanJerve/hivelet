@@ -35,7 +35,6 @@ const IncomeCollectionsView = () => import('@/views/IncomeCollectionsView.vue');
 const ExpensesLedgerView = () => import('@/views/ExpensesLedgerView.vue');
 const MaintenanceDispatchView = () => import('@/views/MaintenanceDispatchView.vue');
 const InquiriesView = () => import('@/views/InquiriesView.vue');
-const AuditLogsView = () => import('@/views/AuditLogsView.vue');
 const TenantOverviewView = () => import('@/views/TenantOverviewView.vue');
 const TenantPaymentsView = () => import('@/views/TenantPaymentsView.vue');
 const TenantTicketsView = () => import('@/views/TenantTicketsView.vue');
@@ -132,12 +131,9 @@ const routes: RouteRecordRaw[] = [
     component: InquiriesView,
     meta: { roles: ['admin'], label: 'inquiries' },
   },
-  {
-    path: '/admin/audit-logs',
-    name: 'AdminAuditLogs',
-    component: AuditLogsView,
-    meta: { roles: ['admin'], label: 'the activity log' },
-  },
+  // No /admin/audit-logs (Sean, 2026-10-01): the adviser ruled the Activity log a
+  // developer's record, not part of the site, so the address is a not-found page.
+  // audit_logs is still written by the server and read in the database.
 
   // Legacy basis aliases
   { path: '/basis', redirect: '/admin/overview' },

@@ -45,7 +45,6 @@ import { generateLoginId, LOGIN_ID_INDEX } from '../utils/loginId.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom, toCentavos, MONEY_DUST } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
-import { buildAuditTrailWorkbook, type AuditCategory } from '../services/auditTrailExport.js';
 import { buildTenantHistoryWorkbook } from '../services/tenantHistoryExport.js';
 import { money, occupantCount, isoDate, shortText, unitCode, uuid, queryInt } from '../utils/validators.js';
 
@@ -1543,7 +1542,7 @@ router.post(
     }
 
     // AUTH_PASSWORD_CHANGE rather than a new action name: it is the action the
-    // Activity page already knows how to show, and the note says who did it.
+    // audit record already uses for a password, and the note says who did it.
     await auditFromRequest(req, {
       action: 'AUTH_PASSWORD_CHANGE',
       entityType: 'PROFILE',
@@ -2435,53 +2434,13 @@ router.get(
 );
 
 /**
- * GET /api/admin/reports/audit.xlsx?category=business|auth|all&limit=N
- *
- * FR-029, BR-028. The trail left the system as a CSV while both financial
- * ledgers left as workbooks - the weakest format for the one artifact whose
- * whole claim is that it can be trusted, and the worst case for CSV besides:
- * `previous_values` and `new_values` are JSON, and every comma and quote in
- * them is a chance to shift a column and change what the record appears to say.
- *
- * The export itself is audited, like the other two.
- */
-router.get(
-  '/admin/reports/audit.xlsx',
-  requirePermission(PERMISSIONS.AUDIT_READ),
-  asyncHandler(async (req, res) => {
-    const raw = String(req.query.category ?? 'business');
-    const category: AuditCategory =
-      raw === 'auth' || raw === 'all' || raw === 'business' || raw === 'export' ? raw : 'business';
-    const limit = Number(req.query.limit ?? 500);
-
-    const { workbook, rowCount } = await buildAuditTrailWorkbook(category, limit);
-
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader('Content-Disposition', attachmentHeader('audit', category));
-
-    await auditFromRequest(req, {
-      action: 'LEDGER_EXPORT',
-      entityType: 'AUDIT_LOG',
-      entityId: category,
-      newValues: { export: 'xlsx', trail: category, limit, rows: rowCount },
-    });
-
-    await workbook.xlsx.write(res);
-    res.end();
-  })
-);
-
-/**
  * GET /api/admin/reports/tenants.xlsx?year=YYYY[&month=M]
  *
  * The Tenants page's history (Year, and Month when chosen) as a workbook: who
  * paid for each unit then, from her receipts, with the same names the screen
  * shows (services/tenantHistoryExport.ts, utils/tenantHistory.ts). Read-only,
  * behind the income ledger's own permission because that is what it reads,
- * and audited like the other three downloads (Sean, 2026-09-30).
+ * and audited like the other two downloads (Sean, 2026-09-30).
  */
 router.get(
   '/admin/reports/tenants.xlsx',
@@ -4758,97 +4717,18 @@ router.delete(
 );
 
 /* ========================================================================== *
- * AUDIT TRAIL — FR-029, Section 20 (administrator-only)
+ * AUDIT TRAIL - written, not served (Sean, 2026-10-01)
  * ========================================================================== */
 
-router.get(
-  '/admin/audit-logs',
-  requirePermission(PERMISSIONS.AUDIT_READ),
-  asyncHandler(async (req, res) => {
-    const limit = queryInt(req.query.limit, { fieldName: 'limit', min: 1, max: 500 }) ?? 100;
-
-    /**
-     * `category` filters BEFORE the row limit, which is the whole point.
-     *
-     * 1,700 of the 2,221 rows in this table are `AUTH_ACCESS_DENIED`, nearly all
-     * of them produced by a bug in our own frontend that fired six
-     * administrator-only requests on every page load regardless of who was signed
-     * in. That is fixed, but `audit_logs` is append-only - migration 002 revokes
-     * DELETE from every role including this one - so the rows are permanent.
-     *
-     * Filtering in the browser could not work: the last 100 rows are ALL
-     * authentication events, so a client-side "business events" filter returned
-     * nothing at all. The database has to do the filtering.
-     *
-     *   business - what was actually done to the records
-     *   auth     - sign-ins, sign-outs and refused requests
-     *   export   - downloads of a ledger. A read; it changes nothing
-     *   (absent) - everything, newest first
-     *
-     * **`export` was split out of `business` on 2026-09-19, and it is the same
-     * defect as the paragraph above, one category over.** `LEDGER_EXPORT` does
-     * not begin with `AUTH_`, so every one of them landed in the business
-     * bucket - and the verification suites export workbooks on every run.
-     * Counted on the day: **1,581 of the 1,715 business rows were
-     * `LEDGER_EXPORT`, 92%**, leaving 134 real events. The default limit is 100,
-     * newest first, so the administrator's first page was entirely exports and
-     * the rows describing what was actually done to her records were off the
-     * end of it. Exactly what the AUTH filter exists to prevent.
-     *
-     * The tab is labelled *"Done to the records"*. An export does nothing to
-     * them, so this is what that label already promised rather than a new
-     * definition. The rows are still written and still readable - auditing who
-     * downloaded the ledger is a real access record - they are simply not
-     * counted as a change.
-     */
-    const category = typeof req.query.category === 'string' ? req.query.category : undefined;
-
-    let query = db
-      .from('audit_logs')
-      .select('*, profiles:actor_profile_id (id, full_name, role)');
-
-    if (category === 'business') {
-      query = query.not('action', 'like', 'AUTH\_%').neq('action', 'LEDGER_EXPORT');
-    } else if (category === 'auth') query = query.like('action', 'AUTH\_%');
-    else if (category === 'export') query = query.eq('action', 'LEDGER_EXPORT');
-
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw ApiError.internal(error.message);
-
-    // Totals for the whole table, so the tab labels are not limited to the window.
-    const counted = await db
-      .from('audit_logs')
-      .select('id', { head: true, count: 'exact' })
-      .like('action', 'AUTH\_%');
-    const exported = await db
-      .from('audit_logs')
-      .select('id', { head: true, count: 'exact' })
-      .eq('action', 'LEDGER_EXPORT');
-    const total = await db
-      .from('audit_logs')
-      .select('id', { head: true, count: 'exact' });
-
-    const authTotal = counted.count ?? 0;
-    const exportTotal = exported.count ?? 0;
-    const grandTotal = total.count ?? 0;
-
-    res.status(200).json({
-      success: true,
-      data: data ?? [],
-      meta: {
-        authTotal,
-        exportTotal,
-        // What is left once sign-ins and downloads are taken out: the events
-        // the tab actually claims to list.
-        businessTotal: grandTotal - authTotal - exportTotal,
-        grandTotal,
-      },
-    });
-  })
-);
+/*
+ * GET /admin/audit-logs and GET /admin/reports/audit.xlsx were removed with the
+ * Activity screen they served: the capstone adviser ruled the audit trail a
+ * developer's record, not part of the site the panel evaluates. Every handler
+ * still writes its row through auditFromRequest (services/auditService.ts) and
+ * audit_logs is untouched; the developers read it in the database. A GET left
+ * here with no screen calling it would fail check:endpoints, and is one more
+ * administrator-only door to keep guarded for nothing.
+ */
 
 /* ========================================================================== *
  * NOTIFICATIONS & REAL-TIME ALERTS — FR-027, Section 16 & 22
@@ -4878,8 +4758,7 @@ router.get(
      * returns exactly `{ data: payload.data, meta: payload.meta }` - every other
      * top-level key is dropped on the floor. This endpoint sent `totalUnread` as
      * a sibling of `data`, so the number never reached the browser at all, no
-     * matter which helper called it. `/admin/audit-logs` already does this
-     * correctly with `meta.businessTotal`; this one did not.
+     * matter which helper called it.
      */
     res.status(200).json({
       success: true,

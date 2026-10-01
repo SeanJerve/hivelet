@@ -158,8 +158,8 @@ Do not go back to hex literals in components.
 
 **Renaming a screen has a cost in another file.** `TESTING_REHEARSAL.md` walks 26 steps by
 **sidebar label**, read out of `AppSidebar.vue` rather than remembered (as of 2026-09-28):
-*Overview, Rooms and rates, Tenants, Monthly Income, Monthly Expenses, Repairs, Inquiries,
-Activity* — and for a resident, *Overview, Payments and billing, Repairs, My details*. **If you
+*Overview, Rooms and rates, Tenants, Monthly Income, Monthly Expenses, Repairs, Inquiries*
+(Activity was removed on 1 October 2026) — and for a resident, *Overview, Payments and billing, Repairs, My details*. **If you
 rename any of them, rename them there in the same commit**, and in `docs/FINAL MANUSCRIPT/`
 Chapter 4, which names the ledger pages too. A rehearsal sheet that sends a person hunting for a screen that no longer exists under
 that name is worse than no sheet.
