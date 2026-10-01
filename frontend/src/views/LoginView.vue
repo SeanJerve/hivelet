@@ -285,11 +285,11 @@ async function handleQuickLogin(account: DemoAccount) {
                 for="login-email"
                 class="block text-xs text-ink-faint"
               >
-                Phone number or email
+                Login ID, phone number or email
               </label>
               <!--
-                Either identifier is accepted (OD-09: a tenant may have no
-                email, but every tenant has a phone number), so this is
+                Any of the three is accepted. A new tenant has only the login ID
+                the landlady gave them (073, e.g. HV-48213), so this is
                 type="text". type="email" would make the browser reject a
                 phone number before it was ever sent. For the same reason there
                 is no inputmode="tel": an iPhone's telephone keypad has no
@@ -301,7 +301,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 type="text"
                 autocomplete="username"
                 required
-                placeholder="0917-000-0000 or you@email.com"
+                placeholder="HV-12345, 0917-000-0000 or you@email.com"
                 class="ws-input mt-2"
               />
             </div>

@@ -86,7 +86,7 @@ const db = createClient(
 
 const { data: allTenants, error } = await db
   .from('profiles')
-  .select('id, full_name, email, phone_number, role, account_status')
+  .select('id, full_name, email, phone_number, login_id, role, account_status')
   .eq('role', 'tenant')
   .order('full_name');
 if (error) {
@@ -95,7 +95,11 @@ if (error) {
 }
 const tenants = ONLY
   ? allTenants.filter(
-      (t) => t.email?.toLowerCase() === ONLY || (phoneKey(ONLY) && phoneKey(t.phone_number) === phoneKey(ONLY))
+      (t) =>
+        t.email?.toLowerCase() === ONLY ||
+        (phoneKey(ONLY) && phoneKey(t.phone_number) === phoneKey(ONLY)) ||
+        // A login ID (073), dashes and case ignored as sign-in ignores them.
+        (t.login_id && t.login_id.replace(/[^A-Za-z0-9]/g, '').toUpperCase() === ONLY.replace(/[^A-Za-z0-9]/g, '').toUpperCase())
     )
   : allTenants;
 if (ONLY && tenants.length !== 1) {
@@ -190,14 +194,14 @@ fs.mkdirSync(outDir, { recursive: true });
 
 const csvCell = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
 const csvPath = path.join(outDir, 'tenant-starting-passwords.csv');
-const csvRows = issued.map((t) => [t.full_name, t.units, t.phone_number, t.email, t.password, now, '', ''].map(csvCell).join(','));
+const csvRows = issued.map((t) => [t.full_name, t.units, t.login_id, t.phone_number, t.email, t.password, now, '', ''].map(csvCell).join(','));
 if (ONLY && fs.existsSync(csvPath)) {
   // Appended, never rewritten: the record of the first batch stays whole.
   fs.appendFileSync(csvPath, csvRows.join('\n') + '\n', 'utf8');
 } else {
   fs.writeFileSync(
     csvPath,
-    ['name,units,phone,email,starting_password,issued_at,handed_over_by,handed_over_on'].concat(csvRows).join('\n') + '\n',
+    ['name,units,login_id,phone,email,starting_password,issued_at,handed_over_by,handed_over_on'].concat(csvRows).join('\n') + '\n',
     'utf8'
   );
 }
@@ -213,11 +217,11 @@ const slips = issued
   <p class="unit">Unit ${esc(t.units || 'not assigned')}</p>
   <table>
     <tr><th>Website</th><td>${SITE}</td></tr>
-    <tr><th>Sign in with</th><td>${esc(t.phone_number)}</td></tr>
+    <tr><th>Login ID</th><td class="pw">${esc(t.login_id || t.phone_number)}</td></tr>
     <tr><th>Starting password</th><td class="pw">${esc(t.password)}</td></tr>
   </table>
   <ol>
-    <li>Open the website and sign in with your phone number and the starting password above.</li>
+    <li>Open the website and sign in with the login ID and the starting password above.</li>
     <li>You will be asked straight away for your own email address and your own password: at least 10 characters, with a letter and a number. You can change both, and your phone number, any time under My details.</li>
     <li>This starting password stops working once you change it. Keep this slip private, and tear it up afterwards.</li>
     <li>Five wrong tries locks the account for 15 minutes. Ask the owner if you are stuck.</li>

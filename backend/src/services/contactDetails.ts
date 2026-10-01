@@ -72,12 +72,23 @@ export function placeholderEmailFor(profileId: string): string {
  * asks for all three together), and whenever the email is a placeholder.
  * An administrator is never asked: her address is her own sign-in.
  */
-export function mustCompleteContact(user: {
-  role: string;
-  email: string | null;
-  mustChangePassword: boolean;
-}): boolean {
-  return user.role === 'tenant' && (user.mustChangePassword || isPlaceholderEmail(user.email));
+export function mustCompleteContact(
+  user: {
+    role: string;
+    email: string | null;
+    mustChangePassword: boolean;
+  },
+  /**
+   * The phone on file, when the caller read it (`undefined` = not read). Since
+   * 073 a tenant may have none - they sign in first with a login ID - and is
+   * asked for their own at sign-in like the email (Sean, 2026-10-01).
+   */
+  phoneNumber?: string | null
+): boolean {
+  return (
+    user.role === 'tenant' &&
+    (user.mustChangePassword || isPlaceholderEmail(user.email) || phoneNumber === null || phoneNumber === '')
+  );
 }
 
 /**

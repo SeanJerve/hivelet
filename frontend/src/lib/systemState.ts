@@ -61,6 +61,8 @@ export interface TenantRecord {
   name: string;
   unitCode: string;
   roomId?: string;
+  /** What they first sign in with (migration 073), e.g. HV-48213; '—' if none. */
+  loginId: string;
   phone: string;
   email: string;
   moveInDate: string;
@@ -864,7 +866,9 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
           name: t.full_name || 'Tenant',
           unitCode,
           roomId: assignedRoom?.id,
-          phone: t.phone_number || '—',
+          loginId: t.login_id || '—',
+          // Since 073 the tenant gives their own phone at first sign-in.
+          phone: t.phone_number || 'Not given yet',
           // A placeholder (migration 067) is not an address: shown as none yet.
           email: realEmail(t.email) || '—',
           moveInDate,

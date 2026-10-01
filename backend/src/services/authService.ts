@@ -16,7 +16,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { recordAudit } from './auditService.js';
 import { likeLiteral } from '../utils/likeLiteral.js';
-import { assertContactAvailable, contactClash, mustCompleteContact } from './contactDetails.js';
+import { assertContactAvailable, contactClash, isPlaceholderEmail, mustCompleteContact } from './contactDetails.js';
 import type { AuthUser, JwtPayload } from '../types/auth.js';
 import type { StoredRole } from '../config/rbac.js';
 
@@ -262,11 +262,12 @@ export async function resolveAuthUser(
 ): Promise<AuthUser> {
   const { data, error } = await db
     .from('profiles')
-    .select('id, email, full_name, role, account_status, must_change_password, password_changed_at')
+    .select('id, email, full_name, role, account_status, must_change_password, password_changed_at, phone_number')
     .eq('id', profileId)
     .maybeSingle<
       Omit<CredentialRow, 'password_hash' | 'failed_login_count' | 'locked_until'> & {
         password_changed_at: string | null;
+        phone_number: string | null;
       }
     >();
 
@@ -310,7 +311,7 @@ export async function resolveAuthUser(
     mustChangePassword: data.must_change_password ?? false,
     mustCompleteContact: false,
   };
-  user.mustCompleteContact = mustCompleteContact(user);
+  user.mustCompleteContact = mustCompleteContact(user, data.phone_number ?? null);
   return user;
 }
 
@@ -453,6 +454,24 @@ export async function changeOwnPassword(
   const contactPatch: ContactPatch = {};
   if (contact.email !== undefined) contactPatch.email = contact.email;
   if (contact.phone_number !== undefined) contactPatch.phone_number = contact.phone_number;
+
+  /**
+   * A tenant with no phone, or only a placeholder email, gives their own in this
+   * same step (073: they first sign in with a login ID, and nothing personal is
+   * assumed). Checked after the current password, so a wrong one learns nothing.
+   */
+  if (data.role === 'tenant') {
+    const missing: Record<string, string[]> = {};
+    if (!data.phone_number && !contactPatch.phone_number) {
+      missing.phone_number = ['Add the mobile number you use, so the landlady can reach you.'];
+    }
+    if (isPlaceholderEmail(data.email) && !contactPatch.email) {
+      missing.email = ['Add an email address you use.'];
+    }
+    if (Object.keys(missing).length > 0) {
+      throw ApiError.validation('Add your own email and phone number.', missing);
+    }
+  }
   if (Object.keys(contactPatch).length > 0) {
     await assertContactAvailable(profileId, contactPatch);
   }
