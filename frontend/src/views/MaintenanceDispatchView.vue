@@ -546,10 +546,13 @@ function handleDeleteTicketPrompt() {
         <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Repairs</h1>
       </div>
-      <button type="button" class="pill-btn-brand shrink-0 self-start sm:self-auto" @click="openLogRepair">
-        <Plus class="size-4" aria-hidden="true" />
-        Log a repair
-      </button>
+      <!-- The header action row every admin page shares (Sean, 2026-10-01). -->
+      <div class="ws-page-actions">
+        <button type="button" class="pill-btn-brand" @click="openLogRepair">
+          <Plus class="size-4" aria-hidden="true" />
+          Log a repair
+        </button>
+      </div>
     </header>
 
     <!--
@@ -743,7 +746,7 @@ function handleDeleteTicketPrompt() {
               type="button"
               :disabled="isSubmitting"
               @click="handleQuickDispatch"
-              class="pill-btn px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
+              class="pill-btn pill-btn-compact"
             >
               <UserCheck class="size-3.5 text-brand" aria-hidden="true" />
               <span>Send technician</span>
@@ -759,7 +762,7 @@ function handleDeleteTicketPrompt() {
               type="button"
               :disabled="isSubmitting"
               @click="handleQuickResolve"
-              class="pill-btn-brand px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
+              class="pill-btn-brand pill-btn-compact"
             >
               <CheckCircle2 class="size-3.5" aria-hidden="true" />
               <span>Mark resolved</span>
@@ -918,24 +921,24 @@ function handleDeleteTicketPrompt() {
             Changes" - the button the form exists to press - was 107px past the
             right edge of the panel.
           -->
-          <div class="pt-4 border-t border-line flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <!-- The stack left Delete full width and Cancel and Save their own
+               widths (Sean, 2026-10-01). `.ws-actions` (index.css): Cancel and
+               Save equal halves, Delete its own row beneath, one height. -->
+          <div class="ws-actions pt-4 border-t border-line">
             <button
               type="button"
               @click="handleDeleteTicketPrompt"
-              class="pill-btn-danger-quiet"
+              class="pill-btn-danger-quiet ws-action-apart"
             >
-              <Trash2 class="size-3.5" aria-hidden="true" />
+              <Trash2 class="size-4" aria-hidden="true" />
               <span>Delete repair</span>
             </button>
-
-            <div class="flex items-center justify-end gap-2">
-              <button type="button" @click="isEditModalOpen = false" class="pill-btn">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
-                <Check v-else class="size-3.5" aria-hidden="true" />
-                <span>Save changes</span>
-              </button>
-            </div>
+            <button type="button" @click="isEditModalOpen = false" class="pill-btn">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
+              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+              <Check v-else class="size-4" aria-hidden="true" />
+              <span>Save changes</span>
+            </button>
           </div>
         </form>
     </WsModal>

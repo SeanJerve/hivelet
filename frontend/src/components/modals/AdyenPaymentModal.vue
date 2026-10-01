@@ -514,7 +514,9 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     </div>
 
     <template #actions>
-      <p class="mr-auto flex items-center gap-2 text-xs text-ink-faint">
+      <!-- `ws-action-apart`: its own row under the button on a phone, the far
+           left from 640px - the place `mr-auto` gave it on a desktop only. -->
+      <p class="ws-action-apart flex items-center gap-2 text-xs text-ink-faint">
         <ShieldCheck class="size-4 text-brand" aria-hidden="true" />
         Payment details stay with Adyen
       </p>

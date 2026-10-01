@@ -399,10 +399,10 @@ function applyRoomFilters(v: FilterDraft) {
                   <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
                 </dl>
                 <div class="flex shrink-0 gap-1.5">
-                  <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
+                  <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
                     <Eye class="size-4" aria-hidden="true" />
                   </button>
-                  <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
+                  <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
                     <Pencil class="size-4" aria-hidden="true" />
                   </button>
                 </div>
@@ -490,11 +490,11 @@ function applyRoomFilters(v: FilterDraft) {
           </td>
           <td class="num">
             <div class="inline-flex items-center justify-end gap-2">
-              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
-                <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
+              <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+                <Eye class="size-4" aria-hidden="true" />
               </button>
-              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
-                <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+              <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+                <Pencil class="size-4" aria-hidden="true" />
               </button>
             </div>
           </td>
@@ -527,10 +527,10 @@ function applyRoomFilters(v: FilterDraft) {
             <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
           </dl>
           <div class="flex shrink-0 gap-1.5">
-            <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
+            <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
               <Eye class="size-4" aria-hidden="true" />
             </button>
-            <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
+            <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
               <Pencil class="size-4" aria-hidden="true" />
             </button>
           </div>

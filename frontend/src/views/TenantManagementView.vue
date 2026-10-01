@@ -867,8 +867,10 @@ async function handleOnboard() {
         </p>
       </div>
 
-      <div class="flex items-center gap-2 self-start sm:self-auto">
-
+      <!-- `.ws-page-actions` (index.css): the header action row every admin
+           page shares, so this sits and sizes like Record payment does on
+           Monthly Income (Sean, 2026-10-01). -->
+      <div class="ws-page-actions">
         <button type="button" class="pill-btn-brand" @click="isOnboardModalOpen = true">
           <UserPlus class="size-4" aria-hidden="true" />
           <span>Move someone in</span>
@@ -990,11 +992,11 @@ async function handleOnboard() {
             -->
             <button
               type="button"
-              class="press-plate flex size-9 items-center justify-center rounded-full ml-auto row-action hover:bg-canvas cursor-pointer"
+              class="press-plate icon-btn-plain row-action ml-auto"
               :aria-label="`Edit ${t.name}`"
               @click="openEdit(t)"
             >
-              <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+              <Pencil class="size-4" aria-hidden="true" />
             </button>
           </td>
         </tr>
@@ -1028,7 +1030,7 @@ async function handleOnboard() {
             <dt class="text-xs text-ink-faint">Deposit</dt>
             <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
           </dl>
-          <button type="button" class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
+          <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
             <Pencil class="size-4" aria-hidden="true" />
           </button>
         </div>
@@ -1175,11 +1177,11 @@ async function handleOnboard() {
                 <td class="num">
                   <button
                     type="button"
-                    class="press-plate flex size-9 items-center justify-center rounded-full ml-auto row-action hover:bg-canvas cursor-pointer"
+                    class="press-plate icon-btn-plain row-action ml-auto"
                     :aria-label="`Edit ${t.name}`"
                     @click="openEdit(t)"
                   >
-                    <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+                    <Pencil class="size-4" aria-hidden="true" />
                   </button>
                 </td>
               </tr>
@@ -1220,7 +1222,7 @@ async function handleOnboard() {
                 <dt class="text-xs text-ink-faint">Deposit</dt>
                 <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
               </dl>
-              <button type="button" class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
+              <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
                 <Pencil class="size-4" aria-hidden="true" />
               </button>
             </div>
@@ -1385,37 +1387,34 @@ async function handleOnboard() {
             a month.
           </p>
 
-          <div
-            class="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                class="pill-btn-danger-quiet"
-                @click="openVacateFromModal(editModalTenant)"
-              >
-                <LogOut class="size-3.5" aria-hidden="true" />
-                <span>Move them out</span>
-              </button>
-              <button
-                v-if="editModalTenant.role === 'tenant' && editModalTenant.status !== 'vacated'"
-                type="button"
-                class="pill-btn"
-                @click="openResetFromModal(editModalTenant)"
-              >
-                <KeyRound class="size-3.5" aria-hidden="true" />
-                <span>Reset password</span>
-              </button>
-            </div>
-
-            <div class="flex items-center justify-end gap-2">
-              <button type="button" class="pill-btn" @click="editModalTenant = null">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
-                <Check v-else class="size-3.5" aria-hidden="true" />
-                <span>Save changes</span>
-              </button>
-            </div>
+          <!-- `.ws-actions` (index.css; Sean, 2026-10-01): Cancel and Save
+               changes as equal halves on a phone with Reset password and Move
+               them out on rows of their own beneath, all one height; from
+               640px the two record actions sit left and Save sits right. -->
+          <div class="ws-actions border-t border-line pt-5">
+            <button
+              type="button"
+              class="pill-btn-danger-quiet ws-action-apart"
+              @click="openVacateFromModal(editModalTenant)"
+            >
+              <LogOut class="size-4" aria-hidden="true" />
+              <span>Move them out</span>
+            </button>
+            <button
+              v-if="editModalTenant.role === 'tenant' && editModalTenant.status !== 'vacated'"
+              type="button"
+              class="pill-btn ws-action-apart"
+              @click="openResetFromModal(editModalTenant)"
+            >
+              <KeyRound class="size-4" aria-hidden="true" />
+              <span>Reset password</span>
+            </button>
+            <button type="button" class="pill-btn" @click="editModalTenant = null">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
+              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+              <Check v-else class="size-4" aria-hidden="true" />
+              <span>Save changes</span>
+            </button>
           </div>
         </form>
     </WsModal>
@@ -1607,10 +1606,10 @@ async function handleOnboard() {
             a month.
           </p>
 
-          <div class="flex justify-end gap-2 border-t border-line pt-5 sm:col-span-2">
+          <div class="ws-actions border-t border-line pt-5 sm:col-span-2">
             <button type="button" class="pill-btn" @click="isOnboardModalOpen = false">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
+              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <span>Move them in</span>
             </button>
           </div>
@@ -1647,9 +1646,10 @@ async function handleOnboard() {
 
       <div class="flex items-center gap-2 rounded-2xl border border-line bg-canvas px-4 py-3">
         <code data-one-time-password class="flex-1 select-all break-all font-mono text-base font-semibold tracking-wide text-ink">{{ onboardedCredentials.password }}</code>
+        <!-- Plain, not ringed: the ring is for close and go-to only (Sean, 2026-10-01). -->
         <button
           type="button"
-          class="icon-btn shrink-0"
+          class="icon-btn-plain"
           :aria-label="justCopiedPassword ? 'Copied' : 'Copy password'"
           @click="copyTemporaryPassword"
         >

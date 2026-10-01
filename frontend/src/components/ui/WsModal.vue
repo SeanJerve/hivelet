@@ -333,13 +333,25 @@ onBeforeUnmount(() => {
         </button>
       </header>
 
-      <div class="p-5 sm:p-6 flex flex-col gap-5">
+      <!--
+        `min-w-0` and `overflow-x-clip` (Sean, 2026-10-01: "the modal has
+        HORIZONTAL scrolling - really bad"). A field that will not shrink - a
+        native date control at the phone's 16px is the one that did - pushed the
+        body wider than the panel, and the overlay, which scrolls, scrolled
+        sideways with it. The fields themselves are fixed to shrink and stack;
+        this is the floor, so a dialog can never be dragged sideways again.
+        `clip` rather than `hidden`, so it does not become a scroll container
+        and the vertical axis, where PillSelect's menus open, stays visible.
+      -->
+      <div class="p-5 sm:p-6 flex min-w-0 flex-col gap-5 overflow-x-clip">
         <slot />
       </div>
 
+      <!-- `.ws-actions` (index.css): equal halves on a phone, right-aligned
+           from 640px, one height. Sean, 2026-10-01. -->
       <footer
         v-if="$slots.actions"
-        class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-5 sm:p-6"
+        class="ws-actions border-t border-line p-5 sm:p-6"
       >
         <slot name="actions" />
       </footer>

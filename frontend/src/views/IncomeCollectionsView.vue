@@ -1060,24 +1060,32 @@ async function exportExcel() {
         </h1>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="ws-page-actions">
         <!--
           One export, not two. A CSV button sat beside this one writing a flat
           dump, while this writes her actual layout: month blocks, cluster
           subtotals, Linda kept separate. Two buttons meant two files that
           disagreed about what the ledger looks like.
+
+          "Download", not "Download 2026 for Excel" (Sean, 2026-10-01): the
+          long label made it the wider of the pair beside Record payment. The
+          year and the format are still in its name and its tooltip, and the
+          spreadsheet icon says Excel at a glance.
         -->
         <button
           type="button"
           class="pill-btn"
           :disabled="isExportingExcel"
+          :aria-busy="isExportingExcel"
+          :aria-label="`Download ${exportYear} for Excel`"
+          :title="`Download ${exportYear} for Excel`"
           @click="exportExcel"
         >
           <FileSpreadsheet
             :class="['size-4', isExportingExcel && 'animate-pulse']"
             aria-hidden="true"
           />
-          <span>{{ isExportingExcel ? 'Building the file' : `Download ${exportYear} for Excel` }}</span>
+          <span>{{ isExportingExcel ? 'Preparing' : 'Download' }}</span>
         </button>
 
         <button type="button" class="pill-btn-brand" @click="isOnsitePaymentModalOpen = true">
@@ -1500,12 +1508,12 @@ async function exportExcel() {
                 <td class="num">
                   <button
                     type="button"
-                    class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
+                    class="press-plate icon-btn-plain row-action"
                     :aria-label="`Edit ${r.contact}'s record`"
                     title="Edit"
                     @click="startEditIncome(r)"
                   >
-                    <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+                    <Pencil class="size-4" aria-hidden="true" />
                   </button>
                 </td>
               </tr>
@@ -1621,12 +1629,12 @@ async function exportExcel() {
               <div class="mt-3 flex justify-end">
               <button
                 type="button"
-                class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+                class="press-plate icon-btn-plain row-action"
                 :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
                 title="Edit"
                 @click="startEditIncome(r)"
               >
-                <Pencil class="size-3.5" aria-hidden="true" />
+                <Pencil class="size-4" aria-hidden="true" />
               </button>
               </div>
             </template>
@@ -1689,12 +1697,12 @@ async function exportExcel() {
           <td class="num">
             <button
               type="button"
-              class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
+              class="press-plate icon-btn-plain row-action"
               :aria-label="`Edit ${r.contact}'s record`"
                     title="Edit"
               @click="startEditIncome(r)"
             >
-              <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+              <Pencil class="size-4" aria-hidden="true" />
             </button>
           </td>
         </tr>
@@ -1795,12 +1803,12 @@ async function exportExcel() {
         <div class="mt-3 flex justify-end">
         <button
           type="button"
-          class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+          class="press-plate icon-btn-plain row-action"
           :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
           title="Edit"
           @click="startEditIncome(r)"
         >
-          <Pencil class="size-3.5" aria-hidden="true" />
+          <Pencil class="size-4" aria-hidden="true" />
         </button>
         </div>
       </template>
@@ -1910,10 +1918,17 @@ async function exportExcel() {
           </div>
 
           <!-- Rent Validity / Duration Details Row -->
-          <!-- FOUR labels in a three-column grid, so on a phone they were four
-               full-width controls one under the other. Two up costs nothing:
-               `input[type=date]` measures 144px of content in a 146px box. -->
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+          <!--
+            Two short numbers stay two up on a phone; the dates do not (Sean,
+            2026-10-01: "Covering from and Covering to are beside each other,
+            covering each other"). The note here used to say two up cost
+            nothing because a date field measured 144px in a 146px box - in
+            Chrome at 14px. At the phone's 16px it measured 118px and showed
+            "mm/dd/" and "09/02/2", and a phone's own date control is wider
+            still, which is what ran into its neighbour and scrolled the dialog
+            sideways. A date takes the whole row on a phone and half from 640px.
+          -->
+          <div class="grid grid-cols-2 gap-3 sm:gap-4">
             <label class="ws-field">
               Months covered
               <input v-model.number="editMonthsCovered" type="number" min="1" class="ws-input w-full" required />
@@ -1923,6 +1938,8 @@ async function exportExcel() {
               <input v-model.number="editOccupants" type="number" min="1" max="50" class="ws-input w-full" required />
               <span class="ws-hint">Water is charged per person.</span>
             </label>
+          </div>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label class="ws-field">
               Covering from
               <input v-model="editDateCoveredStart" type="date" class="ws-input w-full" />
@@ -1934,14 +1951,16 @@ async function exportExcel() {
             </label>
           </div>
 
-          <!-- Date Received & Read-Only Total Amount calculation -->
-          <div class="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
+          <!-- Date Received & Read-Only Total Amount calculation. Stacked on a
+               phone for the same reason as the dates above, and the total gets
+               a full row to itself rather than a cramped half beside a date. -->
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label class="ws-field">
               Date received
               <input v-model="editDate" type="date" class="ws-input w-full" required />
             </label>
             <!-- The same total box the payment form uses, so the twins read alike. -->
-            <div class="rounded-2xl bg-canvas px-4 py-3 self-end">
+            <div class="rounded-2xl bg-canvas px-4 py-3 sm:self-end">
               <p class="text-xs text-ink-faint">Total</p>
               <p class="tabular mt-0.5 text-lg font-semibold leading-none text-brand">{{ peso(editTotal, 2) }}</p>
             </div>
@@ -1963,34 +1982,27 @@ async function exportExcel() {
             a correction to the ledger could not be fully seen and its right
             half could not be pressed.
 
-            `flex-wrap-reverse` rather than plain `flex-wrap`, so that when the
-            row does break, the line that wraps is drawn ABOVE the other one.
-            Cancel and "Save changes" stay together on top and "Delete
-            entry" drops beneath them - the destructive control ends up
-            furthest from the thumb rather than first under it.
-
-            At `sm` it is one line again with `justify-between`, which is a
-            single flex line, and a single line renders identically under
-            `wrap-reverse` - so the desktop footer is untouched.
+            Wrapping fixed the clipping and left three buttons of three widths
+            (Sean, 2026-10-01). `.ws-actions` (index.css) is the one footer
+            rule now: Cancel and Save changes as equal halves, Delete payment
+            a full row of its own beneath them at the same height, and from
+            640px one line with Delete at the far left.
           -->
-          <div class="pt-4 border-t border-line flex flex-wrap-reverse items-center justify-end gap-2 sm:justify-between sm:gap-3">
+          <div class="ws-actions mt-4 pt-4 border-t border-line">
             <button
               type="button"
               @click="handleDeleteFromModal"
-              class="pill-btn-danger-quiet"
+              class="pill-btn-danger-quiet ws-action-apart"
             >
-              <Trash2 class="size-3.5" aria-hidden="true" />
+              <Trash2 class="size-4" aria-hidden="true" />
               <span>Delete payment</span>
             </button>
-
-            <div class="flex items-center gap-2">
-              <button type="button" @click="isEditOpen = false" class="pill-btn">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
-                <Check v-else class="size-3.5" aria-hidden="true" />
-                <span>Save changes</span>
-              </button>
-            </div>
+            <button type="button" @click="isEditOpen = false" class="pill-btn">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
+              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+              <Check v-else class="size-4" aria-hidden="true" />
+              <span>Save changes</span>
+            </button>
           </div>
         </form>
     </WsModal>
@@ -2049,7 +2061,7 @@ async function exportExcel() {
       <template #actions>
         <button
           type="button"
-          class="pill-btn-danger-quiet disabled:opacity-50"
+          class="pill-btn-danger-quiet ws-action-apart disabled:opacity-50"
           :disabled="verifying !== null"
           @click="rejectOpenedPayment"
         >

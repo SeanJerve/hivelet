@@ -966,7 +966,10 @@ function triggerRecord() {
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+        <!-- Stacked on a phone (Sean, 2026-10-01): beside Rent, the invoice
+             field's label ran to three lines in a 118px half at 320 and its
+             box sat lower than the rent's. -->
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label class="ws-field">
             Rent
             <input v-model.number="rentAmount" type="number" min="0" step="any" class="ws-input w-full" required />
@@ -1033,12 +1036,15 @@ function triggerRecord() {
         </div>
 
         <!--
-          Two columns on a phone, three from `sm`. The three date-ish controls
-          were 238px stacked and are 144px paired; `input[type=date]` was
-          measured at 146px wide in the running app with scrollWidth 144, so
-          the native control is not being squeezed.
+          One column on a phone, three from `sm` (Sean, 2026-10-01: "Covering
+          from and Covering to are beside each other, covering each other").
+          This was two up on the strength of a date field measuring 146px with
+          a 144px scrollWidth - in desktop Chrome at 14px. A phone sets fields
+          at 16px, where the same field shows "mm/dd/" in 118px at 320, and a
+          phone's own date control is wider again: it ran into the field
+          beside it and pushed the dialog into a sideways scroll.
         -->
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <label class="ws-field">
             Months covered
             <input v-model.number="monthsCovered" type="number" min="1" max="24" class="ws-input w-full" required />
@@ -1062,7 +1068,7 @@ function triggerRecord() {
           </label>
         </div>
 
-        <div class="grid items-end gap-4 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-end">
           <label class="ws-field">
             Date received
             <input v-model="date" type="date" class="ws-input w-full" required @input="dateReceivedTyped = true" />

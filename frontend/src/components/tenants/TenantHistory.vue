@@ -101,14 +101,19 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
         written on the payments; when one person was written two ways in the same unit, they are shown
         once, with the other spelling under their name.
       </p>
+      <!-- "Download", with the period and the format in its name and tooltip:
+           the same short label as the ledgers' (Sean, 2026-10-01). -->
       <button
         type="button"
-        class="pill-btn w-full shrink-0 sm:w-auto"
+        class="pill-btn w-full shrink-0 sm:w-auto sm:min-w-44"
         :disabled="isExporting || loading"
+        :aria-busy="isExporting"
+        :aria-label="`Download ${periodLabel} for Excel`"
+        :title="`Download ${periodLabel} for Excel`"
         @click="exportHistory"
       >
         <FileSpreadsheet :class="['size-4 text-ink-soft', isExporting && 'animate-pulse']" aria-hidden="true" />
-        <span>{{ isExporting ? 'Building the file' : `Download ${periodLabel} for Excel` }}</span>
+        <span>{{ isExporting ? 'Preparing' : 'Download' }}</span>
       </button>
     </div>
 
