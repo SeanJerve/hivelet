@@ -5,8 +5,28 @@ QA — **you and Kiel have swapped**, confirmed 17 Sep. Kiel owns the interface 
 whether any of this actually works.
 
 Hivelet runs the **Fe Galang Da Silva Boarding House**. The database is live: **937 income rows,
-1,327 expense allocations, 33 units with 32 occupied.** Mrs. Da Silva keeps her books in it.
-There is no staging copy.
+1,327 expense allocations, 33 units with 32 occupied.** The boarding house's books are in it, and
+Michelle runs them as the administrator. There is no staging copy.
+
+---
+
+## 0. For the professional testers and technical evaluators (2026-10-01)
+
+- **Tenant account for evaluation: `loydtest`.** It is a real tenant account kept for this purpose
+  (migration 071). At first sign-in it asks for an email and a new password: that is the feature
+  (every tenant must set their own), not a fault. Until a person moves it into unit `PH` from
+  Tenants (B-92), its Overview has no unit. The admin account is Michelle's and is used only with
+  her or the team present.
+- **What a tester will see:**
+  - Payments: a month with no payment entered reads **Not entered**, never overdue. Only a bill
+    actually raised is Due.
+  - Invoice numbers read `INV#…`, or **Acknowledgement receipt** for a slip with no number.
+  - Water is worked out from the occupants and never typed.
+  - Pages update within about 5 seconds without a refresh.
+- **GCash** runs on Adyen's test account: no real money moves. Reject any GCash payment in the
+  To verify queue.
+- **Do not** run active scanners, password guessing or form-filling spiders against the live site.
+  It holds real records, and five wrong passwords lock an account for 15 minutes.
 
 ---
 

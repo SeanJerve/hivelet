@@ -1,5 +1,29 @@
 # CONTINUE HERE — handoff for the next machine
 
+> [!IMPORTANT]
+> **0.0 — where things stand, 2026-10-01 (Lloyd's machine; Sean's notes are in `HANDOFF_NEXT_SESSION.md`).**
+>
+> - **Migrations 066 to 072.** 066 garbage fee out and invoices `INV#…`, optional (applied); 067 tenant
+>   emails are placeholders, each tenant gives their own email and password at first sign-in (applied);
+>   068 `live_version()` for live pages (applied); 069 second rehearsal tenant's records removed
+>   (applied); 070 the two walkthrough expenses voided (applied 1 Oct through the Supabase MCP
+>   connection, after a backup); 071 `loydtest` switched back on as the **evaluation account**
+>   (applied); **072 acknowledgement receipts: written, NOT applied** (B-93). Next number: 073.
+> - **Live updates.** Every open page checks `GET /api/live/version` every 5 s while visible and
+>   reloads only what changed (`lib/live.ts`); sounds on new notifications, success and errors
+>   (`lib/sounds.ts`). Not yet proven on two real devices (handoff 3.6).
+> - **Invoices.** The owner issues invoices, written `INV#4726`, optional. For a slip with no number
+>   the invoice field offers **Acknowledgement receipt** in its dropdown. Never "OR".
+> - **Water** is worked out from the occupants on Record payment, never typed; the occupants recorded
+>   with the latest payment become the tenancy's count.
+> - **A month with no payment reads "Not entered"**, never overdue or unpaid; only a bill actually
+>   raised is Due. She enters payments a week or two after receiving them.
+> - **Testing-day fixes:** A-30 (₱0 offline: the income loader's silent-empty path, fixed and
+>   proven both ways) and O-12 (late Android save message: deadline re-checked on visibility).
+>   Both need one re-test on the real devices.
+> - **The evaluation account** is `loydtest` (tenant). It has no unit yet: a person moves it into
+>   `PH` from Tenants (B-92). See `HANDOFF_TO_QA.md`.
+
 > [!NOTE]
 > **2026-09-29 evening, Sean's machine, all pushed and deploying before testing day.** What
 > changed on the site tonight from this side, each checked in the running app:
