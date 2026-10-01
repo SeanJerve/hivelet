@@ -43,12 +43,12 @@ import MonthCapsules from '@/components/overview/MonthCapsules.vue';
 import OccupancyArc from '@/components/overview/OccupancyArc.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
-import type { ArcUnit, CapsuleMonth } from '@/components/overview/types';
+import type { ArcUnit, CapsuleMonth, QuickAction } from '@/components/overview/types';
 import {
   Plus,
   ReceiptText,
-  Calendar,
   ChevronDown,
   Check,
   FileSpreadsheet,
@@ -211,6 +211,24 @@ function chooseYear(year: string) {
   if (year === String(CURRENT_YEAR)) exitHistoricalMode();
   else enterHistoricalMode(year);
 }
+
+/**
+ * Her three regular actions, in priority order, written once for both places
+ * they appear (Sean, 2026-10-01): the header row from 768px, and the floating
+ * button on a phone (QuickActionsFab), so the two cannot point at different
+ * places. The header shows them reversed, the primary last at the right edge.
+ *
+ * Move someone in/out is as much her regular work as a receipt (Sean,
+ * 2026-09-30). One action, to the Tenants page, because both start there:
+ * "Move someone in" is at its top, and moving out needs the list to choose who
+ * (Edit > Move them out).
+ */
+const quickActions: QuickAction[] = [
+  { to: '/admin/income?openPayment=1', label: 'Record payment', icon: Plus, primary: true },
+  { to: '/admin/expenses?openExpense=1', label: 'Record expense', icon: ReceiptText },
+  { to: '/admin/tenants', label: 'Move someone in/out', icon: DoorOpen },
+];
+const headerActions = [...quickActions].reverse();
 
 function onDocumentPointerDown(e: PointerEvent) {
   if (isYearMenuOpen.value && yearMenuRoot.value && !yearMenuRoot.value.contains(e.target as Node)) {
@@ -701,7 +719,15 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
 </script>
 
 <template>
-  <div class="ws-focus flex flex-col gap-5 text-ink">
+  <div
+    :class="[
+      'ws-focus flex flex-col gap-5 text-ink',
+      !isHistoricalMode && 'max-md:pb-[calc(4rem+env(safe-area-inset-bottom))]',
+    ]"
+  >
+    <!-- The bottom padding on a phone is the floating button's room (56px, 16px
+         off the edge, plus the home-indicator inset), so it never sits on the
+         last tile's content (Sean, 2026-10-01). -->
     <!-- ================================================================== *
      * Header
      * ================================================================== -->
@@ -710,7 +736,85 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
          payment fell onto a line of its own; under the title they are one row. -->
     <header class="flex flex-col 2xl:flex-row 2xl:items-end justify-between gap-4">
       <div class="min-w-0">
-        <p class="text-sm text-ink-faint">{{ todayLabel }}</p>
+        <div class="flex items-center justify-between gap-4">
+          <p class="min-w-0 text-sm text-ink-faint">{{ todayLabel }}</p>
+          <!--
+            The year: a word, not a button (Sean, 2026-10-01: "not a button -
+            a clickable word, like 'Ledger' and 'To verify' on Monthly
+            Income"), so it takes those tab words' style - bold, brand, text
+            size - with a chevron for the menu it opens. It sits on the date
+            line, at the right, on every screen size, which also takes it out
+            of the action row a phone no longer shows. `-my-1` keeps the py-1
+            hit area from pushing the greeting down; the `before:` box widens
+            the target for a finger without moving anything. The menu is
+            `w-max`: its anchor is now only as wide as the word, and an
+            absolute box sizes to its anchor, so "2026, this year" wrapped.
+          -->
+          <div ref="yearMenuRoot" class="relative -my-1 shrink-0" @keydown.escape="closeYearMenu(true)">
+            <button
+              ref="yearButton"
+              type="button"
+              class="press relative inline-flex items-center gap-1 py-1 text-sm font-bold text-brand cursor-pointer whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+              aria-haspopup="true"
+              :aria-expanded="isYearMenuOpen"
+              aria-controls="overview-year-menu"
+              @click="isYearMenuOpen = !isYearMenuOpen"
+            >
+              <span class="tabular">{{ shownYear }}</span>
+              <span class="sr-only">, change year</span>
+              <ChevronDown
+                :class="[
+                  'size-4 transition-transform duration-200 ease-[var(--ease-out)]',
+                  isYearMenuOpen && 'rotate-180',
+                ]"
+                aria-hidden="true"
+              />
+            </button>
+            <!--
+              This was `v-show`, which is instant: the menu was there or it was
+              not, on the same frame as the click. PillSelect's popover already
+              solved this exact shape (a menu anchored to its own trigger), so
+              the year menu now opens the same way instead of reading as a
+              different control that happens to sit beside it. `motion-safe:` on
+              the scale and translate utilities is what stands in for a
+              hand-written `prefers-reduced-motion` block here, since Tailwind
+              already generates that correctly; opacity still fades either way.
+
+              220ms/160ms, not 150ms/100ms - PillSelect's own dropdown was
+              bumped to those numbers after the client found its old pair an
+              instant cut rather than a deliberate motion. This menu copied
+              PillSelect's timing when it was written and was left behind at
+              the old numbers when PillSelect moved; same shape, same trigger,
+              so it gets the same fix.
+
+              Now `ws-pop` (index.css), the one transition PillSelect and both
+              header menus share, so it cannot drift from them again (Sean,
+              2026-10-01). Reduced motion keeps its fade there too.
+            -->
+            <Transition name="ws-pop">
+              <div
+                v-if="isYearMenuOpen"
+                id="overview-year-menu"
+                :class="[
+                  'absolute top-full z-30 mt-2 w-max min-w-40 rounded-2xl bg-tile p-1.5 shadow-lift border border-line',
+                  yearMenuAlignEnd ? 'right-0 origin-top-right' : 'left-0 origin-top-left',
+                ]"
+              >
+                <button
+                  v-for="y in yearOptions"
+                  :key="y"
+                  type="button"
+                  :aria-current="y === shownYear ? 'true' : undefined"
+                  class="press flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular hover:bg-canvas cursor-pointer"
+                  @click="chooseYear(y)"
+                >
+                  <span>{{ y === String(CURRENT_YEAR) ? `${y}, this year` : y }}</span>
+                  <Check v-if="y === shownYear" class="size-4 text-brand" aria-hidden="true" />
+                </button>
+              </div>
+            </Transition>
+          </div>
+        </div>
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           <template v-if="!isHistoricalMode">
             Good {{ partOfDay }}<template v-if="firstName">, {{ firstName }}</template>
@@ -723,100 +827,24 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       </div>
 
       <!--
-        `.ws-page-actions` (index.css), the header row every admin page shares
-        (Sean, 2026-10-01: "fix Record payment, Record expense, Move someone
-        in/out and the year select so they're arranged better"). The `order-*`
-        classes arrange without moving the markup: on a phone the two Record
-        buttons are equal halves of the first row and the year (compact, as wide
-        as its value) leads the second with Move someone in/out filling the
-        rest; from 640px the year comes first and Record payment, the primary,
-        last at the right edge, as on Monthly Income.
+        `.ws-page-actions` (index.css), the header row every admin page shares.
+        From 768px only (Sean, 2026-10-01: on a phone the row under the greeting
+        was "too much"; there the same three actions open from the floating
+        button, QuickActionsFab, below). Record payment, the primary, is last
+        at the right edge, as on Monthly Income. The year moved to the date
+        line above. "Back to 2026" in an archive year stays on every size: the
+        floating button is for the live year's actions only.
       -->
-      <div class="ws-page-actions">
-        <div ref="yearMenuRoot" class="ws-action-compact relative order-3 sm:order-1" @keydown.escape="closeYearMenu(true)">
-          <button
-            ref="yearButton"
-            type="button"
-            class="pill-btn"
-            aria-haspopup="true"
-            :aria-expanded="isYearMenuOpen"
-            aria-controls="overview-year-menu"
-            @click="isYearMenuOpen = !isYearMenuOpen"
-          >
-            <Calendar class="size-4 text-ink-soft" aria-hidden="true" />
-            <span class="tabular">{{ shownYear }}</span>
-            <span class="sr-only">, change year</span>
-            <ChevronDown
-              :class="[
-                'size-4 text-ink-soft transition-transform duration-200 ease-[var(--ease-out)]',
-                isYearMenuOpen && 'rotate-180',
-              ]"
-              aria-hidden="true"
-            />
-          </button>
-          <!--
-            This was `v-show`, which is instant: the menu was there or it was
-            not, on the same frame as the click. PillSelect's popover already
-            solved this exact shape (a menu anchored to its own trigger), so
-            the year menu now opens the same way instead of reading as a
-            different control that happens to sit beside it. `motion-safe:` on
-            the scale and translate utilities is what stands in for a
-            hand-written `prefers-reduced-motion` block here, since Tailwind
-            already generates that correctly; opacity still fades either way.
-
-            220ms/160ms, not 150ms/100ms - PillSelect's own dropdown was
-            bumped to those numbers after the client found its old pair an
-            instant cut rather than a deliberate motion. This menu copied
-            PillSelect's timing when it was written and was left behind at
-            the old numbers when PillSelect moved; same shape, same trigger,
-            so it gets the same fix.
-
-            Now `ws-pop` (index.css), the one transition PillSelect and both
-            header menus share, so it cannot drift from them again (Sean,
-            2026-10-01). Reduced motion keeps its fade there too.
-          -->
-          <Transition name="ws-pop">
-            <div
-              v-if="isYearMenuOpen"
-              id="overview-year-menu"
-              :class="[
-                'absolute top-full z-30 mt-2 min-w-40 rounded-2xl bg-tile p-1.5 shadow-lift border border-line',
-                yearMenuAlignEnd ? 'right-0 origin-top-right' : 'left-0 origin-top-left',
-              ]"
-            >
-              <button
-                v-for="y in yearOptions"
-                :key="y"
-                type="button"
-                :aria-current="y === shownYear ? 'true' : undefined"
-                class="press flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular hover:bg-canvas cursor-pointer"
-                @click="chooseYear(y)"
-              >
-                <span>{{ y === String(CURRENT_YEAR) ? `${y}, this year` : y }}</span>
-                <Check v-if="y === shownYear" class="size-4 text-brand" aria-hidden="true" />
-              </button>
-            </div>
-          </Transition>
-        </div>
-
+      <div :class="['ws-page-actions', !isHistoricalMode && 'max-md:hidden']">
         <template v-if="!isHistoricalMode">
-          <router-link to="/admin/income?openPayment=1" class="pill-btn-brand order-2 sm:order-4">
-            <Plus class="size-4" aria-hidden="true" />
-            Record payment
-          </router-link>
-          <router-link to="/admin/expenses?openExpense=1" class="pill-btn order-1 sm:order-3">
-            <ReceiptText class="size-4 text-ink-soft" aria-hidden="true" />
-            Record expense
-          </router-link>
-          <!--
-            Moving someone in or out is as much her regular work as a receipt
-            (Sean, 2026-09-30). One button, to the Tenants page, because both
-            start there: "Move someone in" is at its top, and moving out needs
-            the list to choose who (Edit > Move them out).
-          -->
-          <router-link to="/admin/tenants" class="pill-btn order-4 sm:order-2">
-            <DoorOpen class="size-4 text-ink-soft" aria-hidden="true" />
-            Move someone in/out
+          <router-link
+            v-for="a in headerActions"
+            :key="a.to"
+            :to="a.to"
+            :class="a.primary ? 'pill-btn-brand' : 'pill-btn'"
+          >
+            <component :is="a.icon" :class="['size-4', !a.primary && 'text-ink-soft']" aria-hidden="true" />
+            {{ a.label }}
           </router-link>
         </template>
         <template v-else>
@@ -827,6 +855,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </template>
       </div>
     </header>
+
+    <QuickActionsFab v-if="!isHistoricalMode" :actions="quickActions" />
 
     <div
       v-if="!isInitialLoading && anyLoadFailed"
