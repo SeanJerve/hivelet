@@ -394,10 +394,17 @@ const figuresScope = computed(() => {
   } else if (y === 'All') period = `${m} of every year`;
   else if (filterMonth.value === 'All') period = `all of ${y}`;
   else period = `${m} ${y}`;
-  const narrowed = [selectedCategory.value !== 'All' ? 'of the kind picked' : '', q.value.trim() ? 'matching your search' : '']
-    .filter(Boolean)
-    .join(' and ');
-  return `These figures are for ${period}${narrowed ? `, ${narrowed}` : ''}: every area, personal spending included.`;
+  const searching = q.value.trim() ? ', matching your search' : '';
+  // With one kind picked the figures are that kind alone, so "personal spending
+  // included" was no longer true of them - "3 — Janitorial and Messengerial
+  // Services" read as if personal costs were in its ₱13,000 (audit 2026-10-01).
+  // Naming the kind says what the line is for; "of the kind picked" made her
+  // look back up at the filter to find out.
+  if (selectedCategory.value !== 'All') {
+    const kind = selectedCategory.value.replace(/^\w+ — /, '');
+    return `These figures are for ${period}${searching}: ${kind} only, every area.`;
+  }
+  return `These figures are for ${period}${searching}: every area, personal spending included.`;
 });
 
 const utilitiesTotal = computed(() =>

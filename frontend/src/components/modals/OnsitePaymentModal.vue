@@ -20,7 +20,7 @@ import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ACKNOWLEDGEMENT_RECEIPT, isAcknowledgementReceipt, normalizeInvoiceNumber } from '@/lib/invoiceNumber';
 
 const router = useRouter();
@@ -645,11 +645,27 @@ function handleConfirmAccept() {
 
 function closeModal() {
   isOnsitePaymentModalOpen.value = false;
+  // The confirmation lives inside this dialog; closed with it, or it would be
+  // waiting on top of the form the next time Record payment is opened.
+  isConfirmOpen.value = false;
   recorded.value = null;
   overlappingPayments.value = [];
   waitingPayments.value = [];
   overlapCheckFailed.value = false;
 }
+
+/**
+ * Mounted once in App.vue, not by the page that opens it, so leaving the page
+ * did not close it: the phone's Back took Monthly Income away and left Record
+ * payment open over the Overview (audit 2026-10-01). Every dialog a page mounts
+ * itself already goes with its page. The path only, not the query: Monthly
+ * Income opens this from `?openPayment=1` and then takes the parameter out of
+ * the URL, which must not close what it has just opened.
+ */
+const route = useRoute();
+watch(() => route.path, () => {
+  if (isOnsitePaymentModalOpen.value) closeModal();
+});
 
 function triggerRecord() {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase());

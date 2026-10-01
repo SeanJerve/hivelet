@@ -590,6 +590,12 @@ const figuresScope = computed(() => {
   else if (filterMonth.value === 'All') period = `all of ${y}`;
   else period = `${m} ${y}`;
   const searching = q.value.trim() ? ', matching your search' : '';
+  // The cluster filter narrows every figure below it too (`rows`), but this line
+  // went on saying "all units" with BH picked - ₱163,750 for March 2025 under a
+  // sentence promising the whole property (audit 2026-10-01).
+  if (selectedCluster.value !== 'All') {
+    return `These figures are for ${period}${searching}: ${selectedCluster.value} only.`;
+  }
   return `These figures are for ${period}${searching}: all units, the Penthouse and Linda's units included.`;
 });
 

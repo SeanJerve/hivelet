@@ -206,6 +206,13 @@ function closeMobileNav() {
   isMobileSidebarOpen.value = false;
 }
 
+// The links close the drawer themselves, but the phone's Back changed the page
+// with the drawer still open over it, and the scroll lock still holding the
+// new page still underneath (audit 2026-10-01).
+watch(() => route.path, () => {
+  if (isMobileSidebarOpen.value) closeMobileNav();
+});
+
 /**
  * Hold the page still while the drawer is open.
  *
