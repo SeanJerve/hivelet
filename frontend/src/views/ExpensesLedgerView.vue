@@ -851,24 +851,30 @@ async function handleEditExpense() {
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+      <div class="ws-page-actions">
         <!--
           One export. A CSV button sat beside this one writing a flat dump,
           while this writes her layout: month blocks, Property Area totals, and
           the category summary with its running cumulative. Two buttons meant
           two files that disagreed about what the ledger looks like.
+
+          "Download" with the year and format in its name and tooltip, the
+          same pair as Monthly Income's (Sean, 2026-10-01).
         -->
         <button
           type="button"
           class="pill-btn"
           :disabled="isExportingExcel"
+          :aria-busy="isExportingExcel"
+          :aria-label="`Download ${exportYear} for Excel`"
+          :title="`Download ${exportYear} for Excel`"
           @click="exportExpensesExcel"
         >
           <FileSpreadsheet
             :class="['size-4', isExportingExcel && 'animate-pulse']"
             aria-hidden="true"
           />
-          <span>{{ isExportingExcel ? 'Building the file' : `Download ${exportYear} for Excel` }}</span>
+          <span>{{ isExportingExcel ? 'Preparing' : 'Download' }}</span>
         </button>
 
         <button type="button" class="pill-btn-brand" @click="isAddOpen = true">
@@ -1101,12 +1107,12 @@ async function handleEditExpense() {
           <td class="num">
             <button
               type="button"
-              class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
+              class="press-plate icon-btn-plain row-action"
               :aria-label="`Edit ${e.description}`"
               title="Edit"
               @click="startEditExpense(e)"
             >
-              <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+              <Pencil class="size-4" aria-hidden="true" />
             </button>
           </td>
         </tr>
@@ -1161,12 +1167,12 @@ async function handleEditExpense() {
             <div class="mt-2 flex justify-end">
             <button
               type="button"
-              class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+              class="press-plate icon-btn-plain row-action"
               :aria-label="`Edit ${e.description}`"
               title="Edit"
               @click="startEditExpense(e)"
             >
-              <Pencil class="size-3.5" aria-hidden="true" />
+              <Pencil class="size-4" aria-hidden="true" />
             </button>
             </div>
           </li>
@@ -1244,7 +1250,7 @@ async function handleEditExpense() {
                     v-if="formEntries.length > 1"
                     type="button"
                     @click="removeFormEntry(index)"
-                    class="pill-btn-danger-quiet"
+                    class="pill-btn-danger-quiet pill-btn-compact"
                   >
                     <Trash2 class="size-3.5" aria-hidden="true" />
                     <span>Remove</span>
@@ -1326,7 +1332,7 @@ async function handleEditExpense() {
                         <button
                           v-if="entry.allocations.length > 1"
                           type="button"
-                          class="icon-btn size-11 text-overdue hover:bg-overdue-soft"
+                          class="icon-btn-plain text-overdue"
                           aria-label="Take this part of the property off the split"
                           @click="removeAllocation(index, aIdx)"
                         >
@@ -1341,7 +1347,7 @@ async function handleEditExpense() {
                     <button
                       type="button"
                       @click="addAllocation(index)"
-                      class="pill-btn text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
+                      class="pill-btn pill-btn-compact"
                     >
                       <Plus class="size-3.5 text-brand" />
                       <span>Split across another area</span>
@@ -1356,7 +1362,7 @@ async function handleEditExpense() {
               <button 
                 type="button" 
                 @click="addFormEntry" 
-                class="pill-btn min-h-10 text-xs px-3.5 py-2 gap-1.5 inline-flex items-center cursor-pointer"
+                class="pill-btn pill-btn-compact"
               >
                 <Plus class="size-4 text-brand" aria-hidden="true" />
                 <span>Add another expense</span>
@@ -1367,10 +1373,12 @@ async function handleEditExpense() {
           <!-- Modal Actions Footer. `flex-wrap` so a longer label can never do
                here what it did on the edit dialog's footer below, where the
                row ran 111px past its box at 375. -->
-          <div class="mt-4 pt-4 border-t border-line flex flex-wrap items-center justify-end gap-2">
-            <button type="button" @click="isAddOpen = false" class="pill-btn cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand cursor-pointer disabled:opacity-50 min-w-[110px]">
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" aria-hidden="true" />
+          <!-- `.ws-actions` (index.css; Sean, 2026-10-01): equal halves on a
+               phone, right-aligned from 640px, one height. -->
+          <div class="ws-actions mt-4 pt-4 border-t border-line">
+            <button type="button" @click="isAddOpen = false" class="pill-btn">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand disabled:opacity-50">
+              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <span>{{ formEntries.length === 1 ? 'Save expense' : `Save ${formEntries.length} expenses` }}</span>
             </button>
           </div>
@@ -1458,7 +1466,7 @@ async function handleEditExpense() {
                     <button
                       v-if="editAllocations.length > 1"
                       type="button"
-                      class="icon-btn size-11 text-overdue hover:bg-overdue-soft"
+                      class="icon-btn-plain text-overdue"
                       aria-label="Take this part of the property off the split"
                       @click="removeEditAllocation(aIdx)"
                     >
@@ -1473,7 +1481,7 @@ async function handleEditExpense() {
                 <button 
                   type="button" 
                   @click="addEditAllocation" 
-                  class="pill-btn text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
+                  class="pill-btn pill-btn-compact"
                 >
                   <Plus class="size-3.5 text-brand" />
                   <span>Split across another area</span>
@@ -1491,30 +1499,26 @@ async function handleEditExpense() {
             "Update Entry"'s right edge at x=450 against a column ending at 339
             and `overflow-x: hidden` on `body` cutting it off.
 
-            `flex-wrap-reverse` puts the wrapped line above rather than below,
-            so Cancel and Update stay together on top and "Delete Expense"
-            drops underneath - the destructive one furthest from the thumb. At
-            `sm` this is a single flex line again and renders exactly as before.
+            Wrapping fixed that and left three widths in two rows (Sean,
+            2026-10-01). `.ws-actions` (index.css) now: Cancel and Save changes
+            equal halves, Delete expense its own row beneath at the same
+            height; from 640px one line with Delete at the far left.
           -->
-          <div class="mt-4 pt-4 border-t border-line flex flex-wrap-reverse items-center justify-end gap-2 sm:justify-between sm:gap-3">
+          <div class="ws-actions mt-4 pt-4 border-t border-line">
             <button
               v-if="editingExpense"
               type="button"
               @click="handleDeleteFromEditModal"
-              class="pill-btn-danger-quiet"
+              class="pill-btn-danger-quiet ws-action-apart"
             >
-              <Trash2 class="size-3.5" aria-hidden="true" />
+              <Trash2 class="size-4" aria-hidden="true" />
               <span>Delete expense</span>
             </button>
-            <div v-else />
-
-            <div class="flex items-center gap-2">
-              <button type="button" @click="isEditOpen = false" class="pill-btn cursor-pointer">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="pill-btn-brand cursor-pointer disabled:opacity-50 min-w-[110px]">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" aria-hidden="true" />
-                <span>Save changes</span>
-              </button>
-            </div>
+            <button type="button" @click="isEditOpen = false" class="pill-btn">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand disabled:opacity-50">
+              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+              <span>Save changes</span>
+            </button>
           </div>
         </form>
     </WsModal>
