@@ -333,12 +333,10 @@ async function handleSendReply() {
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Inquiries
         </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          Each inquiry, what they asked, and what you answered.
-        </p>
       </div>
 
     </div>
@@ -403,7 +401,7 @@ async function handleSendReply() {
           <!-- Two different empties. This said "Nothing matches what you have
                typed" to an inbox with nothing in it and nothing typed (B-61). -->
           <p v-else-if="inquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
-            No inquiries yet. When someone asks about a unit, it appears here.
+            No inquiries yet.
           </p>
 
           <p v-else-if="filteredInquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">

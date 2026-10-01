@@ -737,10 +737,10 @@ function refreshAll() {
     <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div class="min-w-0">
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
+        <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Payments and billing
         </h1>
-        <p class="mt-1 text-sm text-ink-soft">Pay a bill with GCash, and see what has been recorded against your unit.</p>
         <!-- Here, not inside the payment dialog: leaving the page from there
              drops the checkout session. -->
         <RouterLink
@@ -826,7 +826,7 @@ function refreshAll() {
           <template v-else>No payment is recorded yet.</template>
           <template v-if="standing.status === 'overdue'">
             {{ standing.periodsDue > 1 ? `${standing.periodsDue} months after that are` : 'The month after that is' }} not entered
-            yet. If you have paid the landlady, it appears here once she enters it.
+            yet.
           </template>
           Paying now covers {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
           {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }}.
@@ -850,8 +850,7 @@ function refreshAll() {
         Pay with GCash
       </button>
       <p class="text-xs leading-5 text-on-brand-soft">
-        {{ peso(standing.perPeriod.totalAmount, 2) }} a month. Paid in person? It shows here once the
-        landlady records the payment.
+        Paid in person? It shows here once the landlady records it.
       </p>
     </OverviewTile>
 
@@ -970,8 +969,8 @@ function refreshAll() {
         </div>
       </dl>
       <p class="text-sm leading-6 text-ink-soft">
-        Rent is due {{ rentFacts.dueDay }}. The landlady usually enters payments a week or two after
-        she receives them, so a month you have paid can show "Not entered" for a while.
+        Rent is due {{ rentFacts.dueDay }}. A month you have paid can show "Not entered" until the
+        landlady enters it.
       </p>
     </OverviewTile>
     </section>

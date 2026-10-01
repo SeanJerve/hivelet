@@ -1025,12 +1025,11 @@ async function exportExcel() {
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <!-- No subtitle under the name: "Every payment received, unit by unit"
+             said what the page plainly is (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Monthly Income
         </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          Every payment received, unit by unit.
-        </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
@@ -1090,8 +1089,9 @@ async function exportExcel() {
                250 short of the breakdown's own total with no reason given; that
                figure is still the ledger's Remitted column. -->
           <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(collectedAltogether) }}</p>
+          <!-- The count is the context; the tile's name already says rent and water. -->
           <p class="mt-2 text-sm leading-6 text-on-night-soft">
-            Rent and water, from {{ rows.length }}
+            From {{ rows.length }}
             {{ rows.length === 1 ? 'payment' : 'payments' }}
           </p>
         </template>
@@ -1101,7 +1101,6 @@ async function exportExcel() {
         <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
         <template v-else>
           <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalRent) }}</p>
-          <p class="mt-2 text-sm leading-6 text-ink-soft">The full rent from every payment</p>
         </template>
       </OverviewTile>
 
@@ -1334,15 +1333,11 @@ async function exportExcel() {
 
       <OverviewTile v-else-if="pendingPayments.length === 0" tone="soft" class="ws-reveal" title="Payments to verify">
         <p class="text-2xl font-semibold tracking-tight">Nothing is waiting</p>
-        <p class="text-sm text-ink-soft">
-          GCash payments appear here and count as paid once you verify them.
-        </p>
       </OverviewTile>
 
       <template v-else>
-        <p class="ws-reveal text-sm leading-6 text-ink-soft">
-          Paid online with GCash. Verifying one marks the bill as paid and adds it to the ledger.
-        </p>
+        <!-- What verifying does is said once, in the dialog where she verifies
+             (Sean, 2026-10-01: fewer words). The test-account warning stays. -->
         <!--
           B-80, Sean's decision of 2026-09-28: do not verify an online payment as
           real money until the account is live. The tenant's pay dialog says the
@@ -1450,9 +1445,6 @@ async function exportExcel() {
         class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
       >
         <p class="text-base font-semibold text-ink">Nothing matches</p>
-        <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-          No collection answers to what you have asked for.
-        </p>
       </div>
 
       <section
@@ -1724,7 +1716,6 @@ async function exportExcel() {
       :page-size="12"
       table-from="xl"
       empty-title="Nothing matches"
-      empty-note="No collection answers to what you have asked for."
     >
       <template #head>
         <tr>

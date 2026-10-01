@@ -1528,7 +1528,6 @@ async function handleOnboard() {
     <WsModal
       v-if="isOnboardModalOpen"
       title="Move someone in"
-      subtitle="Creates the account and assigns the unit."
       size="lg"
       :dismissible="false"
       @close="isOnboardModalOpen = false"
@@ -1594,7 +1593,7 @@ async function handleOnboard() {
               class="ws-input w-full"
               required
             />
-            <p class="ws-hint">One month's rent, filled in when you choose a unit. Change it if you agreed on a different amount.</p>
+            <p class="ws-hint">One month's rent. Change it if you agreed on another amount.</p>
           </div>
           <div class="ws-field">
             <label for="new-move-in">Move-in date</label>

@@ -278,8 +278,9 @@ function handleReset() {
       <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
         My details
       </h1>
+      <!-- Only the privacy link: "Keep these right so the landlady can reach you"
+           went (Sean, 2026-10-01, fewer words). -->
       <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-        Keep these right so the landlady can reach you.
         <RouterLink
           to="/privacy"
           class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"

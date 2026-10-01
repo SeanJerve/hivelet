@@ -152,7 +152,6 @@ function isTicketExpanded(ticketId: string): boolean {
 
 /** The room the ticket is filed against — derived server-side data, never typed by the tenant. */
 const activeRoomId = ref<string | null>(null);
-const activeRoomNumber = ref<string>('');
 
 // Status filter chips. 'All' is the default so nothing is hidden on first paint.
 const statusFilter = ref<'All' | 'Open' | 'Resolved'>('All');
@@ -464,7 +463,6 @@ async function fetchActiveRoom() {
        * was the case it could not see.
        */
       activeRoomId.value = activeRoom.rooms?.id ?? '';
-      activeRoomNumber.value = activeRoom.rooms?.room_number ?? '';
     }
   } catch (err: any) {
     console.error('Failed to resolve active room:', err?.message || err);
@@ -687,13 +685,10 @@ function formatDateTime(iso: string) {
       <!-- Page header -->
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
+        <!-- No subtitle that restates the page (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Repairs
         </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          Tell the landlady what is wrong<span v-if="activeRoomNumber"> in unit {{ activeRoomNumber }}</span>, and
-          follow what happens next.
-        </p>
       </div>
 
       <div
@@ -724,9 +719,6 @@ function formatDateTime(iso: string) {
         <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-5">
           <div class="border-b border-line p-5 sm:p-6">
             <h2 class="text-base font-semibold text-ink">Report it</h2>
-            <p class="mt-1 text-sm leading-6 text-ink-soft">
-              This goes straight to the landlady.
-            </p>
           </div>
 
           <!-- `p-5 sm:p-6`, matching the header strip directly above it. -->
@@ -979,11 +971,10 @@ function formatDateTime(iso: string) {
               <p class="text-sm font-semibold text-ink">
                 {{ tickets.length === 0 ? 'No requests yet' : 'Nothing to show' }}
               </p>
-              <p class="text-sm text-ink-soft break-words">
+              <!-- "No requests yet" needs no second line telling her to use the form beside it. -->
+              <p v-if="tickets.length > 0" class="text-sm text-ink-soft break-words">
                 {{
-                  tickets.length === 0
-                    ? 'Send one with the form and it will appear here.'
-                    : searchQuery.trim()
+                  searchQuery.trim()
                       ? `Nothing matches "${searchQuery.trim()}".`
                       : statusFilter === 'Resolved'
                         ? 'None of your requests is done yet.'

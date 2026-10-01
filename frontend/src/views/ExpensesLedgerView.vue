@@ -843,12 +843,10 @@ async function handleEditExpense() {
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <!-- No subtitle: it described the columns below (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Monthly Expenses
         </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          What was spent, what kind of thing it was, and which part of the property it belongs to.
-        </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
@@ -966,7 +964,7 @@ async function handleEditExpense() {
             </li>
           </ul>
           <p class="text-xs leading-5 text-ink-faint">
-            Main House and Other are your own costs. They are recorded here but not taken out of rental income.
+            Main House and Other are personal: not taken out of rental income.
           </p>
         </template>
       </OverviewTile>
@@ -1036,13 +1034,11 @@ async function handleEditExpense() {
     <div v-else-if="groupedExpenses.length === 0" class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center">
       <p class="text-base font-semibold text-ink">
         <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
-        <template v-else>Nothing here</template>
+        <template v-else>Nothing matches</template>
       </p>
-      <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-        <template v-if="expenseRecordsFetchFailed">
-          This is not the same as there being no expenses. Reload the page to try again.
-        </template>
-        <template v-else>No expense matches what you have asked for.</template>
+      <!-- The heading says it when nothing matches; the failure keeps its line. -->
+      <p v-if="expenseRecordsFetchFailed" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+        This is not the same as there being no expenses. Reload the page to try again.
       </p>
     </div>
 

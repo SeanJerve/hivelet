@@ -537,10 +537,8 @@ function handleDeleteTicketPrompt() {
     <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div class="min-w-0">
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Repairs</h1>
-        <p class="mt-1 text-sm text-ink-soft">
-          What tenants have reported, who is attending it, and what is finished.
-        </p>
       </div>
       <button type="button" class="pill-btn-brand shrink-0 self-start sm:self-auto" @click="openLogRepair">
         <Plus class="size-4" aria-hidden="true" />

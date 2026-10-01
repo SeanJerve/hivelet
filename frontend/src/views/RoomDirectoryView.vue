@@ -249,12 +249,10 @@ const statusChips = computed(() => [
     <!-- Page header -->
     <div>
       <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+      <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
       <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
         Rooms and rates
       </h1>
-      <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-        All 33 units across 5 clusters, what each one lets for, and who is in it.
-      </p>
     </div>
 
     <!--
