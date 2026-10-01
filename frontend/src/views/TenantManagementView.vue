@@ -10,13 +10,15 @@ import { propertyToday } from '@/lib/propertyDate';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { copyText } from '@/lib/copyText';
 import { EMAIL_NOT_SET } from '@/lib/contactDetails';
-import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
+import { UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import ShowMore from '@/components/ui/ShowMore.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
 
 const route = useRoute();
 const router = useRouter();
@@ -470,6 +472,42 @@ type ViewMode = 'list' | 'grouped';
 const viewMode = ref<ViewMode>('grouped');
 
 /**
+ * The toolbar's switch and filters (components/ui/ListToolbar.vue, Sean,
+ * 2026-10-01). The refs above stay the state; these only describe them.
+ * Year comes first because it decides the rest: Month only once a year is
+ * picked, and the standing only for "Now" - a past year is one list by unit,
+ * from the receipts, with nobody's standing in it.
+ */
+const tenantViews: ToolbarView<ViewMode>[] = [
+  { value: 'grouped', label: 'By cluster', icon: LayoutGrid },
+  { value: 'list', label: 'As a list', icon: TableIcon },
+];
+const tenantFilters = computed<ToolbarFilter[]>(() => [
+  { key: 'year', label: 'Year', value: historyYear.value, defaultValue: 'now', options: historyYearOptions.value },
+  {
+    key: 'month',
+    label: 'Month',
+    value: historyMonth.value,
+    defaultValue: 'all',
+    options: historyMonthOptions,
+    when: (d) => d.year !== 'now',
+  },
+  {
+    key: 'status',
+    label: 'Standing',
+    value: statusFilter.value,
+    defaultValue: 'active',
+    options: filterChips.value,
+    when: (d) => d.year === 'now',
+  },
+]);
+function applyTenantFilters(v: FilterDraft) {
+  historyYear.value = String(v.year);
+  historyMonth.value = String(v.month);
+  statusFilter.value = v.status as StatusFilter;
+}
+
+/**
  * `unitCode` on a resident is the only thread to a cluster - `TenantRecord`
  * carries no cluster of its own. `rooms` is keyed by unit and is already the
  * live source every other screen reads a unit's cluster from, so this is a
@@ -839,110 +877,25 @@ async function handleOnboard() {
     </div>
 
     <!--
-      Search, the switcher, and the standing filter - same grouping as the Units directory.
+      The list toolbar every screen shares (components/ui/ListToolbar.vue,
+      Sean, 2026-10-01): the switch, then search with the filter button beside
+      it. Year, Month and the standing are inside the filter dialog.
 
-      A COLUMN ON A PHONE, A ROW FROM `sm` UP, and the two `shrink-0`s that used
-      to sit inside the wrapping row are gone.
-
-      What they did, measured in the running app at a 375px viewport: the filter
-      wrapper was `shrink-0` while this left-hand group was `flex-1 min-w-0`, so
-      the row never wrapped - the left group simply absorbed the whole shortfall
-      and closed to 123px of the 343px content column. The search box says
-      `w-full`, and `w-full` of 123px is 123px, so the one control the client
-      likes was a third of the width he saw it at. The switcher inside it could
-      not shrink (`shrink-0`, min-content 236px), so it ran to x=238 inside that
-      123px box and straight under the filter pill, which starts at x=135: two
-      controls overlapping by 103px.
-
-      Stacking on the small side rather than wrapping means nothing has to be
-      squeezed: search, then the switcher, then the filter, each the full width
-      of the column. From `sm` the group is a row again and lays out as it did.
-      Re-measured at 375, 768 and 1280 - see the note on the room directory's
-      filters, which is the same shape and the same trap.
+      The switch is not for a past year: that is one list by unit, from the
+      receipts. The standing is only offered when there is something to choose
+      between - with nobody moved out and no prospects it held one choice,
+      "Living here", which Sean called nonsense on the testing morning
+      (2026-09-30); the dialog leaves out any filter with a single option.
     -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <div class="relative w-full sm:w-80">
-          <Search
-            class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-            aria-hidden="true"
-          />
-          <label for="resident-search" class="sr-only">Search tenants</label>
-          <input
-            id="resident-search"
-            v-model="q"
-            type="search"
-            placeholder="Search"
-            class="ws-input w-full pl-11"
-          />
-        </div>
-
-        <!-- By cluster / As a list switcher, same treatment as the Units directory.
-             Not for a past year: that is one list by unit, from the receipts. -->
-        <div
-          v-if="!showingHistory"
-          class="min-h-[2.75rem] h-11 inline-flex w-full items-center rounded-full bg-tile border border-line p-1 shadow-xs sm:w-auto sm:shrink-0"
-          role="group"
-          aria-label="How to show the tenants"
-        >
-          <button
-            type="button"
-            :class="[
-              'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
-              viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-            ]"
-            :aria-pressed="viewMode === 'grouped'"
-            @click="viewMode = 'grouped'"
-          >
-            <LayoutGrid class="size-4" aria-hidden="true" />
-            <span>By cluster</span>
-          </button>
-          <button
-            type="button"
-            :class="[
-              'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
-              viewMode === 'list' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-            ]"
-            :aria-pressed="viewMode === 'list'"
-            @click="viewMode = 'list'"
-          >
-            <TableIcon class="size-4" aria-hidden="true" />
-            <span>As a list</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- `sm:ml-auto` keeps the filter on the right edge even on the line it
-           wraps onto, which is what `justify-between` did for it while it was
-           the only thing over there. -->
-      <!-- Only when there is something to choose between. With nobody moved out
-           and no prospects it held one choice, "Living here", which Sean called
-           nonsense on the testing morning (2026-09-30). -->
-      <!-- Two to a row on a phone, a row of their own from `sm`. Year is always
-           there; Month only once a year is chosen; standing only for "Now". -->
-      <div class="grid grid-cols-2 gap-3 sm:ml-auto sm:flex sm:items-center">
-        <PillSelect
-          v-if="filterChips.length > 1 && !showingHistory"
-          v-model="statusFilter"
-          :options="filterChips"
-          aria-label="Filter by standing"
-          widthClass="w-full sm:w-52"
-        />
-        <PillSelect
-          v-model="historyYear"
-          :options="historyYearOptions"
-          aria-label="Year"
-          widthClass="w-full sm:w-32"
-        />
-        <PillSelect
-          v-if="showingHistory"
-          v-model="historyMonth"
-          :options="historyMonthOptions"
-          aria-label="Month"
-          widthClass="w-full sm:w-44"
-        />
-      </div>
-    </div>
+    <ListToolbar
+      v-model:view="viewMode"
+      v-model:search="q"
+      :views="showingHistory ? [] : tenantViews"
+      view-label="How to show the tenants"
+      search-label="Search tenants"
+      :filters="tenantFilters"
+      @apply="applyTenantFilters"
+    />
 
     <TenantHistory
       v-if="showingHistory"

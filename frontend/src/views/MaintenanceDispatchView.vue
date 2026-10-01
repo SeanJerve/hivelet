@@ -20,7 +20,6 @@ import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { 
   Plus, 
-  Search, 
   Wrench, 
   CheckCircle2, 
   UserCheck, 
@@ -39,6 +38,8 @@ import Skeleton from '@/components/ui/Skeleton.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { ToolbarFilter } from '@/components/ui/listToolbar';
 
 const q = ref('');
 const statusFilter = ref('All');
@@ -52,6 +53,11 @@ const statusFilterOptions = [
   { value: 'Resolved', label: 'Resolved' },
   { value: 'Closed', label: 'Closed' },
 ];
+
+/** The toolbar's one filter (components/ui/ListToolbar.vue); `statusFilter` stays the state. */
+const repairFilters = computed<ToolbarFilter[]>(() => [
+  { key: 'status', label: 'Status', value: statusFilter.value, defaultValue: 'All', options: statusFilterOptions },
+]);
 
 // Edit / Manage Ticket Modal State
 const isEditModalOpen = ref(false);
@@ -547,37 +553,17 @@ function handleDeleteTicketPrompt() {
     </header>
 
     <!--
-      A column on a phone, a row from `sm` up - the same shape as the residents
-      register and the room directory, so the three toolbars behave alike. The
-      filter took the search box's full width rather than sitting alone at
-      208px under a 343px bar; neither `shrink-0` is doing anything a wrapping
-      row wants (see the residents register for what the pair of them cost
-      there).
+      The list toolbar every screen shares (components/ui/ListToolbar.vue).
+      One filter, the status, and it still sits behind the filter button
+      rather than beside the search: the same button in the same place on
+      every list (Sean, 2026-10-01: "even if it has one filter").
     -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-      <div class="relative w-full sm:w-80">
-        <!-- left-4/pl-11, the inset the other six admin registers use for the
-             same search box. This one sat 2px further left with 4px less room
-             for its text. -->
-        <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-        <label for="maintenance-search" class="sr-only">Search by title, unit or technician</label>
-        <input
-          id="maintenance-search"
-          v-model="q"
-          type="search"
-          placeholder="Search"
-          class="ws-input w-full pl-11"
-        />
-      </div>
-      <div class="flex items-center gap-2 sm:ml-auto">
-        <PillSelect
-          v-model="statusFilter"
-          :options="statusFilterOptions"
-          aria-label="Filter by status"
-          widthClass="w-full sm:w-52"
-        />
-      </div>
-    </div>
+    <ListToolbar
+      v-model:search="q"
+      search-label="Search by title, unit or technician"
+      :filters="repairFilters"
+      @apply="(v) => (statusFilter = String(v.status))"
+    />
 
     <div v-if="isLoading" class="grid gap-4 xl:grid-cols-3" aria-busy="true">
       <span class="sr-only" role="status">Loading repair requests</span>

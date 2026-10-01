@@ -16,14 +16,15 @@ import { playSound } from '@/lib/sounds';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
-import { CreditCard, Search, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
+import { CreditCard, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SavedCopyNote from '@/components/overview/SavedCopyNote.vue';
-import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { FilterDraft, ToolbarFilter } from '@/components/ui/listToolbar';
 import PaymentMonths from '@/components/overview/PaymentMonths.vue';
 import type { ReceiptInput } from '@/lib/tenantPaymentMonths';
 
@@ -316,6 +317,16 @@ const availableYears = computed(() => {
 const yearOptions = computed(() =>
   availableYears.value.map((y) => ({ value: y, label: String(y) }))
 );
+
+/** The toolbar's filters (components/ui/ListToolbar.vue); the refs above stay the state. */
+const paymentFilters = computed<ToolbarFilter[]>(() => [
+  { key: 'year', label: 'Year', value: selectedYear.value, defaultValue: currentYear, options: yearOptions.value },
+  { key: 'sort', label: 'Order', value: sortOrder.value, defaultValue: 'latest', options: sortOrderOptions },
+]);
+function applyPaymentFilters(v: FilterDraft) {
+  selectedYear.value = Number(v.year);
+  sortOrder.value = v.sort === 'oldest' ? 'oldest' : 'latest';
+}
 
 const filteredPayments = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
@@ -992,43 +1003,15 @@ function refreshAll() {
 
     <!-- Payment record -->
     <OverviewTile title="Payment record">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="relative w-full sm:w-80 shrink-0">
-          <!-- left-4/pl-11: the one inset every search box in the workspace
-               uses. -->
-          <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-          <label for="tenant-payment-search" class="sr-only">Search by reference, method or status</label>
-          <input
-            id="tenant-payment-search"
-            v-model="searchQuery"
-            type="search"
-            placeholder="Search"
-            class="ws-input w-full pl-11"
-          />
-        </div>
-        <!--
-          No `shrink-0`. Sized at max-content (2 x 13rem plus the gap = 424px)
-          this row ran to x=472 against a tile ending at 327 on a 375px phone,
-          clipped rather than reachable by `body`'s `overflow-x: hidden`, so a
-          resident could not change the order of their own payment history.
-          Below `sm` the two selects now share one full-width row, half each.
-        -->
-        <div class="flex w-full items-center gap-2 sm:w-auto">
-          <PillSelect
-            v-model="selectedYear"
-            :options="yearOptions"
-            aria-label="Filter by year"
-            width-class="min-w-0 flex-1 sm:w-52 sm:flex-none"
-          />
-          <PillSelect
-            v-model="sortOrder"
-            :options="sortOrderOptions"
-            aria-label="Sort order"
-            align="right"
-            width-class="min-w-0 flex-1 sm:w-52 sm:flex-none"
-          />
-        </div>
-      </div>
+      <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
+           Sean, 2026-10-01): search, and the filter button beside it holding
+           the year and the order. -->
+      <ListToolbar
+        v-model:search="searchQuery"
+        search-label="Search by reference, method or status"
+        :filters="paymentFilters"
+        @apply="applyPaymentFilters"
+      />
 
       <UnavailableNote
         v-if="historyLoadFailed"

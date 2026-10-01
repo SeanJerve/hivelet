@@ -7,10 +7,12 @@ import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed,
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
-import { Inbox, Phone, Mail, Send, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
+import { Inbox, Phone, Mail, Send, Loader2, UserPlus, XCircle } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { ToolbarFilter } from '@/components/ui/listToolbar';
 
 const router = useRouter();
 
@@ -147,14 +149,38 @@ useOpenFromQuery('inquiry', async (id) => {
   else if (!inquiriesFetchFailed.value) showToast('info', 'Not found', 'That inquiry is no longer in the list.');
 });
 
+/**
+ * Which inquiries to list, by where they stand. New with the shared list
+ * toolbar (Sean, 2026-10-01): every list has the same filter button, and here
+ * the useful question is "who is still waiting for an answer". All by default,
+ * so nothing is hidden on arrival.
+ */
+const statusFilter = ref('All');
+const inquiryFilters = computed<ToolbarFilter[]>(() => [
+  {
+    key: 'status',
+    label: 'Status',
+    value: statusFilter.value,
+    defaultValue: 'All',
+    options: [
+      { value: 'All', label: 'All inquiries', count: inquiries.length },
+      ...Object.keys(STATUS_WORD).map((s) => ({
+        value: s,
+        label: STATUS_WORD[s],
+        count: inquiries.filter((i) => i.status === s).length,
+      })),
+    ],
+  },
+]);
+
 const filteredInquiries = computed(() => {
   return inquiries.filter(inq => {
-    const matchesSearch = 
+    const matchesSearch =
       inq.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       inq.unit.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       inq.phone.includes(searchQuery.value) ||
       inq.email.toLowerCase().includes(searchQuery.value.toLowerCase());
-    return matchesSearch;
+    return matchesSearch && (statusFilter.value === 'All' || inq.status === statusFilter.value);
   });
 });
 
@@ -345,20 +371,14 @@ async function handleSendReply() {
       <!-- The enquiries -->
       <div class="flex flex-col overflow-hidden rounded-tile bg-tile xl:col-span-4">
         <div class="space-y-3 border-b border-line p-4">
-          <div class="relative">
-            <Search
-              class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-              aria-hidden="true"
-            />
-            <label for="inquiry-search" class="sr-only">Search inquiries</label>
-            <input
-              id="inquiry-search"
-              v-model="searchQuery"
-              type="search"
-              placeholder="Search"
-              class="ws-input w-full pl-11"
-            />
-          </div>
+          <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
+               Sean, 2026-10-01): search, and the filter button beside it. -->
+          <ListToolbar
+            v-model:search="searchQuery"
+            search-label="Search inquiries"
+            :filters="inquiryFilters"
+            @apply="(v) => (statusFilter = String(v.status))"
+          />
           <p class="text-sm text-ink-soft">
             {{ filteredInquiries.length }}
             {{ filteredInquiries.length === 1 ? 'inquiry' : 'inquiries' }}
@@ -405,7 +425,9 @@ async function handleSendReply() {
           </p>
 
           <p v-else-if="filteredInquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
-            No inquiry matches “{{ searchQuery.trim() }}”.
+            <template v-if="searchQuery.trim()">No inquiry matches “{{ searchQuery.trim() }}”.</template>
+            <!-- Only the status filter can empty the list without a search. -->
+            <template v-else>No inquiry is “{{ statusWord(statusFilter) }}”.</template>
           </p>
 
           <!--

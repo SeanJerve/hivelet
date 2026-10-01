@@ -25,7 +25,8 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import ShowMore from '@/components/ui/ShowMore.vue';
 import { Search, Pencil, LayoutGrid, Table as TableIcon, Eye, ChevronDown } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
-import PillSelect from '@/components/ui/PillSelect.vue';
+import ListToolbar from '@/components/ui/ListToolbar.vue';
+import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
 
 type ViewMode = 'matrix' | 'table';
 
@@ -221,6 +222,20 @@ const statusChips = computed(() => [
     count: rooms.filter((r) => r.status === 'maintenance').length,
   },
 ]);
+
+/** The toolbar's switch and filters (components/ui/ListToolbar.vue); the refs above stay the state. */
+const roomViews: ToolbarView<ViewMode>[] = [
+  { value: 'matrix', label: 'By cluster', icon: LayoutGrid },
+  { value: 'table', label: 'As a list', icon: TableIcon },
+];
+const roomFilters = computed<ToolbarFilter[]>(() => [
+  { key: 'status', label: 'Status', value: selectedStatus.value, defaultValue: 'All', options: statusChips.value },
+  { key: 'cluster', label: 'Cluster', value: cluster.value, defaultValue: 'All', options: clusterOptions.value },
+]);
+function applyRoomFilters(v: FilterDraft) {
+  selectedStatus.value = String(v.status);
+  cluster.value = String(v.cluster);
+}
 </script>
 
 <template>
@@ -256,106 +271,20 @@ const statusChips = computed(() => [
     </div>
 
     <!--
-      Controls toolbar. A column on a phone, a row from `sm` up.
-
-      `flex-1 min-w-0` on the left-hand group is gone with it. It is the other
-      half of the trap the filters below document: an item that can absorb the
-      whole shortfall means the row never wraps, so at 375 the search box and
-      the switcher were being squeezed rather than stacked. Here the group is
-      sized by its content, so the outer row wraps the filters underneath
-      instead, which is what it did at every width worth having.
+      The list toolbar every screen shares (components/ui/ListToolbar.vue,
+      Sean, 2026-10-01): the switch between the two ways of reading the same 33
+      units at the top, then search with the filter button beside it. The
+      status ("All units") and cluster filters are in the filter dialog.
     -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <!-- Search units -->
-        <div class="relative w-full sm:w-80">
-          <Search
-            class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-            aria-hidden="true"
-          />
-          <label for="unit-search" class="sr-only">Search units</label>
-          <input
-            id="unit-search"
-            v-model="q"
-            type="search"
-            placeholder="Search"
-            class="ws-input w-full pl-11"
-          />
-        </div>
-
-        <!-- Two ways of reading the same 33 units -->
-        <div
-          class="min-h-[2.75rem] h-11 inline-flex w-full items-center rounded-full bg-tile border border-line p-1 shadow-xs sm:w-auto sm:shrink-0"
-          role="group"
-          aria-label="How to show the units"
-        >
-          <button
-            type="button"
-            :class="[
-              'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
-              viewMode === 'matrix' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-            ]"
-            :aria-pressed="viewMode === 'matrix'"
-            @click="viewMode = 'matrix'"
-          >
-            <LayoutGrid class="size-4" aria-hidden="true" />
-            <span>By cluster</span>
-          </button>
-
-          <button
-            type="button"
-            :class="[
-              'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
-              viewMode === 'table' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-            ]"
-            :aria-pressed="viewMode === 'table'"
-            @click="viewMode = 'table'"
-          >
-            <TableIcon class="size-4" aria-hidden="true" />
-            <span>As a list</span>
-          </button>
-        </div>
-      </div>
-
-      <!--
-        `flex-wrap`, and no `shrink-0`, which is how the expenses ledger and
-        the audit trail already lay their filter rows out.
-
-        Two PillSelects are 2 x 13rem plus the gap = 424px, and `shrink-0`
-        held that width against a 343px content column on a phone. Measured in
-        the running app at a 375px viewport: the row ran to x=448, so the last
-        97px of the cluster filter sat past the right edge - and `body` carries
-        `overflow-x: hidden`, so it was CLIPPED rather than reachable by
-        scrolling. The cluster filter could not be used on a phone at all.
-
-        Re-measured after the change at 375, 768 and 1280: they stack only at
-        375 and sit on one row at both larger widths, ending on exactly the
-        same right edge as before.
-
-        2026-09-23: that stack was two 208px pills on two rows, left-aligned
-        under a 236px switcher, and the client called the result messy. They
-        share ONE row at phone width now - `flex-1` off a 343px column is
-        167.5px each - and `sm:w-48 sm:flex-none` fixes their width from `sm`
-        up. 2026-09-25: 12rem rather than 13rem, because at 1366 the toolbar
-        needed 990px of a 980px column and the filters wrapped onto a second
-        row by themselves.
-      -->
-      <div class="flex flex-wrap items-center gap-2 sm:ml-auto">
-        <PillSelect
-          v-model="selectedStatus"
-          :options="statusChips"
-          aria-label="Filter by status"
-          widthClass="min-w-0 flex-1 sm:w-48 sm:flex-none"
-        />
-        <PillSelect
-          v-model="cluster"
-          :options="clusterOptions"
-          aria-label="Cluster"
-          align="right"
-          widthClass="min-w-0 flex-1 sm:w-48 sm:flex-none"
-        />
-      </div>
-    </div>
+    <ListToolbar
+      v-model:view="viewMode"
+      v-model:search="q"
+      :views="roomViews"
+      view-label="How to show the units"
+      search-label="Search units"
+      :filters="roomFilters"
+      @apply="applyRoomFilters"
+    />
 
     <!-- SKELETON LOADING STATE -->
     <div v-if="isLoading" class="space-y-6">
