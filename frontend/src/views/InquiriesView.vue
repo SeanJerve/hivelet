@@ -3,7 +3,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { useRouter } from 'vue-router';
-import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
+import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, roomsLoaded, fetchRooms, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
@@ -124,6 +124,15 @@ async function fetchInquiries() {
 }
 
 onMounted(async () => {
+  /**
+   * The rate quoted beside an inquiry ("which rents for ...") reads `rooms`, and
+   * nothing on this screen ever loaded them. Opened straight from the menu or a
+   * notification, `rooms` was still the seed, so a Penthouse inquiry was quoted
+   * ₱12,000 a month against the ₱30,000 Rooms and rates shows (audit
+   * 2026-10-01). Not awaited: the inbox does not wait for the rates, and the
+   * price is held back until they have arrived (`roomsLoaded`, below).
+   */
+  if (!roomsLoaded.value) void fetchRooms().catch(() => {});
   await fetchInquiries();
   // Only when nothing is chosen yet: a notification may already have opened one.
   if (!activeInquiryId.value && inquiries.length > 0) {
@@ -501,7 +510,7 @@ async function handleSendReply() {
                      to show no price than a wrong one. -->
                 Filed under unit
                 <span class="font-semibold uppercase text-ink">{{ activeUnit.unitCode }}</span
-                ><template v-if="!roomsFetchFailed">, which rents for
+                ><template v-if="roomsLoaded && !roomsFetchFailed">, which rents for
                   <span class="tabular font-semibold text-ink">{{ peso(activeUnit.price) }}</span>
                   a month</template
                 >.

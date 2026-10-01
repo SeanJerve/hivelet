@@ -289,8 +289,12 @@ function checkInquiryConversion() {
       newUnit.value = asListedUnitCode(String(route.query.unit));
     }
     syncDepositToUnit();
+    // No "Filled in from the inquiry" toast any more (audit 2026-10-01). On a
+    // phone it landed on top of this dialog's title and X for its four seconds,
+    // so the first tap on the X hit the toast instead, and it told her to
+    // "choose a unit" that the inquiry had already chosen. The filled-in name
+    // and unit in the dialog say the same thing.
     isOnboardModalOpen.value = true;
-    showToast('info', 'Filled in from the inquiry', `Check ${newName.value}'s details, then choose a unit.`);
   }
 }
 
@@ -369,6 +373,22 @@ watch(rooms, () => {
 
 watch(() => route.query.convertInquiryId, () => {
   checkInquiryConversion();
+});
+
+/**
+ * A conversion she backs out of is put down too (audit 2026-10-01).
+ *
+ * `handleOnboard` drops `?convertInquiryId` once it has used it, but only on a
+ * successful move-in. Closed with the X or Cancel, the parameter stayed in the
+ * URL, so the next "Move someone in" on this page - a walk-in with nothing to
+ * do with that inquiry - was saved as its conversion: the inquiry marked
+ * Converted and pointed at the wrong tenant. The backend's 409 only stops a
+ * SECOND conversion, not this first wrong one.
+ */
+watch(isOnboardModalOpen, (open) => {
+  if (open || !route.query.convertInquiryId) return;
+  const { convertInquiryId, name, phone, email, unit, ...keep } = route.query;
+  void router.replace({ query: keep });
 });
 
 type StatusFilter = 'active' | 'vacated' | 'prospect';
