@@ -277,6 +277,39 @@ const config: UserConfig = {
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
+            /**
+             * The site's own pictures, from the phone after the first time
+             * (Sean, 2026-10-02: a refresh on LTE should show the page at once,
+             * photograph included). The hero pair is precached above; this
+             * covers what is not: the gate in Location (and its 800-pixel
+             * copy), the floor plans a visitor opens, the share image. Each is
+             * stored the first time it is shown and served from the phone from
+             * then on, offline too. File names do not change when a picture
+             * is replaced, so entries expire after 30 days rather than living
+             * forever.
+             *
+             * Same origin and never `/api/`: nothing a server answers per
+             * person (a receipt, an upload) may sit in this cache; see the
+             * `/api/(public|health)` rule below for why that matters on a
+             * shared phone. A function rather than a RegExp because Workbox
+             * tests a RegExp against the whole URL, origin included, and this
+             * rule must not depend on which domain the site is served from.
+             */
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin && !url.pathname.startsWith('/api/') && /\.(?:webp|avif|jpe?g|png|gif|svg)$/i.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'site-images',
+              expiration: {
+                maxEntries: 40,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              },
+              cacheableResponse: {
+                statuses: [200]
+              }
+            }
+          },
+          {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
             options: {

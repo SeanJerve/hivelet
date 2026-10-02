@@ -131,9 +131,9 @@ router.afterEach((to) => {
  * actually rendered: `router.isReady()` waits for the first route's own code
  * and guards, `nextTick` for RouterView to have rendered that page into the
  * DOM, and the frame after that is it painted. Taking it down at `app.mount`
- * alone would uncover the header over the empty placeholder App.vue holds open
- * while the route's chunk downloads - the "white page and the headers" it is
- * there to cover.
+ * alone would uncover the stand-in App.vue holds open while the route's chunk
+ * downloads (RouteSkeleton since 2026-10-02; before that an empty pale box
+ * under the header, the "white page and the headers" it is there to cover).
  *
  * It can never trap anyone: it also goes if the first navigation fails (a
  * route chunk that did not download), on a script error during start-up, and
@@ -142,6 +142,8 @@ router.afterEach((to) => {
  */
 const SPLASH_CAP_MS = 8000
 function dismissSplash() {
+  // public/boot.js's dark page background for a landing refresh: the app covers it now.
+  document.documentElement.classList.remove('boot-hero')
   const splash = document.getElementById('app-splash')
   if (!splash || splash.classList.contains('is-leaving')) return
   // Never drawn (public/boot.js's `no-splash`): there is no fade to wait for.
@@ -183,12 +185,38 @@ function firstPageRendered() {
   watch(currentRole, (role) => warmRoutes(router, role))
 }
 
+/*
+ * "Rendered" means the page itself is in <main> with a height, checked each
+ * frame, not only that the router is ready (Sean, 2026-10-02). `isReady` plus
+ * a tick was right for every page measured, but it is a claim about Vue's
+ * scheduling rather than about the screen, and the loader coming down early
+ * is exactly what uncovered the header over an empty page. RouteSkeleton
+ * (`data-boot-skeleton`) does not count: it is the stand-in, not the page.
+ * The 8s cap above still applies, and the cap never sets `hivelet.seen`: a
+ * load that did not render keeps the loader for next time.
+ */
+function pageInMain(): boolean {
+  const main = document.getElementById('main')
+  if (!main) return false
+  return Array.from(main.children).some(
+    (el) => !el.hasAttribute('data-boot-skeleton') && el.getBoundingClientRect().height > 0,
+  )
+}
+function whenPageInMain(done: () => void) {
+  const started = performance.now()
+  const look = () => {
+    if (pageInMain()) done()
+    else if (performance.now() - started < SPLASH_CAP_MS) requestAnimationFrame(look)
+  }
+  requestAnimationFrame(look)
+}
+
 router
   .isReady()
   .then(
     () =>
       nextTick().then(() =>
-        requestAnimationFrame(() => {
+        whenPageInMain(() => {
           dismissSplash()
           firstPageRendered()
         }),
