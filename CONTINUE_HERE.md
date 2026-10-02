@@ -22,11 +22,27 @@
 >   Repairs still offering their writes offline; greyed now like the rest (`03f4bbb`).
 > - **Docs:** Appendix K, `HANDOFF_TO_QA.md` §0a (rows for Show as, this year first, the Download
 >   dialog, the loader rule, the wider offline greying).
-> - **Needs a person:** **B-94** (Vercel challenge; the Adyen webhook) before Saturday; **B-96** (RLS
->   on three backup tables, SQL written, Supabase connection was down); and **confirm the deploy**:
->   the machine that did this could not reach `hivelet.vercel.app` at all (network policy), so
->   `887457a`/`03f4bbb` being live was not seen. `curl -sI https://hivelet.vercel.app/ | grep -i
->   content-security` should end `object-src 'none'; base-uri 'self'; frame-ancestors 'none'`.
+> - **2 Oct afternoon and evening (Sean's list, `CLOUD_HANDOFF.md`):** "BH" reads **Boarding
+>   House** on every screen and in the income workbook (code `BH` unchanged); the unit editor shows
+>   the unit's **floor plan** (the public page's own image) until a photograph replaces it; no eye
+>   button on unit cards; **Order** in every list's Filters (`lib/rowOrder.ts`) and **Group by** on
+>   Monthly Income; **Delete** on inquiries (new `DELETE /admin/inquiries/:id`, hard delete,
+>   audited) and a bin on repair cards, neither yet run against the live database; a cancelled
+>   Save window says nothing; **pull-to-refresh refreshes in place** (the hexagon turns until the
+>   data is back, skeletons over the figures, no loader on any reload once the worker controls the
+>   page); no skeleton on the landing or sign-in page; all three **workbooks** share one look
+>   (subtotals light blue, grand/year totals red with white type, **ACK** for acknowledgement
+>   receipts, no working notes).
+> - **Checked from a cloud session, 2 Oct evening:** the live site serves the current build
+>   (precache file list identical to `main`'s build) and the audit fixes (CSP ends `object-src
+>   'none'; base-uri 'self'; frame-ancestors 'none'`). **B-94's challenge is off**: every page,
+>   `/api/health`, `/api/public/rates` and all 64 precache files answer 200 with no
+>   `x-vercel-mitigated`. **Offline on the live site**: the worker installs, and offline with a cold
+>   reload `/`, `/login`, `/rooms`, `/admin`, `/tenant` all come from it. An installed app that
+>   showed Chrome's "You're offline" needs one online open (wait ~10 s, close) to take the worker.
+> - **Needs a person:** in Adyen (Developers > Webhooks) confirm deliveries succeed now that the
+>   challenge is off (B-94); **B-96** (RLS on three backup tables, SQL written; the Supabase
+>   connection was not authorised in either 2 Oct session); try **Delete** once on a test inquiry.
 >   Migrations: none written or applied on 2 Oct; next number still **076** (B-96 proposes it).
 >
 > **0.0 (previous) — where things stand, 2026-10-01 (Lloyd's machine; Sean's notes are in `HANDOFF_NEXT_SESSION.md`).**

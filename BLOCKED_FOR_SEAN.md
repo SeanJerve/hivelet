@@ -98,6 +98,12 @@ thing did not work" is not.
 
 ### B-94 — Vercel "Security Checkpoint" challenges every visitor, `/api` included · **OPEN, needs the Vercel owner**
 
+- **2 Oct evening: the challenge is off.** From a cloud session, `/`, `/public`, `/sw.js`,
+  `/api/health`, `/api/public/rates` and all 64 service-worker precache files answer 200 with no
+  `x-vercel-mitigated` header, and the worker installs and serves the app offline. **Left to do:**
+  Adyen > Developers > Webhooks: check that deliveries since the challenge was lifted succeeded
+  (and resend any that failed while it was on). Then mark this DONE.
+
 - **What:** since some time on 2026-10-01 (seen 22:30 PHT) every request to
   `https://hivelet.vercel.app` (`/public`, `/`, `/api/public/rates`) answers **403** with
   `x-vercel-mitigated: challenge` unless it is a browser that passes the "We're verifying your

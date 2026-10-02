@@ -85,7 +85,8 @@ email. Your name can only be changed by the landlady.
 - **Android (Chrome):** menu **⋮** > **Install app** (or **Add to Home screen**).
 - **iPhone (Safari):** **Share** > **Add to Home Screen**.
 
-It then opens from its own icon. **Pull down from the top** of a page to reload it.
+It then opens from its own icon. **Pull down from the top** of a page to reload it: the green
+hexagon turns until your figures are back, and the page stays where it is.
 *Hilahin pababa mula sa itaas para i-reload.*
 
 **Without signal**, it still opens and says **"No connection"**, with **"Saved figures from"** and
@@ -118,16 +119,25 @@ has the same bar at the top:
 - **Search** narrows the list as you type.
 - **Filters** opens a window with every filter for that list (cluster, month, year, status, kind).
   Where a list can be drawn two ways, **Show as** at the top of that window picks **By cluster** or
-  **As a list**. Nothing changes until you press **Apply filters**; **Reset** puts the choices back.
+  **As a list**. **Order** arranges the list: **By unit**, **By name (A to Z)**, **Newest first** or
+  **Oldest first**, whichever that list has (Repairs also has **Most urgent first**). Nothing changes
+  until you press **Apply filters**; **Reset** puts the choices back.
   The filters in use are named under the bar; **Clear** removes them.
 
 **Also on every screen:** a short ping means something was saved, or someone else's change has
 arrived. Tap a message at the top of the screen to close it. The phone's **Back** button goes back a
 page and closes any window that was open on it. In the installed app, **pull down from the top** of a
-page to reload it. **Light or dark:** your initials > **Appearance** > **System**, **Light** or
+page to reload it: the green hexagon turns until the figures are back, and grey outlines stand in
+for them meanwhile; the page does not go blank. **Light or dark:** your initials > **Appearance** > **System**, **Light** or
 **Dark** (System follows the phone or computer). On the public pages it is the sun/moon button at
 the foot of the page. **The green hexagon** turns only the first time the site opens on a phone or
-computer; after that a reload shows grey outlines of the page while it loads.
+computer; after that a reload shows grey outlines of the page while it loads. The public landing
+page and the sign-in page come with the app and appear at once, with no outlines.
+
+**Downloads.** Where the browser offers a **Save** window (Chrome or Edge on a computer), the message
+**"Report downloaded"** appears only once the file is saved; cancelling the window says nothing and
+saves nothing. On a phone the message is **"Download started"**. The cluster of 22 main rooms is
+called **Boarding House** on every screen and in every downloaded workbook.
 
 ### 1. Signing in and your password
 
@@ -187,14 +197,18 @@ payment goes live it runs on Adyen's test account and no real money arrives, so 
 
 **Which year.** Monthly Income opens on **this year**, and the figures at the top say so ("These
 figures are for all of 2026"). **Filters** > **Year** picks another year, or **All years** for
-everything since the records began.
+everything since the records began. **Filters** > **Group by** gathers the payments by **Cluster**
+(the usual view), by **Unit**, or by **Tenant (A to Z)**.
 
 **Download** asks what the file should cover: **Month** (pick the month and year), **Year** (pick
 the year) or **All**. It opens on what the screen is showing, so pressing **Download** again gets
 that. The workbook is in your own layout (month blocks, cluster subtotals, Linda separate) and is
 named for what it holds: "Monthly Income March 2026 only - MI032026" for one month, "Monthly Income
 2025 - MI2025" for a past year (this year's file is named for the current month, as before), and
-"Monthly Income All Years - MIALL".
+"Monthly Income All Years - MIALL". In the workbook each cluster's subtotal is on a light-blue row
+and each **GRAND SUBTOTAL** is red with white letters; an acknowledgement receipt shows as **ACK**.
+The Monthly Expenses workbook uses the same colours for each month's **TOTAL** and the **YEAR
+TOTAL**.
 
 ### 4. Recording an expense (Monthly Expenses)
 
@@ -233,8 +247,10 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
 ### 6. Rooms and rates
 
 Every unit, by cluster or as one list (**Filters** > **Show as**); **Filters** also narrows them by
-status or cluster. **Edit** a unit to change its rate, status, description
-or photo. Every rate change is kept in the unit's price history automatically; the system never
+status or cluster. **Edit** (the pencil) a unit to change its rate, status, description
+or picture. A unit with no photograph shows its **Floor plan**, the same one visitors see on the
+public pages; **Replace with a photograph** uploads one, and once saved the public page shows that
+photograph instead. Every rate change is kept in the unit's price history automatically; the system never
 raises a rate by itself.
 
 ### 7. Repairs
@@ -242,12 +258,15 @@ raises a rate by itself.
 New requests from tenants appear here, marked by urgency. Open one (**Manage this repair**) to reply,
 **Send technician**, move it to **In Progress**, or **Mark resolved** (the tenant is notified). **Log
 a repair** records one you were told about in person, or one for an empty unit. **Delete repair**
-removes a request made by mistake. **Filters** > **Status** shows one stage only.
+(in **Manage this repair**, or the bin icon beside **Manage** on each card) removes a request for
+good after you confirm it. **Filters** > **Status** shows one stage only.
 
 ### 8. Inquiries
 
 Messages from people asking about a unit. Reply (**Save reply**), **Close inquiry** when settled, or
-**Move them in** to start a tenancy with the details already filled in. **Filters** > **Status**
+**Move them in** to start a tenancy with the details already filled in. **Delete** (on any inquiry)
+asks **"Delete this inquiry?"** and then removes it and its conversation for good; it cannot be
+undone. **Filters** > **Status**
 shows only those **Waiting for an answer**, **Answered**, **Moved in** or **Closed**.
 
 The person who asked reads your reply on their inquiry's own page, and can write back there: when

@@ -29,7 +29,7 @@ reload (service worker must serve the shell).
 
 ## Open work, in priority order (Sean, 2 Oct afternoon)
 
-1. **Offline must work on the INSTALLED app.** Sean's installed app offline shows Chrome's own
+1. **DONE on the live site (cloud session, 2 Oct evening; Sean: one online open of the installed app)** **Offline must work on the INSTALLED app.** Sean's installed app offline shows Chrome's own
    "You're offline" page (app icon + "You're offline") — i.e. the service worker did not serve the
    navigation at all, so none of the saved figures can show. The IndexedDB layer
    (`frontend/src/lib/offlineCache.ts`) works when the shell loads (verified on a local production
@@ -44,7 +44,12 @@ reload (service worker must serve the shell).
    challenge mode (B-94) answering the worker's ~80 precache fetches with 403. Ask Sean to turn B-94
    off, then open the installed app online once, wait ~10 s, close, reopen offline. If it still fails,
    read the install error in the installed app's DevTools (Application > Service workers).
-2. **DONE (8c62857)** Rename "BH" to "Boarding House" (frontend; check backend Excel exports in backend/src/services/*Export.ts still print "BH" and rename there too) everywhere it is a label shown to people (cluster names on
+   **Cloud check, 2 Oct evening:** challenge mode is off (no `x-vercel-mitigated`; `/api` 200); all 64
+   precache URLs in the live `sw.js` answer 200 and match `main`'s build file-for-file; a fresh
+   headless Chromium installs the worker, and offline with a cold reload `/`, `/login`, `/rooms`,
+   `/admin`, `/tenant` are served by it. What is left is on the phone: open the installed app online
+   once, wait ~10 s, close, reopen offline.
+2. **DONE (8c62857 frontend; 339e36b backend: income workbook subtotal and the cashier payee line)** Rename "BH" to "Boarding House" (frontend; check backend Excel exports in backend/src/services/*Export.ts still print "BH" and rename there too) everywhere it is a label shown to people (cluster names on
    Overview "Units by cluster", Rooms and rates, Tenants, Monthly Income/Expenses filters and
    tables, downloads, public pages). Keep data codes/keys unchanged unless a migration is truly
    needed; map at display time. Check Excel exports too.
@@ -61,12 +66,12 @@ reload (service worker must serve the shell).
    headers/CSP, uploads, webhook code review only, `npm audit --omit=dev`; axe-core (install outside
    the repo) on every screen light+dark at 375/1366, keyboard/focus/touch targets. Fix low-risk
    issues; write `docs/AUDIT_2026-10-02_SECURITY_ACCESSIBILITY.md`.
-8. Docs: update `docs/FINAL MANUSCRIPT/USER_MANUAL_APPENDIX_K.md`, `HANDOFF_TO_QA.md` §0a and
+8. **DONE (see git log: "Docs for the 2 Oct afternoon")** Docs: update `docs/FINAL MANUSCRIPT/USER_MANUAL_APPENDIX_K.md`, `HANDOFF_TO_QA.md` §0a and
    `CONTINUE_HERE.md` §0.0 for every change (Show as in Filters; year-default figures; Download
    dialog, month files end "only"; offline essentials; loader on first load only; items above).
 
 9. **DONE (e0a6683)** Pull-to-refresh: the hexagon mark keeps spinning from release until the page is back (loader shown on a pull reload).. **DONE (8a54696)** Delete for inquiries (new DELETE /admin/inquiries/:id, hard delete + cascade + audit) and a visible delete on repairs. NOT yet exercised against the live DB: verify once on a test inquiry if possible.
 
-11. **DONE (ab95744, a91777d)** Every list's Filters has Order (lib/rowOrder.ts); Monthly Income also has Group by (cluster / unit / tenant).. **DONE (639dcb2, cfe6af0, 9071ce6)** Pull-to-refresh refreshes in place (lib/live.ts refreshNow) with RefreshSkeleton over the page; no full-screen loader on any reload once the service worker controls the page.. **DONE (f982969)** Income workbook: ACK for acknowledgement receipts, subtotal rows light blue, GRAND SUBTOTAL red with white type, Linda note lines and the OD-01 note removed. Public masthead links semibold.. **DONE (33d8f9a)** No skeleton on the landing or sign-in page (both bundled with the app; static public pages get no placeholder bars).. **OPEN** Check that the Monthly Expenses and Tenant History workbooks match the income workbook's look (ACK, blue subtotal / red grand rows) if Sean wants them consistent; update docs/09_MONTHLY_INCOME_REPORT.md if it describes the removed Linda lines or the old colours.
+11. **DONE (ab95744, a91777d)** Every list's Filters has Order (lib/rowOrder.ts); Monthly Income also has Group by (cluster / unit / tenant).. **DONE (639dcb2, cfe6af0, 9071ce6)** Pull-to-refresh refreshes in place (lib/live.ts refreshNow) with RefreshSkeleton over the page; no full-screen loader on any reload once the service worker controls the page.. **DONE (f982969)** Income workbook: ACK for acknowledgement receipts, subtotal rows light blue, GRAND SUBTOTAL red with white type, Linda note lines and the OD-01 note removed. Public masthead links semibold.. **DONE (33d8f9a)** No skeleton on the landing or sign-in page (both bundled with the app; static public pages get no placeholder bars).. **DONE (1a0d3d1)** Check that the Monthly Expenses and Tenant History workbooks match the income workbook's look (ACK, blue subtotal / red grand rows) if Sean wants them consistent; update docs/09_MONTHLY_INCOME_REPORT.md if it describes the removed Linda lines or the old colours.
 
 Mark each item here **DONE (commit)** as you finish it, and push.
