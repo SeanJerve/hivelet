@@ -14,6 +14,7 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { shrinkPhoto } from '@/lib/shrinkPhoto';
@@ -583,7 +584,8 @@ async function handleTicketSubmit() {
   // The submit button disables on `submitting`, but Enter inside the title or
   // description field submits the form directly - a second Enter before Vue's
   // next render still reaches here with the button not yet visibly disabled.
-  if (submitting.value) return;
+  // The same Enter reaches here while the button is disabled for having no connection.
+  if (submitting.value || writesUnavailable.value) return;
   ticketError.value = '';
   ticketErrorField.value = null;
 
@@ -873,13 +875,15 @@ function formatDateTime(iso: string) {
               </div>
             </div>
 
+            <!-- Offline or from the saved copy, it says why it cannot send rather than
+                 failing after she has typed it all (lib/offlineCache.ts; Sean, 2026-10-02). -->
             <button
               type="submit"
-              :disabled="submitting"
+              :disabled="submitting || writesUnavailable"
               class="pill-btn-brand w-full min-h-11 mt-4"
             >
               <Send class="size-3.5" aria-hidden="true" />
-              <span>{{ submitting ? 'Sending…' : 'Send request' }}</span>
+              <span>{{ submitting ? 'Sending…' : writesUnavailable ? 'Sending needs a connection' : 'Send request' }}</span>
             </button>
           </form>
         </div>

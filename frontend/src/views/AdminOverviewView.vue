@@ -13,6 +13,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '@/lib/api';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { currentUser } from '@/lib/authStore';
 import {
   rooms,
@@ -836,9 +837,11 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         floating button is for the live year's actions only.
       -->
       <div :class="['ws-page-actions', !isHistoricalMode && 'max-md:hidden']">
+        <!-- None while offline or showing the saved copy: each one is a write (lib/offlineCache.ts;
+             Sean, 2026-10-02). -->
         <template v-if="!isHistoricalMode">
           <router-link
-            v-for="a in headerActions"
+            v-for="a in writesUnavailable ? [] : headerActions"
             :key="a.to"
             :to="a.to"
             :class="a.primary ? 'pill-btn-brand' : 'pill-btn'"
@@ -856,7 +859,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       </div>
     </header>
 
-    <QuickActionsFab v-if="!isHistoricalMode" :actions="quickActions" />
+    <QuickActionsFab v-if="!isHistoricalMode && !writesUnavailable" :actions="quickActions" />
 
     <div
       v-if="!isInitialLoading && anyLoadFailed"

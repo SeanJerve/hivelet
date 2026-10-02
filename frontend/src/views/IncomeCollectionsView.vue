@@ -22,6 +22,7 @@ import {
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
@@ -1088,7 +1089,14 @@ async function exportExcel() {
           <span>{{ isExportingExcel ? 'Preparing' : 'Download' }}</span>
         </button>
 
-        <button type="button" class="pill-btn-brand" @click="isOnsitePaymentModalOpen = true">
+        <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
+        <button
+          type="button"
+          class="pill-btn-brand"
+          :disabled="writesUnavailable"
+          :title="writesUnavailable ? 'Needs a connection' : undefined"
+          @click="isOnsitePaymentModalOpen = true"
+        >
           <Plus class="size-4" aria-hidden="true" />
           <span>Record payment</span>
         </button>

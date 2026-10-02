@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
@@ -889,7 +890,14 @@ async function handleEditExpense() {
           <span>{{ isExportingExcel ? 'Preparing' : 'Download' }}</span>
         </button>
 
-        <button type="button" class="pill-btn-brand" @click="isAddOpen = true">
+        <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
+        <button
+          type="button"
+          class="pill-btn-brand"
+          :disabled="writesUnavailable"
+          :title="writesUnavailable ? 'Needs a connection' : undefined"
+          @click="isAddOpen = true"
+        >
           <Plus class="size-4" aria-hidden="true" />
           <span>Record expense</span>
         </button>
