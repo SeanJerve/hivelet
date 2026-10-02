@@ -3,11 +3,8 @@
 Sean's list, 2026-10-02, in the order it is meant to run. Each part says where to start, what is
 already true, and what "done" means. Read `CLAUDE.md` first in any session; its rules still hold.
 
-**Before any of it, two open items:**
-- **B-98** (`BLOCKED_FOR_SEAN.md`): `credentials/creds.txt` is readable in the public repo's history
-  (branch `design-from-lloyd`). Change what still works, rotate any key with Vercel in the same sitting,
-  then delete the branch or make the repo private.
-- **After the evaluation:** move loydtest out of PH (Tenants > Move them out), so occupancy reads 32 of 33.
+**After the evaluation:** move loydtest out of PH (Tenants > Move them out), so occupancy reads 32 of 33.
+(B-98 was closed by Sean on 2 Oct.)
 
 ## 1. Code documentation and clean-up
 

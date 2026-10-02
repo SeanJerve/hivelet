@@ -33,7 +33,10 @@ thing did not work" is not.
 
 ## Open
 
-### B-98 — `credentials/creds.txt` is readable in the public repo's history (branch `design-from-lloyd`) · **OPEN, needs Sean**
+### B-98 — `credentials/creds.txt` is readable in the public repo's history (branch `design-from-lloyd`) · **DONE 2026-10-02 (Sean: addressed)**
+
+- **Closed by Sean the same evening.** At the time of closing, the branch `design-from-lloyd` was still on
+  GitHub and the repository still public; Sean confirmed the contents were dealt with.
 
 - **What:** the repository is public on GitHub. `credentials/creds.txt` (and a screenshot beside it)
   was committed on 2026-08-25 (`788f321`) and removed on 2026-09-13 (`bd95b14`), but every commit in
