@@ -23,7 +23,7 @@ import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import ShowMore from '@/components/ui/ShowMore.vue';
-import { Search, Pencil, LayoutGrid, Table as TableIcon, Eye, ChevronDown } from 'lucide-vue-next';
+import { Search, Pencil, LayoutGrid, Table as TableIcon, ChevronDown } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
@@ -197,10 +197,8 @@ function editUnit(u: RoomItem) {
   isAdminEditUnitModalOpen.value = true;
 }
 
-function openSpecs(u: RoomItem) {
-  activeRoomDetail.value = u;
-  isRoomDetailModalOpen.value = true;
-}
+// No "Details" (eye) button any more (Sean, 2026-10-02): the edit dialog already shows the unit,
+// so the pencil is the one action on a card or row.
 
 /**
  * The counts, which are also the filter. One chip per state, each carrying the
@@ -400,9 +398,6 @@ function applyRoomFilters(v: FilterDraft) {
                   <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
                 </dl>
                 <div class="flex shrink-0 gap-1.5">
-                  <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
-                    <Eye class="size-4" aria-hidden="true" />
-                  </button>
                   <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
                     <Pencil class="size-4" aria-hidden="true" />
                   </button>
@@ -491,9 +486,6 @@ function applyRoomFilters(v: FilterDraft) {
           </td>
           <td class="num">
             <div class="inline-flex items-center justify-end gap-2">
-              <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
-                <Eye class="size-4" aria-hidden="true" />
-              </button>
               <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
                 <Pencil class="size-4" aria-hidden="true" />
               </button>
@@ -528,9 +520,6 @@ function applyRoomFilters(v: FilterDraft) {
             <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
           </dl>
           <div class="flex shrink-0 gap-1.5">
-            <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
-              <Eye class="size-4" aria-hidden="true" />
-            </button>
             <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
               <Pencil class="size-4" aria-hidden="true" />
             </button>

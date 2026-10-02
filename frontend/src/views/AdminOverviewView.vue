@@ -456,7 +456,7 @@ const live12MonthsData = computed<MonthIncomeData[]>(() =>
         hasExpenses: matchingExpenses.length > 0,
         grossIncome,
         halfOfRentShare: matchingRecords.reduce(
-          (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0),
+          (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'Boarding House' ? r.rent / 2 : r.rent) || 0),
           0
         ),
         waterIncome: matchingRecords.reduce((sum, r) => sum + Number(r.water || 0), 0),
@@ -548,7 +548,7 @@ const historicalAnnualGrossTotal = computed(() =>
 
 const historicalAnnualHalfOfRentShare = computed(() =>
   historicalIncomeRecords.value.reduce(
-    (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0),
+    (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'Boarding House' ? r.rent / 2 : r.rent) || 0),
     0
   )
 );
@@ -581,7 +581,7 @@ const historical12MonthsData = computed<MonthIncomeData[]>(() =>
       hasExpenses: matchingExpenses.length > 0,
       grossIncome,
       halfOfRentShare: matchingRecords.reduce(
-        (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0),
+        (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'Boarding House' ? r.rent / 2 : r.rent) || 0),
         0
       ),
       waterIncome: matchingRecords.reduce((sum, r) => sum + Number(r.water || 0), 0),

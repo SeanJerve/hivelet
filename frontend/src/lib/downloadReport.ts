@@ -120,21 +120,52 @@ export async function downloadReport(
   }
   if (!res.ok) throw new Error(await failureMessage(res));
 
-  const url = URL.createObjectURL(await res.blob());
-  const a = document.createElement('a');
-  a.href = url;
+  const blob = await res.blob();
   const fileName =
     scope.kind === 'all'
       ? reportFileName(kind, 'all')
       : reportFileName(kind, scope.year, propertyToday(), scope.kind === 'month' ? scope.month : null);
+
+  /*
+   * "Even when I cancel it still shows success" (Sean, 2026-10-02). A plain <a download> cannot
+   * tell the page whether the browser's own Save dialog was cancelled. Where the browser has a
+   * save picker (Chrome and Edge on a computer), use it: it reports a cancel, and success is said
+   * only once the file is written. It needs the tap's user activation, which a slow download can
+   * outlive; then (and everywhere else - phones, Safari, Firefox) the plain download runs, and the
+   * message says it started rather than claiming it was saved.
+   */
+  type SavePicker = (o: { suggestedName: string; types: { description: string; accept: Record<string, string[]> }[] }) => Promise<{
+    createWritable(): Promise<{ write(b: Blob): Promise<void>; close(): Promise<void> }>;
+  }>;
+  const picker = (window as unknown as { showSaveFilePicker?: SavePicker }).showSaveFilePicker;
+  if (picker) {
+    try {
+      const handle = await picker({
+        suggestedName: fileName,
+        types: [{ description: 'Excel workbook', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      // A download is not a change, so no ping (Sean, 2026-10-01: major actions only).
+      showToast('success', 'Report downloaded', `Saved as ${fileName}`, { sound: false });
+      return;
+    } catch (err) {
+      // Cancelled in the Save window: nothing was saved, so nothing to announce.
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      // Activation expired or the picker refused: fall through to the plain download.
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
   a.download = fileName;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-
-  // A download is not a change, so no ping (Sean, 2026-10-01: major actions only).
-  showToast('success', 'Report downloaded', `Saved as ${fileName}`, { sound: false });
+  showToast('info', 'Download started', fileName, { sound: false });
 }
 
 /** The server's own sentence for a refusal it explains (a 422), else the status. */

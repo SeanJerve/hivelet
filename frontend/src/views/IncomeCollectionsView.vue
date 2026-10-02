@@ -548,7 +548,7 @@ const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
  * Described only as a system-computed figure equal to half the row's Rent
  * Amount, retained so the ledger reconciles with the historical spreadsheet.
  */
-const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'BH' ? (r.rent / 2) : 0), 0));
+const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'Boarding House' ? (r.rent / 2) : 0), 0));
 const totalWater = computed(() => rows.value.reduce((s, r) => s + r.water, 0));
 /**
  * BR-038, matching the generated column exactly: Rent Amount + Water Payment.
@@ -656,8 +656,8 @@ const figuresScope = computed(() => {
 const clusterGroups = computed(() => {
   const definitions = [
     { 
-      key: 'BH', 
-      label: 'Boarding House (BH)',
+      key: 'Boarding House', 
+      label: 'Boarding House',
       desc: '22 Rooms',
       hasShareColumn: true, 
       units: ['1A', '1B', '1C', '1D', '1E', '1F', '1G', '1H', '2A', '2B', '2C', '2D', '2E', '2F', '2G', '3A', '3B', '3C', '3D', '3E', '3F', '3G'] 
@@ -1196,7 +1196,7 @@ const isDownloadOpen = ref(false);
         <template v-else>
           <p class="tabular text-3xl font-semibold leading-none text-verify">{{ peso(totalShare) }}</p>
           <p class="mt-2 text-sm leading-6 text-ink-soft">
-            Half of each BH payment's rent, worked out automatically
+            Half of each Boarding House payment's rent, worked out automatically
           </p>
         </template>
       </OverviewTile>
@@ -1720,7 +1720,7 @@ const isDownloadOpen = ref(false);
           </td>
           <td class="num">
             <span class="block font-semibold text-ink">{{ peso(r.rent, 2) }}</span>
-            <span v-if="r.cluster === 'BH'" class="block text-xs font-semibold text-verify">
+            <span v-if="r.cluster === 'Boarding House'" class="block text-xs font-semibold text-verify">
               50%: {{ peso(r.rent / 2, 2) }}
             </span>
           </td>
@@ -1748,7 +1748,7 @@ const isDownloadOpen = ref(false);
           <th scope="row" colspan="3">All {{ rows.length }} on screen</th>
           <td class="num">
             <span class="block">{{ peso(totalRent, 2) }}</span>
-            <span class="block text-xs text-verify">50% on BH: {{ peso(totalShare, 2) }}</span>
+            <span class="block text-xs text-verify">50% on Boarding House: {{ peso(totalShare, 2) }}</span>
           </td>
           <td class="num">{{ rows.reduce((sum, r) => sum + r.occupants, 0) }}</td>
           <td class="num">{{ peso(totalWater, 2) }}</td>
@@ -1789,7 +1789,7 @@ const isDownloadOpen = ref(false);
             <dd class="tabular font-semibold text-ink">{{ peso(totalRent, 2) }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-ink-faint">50% Share, on BH rows</dt>
+            <dt class="text-xs text-ink-faint">50% Share, on Boarding House rows</dt>
             <dd class="tabular font-semibold text-verify">{{ peso(totalShare, 2) }}</dd>
           </div>
           <div>
@@ -1826,7 +1826,7 @@ const isDownloadOpen = ref(false);
             <dt class="text-xs text-ink-faint">Rent</dt>
             <dd class="tabular font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
           </div>
-          <div v-if="r.cluster === 'BH'">
+          <div v-if="r.cluster === 'Boarding House'">
             <dt class="text-xs text-ink-faint">50% Share</dt>
             <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2, 2) }}</dd>
           </div>

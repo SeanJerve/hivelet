@@ -754,7 +754,7 @@ function triggerRecord() {
         incomeRecords.unshift({
           id: serverRecordId,
           unit: selectedUnit.value.toUpperCase(),
-          cluster: room?.cluster || 'BH',
+          cluster: room?.cluster || 'Boarding House',
           datePaid: formatDateForDisplay(date.value),
           contact: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || 'Walk-in Resident'),
           invoice: inv,

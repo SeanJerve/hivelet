@@ -935,7 +935,7 @@ const statusTone = computed(() => {
               <Home class="size-6 text-brand" aria-hidden="true" />
             </div>
           </div>
-          <!-- No "Building" row: it showed the cluster code ("BH"), which means
+          <!-- No "Building" row: it showed the cluster code ("Boarding House"), which means
                nothing to a resident, about a place they already live in. -->
           <dl class="grid grid-cols-3 gap-x-4 gap-y-3 text-sm">
             <div>

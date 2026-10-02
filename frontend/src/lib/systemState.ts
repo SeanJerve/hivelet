@@ -94,7 +94,7 @@ export interface IncomeRecord {
   /**
    * `''` when the row's unit could not be read, which is a state the ledger has
    * to be able to represent. The alternative is what was here before - naming a
-   * real cluster, `'BH'`, for a row nobody could place - and a row filed into a
+   * real cluster, `'Boarding House'`, for a row nobody could place - and a row filed into a
    * subtotal it may not belong in is worse than one that visibly has no home.
    */
   cluster: Cluster | '';
@@ -406,7 +406,7 @@ export function floorLabelFor(floor: number): string {
 /**
  * A building's name as a sentence would say it.
  *
- * `cluster_code` holds short labels - "BH", "Back Apartment", "Linda" - which
+ * `cluster_code` holds short labels - "Boarding House", "Back Apartment", "Linda" - which
  * are right on a chip in a table and wrong in prose. The category page's
  * floor-plan caption read "Floor plan of the 1st Floor of the BH", and its
  * screen-reader line "Unit 1A is on the 1st Floor of the BH".
@@ -654,12 +654,12 @@ export function updateRoomRate(unitCode: string, newRate: number, maxOccupants: 
 
 function mapClusterName(code: string): Cluster {
   const norm = (code || '').toLowerCase().trim();
-  if (norm === 'bh' || norm.includes('main')) return 'BH';
+  if (norm === 'bh' || norm.includes('main')) return 'Boarding House';
   if (norm.includes('back')) return 'Back Apartment';
   if (norm.includes('front')) return 'Front Apartment';
   if (norm.includes('penthouse') || norm === 'ph') return 'Penthouse';
   if (norm.includes('linda')) return 'Linda Units';
-  return 'BH';
+  return 'Boarding House';
 }
 
 function mapOperationalStatus(status: string): UnitStatus {
@@ -692,7 +692,7 @@ export async function fetchRooms(): Promise<RoomItem[]> {
 
     if (Array.isArray(data) && data.length > 0) {
       const mapped: RoomItem[] = data.map((r) => {
-        const clusterCode = r.cluster_code || r.clusters?.code || 'BH';
+        const clusterCode = r.cluster_code || r.clusters?.code || 'Boarding House';
         const cluster = mapClusterName(clusterCode);
         /**
          * THE CODE THAT IS ACTUALLY ON THE DOOR.
@@ -1016,7 +1016,7 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
         /**
          * No invented unit, and no invented cluster.
          *
-         * These read `|| '1A'` and `|| 'BH'`. Neither can fire today -
+         * These read `|| '1A'` and `|| 'Boarding House'`. Neither can fire today -
          * `monthly_income_records.room_id` is NOT NULL and 0 of 937 rows are
          * null, so the join always resolves - and that is exactly why they are
          * worth removing rather than leaving. They fire on a SHAPE change, not
