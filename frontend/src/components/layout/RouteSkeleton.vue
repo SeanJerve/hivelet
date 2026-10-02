@@ -71,16 +71,22 @@ const kind: 'landing' | 'workspace' | 'public' =
     aria-hidden="true"
   >
     <!-- The masthead bar: the wordmark's place, and the controls' place on the right. -->
-    <div class="ws-page flex h-16 items-center justify-between">
+    <div :class="['ws-page flex h-16 items-center justify-between', kind === 'workspace' && 'ws-workspace']">
       <Skeleton class-name="h-6 w-24 rounded-full" />
       <Skeleton class-name="h-8 w-8 rounded-full" />
     </div>
-    <div v-if="kind === 'workspace'" class="ws-page ws-workspace flex flex-col gap-6 py-6">
-      <Skeleton class-name="h-8 w-48 rounded-full" />
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <SkeletonCard variant="metric" :count="3" />
+    <!-- AppSidebar's column (w-60 from lg) and App.vue's `py-6 lg:pl-6`, so nothing moves sideways when the page lands. -->
+    <div v-if="kind === 'workspace'" class="ws-page ws-workspace flex">
+      <div class="hidden w-60 shrink-0 flex-col gap-3 py-6 pr-2 lg:flex">
+        <Skeleton v-for="i in 7" :key="i" class-name="h-9 w-full rounded-xl" />
       </div>
-      <SkeletonCard variant="list" :count="2" />
+      <div class="flex min-w-0 flex-1 flex-col gap-6 py-6 lg:pl-6">
+        <Skeleton class-name="h-8 w-48 rounded-full" />
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <SkeletonCard variant="metric" :count="3" />
+        </div>
+        <SkeletonCard variant="list" :count="2" />
+      </div>
     </div>
     <div v-else class="ws-page py-10">
       <div class="flex max-w-2xl flex-col gap-4">

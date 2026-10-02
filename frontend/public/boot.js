@@ -62,6 +62,18 @@
   try {
     if (localStorage.getItem('hivelet.seen') === '1') {
       document.documentElement.classList.add('no-splash');
+      /*
+       * No loader, so what shows until the app's code has run is the page
+       * background. On the landing page that is the hero's dark field, not
+       * the pale canvas, so a refresh there goes straight from dark to the
+       * photograph instead of pale, then dark, then the photograph (Sean,
+       * 2026-10-02). index.html colours it; main.ts takes the class off once
+       * the page has rendered.
+       */
+      var path = location.pathname;
+      if (path === '/' || path === '/public' || path === '/public/') {
+        document.documentElement.classList.add('boot-hero');
+      }
     }
   } catch (e) {
     // Storage blocked: leave the loader on.

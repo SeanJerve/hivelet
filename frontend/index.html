@@ -124,6 +124,9 @@
       @media (prefers-reduced-motion:reduce){#app-splash .hex{animation:splash-breathe 2.4s ease-in-out infinite}}
       .no-splash #app-splash{display:none}
       [data-theme="dark"] #app-splash{background:#0f1412}
+      /* A refresh of the landing page with no loader (public/boot.js `boot-hero`): the hero's own --night until the page renders (Sean, 2026-10-02). */
+      .boot-hero body{background:#0f1b15}
+      [data-theme="dark"].boot-hero body{background:#24332b}
     </style>
   </head>
   <body class="bg-[#fafaf9] text-[#1c1917] antialiased selection:bg-[#f59e0b]/20 selection:text-[#1c1917]">

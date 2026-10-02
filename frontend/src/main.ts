@@ -142,6 +142,8 @@ router.afterEach((to) => {
  */
 const SPLASH_CAP_MS = 8000
 function dismissSplash() {
+  // public/boot.js's dark page background for a landing refresh: the app covers it now.
+  document.documentElement.classList.remove('boot-hero')
   const splash = document.getElementById('app-splash')
   if (!splash || splash.classList.contains('is-leaving')) return
   // Never drawn (public/boot.js's `no-splash`): there is no fade to wait for.
