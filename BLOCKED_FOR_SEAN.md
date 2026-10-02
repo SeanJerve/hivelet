@@ -33,6 +33,18 @@ thing did not work" is not.
 
 ## Open
 
+### B-95 — two small calls from the Download dialog (2 Oct) · **OPEN, decision**
+
+- **Same file name for "this month" and "this year":** downloading the *current* month saves as
+  "Monthly Income October 2026 - MI102026.xlsx", which is also the current-year file's name (the year
+  names were kept because test case A-29 and rehearsal step 23 quote them). Decide whether a month
+  file should read e.g. "MI2026-10" instead, and update the two documents with it.
+- **`backend/scripts/check-report-totals.mjs`** reads tenant-sheet columns `Receipts` / `Receipt`;
+  the sheet's headers are `Payments` / `Invoice`, so its tenant receipt-count comparisons probably
+  compare 0 with the real count. Pre-existing; not run (it reads the live database). Fix the column
+  names and run it once with `.env`.
+- **Raised:** 2026-10-02 by Claude, from the download-scope work (merged 75fb103)
+
 ### B-94 — Vercel "Security Checkpoint" challenges every visitor, `/api` included · **OPEN, needs the Vercel owner**
 
 - **What:** since some time on 2026-10-01 (seen 22:30 PHT) every request to
