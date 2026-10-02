@@ -33,6 +33,8 @@ import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
+import SegmentBar from '@/components/overview/SegmentBar.vue';
+import { focusMonth, MONTH_SHORT as FOCUS_MONTH_SHORT } from '@/lib/focusMonth';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import type { CapsuleMonth } from '@/components/overview/types';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -560,18 +562,6 @@ function applyIncomeFilters(v: FilterDraft) {
 }
 
 const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
-/**
- * Half of Rent Amount, summed over BH rows only. BR-035.
- *
- * The scope matters and was not stated anywhere on screen: this is not half of
- * the whole ledger. Half of every row's rent is P3,886,125; this figure is
- * P2,343,375 because only the Boarding House cluster carries the column in the
- * landlady's spreadsheet. The card now says so.
- *
- * Described only as a system-computed figure equal to half the row's Rent
- * Amount, retained so the ledger reconciles with the historical spreadsheet.
- */
-const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'Boarding House' ? (r.rent / 2) : 0), 0));
 const totalWater = computed(() => rows.value.reduce((s, r) => s + r.water, 0));
 /**
  * BR-038, matching the generated column exactly: Rent Amount + Water Payment.
@@ -655,24 +645,39 @@ const periodWord = computed(() => {
   return m ? `${m} ${filterYear.value}` : filterYear.value;
 });
 
-const figuresScope = computed(() => {
-  const y = filterYear.value;
-  const m = monthsList.find((x) => x.val === filterMonth.value)?.label ?? '';
-  const years = yearsList.value.filter((v) => v !== 'All');
-  let period: string;
-  if (y === 'All' && filterMonth.value === 'All') {
-    period = years.length > 1 ? `every payment from ${years.at(-1)} to ${years[0]}` : `every payment in ${years[0] ?? 'the ledger'}`;
-  } else if (y === 'All') period = `${m} of every year`;
-  else if (filterMonth.value === 'All') period = `all of ${y}`;
-  else period = `${m} ${y}`;
-  const searching = q.value.trim() ? ', matching your search' : '';
-  // The cluster filter narrows every figure below it too (`rows`), but this line
-  // went on saying "all units" with BH picked - ₱163,750 for March 2025 under a
-  // sentence promising the whole property (audit 2026-10-01).
-  if (selectedCluster.value !== 'All') {
-    return `These figures are for ${period}${searching}: ${selectedCluster.value} only.`;
-  }
-  return `These figures are for ${period}${searching}: all units, the Penthouse and Linda's units included.`;
+/**
+ * The headline card is one month (Sean, 2026-10-02: the screen is MONTHLY
+ * Income; the year is the card beside it, as on Monthly Expenses). Which
+ * month: lib/focusMonth.ts. The sentence that sat above the cards ("These
+ * figures are for all of 2026: all units, the Penthouse and Linda's units
+ * included") is gone: each card's title names its period.
+ */
+const focus = computed(() =>
+  focusMonth(filterYear.value, filterMonth.value, (year) => [
+    ...new Set(incomeRecords.filter((r) => String(r.year) === year).map((r) => incomeRowMonth(r)).filter((m): m is number => m !== null)),
+  ])
+);
+const monthRows = computed(() =>
+  incomeRecords.filter(
+    (r) =>
+      matchesExceptCluster(r, focus.value.year, FOCUS_MONTH_SHORT[focus.value.month - 1]) &&
+      (selectedCluster.value === 'All' || r.cluster === selectedCluster.value)
+  )
+);
+const monthRent = computed(() => monthRows.value.reduce((s, r) => s + r.rent, 0));
+const monthWater = computed(() => monthRows.value.reduce((s, r) => s + r.water, 0));
+// BR-035: half of each Boarding House row's Rent Amount, as `totalShare`.
+const monthShare = computed(() => monthRows.value.reduce((s, r) => s + (r.cluster === 'Boarding House' ? r.rent / 2 : 0), 0));
+
+/** Where the period's rent and water came from, by cluster: a true part-to-whole, like Expenses by area. */
+const clusterSplit = computed(() => {
+  const totals = new Map<string, number>();
+  for (const r of rows.value) totals.set(r.cluster, (totals.get(r.cluster) ?? 0) + r.rent + r.water);
+  const tones = ['brand', 'bright', 'night', 'soft', 'hatch', 'faint'] as const;
+  return [...totals.entries()]
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({ label, value, tone: tones[i % tones.length] }));
 });
 
 // Grouped rows matching Excel's 5 physical sub-sections
@@ -1208,9 +1213,8 @@ const isDownloadOpen = ref(false);
       the data - read it in none, which is the same shape as the dispatch board
       that claimed zero repairs.
     -->
-    <p v-if="!incomeRecordsFetchFailed" class="text-sm leading-6 text-ink-soft">{{ figuresScope }}</p>
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <OverviewTile :title="`Rent and water received, ${periodWord}`" tone="night">
+    <div class="grid gap-4 xl:grid-cols-12">
+      <OverviewTile :title="`Received, ${focus.label}`" tone="night" class="xl:col-span-4">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
@@ -1218,49 +1222,70 @@ const isDownloadOpen = ref(false);
           @retry="fetchIncome"
         />
         <template v-else>
-          <!-- Everything handed over, the same sum the breakdown below is made of.
-               It was rent plus water (BR-038's remitted_amount), which left it
-               250 short of the breakdown's own total with no reason given; that
-               figure is still the ledger's Remitted column. -->
-          <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(collectedAltogether) }}</p>
-          <!-- The count is the context; the tile's name already says rent and water. -->
-          <p class="mt-2 text-sm leading-6 text-on-night-soft">
-            From {{ rows.length }}
-            {{ rows.length === 1 ? 'payment' : 'payments' }}
+          <!-- Rent plus water, the Remitted column's figure, for the one month. -->
+          <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater) }}</p>
+          <p class="text-sm leading-6 text-on-night-soft">
+            {{ monthRows.length === 0 ? 'Nothing entered yet' : `From ${monthRows.length} ${monthRows.length === 1 ? 'payment' : 'payments'}` }}
           </p>
+          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1">
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-on-night-soft">Rent</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(monthRent) }}</dd>
+            </div>
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-on-night-soft">Water</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(monthWater) }}</dd>
+            </div>
+            <!-- BR-035: the label only; a system-computed figure, half of each row's Rent Amount. -->
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-on-night-soft">50% Share</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(monthShare) }}</dd>
+            </div>
+          </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Rent, ${periodWord}`">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
+      <OverviewTile :title="`Where it came from, ${periodWord}`" class="xl:col-span-8">
+        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
+        <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
+          No payments match the filters above.
+        </p>
         <template v-else>
-          <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalRent) }}</p>
-        </template>
-      </OverviewTile>
-
-      <OverviewTile :title="`Water, ${periodWord}`">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
-        <template v-else>
-          <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalWater) }}</p>
-          <p class="mt-2 text-sm leading-6 text-ink-soft">{{ perOccupantWaterText() }}</p>
-        </template>
-      </OverviewTile>
-
-      <!-- BR-035 wording is fixed: this is a system-computed figure equal to half
-           the row's Rent Amount, retained for parity with the historical
-           spreadsheet. It names no recipient and describes no destination.
-
-           This card used to name a party and assert a purpose for the figure,
-           both of which the locked wording forbids. The earlier text is not
-           quoted here - repeating it would put the banned phrasing back into
-           the repository, which is what the rule is for. See BR-035 in
-           docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md. -->
-      <OverviewTile :title="`50% Share, ${periodWord}`">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
-        <template v-else>
-          <p class="tabular text-3xl font-semibold leading-none text-verify">{{ peso(totalShare) }}</p>
-          <p class="mt-2 text-sm leading-6 text-ink-soft">
-            Half of each Boarding House payment's rent, worked out automatically
+          <p class="flex flex-wrap items-baseline gap-x-2">
+            <span class="tabular text-2xl font-semibold leading-none text-ink">{{ peso(collectedAltogether) }}</span>
+            <span class="text-sm text-ink-soft">received from {{ rows.length }} {{ rows.length === 1 ? 'payment' : 'payments' }}</span>
+          </p>
+          <SegmentBar
+            :segments="clusterSplit"
+            :label="`How ${peso(collectedAltogether)} divides across the clusters`"
+          />
+          <ul class="flex flex-col gap-2.5">
+            <li v-for="c in clusterSplit" :key="c.label" class="flex items-center justify-between gap-3 text-sm">
+              <span class="flex min-w-0 items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  :class="[
+                    'size-3 shrink-0 rounded-full',
+                    c.tone === 'brand' && 'bg-brand',
+                    c.tone === 'bright' && 'bg-brand-bright',
+                    c.tone === 'night' && 'bg-series-night',
+                    c.tone === 'soft' && 'bg-series-soft',
+                    c.tone === 'hatch' && 'hatch border border-line',
+                    c.tone === 'faint' && 'bg-ink-faint',
+                  ]"
+                />
+                <span class="truncate">{{ c.label }}</span>
+              </span>
+              <span class="flex shrink-0 items-baseline gap-3">
+                <span class="text-xs text-ink-faint tabular">
+                  {{ collectedAltogether > 0 ? Math.round((c.value / collectedAltogether) * 100) : 0 }}%
+                </span>
+                <span class="tabular font-semibold">{{ peso(c.value) }}</span>
+              </span>
+            </li>
+          </ul>
+          <p v-if="waterRatePerOccupant !== null" class="text-xs leading-5 text-ink-faint">
+            Water is {{ peso(waterRatePerOccupant) }} per person each month.
           </p>
         </template>
       </OverviewTile>

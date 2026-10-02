@@ -18,6 +18,7 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
+import { focusMonth, MONTH_SHORT } from '@/lib/focusMonth';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
@@ -352,14 +353,19 @@ onMounted(() => {
   }
 });
 
+/** Search and Kind, without the period: shared by the ledger and the month card. */
+function matchesSearchAndKind(e: ExpenseRecord): boolean {
+  const query = q.value.toLowerCase().trim();
+  const matchesQ =
+    !query ||
+    e.description.toLowerCase().includes(query) ||
+    e.category.toLowerCase().includes(query);
+  return matchesQ && (selectedCategory.value === 'All' || e.category === selectedCategory.value);
+}
+
 const filtered = computed(() => {
   return expenseRecords.filter((e) => {
-    const query = q.value.toLowerCase().trim();
-    const matchesQ =
-      !query ||
-      e.description.toLowerCase().includes(query) ||
-      e.category.toLowerCase().includes(query);
-    const matchesCat = selectedCategory.value === 'All' || e.category === selectedCategory.value;
+    const matchesQAndCat = matchesSearchAndKind(e);
 
     const dateParts = e.date.split(' ');
     const monthPart = dateParts[0]; 
@@ -368,7 +374,7 @@ const filtered = computed(() => {
     const matchesMonth = filterMonth.value === 'All' || monthPart === filterMonth.value;
     const matchesYear = filterYear.value === 'All' || yearPart === filterYear.value;
 
-    return matchesQ && matchesCat && matchesMonth && matchesYear;
+    return matchesQAndCat && matchesMonth && matchesYear;
   });
 });
 
@@ -404,47 +410,42 @@ const totalJuly = computed(() =>
   filtered.value.reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0)
 );
 
-/**
- * What the figures below add up, in one plain line - the twin of Monthly
- * Income's (Sean, 2026-10-01: the landlady could not tell what a big figure was
- * for). Every area is counted, personal spending included, which the Overview
- * keeps apart from operating costs.
- */
-/** The period in the tiles' titles, "2026" / "September 2026" / "all years" - Monthly Income's `periodWord`. */
+/** The period in the year card's title, "2026" / "September 2026" / "all years" - Monthly Income's `periodWord`. */
 const periodWord = computed(() => {
   const m = filterMonth.value === 'All' ? '' : (monthsList.find((x) => x.val === filterMonth.value)?.label ?? '');
   if (filterYear.value === 'All') return m ? `${m}, every year` : 'all years';
   return m ? `${m} ${filterYear.value}` : filterYear.value;
 });
 
-const figuresScope = computed(() => {
-  const y = filterYear.value;
-  const m = monthsList.find((x) => x.val === filterMonth.value)?.label ?? '';
-  const years = yearsList.value.filter((v) => v !== 'All');
-  let period: string;
-  if (y === 'All' && filterMonth.value === 'All') {
-    period = years.length > 1 ? `every expense from ${years.at(-1)} to ${years[0]}` : `every expense in ${years[0] ?? 'the ledger'}`;
-  } else if (y === 'All') period = `${m} of every year`;
-  else if (filterMonth.value === 'All') period = `all of ${y}`;
-  else period = `${m} ${y}`;
-  const searching = q.value.trim() ? ', matching your search' : '';
-  // With one kind picked the figures are that kind alone, so "personal spending
-  // included" was no longer true of them - "3 — Janitorial and Messengerial
-  // Services" read as if personal costs were in its ₱13,000 (audit 2026-10-01).
-  // Naming the kind says what the line is for; "of the kind picked" made her
-  // look back up at the filter to find out.
-  if (selectedCategory.value !== 'All') {
-    const kind = selectedCategory.value.replace(/^\w+ — /, '');
-    return `These figures are for ${period}${searching}: ${kind} only, every area.`;
-  }
-  return `These figures are for ${period}${searching}: every area, personal spending included.`;
-});
-
-const utilitiesTotal = computed(() =>
-  filtered.value
-    .filter((e) => e.category.toLowerCase().includes('water') || e.category.toLowerCase().includes('light') || e.category.toLowerCase().includes('util'))
-    .reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0)
+/**
+ * The headline card is one month (Sean, 2026-10-02: the screen is MONTHLY
+ * Expenses; the year is the card beside it). Which month: lib/focusMonth.ts.
+ * The sentence that used to sit above the cards ("These figures are for all of
+ * 2026: every area, personal spending included") is gone: each card's title
+ * names its period, and nobody reads a sentence about the figures.
+ */
+const focus = computed(() =>
+  focusMonth(filterYear.value, filterMonth.value, (year) => [
+    ...new Set(
+      expenseRecords
+        .filter((e) => e.date.split(' ')[2] === year)
+        .map((e) => MONTH_SHORT.indexOf(e.date.split(' ')[0] as (typeof MONTH_SHORT)[number]) + 1)
+        .filter((m) => m > 0)
+    ),
+  ])
 );
+const monthEntries = computed(() =>
+  expenseRecords.filter((e) => {
+    const [mon, , yr] = e.date.split(' ');
+    return matchesSearchAndKind(e) && yr === focus.value.year && mon === MONTH_SHORT[focus.value.month - 1];
+  })
+);
+const sumOf = (list: ExpenseRecord[]) => list.reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0);
+const isUtility = (e: ExpenseRecord) => /water|light|util/i.test(e.category);
+const isRepairOrCleaning = (e: ExpenseRecord) => /repair|janitorial|suppl/i.test(e.category);
+const monthTotal = computed(() => sumOf(monthEntries.value));
+const monthUtilities = computed(() => sumOf(monthEntries.value.filter(isUtility)));
+const monthRepairs = computed(() => sumOf(monthEntries.value.filter(isRepairOrCleaning)));
 
 /**
  * Where the filtered money actually went. Every entry is allocated across the
@@ -469,12 +470,6 @@ const areaSplit = computed(() => {
     .sort((a, b) => b[1] - a[1])
     .map(([label, value], i) => ({ label, value, tone: tones[i % tones.length] }));
 });
-
-const repairsTotal = computed(() =>
-  filtered.value
-    .filter((e) => e.category.toLowerCase().includes('repair') || e.category.toLowerCase().includes('janitorial') || e.category.toLowerCase().includes('suppl'))
-    .reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0)
-);
 
 function getExpenseTotal(e: ExpenseRecord) {
   return e.splits.reduce((s, x) => s + x.amount, 0);
@@ -930,7 +925,6 @@ async function handleEditExpense() {
     </div>
 
     <!-- What was spent, and where it landed -->
-    <p v-if="!expenseRecordsFetchFailed" class="text-sm leading-6 text-ink-soft">{{ figuresScope }}</p>
     <div class="grid gap-4 xl:grid-cols-12">
       <!--
         The one dark tile on this screen, and the one figure the screen exists
@@ -958,7 +952,7 @@ async function handleEditExpense() {
         which is the dark-tile idiom already in AdminOverviewView, not a new
         colour.
       -->
-      <OverviewTile :title="`Spent, ${periodWord}`" tone="night" class="xl:col-span-4">
+      <OverviewTile :title="`Spent, ${focus.label}`" tone="night" class="xl:col-span-4">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           dark
@@ -966,16 +960,18 @@ async function handleEditExpense() {
           @retry="fetchExpenses"
         />
         <template v-else>
-          <p class="tabular text-4xl leading-none font-semibold tracking-tight">{{ peso(totalJuly) }}</p>
-          <p class="text-sm leading-6 text-on-night-soft">Across {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</p>
-          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1 text-sm">
-            <div class="flex items-baseline justify-between gap-3 py-2">
-              <dt class="text-on-night-soft">Utilities</dt>
-              <dd class="tabular font-semibold">{{ peso(utilitiesTotal) }}</dd>
+          <p class="tabular text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal) }}</p>
+          <p class="text-sm leading-6 text-on-night-soft">
+            {{ monthEntries.length === 0 ? 'Nothing entered yet' : `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}
+          </p>
+          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1">
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-on-night-soft">Utilities</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(monthUtilities) }}</dd>
             </div>
-            <div class="flex items-baseline justify-between gap-3 py-2">
-              <dt class="text-on-night-soft">Repairs and cleaning</dt>
-              <dd class="tabular font-semibold">{{ peso(repairsTotal) }}</dd>
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-on-night-soft">Repairs and cleaning</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(monthRepairs) }}</dd>
             </div>
           </dl>
         </template>
@@ -987,6 +983,10 @@ async function handleEditExpense() {
           No expenses match the filters above.
         </p>
         <template v-else>
+          <p class="flex flex-wrap items-baseline gap-x-2">
+            <span class="tabular text-2xl font-semibold leading-none text-ink">{{ peso(totalJuly) }}</span>
+            <span class="text-sm text-ink-soft">spent across {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</span>
+          </p>
           <SegmentBar
             :segments="areaSplit"
             :label="`How ${peso(totalJuly)} divides across the property areas`"
