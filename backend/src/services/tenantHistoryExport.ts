@@ -15,7 +15,14 @@
 import ExcelJS from 'exceljs';
 import { db } from '../config/db.js';
 import { ApiError } from '../utils/ApiError.js';
-import { buildTenantHistory, monthsLabel, type HistoryReceipt, type HistoryPerson } from '../utils/tenantHistory.js';
+import {
+  buildTenantHistory,
+  monthsLabel,
+  type CurrentTenant,
+  type HistoryReceipt,
+  type HistoryPerson,
+} from '../utils/tenantHistory.js';
+import { asScope, assertScope, type ReportScope } from '../utils/reportScope.js';
 
 /** The same header ink and hairline as the other workbooks (incomeReportExport.ts, expenseReportExport.ts). */
 const INK = 'FF1F2430';
@@ -78,27 +85,67 @@ async function currentTenants() {
   });
 }
 
+/**
+ * A month, a year, or every year (`ReportScope`; `(year, month)` as before
+ * 2026-10-02 still works). Every receipt is read whatever the scope, because
+ * the name folding must not depend on the period chosen (utils/tenantHistory.ts).
+ */
 export async function buildTenantHistoryWorkbook(
-  year: number,
-  month: number | null
+  scopeOrYear: ReportScope | number,
+  month: number | null = null
 ): Promise<{ workbook: ExcelJS.Workbook; rowCount: number; people: HistoryPerson[] }> {
-  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
-    throw ApiError.validation('A year between 2000 and 2100 is required.', { year: ['must be between 2000 and 2100'] });
-  }
-  if (month !== null && (!Number.isInteger(month) || month < 1 || month > 12)) {
-    throw ApiError.validation('A month from 1 to 12 is required.', { month: ['must be from 1 to 12'] });
-  }
-
+  const scope = asScope(scopeOrYear, month);
+  assertScope(scope);
   const [receipts, current] = await Promise.all([allReceipts(), currentTenants()]);
-  const people = buildTenantHistory(receipts, current, { year, month });
+  return renderTenantHistoryWorkbook(receipts, current, scope);
+}
 
+/**
+ * The workbook from receipts already read: no database here, so each scope can
+ * be checked against fixture rows (Sean, 2026-10-02).
+ *
+ * Everything is one sheet per year her receipts cover, each the year sheet the
+ * page shows for that year. One sheet across every year would list a tenant
+ * once with "months paid" that could not say which year they were in.
+ */
+export function renderTenantHistoryWorkbook(
+  receipts: HistoryReceipt[],
+  current: CurrentTenant[],
+  scope: ReportScope
+): { workbook: ExcelJS.Workbook; rowCount: number; people: HistoryPerson[] } {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'Hivelet';
   workbook.created = new Date();
-  const period = month ? `${MONTH_NAMES[month - 1]} ${year}` : String(year);
-  workbook.title = `Tenant history, ${period}`;
   workbook.subject = 'Who paid for each unit, from the payments in Monthly Income';
 
+  if (scope.kind !== 'all') {
+    const month = scope.kind === 'month' ? scope.month : null;
+    const people = buildTenantHistory(receipts, current, { year: scope.year, month });
+    const period = month ? `${MONTH_NAMES[month - 1]} ${scope.year}` : String(scope.year);
+    workbook.title = `Tenant history, ${period}`;
+    addTenantSheet(workbook, scope.year, month, people);
+    return { workbook, rowCount: people.length, people };
+  }
+
+  workbook.title = 'Tenant history, all years';
+  const years = [...new Set(receipts.map((r) => Number(r.year)).filter(isLedgerYear))].sort((a, b) => a - b);
+  const everyone: HistoryPerson[] = [];
+  for (const year of years) {
+    const people = buildTenantHistory(receipts, current, { year, month: null });
+    addTenantSheet(workbook, year, null, people);
+    everyone.push(...people);
+  }
+  if (years.length === 0) {
+    workbook.addWorksheet('Tenants').addRow(['No payments have been recorded.']);
+  }
+  return { workbook, rowCount: everyone.length, people: everyone };
+}
+
+/** A year the receipts can mean, so a stray value cannot name a sheet. */
+const isLedgerYear = (y: number) => Number.isInteger(y) && y >= 2000 && y <= 2100;
+
+function addTenantSheet(workbook: ExcelJS.Workbook, year: number, month: number | null, people: HistoryPerson[]): void {
+  const period = month ? `${MONTH_NAMES[month - 1]} ${year}` : String(year);
   const sheet = workbook.addWorksheet(`Tenants ${period}`.slice(0, 31));
   sheet.columns = [
     { header: 'Unit', key: 'unit', width: 8 },
@@ -144,6 +191,4 @@ export async function buildTenantHistoryWorkbook(
   });
   sheet.views = [{ state: 'frozen', ySplit: 1 }];
   sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: sheet.columns.length } };
-
-  return { workbook, rowCount: people.length, people };
 }

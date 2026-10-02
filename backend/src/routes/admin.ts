@@ -28,6 +28,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { likeLiteral } from '../utils/likeLiteral.js';
 import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
 import { attachmentHeader } from '../utils/reportFileName.js';
+import { parseReportScope, scopeAudit, scopeName } from '../utils/reportScope.js';
 import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
 import { generateTemporaryPassword } from '../utils/generateTemporaryPassword.js';
 import { randomUUID } from 'node:crypto';
@@ -2352,6 +2353,11 @@ router.patch(
 
 /**
  * GET /api/admin/reports/income.xlsx?year=YYYY
+ *     [&scope=month&month=M | &scope=year | ?scope=all]
+ *
+ * The Download dialog's three choices (Sean, 2026-10-02): one month, one year,
+ * or everything (one sheet per year). No `scope` is the year, as before -
+ * utils/reportScope.ts reads and refuses the query for all three workbooks.
  *
  * BR-049 / FR-044 - the Monthly Income Report as a real spreadsheet, in the
  * layout `docs/09_MONTHLY_INCOME_REPORT.md` documents: month blocks, units in
@@ -2370,9 +2376,11 @@ router.get(
   '/admin/reports/income.xlsx',
   requirePermission(PERMISSIONS.INCOME_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = queryInt(req.query.year, { fieldName: 'year', min: 2000, max: 2100 }) ?? propertyParts(Date.now()).year;
+    const scope = parseReportScope(req.query, propertyParts(Date.now()).year);
+    const name = scopeName(scope);
+    const audit = scopeAudit(scope);
 
-    const workbook = await buildIncomeReportWorkbook(year);
+    const workbook = await buildIncomeReportWorkbook(scope);
 
     res.setHeader(
       'Content-Type',
@@ -2380,14 +2388,14 @@ router.get(
     );
     res.setHeader(
       'Content-Disposition',
-      attachmentHeader('income', year)
+      attachmentHeader('income', name.scope, name.month)
     );
 
     await auditFromRequest(req, {
       action: 'LEDGER_EXPORT',
       entityType: 'INCOME_RECORD',
-      entityId: String(year),
-      newValues: { export: 'xlsx', year },
+      entityId: audit.entityId,
+      newValues: { export: 'xlsx', ...audit.values },
     });
 
     await workbook.xlsx.write(res);
@@ -2397,6 +2405,10 @@ router.get(
 
 /**
  * GET /api/admin/reports/expenses.xlsx?year=YYYY
+ *     [&scope=month&month=M | &scope=year | ?scope=all]
+ *
+ * The same three choices as income.xlsx (utils/reportScope.ts). A month still
+ * reads from January, for its Cumulative column, and prints only that month.
  *
  * BR-049 / FR-044 - the other half. `docs/10_MONTHLY_EXPENSES_REPORT.md` describes
  * a month block with two totals systems side by side: Property Area columns
@@ -2408,9 +2420,11 @@ router.get(
   '/admin/reports/expenses.xlsx',
   requirePermission(PERMISSIONS.EXPENSE_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = queryInt(req.query.year, { fieldName: 'year', min: 2000, max: 2100 }) ?? propertyParts(Date.now()).year;
+    const scope = parseReportScope(req.query, propertyParts(Date.now()).year);
+    const name = scopeName(scope);
+    const audit = scopeAudit(scope);
 
-    const workbook = await buildExpenseReportWorkbook(year);
+    const workbook = await buildExpenseReportWorkbook(scope);
 
     res.setHeader(
       'Content-Type',
@@ -2418,14 +2432,14 @@ router.get(
     );
     res.setHeader(
       'Content-Disposition',
-      attachmentHeader('expenses', year)
+      attachmentHeader('expenses', name.scope, name.month)
     );
 
     await auditFromRequest(req, {
       action: 'LEDGER_EXPORT',
       entityType: 'EXPENSE_ENTRY',
-      entityId: String(year),
-      newValues: { export: 'xlsx', ledger: 'expenses', year },
+      entityId: audit.entityId,
+      newValues: { export: 'xlsx', ledger: 'expenses', ...audit.values },
     });
 
     await workbook.xlsx.write(res);
@@ -2435,6 +2449,11 @@ router.get(
 
 /**
  * GET /api/admin/reports/tenants.xlsx?year=YYYY[&month=M]
+ *     [&scope=month|year | ?scope=all]
+ *
+ * `scope` as for income.xlsx (utils/reportScope.ts); without it a `month`
+ * still means that month, as it always has here. Everything is one sheet per
+ * year (Sean, 2026-10-02).
  *
  * The Tenants page's history (Year, and Month when chosen) as a workbook: who
  * paid for each unit then, from her receipts, with the same names the screen
@@ -2446,22 +2465,23 @@ router.get(
   '/admin/reports/tenants.xlsx',
   requirePermission(PERMISSIONS.INCOME_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = queryInt(req.query.year, { fieldName: 'year', min: 2000, max: 2100 }) ?? propertyParts(Date.now()).year;
-    const month = queryInt(req.query.month, { fieldName: 'month', min: 1, max: 12 }) ?? null;
+    const scope = parseReportScope(req.query, propertyParts(Date.now()).year);
+    const name = scopeName(scope);
+    const audit = scopeAudit(scope);
 
-    const { workbook, rowCount } = await buildTenantHistoryWorkbook(year, month);
+    const { workbook, rowCount } = await buildTenantHistoryWorkbook(scope);
 
     res.setHeader(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     );
-    res.setHeader('Content-Disposition', attachmentHeader('tenants', year, month));
+    res.setHeader('Content-Disposition', attachmentHeader('tenants', name.scope, name.month));
 
     await auditFromRequest(req, {
       action: 'LEDGER_EXPORT',
       entityType: 'INCOME_RECORD',
-      entityId: String(year),
-      newValues: { export: 'xlsx', report: 'tenant history', year, month: month ?? 'all', rows: rowCount },
+      entityId: audit.entityId,
+      newValues: { export: 'xlsx', report: 'tenant history', ...audit.values, rows: rowCount },
     });
 
     await workbook.xlsx.write(res);

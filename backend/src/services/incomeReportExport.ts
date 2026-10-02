@@ -37,6 +37,7 @@
 import ExcelJS from 'exceljs';
 import { db } from '../config/db.js';
 import { ApiError } from '../utils/ApiError.js';
+import { asScope, assertScope, type ReportScope } from '../utils/reportScope.js';
 
 /**
  * The canonical unit order, from `docs/09_MONTHLY_INCOME_REPORT.md` §2.
@@ -168,15 +169,19 @@ const merge = (into: Totals, from: Totals): void => {
 };
 
 /**
- * Builds the workbook for one year.
+ * Builds the workbook for one month, one year, or every year (`ReportScope`;
+ * a bare number is a year, as every caller before 2026-10-02 passed).
  *
  * Voided rows are excluded — they are preserved in the database under BR-003,
  * but a voided receipt is not income and must not reach a total.
+ *
+ * A month and a year are chosen by the receipt's own `year` and `month`
+ * columns - the period it pays for - which is what the year export has always
+ * filtered on and what the Monthly Income screen groups by (Sean, 2026-10-02).
  */
-export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.Workbook> {
-  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
-    throw ApiError.validation('A four-digit year is required.', { year: ['must be between 2000 and 2100'] });
-  }
+export async function buildIncomeReportWorkbook(scopeOrYear: ReportScope | number): Promise<ExcelJS.Workbook> {
+  const scope = asScope(scopeOrYear);
+  assertScope(scope);
 
   /**
    * Read in batches. A single `select` is capped by PostgREST's default of 1000
@@ -191,16 +196,20 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   const BATCH = 1000;
   const data: any[] = [];
   for (let from = 0; ; from += BATCH) {
-    const { data: page, error } = await db
+    let query = db
       .from('monthly_income_records')
       .select(
-        'month, date_paid, contact_name, invoice_number, rent_period_start, rent_period_end, ' +
+        'year, month, date_paid, contact_name, invoice_number, rent_period_start, rent_period_end, ' +
           'rent_amount, fifty_percent_share, occupants, water_payment, remitted_amount, ' +
           'linda_electricity_charge, linda_water_charge, room_id, tenant_profile_id, ' +
           'rooms:room_id (room_number)'
       )
-      .eq('year', year)
-      .is('voided_at', null)
+      .is('voided_at', null);
+    // Filtered here, in the query, so a month reads a month and not the ledger.
+    if (scope.kind !== 'all') query = query.eq('year', scope.year);
+    if (scope.kind === 'month') query = query.eq('month', scope.month);
+    const { data: page, error } = await query
+      .order('year', { ascending: true })
       .order('month', { ascending: true })
       .order('date_paid', { ascending: true })
       .order('invoice_number', { ascending: true })
@@ -249,6 +258,30 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
     throw ApiError.internal(`Tenancies could not be read for the report: ${assignError.message}`);
   }
 
+  return renderIncomeReportWorkbook(data, assignments ?? [], scope);
+}
+
+/** "March", for the sentence a month with nothing in it prints. */
+const monthTitle = (m: number) => MONTHS[m - 1].charAt(0) + MONTHS[m - 1].slice(1).toLowerCase();
+
+/**
+ * The workbook from rows already read: no database here, so the layout for each
+ * scope can be checked against fixture rows without touching the owner's ledger
+ * (Sean, 2026-10-02).
+ *
+ * The rows are filtered by the scope again, as well as by the query that read
+ * them, so this function means the same thing whoever calls it.
+ *
+ * Everything is one sheet per year, each the year's own layout - its own year
+ * to date and Linda year to date - rather than one sheet running across years.
+ * A running total across years is a figure the owner has never asked for, and
+ * OD-01 has not settled even the one-year figure.
+ */
+export function renderIncomeReportWorkbook(
+  rawRows: readonly Record<string, any>[],
+  assignments: readonly Record<string, any>[],
+  scope: ReportScope
+): ExcelJS.Workbook {
   const tenancy = new Map<string, { anniversary_date: string | null; deposit_amount: number | null }>();
   for (const a of assignments ?? []) {
     const key = `${(a as any).room_id}::${(a as any).tenant_profile_id}`;
@@ -261,8 +294,12 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
     });
   }
 
-  const byMonth = new Map<number, LedgerRow[]>();
-  for (const raw of (data ?? []) as unknown as Record<string, any>[]) {
+  const byYear = new Map<number, Map<number, LedgerRow[]>>();
+  for (const raw of rawRows) {
+    const rowYear = Number(raw.year);
+    const rowMonth = Number(raw.month);
+    if (scope.kind !== 'all' && rowYear !== scope.year) continue;
+    if (scope.kind === 'month' && rowMonth !== scope.month) continue;
     const row: LedgerRow = {
       room_number: raw.rooms?.room_number ?? '',
       date_paid: raw.date_paid,
@@ -288,15 +325,45 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
       row.anniversary_date = link.anniversary_date;
       row.deposit_amount = link.deposit_amount;
     }
-    const list = byMonth.get(Number(raw.month)) ?? [];
+    const byMonth = byYear.get(rowYear) ?? new Map<number, LedgerRow[]>();
+    const list = byMonth.get(rowMonth) ?? [];
     list.push(row);
-    byMonth.set(Number(raw.month), list);
+    byMonth.set(rowMonth, list);
+    byYear.set(rowYear, byMonth);
   }
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Hivelet';
   wb.created = new Date();
-  const ws = wb.addWorksheet(`Income ${year}`, {
+
+  if (scope.kind === 'all') {
+    const years = [...byYear.keys()].sort((a, b) => a - b);
+    if (years.length === 0) {
+      const ws = wb.addWorksheet('Income');
+      ws.addRow(['No income has been recorded.']).font = { size: 10, italic: true };
+      return wb;
+    }
+    for (const y of years) addIncomeSheet(wb, y, null, byYear.get(y)!);
+    return wb;
+  }
+
+  addIncomeSheet(wb, scope.year, scope.kind === 'month' ? scope.month : null, byYear.get(scope.year) ?? new Map());
+  return wb;
+}
+
+/**
+ * One sheet: a year, or one month of it (`onlyMonth`). A month is the same
+ * block a year prints for it, and stops there - the year to date beneath a
+ * year is not a figure one month can carry.
+ */
+function addIncomeSheet(
+  wb: ExcelJS.Workbook,
+  year: number,
+  onlyMonth: number | null,
+  byMonth: Map<number, LedgerRow[]>
+): void {
+  const period = onlyMonth ? `${MONTHS[onlyMonth - 1]} ${year}` : String(year);
+  const ws = wb.addWorksheet(onlyMonth ? `Income ${MON[onlyMonth - 1]} ${year}` : `Income ${year}`, {
     views: [{ state: 'frozen', ySplit: 2 }],
     pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
   });
@@ -315,7 +382,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
     { width: 12 }, // 11 Deposit
   ];
 
-  const title = ws.addRow([`HIVELET — MONTHLY INCOME REPORT — ${year}`]);
+  const title = ws.addRow([`HIVELET — MONTHLY INCOME REPORT — ${period}`]);
   title.font = { bold: true, size: 13, color: { argb: INK } };
   ws.mergeCells(title.number, 1, title.number, 11);
 
@@ -541,11 +608,16 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
    * Nothing is totalled when there is nothing to total.
    */
   if (monthsPresent.length === 0) {
-    const empty = ws.addRow([`No income was recorded for ${year}.`]);
+    const empty = ws.addRow([
+      `No income was recorded for ${onlyMonth ? `${monthTitle(onlyMonth)} ${year}` : year}.`,
+    ]);
     empty.font = { size: 10, italic: true };
     ws.mergeCells(empty.number, 1, empty.number, 11);
-    return wb;
+    return;
   }
+
+  // One month: its block already carries its grand subtotal and Linda's lines.
+  if (onlyMonth) return;
 
   const ytd = emitTotalRow(`YEAR TO DATE ${year} — excludes Linda`, yearToDate, { strong: true });
   ytd.font = { bold: true, size: 11, color: { argb: INK } };
@@ -587,6 +659,4 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   note.font = { size: 9, italic: true, color: { argb: INK } };
   ws.mergeCells(note.number, 1, note.number, 11);
   note.alignment = { wrapText: true, vertical: 'top' };
-
-  return wb;
 }
