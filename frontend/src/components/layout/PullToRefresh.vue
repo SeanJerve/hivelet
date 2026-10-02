@@ -120,8 +120,12 @@ const indicatorStyle = computed(() => ({
     rotate: 360deg;
   }
 }
+/*
+ * Started 0.6 s into the turn - its fast part - so the spin is visibly going the instant the
+ * finger lifts; begun at 0 the curve's slow start read as the hexagon stopping (Sean, 2026-10-02).
+ */
 .ptr-hex-spin {
-  animation: ptr-hex-spin 1.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+  animation: ptr-hex-spin 1.8s cubic-bezier(0.77, 0, 0.175, 1) -0.6s infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .ptr-hex-spin {

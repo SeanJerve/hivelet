@@ -259,6 +259,14 @@ export function usePullToRefresh() {
     // gesture rather than a flicker (and the "Refreshing" status is on screen
     // well before it). index.html's own loader takes over once the new page
     // starts loading.
+    // The loader is first-load only (boot.js) - except after a pull: this flag asks boot.js to
+    // draw it on the page that follows, so the same hexagon keeps turning from release until the
+    // new page is ready instead of stopping when this one unloads (Sean, 2026-10-02).
+    try {
+      sessionStorage.setItem('hivelet.ptr', '1');
+    } catch {
+      // Storage blocked: the reload still happens, just without the loader.
+    }
     window.setTimeout(() => window.location.reload(), PULL_SETTLE_MS);
   }
 
