@@ -296,8 +296,7 @@ watch(() => route.hash, syncWithAddress);
             Your inquiries
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-            {{ LANDLADY.name }}, who runs the boarding house, answers each inquiry on its own page.
-            Open yours to read her reply and answer.
+            Enter your reference code and phone number to read {{ LANDLADY.name }}'s reply.
           </p>
 
           <p v-if="loadError && !saved.length && !lookupError" class="mt-6 text-sm text-overdue" role="alert">{{ loadError }}</p>
@@ -322,11 +321,7 @@ watch(() => route.hash, syncWithAddress);
           </ul>
 
           <form class="mt-8 max-w-md" novalidate @submit.prevent="lookUp">
-            <h2 class="text-sm font-medium text-ink">Open one with its reference code</h2>
-            <p class="mt-1 text-xs leading-relaxed text-ink-soft">
-              The code was shown when you sent your inquiry. Enter it with the phone number you gave.
-            </p>
-            <label for="find-ref" class="mt-4 block text-xs text-ink-faint">Reference code</label>
+            <label for="find-ref" class="block text-xs text-ink-faint">Reference code</label>
             <input
               id="find-ref"
               v-model="refInput"
@@ -352,14 +347,14 @@ watch(() => route.hash, syncWithAddress);
               {{ lookupError }}
             </p>
             <button type="submit" class="pill-btn-brand mt-4" :disabled="loading">
-              {{ loading ? 'Opening' : 'Open my inquiry' }}
+              {{ loading ? 'Opening' : 'Open inquiry' }}
             </button>
           </form>
 
           <p class="mt-10 text-xs leading-relaxed text-ink-soft">
             No inquiry yet?
-            <RouterLink to="/inquire" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Send an inquiry</RouterLink>.
-            Sent one before September 30, 2026? {{ LANDLADY.name }} answers those by phone:
+            <RouterLink to="/inquire" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Send one</RouterLink>.
+            Need help? Call
             <a :href="`tel:${LANDLADY.phone}`" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink">{{ LANDLADY.phone }}</a>.
           </p>
         </section>
