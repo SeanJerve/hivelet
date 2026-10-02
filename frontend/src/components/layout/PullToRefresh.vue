@@ -8,17 +8,14 @@
  * Nothing renders in a browser tab: `enabled` is read once, because a page does
  * not change display mode while it is open.
  *
- * THE ICON (Sean, 2026-10-01: "I like the arrow that turns into a spinning
- * refresh icon at a certain point - keep that - but I want the refresh icon to
- * also rotate relative to how far you pull"). It turns with the finger the
- * whole way down: the arrow one full turn by the threshold, then the refresh
- * icon that replaces it carries on turning at the same rate for as long as the
- * pull continues. Crossing the threshold is the
- * one discrete cue - grey to brand green, a slight grow, and a haptic tick
- * where the phone has one - and letting go there sets it spinning on its own.
+ * THE MARK (Sean, 2026-10-01: the icon turns with the pull; 2026-10-02: "replace
+ * the refresh icon with the hexagon rotating with our icon"). The app's mark:
+ * its green hexagon turns with the finger the whole way down (one full turn by
+ * the threshold), the white house and H stay upright. Crossing the threshold is
+ * the one discrete cue - a slight grow, and a haptic tick where the phone has
+ * one - and letting go there sets the hexagon turning like the first-load loader.
  */
 import { computed, ref, watch } from 'vue';
-import { ArrowDown, RefreshCw } from 'lucide-vue-next';
 import {
   isStandaloneDisplay,
   usePullToRefresh,
@@ -56,34 +53,44 @@ const indicatorStyle = computed(() => ({
 }));
 
 /*
- * `rotate` and `scale` are set as their own properties rather than inside one
- * `transform`, so the grow at the threshold can ease while the turn tracks the
- * finger exactly - one `transform` would have to take one transition for both.
+ * `rotate` (on the hexagon only) and `scale` (on the whole mark) are their own
+ * properties rather than one `transform`, so the grow at the threshold can ease
+ * while the turn tracks the finger exactly.
  */
-const iconStyle = computed(() => ({
-  rotate: `${rotation.value}deg`,
-  scale: armed.value ? '1.12' : '1',
-}));
 </script>
 
 <template>
   <template v-if="enabled">
+    <!--
+      The app's own mark in place of a refresh icon (Sean, 2026-10-02: "replace the refresh icon
+      with the hexagon rotating with our icon"): the same hexagon and house-and-H as the first-load
+      loader in index.html and public/favicon.svg. The hexagon turns with the pull and spins
+      fast-slow while reloading; the house and H stay upright, as on the loader.
+    -->
     <div
-      class="ptr-indicator pointer-events-none fixed left-1/2 top-0 z-[60] flex size-10 items-center justify-center rounded-full border border-line bg-tile shadow-lift"
+      class="ptr-indicator pointer-events-none fixed left-1/2 top-0 z-[60] flex size-11 items-center justify-center"
       :class="{ 'ptr-settling': !dragging }"
       :style="indicatorStyle"
       aria-hidden="true"
       data-pull-to-refresh
     >
-      <span
-        class="ptr-icon flex"
-        :class="armed ? 'text-brand' : 'text-ink-faint'"
-        :style="iconStyle"
-        data-ptr-icon
-      >
-        <RefreshCw v-if="armed" class="size-5" :class="{ 'motion-safe:animate-spin': refreshing }" />
-        <ArrowDown v-else class="size-5" />
-      </span>
+      <svg class="ptr-icon size-11 drop-shadow-md" viewBox="0 0 512 512" :style="{ scale: armed ? '1.12' : '1' }" data-ptr-icon>
+        <path
+          class="ptr-hex"
+          :class="{ 'ptr-hex-spin': refreshing }"
+          :style="refreshing ? undefined : { rotate: `${rotation}deg` }"
+          fill="#17603f"
+          d="M217.89 34Q256 12 294.11 34L429.21 112Q467.31 134 467.31 178L467.31 334Q467.31 378 429.21 400L294.11 478Q256 500 217.89 478L82.79 400Q44.69 378 44.69 334L44.69 178Q44.69 134 82.79 112Z"
+        />
+        <path
+          fill="none"
+          stroke="#fff"
+          stroke-width="36"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M146 216L256 126L366 216M186 244V366M326 244V366M186 304H326"
+        />
+      </svg>
     </div>
     <!-- The reload follows once the indicator settles; this is what is said before it. -->
     <span class="sr-only" role="status">{{ refreshing ? 'Refreshing' : '' }}</span>
@@ -102,6 +109,26 @@ const iconStyle = computed(() => ({
   will-change: transform, opacity;
 }
 
+/* The hexagon turns about its own centre (the viewBox is 512 square). */
+.ptr-hex {
+  transform-origin: 256px 256px;
+}
+
+/* Reloading: the loader's own turn - one revolution every 1.8 s, fast then slow (index.html). */
+@keyframes ptr-hex-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+.ptr-hex-spin {
+  animation: ptr-hex-spin 1.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ptr-hex-spin {
+    animation: none;
+  }
+}
+
 /*
  * While the finger is down the circle and the icon's turn track it exactly -
  * easing there would make them lag behind the touch. Once released the circle
@@ -112,20 +139,15 @@ const iconStyle = computed(() => ({
  */
 @media (prefers-reduced-motion: no-preference) {
   .ptr-icon {
-    transition:
-      scale 0.15s var(--ease-out),
-      color 0.15s var(--ease-out);
+    transition: scale 0.15s var(--ease-out);
   }
   .ptr-settling {
     transition:
       transform var(--ptr-settle) var(--ease-out),
       opacity var(--ptr-settle) var(--ease-out);
   }
-  .ptr-settling .ptr-icon {
-    transition:
-      rotate var(--ptr-settle) var(--ease-out),
-      scale 0.15s var(--ease-out),
-      color 0.15s var(--ease-out);
+  .ptr-settling .ptr-hex:not(.ptr-hex-spin) {
+    transition: rotate var(--ptr-settle) var(--ease-out);
   }
 }
 </style>
