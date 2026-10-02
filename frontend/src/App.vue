@@ -13,6 +13,7 @@ import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import PullToRefresh from '@/components/layout/PullToRefresh.vue';
+import RouteSkeleton from '@/components/layout/RouteSkeleton.vue';
 import { startLiveUpdates, stopLiveUpdates } from '@/lib/live';
 
 // Every open page stays current while someone is signed in (lib/live.ts).
@@ -31,6 +32,20 @@ const { showToast } = useToast();
  */
 const animatePages = ref(false);
 router.isReady().then(() => requestAnimationFrame(() => (animatePages.value = true)));
+
+/**
+ * The header and footer wait for the first navigation (Sean, 2026-10-02).
+ * Until it finishes, `route` is the router's START location, path "/", which
+ * AppHeader takes for the landing page: white text on a transparent bar, drawn
+ * over the pale placeholder below, the "header on an empty page" from his
+ * phone. `matched` is empty only then (the catch-all matches every address),
+ * and RouteSkeleton holds the screen meanwhile. A first navigation that fails
+ * outright (a page's code that would not download) still brings the header
+ * back, so there is a way to the rest of the site.
+ */
+const firstNavigationFailed = ref(false);
+router.isReady().catch(() => (firstNavigationFailed.value = true));
+const routeResolved = computed(() => route.matched.length > 0 || firstNavigationFailed.value);
 
 /**
  * Hold the leaving page exactly where it was drawn while it fades.
@@ -196,7 +211,7 @@ const hidesGlobalHeader = computed(() =>
     <!-- A plain text link, not a button (Sean, 2026-09-30); it still appears only on Tab. -->
     <a href="#main" class="ws-skip bg-canvas px-2 py-1 text-sm text-ink underline underline-offset-4 decoration-1">Skip to content</a>
 
-    <AppHeader v-if="!hidesGlobalHeader" />
+    <AppHeader v-if="routeResolved && !hidesGlobalHeader" />
     
     <!--
       The workspace takes the same `ws-page` the public pages take. It used to
@@ -259,18 +274,21 @@ const hidesGlobalHeader = computed(() =>
           "good" line), 2026-09-30. With the space held, the footer starts below
           the fold and nothing visible moves. It exists only before the first
           page renders; later navigations always have a component.
+
+          Since 2026-10-02 (Sean) it is RouteSkeleton, the shape of the page on
+          its way, rather than an empty pale box with the header over it.
         -->
         <RouterView v-slot="{ Component }">
           <Transition name="page-move" :css="animatePages" @before-leave="pinLeavingPage">
             <component :is="Component" v-if="Component" />
-            <div v-else class="min-h-screen supports-[min-height:100dvh]:min-h-dvh" aria-hidden="true" />
+            <RouteSkeleton v-else />
           </Transition>
         </RouterView>
       </main>
     </div>
 
     <!-- Edge-to-edge full width footer (no left/right/bottom whitespace) -->
-    <AppFooter v-if="isPublicPage" />
+    <AppFooter v-if="routeResolved && isPublicPage" />
     
     <!-- Global Modals & Notifications -->
     <ToastContainer />
