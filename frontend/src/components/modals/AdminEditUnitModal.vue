@@ -3,6 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
+import { planFor } from '@/lib/floorPlans';
 import type { UnitStatus } from '@/lib/canonicalUnits';
 import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
@@ -164,10 +165,19 @@ const isUploadingPhoto = ref(false);
 const uploadedFileName = ref<string>('');
 const uploadedFileSize = ref<string>('');
 
-const unitPhoto = computed(() => {
-  // No stock photograph stands in for a unit that has none on file.
-  return editPhotoUrl.value || '';
+/**
+ * The unit's floor plan, the same file the public unit page shows when a unit has no photograph
+ * (CategoryRoomsView: photo first, else `/floorplans/<plan>.png`). Sean, 2026-10-02: "the
+ * photograph should be the floor plan that can be seen on the public web, still editable". So the
+ * owner sees exactly what visitors see: the plan until a photograph is saved, which then replaces
+ * it on both pages. Display only - the save below sends `editPhotoUrl`, never this path.
+ */
+const floorPlanUrl = computed(() => {
+  const plan = unit.value ? planFor(unit.value.unitCode) : null;
+  return plan ? `/floorplans/${plan.plan}.png` : '';
 });
+const showingFloorPlan = computed(() => !editPhotoUrl.value && !!floorPlanUrl.value);
+const unitPhoto = computed(() => editPhotoUrl.value || floorPlanUrl.value);
 
 /**
  * Whether the current photograph has actually finished loading.
@@ -382,7 +392,7 @@ async function handleSave() {
       >
         <!-- The photograph -->
         <div class="ws-field">
-          <span>Photograph</span>
+          <span>{{ showingFloorPlan ? 'Floor plan' : 'Photograph' }}</span>
 
           <input
             ref="fileInputRef"
@@ -406,9 +416,9 @@ async function handleSave() {
               <img
                 v-if="unitPhoto"
                 :src="unitPhoto"
-                :alt="`Unit ${unit.unitCode}`"
-                class="size-full object-cover transition-opacity duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
-                :class="isPhotoLoaded ? 'opacity-100' : 'opacity-0'"
+                :alt="showingFloorPlan ? `Floor plan of unit ${unit.unitCode.toUpperCase()}` : `Unit ${unit.unitCode}`"
+                class="size-full transition-opacity duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                :class="[isPhotoLoaded ? 'opacity-100' : 'opacity-0', showingFloorPlan ? 'bg-white object-contain p-2' : 'object-cover']"
                 @load="isPhotoLoaded = true"
                 @error="isPhotoLoaded = true"
               />
@@ -430,7 +440,13 @@ async function handleSave() {
 
             <div class="flex flex-wrap items-center justify-between gap-3 p-3">
               <span class="min-w-0 truncate text-sm text-ink-soft">
-                {{ uploadedFileName ? `${uploadedFileName} (${uploadedFileSize})` : 'PNG, JPG or WebP' }}
+                {{
+                  uploadedFileName
+                    ? `${uploadedFileName} (${uploadedFileSize})`
+                    : showingFloorPlan
+                      ? 'Shown on the public page'
+                      : 'PNG, JPG or WebP'
+                }}
               </span>
 
               <button
@@ -440,7 +456,7 @@ async function handleSave() {
                 @click="triggerFileInput"
               >
                 <Upload class="size-3.5" aria-hidden="true" />
-                <span>Choose a photograph</span>
+                <span>{{ showingFloorPlan ? 'Replace with a photograph' : 'Choose a photograph' }}</span>
               </button>
             </div>
           </div>

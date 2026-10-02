@@ -48,7 +48,7 @@ reload (service worker must serve the shell).
    Overview "Units by cluster", Rooms and rates, Tenants, Monthly Income/Expenses filters and
    tables, downloads, public pages). Keep data codes/keys unchanged unless a migration is truly
    needed; map at display time. Check Excel exports too.
-3. **Rooms and rates edit dialog: the "Photograph" becomes the unit's floor plan** — the same floor
+3. **DONE (next commit)** Rooms and rates edit dialog: the "Photograph" becomes the unit's floor plan — the same floor
    plan the public category pages show for that unit/floor (find where the public pages get it).
    Show it by default in the admin dialog; keep it replaceable by the admin (upload), and the public
    page must show whatever the admin set. Connect both to one source.
