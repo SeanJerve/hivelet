@@ -216,7 +216,11 @@ export function issueToken(user: TokenSubject): string {
     role: user.role,
   };
 
+  // HS256 is what jsonwebtoken signs with by default, so every token already
+  // issued is HS256; naming it here and in verifyToken pins the pair (audit
+  // 2026-10-02, S-4).
   const options: SignOptions = {
+    algorithm: 'HS256',
     expiresIn: config.jwt.expiresIn as SignOptions['expiresIn'],
     issuer: config.jwt.issuer,
     audience: config.jwt.audience,
@@ -228,6 +232,7 @@ export function issueToken(user: TokenSubject): string {
 export function verifyToken(token: string): JwtPayload {
   try {
     return jwt.verify(token, config.jwt.secret, {
+      algorithms: ['HS256'],
       issuer: config.jwt.issuer,
       audience: config.jwt.audience,
     }) as JwtPayload;

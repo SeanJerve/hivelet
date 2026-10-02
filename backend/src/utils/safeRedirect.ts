@@ -41,6 +41,15 @@ export function safeReturnUrl(candidate: string | null | undefined, fallback: st
   const value = candidate.trim();
   if (!value) return fallback;
 
+  // A backslash or a control character never belongs in a return URL, and both
+  // defeat the relative-path test below: browsers read "/\evil.example" as
+  // "//evil.example", and drop tabs and newlines, so "/\t/evil.example" becomes
+  // the same thing (audit 2026-10-02, S-3).
+  if (/[\\\u0000-\u001F\u007F]/.test(value)) {
+    console.warn(`[safeRedirect] refused URL with a backslash or control character: ${JSON.stringify(value.slice(0, 80))}`);
+    return fallback;
+  }
+
   // Protocol-relative: "//evil.example/x" is an ABSOLUTE url to a browser.
   if (value.startsWith('//')) {
     console.warn(`[safeRedirect] refused protocol-relative URL: ${value.slice(0, 80)}`);
