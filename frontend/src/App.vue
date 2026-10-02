@@ -133,6 +133,15 @@ const isWorkspaceSection = computed(() =>
  * nothing. `/inquire` and `/login` stay out on purpose - both are drawn one screen tall - so
  * they link the documents from their own text: InquireView beside the form's submit button.
  */
+/**
+ * Pull-to-refresh hides a page behind skeletons only where data is refetched:
+ * the signed-in screens. A public page or the sign-in page has none of its
+ * own, and the skeleton under a live header ("Hivelet", "Inquire now", "Sign
+ * in") was half a screen (Sean, 2026-10-02: "the whole screen should load").
+ * There the page stays as it is while the hexagon turns, then reloads.
+ */
+const skeletonOnRefresh = computed(() => pullRefreshing.value && isWorkspaceSection.value);
+
 const isPublicPage = computed(() =>
   route.path.startsWith('/public') ||
   route.path.startsWith('/category') ||
@@ -233,7 +242,7 @@ const hidesGlobalHeader = computed(() =>
       <main
         id="main"
         tabindex="-1"
-        :class="['relative flex-1 max-w-full min-w-0 flex flex-col outline-none', isWorkspaceSection ? 'py-6 lg:pl-6' : '', pullRefreshing && 'ptr-busy']"
+        :class="['relative flex-1 max-w-full min-w-0 flex flex-col outline-none', isWorkspaceSection ? 'py-6 lg:pl-6' : '', skeletonOnRefresh && 'ptr-busy']"
       >
         <!--
           Pages used to swap with no transition at all - one screen replaced
@@ -295,7 +304,7 @@ const hidesGlobalHeader = computed(() =>
         </RouterView>
         <!-- While a pull-to-refresh refetches, the page stays mounted (it takes the fresh
              answers) but is hidden - `ptr-busy` on <main> - behind this (Sean, 2026-10-02). -->
-        <RefreshSkeleton v-if="pullRefreshing" />
+        <RefreshSkeleton v-if="skeletonOnRefresh" />
       </main>
     </div>
 
