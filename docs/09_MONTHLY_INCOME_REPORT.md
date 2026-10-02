@@ -20,7 +20,7 @@ The property's rentable units are fixed and grouped into five clusters, always p
 
 | Cluster | Units |
 | --- | --- |
-| **BH (Main Rooms)** | 1a, 1b, 1c, 1d, 1e, 1f, 1g, 1h, 2a, 2b, 2c, 2d, 2e, 2f, 2g, 3a, 3b, 3c, 3d, 3e, 3f, 3g |
+| **Boarding House (Main Rooms)** (database code `BH`) | 1a, 1b, 1c, 1d, 1e, 1f, 1g, 1h, 2a, 2b, 2c, 2d, 2e, 2f, 2g, 3a, 3b, 3c, 3d, 3e, 3f, 3g |
 | **Back Apartment** | B1F, B2F, B2B, B3F, B3B |
 | **Penthouse** | PH |
 | **Front Apartment** | F1, F2F, F2B |
@@ -43,6 +43,16 @@ The report is organized as a running ledger, not a flat table:
 5. A **grand subtotal row** follows, combining BH + Back Apartment + Penthouse + Front Apartment (excluding Linda).
 6. The **Linda** section follows, with its own fixed-rate rows and its own total, remitted directly to Linda (Section 6).
 7. At least one blank row separates each month's block from the next.
+
+**How the downloaded workbook looks (Sean, 2026-10-02).** Every cluster subtotal and the Linda
+total sit on a light-blue band (`FFDDEBF7`); every `GRAND SUBTOTAL (excludes Linda)` row is red
+(`FFC00000`) with white type. An acknowledgement receipt prints as **`ACK`** in red beside the
+contact name. The sheet carries no working notes: the Linda water/electricity note lines and the
+OD-01 explanation at the foot were removed, and none of them was in any total, so no figure
+changed. The Monthly Expenses workbook follows the same look (each month's `TOTAL` light blue on
+the ledger columns, `YEAR TOTAL` red with white type, no OD-05/06/07 note at the foot), and the
+Tenant History workbook prints `ACK` in its Invoice column. The cluster prints as "Boarding House"
+everywhere a person reads it; `BH` is only the stored code.
 
 Whether the very bottom figures on a report page represent a single month's total or a running year-to-date total across all months entered so far is unresolved — see Open Decision (Section 8, item 1).
 

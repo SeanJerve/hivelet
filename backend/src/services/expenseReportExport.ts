@@ -314,6 +314,19 @@ function addExpenseSheet(
     r.getCell(totalCol).numFmt = MONEY_FMT;
   };
 
+  /**
+   * The income sheet's total colours (Sean, 2026-10-02): a month's TOTAL on light
+   * blue, the YEAR TOTAL on red with white type. Only the ledger's own columns -
+   * the category summary beside them can share the row and keeps its own look.
+   */
+  const bandRow = (r: ExcelJS.Row, band: 'subtotal' | 'grand') => {
+    for (let c = 1; c <= totalCol; c++) {
+      const cell = r.getCell(c);
+      cell.border = { top: { style: 'medium', color: { argb: INK } } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: band === 'grand' ? 'FFC00000' : 'FFDDEBF7' } };
+    }
+  };
+
   for (const month of [...byMonth.keys()].sort((a, b) => a - b)) {
     const entries = byMonth.get(month) ?? [];
 
@@ -360,9 +373,7 @@ function addExpenseSheet(
     const totalRow = ws.addRow(totalCells);
     totalRow.font = { bold: true, size: 10, color: { argb: INK } };
     moneyCells(totalRow);
-    totalRow.eachCell({ includeEmpty: true }, (c) => {
-      c.border = { top: { style: 'medium', color: { argb: INK } } };
-    });
+    bandRow(totalRow, 'subtotal');
 
     for (const a of areas) {
       yearAreaTotals.set(a.code, (yearAreaTotals.get(a.code) ?? 0) + (areaTotals.get(a.code) ?? 0));
@@ -452,21 +463,12 @@ function addExpenseSheet(
     yearCells.push(null, c2(yearGrandTotal));
 
     const yearRow = ws.addRow(yearCells);
-    yearRow.font = { bold: true, size: 11, color: { argb: INK } };
+    yearRow.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
     moneyCells(yearRow);
-    yearRow.eachCell({ includeEmpty: true }, (c) => {
-      c.border = { top: { style: 'medium', color: { argb: INK } } };
-    });
+    bandRow(yearRow, 'grand');
   }
 
-  const note = ws.addRow([
-    'The Cumulative column accumulates from January of this year. Whether it should reset at the ' +
-      'year boundary or run indefinitely is OD-07, still open with the owner — it is the one ' +
-      'question keeping BR-046 unenforced, so no convention is assumed here. "Main House" is a ' +
-      'real area in the database; what it covers is OD-05. Dates follow the spreadsheet\'s ' +
-      'D-MMM-YY rather than the DD/MM/YYYY described verbally (OD-06).',
-  ]);
-  note.font = { size: 9, italic: true, color: { argb: INK } };
-  ws.mergeCells(note.number, 1, note.number, sumCumCol);
-  note.alignment = { wrapText: true, vertical: 'top' };
+  // The OD-05/06/07 working note that ended each sheet is gone, as the income
+  // sheet's OD-01 note went (Sean, 2026-10-02: no working notes in a workbook).
+  // Those questions are still open; they live in CLIENT_MEETING_QUESTIONS.md.
 }

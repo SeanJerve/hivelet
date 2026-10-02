@@ -23,6 +23,7 @@ import {
   type HistoryPerson,
 } from '../utils/tenantHistory.js';
 import { asScope, assertScope, type ReportScope } from '../utils/reportScope.js';
+import { isAcknowledgementReceipt } from '../utils/invoiceNumber.js';
 
 /** The same header ink and hairline as the other workbooks (incomeReportExport.ts, expenseReportExport.ts). */
 const INK = 'FF1F2430';
@@ -179,7 +180,8 @@ function addTenantSheet(workbook: ExcelJS.Workbook, year: number, month: number 
       spellings: p.otherSpellings.join(', '),
       alsoIn: p.alsoIn.map((u) => u.toUpperCase()).join(', '),
       ...(month
-        ? { covers: p.covers.join('; '), paidOn: p.paidOn.join('; '), receipt: p.receiptNumbers.join(', ') }
+        ? // An acknowledgement receipt reads "ACK", as on the income sheet (Sean, 2026-10-02).
+          { covers: p.covers.join('; '), paidOn: p.paidOn.join('; '), receipt: p.receiptNumbers.map((r) => (isAcknowledgementReceipt(r) ? 'ACK' : r)).join(', ') }
         : { months: monthsLabel(p.months), receipts: p.receipts }),
     });
   }
