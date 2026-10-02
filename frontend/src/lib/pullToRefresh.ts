@@ -49,6 +49,12 @@ import { refreshNow } from './live';
 /** The shortest spin after a release, so a fast refresh still reads as one. */
 const MIN_SPIN_MS = 700;
 
+/**
+ * True from release until the refetch is in: App.vue swaps the page area for RefreshSkeleton
+ * meanwhile, so the refresh shows on the page and not only in the hexagon (Sean, 2026-10-02).
+ */
+export const pullRefreshing = ref(false);
+
 /*
  * THE FEEL (Sean, 2026-10-01: "make it smooth like Facebook and Instagram -
  * when you pull it doesn't get stuck, it just keeps going down as you pull").
@@ -269,8 +275,11 @@ export function usePullToRefresh() {
      * network never leaves it spinning for ever.
      */
     const started = Date.now();
+    pullRefreshing.value = true;
+    window.scrollTo({ top: 0 });
     const finish = () => {
       refreshing.value = false;
+      pullRefreshing.value = false;
       distance.value = 0;
     };
     const cap = window.setTimeout(finish, 15_000);

@@ -2406,3 +2406,11 @@ dialog.ws-dialog[open]::backdrop {
     scale: none;
   }
 }
+
+/*
+ * Pull-to-refresh in progress (App.vue, lib/pullToRefresh.ts; Sean, 2026-10-02): the page stays
+ * mounted to take the fresh answers but is hidden, and RefreshSkeleton stands in for it.
+ */
+#main.ptr-busy > :not([data-refresh-skeleton]) {
+  display: none;
+}

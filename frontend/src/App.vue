@@ -14,6 +14,8 @@ import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import PullToRefresh from '@/components/layout/PullToRefresh.vue';
 import RouteSkeleton from '@/components/layout/RouteSkeleton.vue';
+import RefreshSkeleton from '@/components/layout/RefreshSkeleton.vue';
+import { pullRefreshing } from '@/lib/pullToRefresh';
 import { startLiveUpdates, stopLiveUpdates } from '@/lib/live';
 import { isOffline, savedCopySince, savedAtLabel } from '@/lib/offlineCache';
 
@@ -231,7 +233,7 @@ const hidesGlobalHeader = computed(() =>
       <main
         id="main"
         tabindex="-1"
-        :class="['relative flex-1 max-w-full min-w-0 flex flex-col outline-none', isWorkspaceSection ? 'py-6 lg:pl-6' : '']"
+        :class="['relative flex-1 max-w-full min-w-0 flex flex-col outline-none', isWorkspaceSection ? 'py-6 lg:pl-6' : '', pullRefreshing && 'ptr-busy']"
       >
         <!--
           Pages used to swap with no transition at all - one screen replaced
@@ -291,6 +293,9 @@ const hidesGlobalHeader = computed(() =>
             <RouteSkeleton v-else />
           </Transition>
         </RouterView>
+        <!-- While a pull-to-refresh refetches, the page stays mounted (it takes the fresh
+             answers) but is hidden - `ptr-busy` on <main> - behind this (Sean, 2026-10-02). -->
+        <RefreshSkeleton v-if="pullRefreshing" />
       </main>
     </div>
 
