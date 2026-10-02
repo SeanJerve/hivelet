@@ -87,6 +87,13 @@ export const PULL_REST = 56;
 export const PULL_ROTATE_PER_PX = 360 / PULL_THRESHOLD;
 /** The settle after letting go (PullToRefresh.vue's transition), in ms. */
 export const PULL_SETTLE_MS = 300;
+/**
+ * After a refresh the hexagon goes back up still turning, on a gentle curve, and fades only near
+ * the top (Sean, 2026-10-02 evening: "instead of slowly going back smoothly, it just disappears").
+ * It used to stop spinning, spring up and fade on one sharp 300 ms ease-out in the same frame, so
+ * it was mostly gone within about 80 ms.
+ */
+export const PULL_RETURN_MS = 520;
 /** Finger travel before the gesture's direction is decided. */
 const DECIDE_AFTER = 10;
 
@@ -151,6 +158,9 @@ export function usePullToRefresh() {
   const dragging = ref(false);
   /** Let go past the threshold: the reload is on its way. */
   const refreshing = ref(false);
+  /** The refresh is done and the indicator is travelling back up (PULL_RETURN_MS). */
+  const returning = ref(false);
+  let returnTimer = 0;
 
   // Per-gesture state; not reactive, nothing draws from it directly.
   let candidate = false; // touchstart passed every check
@@ -229,6 +239,9 @@ export function usePullToRefresh() {
       pulling = true;
       wasArmed = false;
       dragging.value = true;
+      // A new pull during the return: the finger has it now, with no easing.
+      window.clearTimeout(returnTimer);
+      returning.value = false;
     }
 
     if (dy <= 0) {
@@ -278,9 +291,13 @@ export function usePullToRefresh() {
     pullRefreshing.value = true;
     window.scrollTo({ top: 0 });
     const finish = () => {
+      returning.value = true;
       refreshing.value = false;
       pullRefreshing.value = false;
       distance.value = 0;
+      window.clearTimeout(returnTimer);
+      // A little longer than the transition, so it ends at the top rather than snapping there.
+      returnTimer = window.setTimeout(() => (returning.value = false), PULL_RETURN_MS + 120);
     };
     const cap = window.setTimeout(finish, 15_000);
     void refreshNow()
@@ -329,5 +346,5 @@ export function usePullToRefresh() {
     attached = false;
   });
 
-  return { distance, dragging, refreshing };
+  return { distance, dragging, refreshing, returning };
 }

@@ -20,12 +20,13 @@ import {
   isStandaloneDisplay,
   usePullToRefresh,
   PULL_ROTATE_PER_PX,
+  PULL_RETURN_MS,
   PULL_SETTLE_MS,
   PULL_THRESHOLD,
 } from '@/lib/pullToRefresh';
 
 const enabled = isStandaloneDisplay();
-const { distance, dragging, refreshing } = usePullToRefresh();
+const { distance, dragging, refreshing, returning } = usePullToRefresh();
 
 /** Past the threshold: letting go now reloads. The arrow becomes the refresh icon. */
 const armed = computed(() => refreshing.value || distance.value >= PULL_THRESHOLD);
@@ -50,6 +51,7 @@ const indicatorStyle = computed(() => ({
   transform: `translate(-50%, calc(${distance.value}px - 48px + env(safe-area-inset-top, 0px)))`,
   opacity: String(Math.min(1, distance.value / PULL_THRESHOLD)),
   '--ptr-settle': `${PULL_SETTLE_MS}ms`,
+  '--ptr-return': `${PULL_RETURN_MS}ms`,
 }));
 
 /*
@@ -69,16 +71,16 @@ const indicatorStyle = computed(() => ({
     -->
     <div
       class="ptr-indicator pointer-events-none fixed left-1/2 top-0 z-[60] flex size-11 items-center justify-center"
-      :class="{ 'ptr-settling': !dragging }"
+      :class="{ 'ptr-settling': !dragging && !returning, 'ptr-returning': returning }"
       :style="indicatorStyle"
       aria-hidden="true"
       data-pull-to-refresh
     >
-      <svg class="ptr-icon size-11 drop-shadow-md" viewBox="0 0 512 512" :style="{ scale: armed ? '1.12' : '1' }" data-ptr-icon>
+      <svg class="ptr-icon size-11 drop-shadow-md" viewBox="0 0 512 512" :style="{ scale: returning ? '0.7' : armed ? '1.12' : '1' }" data-ptr-icon>
         <path
           class="ptr-hex"
-          :class="{ 'ptr-hex-spin': refreshing }"
-          :style="refreshing ? undefined : { rotate: `${rotation}deg` }"
+          :class="{ 'ptr-hex-spin': refreshing || returning }"
+          :style="refreshing || returning ? undefined : { rotate: `${rotation}deg` }"
           fill="#17603f"
           d="M217.89 34Q256 12 294.11 34L429.21 112Q467.31 134 467.31 178L467.31 334Q467.31 378 429.21 400L294.11 478Q256 500 217.89 478L82.79 400Q44.69 378 44.69 334L44.69 178Q44.69 134 82.79 112Z"
         />
@@ -152,6 +154,18 @@ const indicatorStyle = computed(() => ({
   }
   .ptr-settling .ptr-hex:not(.ptr-hex-spin) {
     transition: rotate var(--ptr-settle) var(--ease-out);
+  }
+  /*
+   * Back up after a refresh: still turning, on an even ease-in-out so the travel is seen, and the
+   * fade on an ease-in so it stays visible most of the way and goes only near the top.
+   */
+  .ptr-returning {
+    transition:
+      transform var(--ptr-return) cubic-bezier(0.65, 0, 0.35, 1),
+      opacity var(--ptr-return) cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  .ptr-returning .ptr-icon {
+    transition: scale var(--ptr-return) cubic-bezier(0.65, 0, 0.35, 1);
   }
 }
 </style>
