@@ -83,7 +83,7 @@ export const CATEGORIES: UnitCategory[] = [
     slug: 'studio',
     title: 'Studio',
     // Not "1st Floor": the studios are on floors 1 to 3 (see the table above).
-    blurb: 'One room with its own bathroom and cabinets.',
+    blurb: 'A single room, rented on its own.',
     icon: BedSingle,
   },
   {
@@ -98,14 +98,14 @@ export const CATEGORIES: UnitCategory[] = [
     key: 'Two-bedroom',
     slug: 'two-bedroom',
     title: 'Two-bedroom',
-    blurb: 'The larger apartments at the back and front, with a kitchenette and room to park.',
+    blurb: 'Two bedrooms, in the back and front apartments.',
     icon: Building2,
   },
   {
     key: 'Three-bedroom',
     slug: 'three-bedroom',
     title: 'Three-bedroom',
-    blurb: 'The penthouse on the top floor, with the roof deck and the view over Legazpi.',
+    blurb: 'The penthouse, on the top floor.',
     icon: Hotel,
   },
 ];

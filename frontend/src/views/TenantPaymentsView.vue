@@ -195,12 +195,12 @@ const rentFacts = computed(() => {
   const st = standing.value;
   if (!st) return null;
   const start = st.owedPeriods[0]?.start ?? st.nextPeriodStart;
-  let dueDay = 'on the same day each month as the day you moved in';
+  let dueDay = 'each month on the day you moved in';
   if (/^\d{4}-\d{2}-\d{2}/.test(start)) {
     const [y, m, d] = start.split('-').map(Number) as [number, number, number];
     const lastOfMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
     if (d <= 28 && d !== lastOfMonth) dueDay = `on the ${ordinal(d)} of each month`;
-    else dueDay += ', or on the last day of a shorter month';
+    // A clamped day (29th-31st, or a month's last day) keeps the move-in wording.
   }
   const rate = waterRatePerOccupant.value;
   const occupants = rate && rate > 0 ? Math.round(st.perPeriod.waterAmount / rate) : null;
@@ -948,8 +948,7 @@ function refreshAll() {
         </div>
       </dl>
       <p class="text-sm leading-6 text-ink-soft">
-        Rent is due {{ rentFacts.dueDay }}. A month you have paid can show "Not entered" until the
-        landlady enters it.
+        Rent is due {{ rentFacts.dueDay }}.
       </p>
     </OverviewTile>
     </section>

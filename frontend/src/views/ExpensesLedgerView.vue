@@ -1017,7 +1017,7 @@ async function handleEditExpense() {
             </li>
           </ul>
           <p class="text-xs leading-5 text-ink-faint">
-            Main House and Other are personal: not taken out of rental income.
+            Main House and Other are personal spending.
           </p>
         </template>
       </OverviewTile>

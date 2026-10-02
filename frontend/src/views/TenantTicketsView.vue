@@ -835,7 +835,7 @@ function formatDateTime(iso: string) {
                   >
                     <ImageIcon class="size-6 text-brand" aria-hidden="true" />
                     <span class="text-xs font-semibold text-ink">Add a photo</span>
-                    <span class="text-xs text-ink-soft">A photo from your phone. Large photos are made smaller to send.</span>
+                    <span class="text-xs text-ink-soft">Optional. A photo helps show the problem.</span>
                   </label>
                 </div>
 

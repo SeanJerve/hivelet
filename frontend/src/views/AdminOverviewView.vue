@@ -822,9 +822,9 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </template>
           <template v-else>{{ selectedArchiveYear }} archive</template>
         </h1>
-        <!-- No "Every entry recorded for January to December" under an archive
-             year: the heading says it (Sean, 2026-10-01, fewer words). -->
-        <p v-if="!isHistoricalMode && ledgerNote" class="mt-1 text-sm text-ink-soft">{{ ledgerNote }}</p>
+        <!-- No line under the greeting (Sean, 2026-10-02): "Collections are entered
+             through September" was a sentence about the data, not for her. The
+             income tiles already mark a month with nothing entered. -->
       </div>
 
       <!--
@@ -1038,7 +1038,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               <dt class="text-xs text-ink-faint">Rent and water entered</dt>
               <dd class="text-lg font-semibold tabular">{{ peso(monthlyRevenue) }}</dd>
               <dd class="text-xs text-ink-soft">
-                Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}, all units, Linda's included
+                Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}
               </dd>
             </div>
             <div>
@@ -1050,7 +1050,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               <dd class="text-lg font-semibold tabular">
                 {{ roomsFetchFailed ? 'Unavailable' : peso(baseMonthlyRunRate) }}
               </dd>
-              <dd class="text-xs text-ink-soft">Rent and water of the units occupied now</dd>
+              <dd class="text-xs text-ink-soft">From the units occupied now</dd>
             </div>
           </dl>
         </template>
@@ -1187,7 +1187,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </table>
           </div>
           <p class="text-xs leading-5 text-ink-faint">
-            Personal costs (Main House, Other), not subtracted: {{ peso(livePersonalTotal) }} in {{ CURRENT_YEAR }}
+            Personal spending in {{ CURRENT_YEAR }}: {{ peso(livePersonalTotal) }}, not counted above
           </p>
         </template>
       </OverviewTile>
@@ -1297,7 +1297,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             <div>
               <dt class="text-xs text-ink-faint">Rent and water entered</dt>
               <dd class="text-lg font-semibold tabular">{{ peso(historicalAnnualGrossTotal) }}</dd>
-              <dd class="text-xs text-ink-soft">All units, Linda's included</dd>
+              <dd class="text-xs text-ink-soft">All units</dd>
             </div>
             <div>
               <dt class="text-xs text-ink-faint">Average entered month</dt>
