@@ -43,7 +43,7 @@ export function sortRows<T>(
   order: RowOrder,
   get: { unit?: (r: T) => string | null | undefined; name?: (r: T) => string | null | undefined; date?: (r: T) => string | number | Date | null | undefined }
 ): T[] {
-  const byName = (a: T, b: T) => (get.name ? (get.name(a) ?? '').localeCompare(get.name(b) ?? '') : 0);
+  const byName = (a: T, b: T) => (get.name ? (get.name(a) ?? '').localeCompare(get.name(b) ?? '', undefined, { numeric: true, sensitivity: 'base' }) : 0);
   const byDate = (a: T, b: T) => {
     if (!get.date) return 0;
     const x = time(get.date(a));

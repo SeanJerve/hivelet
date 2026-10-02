@@ -28,7 +28,7 @@ import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
 import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
 import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown } from 'lucide-vue-next';
-import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
+import { sortRows, orderOptions, compareUnits, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -412,7 +412,7 @@ async function showHighlighted() {
   if (y_isLoading()) return; // tried again when the ledger arrives
   const row = rows.value.find((r) => r.id === id);
   if (!row) return;
-  const group = clusterGroups.value.find((g) => g.records.some((r) => r.id === id));
+  const group = displayGroups.value.find((g) => g.records.some((r) => r.id === id));
   if (group) openClusters.value = { ...openClusters.value, [group.key]: true };
   await nextTick();
   document.querySelector(`[data-row-id="${id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -536,6 +536,17 @@ const incomeFilters = computed<ToolbarFilter[]>(() => [
   // Default this year (above), so Reset and Clear come back to it, and the
   // summary line names "All years" when that is picked.
   { key: 'year', label: 'Year', value: filterYear.value, defaultValue: THIS_YEAR, options: yearOptions.value },
+  {
+    key: 'group',
+    label: 'Group by',
+    value: incomeGroupBy.value,
+    defaultValue: 'cluster',
+    options: [
+      { value: 'cluster', label: 'Cluster' },
+      { value: 'unit', label: 'Unit' },
+      { value: 'name', label: 'Tenant (A to Z)' },
+    ],
+  },
   { key: 'order', label: 'Order', value: incomeOrder.value, defaultValue: 'newest', options: orderOptions(['newest', 'oldest', 'unit', 'name']) },
 ]);
 function applyIncomeFilters(v: FilterDraft) {
@@ -543,6 +554,9 @@ function applyIncomeFilters(v: FilterDraft) {
   filterMonth.value = String(v.month);
   filterYear.value = String(v.year);
   incomeOrder.value = v.order as RowOrder;
+  incomeGroupBy.value = v.group as IncomeGroupBy;
+  // Grouping by unit or tenant only shows in the grouped view, so choosing one switches to it.
+  if (incomeGroupBy.value !== 'cluster') viewMode.value = 'grouped';
 }
 
 const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
@@ -736,6 +750,47 @@ const clusterGroups = computed(() => {
       totalRemitted: gRemitted
     };
   }).filter(g => g.records.length > 0);
+});
+
+/**
+ * Filters > Group by (Sean, 2026-10-02: "a filter that groups the tenants by their units,
+ * alphabetically, or by name"). By cluster is the sections above; by unit is one section per
+ * unit (1A, 1B ... 3G, then the named units); by tenant is one per payer, A to Z. Each section has
+ * the same header and totals as a cluster's; the 50% Share counts only Boarding House rows in it
+ * (BR-035, half that row's Rent Amount), so a tenant or unit section outside it shows none.
+ */
+type IncomeGroupBy = 'cluster' | 'unit' | 'name';
+const incomeGroupBy = ref<IncomeGroupBy>('cluster');
+const displayGroups = computed(() => {
+  if (incomeGroupBy.value === 'cluster') return clusterGroups.value;
+  const byUnit = incomeGroupBy.value === 'unit';
+  const buckets = new Map<string, (typeof rows.value)[number][]>();
+  for (const r of rows.value) {
+    const k = byUnit ? (r.unit || '').toUpperCase() || 'No unit' : (r.contact || '').trim() || 'No name';
+    const list = buckets.get(k);
+    if (list) list.push(r);
+    else buckets.set(k, [r]);
+  }
+  const keys = [...buckets.keys()].sort(byUnit ? compareUnits : (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  return keys.map((k, i) => {
+    const records = buckets.get(k)!;
+    const totalRent = records.reduce((s, r) => s + r.rent, 0);
+    const totalShare = records.filter((r) => r.cluster === 'Boarding House').reduce((s, r) => s + r.rent / 2, 0);
+    const units = [...new Set(records.map((r) => (r.unit || '').toUpperCase()).filter(Boolean))];
+    return {
+      key: `${incomeGroupBy.value}-${i}-${k.replace(/[^A-Za-z0-9]+/g, '-')}`,
+      label: byUnit ? `Unit ${k}` : k,
+      desc: byUnit ? records[0].cluster || '' : units.length ? `Unit ${units.join(', ')}` : '',
+      hasShareColumn: totalShare > 0,
+      units,
+      records,
+      totalRent,
+      totalShare,
+      totalOccupants: records.reduce((s, r) => s + r.occupants, 0),
+      totalWater: records.reduce((s, r) => s + r.water, 0),
+      totalRemitted: records.reduce((s, r) => s + r.rent + r.water, 0),
+    };
+  });
 });
 
 // Custom Confirmation Modal state
@@ -1422,14 +1477,14 @@ const isDownloadOpen = ref(false);
         "nothing found" looks like.
       -->
       <div
-        v-if="clusterGroups.length === 0"
+        v-if="displayGroups.length === 0"
         class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
       >
         <p class="text-base font-semibold text-ink">Nothing matches</p>
       </div>
 
       <section
-        v-for="(group, groupIndex) in clusterGroups"
+        v-for="(group, groupIndex) in displayGroups"
         :key="group.key"
         class="overflow-hidden rounded-tile bg-tile"
       >
