@@ -30,10 +30,13 @@
  *                            sessionStorage entries: lib/yearScope.ts (the year picked on the
  *                            admin screens), authStore.ts PASSWORD_CHANGED_FLAG (read once
  *                            after a forced password change) and MOVED_OUT_FLAG (read once by
- *                            the sign-in page, added 2026-09-30), lib/offlineCache.ts (a
- *                            tenant's own last-loaded bills, payments, standing and unit, for
- *                            viewing with no signal; tenants only, keyed to that tenant, wiped at
- *                            sign-out; Sean, 2026-10-01), rechecked 2026-10-01; no
+ *                            the sign-in page, added 2026-09-30), lib/offlineCache.ts (IndexedDB
+ *                            `hivelet-offline`: the signed-in person's allowlisted reads from the
+ *                            last load - ADMIN_READS / TENANT_READS - for viewing with no signal;
+ *                            keyed to the profile id, no photos, conversations or token-named
+ *                            keys, wiped at sign-out and when someone else signs in; Sean,
+ *                            2026-10-02, replacing the tenant-only localStorage copy of
+ *                            2026-10-01), rechecked 2026-10-02; no
  *                            `document.cookie` in frontend/src, no `res.cookie` in backend/src,
  *                            no analytics script anywhere
  *   offline cache            frontend/vite.config.ts workbox: static files, fonts, and
@@ -278,9 +281,12 @@ const sections = Object.values(S);
           use, sign out when you finish.
         </li>
         <li>
-          <strong>If you are a tenant:</strong> the bills, balance, payments and unit details your
-          pages last loaded, so you can see what you owe with no signal. They are kept for your
-          account only, and signing out removes them.
+          <strong>For viewing with no signal:</strong> the essential figures, names and
+          notifications your screens last loaded, so you can still read them offline. For a
+          tenant, that is your rent, balance, payments, repair requests and details; for the
+          landlady, the units, tenants, income and expense records, repairs and inquiries. Never
+          photos or conversations. They are kept on your own device, for your account only, and
+          signing out removes them.
         </li>
         <li>
           <strong>On the landlady's screens:</strong> which inquiries and urgent repairs she has
@@ -304,8 +310,8 @@ const sections = Object.values(S);
           <strong>An offline copy of the site.</strong> Hivelet installs a small helper in your
           browser (a service worker) that keeps the site's own files, its typefaces, and the public
           information about the units, so pages still open on a weak connection. The unit
-          information is kept for up to an hour. It never keeps your bills, payments, tickets or
-          account details.
+          information is kept for up to an hour. The helper itself never keeps your bills,
+          payments, tickets or account details.
         </li>
       </ul>
       <p>
