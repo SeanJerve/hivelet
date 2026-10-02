@@ -14,6 +14,7 @@ import { config } from './config/env.js';
 import { reportDbStatus } from './config/db.js';
 import apiRouter from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { ApiError } from './utils/ApiError.js';
 
 const app = express();
 
@@ -133,7 +134,10 @@ app.use(
         return;
       }
 
-      callback(new Error(`Origin ${origin} is not permitted by CORS policy.`));
+      // A refusal, not a fault: 403, where a plain Error fell through the error
+      // handler as a 500 "Internal server error" (found 2026-10-02 probing the
+      // live API with a foreign Origin). Still refused before any route runs.
+      callback(ApiError.forbidden('This website is not permitted to call this API.'));
     },
     credentials: true,
   })
