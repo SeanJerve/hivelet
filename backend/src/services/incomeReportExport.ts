@@ -38,6 +38,7 @@ import ExcelJS from 'exceljs';
 import { db } from '../config/db.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asScope, assertScope, type ReportScope } from '../utils/reportScope.js';
+import { isAcknowledgementReceipt } from '../utils/invoiceNumber.js';
 
 /**
  * The canonical unit order, from `docs/09_MONTHLY_INCOME_REPORT.md` §2.
@@ -412,8 +413,6 @@ function addIncomeSheet(
    * Anyone totalling Linda for a year from the year line was 30,635.76 short
    * over the ledger's life.
    */
-  let lindaYearWater = 0;
-  let lindaYearElectricity = 0;
   const monthsPresent = [...byMonth.keys()].sort((a, b) => a - b);
 
   const moneyCells = (r: ExcelJS.Row) => {
@@ -436,10 +435,12 @@ function addIncomeSheet(
     ]);
     // The invoice number is red so it reads apart from the contact name, which is
     // how the owner's own sheet distinguishes them.
+    // An acknowledgement receipt prints as "ACK" (Sean, 2026-10-02: shortened, still red).
+    const invoice = isAcknowledgementReceipt(r.invoice_number) ? 'ACK' : r.invoice_number ?? '';
     row.getCell(3).value = {
       richText: [
         { text: `${r.contact_name}  ` },
-        { text: r.invoice_number ?? '', font: { color: { argb: RED }, bold: true } },
+        { text: invoice, font: { color: { argb: RED }, bold: true } },
       ],
     };
     row.font = { size: 10 };
@@ -447,15 +448,31 @@ function addIncomeSheet(
     return row;
   };
 
-  const emitTotalRow = (label: string, t: Totals, opts: { strong?: boolean } = {}) => {
+  /**
+   * Total rows. `band` colours them (Sean, 2026-10-02): a subtotal on light blue, a GRAND
+   * SUBTOTAL on red with white type, so the two kinds of total read apart at a glance.
+   */
+  const emitTotalRow = (
+    label: string,
+    t: Totals,
+    opts: { strong?: boolean; band?: 'subtotal' | 'grand' } = {}
+  ) => {
     const row = ws.addRow([label, null, null, null, t.rent, t.share, t.occupants, t.water, t.remitted, null, null]);
-    row.font = { bold: true, size: 10, color: { argb: INK } };
+    row.font = { bold: true, size: 10, color: { argb: opts.band === 'grand' ? 'FFFFFFFF' : INK } };
     moneyCells(row);
-    row.eachCell({ includeEmpty: true }, (c) => {
+    for (let col = 1; col <= 11; col++) {
+      const c = row.getCell(col);
       c.border = {
         top: { style: opts.strong ? 'medium' : 'thin', color: { argb: opts.strong ? INK : RULE } },
       };
-    });
+      if (opts.band) {
+        c.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: opts.band === 'grand' ? 'FFC00000' : 'FFDDEBF7' },
+        };
+      }
+    }
     return row;
   };
 
@@ -483,7 +500,7 @@ function addIncomeSheet(
       merge(grand, clusterTotal);
 
       // The sheet gives Penthouse no subtotal - a single unit's row is its own total.
-      if (cluster.subtotal) emitTotalRow(`${cluster.label} subtotal`, clusterTotal);
+      if (cluster.subtotal) emitTotalRow(`${cluster.label} subtotal`, clusterTotal, { band: 'subtotal' });
     }
 
     /**
@@ -515,11 +532,11 @@ function addIncomeSheet(
         emitUnitRow(r);
         add(unplacedTotal, r);
       }
-      emitTotalRow('Not in the documented order — subtotal', unplacedTotal);
+      emitTotalRow('Not in the documented order — subtotal', unplacedTotal, { band: 'subtotal' });
       merge(grand, unplacedTotal);
     }
 
-    emitTotalRow('GRAND SUBTOTAL (excludes Linda)', grand, { strong: true });
+    emitTotalRow('GRAND SUBTOTAL (excludes Linda)', grand, { strong: true, band: 'grand' });
     merge(yearToDate, grand);
 
     // --- Linda: fixed charges, remitted directly to Linda, never pooled above ---
@@ -533,51 +550,15 @@ function addIncomeSheet(
       ws.mergeCells(lindaHeader.number, 1, lindaHeader.number, 11);
 
       const lindaTotal = zero();
-      let lindaElectricity = 0;
-      let lindaWater = 0;
       for (const r of lindaRows) {
         emitUnitRow(r);
         add(lindaTotal, r);
-        lindaElectricity += n(r.linda_electricity_charge);
-        lindaWater += n(r.linda_water_charge);
-        lindaYearElectricity += n(r.linda_electricity_charge);
-        lindaYearWater += n(r.linda_water_charge);
       }
-      emitTotalRow('Linda total', lindaTotal);
+      emitTotalRow('Linda total', lindaTotal, { band: 'subtotal' });
       merge(lindaYear, lindaTotal);
-
-      /**
-       * The fixed water charge, shown as its own line rather than folded into
-       * the Linda total.
-       *
-       * `remitted_amount` is a GENERATED column - `rent_amount + water_payment` -
-       * and for these units `water_payment` is 0. Adding the fixed charge into
-       * the total would make the total disagree with the column the database
-       * itself computes, which is a worse error than the one being fixed. A
-       * separate labelled line makes the money visible and keeps the arithmetic
-       * honest. Unlike the electricity line below, this charge is CURRENT: it is
-       * BR-040's live model, read from `system_settings` by
-       * `getLindaFixedWaterCharge()`.
-       */
-      if (lindaWater > 0) {
-        const w = ws.addRow([
-          'Linda fixed water charge (BR-040, remitted directly to Linda)',
-          null, null, null, null, null, null, null, lindaWater, null, null,
-        ]);
-        w.font = { size: 9, italic: true, color: { argb: INK } };
-        w.getCell(9).numFmt = MONEY_FMT;
-      }
-
-      if (lindaElectricity > 0) {
-        // Historical only. Migration 017 retired the flat charge; these figures are
-        // real money already collected and are shown rather than dropped.
-        const e = ws.addRow([
-          'Linda electricity (historical, retired 2026-09-13)',
-          null, null, null, null, null, null, null, lindaElectricity, null, null,
-        ]);
-        e.font = { size: 9, italic: true, color: { argb: INK } };
-        e.getCell(9).numFmt = MONEY_FMT;
-      }
+      // The "Linda fixed water charge (BR-040 ...)" and "Linda electricity (historical ...)" note
+      // lines are gone (Sean, 2026-10-02: unnecessary text on the owner's sheet). Neither was ever
+      // in the Linda total, so no figure above changes.
     }
 
     ws.addRow([]); // the blank row the layout requires between months
@@ -627,36 +608,6 @@ function addIncomeSheet(
     lytd.font = { bold: true, size: 10, italic: true, color: { argb: INK } };
   }
 
-  // The year-level counterparts of the two lines each month block already
-  // carries. Kept out of the total above for the same reason they are kept out
-  // of the monthly total: `remitted_amount` is a GENERATED column computed as
-  // `rent_amount + water_payment`, and folding a fixed charge into it would make
-  // the sheet disagree with the database. Separate labelled lines make the money
-  // visible without breaking that arithmetic.
-  if (lindaYearWater > 0) {
-    const w = ws.addRow([
-      `Linda fixed water charge, year to date ${year} (BR-040, remitted directly to Linda)`,
-      null, null, null, null, null, null, null, lindaYearWater, null, null,
-    ]);
-    w.font = { size: 9, italic: true, color: { argb: INK } };
-    w.getCell(9).numFmt = MONEY_FMT;
-  }
-
-  if (lindaYearElectricity > 0) {
-    const e = ws.addRow([
-      `Linda electricity, year to date ${year} (historical, retired 2026-09-13)`,
-      null, null, null, null, null, null, null, lindaYearElectricity, null, null,
-    ]);
-    e.font = { size: 9, italic: true, color: { argb: INK } };
-    e.getCell(9).numFmt = MONEY_FMT;
-  }
-
-  const note = ws.addRow([
-    'Both figures are shown deliberately: each month carries its own grand subtotal, and the ' +
-      'line above totals the year. Which of the two belongs at the bottom of the page is OD-01, ' +
-      'still open with the owner — so neither is presented as the total.',
-  ]);
-  note.font = { size: 9, italic: true, color: { argb: INK } };
-  ws.mergeCells(note.number, 1, note.number, 11);
-  note.alignment = { wrapText: true, vertical: 'top' };
+  // The year's Linda water/electricity note lines and the OD-01 explanation that followed are
+  // gone too (Sean, 2026-10-02): working notes, not something the owner's sheet should say.
 }

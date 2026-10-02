@@ -357,14 +357,14 @@ onUnmounted(() => {
           <div v-if="!isAuthenticated" class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light text-white [text-shadow:0_1px_3px_rgb(0_0_0/0.6)]">
             <RouterLink
               to="/inquire"
-              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+              class="press inline-flex min-h-11 items-center font-semibold underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
             >
               Inquire now
             </RouterLink>
             <span aria-hidden="true" class="pr-2 text-white">,</span>
             <RouterLink
               to="/login"
-              class="press inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+              class="press inline-flex min-h-11 min-w-11 items-center justify-center font-semibold underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
             >
               Sign in
             </RouterLink>
