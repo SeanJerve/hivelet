@@ -33,6 +33,26 @@ thing did not work" is not.
 
 ## Open
 
+### B-98 — `credentials/creds.txt` is readable in the public repo's history (branch `design-from-lloyd`) · **OPEN, needs Sean**
+
+- **What:** the repository is public on GitHub. `credentials/creds.txt` (and a screenshot beside it)
+  was committed on 2026-08-25 (`788f321`) and removed on 2026-09-13 (`bd95b14`), but every commit in
+  between is still on the branch `design-from-lloyd`, so anyone can open the file from that history.
+  `main` does not contain it, and `check:secrets` passes on the current tree. Found 2 Oct evening
+  while checking out the 28 Aug version for the iteration screenshots. Claude did not open the file.
+- **What Sean needs to do, in this order:**
+  1. Assume everything in that file is known to others. Change each password in it that still works
+     (the owner's account above all), and if it holds any key (Supabase, Adyen, JWT), rotate that key
+     and update Vercel's environment variables in the same sitting (B-68: a key changed on one side
+     only breaks the site).
+  2. Then remove it from GitHub's reach: delete the branch `design-from-lloyd` (and any other branch
+     that still contains `788f321`: `git branch -r --contains 788f321`), or make the repository
+     private. Deleting the branch alone is not enough until step 1 is done: forks and caches may
+     already hold it.
+- **How to know it worked:** `git branch -r --contains 788f321` lists nothing on GitHub, and the old
+  passwords no longer sign in.
+- **Raised:** 2026-10-02 by Claude
+
 ### B-97 — the evaluation account cannot pay: "nothing to pay" beside P30,400 owed (2 Oct evening) · **DONE 2026-10-02 (077 applied by Claude through the Supabase connector)**
 
 - **What:** signed in as loydtest, Payments and billing shows "Not entered yet P30,400.00", and Pay
