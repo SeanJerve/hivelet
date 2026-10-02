@@ -361,6 +361,13 @@ to contact "Mrs. Fe Galang Da Silva" or "Mrs. Da Silva" now says Michelle (commi
 who runs the boarding house". The privacy policy now names the boarding house as the personal
 information controller, with Michelle as the contact, instead of saying she owns it.
 
+**Superseded on the public pages, 2026-10-02 (Loyd):** "stop bringing up Michelle, we can't keep
+disclosing the name in public". No public page names her now: they say "we", "us" or "the
+landlady", the terms and policy contact blocks give the property, address and phone, and replies on
+a visitor's inquiry page are labelled "Boarding house" rather than the stored sender name.
+`LANDLADY.name` was removed from `systemState.ts` so it cannot creep back. The admin account's own
+name (above) is unchanged and still shows on signed-in screens.
+
 **What is left is the account's own name**, which is live data: the header, the Activity page and
 the repair-reply notice a tenant receives ("... commented on your request") all print it.
 

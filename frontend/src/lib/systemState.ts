@@ -591,7 +591,6 @@ export const TECHNICIANS = [
  * "who runs the boarding house"; tenant pages use the name alone.
  */
 export const LANDLADY = {
-  name: "Michelle",
   gcash: "09274653938",
   phone: "09274653938",
   property: "Fe Galang Da Silva Boarding House",
