@@ -115,18 +115,19 @@ House. The greeting at the top follows the time of day.
 **Every list** (Rooms and rates, Tenants, Monthly Income, Monthly Expenses, Repairs, Inquiries)
 has the same bar at the top:
 
-- **By cluster / As a list** (where a list has both) changes how the rows are shown.
 - **Search** narrows the list as you type.
 - **Filters** opens a window with every filter for that list (cluster, month, year, status, kind).
-  Nothing changes until you press **Apply filters**; **Reset** puts the choices back. The filters in
-  use are named under the bar; **Clear** removes them.
+  Where a list can be drawn two ways, **Show as** at the top of that window picks **By cluster** or
+  **As a list**. Nothing changes until you press **Apply filters**; **Reset** puts the choices back.
+  The filters in use are named under the bar; **Clear** removes them.
 
 **Also on every screen:** a short ping means something was saved, or someone else's change has
 arrived. Tap a message at the top of the screen to close it. The phone's **Back** button goes back a
 page and closes any window that was open on it. In the installed app, **pull down from the top** of a
 page to reload it. **Light or dark:** your initials > **Appearance** > **System**, **Light** or
 **Dark** (System follows the phone or computer). On the public pages it is the sun/moon button at
-the foot of the page.
+the foot of the page. **The green hexagon** turns only the first time the site opens on a phone or
+computer; after that a reload shows grey outlines of the page while it loads.
 
 ### 1. Signing in and your password
 
@@ -184,8 +185,16 @@ system's own record (section 9) keeps that it existed and who removed it.
 arrived, then verify it, or reject it. A payment is only counted once you verify it. **Until online
 payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
 
-**Download** gives the income workbook for the year shown, in your own layout (month blocks,
-cluster subtotals, Linda separate).
+**Which year.** Monthly Income opens on **this year**, and the figures at the top say so ("These
+figures are for all of 2026"). **Filters** > **Year** picks another year, or **All years** for
+everything since the records began.
+
+**Download** asks what the file should cover: **Month** (pick the month and year), **Year** (pick
+the year) or **All**. It opens on what the screen is showing, so pressing **Download** again gets
+that. The workbook is in your own layout (month blocks, cluster subtotals, Linda separate) and is
+named for what it holds: "Monthly Income March 2026 only - MI032026" for one month, "Monthly Income
+2025 - MI2025" for a past year (this year's file is named for the current month, as before), and
+"Monthly Income All Years - MIALL".
 
 ### 4. Recording an expense (Monthly Expenses)
 
@@ -196,8 +205,9 @@ cluster subtotals, Linda separate).
    be given once, so two amounts for the same area go in as one.
 4. **Add another expense** records the next one without closing the form.
 
-Editing and **Delete expense** work as for payments. **Download** gives the expenses workbook for
-the year shown.
+Editing and **Delete expense** work as for payments. Monthly Expenses also opens on **this year**,
+with **All years** in **Filters** > **Year**. **Download** asks **Month**, **Year** or **All**, as
+for income; a single month's file ends in "only" ("Monthly Expenses March 2026 only - ME032026").
 
 ### 5. Tenants
 
@@ -216,13 +226,14 @@ the year shown.
   **Apply filters**. The list then shows who paid for each unit then, read from your receipts: the months they paid,
   or for one month what the receipt covered, when it was paid and its number. A name you wrote two
   ways in the same unit is shown once, with the other spelling under it; a tenant who moved units
-  says which other unit they rented. **Download** saves the same list as a workbook, named like
-  "Tenant History June 2025 - TH062025". **Clear** (under the search) goes back to your current
+  says which other unit they rented. **Download** asks **Month**, **Year** or **All** and saves
+  the list as a workbook, named like "Tenant History June 2025 - TH062025". **Clear** (under the search) goes back to your current
   tenants.
 
 ### 6. Rooms and rates
 
-Every unit **By cluster** or **As a list**; **Filters** narrows them by status or cluster. **Edit** a unit to change its rate, status, description
+Every unit, by cluster or as one list (**Filters** > **Show as**); **Filters** also narrows them by
+status or cluster. **Edit** a unit to change its rate, status, description
 or photo. Every rate change is kept in the unit's price history automatically; the system never
 raises a rate by itself.
 
@@ -257,8 +268,11 @@ app**. Ask the team if you need to know who changed something.
 The system opens without a connection and shows what each screen last loaded on this device, under
 **"Saved figures from"** and the time: the Overview's figures, the tenants, both ledgers, repairs,
 inquiries and the notifications. Nothing can be recorded, moved or marked read until the connection
-returns, so **Record payment**, **Record expense** and **Move someone in** are greyed out and the
-Overview's actions are hidden; when it returns, every screen reloads by itself. These essential
+returns, so **Record payment**, **Record expense**, **Move someone in**, the buttons in **Manage
+this repair** and **Log a repair**, and **Save reply** and **Close inquiry** are greyed out ("Needs
+a connection"), and the Overview's actions are hidden; when it returns, every screen reloads by
+itself. An inquiry's conversation (the replies) is not saved for offline viewing: its first message
+is shown, with a note that the replies could not be loaded. These essential
 figures, names and notifications stay on your own device only, and **signing out removes them**.
 A screen you have not opened since signing in has nothing saved yet. If a save
 takes too long it stops after about 45 seconds and says it **cannot tell whether the save arrived**:

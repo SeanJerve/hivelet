@@ -95,6 +95,7 @@ have rendered the stub figures before it was scanned. Scripts were kept outside 
 | | Record expense | Native `required` validation, focus to the empty field |
 | | Record payment | Submit opens the confirmation dialog, which takes focus |
 | Toasts | All | A polite live region |
+| Escape on forms | Manage this repair, Log a repair (and other forms holding typed input) | Escape and the backdrop do **not** close these, by design (`WsModal` `dismissible=false`: a reflexive Escape must not throw away typing); the X and **Cancel** close them. WCAG does not require Escape; noted so a tester does not log it |
 | Visible focus | First 25 Tab stops on 15 screens, light and dark | Every stop draws an outline or ring |
 | Touch targets, 375 px | 15 screens | Nothing under 24 px except the Overview and income month bars (20 px wide), which pass WCAG 2.2's spacing exception (axe `target-size` passes) |
 | Reduced motion | 6 screens, `reduce` vs `no-preference` | With `reduce` the loader breathes instead of spinning and only opacity fades run; no slide, fill, arc or skeleton-pulse animation |
@@ -104,6 +105,22 @@ have rendered the stub figures before it was scanned. Scripts were kept outside 
 phone. axe finds roughly a third to a half of WCAG problems; these results say the markup is
 right, not that a blind user has tried it. The Adyen GCash dialog could not be opened (no
 network to Adyen). `HANDOFF_TO_QA.md` §0a keeps the phone checks.
+
+### 2.1 Offline essentials, re-verified the same day
+
+`vite build` + `vite preview` with the service worker, stub API, 375 px: every main screen visited
+online, then the browser taken offline and each screen reopened cold in a new tab. **Admin 24/25,
+tenant 15/15.** Each screen showed its figures with one "Saved figures from" line; the bell kept its
+unread count; Pay with GCash, Mark all read and the Overview's + were not offered; no write left the
+browser; back online the line went within 7 s without a reload; sign-out left 0 saved rows, and a
+cold offline reopen afterwards showed nothing old. The one miss is accepted: an inquiry's reply
+thread is not saved, so it says the replies could not be loaded.
+
+It found one defect, fixed in `03f4bbb`: **Inquiries and Repairs still offered their writes
+offline** (Close inquiry; Save reply once text was typed; Save changes, Delete repair, Dispatch,
+Resolve, the comment send and Log a repair's save). Pressing one only failed with a connection
+message, but every other screen greys them. They use the same `writesUnavailable` flag now; the run
+shows them greyed offline and enabled online.
 
 ---
 

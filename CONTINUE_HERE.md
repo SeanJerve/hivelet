@@ -1,7 +1,35 @@
 # CONTINUE HERE — handoff for the next machine
 
 > [!IMPORTANT]
-> **0.0 — where things stand, 2026-10-01 (Lloyd's machine; Sean's notes are in `HANDOFF_NEXT_SESSION.md`).**
+> **0.0 — 2 October 2026, the day before the panel (Saturday 3 Oct evaluates the live site).**
+>
+> - **On the site since 1 Oct (frontend):** **Show as** (By cluster / As a list) is inside
+>   **Filters** on Rooms and rates, Tenants and Monthly Income; Monthly Income and Expenses open on
+>   **this year**, with **All years** in Filters; **Download** opens a dialog (Month / Year / All,
+>   backend `utils/reportScope.ts`), a ledger's single month saving as "... March 2026 **only** -
+>   MI032026"; **offline essentials** for both roles (`lib/offlineCache.ts`: a per-user IndexedDB
+>   copy of allow-listed reads, served on a network error, one "Saved figures from" line, writes
+>   greyed or hidden, wiped at sign-out); the loader on the **first load in a browser only**
+>   (`public/boot.js`, `hivelet.seen`; a landing-page refresh stays dark); dark mode; the Overview's
+>   phone **+**; no Activity page.
+> - **Security and accessibility audit, the first of each:**
+>   `docs/AUDIT_2026-10-02_SECURITY_ACCESSIBILITY.md`. No high-severity code finding. Fixed
+>   (`887457a`): return URLs with a backslash or control character are refused, JWTs pinned to
+>   HS256, no SVG repair photos, CSP `object-src 'none'; base-uri 'self'`. axe-core: 0 violations on
+>   19 screens × light/dark × 375/1366, every dialog passes focus, Tab trap, Escape and restore.
+> - **Offline re-verified** on a production build with the service worker (stub API): admin 24/25
+>   (the one is the accepted uncached inquiry reply thread), tenant 15/15. It found Inquiries and
+>   Repairs still offering their writes offline; greyed now like the rest (`03f4bbb`).
+> - **Docs:** Appendix K, `HANDOFF_TO_QA.md` §0a (rows for Show as, this year first, the Download
+>   dialog, the loader rule, the wider offline greying).
+> - **Needs a person:** **B-94** (Vercel challenge; the Adyen webhook) before Saturday; **B-96** (RLS
+>   on three backup tables, SQL written, Supabase connection was down); and **confirm the deploy**:
+>   the machine that did this could not reach `hivelet.vercel.app` at all (network policy), so
+>   `887457a`/`03f4bbb` being live was not seen. `curl -sI https://hivelet.vercel.app/ | grep -i
+>   content-security` should end `object-src 'none'; base-uri 'self'; frame-ancestors 'none'`.
+>   Migrations: none written or applied on 2 Oct; next number still **076** (B-96 proposes it).
+>
+> **0.0 (previous) — where things stand, 2026-10-01 (Lloyd's machine; Sean's notes are in `HANDOFF_NEXT_SESSION.md`).**
 >
 > - **Migrations 066 to 072.** 066 garbage fee out and invoices `INV#…`, optional (applied); 067 tenant
 >   emails are placeholders, each tenant gives their own email and password at first sign-in (applied);
