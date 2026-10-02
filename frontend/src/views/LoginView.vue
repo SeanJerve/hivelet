@@ -303,7 +303,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 type="text"
                 autocomplete="username"
                 required
-                placeholder="HV-12345, 0917-000-0000 or you@email.com"
+                placeholder="e.g. HV-12345"
                 class="ws-input mt-2"
               />
             </div>
