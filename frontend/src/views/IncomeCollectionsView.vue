@@ -23,7 +23,7 @@ import {
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
-import { downloadReport } from '@/lib/downloadReport';
+import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
 import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
 import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown } from 'lucide-vue-next';
@@ -1022,24 +1022,19 @@ async function handleEditIncome() {
  * cannot express any of that structure, so the two files disagreed about what
  * the ledger looks like, and the flat one was the easier button to reach.
  */
-const isExportingExcel = ref(false);
-
-// The workbook is a per-year report, so "All Years" falls back to this year
-// rather than silently exporting one of them. The button names the year, so
-// "Every year" on the filter does not read as "every year in the file".
+//
+// The button opens the Download dialog (Sean, 2026-10-02): one month, one
+// year, or everything. It opens on what the screen is showing - the month and
+// year in the filters - and on this year when the filter says every year, so
+// one press of Download still gets this year's workbook as it always did.
 // The property's year, not the viewer's (lib/propertyDate.ts).
 const exportYear = computed(() => (filterYear.value !== 'All' ? filterYear.value : propertyToday().slice(0, 4)));
-
-async function exportExcel() {
-  if (isExportingExcel.value) return;
-  isExportingExcel.value = true;
-  const year = exportYear.value;
-  try {
-    await downloadReport('income', year);
-  } finally {
-    isExportingExcel.value = false;
-  }
-}
+const exportMonth = computed(() => {
+  const i = monthsList.findIndex((m) => m.val === filterMonth.value);
+  return i > 0 ? i : null;
+});
+const exportYears = computed(() => yearsList.value.filter((y) => y !== 'All').map(Number));
+const isDownloadOpen = ref(false);
 
 </script>
 
@@ -1075,17 +1070,13 @@ async function exportExcel() {
         <button
           type="button"
           class="pill-btn"
-          :disabled="isExportingExcel"
-          :aria-busy="isExportingExcel"
+          aria-haspopup="dialog"
           :aria-label="`Download ${exportYear} for Excel`"
           :title="`Download ${exportYear} for Excel`"
-          @click="exportExcel"
+          @click="isDownloadOpen = true"
         >
-          <FileSpreadsheet
-            :class="['size-4', isExportingExcel && 'animate-pulse']"
-            aria-hidden="true"
-          />
-          <span>{{ isExportingExcel ? 'Preparing' : 'Download' }}</span>
+          <FileSpreadsheet class="size-4" aria-hidden="true" />
+          <span>Download</span>
         </button>
 
         <button type="button" class="pill-btn-brand" @click="isOnsitePaymentModalOpen = true">
@@ -1093,6 +1084,17 @@ async function exportExcel() {
           <span>Record payment</span>
         </button>
       </div>
+
+      <!-- Month, year, or everything; the busy state and any failure live in it. -->
+      <DownloadDialog
+        v-if="isDownloadOpen"
+        kind="income"
+        title="Monthly Income"
+        :years="exportYears"
+        :year="Number(exportYear)"
+        :month="exportMonth"
+        @close="isDownloadOpen = false"
+      />
     </div>
 
     <!--

@@ -15,6 +15,16 @@ import { propertyToday } from './propertyDate';
 export type ReportKind = 'income' | 'expenses' | 'tenants';
 
 /**
+ * What a download covers: one month, one year, or everything (Sean,
+ * 2026-10-02 - the Download dialog, components/ui/DownloadDialog.vue). The
+ * server reads the same three (backend/src/utils/reportScope.ts).
+ */
+export type DownloadScope =
+  | { kind: 'month'; year: number; month: number }
+  | { kind: 'year'; year: number }
+  | { kind: 'all' };
+
+/**
  * The paths, written out.
  *
  * Not `/admin/reports/${kind}.xlsx`. `check:endpoints` proves every route has a
@@ -39,6 +49,10 @@ const PATH: Record<ReportKind, string> = {
  * year alone - "Monthly Income 2025 - MI2025". The month is the property's
  * (lib/propertyDate.ts), not the viewer's clock. The server names its
  * attachment the same way (backend/src/utils/reportFileName.ts), so the two agree.
+ *
+ * One month of any report is named for that month - "Monthly Income March 2026
+ * - MI032026" - and everything is "Monthly Income All Years - MIALL" (Sean,
+ * 2026-10-02, the Download dialog).
  */
 const NAME: Record<ReportKind, { title: string; code: string }> = {
   income: { title: 'Monthly Income', code: 'MI' },
@@ -62,55 +76,78 @@ export function reportFileName(
 ): string {
   const [year, thisMonth] = today.split('-');
   const { title, code } = NAME[kind];
-  if (kind === 'tenants') {
-    if (!month) return `${title} ${scope} - ${code}${scope}.xlsx`;
+  if (scope === 'all') return `${title} All Years - ${code}ALL.xlsx`;
+  if (month) {
     const mm = String(month).padStart(2, '0');
     return `${title} ${monthNameOf(Number(scope), month)} ${scope} - ${code}${mm}${scope}.xlsx`;
   }
+  if (kind === 'tenants') return `${title} ${scope} - ${code}${scope}.xlsx`;
   if (String(scope) !== year) return `${title} ${scope} - ${code}${scope}.xlsx`;
   return `${title} ${monthNameOf(Number(year), Number(thisMonth))} ${year} - ${code}${thisMonth}${year}.xlsx`;
 }
 
+/** The query the server reads, from a scope: `scope=month&year=2026&month=3`. */
+export function scopeQuery(scope: DownloadScope): URLSearchParams {
+  if (scope.kind === 'all') return new URLSearchParams({ scope: 'all' });
+  if (scope.kind === 'year') return new URLSearchParams({ scope: 'year', year: String(scope.year) });
+  return new URLSearchParams({ scope: 'month', year: String(scope.year), month: String(scope.month) });
+}
+
 /**
- * `scope` is the year. It ends up as a query the endpoint understands, and in
- * the file name. (The Activity Log workbook went with its screen - Sean,
- * 2026-10-01.)
+ * Fetches the workbook and saves it, then says so in a toast.
+ *
+ * A failure is THROWN, not toasted (Sean, 2026-10-02): the Download dialog is
+ * still open when it happens and shows it there, beside the button that will
+ * try again - a toast would land over the dialog's X. `signal` lets the
+ * dialog stop waiting when it is closed mid-download.
  */
 export async function downloadReport(
   kind: ReportKind,
-  scope: string | number,
-  extra: Record<string, string | number> = {}
-) {
+  scope: DownloadScope,
+  options: { signal?: AbortSignal } = {}
+): Promise<void> {
+  let res: Response;
   try {
-    const params = new URLSearchParams({ year: String(scope), ...toStrings(extra) });
-    const res = await fetch(`${API_BASE}${PATH[kind]}?${params}`, {
+    res = await fetch(`${API_BASE}${PATH[kind]}?${scopeQuery(scope)}`, {
       headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
+      signal: options.signal,
     });
-    if (!res.ok) {
-      throw new Error(`The report could not be generated (HTTP ${res.status}).`);
-    }
-
-    const url = URL.createObjectURL(await res.blob());
-    const a = document.createElement('a');
-    a.href = url;
-    const fileName = reportFileName(kind, scope, propertyToday(), extra.month ? Number(extra.month) : null);
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-
-    // A download is not a change, so no ping (Sean, 2026-10-01: major actions only).
-    showToast('success', 'Report downloaded', `Saved as ${fileName}`, { sound: false });
-  } catch (err: unknown) {
-    showToast(
-      'error',
-      'Export failed',
-      err instanceof Error ? err.message : 'The report could not be generated.'
-    );
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') throw err;
+    throw new Error('The server could not be reached. Check the connection and try again.');
   }
+  if (!res.ok) throw new Error(await failureMessage(res));
+
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  const fileName =
+    scope.kind === 'all'
+      ? reportFileName(kind, 'all')
+      : reportFileName(kind, scope.year, propertyToday(), scope.kind === 'month' ? scope.month : null);
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  // A download is not a change, so no ping (Sean, 2026-10-01: major actions only).
+  showToast('success', 'Report downloaded', `Saved as ${fileName}`, { sound: false });
 }
 
-function toStrings(o: Record<string, string | number>): Record<string, string> {
-  return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, String(v)]));
+/** The server's own sentence for a refusal it explains (a 422), else the status. */
+async function failureMessage(res: Response): Promise<string> {
+  if (res.status === 401 || res.status === 403) {
+    return 'You are not allowed to download this report. Sign in again and try once more.';
+  }
+  if (res.status < 500) {
+    try {
+      const body = await res.json();
+      const message = body?.error?.message;
+      if (typeof message === 'string' && message) return message;
+    } catch {
+      // Not JSON: fall through to the status.
+    }
+  }
+  return `The report could not be generated (HTTP ${res.status}).`;
 }
