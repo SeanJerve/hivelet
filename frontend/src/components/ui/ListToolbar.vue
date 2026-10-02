@@ -2,24 +2,27 @@
 /**
  * The one toolbar every list screen uses (Sean, 2026-10-01).
  *
- *   row 1  the view switch ("By cluster / As a list"), full width on a phone
- *   row 2  the search bar, and in line with it one filter button
+ *   the search bar, and in line with it one filter button
  *
- * From `sm` up the two rows share one line. The switch is the Tenants page's,
- * the one Sean liked, and it is the same width and height on every screen
- * because it is the same markup: Monthly Income's was a different element
- * that stopped at its content width on a phone, which is what he noticed.
+ * The view switch ("By cluster / As a list") is no longer a row of its own:
+ * it is "Show as" at the top of the filter dialog (Sean, 2026-10-02: "put the
+ * switch inside the Filters, so it's cleaner" - on a small phone the page is
+ * the title, then search with Filters beside it, nothing else). On every size,
+ * not only phones, so the toolbar is one shape everywhere. A screen with a
+ * switch but no filter to offer still gets the button, since the switch is
+ * behind it.
  *
  * Every filter sits behind the filter button, in `FilterSheet`, even when a
  * screen has only one (Repairs' status) - the same button in the same place
  * on every list. The button carries a count of the filters not at their
  * default, and under the toolbar the same filters are named in a short line
  * ("2025 · BH") with one tap to clear them, so the landlady can see what she
- * is looking at without opening anything.
+ * is looking at without opening anything. The view is not in that line or
+ * that count: the page itself shows which way it is drawn.
  *
- * The screen keeps its own refs; this emits `apply` with the new values and
- * the screen writes them, so every computed, URL query and Excel export that
- * read those refs before still reads them.
+ * The screen keeps its own refs; this emits `update:view` and `apply` with the
+ * new values and the screen writes them, so every computed, URL query and
+ * Excel export that read those refs before still reads them.
  */
 import { computed, ref } from 'vue';
 import { Search, SlidersHorizontal, X } from 'lucide-vue-next';
@@ -38,8 +41,10 @@ const props = withDefaults(
     /** Two or three ways of drawing the same rows. Omit for a screen with one. */
     views?: ToolbarView<V>[];
     view?: V;
-    /** Names the switch for a screen reader ("How to show the tenants"). */
+    /** Kept for the screens that pass it; the switch is now labelled "Show as" in the dialog. */
     viewLabel?: string;
+    /** The switch is offered only while this holds for the dialog's draft (Tenants: not for a past year). */
+    viewsWhen?: (draft: FilterDraft) => boolean;
     /** The search is drawn only when this is given; it is also its accessible name. */
     searchLabel?: string;
     search?: string;
@@ -53,6 +58,7 @@ const props = withDefaults(
     views: () => [],
     view: undefined,
     viewLabel: 'How to show the list',
+    viewsWhen: undefined,
     searchLabel: '',
     search: '',
     filters: () => [],
@@ -88,6 +94,15 @@ const active = computed(() =>
     }))
 );
 
+/** Whether there is anything behind the filter button: a filter, or the view switch. */
+const hasSheet = computed(() => offered.value.length > 0 || props.views.length > 1);
+
+function onApply(values: FilterDraft, view: string | undefined) {
+  // The sheet only hands back one of `views`' own values, so this is a V.
+  if (view !== undefined && view !== props.view) emit('update:view', view as V);
+  if (props.filters.length) emit('apply', values);
+}
+
 const filterButtonLabel = computed(() =>
   active.value.length
     ? `${props.filterTitle}, ${active.value.length} on`
@@ -102,34 +117,10 @@ function clearFilters() {
 <template>
   <div class="flex flex-col gap-2">
     <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-      <!-- The Tenants switch, unchanged: full width with even halves on a phone,
-           its natural width from `sm`. -->
-      <div
-        v-if="views.length > 1"
-        class="min-h-[2.75rem] h-11 inline-flex w-full items-center rounded-full bg-tile border border-line p-1 shadow-xs sm:w-auto sm:shrink-0"
-        role="group"
-        :aria-label="viewLabel"
-      >
-        <button
-          v-for="v in views"
-          :key="v.value"
-          type="button"
-          :class="[
-            'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
-            view === v.value ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-          ]"
-          :aria-pressed="view === v.value"
-          @click="emit('update:view', v.value)"
-        >
-          <component :is="v.icon" v-if="v.icon" class="size-4" aria-hidden="true" />
-          <span>{{ v.label }}</span>
-        </button>
-      </div>
-
       <!-- `min-w-0 flex-1` on the search so it takes what the filter button
            leaves, down to 320px phones; `sm:max-w-80` keeps it the 20rem every
            register's search box has been on a wide screen. -->
-      <div v-if="searchLabel || offered.length" class="flex min-w-0 items-center gap-2 sm:flex-1">
+      <div v-if="searchLabel || hasSheet" class="flex min-w-0 items-center gap-2 sm:flex-1">
         <div v-if="searchLabel" class="relative min-w-0 flex-1 sm:max-w-80">
           <Search
             class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
@@ -146,7 +137,7 @@ function clearFilters() {
         </div>
 
         <button
-          v-if="offered.length"
+          v-if="hasSheet"
           type="button"
           :class="['pill-btn relative shrink-0', !searchLabel && 'ml-auto', active.length && 'border-brand text-brand']"
           :aria-label="filterButtonLabel"
@@ -188,7 +179,10 @@ function clearFilters() {
       v-if="sheetOpen"
       :filters="filters"
       :title="filterTitle"
-      @apply="emit('apply', $event)"
+      :views="views"
+      :view="(view as string | undefined)"
+      :views-when="viewsWhen"
+      @apply="onApply"
       @close="sheetOpen = false"
     />
   </div>

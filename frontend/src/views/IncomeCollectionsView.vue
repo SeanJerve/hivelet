@@ -1185,10 +1185,11 @@ async function exportExcel() {
 
     <!--
       The tabs, then the list toolbar every screen shares (components/ui/
-      ListToolbar.vue, Sean, 2026-10-01): the By cluster / As a list switch -
-      the same one, the same width, as on Tenants; it was a narrower copy here
-      that did not fill a phone - then search with the filter button beside it.
-      Cluster, Month and Year are in the filter dialog, only on the ledger.
+      ListToolbar.vue, Sean, 2026-10-01): search with the filter button beside
+      it. Cluster, Month, Year and "Show as" (By cluster / As a list, moved into
+      the dialog by Sean, 2026-10-02) are in the filter dialog, only on the
+      ledger. Ledger / To verify stay tabs: they are two different lists, not
+      two drawings of one.
     -->
     <div class="flex flex-col gap-3">
       <!-- Tabs: Ledger or To verify -->

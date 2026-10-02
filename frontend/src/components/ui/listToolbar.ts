@@ -6,7 +6,9 @@
  * own way, and the "By cluster / As a list" switch was full width on Tenants
  * and not on Monthly Income. Sean, 2026-10-01: one toolbar everywhere, the
  * switch on top, a search bar under it, and every filter behind one filter
- * button, even where there is only one filter, for consistency.
+ * button, even where there is only one filter, for consistency. Since
+ * 2026-10-02 the switch is behind that button too, as "Show as" at the top of
+ * the filter dialog (Sean: "so it's cleaner"); the toolbar is search + Filters.
  *
  * A screen describes its filters with `ToolbarFilter` and keeps its own refs:
  * the toolbar never owns the filter state, so every computed, URL query and

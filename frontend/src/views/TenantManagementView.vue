@@ -880,11 +880,12 @@ async function handleOnboard() {
 
     <!--
       The list toolbar every screen shares (components/ui/ListToolbar.vue,
-      Sean, 2026-10-01): the switch, then search with the filter button beside
-      it. Year, Month and the standing are inside the filter dialog.
+      Sean, 2026-10-01): search with the filter button beside it. Year, Month,
+      the standing and "Show as" (the By cluster / As a list switch, moved into
+      the dialog by Sean, 2026-10-02) are inside the filter dialog.
 
-      The switch is not for a past year: that is one list by unit, from the
-      receipts. The standing is only offered when there is something to choose
+      "Show as" is not offered for a past year (`views-when`, read against the
+      dialog's draft): that is one list by unit, from the receipts. The standing is only offered when there is something to choose
       between - with nobody moved out and no prospects it held one choice,
       "Living here", which Sean called nonsense on the testing morning
       (2026-09-30); the dialog leaves out any filter with a single option.
@@ -892,7 +893,8 @@ async function handleOnboard() {
     <ListToolbar
       v-model:view="viewMode"
       v-model:search="q"
-      :views="showingHistory ? [] : tenantViews"
+      :views="tenantViews"
+      :views-when="(d) => d.year === 'now'"
       view-label="How to show the tenants"
       search-label="Search tenants"
       :filters="tenantFilters"

@@ -272,9 +272,10 @@ function applyRoomFilters(v: FilterDraft) {
 
     <!--
       The list toolbar every screen shares (components/ui/ListToolbar.vue,
-      Sean, 2026-10-01): the switch between the two ways of reading the same 33
-      units at the top, then search with the filter button beside it. The
-      status ("All units") and cluster filters are in the filter dialog.
+      Sean, 2026-10-01): search with the filter button beside it. The status
+      ("All units") and cluster filters are in the filter dialog, and so is the
+      switch between the two ways of reading the same 33 units, as "Show as"
+      at its top (Sean, 2026-10-02: the switch inside Filters, so it's cleaner).
     -->
     <ListToolbar
       v-model:view="viewMode"
