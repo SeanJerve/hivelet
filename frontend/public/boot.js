@@ -60,16 +60,7 @@
  */
 (function () {
   try {
-    // A pull-to-refresh reload keeps the loader (lib/pullToRefresh.ts sets this just before it
-    // reloads), so the hexagon spinning on release carries on until the page is back.
-    var pulled = false;
-    try {
-      pulled = sessionStorage.getItem('hivelet.ptr') === '1';
-      sessionStorage.removeItem('hivelet.ptr');
-    } catch (e) {
-      pulled = false;
-    }
-    if (!pulled && localStorage.getItem('hivelet.seen') === '1') {
+    if (localStorage.getItem('hivelet.seen') === '1') {
       document.documentElement.classList.add('no-splash');
       /*
        * No loader, so what shows until the app's code has run is the page

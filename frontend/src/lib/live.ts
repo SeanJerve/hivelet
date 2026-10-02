@@ -62,6 +62,17 @@ async function refreshEverything() {
 }
 
 /**
+ * Pull-to-refresh's in-place refresh (lib/pullToRefresh.ts, Sean, 2026-10-02): everything on
+ * screen fetched again, resolved when the answers are in. False when nobody is signed in - a
+ * public page has no refetch list, so the caller reloads instead.
+ */
+export async function refreshNow(): Promise<boolean> {
+  if (!isAuthenticated.value) return false;
+  await refreshEverything();
+  return true;
+}
+
+/**
  * Back from no connection: the same reload, once, so the saved figures shown meanwhile are
  * replaced by live ones and the "Saved figures from" notice goes (lib/offlineCache.ts; Sean,
  * 2026-10-02). The version check below cannot do it: a page opened offline has no version to

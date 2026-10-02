@@ -44,6 +44,10 @@
  * unless a pull is in progress, and it is attached only in standalone mode.
  */
 import { onMounted, onUnmounted, ref } from 'vue';
+import { refreshNow } from './live';
+
+/** The shortest spin after a release, so a fast refresh still reads as one. */
+const MIN_SPIN_MS = 700;
 
 /*
  * THE FEEL (Sean, 2026-10-01: "make it smooth like Facebook and Instagram -
@@ -254,20 +258,38 @@ export function usePullToRefresh() {
     }
     refreshing.value = true;
     distance.value = PULL_REST;
-    // The indicator eases up to where it rests and the refresh icon spins
-    // there before the page goes, so the reload reads as the end of the
-    // gesture rather than a flicker (and the "Refreshing" status is on screen
-    // well before it). index.html's own loader takes over once the new page
-    // starts loading.
-    // The loader is first-load only (boot.js) - except after a pull: this flag asks boot.js to
-    // draw it on the page that follows, so the same hexagon keeps turning from release until the
-    // new page is ready instead of stopping when this one unloads (Sean, 2026-10-02).
-    try {
-      sessionStorage.setItem('hivelet.ptr', '1');
-    } catch {
-      // Storage blocked: the reload still happens, just without the loader.
-    }
-    window.setTimeout(() => window.location.reload(), PULL_SETTLE_MS);
+    /*
+     * Refresh in place, the way Instagram and Facebook do (Sean, 2026-10-02: "spin continuously
+     * until the page is loaded instead of showing a [full-screen] spinner"). A full reload throws
+     * the page - and this indicator with it - away, so nothing could keep spinning across it.
+     * Instead every figure on screen is fetched again (lib/live.ts `refreshNow`, the same refetch a
+     * live update runs) while the hexagon spins at its resting place; when the answers are in, it
+     * springs back. At least a short spin, so a fast answer still reads as "refreshed". A signed-out
+     * public page has nothing to refetch and falls back to a plain reload. A cap, so a stalled
+     * network never leaves it spinning for ever.
+     */
+    const started = Date.now();
+    const finish = () => {
+      refreshing.value = false;
+      distance.value = 0;
+    };
+    const cap = window.setTimeout(finish, 15_000);
+    void refreshNow()
+      .then((refreshed) => {
+        if (!refreshed) {
+          // Signed out: a plain reload, after the hexagon has visibly started turning.
+          window.setTimeout(() => window.location.reload(), PULL_SETTLE_MS);
+          return;
+        }
+        window.setTimeout(() => {
+          window.clearTimeout(cap);
+          finish();
+        }, Math.max(0, MIN_SPIN_MS - (Date.now() - started)));
+      })
+      .catch(() => {
+        window.clearTimeout(cap);
+        finish();
+      });
   }
 
   onMounted(() => {
