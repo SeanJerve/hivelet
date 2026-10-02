@@ -21,13 +21,19 @@ import { getStoredToken } from '@/lib/api';
  * any route. Nothing about what a view does changes; only when its JavaScript
  * arrives.
  */
-const PublicGuestView = () => import('@/views/PublicGuestView.vue');
+/*
+ * The two entry pages - the landing page and sign-in - come with the app itself rather than as
+ * their own chunk (Sean, 2026-10-02: no skeleton on the landing page). They load no data of their
+ * own to wait for, so with their code already here they draw at once on a refresh; a lazy chunk
+ * meant a placeholder first, however brief.
+ */
+import PublicGuestView from '@/views/PublicGuestView.vue';
+import LoginView from '@/views/LoginView.vue';
 const InquireView = () => import('@/views/InquireView.vue');
 const InquiryThreadView = () => import('@/views/InquiryThreadView.vue');
 const PrivacyPolicyView = () => import('@/views/PrivacyPolicyView.vue');
 const TermsView = () => import('@/views/TermsView.vue');
 const CategoryRoomsView = () => import('@/views/CategoryRoomsView.vue');
-const LoginView = () => import('@/views/LoginView.vue');
 const AdminOverviewView = () => import('@/views/AdminOverviewView.vue');
 const RoomDirectoryView = () => import('@/views/RoomDirectoryView.vue');
 const TenantManagementView = () => import('@/views/TenantManagementView.vue');

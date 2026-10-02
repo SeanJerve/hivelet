@@ -56,16 +56,8 @@ const kind: 'landing' | 'workspace' | 'public' =
     class="relative flex min-h-screen supports-[min-height:100dvh]:min-h-dvh w-full flex-col justify-end bg-night"
     aria-hidden="true"
   >
-    <!-- The masthead's place: the wordmark, and "Inquire now, Sign in" on the right. -->
-    <div class="ws-page absolute inset-x-0 top-0 flex h-16 items-center justify-between">
-      <Skeleton class-name="h-6 w-24 rounded-full bg-on-night/10" />
-      <Skeleton class-name="h-4 w-32 rounded-full bg-on-night/10" />
-    </div>
-    <!-- The name's two lines, at the hero's own gutter and bottom padding. -->
-    <div class="ws-page w-full pt-24 pb-20 sm:pb-16 md:pb-12 lg:pb-6 flex flex-col gap-4">
-      <Skeleton class-name="h-12 sm:h-20 w-4/5 max-w-3xl rounded-2xl bg-on-night/10" />
-      <Skeleton class-name="h-4 w-36 rounded-full bg-on-night/10" />
-    </div>
+    <!-- Only the hero's dark field: the landing page loads no data, so no skeleton bars on it
+         (Sean, 2026-10-02: skeletons are for components that load, not a static page). -->
   </div>
 
   <div
@@ -77,8 +69,9 @@ const kind: 'landing' | 'workspace' | 'public' =
     ]"
     aria-hidden="true"
   >
-    <!-- The masthead bar: the wordmark's place, and the controls' place on the right. -->
-    <div :class="['ws-page flex h-16 items-center justify-between', kind === 'workspace' && 'ws-workspace']">
+    <!-- The masthead bar: the wordmark's place, and the controls' place on the right. Signed-in
+         pages only: a public page is static, so it shows just its background (Sean, 2026-10-02). -->
+    <div v-if="kind === 'workspace'" class="ws-page ws-workspace flex h-16 items-center justify-between">
       <Skeleton class-name="h-6 w-24 rounded-full" />
       <Skeleton class-name="h-8 w-8 rounded-full" />
     </div>
@@ -93,14 +86,6 @@ const kind: 'landing' | 'workspace' | 'public' =
           <SkeletonCard variant="metric" :count="3" />
         </div>
         <SkeletonCard variant="list" :count="2" />
-      </div>
-    </div>
-    <div v-else class="ws-page py-10">
-      <div class="flex max-w-2xl flex-col gap-4">
-        <Skeleton class-name="h-10 w-3/4 rounded-2xl" />
-        <Skeleton class-name="h-4 w-full rounded-full" />
-        <Skeleton class-name="h-4 w-5/6 rounded-full" />
-        <Skeleton class-name="h-4 w-2/3 rounded-full" />
       </div>
     </div>
   </div>
