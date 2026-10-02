@@ -48,9 +48,9 @@ later, do. Chapter 4 cites these.
 
 | Run | Captured | Form factor | Scores | FCP | LCP | TBT | CLS | Speed Index | Evidence |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| 1 (Sean) | 1 Oct 2026, 12:36 AM GMT+8 | Mobile (Moto G Power, slow 4G) | 87 / 100 / 100 / 100 | 2.4 s | 3.6 s | 0 ms | 0.014 | 2.4 s | [`PF-09_pagespeed_mobile_87_2026-10-01_0036_fullreport.pdf`](evidence/PF-09_pagespeed_mobile_87_2026-10-01_0036_fullreport.pdf) |
+| 1 (Sean) | 1 Oct 2026, 12:36 AM GMT+8 | Mobile (Moto G Power, slow 4G) | 87 / 100 / 100 / 100 | 2.4 s | 3.6 s | 0 ms | 0.014 | 2.4 s | [`PF-09_pagespeed_mobile_87_2026-10-01_0036_fullreport.pdf`](evidence/PF-09_pagespeed_mobile_87_2026-10-01_0036_fullreport.pdf), [`.png`](evidence/PF-09_pagespeed_mobile_87_2026-10-01_0036.png) |
 | 2 (Claude) | 1 Oct 2026, 12:40 AM GMT+8 | Mobile (Moto G Power, slow 4G) | 86 / 100 / 100 / 100 | 2.6 s | 3.6 s | 0 ms | 0.014 | 2.6 s | [`PF-09_pagespeed_mobile_86_2026-10-01_0040.png`](evidence/PF-09_pagespeed_mobile_86_2026-10-01_0040.png) |
-| 3 (Sean) | 1 Oct 2026, 12:37 AM GMT+8 | Desktop | 98 / 100 / 100 / 100 | 0.7 s | 1.1 s | 0 ms | 0.003 | 0.8 s | [`PF-09_pagespeed_desktop_98_2026-10-01_0037_fullreport.pdf`](evidence/PF-09_pagespeed_desktop_98_2026-10-01_0037_fullreport.pdf) |
+| 3 (Sean) | 1 Oct 2026, 12:37 AM GMT+8 | Desktop | 98 / 100 / 100 / 100 | 0.7 s | 1.1 s | 0 ms | 0.003 | 0.8 s | [`PF-09_pagespeed_desktop_98_2026-10-01_0037_fullreport.pdf`](evidence/PF-09_pagespeed_desktop_98_2026-10-01_0037_fullreport.pdf), [`.png`](evidence/PF-09_pagespeed_desktop_98_2026-10-01_0037.png) |
 | 4 (Claude) | 1 Oct 2026, 12:40 AM GMT+8 | Desktop | 95 / 100 / 100 / 100 | 0.7 s | 0.9 s | 0 ms | 0 | 2.0 s | [`PF-09_pagespeed_desktop_95_2026-10-01_0040.png`](evidence/PF-09_pagespeed_desktop_95_2026-10-01_0040.png) |
 
 Mobile Performance across all four runs (30 Sep and 1 Oct): 85 to 88, LCP 3.4 to 3.6 s. Desktop:
@@ -79,6 +79,7 @@ Lighthouse 13.5.0, simulated throttling, no run warnings.
   appear in search results. The public pages score 100 (PF-09).
 - **What holds the Performance score down:** layout shift on desktop (CLS 0.221, the cards
   settling as the figures arrive) and blocking time on the emulated phone (700 ms).
-- **Screenshots:** they show the owner's signed-in Overview with her figures, so they are **not
-  committed**. They were saved on Lloyd's laptop; a team member decides whether to add them here
-  (blur the figures first if they go in the manuscript).
+- **Screenshots:** run 1 is now committed (Sean, 2 Oct): [summary](evidence/PF-10_lighthouse_admin_overview_run1_61_100_100_66_summary.png)
+  and [insights](evidence/PF-10_lighthouse_admin_overview_run1_insights.png). They show the scores, the
+  stored-data warning, the metrics and the page still loading; none of the owner's figures can be read
+  in them. Runs 2 and 3 have no screenshot.

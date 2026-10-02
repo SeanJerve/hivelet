@@ -22,9 +22,13 @@ actually done, and a small or partly done part is reported honestly as that.
 
 **Status, 1 Oct 2026:** every file is filled. T and C were corrected against the Activity log (read, never changed); each file says what was changed and why, and git keeps the versions as first pushed. `T_TABLE_11C.md` is Table 11C, computed from `T_observations.csv` (made from the T file by `scripts/survey/t-md-to-csv.mjs`).
 
+**Scan screenshots: done (2 Oct).** `evidence/` holds every scan the files cite: S-01 to S-03
+(Observatory, securityheaders.com, SSL Labs), PF-09 (PageSpeed, PNG and full PDF reports) and PF-10
+run 1 (Lighthouse on the signed-in Overview). Each is linked from the row it supports.
+
 Not in this folder, still needed: **the survey export** (Google Form > Responses > Sheets icon > File >
-Download > CSV), the **defect log** (Form 3, a photo is fine), the **signed consent forms and Form 6**,
-and the **scan screenshots**. When a file is filled, tell Claude its name; when all are in, paste the
+Download > CSV), the **defect log** (Form 3, a photo is fine), and the **signed consent forms and
+Form 6**. The survey export is the only thing Chapter 4's Tables 12 to 22 still wait for. When a file is filled, tell Claude its name; when all are in, paste the
 hand-over message from `INSTRUCTIONS FOR TESTING.md`, Batch 11.
 
 ---

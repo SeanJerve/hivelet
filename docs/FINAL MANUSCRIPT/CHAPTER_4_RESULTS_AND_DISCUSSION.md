@@ -427,7 +427,7 @@ claims to show is now part of how the team verifies the system.
 
 ### 4.3.4 Functional Walkthrough Testing
 
-A 26-step walkthrough exercises every function that writes data exactly once. It runs against the
+A 26-step walkthrough (30 rows in Table 10, counting the sub-steps 15b, 19b, 22b and 23b) exercises every function that writes data exactly once. It runs against the
 one unoccupied unit so that no real tenancy, receipt or expense is touched. The owner performed it
 herself on 30 September 2026 on the administrator's laptop in Google Chrome, signed in to her own
 account, with a team member reading each step and recording the outcome. Where the observer's notes
@@ -438,8 +438,8 @@ what was done.
 > into this table by `scripts/survey/a-md-to-csv.mjs` and `fill-walkthrough.mjs`. Steps 7, 22, 22b
 > and 26 were corrected to "Not done" on 1 October after the activity record showed they had not
 > happened as written. Step 18 was first recorded as Fail (no water warning) and reclassified: since
-> 30 September the water amount cannot be typed. The two test expenses of step 22 are still in
-> September's books until migration 070 is applied (BLOCKED_FOR_SEAN.md, B-91).
+> 30 September the water amount cannot be typed. The two test expenses of step 22 were voided by
+> migration 070 on 1 October (BLOCKED_FOR_SEAN.md, B-91), so September's books no longer count them.
 
 **Table 10.** Results of the Functional Walkthrough
 
@@ -473,7 +473,7 @@ what was done.
 | 23 | Financial workbook export | income.xlsx and expenses.xlsx downloaded matching owner layout | As expected. | Pass |
 | 23b | Fail-safe presentation on API interruption | Backend stopped; money tiles display "—" instead of misleading ₱0.00 | With the connection cut, the money tiles showed ₱0 and "Try again" instead of "—". | Fail |
 | 24 | Tenant vacating and tenancy termination | Tenancy ended; unit returns to Available; end_date recorded | The test tenant was moved out and the unit showed Available. | Pass |
-| 25 | Ledger baseline verification | Rehearsal records removed; ledger restored to exact 937 baseline rows | Done by the team after the session rather than on screen: the test tenant's bill, payments, voided receipt and repair were removed; the two test expenses of step 22 are scheduled for removal. | Not done |
+| 25 | Ledger baseline verification | Rehearsal records removed; ledger restored to exact 937 baseline rows | Done by the team after the session rather than on screen: the test tenant's bill, payments, voided receipt and repair were removed; the two test expenses of step 22 were voided on 1 October. | Not done |
 | 26 | Unit rate restoration | PH rate restored to confirmed ₱30,000 rate card baseline | Not needed, because step 7 was not performed; the rate reads ₱30,000. | Not done |
 
 Of the 30 rows of the walkthrough, 24 passed the first time, 1 failed and 5 were not performed as
