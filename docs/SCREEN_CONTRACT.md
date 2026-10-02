@@ -74,10 +74,11 @@ before the redesign started.
 
 ### `views/InquiriesView.vue`
 
-3 call(s), **2 of them write**.
+4 call(s), **3 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
+| **writes** | `DELETE /admin/inquiries/:id` | — |
 | reads | `GET /admin/inquiries/:id/messages` | what has already been said to a prospect |
 | **writes** | `PATCH /admin/inquiries/:id` | advance or close an enquiry |
 | **writes** | `POST /admin/inquiries/:id/messages` | reply to a prospect |
@@ -247,4 +248,4 @@ before the redesign started.
 
 ---
 
-**21 files make 75 distinct calls, 35 of which write.** Generated 2026-10-01.
+**21 files make 76 distinct calls, 36 of which write.** Generated 2026-10-02.
