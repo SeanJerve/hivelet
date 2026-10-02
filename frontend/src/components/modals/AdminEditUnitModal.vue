@@ -534,7 +534,7 @@ async function handleSave() {
             v-model="amenitiesText"
             rows="3"
             class="ws-textarea w-full"
-            placeholder="For example: private bathroom, cabinets, study desk"
+            placeholder="For example: 1st Floor Studio unit"
           ></textarea>
         </label>
       </form>
