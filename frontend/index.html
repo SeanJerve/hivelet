@@ -52,10 +52,9 @@
     <title>Hivelet</title>
     <!--
       Sets the colour theme (dark mode), then decides before the first paint
-      whether the loader below is drawn: on a
-      first visit and on pages without a skeleton it is; on a later load of a
-      signed-in page or a category page it is not (Sean, 2026-10-01: "on
-      refresh of the dashboard, skeleton only"). Ahead of the stylesheets on
+      whether the loader below is drawn: only on the first load in this browser
+      (Sean, 2026-10-01/02: "first-time load only; on refresh, skeleton only").
+      Ahead of the stylesheets on
       purpose: a classic script after a pending stylesheet waits for it, and
       this one needs nothing from them. See public/boot.js.
     -->
@@ -86,9 +85,9 @@
       an empty page ever shows.
 
       Not on every reload any more (Sean, 2026-10-01, later: "on refresh of the
-      dashboard, skeleton only"): public/boot.js adds `no-splash` to <html> on a
-      returning visitor's admin, tenant and category pages, which draw their own
-      skeletons, and the last rule below then never paints it.
+      dashboard, skeleton only"; 2 Oct: "first-time load only"): public/boot.js
+      adds `no-splash` to <html> once this browser has rendered Hivelet before,
+      and the last rule below then never paints it.
 
       Plain HTML and CSS in this file, because it has to be on screen before any
       script has arrived - and because vercel.json's Content-Security-Policy is

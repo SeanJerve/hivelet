@@ -8,15 +8,8 @@
  * the time any module script runs the loader has already painted. It blocks
  * parsing, so it stays this small: no imports, at most three storage reads.
  *
- * The loader is skipped only when BOTH hold:
- *   - this browser has rendered Hivelet before (`hivelet.seen`, set by
- *     main.ts after the first page renders), so the route code is already in
- *     the service worker's precache and arrives at once; and
- *   - the page draws its own loading skeleton: the admin and tenant screens
- *     (with a sign-in token present - without one the router sends the
- *     person to the sign-in page, which has none) and the category pages
- *     (SkeletonDetail). The landing page's hero has no skeleton, and neither
- *     do the enquiry, sign-in, legal and not-found pages, so they keep it.
+ * The loader is skipped whenever this browser has rendered Hivelet before
+ * (`hivelet.seen`, set by main.ts after the first page renders; see below).
  * Storage that throws (private mode, blocked site data) counts as a first
  * visit: the loader shows, which is the safe side.
  */
@@ -56,11 +49,18 @@
   }
 })();
 
+/*
+ * Only the first load in this browser draws it (Sean, 2026-10-02: "the
+ * spinner still appears on some refreshes - only the first-time load"). The
+ * 1 Oct version also kept it on every refresh of a page without its own
+ * skeleton (the landing page, sign-in, enquiry), which is most of what a
+ * visitor refreshes. After the first render the whole app is in the service
+ * worker's precache, so a later load paints from the phone at once; the
+ * signed-in screens show their skeletons while their figures arrive.
+ */
 (function () {
   try {
-    var p = location.pathname, k = 'hivelet.auth.token';
-    var signedIn = /^\/(admin|tenant)(\/|$)/.test(p) && !!(localStorage.getItem(k) || sessionStorage.getItem(k));
-    if (localStorage.getItem('hivelet.seen') === '1' && (signedIn || /^\/category\//.test(p))) {
+    if (localStorage.getItem('hivelet.seen') === '1') {
       document.documentElement.classList.add('no-splash');
     }
   } catch (e) {
