@@ -12,8 +12,10 @@
  * nothing else. The first navigation waits for the page's own code and, for a
  * signed-in phone, for `/auth/me` (router/index.ts), so on a slow connection
  * that state lasted seconds. Measured on the production build at 400 ms /
- * 400 kbps, refreshing with the loader skipped: up to 1.3 s on /public and
- * /login, and on every signed-in page for as long as `/auth/me` took.
+ * 400 kbps, a 390x844 phone, refreshing with the loader skipped (2 Oct): for
+ * as long as `/auth/me` took on every page of a signed-in phone, /public
+ * included, service worker or not (1.1 s of a 1.2 s answer); and 0.7-1.0 s on
+ * every page without the service worker, while the page's code downloaded.
  *
  * The header and footer now wait for that navigation (App.vue), and this
  * holds the screen in the shape of the page that is coming. It cannot ask the
@@ -54,6 +56,11 @@ const kind: 'landing' | 'workspace' | 'public' =
     class="relative flex min-h-screen supports-[min-height:100dvh]:min-h-dvh w-full flex-col justify-end bg-night"
     aria-hidden="true"
   >
+    <!-- The masthead's place: the wordmark, and "Inquire now, Sign in" on the right. -->
+    <div class="ws-page absolute inset-x-0 top-0 flex h-16 items-center justify-between">
+      <Skeleton class-name="h-6 w-24 rounded-full bg-on-night/10" />
+      <Skeleton class-name="h-4 w-32 rounded-full bg-on-night/10" />
+    </div>
     <!-- The name's two lines, at the hero's own gutter and bottom padding. -->
     <div class="ws-page w-full pt-24 pb-20 sm:pb-16 md:pb-12 lg:pb-6 flex flex-col gap-4">
       <Skeleton class-name="h-12 sm:h-20 w-4/5 max-w-3xl rounded-2xl bg-on-night/10" />
