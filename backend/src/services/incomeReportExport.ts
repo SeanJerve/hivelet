@@ -56,7 +56,7 @@ import { isAcknowledgementReceipt } from '../utils/invoiceNumber.js';
  * not in the year to date, and nothing on the sheet to say a unit was missing.
  * The report would simply have understated her income by that unit's rent.
  *
- * All 33 units are accounted for today (22 BH + 5 Back + 1 PH + 3 Front here,
+ * All 33 units are accounted for today (22 Boarding House (code BH) + 5 Back + 1 PH + 3 Front here,
  * plus LF and LB in LINDA_UNITS), verified against `rooms`. The risk is the
  * next one she adds. `unplacedRows` below now catches that rather than trusting
  * this comment to stay true.
@@ -64,7 +64,7 @@ import { isAcknowledgementReceipt } from '../utils/invoiceNumber.js';
 const CLUSTER_ORDER: { code: string; label: string; units: string[]; subtotal: boolean }[] = [
   {
     code: 'BH',
-    label: 'BH (Main Rooms)',
+    label: 'Boarding House (Main Rooms)',
     units: [
       '1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h',
       '2a', '2b', '2c', '2d', '2e', '2f', '2g',

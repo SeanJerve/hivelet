@@ -901,7 +901,7 @@ router.get(
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                   <span style="color: #64748b;">Pay To:</span>
-                  <strong>Fe Galang Da Silva BH</strong>
+                  <strong>Fe Galang Da Silva Boarding House</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                   <span style="color: #64748b;">Fee:</span>
