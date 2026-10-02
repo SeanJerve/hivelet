@@ -251,8 +251,8 @@ onUnmounted(() => {
     :class="[
       'ws-focus w-full transition-colors duration-150',
       isLandingPage
-        ? 'absolute top-0 inset-x-0 z-40 bg-transparent border-none'
-        : 'ws-glass sticky top-0 z-40 bg-canvas/90 backdrop-blur-sm border-none'
+        ? 'absolute top-[var(--notice-h,0px)] inset-x-0 z-40 bg-transparent border-none'
+        : 'ws-glass sticky top-[var(--notice-h,0px)] z-40 bg-canvas/90 backdrop-blur-sm border-none'
     ]"
   >
     <!--

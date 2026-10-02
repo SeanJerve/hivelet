@@ -89,8 +89,8 @@ It then opens from its own icon. **Pull down from the top** of a page to reload 
 hexagon turns until your figures are back, and the page stays where it is.
 *Hilahin pababa mula sa itaas para i-reload.*
 
-**Without signal**, it still opens and says **"No connection"**, with **"Saved figures from"** and
-the time under it. **Overview**, **Payments and billing**, **Repairs**, **My details** and the bell
+**Without signal**, it still opens, with a thin bar at the top: **"No connection · Transactions
+unavailable"**. **Overview**, **Payments and billing**, **Repairs**, **My details** and the bell
 show your rent, balance, payments, requests, details and notifications as last loaded. **Pay with
 GCash** is hidden and **Send request**, **Save** and marking notifications read wait until the
 signal returns. When it does, the pages reload by themselves. These essential figures, names and
@@ -289,8 +289,8 @@ app**. Ask the team if you need to know who changed something.
 
 ### 10. When the connection is weak or gone
 
-The system opens without a connection and shows what each screen last loaded on this device, under
-**"Saved figures from"** and the time: the Overview's figures, the tenants, both ledgers, repairs,
+The system opens without a connection, with a thin bar at the top (**"No connection · Transactions
+unavailable"**), and shows what each screen last loaded on this device: the Overview's figures, the tenants, both ledgers, repairs,
 inquiries and the notifications. Nothing can be recorded, moved or marked read until the connection
 returns, so **Record payment**, **Record expense**, **Move someone in**, the buttons in **Manage
 this repair** and **Log a repair**, and **Save reply** and **Close inquiry** are greyed out ("Needs

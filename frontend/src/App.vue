@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch, watchEffect } from 'vue';
 import { useRoute, useRouter, RouterView } from 'vue-router';
 import { WifiOff } from 'lucide-vue-next';
 import { useToast } from '@/lib/useToast';
@@ -75,6 +75,16 @@ function pinLeavingPage(el: Element) {
 // Offline network status tracking (BR-031, FR-030). The flag itself lives in lib/offlineCache.ts
 // since 2026-10-02 (Sean), so this bar and the write buttons it speaks for read one value.
 const savedFrom = computed(() => (savedCopySince.value === null ? '' : savedAtLabel(savedCopySince.value)));
+
+/*
+ * The notice above is pinned to the top, and so is the header. While the notice
+ * shows, `--notice-h` is its height and both headers (the pinned one, and the
+ * landing page's transparent one) sit just below it instead of under it (Sean,
+ * 2026-10-02 evening: offline, the header disappeared behind the notice).
+ */
+watchEffect(() => {
+  document.documentElement.style.setProperty('--notice-h', isOffline.value || savedFrom.value ? '2rem' : '0px');
+});
 let wasOffline = isOffline.value;
 
 function updateOnlineStatus() {
@@ -206,19 +216,13 @@ const hidesGlobalHeader = computed(() =>
     <div
       v-if="isOffline || savedFrom"
       role="status"
-      class="sticky top-0 z-50 flex flex-col items-center gap-0.5 border-b border-verify-soft bg-verify-soft px-4 py-2.5 text-center text-sm font-medium text-verify"
+      class="sticky top-0 z-50 flex h-[var(--notice-h)] items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap border-b border-verify-soft bg-verify-soft px-4 text-xs font-medium text-verify"
     >
-      <span v-if="isOffline" class="flex items-center justify-center gap-2">
-        <WifiOff class="size-4 shrink-0" aria-hidden="true" />
-        <span>
-          No connection. You can read what is already loaded, but nothing can be saved or paid
-          until it is back.
-        </span>
-      </span>
-      <span v-if="savedFrom" class="flex items-center justify-center gap-2" data-saved-copy-notice>
-        <WifiOff v-if="!isOffline" class="size-4 shrink-0" aria-hidden="true" />
-        <span>Saved figures from {{ savedFrom }}</span>
-      </span>
+      <!-- One short line (Sean, 2026-10-02 evening: smaller, fewer words). Online with only a
+           saved copy on screen (the server out of reach), it says when that copy is from. -->
+      <WifiOff class="size-3.5 shrink-0" aria-hidden="true" />
+      <span v-if="isOffline">No connection · Transactions unavailable</span>
+      <span v-else data-saved-copy-notice>Saved figures from {{ savedFrom }}</span>
     </div>
 
     <!--
