@@ -24,6 +24,7 @@ import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import ShowMore from '@/components/ui/ShowMore.vue';
 import { Search, Pencil, LayoutGrid, Table as TableIcon, ChevronDown } from 'lucide-vue-next';
+import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
@@ -110,8 +111,9 @@ onMounted(() => {
   fetchRooms();
 });
 
+const roomOrder = ref<RowOrder>('unit');
 const filteredRooms = computed(() => {
-  return rooms.filter((u) => {
+  const matched = rooms.filter((u) => {
     const matchesCluster = cluster.value === 'All' || u.cluster === cluster.value;
     const matchesStatus = selectedStatus.value === 'All' || 
       (selectedStatus.value === 'settled' && u.status === 'settled') ||
@@ -128,6 +130,8 @@ const filteredRooms = computed(() => {
 
     return matchesCluster && matchesStatus && matchesQuery;
   });
+  // Filters > Order (Sean, 2026-10-02, every list): by unit (default) or by tenant name.
+  return sortRows(matched, roomOrder.value, { unit: (u) => u.unitCode, name: (u) => u.tenant });
 });
 
 const activeClusters = computed(() => {
@@ -229,10 +233,12 @@ const roomViews: ToolbarView<ViewMode>[] = [
 const roomFilters = computed<ToolbarFilter[]>(() => [
   { key: 'status', label: 'Status', value: selectedStatus.value, defaultValue: 'All', options: statusChips.value },
   { key: 'cluster', label: 'Cluster', value: cluster.value, defaultValue: 'All', options: clusterOptions.value },
+  { key: 'order', label: 'Order', value: roomOrder.value, defaultValue: 'unit', options: orderOptions(['unit', 'name']) },
 ]);
 function applyRoomFilters(v: FilterDraft) {
   selectedStatus.value = String(v.status);
   cluster.value = String(v.cluster);
+  roomOrder.value = v.order as RowOrder;
 }
 </script>
 

@@ -12,6 +12,7 @@ import { afterArrival } from '@/lib/afterArrival';
 import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
 import { Plus, X, Loader2, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
+import { orderOptions, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -218,11 +219,13 @@ const expenseFilters = computed<ToolbarFilter[]>(() => [
   { key: 'month', label: 'Month', value: filterMonth.value, defaultValue: 'All', options: monthsList },
   // Default this year (above): Reset and Clear come back to it.
   { key: 'year', label: 'Year', value: filterYear.value, defaultValue: THIS_YEAR, options: yearOptions.value },
+  { key: 'order', label: 'Order', value: expenseOrder.value, defaultValue: 'newest', options: orderOptions(['newest', 'oldest']) },
 ]);
 function applyExpenseFilters(v: FilterDraft) {
   selectedCategory.value = String(v.kind);
   filterMonth.value = String(v.month);
   filterYear.value = String(v.year);
+  expenseOrder.value = v.order as RowOrder;
 }
 
 // New Expense Form Entries (At least one default entry)
@@ -369,6 +372,7 @@ const filtered = computed(() => {
   });
 });
 
+const expenseOrder = ref<RowOrder>('newest');
 // Group filtered expenses by Date
 const groupedExpenses = computed(() => {
   const groups: Record<string, ExpenseRecord[]> = {};
@@ -390,7 +394,10 @@ const groupedExpenses = computed(() => {
       records,
       dayTotal
     };
-  }).sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
+  }).sort((a, b) =>
+    // Filters > Order (Sean, 2026-10-02, every list). Expenses have no unit or tenant, so by date.
+    expenseOrder.value === 'oldest' ? a.dateObj.getTime() - b.dateObj.getTime() : b.dateObj.getTime() - a.dateObj.getTime()
+  );
 });
 
 const totalJuly = computed(() =>

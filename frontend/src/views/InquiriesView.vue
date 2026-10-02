@@ -9,6 +9,7 @@ import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { Inbox, Phone, Mail, Send, Loader2, UserPlus, XCircle, Trash2 } from 'lucide-vue-next';
+import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -201,17 +202,20 @@ const inquiryFilters = computed<ToolbarFilter[]>(() => [
       })),
     ],
   },
+  { key: 'order', label: 'Order', value: inquiryOrder.value, defaultValue: 'newest', options: orderOptions(['newest', 'oldest', 'unit', 'name']) },
 ]);
 
+// Filters > Order (Sean, 2026-10-02, every list).
+const inquiryOrder = ref<RowOrder>('newest');
 const filteredInquiries = computed(() => {
-  return inquiries.filter(inq => {
+  return sortRows(inquiries.filter(inq => {
     const matchesSearch =
       inq.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       inq.unit.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       inq.phone.includes(searchQuery.value) ||
       inq.email.toLowerCase().includes(searchQuery.value.toLowerCase());
     return matchesSearch && (statusFilter.value === 'All' || inq.status === statusFilter.value);
-  });
+  }), inquiryOrder.value, { unit: (i) => i.unit, name: (i) => i.name, date: (i) => i.date });
 });
 
 const activeInquiry = computed(() => {
@@ -407,7 +411,7 @@ async function handleSendReply() {
             v-model:search="searchQuery"
             search-label="Search inquiries"
             :filters="inquiryFilters"
-            @apply="(v) => (statusFilter = String(v.status))"
+            @apply="(v) => { statusFilter = String(v.status); inquiryOrder = v.order as RowOrder; }"
           />
           <p class="text-sm text-ink-soft">
             {{ filteredInquiries.length }}

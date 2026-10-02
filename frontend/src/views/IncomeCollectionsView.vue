@@ -28,6 +28,7 @@ import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
 import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
 import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown } from 'lucide-vue-next';
+import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -476,11 +477,17 @@ function matchesExceptCluster(r: IncomeRecord, year = filterYear.value, month = 
   return incomeRowInPeriod(r, year, month);
 }
 
+// Filters > Order (Sean, 2026-10-02, every list): newest payment first (default), by unit, by name.
+const incomeOrder = ref<RowOrder>('newest');
 const rows = computed(() =>
-  incomeRecords.filter(
-    (r) =>
-      matchesExceptCluster(r) &&
-      (selectedCluster.value === 'All' || r.cluster === selectedCluster.value)
+  sortRows(
+    incomeRecords.filter(
+      (r) =>
+        matchesExceptCluster(r) &&
+        (selectedCluster.value === 'All' || r.cluster === selectedCluster.value)
+    ),
+    incomeOrder.value,
+    { unit: (r) => r.unit, name: (r) => r.contact, date: (r) => r.rawDate ?? r.datePaid }
   )
 );
 
@@ -529,11 +536,13 @@ const incomeFilters = computed<ToolbarFilter[]>(() => [
   // Default this year (above), so Reset and Clear come back to it, and the
   // summary line names "All years" when that is picked.
   { key: 'year', label: 'Year', value: filterYear.value, defaultValue: THIS_YEAR, options: yearOptions.value },
+  { key: 'order', label: 'Order', value: incomeOrder.value, defaultValue: 'newest', options: orderOptions(['newest', 'oldest', 'unit', 'name']) },
 ]);
 function applyIncomeFilters(v: FilterDraft) {
   selectedCluster.value = String(v.cluster);
   filterMonth.value = String(v.month);
   filterYear.value = String(v.year);
+  incomeOrder.value = v.order as RowOrder;
 }
 
 const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));

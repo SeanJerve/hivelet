@@ -35,12 +35,13 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-vue-next';
+import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
-import type { ToolbarFilter } from '@/components/ui/listToolbar';
+import type { ToolbarFilter, FilterDraft } from '@/components/ui/listToolbar';
 
 const q = ref('');
 const statusFilter = ref('All');
@@ -56,9 +57,21 @@ const statusFilterOptions = [
 ];
 
 /** The toolbar's one filter (components/ui/ListToolbar.vue); `statusFilter` stays the state. */
+const repairOrder = ref<RowOrder | 'urgent'>('urgent');
 const repairFilters = computed<ToolbarFilter[]>(() => [
   { key: 'status', label: 'Status', value: statusFilter.value, defaultValue: 'All', options: statusFilterOptions },
+  {
+    key: 'order',
+    label: 'Order',
+    value: repairOrder.value,
+    defaultValue: 'urgent',
+    options: [{ value: 'urgent', label: 'Most urgent first' }, ...orderOptions(['newest', 'oldest', 'unit'])],
+  },
 ]);
+function applyRepairFilters(v: FilterDraft) {
+  statusFilter.value = String(v.status);
+  repairOrder.value = v.order as RowOrder | 'urgent';
+}
 
 // Edit / Manage Ticket Modal State
 const isEditModalOpen = ref(false);
@@ -227,6 +240,11 @@ const filtered = computed(() => {
     const matchesStatus = statusFilter.value === 'All' || t.status === statusFilter.value;
     return matchesQ && matchesStatus;
   });
+
+  // Filters > Order (Sean, 2026-10-02, every list). "Most urgent first" is the board's own order below.
+  if (repairOrder.value !== 'urgent') {
+    return sortRows(list, repairOrder.value, { unit: (t) => t.unit, name: (t) => t.title, date: (t) => t.reported });
+  }
 
   return list.slice().sort((a, b) => {
     // 1. Put Resolved tickets at the bottom (0 for active, 1 for resolved)
@@ -566,7 +584,7 @@ function handleDeleteTicketPrompt() {
       v-model:search="q"
       search-label="Search by title, unit or technician"
       :filters="repairFilters"
-      @apply="(v) => (statusFilter = String(v.status))"
+      @apply="applyRepairFilters"
     />
 
     <div v-if="isLoading" class="grid gap-4 xl:grid-cols-3" aria-busy="true">
