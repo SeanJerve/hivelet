@@ -890,16 +890,29 @@ router.post(
       // the original stays outstanding.
       if (existingBillsError) throw ApiError.internal(existingBillsError.message);
 
-      const unpaid = existingBills?.find((b: any) => b.status !== 'Paid');
-      if (unpaid) {
-        targetBillId = unpaid.id;
+      // The latest bill not marked Paid that still has a balance. A bill whose
+      // Verified payments already cover it is settled whatever its status says,
+      // and used to end the search here: the checkout then answered "nothing to
+      // pay" while the page showed a period as owed (loydtest, 2026-10-02). It
+      // is skipped, and the period the ledger says is owed is raised below.
+      let unpaid: { id: string; total_amount: number } | undefined;
+      for (const b of existingBills ?? []) {
+        if ((b as any).status === 'Paid') continue;
         // The same refusal the explicit-billId branch makes, and for the same
         // reason - this branch had none. The webhook never writes bills.status,
         // so a bill paid minutes ago still reads 'Due' and lands here again,
         // and `outstandingOnBill` counts Verified payments only, so it would
         // report the FULL balance and open a second session for it.
-        await refuseIfPaymentPending(unpaid.id);
-        billTotalAmount = await outstandingOnBill(unpaid.id, Number(unpaid.total_amount));
+        await refuseIfPaymentPending((b as any).id);
+        const balance = await outstandingOnBill((b as any).id, Number((b as any).total_amount));
+        if (balance > 0) {
+          unpaid = b as any;
+          billTotalAmount = balance;
+          break;
+        }
+      }
+      if (unpaid) {
+        targetBillId = unpaid.id;
       } else {
         // Raise the current cycle's bill for the tenant's OWN active unit.
         //
@@ -1017,6 +1030,16 @@ router.post(
 
           targetBillId = raced.id;
           billTotalAmount = await outstandingOnBill(raced.id, Number(raced.total_amount));
+          // The bill for the owed period exists and its payments cover it, but
+          // the ledger has no receipt for that period (one was voided or never
+          // entered). Say that, not "nothing to pay": the page shows it owed.
+          if (billTotalAmount <= 0) {
+            throw ApiError.conflict(
+              'A payment for this period is already recorded against your bill, but its receipt ' +
+              'is not in the landlady\'s records, so this page still shows it as owed. Nothing ' +
+              'more can be paid for it here. Contact the administrator to have it checked.'
+            );
+          }
         } else if (billError) {
           throw ApiError.internal(billError.message);
         } else {
