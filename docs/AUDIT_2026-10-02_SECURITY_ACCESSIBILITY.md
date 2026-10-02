@@ -126,12 +126,25 @@ shows them greyed offline and enabled online.
 
 ## 3. What a person needs to do
 
-1. **B-94** (Vercel owner): turn the challenge off, or exempt `/api/public/payments/adyen/webhook`,
-   then check Adyen's recent webhook deliveries. Before Saturday.
+1. **B-94**: ~~turn the challenge off~~ **off as of 2 Oct evening** (no `x-vercel-mitigated` on any
+   page, `/api` or precache file). Left: check Adyen's recent webhook deliveries. Before Saturday.
 2. **B-96** (Sean, Supabase): run the check query; if any of the three backup tables shows
    `relrowsecurity = false`, apply migration 076 as written there.
-3. After Saturday: `npm audit fix` in `backend/` (S-10), a shared rate-limit counter (S-7), and a
-   screen-reader pass on a phone.
-4. **Confirm the deploy.** This machine cannot reach the live site, so `887457a` being live was not
-   seen. On a machine that can: `curl -sI https://hivelet.vercel.app/ | grep -i content-security`
-   should end with `object-src 'none'; base-uri 'self'; frame-ancestors 'none'`.
+3. ~~`npm audit fix` in `backend/` (S-10)~~ **done 2 Oct evening (`a8ebbcc`)**: lockfile only,
+   brace-expansion 1.1.21 / 2.1.7; `npm audit --omit=dev` is 0 in both packages. After Saturday: a
+   shared rate-limit counter (S-7) and a screen-reader pass on a phone.
+4. ~~**Confirm the deploy.**~~ **Confirmed 2 Oct evening** from a cloud session: the live CSP ends
+   `object-src 'none'; base-uri 'self'; frame-ancestors 'none'`.
+
+## 4. The live site, probed from outside (2 Oct evening, no sign-in)
+
+| Probe | Result |
+| :--- | :--- |
+| Admin and tenant endpoints without a token, or with a forged one | 401 everywhere |
+| A foreign `Origin` header | **was 500 "Internal server error"**; now **403** (`f8718cf`), still refused before any route runs |
+| `/.env`, `/.git/config`, `/package.json`, backend source, the schema file, `credentials/` | 404 (`/backups/` is the app's own not-found page) |
+| Source maps in the build | none |
+| API headers | HSTS, nosniff, `X-Frame-Options`, `Referrer-Policy: no-referrer`, a CSP of its own |
+| Lighthouse, mobile, landing page (through this sandbox's proxy, ~700 ms TTFB) | Performance 80, Accessibility 100, Best Practices 100, SEO 100. Sign-in: SEO 66 because it is `noindex` on purpose |
+| 13 public pages at 320, 375 (light) and 1366 (dark) | no horizontal overflow, one `h1` each, no broken image, every image has `alt` |
+| Page titles | were "Hivelet" on every tab; a browser tab now reads "<page> · Hivelet" (`a08fa95`, WCAG 2.4.2), the installed app still "Hivelet" |

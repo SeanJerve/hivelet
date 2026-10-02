@@ -40,6 +40,10 @@
 >   `x-vercel-mitigated`. **Offline on the live site**: the worker installs, and offline with a cold
 >   reload `/`, `/login`, `/rooms`, `/admin`, `/tenant` all come from it. An installed app that
 >   showed Chrome's "You're offline" needs one online open (wait ~10 s, close) to take the worker.
+> - **Evening fixes from probing the live site (no sign-in):** a foreign `Origin` got **500**, now
+>   **403** (`f8718cf`); browser tabs carry the page's name again, the installed app keeps "Hivelet"
+>   (`a08fa95`); `npm audit` clean in both packages (`a8ebbcc`). Results table:
+>   `docs/AUDIT_2026-10-02_SECURITY_ACCESSIBILITY.md` §4.
 > - **Needs a person:** in Adyen (Developers > Webhooks) confirm deliveries succeed now that the
 >   challenge is off (B-94); **B-96** (RLS on three backup tables, SQL written; the Supabase
 >   connection was not authorised in either 2 Oct session); try **Delete** once on a test inquiry.
