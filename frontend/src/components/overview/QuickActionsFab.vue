@@ -114,15 +114,17 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
             id="overview-quick-actions"
             ref="list"
             aria-label="Record or move someone"
-            class="flex flex-col-reverse items-end gap-2.5"
+            class="flex flex-col-reverse items-stretch gap-2.5"
           >
-            <li v-for="(a, i) in actions" :key="a.to" :style="{ '--i': i }">
+            <!-- One width and one colour for all three (Sean, 2026-10-02): the list
+                 stretches its items to the widest, each pill is brand green. -->
+            <li v-for="(a, i) in actions" :key="a.to" :style="{ '--i': i }" class="flex">
               <router-link
                 :to="a.to"
-                :class="[a.primary ? 'pill-btn-brand' : 'pill-btn', 'shadow-lift']"
+                class="pill-btn-brand shadow-lift w-full justify-start"
                 @click="close()"
               >
-                <component :is="a.icon" :class="['size-4', !a.primary && 'text-ink-soft']" aria-hidden="true" />
+                <component :is="a.icon" class="size-4" aria-hidden="true" />
                 {{ a.label }}
               </router-link>
             </li>

@@ -456,7 +456,7 @@ async function handleSave() {
                 @click="triggerFileInput"
               >
                 <Upload class="size-3.5" aria-hidden="true" />
-                <span>{{ showingFloorPlan ? 'Replace with a photograph' : 'Choose a photograph' }}</span>
+                <span>{{ showingFloorPlan ? 'Replace photo' : 'Choose a photo' }}</span>
               </button>
             </div>
           </div>

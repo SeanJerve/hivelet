@@ -460,7 +460,16 @@
  * separate element over the image, so it keeps its brand fill.
  */
 [data-theme='dark'] img[src*='/floorplans/'] {
-  filter: invert(0.9) hue-rotate(180deg);
+  filter: invert(0.94) hue-rotate(180deg);
+  /* The inverted sheet is a near-black grey; `lighten` lets whatever is behind
+     it show instead, so the plan has no box of its own on any panel (Sean,
+     2026-10-02: no green field around the plans). The walls stay light. */
+  mix-blend-mode: lighten;
+}
+
+/* The public unit page's plan panel is the page itself in dark, not a tile. */
+[data-theme='dark'] .plan-panel {
+  background-color: var(--canvas);
 }
 
 /*

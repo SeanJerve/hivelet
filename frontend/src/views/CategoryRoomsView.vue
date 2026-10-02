@@ -830,7 +830,7 @@ async function submitInquiry() {
           -->
           <div
             :class="[
-              'relative flex flex-col justify-center border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden lg:min-h-[30rem]',
+              'plan-panel relative flex flex-col justify-center border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden lg:min-h-[30rem]',
               photoOf(activeUnit) && 'aspect-[4/3] lg:aspect-auto',
             ]"
           >

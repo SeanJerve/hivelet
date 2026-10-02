@@ -12,13 +12,14 @@
  * page. The filters are a pressed-state group, not tabs: they narrow one list
  * rather than swapping panels.
  *
- * The header is one line - title, filter, refresh, close (Sean, 2026-10-01:
+ * The header is one line - title, filter, close (Sean, 2026-10-01:
  * the row of All / Unread / Payments / Repairs / Inquiries chips "is so
  * clogged"). The choices moved into a small list behind a filter icon, and a
  * filter other than All shows as a removable label under the header, so a
- * narrowed list never looks like the whole inbox. "Check again" is a refresh
- * icon beside the X, named "Check again" for a screen reader, spinning while
- * it loads. "Mark all read" moved to the footer the text button left.
+ * narrowed list never looks like the whole inbox. "Mark all read" moved to
+ * the footer the text button left. The refresh icon that sat beside the X is
+ * gone (Sean, 2026-10-02): the list reloads on its own (lib/live.ts) and with
+ * the app's own pull-to-refresh, so it was a second way to do one thing.
  */
 import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
@@ -51,7 +52,6 @@ import {
   Inbox,
   MessageSquare,
   SlidersHorizontal,
-  RefreshCw,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -102,10 +102,6 @@ function chooseFilter(key: NotificationFilter) {
   filterButton.value?.focus();
 }
 
-/** "Check again". Not disabled while loading: a focused button that disables itself drops focus to the page. */
-function checkAgain() {
-  if (!isLoading.value) fetchNotifications();
-}
 
 const ALL_FILTERS: ReadonlyArray<{ key: NotificationFilter; label: string }> = [
   { key: 'all', label: 'All' },
@@ -326,14 +322,14 @@ onUnmounted(() => {
       class="ws-focus fixed inset-x-2 top-[4.125rem] z-50 flex max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-[calc(100%+0.75rem)] sm:w-[420px]"
     >
       <!--
-        Header: title, filter, refresh, close, on one line.
+        Header: title, filter, close, on one line.
 
         `pointer-coarse:` 44px on every control here, as PillSelect does: they
         were 28px (36px for the X) under a finger (B-61), and the compact size
         stays for a mouse. `.press` on each, so a tap answers on a touch screen.
 
         Only the X keeps the circle (`icon-btn`): Sean, 2026-10-01, only close
-        buttons and the up-right arrow buttons wear one. The filter and refresh
+        buttons and the up-right arrow buttons wear one. The filter
         are the icon alone, with a soft fill on hover and while open.
 
         The title and count may wrap onto two lines at 320px rather than push
@@ -411,19 +407,6 @@ onUnmounted(() => {
               </div>
             </Transition>
           </div>
-
-          <!-- "Check again", as an icon beside the X. It spins while a load is
-               in flight; under reduced motion it holds still and the list's own
-               loading rows say the same thing. -->
-          <button
-            type="button"
-            class="press grid size-9 place-items-center rounded-full text-ink-soft hover:bg-canvas hover:text-ink pointer-coarse:size-11"
-            aria-label="Check again"
-            :aria-busy="isLoading"
-            @click="checkAgain"
-          >
-            <RefreshCw :class="['size-4', isLoading && 'motion-safe:animate-spin']" aria-hidden="true" />
-          </button>
 
           <button
             type="button"

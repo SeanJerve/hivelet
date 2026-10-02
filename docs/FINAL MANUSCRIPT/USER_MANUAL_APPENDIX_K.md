@@ -249,7 +249,7 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
 Every unit, by cluster or as one list (**Filters** > **Show as**); **Filters** also narrows them by
 status or cluster. **Edit** (the pencil) a unit to change its rate, status, description
 or picture. A unit with no photograph shows its **Floor plan**, the same one visitors see on the
-public pages; **Replace with a photograph** uploads one, and once saved the public page shows that
+public pages; **Replace photo** uploads one, and once saved the public page shows that
 photograph instead. Every rate change is kept in the unit's price history automatically; the system never
 raises a rate by itself.
 
