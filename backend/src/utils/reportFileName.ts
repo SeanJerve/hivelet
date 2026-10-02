@@ -14,6 +14,12 @@ import { propertyToday } from './propertyClock.js';
  * month, because that is what it holds: "Tenant History 2024 - TH2024", or
  * "Tenant History June 2025 - TH062025" for one month.
  *
+ * One month and everything (Sean, 2026-10-02, the Download dialog): a month of
+ * any report is named for that month, the way the tenant history already was -
+ * "Monthly Income March 2026 - MI032026" - and everything is "Monthly Income
+ * All Years - MIALL". A year keeps the rule above unchanged, because the
+ * testing-day cases quote it (TESTING_REHEARSAL.md step 23, A-29).
+ *
  * The frontend names the file it saves the same way
  * (frontend/src/lib/downloadReport.ts `reportFileName`); change one, change both.
  */
@@ -36,11 +42,12 @@ export function reportFileName(
 ): string {
   const [year, thisMonth] = today.split('-');
   const { title, code } = NAME[kind];
-  if (kind === 'tenants') {
-    if (!month) return `${title} ${scope} - ${code}${scope}.xlsx`;
+  if (scope === 'all') return `${title} All Years - ${code}ALL.xlsx`;
+  if (month) {
     const mm = String(month).padStart(2, '0');
     return `${title} ${monthNameOf(Number(scope), month)} ${scope} - ${code}${mm}${scope}.xlsx`;
   }
+  if (kind === 'tenants') return `${title} ${scope} - ${code}${scope}.xlsx`;
   if (String(scope) !== year) return `${title} ${scope} - ${code}${scope}.xlsx`;
   return `${title} ${monthNameOf(Number(year), Number(thisMonth))} ${year} - ${code}${thisMonth}${year}.xlsx`;
 }

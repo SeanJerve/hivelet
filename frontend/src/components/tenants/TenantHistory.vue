@@ -18,7 +18,7 @@ import { buildTenantHistory, monthsLabel, type HistoryPerson } from '@/lib/tenan
 import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
-import { downloadReport } from '@/lib/downloadReport';
+import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { FileSpreadsheet } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -77,18 +77,14 @@ const monthsFor = (p: HistoryPerson) => monthsLabel(p.months);
 
 /**
  * The same period as a workbook, built by the server with the same rule and
- * written to the audit record like the other downloads.
+ * written to the audit record like the other downloads. The button opens the
+ * Download dialog (Sean, 2026-10-02) on the year and month shown here; it can
+ * also take another month, another year, or every year (a sheet for each).
  */
-const isExporting = ref(false);
-async function exportHistory() {
-  if (isExporting.value) return;
-  isExporting.value = true;
-  try {
-    await downloadReport('tenants', props.year, props.month ? { month: props.month } : {});
-  } finally {
-    isExporting.value = false;
-  }
-}
+const isDownloadOpen = ref(false);
+const historyYears = computed(() =>
+  [...new Set(incomeRecords.map((r) => Number(r.year)).filter(Boolean))].sort((a, b) => b - a)
+);
 
 const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] : ['12%', '48%', '26%', '14%']));
 </script>
@@ -106,16 +102,26 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
       <button
         type="button"
         class="pill-btn w-full shrink-0 sm:w-auto sm:min-w-44"
-        :disabled="isExporting || loading"
-        :aria-busy="isExporting"
+        :disabled="loading"
+        aria-haspopup="dialog"
         :aria-label="`Download ${periodLabel} for Excel`"
         :title="`Download ${periodLabel} for Excel`"
-        @click="exportHistory"
+        @click="isDownloadOpen = true"
       >
-        <FileSpreadsheet :class="['size-4 text-ink-soft', isExporting && 'animate-pulse']" aria-hidden="true" />
-        <span>{{ isExporting ? 'Preparing' : 'Download' }}</span>
+        <FileSpreadsheet class="size-4 text-ink-soft" aria-hidden="true" />
+        <span>Download</span>
       </button>
     </div>
+
+    <DownloadDialog
+      v-if="isDownloadOpen"
+      kind="tenants"
+      title="Tenant History"
+      :years="historyYears"
+      :year="year"
+      :month="month"
+      @close="isDownloadOpen = false"
+    />
 
     <SkeletonTable v-if="loading" :columns="month ? 5 : 4" :rows="6" />
 

@@ -37,6 +37,7 @@
 import ExcelJS from 'exceljs';
 import { db } from '../config/db.js';
 import { ApiError } from '../utils/ApiError.js';
+import { asScope, assertScope, type ReportScope } from '../utils/reportScope.js';
 
 const MONTHS = [
   'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
@@ -85,15 +86,18 @@ interface Entry {
 }
 
 /**
- * Builds the workbook for one year.
+ * Builds the workbook for one month, one year, or every year (`ReportScope`;
+ * a bare number is a year, as every caller before 2026-10-02 passed).
  *
  * Voided entries are excluded. They are kept in the database under BR-003, but a
  * voided expense is not money spent and must not reach a total.
+ *
+ * Months and years are the entry's own `expense_date`, which is what the year
+ * export has always filtered on and what the Monthly Expenses screen groups by.
  */
-export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.Workbook> {
-  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
-    throw ApiError.validation('A four-digit year is required.', { year: ['must be between 2000 and 2100'] });
-  }
+export async function buildExpenseReportWorkbook(scopeOrYear: ReportScope | number): Promise<ExcelJS.Workbook> {
+  const scope = asScope(scopeOrYear);
+  assertScope(scope);
 
   const [{ data: areaRows, error: areaError }, { data: catRows, error: catError }] = await Promise.all([
     db.from('property_areas').select('code, name, display_order').order('display_order'),
@@ -103,15 +107,22 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
   if (areaError) throw ApiError.internal(`Property areas could not be read: ${areaError.message}`);
   if (catError) throw ApiError.internal(`Expense categories could not be read: ${catError.message}`);
 
-  const areas = (areaRows ?? []).map((a) => ({
-    code: String((a as any).code),
-    name: String((a as any).name),
-  }));
-  const categories = (catRows ?? []).map((c) => ({
-    code: String((c as any).code),
-    name: String((c as any).name),
-    parent: (c as any).parent_code ? String((c as any).parent_code) : null,
-  }));
+  /**
+   * One month still reads from January of its year: the category summary's
+   * Cumulative column runs from January (OD-07), and a March sheet whose
+   * "cumulative" held only March would be a wrong figure under a right label.
+   * Only the chosen month is printed (Sean, 2026-10-02).
+   */
+  const range =
+    scope.kind === 'all'
+      ? null
+      : {
+          from: `${scope.year}-01-01`,
+          to:
+            scope.kind === 'year'
+              ? `${scope.year}-12-31`
+              : new Date(Date.UTC(scope.year, scope.month, 0)).toISOString().slice(0, 10),
+        };
 
   /**
    * Read in batches. A single `select` is capped by PostgREST's default of 1000
@@ -126,15 +137,15 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
   const BATCH = 1000;
   const entryRows: any[] = [];
   for (let from = 0; ; from += BATCH) {
-    const { data: page, error: entryError } = await db
+    let query = db
       .from('monthly_expense_entries')
       .select(
         'id, expense_date, invoice_supplier, category_code, total_expenses, ' +
           'expense_property_allocations (property_area, amount)'
       )
-      .gte('expense_date', `${year}-01-01`)
-      .lte('expense_date', `${year}-12-31`)
-      .is('voided_at', null)
+      .is('voided_at', null);
+    if (range) query = query.gte('expense_date', range.from).lte('expense_date', range.to);
+    const { data: page, error: entryError } = await query
       .order('expense_date', { ascending: true })
       // A second, unique key. Ordering by date alone leaves rows that share a
       // date in an order PostgreSQL may choose differently per page, which can
@@ -147,9 +158,57 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
     if (!page || page.length < BATCH) break;
   }
 
-  const byMonth = new Map<number, Entry[]>();
-  for (const raw of (entryRows ?? []) as unknown as Record<string, any>[]) {
-    const month = new Date(`${raw.expense_date}T00:00:00Z`).getUTCMonth() + 1;
+  return renderExpenseReportWorkbook(areaRows ?? [], catRows ?? [], entryRows, scope);
+}
+
+/** "March", for the sentence a month with nothing in it prints. */
+const monthTitle = (m: number) => MONTHS[m - 1].charAt(0) + MONTHS[m - 1].slice(1).toLowerCase();
+
+interface Area {
+  code: string;
+  name: string;
+}
+interface Category {
+  code: string;
+  name: string;
+  parent: string | null;
+}
+
+/**
+ * The workbook from rows already read: no database here, so the layout for each
+ * scope can be checked against fixture rows without touching the owner's ledger
+ * (Sean, 2026-10-02). The rows are filtered by the scope again, so this means
+ * the same thing whoever calls it.
+ *
+ * Everything is one sheet per year, each with its own year total and its
+ * cumulative starting in January - the convention the year sheet already
+ * states, and OD-07 has not been answered otherwise.
+ */
+export function renderExpenseReportWorkbook(
+  areaRows: readonly Record<string, any>[],
+  catRows: readonly Record<string, any>[],
+  entryRows: readonly Record<string, any>[],
+  scope: ReportScope
+): ExcelJS.Workbook {
+  const areas: Area[] = areaRows.map((a) => ({
+    code: String((a as any).code),
+    name: String((a as any).name),
+  }));
+  const categories: Category[] = catRows.map((c) => ({
+    code: String((c as any).code),
+    name: String((c as any).name),
+    parent: (c as any).parent_code ? String((c as any).parent_code) : null,
+  }));
+
+  const byYear = new Map<number, Map<number, Entry[]>>();
+  for (const raw of entryRows) {
+    const at = new Date(`${raw.expense_date}T00:00:00Z`);
+    const year = at.getUTCFullYear();
+    const month = at.getUTCMonth() + 1;
+    if (scope.kind !== 'all' && year !== scope.year) continue;
+    // A month keeps the months before it, for the cumulative; see the builder.
+    if (scope.kind === 'month' && month > scope.month) continue;
+    const byMonth = byYear.get(year) ?? new Map<number, Entry[]>();
     const byArea = new Map<string, number>();
     for (const alloc of raw.expense_property_allocations ?? []) {
       const key = String(alloc.property_area);
@@ -165,12 +224,50 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
       byArea,
     });
     byMonth.set(month, list);
+    byYear.set(year, byMonth);
   }
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Hivelet';
   wb.created = new Date();
-  const ws = wb.addWorksheet(`Expenses ${year}`, {
+
+  if (scope.kind === 'all') {
+    const years = [...byYear.keys()].sort((a, b) => a - b);
+    if (years.length === 0) {
+      const ws = wb.addWorksheet('Expenses');
+      ws.addRow(['No expenses have been recorded.']).font = { size: 10, italic: true };
+      return wb;
+    }
+    for (const y of years) addExpenseSheet(wb, y, null, byYear.get(y)!, areas, categories);
+    return wb;
+  }
+
+  addExpenseSheet(
+    wb,
+    scope.year,
+    scope.kind === 'month' ? scope.month : null,
+    byYear.get(scope.year) ?? new Map(),
+    areas,
+    categories
+  );
+  return wb;
+}
+
+/**
+ * One sheet: a year, or one month of it (`onlyMonth`). The months before a
+ * chosen month are read into its cumulative and not printed; the year total
+ * is a year's figure and is left off a month.
+ */
+function addExpenseSheet(
+  wb: ExcelJS.Workbook,
+  year: number,
+  onlyMonth: number | null,
+  byMonth: Map<number, Entry[]>,
+  areas: Area[],
+  categories: Category[]
+): void {
+  const period = onlyMonth ? `${MONTHS[onlyMonth - 1]} ${year}` : String(year);
+  const ws = wb.addWorksheet(onlyMonth ? `Expenses ${MON[onlyMonth - 1]} ${year}` : `Expenses ${year}`, {
     views: [{ state: 'frozen', ySplit: 2 }],
     pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
   });
@@ -193,7 +290,7 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
     { width: 17 },                                  // summary: cumulative
   ];
 
-  const title = ws.addRow([`HIVELET — MONTHLY EXPENSES REPORT — ${year}`]);
+  const title = ws.addRow([`HIVELET — MONTHLY EXPENSES REPORT — ${period}`]);
   title.font = { bold: true, size: 13, color: { argb: INK } };
   ws.mergeCells(title.number, 1, title.number, sumCumCol);
 
@@ -219,6 +316,14 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
 
   for (const month of [...byMonth.keys()].sort((a, b) => a - b)) {
     const entries = byMonth.get(month) ?? [];
+
+    // Before the chosen month: into the cumulative, not onto the page.
+    if (onlyMonth && month !== onlyMonth) {
+      for (const e of entries) {
+        cumulative.set(e.category_code, (cumulative.get(e.category_code) ?? 0) + e.total_expenses);
+      }
+      continue;
+    }
 
     const monthRow = ws.addRow([`${MONTHS[month - 1]} ${year}`]);
     monthRow.font = { bold: true, size: 11, color: { argb: INK } };
@@ -331,23 +436,28 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
   // for this year" is a different statement and the true one. Once a zero is
   // printed in a totals row, in bold, above the sentence that would correct it,
   // the two are indistinguishable. Same defect as the income sheet.
-  if (byMonth.size === 0) {
-    const empty = ws.addRow([`No expenses were recorded for ${year}.`]);
+  if (onlyMonth ? !byMonth.has(onlyMonth) : byMonth.size === 0) {
+    const empty = ws.addRow([
+      `No expenses were recorded for ${onlyMonth ? `${monthTitle(onlyMonth)} ${year}` : year}.`,
+    ]);
     empty.font = { size: 10, italic: true };
     ws.mergeCells(empty.number, 1, empty.number, totalCol);
-    return wb;
+    return;
   }
 
-  const yearCells: (string | number | null)[] = [`YEAR TOTAL ${year}`, null];
-  for (const a of areas) yearCells.push(c2(yearAreaTotals.get(a.code) ?? 0));
-  yearCells.push(null, c2(yearGrandTotal));
+  // A month's own TOTAL row is above; the year's is a year's figure.
+  if (!onlyMonth) {
+    const yearCells: (string | number | null)[] = [`YEAR TOTAL ${year}`, null];
+    for (const a of areas) yearCells.push(c2(yearAreaTotals.get(a.code) ?? 0));
+    yearCells.push(null, c2(yearGrandTotal));
 
-  const yearRow = ws.addRow(yearCells);
-  yearRow.font = { bold: true, size: 11, color: { argb: INK } };
-  moneyCells(yearRow);
-  yearRow.eachCell({ includeEmpty: true }, (c) => {
-    c.border = { top: { style: 'medium', color: { argb: INK } } };
-  });
+    const yearRow = ws.addRow(yearCells);
+    yearRow.font = { bold: true, size: 11, color: { argb: INK } };
+    moneyCells(yearRow);
+    yearRow.eachCell({ includeEmpty: true }, (c) => {
+      c.border = { top: { style: 'medium', color: { argb: INK } } };
+    });
+  }
 
   const note = ws.addRow([
     'The Cumulative column accumulates from January of this year. Whether it should reset at the ' +
@@ -359,6 +469,4 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
   note.font = { size: 9, italic: true, color: { argb: INK } };
   ws.mergeCells(note.number, 1, note.number, sumCumCol);
   note.alignment = { wrapText: true, vertical: 'top' };
-
-  return wb;
 }
