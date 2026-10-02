@@ -448,9 +448,10 @@ watch(filterChips, (chips) => {
   if (!chips.some((c) => c.key === statusFilter.value)) statusFilter.value = 'active';
 });
 
+const tenantOrder = ref<'name' | 'unit'>('name');
 const rows = computed(() => {
   const query = q.value.toLowerCase().trim();
-  return tenants.filter((t) => {
+  const matched = tenants.filter((t) => {
     const matchesFilter =
       (statusFilter.value === 'prospect' && t.role === 'prospect') ||
       (statusFilter.value === 'active' && t.role === 'tenant' && t.status === 'active') ||
@@ -466,6 +467,17 @@ const rows = computed(() => {
       t.email.toLowerCase().includes(query)
     );
   });
+  // Arranged by name or by unit (Sean, 2026-10-02: "a filter that can arrange the tenants by
+  // their units"). Units compare naturally (1A, 1B ... 3G, then the named units); no unit last.
+  const byName = (a: (typeof matched)[number], b: (typeof matched)[number]) => a.name.localeCompare(b.name);
+  return [...matched].sort(
+    tenantOrder.value === 'unit'
+      ? (a, b) =>
+          (a.unitCode ? 0 : 1) - (b.unitCode ? 0 : 1) ||
+          a.unitCode.localeCompare(b.unitCode, undefined, { numeric: true, sensitivity: 'base' }) ||
+          byName(a, b)
+      : byName
+  );
 });
 
 /** How to look at the same rows: flat and alphabetical, or split by cluster. */
@@ -501,11 +513,23 @@ const tenantFilters = computed<ToolbarFilter[]>(() => [
     options: filterChips.value,
     when: (d) => d.year === 'now',
   },
+  {
+    key: 'order',
+    label: 'Order',
+    value: tenantOrder.value,
+    defaultValue: 'name',
+    options: [
+      { value: 'name', label: 'By name (A to Z)' },
+      { value: 'unit', label: 'By unit' },
+    ],
+    when: (d) => d.year === 'now',
+  },
 ]);
 function applyTenantFilters(v: FilterDraft) {
   historyYear.value = String(v.year);
   historyMonth.value = String(v.month);
   statusFilter.value = v.status as StatusFilter;
+  if (v.order === 'name' || v.order === 'unit') tenantOrder.value = v.order;
 }
 
 /**
