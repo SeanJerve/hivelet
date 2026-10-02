@@ -50,34 +50,35 @@
 })();
 
 /*
- * Only the first load in this browser draws it (Sean, 2026-10-02: "the
- * spinner still appears on some refreshes - only the first-time load"). The
- * 1 Oct version also kept it on every refresh of a page without its own
- * skeleton (the landing page, sign-in, enquiry), which is most of what a
- * visitor refreshes. After the first render the whole app is in the service
- * worker's precache, so a later load paints from the phone at once; the
- * signed-in screens show their skeletons while their figures arrive.
+ * When the loader is drawn (Sean, 2026-10-02 evening - the rule as he set it):
+ *
+ *   - the first visit in this browser (no `hivelet.seen`);
+ *   - opening after being away (`hivelet.lastActive`, kept by main.ts while the
+ *     app is on screen, more than AWAY_MS ago) - the installed app's cold start
+ *     included;
+ *   - a reload of a page with no skeletons of its own: the public pages and the
+ *     sign-in page. With nothing to draw in the shape of the page, the hexagon
+ *     in the middle is the loading sign.
+ *
+ * Otherwise - a reload of a signed-in screen (/admin, /tenant) during a visit -
+ * it is skipped and the screen's skeletons are the loading sign; in the
+ * installed app that is the pull-to-refresh's hexagon and the skeletons.
+ *
+ * The loader is the page's own background (light, or dark under the dark
+ * theme) with the turning hexagon. The dark green field the landing page used
+ * to show on a reload (`boot-hero`) is gone: it read as a broken page.
+ * Storage that throws counts as a first visit: the loader shows.
  */
 (function () {
+  var AWAY_MS = 30 * 60 * 1000;
   try {
-    // Also off whenever the service worker already controls this page - true for every reload of
-    // an installed app - even if `hivelet.seen` was lost (Sean, 2026-10-02: no middle spinner on
-    // refresh; the pull's own hexagon and the skeletons are the loading signs).
-    var controlled = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
-    if (controlled || localStorage.getItem('hivelet.seen') === '1') {
+    var seen = localStorage.getItem('hivelet.seen') === '1';
+    var last = Number(localStorage.getItem('hivelet.lastActive') || 0);
+    var away = !last || Date.now() - last > AWAY_MS;
+    var path = location.pathname;
+    var hasSkeletons = /^\/(admin|tenant)(\/|$)/.test(path);
+    if (seen && !away && hasSkeletons) {
       document.documentElement.classList.add('no-splash');
-      /*
-       * No loader, so what shows until the app's code has run is the page
-       * background. On the landing page that is the hero's dark field, not
-       * the pale canvas, so a refresh there goes straight from dark to the
-       * photograph instead of pale, then dark, then the photograph (Sean,
-       * 2026-10-02). index.html colours it; main.ts takes the class off once
-       * the page has rendered.
-       */
-      var path = location.pathname;
-      if (path === '/' || path === '/public' || path === '/public/') {
-        document.documentElement.classList.add('boot-hero');
-      }
     }
   } catch (e) {
     // Storage blocked: leave the loader on.

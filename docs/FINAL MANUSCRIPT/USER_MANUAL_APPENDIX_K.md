@@ -130,9 +130,10 @@ page and closes any window that was open on it. In the installed app, **pull dow
 page to reload it: the green hexagon turns until the figures are back, and grey outlines stand in
 for them meanwhile; the page does not go blank. **Light or dark:** your initials > **Appearance** > **System**, **Light** or
 **Dark** (System follows the phone or computer). On the public pages it is the sun/moon button at
-the foot of the page. **The green hexagon** turns only the first time the site opens on a phone or
-computer; after that a reload shows grey outlines of the page while it loads. The public landing
-page and the sign-in page come with the app and appear at once, with no outlines.
+the foot of the page. **The green hexagon** turns in the middle of the screen the first time the site opens on a phone
+or computer, when it is opened again after half an hour or more away, and when the public pages or
+the sign-in page are reloaded. Reloading one of your own screens during a visit shows grey outlines
+of the page instead while the figures load.
 
 **Downloads.** Where the browser offers a **Save** window (Chrome or Edge on a computer), the message
 **"Report downloaded"** appears only once the file is saved; cancelling the window says nothing and

@@ -84,10 +84,10 @@
       whole screen, opaque, so neither the white page nor the header drawn over
       an empty page ever shows.
 
-      Not on every reload any more (Sean, 2026-10-01, later: "on refresh of the
-      dashboard, skeleton only"; 2 Oct: "first-time load only"): public/boot.js
-      adds `no-splash` to <html> once this browser has rendered Hivelet before,
-      and the last rule below then never paints it.
+      When it is drawn is public/boot.js's decision (Sean, 2026-10-02 evening):
+      a first visit, opening after 30 minutes away, or a reload of a page with
+      no skeletons (public pages, sign-in). A reload of a signed-in screen gets
+      `no-splash` and its skeletons instead.
 
       Plain HTML and CSS in this file, because it has to be on screen before any
       script has arrived - and because vercel.json's Content-Security-Policy is
@@ -124,9 +124,6 @@
       @media (prefers-reduced-motion:reduce){#app-splash .hex{animation:splash-breathe 2.4s ease-in-out infinite}}
       .no-splash #app-splash{display:none}
       [data-theme="dark"] #app-splash{background:#0f1412}
-      /* A refresh of the landing page with no loader (public/boot.js `boot-hero`): the hero's own --night until the page renders (Sean, 2026-10-02). */
-      .boot-hero body{background:#0f1b15}
-      [data-theme="dark"].boot-hero body{background:#24332b}
     </style>
   </head>
   <body class="bg-[#fafaf9] text-[#1c1917] antialiased selection:bg-[#f59e0b]/20 selection:text-[#1c1917]">

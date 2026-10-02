@@ -173,8 +173,6 @@ router.afterEach((to) => {
  */
 const SPLASH_CAP_MS = 8000
 function dismissSplash() {
-  // public/boot.js's dark page background for a landing refresh: the app covers it now.
-  document.documentElement.classList.remove('boot-hero')
   const splash = document.getElementById('app-splash')
   if (!splash || splash.classList.contains('is-leaving')) return
   // Never drawn (public/boot.js's `no-splash`): there is no fade to wait for.
@@ -212,9 +210,30 @@ function firstPageRendered() {
   } catch {
     // Storage blocked (private mode): every load counts as a first one.
   }
+  markActive()
   warmRoutes(router, currentRole.value)
   watch(currentRole, (role) => warmRoutes(router, role))
 }
+
+/*
+ * "Away" for public/boot.js: the last moment Hivelet was on screen. Written
+ * while the page is visible (each minute, and when it is shown or hidden), so
+ * a tab left open and in use is never "away", and the installed app reopened
+ * after half an hour is (Sean, 2026-10-02 evening: the loader when opening the
+ * app after a while).
+ */
+function markActive() {
+  try {
+    localStorage.setItem('hivelet.lastActive', String(Date.now()))
+  } catch {
+    // Storage blocked: boot.js then always draws the loader, the safe side.
+  }
+}
+document.addEventListener('visibilitychange', markActive)
+window.addEventListener('pagehide', markActive)
+window.setInterval(() => {
+  if (document.visibilityState === 'visible') markActive()
+}, 60_000)
 
 /*
  * "Rendered" means the page itself is in <main> with a height, checked each
