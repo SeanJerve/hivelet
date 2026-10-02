@@ -45,11 +45,11 @@
 >   (`a08fa95`); `npm audit` clean in both packages (`a8ebbcc`). Results table:
 >   `docs/AUDIT_2026-10-02_SECURITY_ACCESSIBILITY.md` §4.
 > - **Needs a person:** in Adyen (Developers > Webhooks) confirm deliveries succeed now that the
->   challenge is off (B-94); **B-96** (RLS on three backup tables, SQL written; the Supabase
+>   challenge is off (B-94; a real webhook was recorded 2 Oct 06:38 UTC); ~~**B-96**~~ (RLS on three backup tables, SQL written; the Supabase
 >   connection was not authorised in either 2 Oct session; now migration **076**); **077**, loydtest's
->   bills (Pay with GCash said "nothing to pay" while the page showed P30,400 owed; B-97). Both are
->   written and tested on a local copy, not applied: run them in the SQL editor after `npm run backup`.
->   Migrations: **076 and 077 written 2 Oct evening, not applied**; next number **078**.
+>   bills (Pay with GCash said "nothing to pay" while the page showed P30,400 owed; B-97). Both
+>   **applied 2 Oct evening** through the Supabase connector and verified (B-96, B-97 done).
+>   Migrations: **076 and 077 applied 2 Oct evening**; next number **078**.
 >
 > **0.0 (previous) — where things stand, 2026-10-01 (Lloyd's machine; Sean's notes are in `HANDOFF_NEXT_SESSION.md`).**
 >

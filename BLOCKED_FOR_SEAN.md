@@ -33,7 +33,7 @@ thing did not work" is not.
 
 ## Open
 
-### B-97 — the evaluation account cannot pay: "nothing to pay" beside P30,400 owed (2 Oct evening) · **OPEN: run migration 077**
+### B-97 — the evaluation account cannot pay: "nothing to pay" beside P30,400 owed (2 Oct evening) · **DONE 2026-10-02 (077 applied by Claude through the Supabase connector)**
 
 - **What:** signed in as loydtest, Payments and billing shows "Not entered yet P30,400.00", and Pay
   with GCash says "No unpaid bill could be resolved for your account, so there is nothing to pay."
@@ -48,13 +48,23 @@ thing did not work" is not.
   077; run the diagnostic again. Then, signed in as loydtest, Pay with GCash should open the Drop-in
   for the owed period. If 077 says "Nothing changed", send the diagnostic output: the cause is
   something else.
+- **Applied 2026-10-02 ~18:48 Manila.** Live state before: bill b82a0d7f (30 Sep - 29 Oct, P30,400) Paid;
+  its GCash payment (a real Adyen test webhook, 06:38 UTC) already Rejected when its receipt was voided
+  (054); an on-site Cash payment of P30,400 on the same bill still Verified though its receipt was voided
+  too. Targeted backup of loydtest's bills and payments taken first (`npm run backup` needs .env, absent);
+  the before-values are also in 077's AUDIT_CORRECTION row f17f94c0. After: the Cash payment Rejected,
+  the bill Due with P0 verified against it; no other tenant's bills changed; ledger unchanged (953 live
+  receipts, Remitted P8,222,900.00). Pay with GCash on loydtest now resolves this bill.
 - **Raised:** 2026-10-02 by Claude, from Sean's screenshot
 
-### B-96 — row-level security on the three correction-backup tables (2 Oct audit, S-2) · **OPEN: run migration 076 in the SQL editor**
+### B-96 — row-level security on the three correction-backup tables (2 Oct audit, S-2) · **DONE 2026-10-02 (076 applied by Claude through the Supabase connector)**
 
 - **2 Oct evening:** saved as `database/migrations/076_rls_on_correction_backup_tables.sql` and run
   against a local copy (RLS on, anon SELECT false). Run it in the Supabase SQL editor, then the check
   query below.
+- **Applied 2026-10-02 evening.** Before: `rent_period_drift_backup_030` and `date_paid_import_backup_032`
+  had RLS off. After: 24 of 24 public tables RLS on, 0 readable by anon; the security advisor has no WARN
+  or ERROR, only the 24 deliberate "RLS enabled, no policy" INFO notices.
 
 - **Blocked on:** the Supabase MCP connection failed in Claude's session on 2 Oct, so the live
   catalogue could not be read and nothing was applied.
@@ -121,7 +131,9 @@ thing did not work" is not.
 
 - **2 Oct evening: the challenge is off.** From a cloud session, `/`, `/public`, `/sw.js`,
   `/api/health`, `/api/public/rates` and all 64 service-worker precache files answer 200 with no
-  `x-vercel-mitigated` header, and the worker installs and serves the app offline. **Left to do:**
+  `x-vercel-mitigated` header, and the worker installs and serves the app offline. **A real Adyen
+  webhook was recorded on 2 Oct 06:38 UTC** (payment cb179cf5, `GCash (Adyen webhook)`), so deliveries
+  were reaching the API that afternoon. **Left to do:**
   Adyen > Developers > Webhooks: check that deliveries since the challenge was lifted succeeded
   (and resend any that failed while it was on). Then mark this DONE.
 

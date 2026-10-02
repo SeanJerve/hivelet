@@ -128,8 +128,8 @@ shows them greyed offline and enabled online.
 
 1. **B-94**: ~~turn the challenge off~~ **off as of 2 Oct evening** (no `x-vercel-mitigated` on any
    page, `/api` or precache file). Left: check Adyen's recent webhook deliveries. Before Saturday.
-2. **B-96** (Sean, Supabase): run the check query; if any of the three backup tables shows
-   `relrowsecurity = false`, apply migration 076 as written there.
+2. ~~**B-96**~~ **done 2 Oct evening**: migration 076 applied; 24/24 public tables RLS on, 0 readable by
+   anon, the security advisor has no WARN or ERROR.
 3. ~~`npm audit fix` in `backend/` (S-10)~~ **done 2 Oct evening (`a8ebbcc`)**: lockfile only,
    brace-expansion 1.1.21 / 2.1.7; `npm audit --omit=dev` is 0 in both packages. After Saturday: a
    shared rate-limit counter (S-7) and a screen-reader pass on a phone.
