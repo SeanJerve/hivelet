@@ -38,7 +38,13 @@ reload (service worker must serve the shell).
    (Vercel challenge mode B-94 can 403 the precache fetches), `navigateFallback` / denylist in
    `frontend/vite.config.ts`, scope, `sw.js` cache headers in `vercel.json`. Essential offline
    content only: balances/rent (tenant), Overview figures and graphs, tenant names, notifications.
-2. **Rename "BH" to "Boarding House"** everywhere it is a label shown to people (cluster names on
+   **Laptop findings (2 Oct ~15:00):** on the live site in a normal browser the worker IS registered,
+   activated, controlling, precaches /index.html and has the NavigationRoute (denylist /api/), so the
+   code is right; the installed app had not got the current worker/precache. Prime suspect: Vercel
+   challenge mode (B-94) answering the worker's ~80 precache fetches with 403. Ask Sean to turn B-94
+   off, then open the installed app online once, wait ~10 s, close, reopen offline. If it still fails,
+   read the install error in the installed app's DevTools (Application > Service workers).
+2. **DONE (8c62857)** Rename "BH" to "Boarding House" (frontend; check backend Excel exports in backend/src/services/*Export.ts still print "BH" and rename there too) everywhere it is a label shown to people (cluster names on
    Overview "Units by cluster", Rooms and rates, Tenants, Monthly Income/Expenses filters and
    tables, downloads, public pages). Keep data codes/keys unchanged unless a migration is truly
    needed; map at display time. Check Excel exports too.
@@ -46,12 +52,12 @@ reload (service worker must serve the shell).
    plan the public category pages show for that unit/floor (find where the public pages get it).
    Show it by default in the admin dialog; keep it replaceable by the admin (upload), and the public
    page must show whatever the admin set. Connect both to one source.
-4. **Remove the eye (preview) icon** on Rooms and rates unit cards — the edit dialog already previews.
-5. **Tenants: a sort/filter to arrange tenants by unit** (in the Filters sheet, e.g. "Order: by unit").
-6. **Downloads: cancelling the save still shows "Report downloaded"** — only show success when the
+4. **DONE (8c62857)** Remove the eye (preview) icon on Rooms and rates unit cards — the edit dialog already previews.
+5. **DONE (47bd559)** Tenants: a sort/filter to arrange tenants by unit (in the Filters sheet, e.g. "Order: by unit").
+6. **DONE (8c62857)** Downloads: cancelling the save still shows "Report downloaded" — only show success when the
    file was actually saved (see `frontend/src/lib/downloadReport.ts`; a cancelled save picker must
    say nothing or "Not saved").
-7. **Security + accessibility audit** (never done): backend RBAC/IDOR, validation, rate limits,
+7. **DONE by a cloud session (887457a, 427d3a4; B-96 open)** Security + accessibility audit: backend RBAC/IDOR, validation, rate limits,
    headers/CSP, uploads, webhook code review only, `npm audit --omit=dev`; axe-core (install outside
    the repo) on every screen light+dark at 375/1366, keyboard/focus/touch targets. Fix low-risk
    issues; write `docs/AUDIT_2026-10-02_SECURITY_ACCESSIBILITY.md`.
