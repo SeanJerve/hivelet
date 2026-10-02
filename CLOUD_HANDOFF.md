@@ -65,4 +65,6 @@ reload (service worker must serve the shell).
    `CONTINUE_HERE.md` §0.0 for every change (Show as in Filters; year-default figures; Download
    dialog, month files end "only"; offline essentials; loader on first load only; items above).
 
+9. **DONE (e0a6683)** Pull-to-refresh: the hexagon mark keeps spinning from release until the page is back (loader shown on a pull reload).. **DONE (8a54696)** Delete for inquiries (new DELETE /admin/inquiries/:id, hard delete + cascade + audit) and a visible delete on repairs. NOT yet exercised against the live DB: verify once on a test inquiry if possible.
+
 Mark each item here **DONE (commit)** as you finish it, and push.
