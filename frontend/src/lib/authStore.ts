@@ -4,7 +4,7 @@
  */
 import { computed, reactive, readonly, ref } from 'vue';
 import { api, setStoredToken, getStoredToken, ApiRequestError } from './api';
-import { clearTenantOfflineCache } from './offlineCache';
+import { claimOfflineCopy, clearOfflineCopy } from './offlineCache';
 
 export type Role = 'guest' | 'prospect' | 'tenant' | 'admin';
 
@@ -127,9 +127,10 @@ function readCachedSessionSnapshot(): { user: SessionUser; permissions: string[]
 }
 
 function applySession(payload: { user: SessionUser; permissions: string[] }): void {
-  // A tenant's saved figures (lib/offlineCache.ts) belong to that tenant alone:
-  // anyone else signing in on this phone wipes them first.
-  clearTenantOfflineCache(payload.user.profileId);
+  // The figures saved for offline viewing (lib/offlineCache.ts) belong to one
+  // person alone: anyone else signing in on this device wipes them first
+  // (Sean, 2026-10-02).
+  claimOfflineCopy(payload.user);
   state.user = payload.user;
   state.permissions = payload.permissions ?? [];
   cacheSessionSnapshot(payload);
@@ -142,8 +143,9 @@ function clearSession(): void {
   setStoredToken(null);
   // Signing out, an expired or refused session, a moved-out account: every one
   // ends here, so the next person to pick up a shared phone does not see this
-  // tenant's balance offline (lib/offlineCache.ts; Sean, 2026-10-01).
-  clearTenantOfflineCache();
+  // person's figures, names or notifications offline (lib/offlineCache.ts;
+  // Sean, 2026-10-02).
+  void clearOfflineCopy();
   try {
     localStorage.removeItem(CACHED_SESSION_KEY);
   } catch {
@@ -242,6 +244,8 @@ export async function restoreSession(): Promise<void> {
     } else {
       const cached = readCachedSessionSnapshot();
       if (cached) {
+        // The saved figures are read back for this same person only (lib/offlineCache.ts).
+        claimOfflineCopy(cached.user);
         state.user = cached.user;
         state.permissions = cached.permissions ?? [];
       } else {

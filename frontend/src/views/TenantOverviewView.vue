@@ -10,7 +10,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
-import { loadWithOfflineCopy, onBackOnline, type TenantGet } from '@/lib/offlineCache';
+import { api } from '@/lib/api';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
@@ -20,7 +21,6 @@ import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
-import SavedCopyNote from '@/components/overview/SavedCopyNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
 import { CreditCard, Wrench, X, CheckCircle2, Home } from 'lucide-vue-next';
@@ -109,12 +109,6 @@ const tenantData = ref({
  * the amount due can no longer disagree about whether anything loaded.
  */
 const tenantDataLoadFailed = ref(false);
-/**
- * When the figures on screen were saved, if they are the copy kept on this phone rather than a
- * live read; `null` when live. Offline, a tenant sees her balance instead of "could not be
- * loaded", but cannot pay from it (Sean, 2026-10-01; lib/offlineCache.ts).
- */
-const offlineSavedAt = ref<number | null>(null);
 
 /** `GET /tenant/my-standing` - see `computeStanding` in backend/src/services/billingService.ts. */
 interface ResidentStanding {
@@ -278,10 +272,8 @@ const waterRatePerOccupant = ref<number | null>(null);
 
 async function loadWaterRate() {
   try {
-    await loadWithOfflineCopy(currentUser.value, async (get) => {
-      const r = await get<{ waterRatePerOccupant: number }>('/public/rates');
-      waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
-    });
+    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
+    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
   } catch {
     // Left null; the bill then states the amount without quoting a rate.
   }
@@ -307,12 +299,9 @@ onMounted(async () => {
   await fetchTenantData();
 });
 
-// Kept current while the page is open, without a skeleton (lib/live.ts).
+// Kept current while the page is open, without a skeleton (lib/live.ts). The same reload runs
+// when the connection comes back, replacing the saved copy shown meanwhile.
 useLiveRefresh(() => fetchTenantData({ quiet: true }));
-// The saved copy is only for while there is no connection: reload the moment it is back.
-onBackOnline(() => {
-  if (offlineSavedAt.value !== null || tenantDataLoadFailed.value) fetchTenantData({ quiet: true });
-});
 
 async function fetchTenantData(opts: { quiet?: boolean } = {}) {
   if (!opts.quiet) {
@@ -320,22 +309,20 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
     unitPhotoLoaded.value = false;
   }
   try {
-    // Live first; with no connection, the copy saved at this tenant's last load.
-    const { savedAt } = await loadWithOfflineCopy(currentUser.value, applyTenantData);
-    offlineSavedAt.value = savedAt;
+    // With no connection, `api.get` answers from the copy saved at this tenant's last load
+    // (lib/offlineCache.ts), so this draws a saved answer exactly as it draws a live one.
+    await applyTenantData();
     tenantDataLoadFailed.value = false;
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
-    offlineSavedAt.value = null;
     tenantDataLoadFailed.value = true;
   } finally {
     loading.value = false;
   }
 }
 
-/** Reads through `get` (lib/offlineCache.ts), so the same code draws a live load and a saved one. */
-async function applyTenantData(get: TenantGet) {
-  const data = await get<any[]>('/tenant/my-rooms');
+async function applyTenantData() {
+  const data = await api.get<any[]>('/tenant/my-rooms');
   if (data && data.length > 0) {
     const activeRoom = data.find((r: any) => r.is_active) || data[0];
     if (activeRoom) {
@@ -362,10 +349,10 @@ async function applyTenantData(get: TenantGet) {
   // `my-standing` is in the same all-or-nothing batch on purpose: a failed read
   // of it must land in the "could not be loaded" state, never in "Settled".
   const [billsData, paymentsData, incomeData, standing] = await Promise.all([
-    get<any[]>('/tenant/my-bills'),
-    get<any[]>('/tenant/my-payments'),
-    get<any[]>('/tenant/my-income-records'),
-    get<ResidentStanding | null>('/tenant/my-standing'),
+    api.get<any[]>('/tenant/my-bills'),
+    api.get<any[]>('/tenant/my-payments'),
+    api.get<any[]>('/tenant/my-income-records'),
+    api.get<ResidentStanding | null>('/tenant/my-standing'),
   ]);
 
   pendingOnlinePayments.value = (paymentsData ?? [])
@@ -622,8 +609,6 @@ const statusTone = computed(() => {
       </button>
     </div>
 
-    <SavedCopyNote v-if="offlineSavedAt !== null && !loading" :saved-at="offlineSavedAt" />
-
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>
       <div
@@ -685,8 +670,9 @@ const statusTone = computed(() => {
             <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand">
               {{ awaitingVerificationLine }}
             </p>
-            <!-- Not from the saved copy: paying needs the connection it lacks. -->
-            <button v-else-if="offlineSavedAt === null" type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
+            <!-- Not offline or from the saved copy: paying needs the connection it lacks
+                 (lib/offlineCache.ts `writesUnavailable`). -->
+            <button v-else-if="!writesUnavailable" type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
               <CreditCard class="size-4" aria-hidden="true" />
               {{ payingOnline ? 'Opening the payment page' : 'Pay with GCash' }}
             </button>

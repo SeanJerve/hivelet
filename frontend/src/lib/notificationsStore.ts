@@ -8,6 +8,7 @@ import { ref, computed, watch } from 'vue';
 import { api } from './api';
 import { currentUser, isAuthenticated, isAdmin } from './authStore';
 import { playSound } from './sounds';
+import { writesUnavailable } from './offlineCache';
 
 export interface NotificationItem {
   id: string;
@@ -230,6 +231,10 @@ export async function pollUnreadCount() {
  * Marks a specific notification as read.
  */
 export async function markAsRead(notificationId: string) {
+  // Offline, or showing the saved copy: the write cannot reach the server, and the optimistic
+  // grey-out would be undone by the saved copy on the next read (lib/offlineCache.ts; Sean,
+  // 2026-10-02). The row stays unread, as it still is.
+  if (writesUnavailable.value) return;
   const item = notifications.value.find((n) => n.id === notificationId);
   if (!item || item.is_read) return;
 
@@ -260,7 +265,7 @@ export async function markAsRead(notificationId: string) {
  * Marks all notifications as read.
  */
 export async function markAllAsRead() {
-  if (unreadCount.value === 0) return;
+  if (unreadCount.value === 0 || writesUnavailable.value) return;
 
   // Optimistic update
   notifications.value.forEach((n) => (n.is_read = true));

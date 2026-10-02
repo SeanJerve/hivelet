@@ -8,6 +8,7 @@ import TenantHistory from '@/components/tenants/TenantHistory.vue';
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { copyText } from '@/lib/copyText';
 import { EMAIL_NOT_SET } from '@/lib/contactDetails';
 import { UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
@@ -871,7 +872,14 @@ async function handleOnboard() {
            page shares, so this sits and sizes like Record payment does on
            Monthly Income (Sean, 2026-10-01). -->
       <div class="ws-page-actions">
-        <button type="button" class="pill-btn-brand" @click="isOnboardModalOpen = true">
+        <!-- Not offline or from the saved copy: moving in needs the server (Sean, 2026-10-02). -->
+        <button
+          type="button"
+          class="pill-btn-brand"
+          :disabled="writesUnavailable"
+          :title="writesUnavailable ? 'Needs a connection' : undefined"
+          @click="isOnboardModalOpen = true"
+        >
           <UserPlus class="size-4" aria-hidden="true" />
           <span>Move someone in</span>
         </button>

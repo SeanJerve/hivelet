@@ -36,6 +36,7 @@ import {
   type NotificationFilter,
 } from '@/lib/notificationsStore';
 import { isAdmin } from '@/lib/authStore';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { notificationTarget } from '@/lib/openFromQuery';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -571,7 +572,11 @@ onUnmounted(() => {
         v-if="unreadCount > 0 && !(notificationsFetchFailed && filteredNotifications.length === 0 && !isLoading)"
         class="flex items-center justify-end gap-3 border-t border-line px-4 py-2 text-xs"
       >
+        <!-- Offline, or showing the saved copy: marking read needs the server, so the button
+             says so instead of greying the rows for a moment (Sean, 2026-10-02). -->
+        <span v-if="writesUnavailable" class="text-ink-faint">Marking read needs a connection</span>
         <button
+          v-else
           type="button"
           class="press inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft pointer-coarse:min-h-11"
           @click="markAllAsRead"

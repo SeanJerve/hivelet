@@ -248,11 +248,14 @@ Other security measures in the system:
 The client is a Progressive Web Application with a service worker and a web app manifest, so it
 can be installed on a phone or computer and opens without the browser's address bar. The service
 worker keeps the application's own files for faster loading, but it does not store tenant or
-financial data. One exception was added on 1 October 2026: a signed-in tenant's own figures, as
-their Overview and Payments pages last loaded them (bills, balance, payments and unit), are kept in
-the browser for that tenant only, so the two pages can show them with no connection under a notice
-giving the time they were saved. Paying and every other action still need the connection, and the
-figures are removed when the tenant signs out. This stays within the delimitation in Section 1.4:
+financial data. A separate, read-only copy was added on 1 and 2 October 2026: the essential
+figures, names and notifications the signed-in person's screens last loaded are kept in the
+browser on that person's own device, so the installed application can still show them with no
+connection under one notice giving the time they were saved. For a tenant these are their rent,
+balance, payments, repair requests and details; for the owner, the units, tenants, income and
+expense records, repairs and inquiries. Paying, recording and every other action still need the
+connection and are not offered without it, and the copy is removed when the person signs out or
+someone else signs in on the device. This stays within the delimitation in Section 1.4:
 current data and every change to it need an internet connection. Screens adapt to the device: tables on a computer become cards
 on a phone. *Figure 8. The Tenant Portal on a Mobile Phone.* [SCREENSHOT PENDING]
 
@@ -573,8 +576,9 @@ nothing to the owner's records.
 
 The results show that the application behaves as Section 1.4 and Section 4.2.7 say it should, and
 no more. It opens without a connection and says plainly what it cannot do, but the owner's and
-tenants' records need the connection. Since 1 October a tenant's own last-loaded figures stay
-readable offline (Section 4.2.7), and they are removed at sign-out, so none are left on a shared phone.
+tenants' records need the connection. Since 1 and 2 October the essential figures, names and
+notifications a person last loaded stay readable offline on that person's device (Section 4.2.7),
+and they are removed at sign-out, so none are left on a shared phone.
 Under loads several times larger than the property's own (a few tenants and one owner), no request
 failed and nineteen in twenty were answered in under a second.
 

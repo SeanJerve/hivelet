@@ -16,10 +16,11 @@
   There is no photo here, and the comment in the template says why.
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { Save, CheckCircle2, AlertTriangle, X, RotateCcw, KeyRound } from 'lucide-vue-next';
 import { currentUser, restoreSession } from '@/lib/authStore';
 import { api, ApiRequestError } from '@/lib/api';
+import { showingSavedCopy, writesUnavailable } from '@/lib/offlineCache';
 import {
   EMAIL_NOT_SET,
   emailProblem,
@@ -94,6 +95,12 @@ const isDirty = computed(
 );
 
 onMounted(fetchProfile);
+// Opened offline, the form shows the copy saved on this phone (lib/offlineCache.ts). The moment
+// the connection is back and the app has reloaded its lists, read the live one, unless she has
+// started typing (Sean, 2026-10-02).
+watch(showingSavedCopy, (now, was) => {
+  if (was && !now && !isDirty.value && !saving.value) fetchProfile();
+});
 
 async function fetchProfile() {
   loading.value = true;
@@ -162,7 +169,8 @@ async function handleSave() {
   // form directly - a second Enter before Vue's next render still reaches
   // here with the button not yet visibly disabled, and would resend the
   // whole profile while the first save is still in flight.
-  if (saving.value) return;
+  // Enter in a field submits even while Save is disabled for having no connection.
+  if (saving.value || writesUnavailable.value) return;
   successNotice.value = '';
 
   // The form is not a picture of what is stored, so it must not be written back.
@@ -489,14 +497,14 @@ function handleReset() {
 
         <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line p-5 sm:p-6">
           <p class="text-sm text-ink-soft">
-            {{ isDirty ? 'You have changes that are not saved yet.' : 'Everything here is saved.' }}
+            {{ writesUnavailable ? 'Saving needs a connection.' : isDirty ? 'You have changes that are not saved yet.' : 'Everything here is saved.' }}
           </p>
           <div class="flex items-center gap-2">
             <button type="button" :disabled="!isDirty || saving || loadFailed" class="pill-btn" @click="handleReset">
               <RotateCcw class="size-3.5" aria-hidden="true" />
               <span>Undo changes</span>
             </button>
-            <button type="submit" :disabled="!isDirty || saving || loadFailed" class="pill-btn-brand">
+            <button type="submit" :disabled="!isDirty || saving || loadFailed || writesUnavailable" class="pill-btn-brand">
               <Save class="size-4" aria-hidden="true" />
               <span>{{ saving ? 'Saving…' : 'Save' }}</span>
             </button>

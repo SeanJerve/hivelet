@@ -8,6 +8,8 @@
 
 /// <reference types="vite/client" />
 
+import { noteReachedServer, noteUnreachable, offlineOwnerFor, readSaved, saveRead } from './offlineCache';
+
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
 const TOKEN_STORAGE_KEY = 'hivelet.auth.token';
 
@@ -127,7 +129,42 @@ interface Envelope<T, M = Record<string, unknown>> {
   meta?: M;
 }
 
+/**
+ * Every request, with the offline copy around the reads (lib/offlineCache.ts; Sean, 2026-10-02).
+ *
+ * A read on the signed-in person's allowlist that reaches the server is saved for them. One that
+ * cannot reach it - `NETWORK_ERROR`, which a read's timeout also produces - is answered from that
+ * saved copy if there is one, so every screen draws it the way it draws a live answer, and App.vue
+ * says once, at the top, when the figures are from. Any answer the server itself gave, an error
+ * included, is never replaced: a 401 still signs out, a 403 is still refused.
+ *
+ * The owner is captured before the request, so a reply that lands after a sign-out or a switch of
+ * account is not saved under whoever is signed in by then.
+ */
 async function requestEnvelope<T, M = Record<string, unknown>>(
+  path: string,
+  options: RequestOptions = {}
+): Promise<Envelope<T, M>> {
+  if ((options.method ?? 'GET') !== 'GET') return sendRequest<T, M>(path, options);
+  const ownerId = offlineOwnerFor(path);
+  try {
+    const envelope = await sendRequest<T, M>(path, options);
+    noteReachedServer();
+    if (ownerId) saveRead(ownerId, path, envelope);
+    return envelope;
+  } catch (err) {
+    if (err instanceof ApiRequestError && err.code === 'NETWORK_ERROR') {
+      noteUnreachable();
+      const saved = ownerId ? await readSaved(ownerId, path) : null;
+      if (saved) return saved as Envelope<T, M>;
+    } else if (err instanceof ApiRequestError) {
+      noteReachedServer();
+    }
+    throw err;
+  }
+}
+
+async function sendRequest<T, M = Record<string, unknown>>(
   path: string,
   options: RequestOptions = {}
 ): Promise<Envelope<T, M>> {

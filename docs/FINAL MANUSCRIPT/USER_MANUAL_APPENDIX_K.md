@@ -88,12 +88,14 @@ email. Your name can only be changed by the landlady.
 It then opens from its own icon. **Pull down from the top** of a page to reload it.
 *Hilahin pababa mula sa itaas para i-reload.*
 
-**Without signal**, it still opens and says **"No connection"**. **Overview** and **Payments and
-billing** show your bill, balance and payments as last loaded, under **"Saved figures from"** and
-the time; **Pay with GCash** is hidden until the signal returns, and nothing can be sent. They are
-kept on your phone for your account only, and **signing out removes them**.
+**Without signal**, it still opens and says **"No connection"**, with **"Saved figures from"** and
+the time under it. **Overview**, **Payments and billing**, **Repairs**, **My details** and the bell
+show your rent, balance, payments, requests, details and notifications as last loaded. **Pay with
+GCash** is hidden and **Send request**, **Save** and marking notifications read wait until the
+signal returns. When it does, the pages reload by themselves. These essential figures, names and
+notifications are kept on your phone for your account only, and **signing out removes them**.
 If sending stalls on a weak signal, wait: after about 45 seconds it tells you whether to check
-before sending again. *Kapag walang signal, makikita pa rin ang huling na-load na singil at bayad, pero hindi makakapagpadala o makakabayad.*
+before sending again. *Kapag walang signal, makikita pa rin ang huling na-load na upa, balanse, bayad, request at notification, pero hindi makakapagpadala o makakabayad.*
 
 **Light or dark:** tap your initials at the top right > **Appearance** > **System**, **Light** or
 **Dark**. **System** follows your phone's own setting. *Piliin ang Light o Dark sa Appearance.*
@@ -101,7 +103,7 @@ before sending again. *Kapag walang signal, makikita pa rin ang huling na-load n
 ### 7. Signing out / Pag-sign out
 
 Tap your initials at the top right > **Sign out**. Always sign out on a phone that is not yours:
-it also removes the bill and payments kept on the phone for viewing without signal.
+it also removes the figures, names and notifications kept on the phone for viewing without signal.
 
 ---
 
@@ -252,7 +254,13 @@ app**. Ask the team if you need to know who changed something.
 
 ### 10. When the connection is weak or gone
 
-The system opens without a connection but cannot save or load records until it returns. If a save
+The system opens without a connection and shows what each screen last loaded on this device, under
+**"Saved figures from"** and the time: the Overview's figures, the tenants, both ledgers, repairs,
+inquiries and the notifications. Nothing can be recorded, moved or marked read until the connection
+returns, so **Record payment**, **Record expense** and **Move someone in** are greyed out and the
+Overview's actions are hidden; when it returns, every screen reloads by itself. These essential
+figures, names and notifications stay on your own device only, and **signing out removes them**.
+A screen you have not opened since signing in has nothing saved yet. If a save
 takes too long it stops after about 45 seconds and says it **cannot tell whether the save arrived**:
 look at the list before recording it again, so it is not recorded twice.
 
