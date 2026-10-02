@@ -28,6 +28,7 @@ import {
   fetchInquiries,
 } from './systemState';
 import { fetchNotifications } from './notificationsStore';
+import { setReconnectHandler } from './offlineCache';
 
 type Refresher = () => unknown;
 type LiveVersion = { version: string | null };
@@ -52,12 +53,22 @@ export function useLiveRefresh(fn: Refresher): void {
 }
 
 async function refreshEverything() {
+  if (!isAuthenticated.value) return;
   const shared: Refresher[] = [fetchNotifications];
   if (isAdmin.value) {
     shared.push(fetchIncomeRecords, fetchExpenseRecords, fetchRooms, fetchTenants, fetchMaintenanceTickets, fetchInquiries);
   }
   await Promise.allSettled([...shared, ...pageRefreshers].map((fn) => Promise.resolve().then(fn)));
 }
+
+/**
+ * Back from no connection: the same reload, once, so the saved figures shown meanwhile are
+ * replaced by live ones and the "Saved figures from" notice goes (lib/offlineCache.ts; Sean,
+ * 2026-10-02). The version check below cannot do it: a page opened offline has no version to
+ * compare its first answer with, and if nothing changed on the server meanwhile the version is
+ * the same one while the screen still shows the saved copy.
+ */
+setReconnectHandler(refreshEverything);
 
 async function check() {
   if (inFlight || !isAuthenticated.value || document.visibilityState !== 'visible') return;

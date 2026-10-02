@@ -14,6 +14,7 @@ import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import PullToRefresh from '@/components/layout/PullToRefresh.vue';
 import { startLiveUpdates, stopLiveUpdates } from '@/lib/live';
+import { isOffline, savedCopySince, savedAtLabel } from '@/lib/offlineCache';
 
 // Every open page stays current while someone is signed in (lib/live.ts).
 watch(isAuthenticated, (signedIn) => (signedIn ? startLiveUpdates() : stopLiveUpdates()), { immediate: true });
@@ -54,30 +55,24 @@ function pinLeavingPage(el: Element) {
   page.style.width = `${p.width}px`;
 }
 
-// Offline network status tracking (BR-031, FR-030)
-const isOffline = ref(!navigator.onLine);
+// Offline network status tracking (BR-031, FR-030). The flag itself lives in lib/offlineCache.ts
+// since 2026-10-02 (Sean), so this bar and the write buttons it speaks for read one value.
+const savedFrom = computed(() => (savedCopySince.value === null ? '' : savedAtLabel(savedCopySince.value)));
+let wasOffline = isOffline.value;
 
 function updateOnlineStatus() {
-  const wasOffline = isOffline.value;
-  isOffline.value = !navigator.onLine;
+  const cameBack = wasOffline && navigator.onLine;
+  wasOffline = !navigator.onLine;
   /**
    * "Authoritative synchronization active" was the old wording, and nothing
-   * behind it did that. `isOffline` is read nowhere else in the app - checked
-   * with a grep across every `.vue` and `.ts` file - so reconnecting triggers
-   * no refetch, no resync, nothing beyond this toast and the banner going
-   * away. Whatever was on screen when the connection dropped stays exactly
-   * that stale until the reader navigates or reloads by hand.
-   *
-   * That is a real gap worth having, not papering over: the honest fix is
-   * either build the resync this claimed, or stop claiming it. Given nothing
-   * elsewhere in the app currently listens for reconnection, claiming it here
-   * would be the exact shape of defect this project keeps finding - a screen
-   * asserting a fact the system does not hold, on the one word ("authoritative")
-   * a reader would take most literally if it mattered to them.
+   * behind it did that, so it was cut to "Reload the page if what you see looks
+   * out of date". Since 2026-10-02 (Sean) there is a resync: the first read that
+   * reaches the server after one that did not reloads every open list and page
+   * (lib/live.ts, `setReconnectHandler`), so the toast no longer asks her to.
    */
-  if (wasOffline && !isOffline.value) {
+  if (cameBack) {
     // Not an action of hers, so no ping (Sean, 2026-10-01).
-    showToast('success', 'Back online', 'You are connected again. Reload the page if what you see looks out of date.', 4000, { sound: false });
+    showToast('success', 'Back online', 'You are connected again.', 4000, { sound: false });
   }
 }
 
@@ -176,15 +171,27 @@ const hidesGlobalHeader = computed(() =>
       The wording changed too. "Financial mutations" is not a phrase anyone
       says, and the person reading it is a landlady who has just lost signal.
     -->
+    <!--
+      The second line is the one notice for the copy saved on this device (lib/offlineCache.ts;
+      Sean, 2026-10-02): every page drawing a saved answer used to carry its own note, and the
+      tenant pages did, twice over. It also shows on its own when the device is online but the
+      server cannot be reached, which is the same state to the reader.
+    -->
     <div
-      v-if="isOffline"
+      v-if="isOffline || savedFrom"
       role="status"
-      class="sticky top-0 z-50 flex items-center justify-center gap-2 border-b border-verify-soft bg-verify-soft px-4 py-2.5 text-sm font-medium text-verify"
+      class="sticky top-0 z-50 flex flex-col items-center gap-0.5 border-b border-verify-soft bg-verify-soft px-4 py-2.5 text-center text-sm font-medium text-verify"
     >
-      <WifiOff class="size-4 shrink-0" aria-hidden="true" />
-      <span>
-        No connection. You can read what is already loaded, but nothing can be saved or paid
-        until it is back.
+      <span v-if="isOffline" class="flex items-center justify-center gap-2">
+        <WifiOff class="size-4 shrink-0" aria-hidden="true" />
+        <span>
+          No connection. You can read what is already loaded, but nothing can be saved or paid
+          until it is back.
+        </span>
+      </span>
+      <span v-if="savedFrom" class="flex items-center justify-center gap-2" data-saved-copy-notice>
+        <WifiOff v-if="!isOffline" class="size-4 shrink-0" aria-hidden="true" />
+        <span>Saved figures from {{ savedFrom }}</span>
       </span>
     </div>
 
