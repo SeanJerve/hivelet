@@ -2,6 +2,7 @@
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, roomsLoaded, fetchRooms, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
@@ -542,7 +543,8 @@ async function handleSendReply() {
                 <button
                   type="button"
                   class="pill-btn"
-                  :disabled="isSubmitting"
+                  :disabled="isSubmitting || writesUnavailable"
+                  :title="writesUnavailable ? 'Needs a connection' : undefined"
                   @click="handleCloseLead"
                 >
                   <XCircle class="size-3.5" aria-hidden="true" />
@@ -650,7 +652,8 @@ async function handleSendReply() {
 
             <button
               type="submit"
-              :disabled="isSubmitting || !replyMessage.trim()"
+              :disabled="isSubmitting || writesUnavailable || !replyMessage.trim()"
+              :title="writesUnavailable ? 'Needs a connection' : undefined"
               class="pill-btn-brand shrink-0"
             >
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
