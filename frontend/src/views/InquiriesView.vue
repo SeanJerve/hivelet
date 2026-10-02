@@ -8,7 +8,7 @@ import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed,
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
-import { Inbox, Phone, Mail, Send, Loader2, UserPlus, XCircle } from 'lucide-vue-next';
+import { Inbox, Phone, Mail, Send, Loader2, UserPlus, XCircle, Trash2 } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -76,12 +76,41 @@ const isConfirmOpen = ref(false);
 const confirmTitle = ref('');
 const confirmMessage = ref('');
 const confirmAction = ref<(() => void) | null>(null);
+const confirmLabel = ref('Close inquiry');
 
-function showConfirm(title: string, message: string, action: () => void) {
+function showConfirm(title: string, message: string, action: () => void, label = 'Close inquiry') {
   confirmTitle.value = title;
   confirmMessage.value = message;
   confirmAction.value = action;
+  confirmLabel.value = label;
   isConfirmOpen.value = true;
+}
+
+/**
+ * Deletes the inquiry and its conversation for good (Sean, 2026-10-02: "a delete button that
+ * completely deletes it on the database"; server: DELETE /admin/inquiries/:id, audited). Removed
+ * from the screen only after the server confirms it, never before.
+ */
+function handleDeleteInquiry() {
+  const inq = activeInquiry.value;
+  if (!inq) return;
+  showConfirm(
+    'Delete this inquiry?',
+    `${inq.name}, unit ${inq.unit.toUpperCase()}.\n\nThe inquiry and its conversation are removed for good. This cannot be undone.`,
+    async () => {
+      isSubmitting.value = true;
+      try {
+        await api.delete(`/admin/inquiries/${inq.id}`);
+        await fetchInquiriesState();
+        showToast('success', 'Inquiry deleted', `${inq.name}'s inquiry is gone.`);
+      } catch (err: any) {
+        showToast('error', failureTitle(err, 'Not deleted'), err?.message || 'The inquiry is still there.');
+      } finally {
+        isSubmitting.value = false;
+      }
+    },
+    'Delete inquiry'
+  );
 }
 
 function handleConfirmAccept() {
@@ -571,7 +600,18 @@ async function handleSendReply() {
                   <span>Move them in</span>
                 </button>
               </template>
-              <!-- A finished inquiry has no actions. Its status already shows beside
+              <!-- Delete, on any inquiry, open or finished (Sean, 2026-10-02). -->
+              <button
+                type="button"
+                class="pill-btn text-overdue"
+                :disabled="isSubmitting || writesUnavailable"
+                :title="writesUnavailable ? 'Needs a connection' : undefined"
+                @click="handleDeleteInquiry"
+              >
+                <Trash2 class="size-3.5" aria-hidden="true" />
+                <span>Delete</span>
+              </button>
+              <!-- A finished inquiry has no other actions. Its status already shows beside
                    the name, so it is not repeated here. -->
             </div>
           </div>
@@ -682,7 +722,7 @@ async function handleSendReply() {
       v-if="isConfirmOpen"
       :title="confirmTitle"
       :message="confirmMessage"
-      confirm-label="Close inquiry"
+      :confirm-label="confirmLabel"
       @cancel="isConfirmOpen = false"
       @confirm="handleConfirmAccept"
     />

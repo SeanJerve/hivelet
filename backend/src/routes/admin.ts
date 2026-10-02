@@ -1857,6 +1857,53 @@ router.patch(
   })
 );
 
+/**
+ * DELETE /api/admin/inquiries/:inquiryId
+ *
+ * Removes an inquiry for good (Sean, 2026-10-02: "a delete button that completely deletes it
+ * from the database"). Its conversation goes with it: `inquiry_messages.inquiry_id` is ON DELETE
+ * CASCADE (checked in pg_constraint, 2 Oct). The notifications that pointed at it are removed
+ * too, so the bell never opens a link to nothing. As with a repair (BR-028), the audit entry
+ * carrying the row is the only record left that it existed. A tenant moved in from it is
+ * untouched - the tenancy does not depend on the inquiry.
+ */
+router.delete(
+  '/admin/inquiries/:inquiryId',
+  requirePermission(PERMISSIONS.INQUIRY_MANAGE),
+  requireUuidParam('inquiryId', 'Inquiry'),
+  asyncHandler(async (req, res) => {
+    const { data: before, error: beforeError } = await db
+      .from('inquiries')
+      .select('*')
+      .eq('id', req.params.inquiryId)
+      .maybeSingle();
+    if (beforeError) throw ApiError.internal(beforeError.message);
+    if (!before) throw ApiError.notFound('Inquiry not found.');
+
+    const { error } = await db.from('inquiries').delete().eq('id', req.params.inquiryId);
+    if (error) throw ApiError.internal(error.message);
+
+    const { error: notifError } = await db
+      .from('notifications')
+      .delete()
+      .eq('related_entity_type', 'INQUIRY')
+      .eq('related_entity_id', req.params.inquiryId);
+    if (notifError) console.warn('[inquiry delete] notifications not cleared:', notifError.message);
+
+    // Never keep the visitor's access hash in the audit copy.
+    const { access_token_hash: _hash, ...kept } = before as Record<string, unknown>;
+    await auditFromRequest(req, {
+      action: 'INQUIRY_DELETE',
+      entityType: 'INQUIRY',
+      entityId: req.params.inquiryId,
+      previousValues: kept,
+      newValues: null,
+    });
+
+    res.status(200).json({ success: true, data: { id: req.params.inquiryId } });
+  })
+);
+
 /* ========================================================================== *
  * BILLING & PAYMENTS — FR-011, FR-014, FR-016, FR-017
  * ========================================================================== */

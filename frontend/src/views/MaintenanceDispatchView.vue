@@ -653,10 +653,23 @@ function handleDeleteTicketPrompt() {
               </div>
             </dl>
 
-            <button type="button" class="pill-btn self-start" @click="openEditModal(t)">
-              <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
-              Manage
-            </button>
+            <!-- Delete beside Manage (Sean, 2026-10-02: a visible delete on repairs); the same
+                 confirmation and removal as the Manage dialog's own Delete repair. -->
+            <div class="flex items-center justify-between gap-2">
+              <button type="button" class="pill-btn" @click="openEditModal(t)">
+                <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+                Manage
+              </button>
+              <button
+                type="button"
+                class="icon-btn-plain text-overdue"
+                :aria-label="`Delete repair: ${t.title}`"
+                title="Delete"
+                @click="editingTicket = t; handleDeleteTicketPrompt()"
+              >
+                <Trash2 class="size-4" aria-hidden="true" />
+              </button>
+            </div>
           </li>
         </ul>
       </section>
