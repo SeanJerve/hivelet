@@ -33,7 +33,28 @@ thing did not work" is not.
 
 ## Open
 
-### B-96 — row-level security on the three correction-backup tables (2 Oct audit, S-2) · **OPEN, needs the Supabase connection**
+### B-97 — the evaluation account cannot pay: "nothing to pay" beside P30,400 owed (2 Oct evening) · **OPEN: run migration 077**
+
+- **What:** signed in as loydtest, Payments and billing shows "Not entered yet P30,400.00", and Pay
+  with GCash says "No unpaid bill could be resolved for your account, so there is nothing to pay."
+  The page reads the ledger (no live receipt for the period: owed); the checkout read a bill whose
+  Verified payments already cover it. Voided testing-day receipts leave that behind: voiding an
+  on-site receipt leaves its payment and bill as they were.
+- **Code (pushed, `1ee518f`):** the checkout skips a covered bill instead of stopping at it, and if the
+  owed period's own bill is covered it now says the receipt is missing rather than "nothing to pay".
+  That alone cannot unstick the account: its data still disagrees.
+- **What Sean needs to do:** `npm run backup`; in the SQL editor run the read-only diagnostic at the
+  top of `database/migrations/077_loydtest_bills_follow_the_ledger.sql` and keep the output; run
+  077; run the diagnostic again. Then, signed in as loydtest, Pay with GCash should open the Drop-in
+  for the owed period. If 077 says "Nothing changed", send the diagnostic output: the cause is
+  something else.
+- **Raised:** 2026-10-02 by Claude, from Sean's screenshot
+
+### B-96 — row-level security on the three correction-backup tables (2 Oct audit, S-2) · **OPEN: run migration 076 in the SQL editor**
+
+- **2 Oct evening:** saved as `database/migrations/076_rls_on_correction_backup_tables.sql` and run
+  against a local copy (RLS on, anon SELECT false). Run it in the Supabase SQL editor, then the check
+  query below.
 
 - **Blocked on:** the Supabase MCP connection failed in Claude's session on 2 Oct, so the live
   catalogue could not be read and nothing was applied.

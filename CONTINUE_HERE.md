@@ -27,7 +27,7 @@
 >   the unit's **floor plan** (the public page's own image) until a photograph replaces it; no eye
 >   button on unit cards; **Order** in every list's Filters (`lib/rowOrder.ts`) and **Group by** on
 >   Monthly Income; **Delete** on inquiries (new `DELETE /admin/inquiries/:id`, hard delete,
->   audited) and a bin on repair cards, neither yet run against the live database; a cancelled
+>   audited; used on the live site by the team on 2 Oct evening) and a bin on repair cards; a cancelled
 >   Save window says nothing; **pull-to-refresh refreshes in place** (the hexagon turns until the
 >   data is back, skeletons over the figures, no loader on any reload once the worker controls the
 >   page); no skeleton on the landing or sign-in page; all three **workbooks** share one look
@@ -46,8 +46,10 @@
 >   `docs/AUDIT_2026-10-02_SECURITY_ACCESSIBILITY.md` §4.
 > - **Needs a person:** in Adyen (Developers > Webhooks) confirm deliveries succeed now that the
 >   challenge is off (B-94); **B-96** (RLS on three backup tables, SQL written; the Supabase
->   connection was not authorised in either 2 Oct session); try **Delete** once on a test inquiry.
->   Migrations: none written or applied on 2 Oct; next number still **076** (B-96 proposes it).
+>   connection was not authorised in either 2 Oct session; now migration **076**); **077**, loydtest's
+>   bills (Pay with GCash said "nothing to pay" while the page showed P30,400 owed; B-97). Both are
+>   written and tested on a local copy, not applied: run them in the SQL editor after `npm run backup`.
+>   Migrations: **076 and 077 written 2 Oct evening, not applied**; next number **078**.
 >
 > **0.0 (previous) — where things stand, 2026-10-01 (Lloyd's machine; Sean's notes are in `HANDOFF_NEXT_SESSION.md`).**
 >
