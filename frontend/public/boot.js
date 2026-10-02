@@ -60,7 +60,11 @@
  */
 (function () {
   try {
-    if (localStorage.getItem('hivelet.seen') === '1') {
+    // Also off whenever the service worker already controls this page - true for every reload of
+    // an installed app - even if `hivelet.seen` was lost (Sean, 2026-10-02: no middle spinner on
+    // refresh; the pull's own hexagon and the skeletons are the loading signs).
+    var controlled = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
+    if (controlled || localStorage.getItem('hivelet.seen') === '1') {
       document.documentElement.classList.add('no-splash');
       /*
        * No loader, so what shows until the app's code has run is the page
