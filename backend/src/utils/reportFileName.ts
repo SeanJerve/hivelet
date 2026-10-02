@@ -16,7 +16,8 @@ import { propertyToday } from './propertyClock.js';
  *
  * One month and everything (Sean, 2026-10-02, the Download dialog): a month of
  * any report is named for that month, the way the tenant history already was -
- * "Monthly Income March 2026 - MI032026" - and everything is "Monthly Income
+ * "Monthly Income March 2026 only - MI032026" ("only" on the two ledgers, so this
+ * month alone never shares the current-year file's name) - and everything is "Monthly Income
  * All Years - MIALL". A year keeps the rule above unchanged, because the
  * testing-day cases quote it (TESTING_REHEARSAL.md step 23, A-29).
  *
@@ -45,7 +46,11 @@ export function reportFileName(
   if (scope === 'all') return `${title} All Years - ${code}ALL.xlsx`;
   if (month) {
     const mm = String(month).padStart(2, '0');
-    return `${title} ${monthNameOf(Number(scope), month)} ${scope} - ${code}${mm}${scope}.xlsx`;
+    // "only" on a ledger's month (Sean, 2026-10-02: nothing unusual): a current-year ledger is
+    // already named for this month, so this month alone needs a different name. The tenant
+    // history has no year-to-date name to collide with and keeps its 30 Sep form.
+    const only = kind === 'tenants' ? '' : ' only';
+    return `${title} ${monthNameOf(Number(scope), month)} ${scope}${only} - ${code}${mm}${scope}.xlsx`;
   }
   if (kind === 'tenants') return `${title} ${scope} - ${code}${scope}.xlsx`;
   if (String(scope) !== year) return `${title} ${scope} - ${code}${scope}.xlsx`;

@@ -79,7 +79,9 @@ export function reportFileName(
   if (scope === 'all') return `${title} All Years - ${code}ALL.xlsx`;
   if (month) {
     const mm = String(month).padStart(2, '0');
-    return `${title} ${monthNameOf(Number(scope), month)} ${scope} - ${code}${mm}${scope}.xlsx`;
+    // "only" on a ledger's month: see the server's twin (backend/src/utils/reportFileName.ts).
+    const only = kind === 'tenants' ? '' : ' only';
+    return `${title} ${monthNameOf(Number(scope), month)} ${scope}${only} - ${code}${mm}${scope}.xlsx`;
   }
   if (kind === 'tenants') return `${title} ${scope} - ${code}${scope}.xlsx`;
   if (String(scope) !== year) return `${title} ${scope} - ${code}${scope}.xlsx`;

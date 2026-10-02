@@ -561,7 +561,10 @@ for (const year of years) {
 
     const { workbook } = await buildTenantHistoryWorkbook(year, null);
     const rows = readRows(workbook.worksheets[0]);
-    check(`${year} receipts counted`, rows.reduce((n, r) => n + Number(r.Receipts || 0), 0), payerCount(ofYear));
+    // The sheet's columns are "Payments" (count) and "Invoice" since the OR -> invoice rename;
+    // this read "Receipts"/"Receipt" and so compared blanks (B-95, 2026-10-02). Old names kept as
+    // a fallback for an older workbook.
+    check(`${year} receipts counted`, rows.reduce((n, r) => n + Number(r.Payments ?? r.Receipts ?? 0), 0), payerCount(ofYear));
     const unknown = rows.filter((r) => !units.has(String(r.Unit).toUpperCase()));
     check(`${year} units that exist`, rows.length - unknown.length, rows.length);
 
@@ -578,7 +581,7 @@ for (const year of years) {
       if (!ofMonth.length) continue;
       const { workbook: wb } = await buildTenantHistoryWorkbook(year, month);
       const mrows = readRows(wb.worksheets[0]);
-      const listed = mrows.reduce((n, r) => n + String(r.Receipt || '').split(', ').filter(Boolean).length, 0);
+      const listed = mrows.reduce((n, r) => n + String(r.Invoice ?? r.Receipt ?? '').split(', ').filter(Boolean).length, 0);
       check(`${MONTHS[month - 1].slice(0, 3)} ${year} receipts`, listed, payerCount(ofMonth));
     }
   }

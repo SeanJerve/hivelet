@@ -33,7 +33,14 @@ thing did not work" is not.
 
 ## Open
 
-### B-95 — two small calls from the Download dialog (2 Oct) · **OPEN, decision**
+### B-95 — two small calls from the Download dialog (2 Oct) · **DONE 2026-10-02 (Claude decided, at Sean's word "go for what you recommend")**
+
+- **Decided:** a ledger's single month now saves as "Monthly Income March 2026 **only** - MI032026.xlsx"
+  (same for Monthly Expenses), so it never shares the current-year file's name; the year names the
+  test cases quote are unchanged; the tenant history keeps its 30 Sep month form (no clash possible).
+  Both twins changed (backend `utils/reportFileName.ts`, frontend `lib/downloadReport.ts`).
+- **Fixed:** `check-report-totals.mjs` now reads `Payments` / `Invoice` (old names as fallback). Run
+  read-only against the live data: **524 passed, 0 failed**, with real counts compared (e.g. 2026: 230).
 
 - **Same file name for "this month" and "this year":** downloading the *current* month saves as
   "Monthly Income October 2026 - MI102026.xlsx", which is also the current-year file's name (the year
