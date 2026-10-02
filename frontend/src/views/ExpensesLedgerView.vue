@@ -125,7 +125,15 @@ const defaultCategory = () => categoryOptions.value[0] ?? EXPENSE_CATEGORIES[0];
 
 // Filter selectors
 const filterMonth = ref('All');
-const filterYear = ref('All');
+/**
+ * This year by default, as on Monthly Income (Sean, 2026-10-02): opened on
+ * "All years", "Spent" added every expense since 2024 - ₱6,057,831 against the
+ * anonymised copy of her ledger - which is not the figure she opens this page
+ * for. "All years" stays one choice away in Filters, and the period is named
+ * in each tile's title. The property's year (lib/propertyDate.ts).
+ */
+const THIS_YEAR = propertyToday().slice(0, 4);
+const filterYear = ref(THIS_YEAR);
 
 /**
  * The Monthly Expenses Report as a real spreadsheet. BR-049.
@@ -212,7 +220,8 @@ watch(filterYear, (year) => {
 const expenseFilters = computed<ToolbarFilter[]>(() => [
   { key: 'kind', label: 'Kind of expense', value: selectedCategory.value, defaultValue: 'All', options: expenseCategoryOptions.value },
   { key: 'month', label: 'Month', value: filterMonth.value, defaultValue: 'All', options: monthsList },
-  { key: 'year', label: 'Year', value: filterYear.value, defaultValue: 'All', options: yearOptions.value },
+  // Default this year (above): Reset and Clear come back to it.
+  { key: 'year', label: 'Year', value: filterYear.value, defaultValue: THIS_YEAR, options: yearOptions.value },
 ]);
 function applyExpenseFilters(v: FilterDraft) {
   selectedCategory.value = String(v.kind);
@@ -398,6 +407,13 @@ const totalJuly = computed(() =>
  * for). Every area is counted, personal spending included, which the Overview
  * keeps apart from operating costs.
  */
+/** The period in the tiles' titles, "2026" / "September 2026" / "all years" - Monthly Income's `periodWord`. */
+const periodWord = computed(() => {
+  const m = filterMonth.value === 'All' ? '' : (monthsList.find((x) => x.val === filterMonth.value)?.label ?? '');
+  if (filterYear.value === 'All') return m ? `${m}, every year` : 'all years';
+  return m ? `${m} ${filterYear.value}` : filterYear.value;
+});
+
 const figuresScope = computed(() => {
   const y = filterYear.value;
   const m = monthsList.find((x) => x.val === filterMonth.value)?.label ?? '';
@@ -925,7 +941,7 @@ async function handleEditExpense() {
         which is the dark-tile idiom already in AdminOverviewView, not a new
         colour.
       -->
-      <OverviewTile title="Spent" tone="night" class="xl:col-span-4">
+      <OverviewTile :title="`Spent, ${periodWord}`" tone="night" class="xl:col-span-4">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           dark
@@ -948,7 +964,7 @@ async function handleEditExpense() {
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Where it landed" class="xl:col-span-8">
+      <OverviewTile :title="`Where it landed, ${periodWord}`" class="xl:col-span-8">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.

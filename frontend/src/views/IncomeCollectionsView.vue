@@ -83,7 +83,16 @@ const isSubmitting = ref(false);
 
 // Month and Year Filters
 const filterMonth = ref('All');
-const filterYear = ref('All');
+/**
+ * This year by default, not every year (Sean, 2026-10-02). Opened on "All
+ * years", every figure on this page added up every payment since 2024 -
+ * ₱8,222,900 against the anonymised copy of her ledger - and the landlady was
+ * surprised by it: she reads this page as "how is this year going". "All
+ * years" is one choice away in Filters, and the period is named in every
+ * figure's title. The property's year, not the viewer's (lib/propertyDate.ts).
+ */
+const THIS_YEAR = propertyToday().slice(0, 4);
+const filterYear = ref(THIS_YEAR);
 const viewMode = ref<'grouped' | 'flat'>('grouped');
 
 /**
@@ -516,7 +525,9 @@ const incomeFilters = computed<ToolbarFilter[]>(() => [
     options: (d) => clusterChipsFor(String(d.year), String(d.month)),
   },
   { key: 'month', label: 'Month', value: filterMonth.value, defaultValue: 'All', options: monthsList },
-  { key: 'year', label: 'Year', value: filterYear.value, defaultValue: 'All', options: yearOptions.value },
+  // Default this year (above), so Reset and Clear come back to it, and the
+  // summary line names "All years" when that is picked.
+  { key: 'year', label: 'Year', value: filterYear.value, defaultValue: THIS_YEAR, options: yearOptions.value },
 ]);
 function applyIncomeFilters(v: FilterDraft) {
   selectedCluster.value = String(v.cluster);
@@ -605,8 +616,21 @@ const collectedAltogether = computed(() => totalRent.value + totalWater.value);
  * What the figures below add up, in one plain line (Sean, 2026-10-01). On the
  * testing day the landlady saw "₱8,222,900" with no idea it was every payment
  * since 2024, and asked whether the Penthouse was in a cluster figure. The page
- * opens on All years / All months, so this names the period and the units.
+ * now opens on this year (Sean, 2026-10-02); this still names the period and
+ * the units, whichever year, or "All years", is picked.
  */
+/**
+ * The period every figure is for, short enough for a tile's title beside the
+ * figure: "2026", "September 2026", "all years" (Sean, 2026-10-02: the year
+ * labelled next to the figure, so this year's total is never read as all-time,
+ * or the other way round).
+ */
+const periodWord = computed(() => {
+  const m = filterMonth.value === 'All' ? '' : (monthsList.find((x) => x.val === filterMonth.value)?.label ?? '');
+  if (filterYear.value === 'All') return m ? `${m}, every year` : 'all years';
+  return m ? `${m} ${filterYear.value}` : filterYear.value;
+});
+
 const figuresScope = computed(() => {
   const y = filterYear.value;
   const m = monthsList.find((x) => x.val === filterMonth.value)?.label ?? '';
@@ -1112,7 +1136,7 @@ async function exportExcel() {
     -->
     <p v-if="!incomeRecordsFetchFailed" class="text-sm leading-6 text-ink-soft">{{ figuresScope }}</p>
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <OverviewTile title="Rent and water received" tone="night">
+      <OverviewTile :title="`Rent and water received, ${periodWord}`" tone="night">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
@@ -1133,14 +1157,14 @@ async function exportExcel() {
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Rent">
+      <OverviewTile :title="`Rent, ${periodWord}`">
         <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
         <template v-else>
           <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalRent) }}</p>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Water">
+      <OverviewTile :title="`Water, ${periodWord}`">
         <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
         <template v-else>
           <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalWater) }}</p>
@@ -1157,7 +1181,7 @@ async function exportExcel() {
            quoted here - repeating it would put the banned phrasing back into
            the repository, which is what the rule is for. See BR-035 in
            docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md. -->
-      <OverviewTile title="50% Share">
+      <OverviewTile :title="`50% Share, ${periodWord}`">
         <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
         <template v-else>
           <p class="tabular text-3xl font-semibold leading-none text-verify">{{ peso(totalShare) }}</p>
@@ -1176,7 +1200,7 @@ async function exportExcel() {
     -->
     <div v-if="rows.length > 0 && showMonthChart">
       <OverviewTile
-        :title="`Rent and water by month${filterYear !== 'All' ? `, ${filterYear}` : ''}`"
+        :title="`Rent and water by month, ${periodWord}`"
       >
         <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" />
       </OverviewTile>

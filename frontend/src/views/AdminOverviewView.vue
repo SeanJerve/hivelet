@@ -956,7 +956,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       </OverviewTile>
 
       <OverviewTile
-        :title="`Rent and water for ${MONTH_LONG[CURRENT_MONTH - 1]}`"
+        :title="`Rent and water for ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
         to="/admin/income"
         to-label="Open the income ledger"
         class="xl:col-span-4"
@@ -1088,7 +1088,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile title="Operating cash flow" to="/admin/expenses" to-label="Open the expense ledger" class="md:col-span-2 xl:col-span-6">
+      <OverviewTile :title="`Operating cash flow, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="md:col-span-2 xl:col-span-6">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded, so net figures cannot be worked out."
@@ -1184,7 +1184,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </table>
           </div>
           <p class="text-xs leading-5 text-ink-faint">
-            Personal costs (Main House, Other), not subtracted: {{ peso(livePersonalTotal) }} this year
+            Personal costs (Main House, Other), not subtracted: {{ peso(livePersonalTotal) }} in {{ CURRENT_YEAR }}
           </p>
         </template>
       </OverviewTile>
@@ -1234,8 +1234,12 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
     <!-- ================================================================== *
      * Archive year
      * ================================================================== -->
+    <!-- Every money tile names its year in its title (Sean, 2026-10-02: the
+         landlady was surprised by all-time sums elsewhere; here nothing was
+         all-time, but a figure should say which year it is without the reader
+         looking back up at the heading). The live year's tiles do the same. -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <OverviewTile tone="brand" title="Rent and water entered" class="xl:col-span-3">
+      <OverviewTile tone="brand" :title="`Rent and water entered, ${selectedArchiveYear}`" class="xl:col-span-3">
         <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
@@ -1245,7 +1249,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
       </OverviewTile>
 
-      <OverviewTile title="50% Share" class="xl:col-span-3">
+      <OverviewTile :title="`50% Share, ${selectedArchiveYear}`" class="xl:col-span-3">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualHalfOfRentShare) }}</p>
@@ -1256,7 +1260,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
       </OverviewTile>
 
-      <OverviewTile title="Operating expenses" to="/admin/expenses" to-label="Open the expense ledger" class="xl:col-span-3">
+      <OverviewTile :title="`Operating expenses, ${selectedArchiveYear}`" to="/admin/expenses" to-label="Open the expense ledger" class="xl:col-span-3">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualExpenseTotal) }}</p>
@@ -1267,7 +1271,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
       </OverviewTile>
 
-      <OverviewTile title="Net operating income" class="xl:col-span-3">
+      <OverviewTile :title="`Net operating income, ${selectedArchiveYear}`" class="xl:col-span-3">
         <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" @retry="refreshAllData" />
         <div v-else>
           <p
@@ -1305,7 +1309,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Rent and water by cluster" class="xl:col-span-4">
+      <OverviewTile :title="`Rent and water by cluster, ${selectedArchiveYear}`" class="xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <ul v-else class="flex flex-col gap-4">
           <li
@@ -1336,7 +1340,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </ul>
       </OverviewTile>
 
-      <OverviewTile title="Month by month" class="md:col-span-2 xl:col-span-12">
+      <OverviewTile :title="`Month by month, ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-12">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded, so net figures cannot be worked out."
