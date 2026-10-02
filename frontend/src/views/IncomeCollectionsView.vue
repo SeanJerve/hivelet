@@ -562,6 +562,12 @@ function applyIncomeFilters(v: FilterDraft) {
 }
 
 const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
+/**
+ * Half of Rent Amount, summed over Boarding House rows only. BR-035: a
+ * system-computed figure equal to half the row's Rent Amount, retained so the
+ * ledger reconciles with the historical spreadsheet. The "As a list" totals row.
+ */
+const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'Boarding House' ? (r.rent / 2) : 0), 0));
 const totalWater = computed(() => rows.value.reduce((s, r) => s + r.water, 0));
 /**
  * BR-038, matching the generated column exactly: Rent Amount + Water Payment.
