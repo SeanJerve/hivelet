@@ -33,6 +33,50 @@ thing did not work" is not.
 
 ## Open
 
+### B-96 — row-level security on the three correction-backup tables (2 Oct audit, S-2) · **OPEN, needs the Supabase connection**
+
+- **Blocked on:** the Supabase MCP connection failed in Claude's session on 2 Oct, so the live
+  catalogue could not be read and nothing was applied.
+- **What:** migrations 030, 031 and 032 created `rent_period_drift_backup_030`,
+  `copied_period_backup_031` and `date_paid_import_backup_032` in `public` without
+  `ENABLE ROW LEVEL SECURITY`; every other table has it. The website is not exposed by this (the
+  browser never holds a Supabase key), but Supabase's security advisor flags it and a panelist
+  who opens the dashboard will see it. `docs/AUDIT_2026-10-02_SECURITY_ACCESSIBILITY.md` S-2.
+- **What Sean needs to do:** `npm run backup`, then run the check:
+
+  ```sql
+  SELECT c.relname, c.relrowsecurity,
+         has_table_privilege('anon', c.oid, 'SELECT') AS anon_can_select
+  FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'public' AND c.relkind = 'r'
+  ORDER BY c.relrowsecurity, c.relname;
+  ```
+
+  If any row shows `relrowsecurity = false`, save this as
+  `database/migrations/076_rls_on_correction_backup_tables.sql` (check the folder for the next
+  number first) and apply it. It changes no data; the backend uses the service role, which RLS
+  does not restrict.
+
+  ```sql
+  -- 076: the three backup tables from 030-032 get RLS like every other table (audit 2026-10-02, S-2).
+  DO $$
+  DECLARE t text;
+  BEGIN
+    FOREACH t IN ARRAY ARRAY['rent_period_drift_backup_030','copied_period_backup_031','date_paid_import_backup_032'] LOOP
+      IF to_regclass('public.' || t) IS NOT NULL THEN
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+        EXECUTE format('REVOKE ALL ON public.%I FROM anon, authenticated', t);
+        RAISE NOTICE '076: RLS on public.%', t;
+      END IF;
+    END LOOP;
+  END $$;
+  ```
+
+- **How to know it worked:** the check query shows `relrowsecurity = true` and
+  `anon_can_select = false` on every row; Supabase → Advisors → Security has no "RLS disabled in
+  public" entry.
+- **Raised:** 2026-10-02 by Claude (security audit)
+
 ### B-95 — two small calls from the Download dialog (2 Oct) · **DONE 2026-10-02 (Claude decided, at Sean's word "go for what you recommend")**
 
 - **Decided:** a ledger's single month now saves as "Monthly Income March 2026 **only** - MI032026.xlsx"

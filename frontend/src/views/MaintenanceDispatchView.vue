@@ -3,6 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
+import { writesUnavailable } from '@/lib/offlineCache';
 import { 
   maintenanceTickets, 
   fetchMaintenanceTickets, 
@@ -711,7 +712,8 @@ function handleDeleteTicketPrompt() {
           type="submit"
           form="log-repair-form"
           class="pill-btn-brand"
-          :disabled="isSubmitting || logUnitOptions.length === 0"
+          :disabled="isSubmitting || writesUnavailable || logUnitOptions.length === 0"
+          :title="writesUnavailable ? 'Needs a connection' : undefined"
         >
           <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
           <Plus v-else class="size-4" aria-hidden="true" />
@@ -744,7 +746,8 @@ function handleDeleteTicketPrompt() {
             <button
               v-if="savedStatus !== 'In Progress' && savedStatus !== 'Resolved' && savedStatus !== 'Closed'"
               type="button"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || writesUnavailable"
+              :title="writesUnavailable ? 'Needs a connection' : undefined"
               @click="handleQuickDispatch"
               class="pill-btn pill-btn-compact"
             >
@@ -760,7 +763,8 @@ function handleDeleteTicketPrompt() {
             <button
               v-if="savedStatus !== 'Resolved' && savedStatus !== 'Closed'"
               type="button"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || writesUnavailable"
+              :title="writesUnavailable ? 'Needs a connection' : undefined"
               @click="handleQuickResolve"
               class="pill-btn-brand pill-btn-compact"
             >
@@ -902,7 +906,8 @@ function handleDeleteTicketPrompt() {
               <button
                 type="button"
                 @click="handleSendAdminComment"
-                :disabled="sendingAdminMessage || !newAdminMessage.trim()"
+                :disabled="sendingAdminMessage || writesUnavailable || !newAdminMessage.trim()"
+                :title="writesUnavailable ? 'Needs a connection' : undefined"
                 class="pill-btn-brand shrink-0"
               >
                 Send
@@ -928,13 +933,15 @@ function handleDeleteTicketPrompt() {
             <button
               type="button"
               @click="handleDeleteTicketPrompt"
+              :disabled="writesUnavailable"
+              :title="writesUnavailable ? 'Needs a connection' : undefined"
               class="pill-btn-danger-quiet ws-action-apart"
             >
               <Trash2 class="size-4" aria-hidden="true" />
               <span>Delete repair</span>
             </button>
             <button type="button" @click="isEditModalOpen = false" class="pill-btn">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
+            <button type="submit" :disabled="isSubmitting || writesUnavailable" :title="writesUnavailable ? 'Needs a connection' : undefined" class="pill-btn-brand">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <Check v-else class="size-4" aria-hidden="true" />
               <span>Save changes</span>

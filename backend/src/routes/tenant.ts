@@ -505,8 +505,11 @@ const ticketSchema = z.object({
           .string()
           .min(1)
           .refine(
-            (v) => /^https:\/\//i.test(v) || /^data:image\/[a-z0-9.+-]+;base64,/i.test(v),
-            'Attachment must be an https:// URL or a base64-encoded image.'
+            // A raster image only: an SVG is a document that can carry script, and
+            // the photo is shown as a link the administrator opens (audit
+            // 2026-10-02, S-5). shrinkPhoto sends JPEG; phones send JPEG or HEIC.
+            (v) => /^https:\/\//i.test(v) || /^data:image\/(?!svg)[a-z0-9.+-]+;base64,/i.test(v),
+            'Attachment must be an https:// URL or a base64-encoded photo (not SVG).'
           ),
         fileType: z.string().max(80).optional(),
       })
