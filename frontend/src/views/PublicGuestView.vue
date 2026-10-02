@@ -98,11 +98,7 @@ const FAQS = computed(() => [
   },
   {
     q: 'What payment methods does the boarding house accept?',
-    a: 'You can pay online with GCash through the portal, or hand the money to Michelle, who runs the boarding house, on site. Either way it is recorded against your unit and you can see it in your own account. Note: Hivelet is a capstone project still in development. Online GCash payments run on Adyen\'s test account, so no real money is charged yet. Pay your rent in person until online payment goes live.',
-  },
-  {
-    q: 'What are the curfew hours and security policies?',
-    a: 'The compound is gated, with a 10:00 PM curfew. Registered tenants have a key for coming home later than that.',
+    a: 'You can pay online with GCash through the portal, or pay in person on site. Either way it is recorded against your unit and you can see it in your own account. Note: Hivelet is a capstone project still in development. Online GCash payments run on Adyen\'s test account, so no real money is charged yet. Pay your rent in person until online payment goes live.',
   },
   {
     q: 'What do I need to move in?',
@@ -110,10 +106,6 @@ const FAQS = computed(() => [
       cheapestRent.value !== null
         ? `A valid government or student ID, the tenant registration form, and two months of money: one month of rent in advance, and one month as a deposit. Our cheapest unit is ₱${cheapestRent.value.toLocaleString('en-PH')} a month, so that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} to bring on the day; for any other unit it is twice that unit's rent. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.`
         : 'A valid government or student ID, the tenant registration form, and two months of money: one month of rent in advance, and one month as a deposit, so twice the monthly rent of the unit you take. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
-  },
-  {
-    q: 'Are visitors and guests allowed inside the rooms?',
-    a: 'Daytime visitors are welcome in the common receiving areas between 8:00 AM and 8:00 PM. Anyone staying overnight has to be registered with the landlady beforehand.',
   },
 ]);
 
