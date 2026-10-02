@@ -63,7 +63,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { peso } from '@/lib/canonicalUnits';
 import { CATEGORIES, resolveSlug, type CategoryKey } from '@/lib/unitCategories';
 import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
-import { LANDLADY, floorLabelFor, buildingNameFor } from '@/lib/systemState';
+import { floorLabelFor, buildingNameFor } from '@/lib/systemState';
 import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
 import { api } from '@/lib/api';
 import { rememberInquiry } from '@/lib/myInquiries';
@@ -1183,13 +1183,11 @@ async function submitInquiry() {
           Your message about unit {{ inquiryUnit.toUpperCase() }} is saved
         </h2>
         <p class="mt-4 max-w-md text-sm text-ink-soft leading-relaxed">
-          {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself.
-          <template v-if="inquiryConversation">She will reply on your inquiry page, and may also call
+          <template v-if="inquiryConversation">We will reply on your inquiry page, and may also call
             <span class="text-ink break-all">{{ inquirySentTo.phone }}</span>.</template>
-          <template v-else>She replies by phone or message to
+          <template v-else>We will reply by phone or message to
             <span class="text-ink break-all">{{ inquirySentTo.phone }}</span> or
             <span class="text-ink break-all">{{ inquirySentTo.email }}</span>.</template>
-          No automatic confirmation email or text is sent.
         </p>
         <InquiryConversationLink
           v-if="inquiryConversation"
@@ -1221,14 +1219,6 @@ async function submitInquiry() {
         >
           Ask about unit {{ inquiryUnit.toUpperCase() }}
         </h2>
-
-        <p class="mt-4 max-w-md text-xs text-ink-soft leading-relaxed">
-          {{ LANDLADY.name }}, who runs the boarding house, reads these herself and replies by phone or email.
-          Nothing is sent to you automatically. See the
-          <!-- A new tab, so reading the policy does not throw away a half-typed question. -->
-          <a href="/privacy" target="_blank" rel="noopener" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy<span class="sr-only"> (opens in a new tab)</span></a>
-          for what happens to this information.
-        </p>
 
         <div class="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2">
           <div class="sm:col-span-2">

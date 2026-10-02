@@ -31,7 +31,7 @@ async function copyLink() {
 <template>
   <div class="mt-6 max-w-xl border-l-2 border-brand pl-4">
     <p class="text-sm leading-relaxed text-ink">
-      Open your inquiry page any time to read her reply and write back.
+      Open your inquiry page any time to read the reply and write back.
     </p>
     <div class="mt-4 flex flex-wrap items-center gap-3">
       <RouterLink :to="`/inquiry#t=${encodeURIComponent(token)}`" class="pill-btn-brand">

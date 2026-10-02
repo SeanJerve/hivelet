@@ -70,10 +70,9 @@ function reload() {
         category page has always carried: an outage is not a full house, and a
         visitor who assumes otherwise simply leaves.
       -->
-      <!-- "Her" had no one to refer to until the footer line; she is named here now. -->
       <p class="mt-5 max-w-xl text-xs sm:text-sm text-ink-soft leading-relaxed">
         That does not mean nothing is vacant. The list is out of reach for the moment,
-        so please ask {{ LANDLADY.name }}, who runs the boarding house, directly.
+        so please call us directly.
       </p>
 
       <div class="mt-8 flex flex-wrap items-center gap-3">

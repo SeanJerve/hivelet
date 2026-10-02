@@ -52,9 +52,9 @@ const lastFromYou = computed(() => thread.value?.messages.at(-1)?.from === 'you'
 const statusLine = computed(() => {
   const s = thread.value?.inquiry.status;
   if (s === 'Converted') return 'You have moved in. Welcome to the boarding house.';
-  if (s === 'Closed') return `${LANDLADY.name} has closed this inquiry.`;
-  if (lastFromYou.value) return `Waiting for ${LANDLADY.name} to reply. Check back here.`;
-  return `${LANDLADY.name} has replied.`;
+  if (s === 'Closed') return 'This inquiry is closed.';
+  if (lastFromYou.value) return 'Waiting for a reply. Check back here.';
+  return 'You have a reply.';
 });
 
 const when = (iso: string) =>
@@ -249,7 +249,7 @@ watch(() => route.hash, syncWithAddress);
               :class="['max-w-[85%] rounded-tile border px-4 py-3', m.from === 'you' ? 'ml-auto border-brand-soft bg-brand-soft' : 'mr-auto border-line bg-surface']"
             >
               <p class="text-[0.7rem] text-ink-soft">
-                <span class="font-medium text-ink">{{ m.from === 'you' ? 'You' : m.name || LANDLADY.name }}</span>
+                <span class="font-medium text-ink">{{ m.from === 'you' ? 'You' : 'Boarding house' }}</span>
                 · {{ when(m.sentAt) }}
               </p>
               <p class="mt-1 whitespace-pre-line break-words text-sm leading-relaxed text-ink">{{ m.body }}</p>
@@ -264,7 +264,7 @@ watch(() => route.hash, syncWithAddress);
           </div>
 
           <form v-if="!closed" class="mt-8" novalidate @submit.prevent="sendReply">
-            <label for="thread-reply" class="block text-xs text-ink-faint">Write back to {{ LANDLADY.name }}</label>
+            <label for="thread-reply" class="block text-xs text-ink-faint">Write back</label>
             <textarea
               id="thread-reply"
               v-model="reply"
@@ -296,7 +296,7 @@ watch(() => route.hash, syncWithAddress);
             Your inquiries
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-            Enter your reference code and phone number to read {{ LANDLADY.name }}'s reply.
+            Enter your reference code and phone number to read the reply.
           </p>
 
           <p v-if="loadError && !saved.length && !lookupError" class="mt-6 text-sm text-overdue" role="alert">{{ loadError }}</p>

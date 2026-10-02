@@ -139,8 +139,7 @@ async function submitInquiry() {
     if (!defaultRoom) {
       formError.value =
         'Your message was not sent: every unit is taken or reserved at the moment, so none ' +
-        `is open for inquiries. Please try again in a few days, or call ${LANDLADY.name} ` +
-        `on ${LANDLADY.phone}.`;
+        `is open for inquiries. Please try again in a few days, or call us on ${LANDLADY.phone}.`;
       return;
     }
 
@@ -308,17 +307,15 @@ async function submitInquiry() {
             Your inquiry is sent
           </h2>
           <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
-            {{ LANDLADY.name }}, who runs the boarding house, reads every inquiry herself.
-            <template v-if="conversation">She will reply on your inquiry page, and may also call
+            <template v-if="conversation">We will reply on your inquiry page, and may also call
               <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
-            <template v-else>She replies by phone or message to
+            <template v-else>We will reply by phone or message to
               <span class="text-ink break-all">{{ sentTo.phone }}</span> or
               <span class="text-ink break-all">{{ sentTo.email }}</span>.</template>
-            No automatic confirmation email or text is sent.
           </p>
           <InquiryConversationLink v-if="conversation" :token="conversation.token" :reference-code="conversation.referenceCode" />
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-            If it is urgent, call her on
+            If it is urgent, call
             <a
               :href="`tel:${LANDLADY.phone}`"
               class="press text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
@@ -426,7 +423,7 @@ async function submitInquiry() {
                 2000 characters - see the validation above), and a one-line
                 box that scrolls its own text sideways does not invite one.
                 Full width for the same reason: this is the field that
-                decides whether Michelle has anything to answer.
+                decides whether there is anything to answer.
               -->
               <textarea
                 id="iq-msg"
@@ -444,25 +441,6 @@ async function submitInquiry() {
               </p>
             </div>
           </div>
-
-          <!--
-            Shortened to the one fact that changes what a reader does with this
-            form: no automatic confirmation goes out, so leave a real way to be
-            reached. The fuller account of where this is stored and who reads
-            it now lives on its own page (B-50 in BLOCKED_FOR_SEAN.md), linked
-            by name rather than just mentioned.
-          -->
-          <!-- Both contact fields are required, so "include a number or address" asked for less than the form does. -->
-          <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
-            {{ LANDLADY.name }}, who runs the boarding house, replies on your inquiry page, which
-            you can open once you send it. Nothing is sent to you by text or email. See the
-            <RouterLink to="/privacy" class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy</RouterLink>
-            for what happens to this information.
-          </p>
-          <p class="mt-3 max-w-xl text-xs leading-relaxed text-ink-soft">
-            Already sent one?
-            <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Read the reply</RouterLink>
-          </p>
 
           <!--
             A failed send says so here, beside the button that retries it, and
@@ -496,6 +474,11 @@ async function submitInquiry() {
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
             <span>{{ isSubmitting ? 'Sending…' : 'Send inquiry' }}</span>
           </button>
+
+          <p class="mt-4 max-w-xl text-xs leading-relaxed text-ink-soft">
+            Already sent one?
+            <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Read the reply</RouterLink>
+          </p>
         </form>
       </div>
 
