@@ -7,6 +7,7 @@ import { currentRole, handleAuthFailure, MOVED_OUT_FLAG } from './lib/authStore'
 import { warmRoutes } from './lib/warmRoutes'
 import { installStaleVersionRecovery } from './lib/staleVersion'
 import { installTheme } from './lib/theme'
+import { CATEGORIES } from './lib/unitCategories'
 import './index.css'
 
 // An open page that outlived a deploy loads the new version on its next
@@ -82,7 +83,35 @@ setAuthFailureHandler((error) => {
  * Boarding House - Fe Galang Da Silva Boarding House, Legazpi City · Hivelet").
  * Per-page titles ("Monthly Income · Hivelet") were removed with it; each page
  * still announces itself through its own <h1>.
+ *
+ * 2026-10-02: the per-page titles are back in a browser tab only. The reason
+ * above is the installed app's window, which still reads "Hivelet" alone; a
+ * browser tab needs the page's name so tabs, history and bookmarks can be told
+ * apart (WCAG 2.4.2), and Chapter 4 reports the 26 Sep fix "each page has one
+ * name, used in the menu, the browser tab and its own heading". The names are
+ * the menu's and the <h1>'s, short, with no business name in them.
  */
+const PAGE_TITLES: Record<string, string> = {
+  Inquire: 'Send an inquiry',
+  InquiryThread: 'Your inquiries',
+  PrivacyPolicy: 'Privacy policy',
+  Terms: 'Terms of use',
+  Login: 'Sign in',
+  NotFound: 'Page not found',
+  TenantOverview: 'Overview',
+  TenantPayments: 'Payments and billing',
+  TenantTickets: 'Repairs',
+  TenantProfile: 'My details',
+  AdminOverview: 'Overview',
+  RoomDirectory: 'Rooms and rates',
+  TenantManagement: 'Tenants',
+  IncomeCollections: 'Monthly Income',
+  ExpensesLedger: 'Monthly Expenses',
+  MaintenanceDispatch: 'Repairs',
+  Inquiries: 'Inquiries',
+}
+const installedApp = () =>
+  window.matchMedia?.('(display-mode: standalone)').matches || (navigator as { standalone?: boolean }).standalone === true
 
 /*
  * What a search result shows under each public page's title. index.html carries
@@ -114,7 +143,9 @@ router.afterEach((to) => {
   const slug = typeof to.params.categorySlug === 'string' ? to.params.categorySlug : ''
   // "one-bedroom" -> "One-bedroom units", the category's own spelling on the page.
   const category = slug ? slug.charAt(0).toUpperCase() + slug.slice(1) + ' units' : ''
-  document.title = 'Hivelet'
+  const categoryTitle = CATEGORIES.find((c) => c.slug === slug)?.title
+  const pageName = categoryTitle ? `${categoryTitle} units` : PAGE_TITLES[String(to.name)]
+  document.title = pageName && !installedApp() ? `${pageName} · Hivelet` : 'Hivelet'
 
   const categoryDescription = category
     ? `${category} at the Fe Galang Da Silva Boarding House in Legazpi City: their rates, which are vacant, and the floor plan of each.`
