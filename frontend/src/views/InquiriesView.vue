@@ -521,17 +521,35 @@ async function handleSendReply() {
         class="ws-reveal flex min-h-[550px] scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile xl:col-span-8"
       >
         <div class="border-b border-line p-5 sm:p-6">
+          <!-- Delete sits top right, level with the name, at every width (Sean, 2026-10-02). -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pt-2">
+              <h2 class="min-w-0 break-words text-lg font-semibold tracking-tight text-ink">
+                {{ activeInquiry.name }}
+              </h2>
+              <span
+                v-if="activeInquiry.referenceCode"
+                class="tabular text-xs tracking-[0.08em] text-ink-faint"
+              >{{ activeInquiry.referenceCode }}</span>
+              <!-- Was a hardcoded "Active Prospect" on every lead, whatever its status. -->
+              <StatusPill :tone="statusTone(activeInquiry.status)">
+                {{ statusWord(activeInquiry.status) }}
+              </StatusPill>
+            </div>
+            <button
+              type="button"
+              class="icon-btn-plain text-overdue"
+              aria-label="Delete inquiry"
+              title="Delete inquiry"
+              :disabled="isSubmitting || writesUnavailable"
+              @click="handleDeleteInquiry"
+            >
+              <Trash2 class="size-4" aria-hidden="true" />
+            </button>
+          </div>
+
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <h2 class="min-w-0 break-words text-lg font-semibold tracking-tight text-ink">
-                  {{ activeInquiry.name }}
-                </h2>
-                <!-- Was a hardcoded "Active Prospect" on every lead, whatever its status. -->
-                <StatusPill :tone="statusTone(activeInquiry.status)">
-                  {{ statusWord(activeInquiry.status) }}
-                </StatusPill>
-              </div>
 
               <!--
                 `min-h-[2.75rem]`, the height every other control in the
@@ -604,17 +622,6 @@ async function handleSendReply() {
                   <span>Move them in</span>
                 </button>
               </template>
-              <!-- Delete, on any inquiry, open or finished (Sean, 2026-10-02). -->
-              <button
-                type="button"
-                class="pill-btn text-overdue"
-                :disabled="isSubmitting || writesUnavailable"
-                :title="writesUnavailable ? 'Needs a connection' : undefined"
-                @click="handleDeleteInquiry"
-              >
-                <Trash2 class="size-3.5" aria-hidden="true" />
-                <span>Delete</span>
-              </button>
               <!-- A finished inquiry has no other actions. Its status already shows beside
                    the name, so it is not repeated here. -->
             </div>
@@ -658,53 +665,36 @@ async function handleSendReply() {
           </div>
         </div>
 
-        <!-- Writing back -->
-        <form @submit.prevent="handleSendReply" class="space-y-3 border-t border-line p-5 sm:p-6">
-          <div class="ws-field">
-            <label for="reply">Your answer</label>
+        <!-- Writing back. The send button sits inside the field, as in a chat app
+             (Sean, 2026-10-02). Nothing goes out by text or email: the reply is
+             saved to `inquiry_messages`, and since 065 the visitor reads it on
+             their inquiry page. -->
+        <form @submit.prevent="handleSendReply" class="space-y-2 border-t border-line p-4 sm:p-5">
+          <label for="reply" class="sr-only">Your answer</label>
+          <div class="relative">
             <textarea
               id="reply"
               v-model="replyMessage"
-              rows="3"
-              placeholder="Opo, vacant pa po ang unit. Pwede po kayong mag-viewing bukas."
-              class="ws-textarea w-full"
+              rows="1"
+              placeholder="Write a reply"
+              class="ws-textarea block min-h-14 max-h-40 w-full resize-none rounded-[1.75rem] py-4 pl-5 pr-16 [field-sizing:content]"
               required
             ></textarea>
-          </div>
-
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <!--
-              This said replies were "dispatched directly via SMS / Email". They
-              are not: the message is written to `inquiry_messages` and nothing
-              in the system sends anything to anybody. The landlady was being
-              told her answer had gone out when it had not left the building.
-            -->
-            <!--
-              065: an enquiry sent since 30 Sep 2026 comes with a private page the
-              visitor opens to read this and write back, so for those the reply
-              does reach them - in Hivelet, not by SMS or email. Older ones do not.
-            -->
-            <p v-if="activeInquiry.hasConversation" class="ws-hint max-w-md">
-              {{ activeInquiry.name }} can read this on their inquiry page and answer there;
-              the answer appears here<template v-if="activeInquiry.referenceCode"> (reference {{ activeInquiry.referenceCode }})</template>.
-              No text or email is sent, so call if it is urgent.
-            </p>
-            <p v-else class="ws-hint max-w-md">
-              Saved here as a record only. This inquiry came before replies could be read
-              online, so call or text {{ activeInquiry.name }} too.
-            </p>
-
             <button
               type="submit"
+              aria-label="Send reply"
               :disabled="isSubmitting || writesUnavailable || !replyMessage.trim()"
-              :title="writesUnavailable ? 'Needs a connection' : undefined"
-              class="pill-btn-brand shrink-0"
+              :title="writesUnavailable ? 'Needs a connection' : 'Send reply'"
+              class="pill-btn-brand absolute bottom-1.5 right-1.5 size-11 px-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
+              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <Send v-else class="size-4" aria-hidden="true" />
-              <span>Save reply</span>
             </button>
           </div>
+          <!-- Sent before 30 Sep 2026: no inquiry page, so this reply never reaches them. -->
+          <p v-if="!activeInquiry.hasConversation" class="ws-hint px-1">
+            They can't read replies online. Call or text them too.
+          </p>
         </form>
       </div>
 
