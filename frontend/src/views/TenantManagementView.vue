@@ -1381,11 +1381,9 @@ async function handleOnboard() {
             Sean, 2026-09-30: the tenant owns their email and phone (and password)
             and changes them from My details; the landlady owns their name. So
             neither is editable below, and PATCH /admin/tenants/:id refuses a change
-            to either. Reset password is still hers.
+            to either. Reset password is still hers. The line saying so came out
+            (Loyd, 2026-10-03): the fields not being there says it.
           -->
-          <p v-if="editModalTenant.role === 'tenant'" class="ws-hint mt-4">
-            The tenant keeps their email and phone number up to date from their own My details page.
-          </p>
         </div>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -1407,8 +1405,7 @@ async function handleOnboard() {
               -->
               <PillSelect id="edit-unit" v-model="editUnitCode" :options="editUnitOptions" aria-label="Unit" widthClass="w-full" />
               <p v-if="editUnitCode === '—'" class="ws-hint">
-                This tenant holds no unit. Pick one to assign them, or save to change the
-                other details and leave them unassigned.
+                No unit yet. Pick one, or save without one.
               </p>
             </div>
 
@@ -1452,11 +1449,12 @@ async function handleOnboard() {
 
           <!-- The two record actions are a row of their own, above the buttons that
                stay on screen: pinned with Cancel and Save they were three rows, a
-               third of a phone's height (Loyd, 2026-10-03). -->
-          <div class="flex flex-wrap gap-2">
+               third of a phone's height (Loyd, 2026-10-03). All four are one size:
+               halves on a phone like Cancel and Save, 11rem each from 640px. -->
+          <div class="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
             <button
               type="button"
-              class="pill-btn-danger-quiet"
+              class="pill-btn-danger-quiet sm:w-44"
               @click="openVacateFromModal(editModalTenant)"
             >
               <LogOut class="size-4" aria-hidden="true" />
@@ -1465,7 +1463,7 @@ async function handleOnboard() {
             <button
               v-if="editModalTenant.role === 'tenant' && editModalTenant.status !== 'vacated'"
               type="button"
-              class="pill-btn"
+              class="pill-btn sm:w-44"
               @click="openResetFromModal(editModalTenant)"
             >
               <KeyRound class="size-4" aria-hidden="true" />
@@ -1474,8 +1472,8 @@ async function handleOnboard() {
           </div>
 
           <div class="ws-actions border-t border-line pt-5">
-            <button type="button" class="pill-btn" @click="editModalTenant = null">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
+            <button type="button" class="pill-btn sm:w-44" @click="editModalTenant = null">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand sm:w-44">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <Check v-else class="size-4" aria-hidden="true" />
               <span>Save changes</span>
@@ -1494,11 +1492,7 @@ async function handleOnboard() {
     >
       <p class="text-sm leading-6 text-ink-soft">
         <strong class="text-ink">{{ resetModalTenant.name }}</strong> gets a new one-time password, shown
-        to you once on the next screen. Give it to them in person.
-      </p>
-      <p class="text-sm leading-6 text-ink-soft">
-        Their old password stops working now, and any phone they are signed in on will ask them to sign
-        in again. They choose their own password the first time they use the new one.
+        once on the next screen. Their old one stops working now.
       </p>
     </ConfirmDialog>
 
@@ -1531,13 +1525,11 @@ async function handleOnboard() {
       @confirm="confirmVacate"
     >
       <p class="text-sm leading-6 text-ink-soft">
-        <strong class="text-ink">{{ vacateModalTenant.name }}</strong> can no longer use the tenant portal,
-        starting now, even if they are signed in. Unit
+        <strong class="text-ink">{{ vacateModalTenant.name }}</strong> loses access to the portal now, and unit
         <strong class="text-ink">{{ vacateModalTenant.unitCode }}</strong> becomes free to let.
       </p>
       <p class="text-sm leading-6 text-ink-soft">
-        <strong class="text-ink">Their records stay.</strong> Every receipt, payment and repair request stays in
-        the ledger. To give them access again, move them in again.
+        Their receipts, payments and repair requests stay in the ledger.
       </p>
     </ConfirmDialog>
 
@@ -1581,10 +1573,7 @@ async function handleOnboard() {
             the system issues a login ID and a one-time password, and the tenant gives
             their own email, phone and password at first sign-in. The name is hers.
           -->
-          <p class="ws-hint col-span-2">
-            They get a login ID and a one-time password, and add their own email and phone the first
-            time they sign in.
-          </p>
+          <p class="ws-hint col-span-2">They get a login ID and a one-time password.</p>
           <div class="ws-field">
             <label for="new-unit">Unit</label>
             <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" aria-label="Unit" placeholder="Choose a unit" widthClass="w-full" />
@@ -1618,7 +1607,6 @@ async function handleOnboard() {
               class="ws-input w-full"
               required
             />
-            <p class="ws-hint">One month's rent unless agreed otherwise.</p>
           </div>
           <div class="ws-field">
             <label for="new-move-in">Move-in date</label>
@@ -1633,7 +1621,6 @@ async function handleOnboard() {
               class="ws-input w-full"
               required
             />
-            <p class="ws-hint">The date their year is counted from.</p>
           </div>
           <div class="ws-field">
             <label for="new-sharing">Sharing the unit</label>
@@ -1704,9 +1691,7 @@ async function handleOnboard() {
       @close="closeCredentialsReveal"
     >
       <p class="text-sm leading-6 text-ink-soft">
-        Write both down now and give them to {{ onboardedCredentials.name }} in person. The password
-        is shown only this once. When they first sign in they choose their own password and add their
-        own email and phone number.
+        Give both to {{ onboardedCredentials.name }} in person. The password is shown only this once.
       </p>
 
       <div v-if="onboardedCredentials.loginId" class="flex flex-col gap-1">
