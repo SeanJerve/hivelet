@@ -527,9 +527,16 @@ for (const year of years) {
   console.log(`  ${twins ? 'OK  ' : 'FAIL'}  the name rule is one file in two places (frontend lib, backend utils)`);
   if (!twins) console.log('          copy frontend/src/lib/tenantHistory.ts over backend/src/utils/tenantHistory.ts');
 
+  // The names (Loyd, 2026-10-03): the period alone, no reference, no "only";
+  // this year's file is named for the year; everything for the years it spans.
   const named = [
-    [reportFileName('tenants', 2024), 'Tenant History 2024 - TH2024.xlsx'],
-    [reportFileName('tenants', 2025, '2026-09-30', 6), 'Tenant History June 2025 - TH062025.xlsx'],
+    [reportFileName('tenants', 2024), 'Tenant History 2024.xlsx'],
+    [reportFileName('tenants', 2025, '2026-09-30', 6), 'Tenant History June 2025.xlsx'],
+    [reportFileName('income', 2026, '2026-10-03', 8), 'Monthly Income August 2026.xlsx'],
+    [reportFileName('income', 2026, '2026-10-03'), 'Monthly Income 2026.xlsx'],
+    [reportFileName('expenses', 2025, '2026-10-03'), 'Monthly Expenses 2025.xlsx'],
+    [reportFileName('income', 'all', '2026-10-03', null, [2024, 2026, 2025]), 'Monthly Income 2024-2026.xlsx'],
+    [reportFileName('expenses', 'all', '2026-10-03', null, []), 'Monthly Expenses, all records.xlsx'],
   ];
   for (const [got, want] of named) {
     const ok = got === want;

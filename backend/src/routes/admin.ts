@@ -27,7 +27,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { likeLiteral } from '../utils/likeLiteral.js';
 import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
-import { attachmentHeader } from '../utils/reportFileName.js';
+import { attachmentHeader, yearsInSheets } from '../utils/reportFileName.js';
 import { parseReportScope, scopeAudit, scopeName } from '../utils/reportScope.js';
 import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
 import { generateTemporaryPassword } from '../utils/generateTemporaryPassword.js';
@@ -2435,7 +2435,7 @@ router.get(
     );
     res.setHeader(
       'Content-Disposition',
-      attachmentHeader('income', name.scope, name.month)
+      attachmentHeader('income', name.scope, name.month, yearsInSheets(workbook.worksheets.map((w) => w.name)))
     );
 
     await auditFromRequest(req, {
@@ -2479,7 +2479,7 @@ router.get(
     );
     res.setHeader(
       'Content-Disposition',
-      attachmentHeader('expenses', name.scope, name.month)
+      attachmentHeader('expenses', name.scope, name.month, yearsInSheets(workbook.worksheets.map((w) => w.name)))
     );
 
     await auditFromRequest(req, {
@@ -2522,7 +2522,7 @@ router.get(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     );
-    res.setHeader('Content-Disposition', attachmentHeader('tenants', name.scope, name.month));
+    res.setHeader('Content-Disposition', attachmentHeader('tenants', name.scope, name.month, yearsInSheets(workbook.worksheets.map((w) => w.name))));
 
     await auditFromRequest(req, {
       action: 'LEDGER_EXPORT',

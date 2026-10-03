@@ -73,7 +73,7 @@ const scope = computed<DownloadScope>(() => {
 /** The name the file will be saved under, so the choice reads back before she presses. */
 const fileName = computed(() => {
   const s = scope.value;
-  if (s.kind === 'all') return reportFileName(props.kind, 'all');
+  if (s.kind === 'all') return reportFileName(props.kind, 'all', propertyToday(), null, props.years);
   return reportFileName(props.kind, s.year, propertyToday(), s.kind === 'month' ? s.month : null);
 });
 
@@ -100,7 +100,7 @@ async function download() {
   error.value = '';
   controller = new AbortController();
   try {
-    await downloadReport(props.kind, scope.value, { signal: controller.signal });
+    await downloadReport(props.kind, scope.value, { signal: controller.signal, years: props.years });
     emit('close');
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') return;

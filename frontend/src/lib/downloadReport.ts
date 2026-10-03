@@ -40,52 +40,39 @@ const PATH: Record<ReportKind, string> = {
 };
 
 /**
- * The name a downloaded workbook is saved under (Sean, 2026-09-29): what it is,
- * the month it is current to, and a reference of the report's initials, month
- * and year - "Monthly Income September 2026 - MI092026".
- *
- * A ledger for the current year runs to this month, so it carries this month. A
- * past year is complete, and no one month describes it, so it is named for the
- * year alone - "Monthly Income 2025 - MI2025". The month is the property's
- * (lib/propertyDate.ts), not the viewer's clock. The server names its
- * attachment the same way (backend/src/utils/reportFileName.ts), so the two agree.
- *
- * One month of any report is named for that month - "Monthly Income March 2026
- * - MI032026" - and everything is "Monthly Income All Years - MIALL" (Sean,
- * 2026-10-02, the Download dialog).
+ * The name a downloaded workbook is saved under: what it is and the period it
+ * holds (Loyd, 2026-10-03) - "Monthly Income August 2026", "Monthly Income
+ * 2026", and for everything the years it spans, "Monthly Income 2024-2026".
+ * No reference after a dash, no "only", and this year's file is named for the
+ * year, not this month. The server names its attachment the same way
+ * (backend/src/utils/reportFileName.ts), so the two agree; change one, change both.
  */
-const NAME: Record<ReportKind, { title: string; code: string }> = {
-  income: { title: 'Monthly Income', code: 'MI' },
-  expenses: { title: 'Monthly Expenses', code: 'ME' },
-  tenants: { title: 'Tenant History', code: 'TH' },
+const NAME: Record<ReportKind, { title: string }> = {
+  income: { title: 'Monthly Income' },
+  expenses: { title: 'Monthly Expenses' },
+  tenants: { title: 'Tenant History' },
 };
 
 const monthNameOf = (year: number, month: number) =>
   new Date(Date.UTC(year, month - 1, 1)).toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });
 
-/**
- * The tenant history is named for the period chosen, not today's month,
- * because that is what it holds: "Tenant History 2024 - TH2024", or "Tenant
- * History June 2025 - TH062025" for one month (`month`).
- */
 export function reportFileName(
   kind: ReportKind,
   scope: string | number,
-  today = propertyToday(),
-  month: number | null = null
+  _today = propertyToday(),
+  month: number | null = null,
+  years: number[] = []
 ): string {
-  const [year, thisMonth] = today.split('-');
-  const { title, code } = NAME[kind];
-  if (scope === 'all') return `${title} All Years - ${code}ALL.xlsx`;
-  if (month) {
-    const mm = String(month).padStart(2, '0');
-    // "only" on a ledger's month: see the server's twin (backend/src/utils/reportFileName.ts).
-    const only = kind === 'tenants' ? '' : ' only';
-    return `${title} ${monthNameOf(Number(scope), month)} ${scope}${only} - ${code}${mm}${scope}.xlsx`;
+  const { title } = NAME[kind];
+  if (scope === 'all') {
+    const held = years.filter((y) => Number.isInteger(y));
+    if (!held.length) return `${title}, all records.xlsx`;
+    const first = Math.min(...held);
+    const last = Math.max(...held);
+    return first === last ? `${title} ${first}.xlsx` : `${title} ${first}-${last}.xlsx`;
   }
-  if (kind === 'tenants') return `${title} ${scope} - ${code}${scope}.xlsx`;
-  if (String(scope) !== year) return `${title} ${scope} - ${code}${scope}.xlsx`;
-  return `${title} ${monthNameOf(Number(year), Number(thisMonth))} ${year} - ${code}${thisMonth}${year}.xlsx`;
+  if (month) return `${title} ${monthNameOf(Number(scope), month)} ${scope}.xlsx`;
+  return `${title} ${scope}.xlsx`;
 }
 
 /** The query the server reads, from a scope: `scope=month&year=2026&month=3`. */
@@ -106,7 +93,7 @@ export function scopeQuery(scope: DownloadScope): URLSearchParams {
 export async function downloadReport(
   kind: ReportKind,
   scope: DownloadScope,
-  options: { signal?: AbortSignal } = {}
+  options: { signal?: AbortSignal; years?: number[] } = {}
 ): Promise<void> {
   let res: Response;
   try {
@@ -123,7 +110,7 @@ export async function downloadReport(
   const blob = await res.blob();
   const fileName =
     scope.kind === 'all'
-      ? reportFileName(kind, 'all')
+      ? reportFileName(kind, 'all', propertyToday(), null, options.years)
       : reportFileName(kind, scope.year, propertyToday(), scope.kind === 'month' ? scope.month : null);
 
   /*
