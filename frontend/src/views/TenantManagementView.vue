@@ -8,6 +8,7 @@ import TenantHistory from '@/components/tenants/TenantHistory.vue';
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
+import { afterArrival } from '@/lib/afterArrival';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { copyText } from '@/lib/copyText';
 import { EMAIL_NOT_SET } from '@/lib/contactDetails';
@@ -326,9 +327,33 @@ async function fetchTenants() {
   }
 }
 
+/**
+ * True while the move-in dialog is open because Overview's "Move someone
+ * in/out" opened it, so the dialog can point the move-out half back at the list.
+ */
+const openedFromQuickAction = ref(false);
+
+/**
+ * Overview's "Move someone in/out", the way Record payment and Record expense
+ * open theirs: the parameter comes out of the address, the list arrives, then
+ * the dialog (lib/afterArrival.ts). Not offline: the page's own button is
+ * disabled then too, because moving in needs the server.
+ */
+function openMoveInFromQuery(loading: Promise<unknown>) {
+  if (route.query.openMoveIn !== '1') return;
+  const { openMoveIn, ...keep } = route.query;
+  void router.replace({ query: keep });
+  afterArrival(loading).then(() => {
+    if (writesUnavailable.value || isOnboardModalOpen.value) return;
+    openedFromQuickAction.value = true;
+    isOnboardModalOpen.value = true;
+  });
+}
+
 onMounted(() => {
-  fetchTenants();
+  const loading = fetchTenants();
   checkInquiryConversion();
+  openMoveInFromQuery(loading);
   // The Year filter lists the years her receipts cover (TenantHistory).
   if (incomeRecords.length === 0) fetchIncomeRecords();
 });
@@ -389,6 +414,7 @@ watch(() => route.query.convertInquiryId, () => {
  * SECOND conversion, not this first wrong one.
  */
 watch(isOnboardModalOpen, (open) => {
+  if (!open) openedFromQuickAction.value = false;
   if (open || !route.query.convertInquiryId) return;
   const { convertInquiryId, name, phone, email, unit, ...keep } = route.query;
   void router.replace({ query: keep });
@@ -1526,6 +1552,14 @@ async function handleOnboard() {
           to share a row with the deposit and their phone sat alone below it.
         -->
         <form @submit.prevent="handleOnboard" class="grid gap-5 sm:grid-cols-2">
+          <p v-if="openedFromQuickAction" class="ws-hint sm:col-span-2">
+            Moving someone out?
+            <button
+              type="button"
+              class="press font-semibold text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+              @click="isOnboardModalOpen = false"
+            >Choose them from the list</button>
+          </p>
           <div class="ws-field sm:col-span-2">
             <label for="new-name">Full name</label>
             <input

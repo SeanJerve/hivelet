@@ -220,14 +220,15 @@ function chooseYear(year: string) {
  * places. The header shows them reversed, the primary last at the right edge.
  *
  * Move someone in/out is as much her regular work as a receipt (Sean,
- * 2026-09-30). One action, to the Tenants page, because both start there:
- * "Move someone in" is at its top, and moving out needs the list to choose who
- * (Edit > Move them out).
+ * 2026-09-30). One action, to the Tenants page, because both start there.
+ * Like the other two it opens its dialog on arrival, "Move someone in"
+ * (Loyd, 2026-10-03); moving out needs the list to choose who (Edit > Move
+ * them out), and that dialog says so in one line.
  */
 const quickActions: QuickAction[] = [
   { to: '/admin/income?openPayment=1', label: 'Record payment', icon: Plus, primary: true },
   { to: '/admin/expenses?openExpense=1', label: 'Record expense', icon: ReceiptText },
-  { to: '/admin/tenants', label: 'Move someone in/out', icon: DoorOpen },
+  { to: '/admin/tenants?openMoveIn=1', label: 'Move someone in/out', icon: DoorOpen },
 ];
 const headerActions = [...quickActions].reverse();
 
