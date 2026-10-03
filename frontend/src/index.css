@@ -2268,7 +2268,11 @@ html:has(> body[style*='overflow: hidden']) {
      panel's actual bottom edge instead of 20px above it. */
   bottom: calc(-1 * var(--ws-modal-pad));
   z-index: 2;
-  margin: auto calc(-1 * var(--ws-modal-pad)) calc(-1 * var(--ws-modal-pad));
+  /* Sides and bottom only: the row keeps the top margin its form gives it
+     (`mt-4`), which `auto` here set to 0 in a block form, so Add another
+     expense sat flush against the row (Loyd, 2026-10-03). */
+  margin-inline: calc(-1 * var(--ws-modal-pad));
+  margin-bottom: calc(-1 * var(--ws-modal-pad));
   padding: 0.75rem var(--ws-modal-pad) max(var(--ws-modal-pad), env(safe-area-inset-bottom));
   background-color: var(--tile);
   border-top: 1px solid var(--line);

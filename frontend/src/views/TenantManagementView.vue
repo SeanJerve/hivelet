@@ -1667,7 +1667,7 @@ async function handleOnboard() {
             <input
               id="new-emerg-phone"
               v-model="newEmergPhone"
-              placeholder="0928-000-0000"
+              placeholder="09280000000"
               class="ws-input w-full"
             />
           </div>
