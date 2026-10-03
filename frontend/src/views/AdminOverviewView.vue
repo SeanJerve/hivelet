@@ -1655,7 +1655,6 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Tenant</th>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Rent for</th>
                       <th scope="col" class="px-4 py-3 text-right font-medium">Rent</th>
-                      <th scope="col" class="px-4 py-3 text-right font-medium">50% Share</th>
                       <th scope="col" class="px-4 py-3 text-right font-medium">Water</th>
                       <th scope="col" class="px-4 py-3 text-right font-medium">Total remitted</th>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Invoice no.</th>
@@ -1673,7 +1672,6 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                       <td>{{ r.contact }}</td>
                       <td class="text-xs text-ink-soft">{{ r.rentFor }}</td>
                       <td class="num text-ink-soft">{{ peso(r.rent, 2) }}</td>
-                      <td class="num text-ink-soft">{{ peso(r.fiftyPercentShare || 0, 2) }}</td>
                       <td class="num text-ink-soft">{{ peso(r.water, 2) }}</td>
                       <td class="num font-semibold">{{ peso(r.totalRemitted || r.rent, 2) }}</td>
                       <td class="text-xs text-ink-soft">{{ r.invoice }}</td>

@@ -567,7 +567,6 @@ const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
  * system-computed figure equal to half the row's Rent Amount, retained so the
  * ledger reconciles with the historical spreadsheet. The "As a list" totals row.
  */
-const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'Boarding House' ? (r.rent / 2) : 0), 0));
 const totalWater = computed(() => rows.value.reduce((s, r) => s + r.water, 0));
 /**
  * BR-038, matching the generated column exactly: Rent Amount + Water Payment.
@@ -674,7 +673,8 @@ const monthRent = computed(() => monthRows.value.reduce((s, r) => s + r.rent, 0)
 /** Nothing to show (not a failed load): sent to the end on a phone. */
 const receivedIsEmpty = computed(() => !incomeRecordsFetchFailed.value && monthRent.value + monthWater.value === 0);
 const monthWater = computed(() => monthRows.value.reduce((s, r) => s + r.water, 0));
-// BR-035: half of each Boarding House row's Rent Amount, as `totalShare`.
+// BR-035: a system-computed figure, half of each Boarding House row's Rent Amount.
+// Shown only here, as the month's total on the Received tile (Loyd, 2026-10-03).
 const monthShare = computed(() => monthRows.value.reduce((s, r) => s + (r.cluster === 'Boarding House' ? r.rent / 2 : 0), 0));
 
 /** Where the period's rent and water came from, by cluster: a true part-to-whole, like Expenses by area. */
@@ -1569,13 +1569,6 @@ const isDownloadOpen = ref(false);
               <StatusPill tone="neutral">
                 {{ group.records.length }} {{ group.records.length === 1 ? 'entry' : 'entries' }}
               </StatusPill>
-              <StatusPill
-                v-if="group.hasShareColumn"
-                tone="verify"
-                title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet."
-              >
-                With 50% Share
-              </StatusPill>
             </span>
           </button>
         </h2>
@@ -1603,10 +1596,11 @@ const isDownloadOpen = ref(false);
                 <th scope="col">Who</th>
                 <th scope="col" class="num">Rent</th>
                 <!-- One slot every cluster keeps, so all five tables share one
-                     grid: BH's 50% Share, Linda's Electricity, else empty. -->
+                     grid: Linda's Electricity, else empty. The 50% Share is a
+                     total on the Received tile only, not a column or badge per
+                     row (Loyd, 2026-10-03); the workbook keeps its column. -->
                 <th scope="col" class="num">
-                  <template v-if="group.hasShareColumn">50% Share</template>
-                  <template v-else-if="group.key === 'Linda'">Electricity</template>
+                  <template v-if="group.key === 'Linda'">Electricity</template>
                 </th>
                 <!-- Heads sits under the water it sets, as on the phone cards
                      ("Water, 2 heads"); a column of its own made the ledger
@@ -1631,10 +1625,7 @@ const isDownloadOpen = ref(false);
                   }}</span>
                 </td>
                 <td class="num font-semibold text-ink">{{ peso(r.rent, 2) }}</td>
-                <td v-if="group.hasShareColumn" class="num font-semibold text-verify">
-                  {{ peso(r.rent / 2, 2) }}
-                </td>
-                <td v-else-if="group.key === 'Linda'" class="num font-semibold text-brand">
+                <td v-if="group.key === 'Linda'" class="num font-semibold text-brand">
                   {{ peso(r.linda?.electricity || 0, 2) }}
                 </td>
                 <td v-else></td>
@@ -1663,10 +1654,7 @@ const isDownloadOpen = ref(false);
               <tr>
                 <th scope="row" colspan="3">{{ group.label }}, all {{ group.records.length }}</th>
                 <td class="num">{{ peso(group.totalRent, 2) }}</td>
-                <td v-if="group.hasShareColumn" class="num text-verify">
-                  {{ peso(group.totalShare, 2) }}
-                </td>
-                <td v-else-if="group.key === 'Linda'" class="num text-brand">
+                <td v-if="group.key === 'Linda'" class="num text-brand">
                   {{ peso(group.records.reduce((sum, r) => sum + (r.linda?.electricity || 0), 0), 2) }}
                 </td>
                 <td v-else></td>
@@ -1714,10 +1702,6 @@ const isDownloadOpen = ref(false);
                   <dt class="text-xs text-ink-faint">Rent</dt>
                   <dd class="tabular font-semibold text-ink">{{ peso(group.totalRent, 2) }}</dd>
                 </div>
-                <div v-if="group.hasShareColumn">
-                  <dt class="text-xs text-ink-faint">50% Share</dt>
-                  <dd class="tabular font-semibold text-verify">{{ peso(group.totalShare, 2) }}</dd>
-                </div>
                 <div v-if="group.key === 'Linda'">
                   <dt class="text-xs text-ink-faint">Electricity</dt>
                   <dd class="tabular font-semibold text-brand">
@@ -1756,10 +1740,6 @@ const isDownloadOpen = ref(false);
                 <div>
                   <dt class="text-xs text-ink-faint">Rent</dt>
                   <dd class="tabular font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
-                </div>
-                <div v-if="group.hasShareColumn">
-                  <dt class="text-xs text-ink-faint">50% Share</dt>
-                  <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2, 2) }}</dd>
                 </div>
                 <div>
                   <dt class="text-xs text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
@@ -1823,12 +1803,7 @@ const isDownloadOpen = ref(false);
               r.invoice
             }}</span>
           </td>
-          <td class="num">
-            <span class="block font-semibold text-ink">{{ peso(r.rent, 2) }}</span>
-            <span v-if="r.cluster === 'Boarding House'" class="block text-xs font-semibold text-verify">
-              50%: {{ peso(r.rent / 2, 2) }}
-            </span>
-          </td>
+          <td class="num font-semibold text-ink">{{ peso(r.rent, 2) }}</td>
           <td class="num">{{ r.occupants }}</td>
           <td class="num font-semibold text-ink">{{ peso(r.water, 2) }}</td>
           <td class="num font-semibold text-brand">
@@ -1851,10 +1826,7 @@ const isDownloadOpen = ref(false);
       <template #foot>
         <tr>
           <th scope="row" colspan="3">All {{ rows.length }} on screen</th>
-          <td class="num">
-            <span class="block">{{ peso(totalRent, 2) }}</span>
-            <span class="block text-xs text-verify">50% on Boarding House: {{ peso(totalShare, 2) }}</span>
-          </td>
+          <td class="num">{{ peso(totalRent, 2) }}</td>
           <td class="num">{{ rows.reduce((sum, r) => sum + r.occupants, 0) }}</td>
           <td class="num">{{ peso(totalWater, 2) }}</td>
           <!-- The column's own sum: every row is rent + water (BR-038). -->
@@ -1894,10 +1866,6 @@ const isDownloadOpen = ref(false);
             <dd class="tabular font-semibold text-ink">{{ peso(totalRent, 2) }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-ink-faint">50% Share, on Boarding House rows</dt>
-            <dd class="tabular font-semibold text-verify">{{ peso(totalShare, 2) }}</dd>
-          </div>
-          <div>
             <dt class="text-xs text-ink-faint">
               Water, {{ headsLabel(rows.reduce((sum, r) => sum + r.occupants, 0)) }}
             </dt>
@@ -1930,10 +1898,6 @@ const isDownloadOpen = ref(false);
           <div>
             <dt class="text-xs text-ink-faint">Rent</dt>
             <dd class="tabular font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
-          </div>
-          <div v-if="r.cluster === 'Boarding House'">
-            <dt class="text-xs text-ink-faint">50% Share</dt>
-            <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2, 2) }}</dd>
           </div>
           <div>
             <dt class="text-xs text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
