@@ -401,7 +401,7 @@ function applyRoomFilters(v: FilterDraft) {
               <div class="mt-3 flex items-end justify-between gap-2">
                 <dl class="text-sm">
                   <dt class="text-xs text-ink-faint">Monthly rent</dt>
-                  <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
+                  <dd class="mt-0.5 tabular text-base font-bold text-brand">{{ peso(u.price) }}</dd>
                 </dl>
                 <div class="flex shrink-0 gap-1.5">
                   <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
@@ -523,7 +523,7 @@ function applyRoomFilters(v: FilterDraft) {
         <div class="mt-3 flex items-end justify-between gap-2">
           <dl class="text-sm">
             <dt class="text-xs text-ink-faint">Monthly rent</dt>
-            <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
+            <dd class="mt-0.5 tabular text-base font-bold text-brand">{{ peso(u.price) }}</dd>
           </dl>
           <div class="flex shrink-0 gap-1.5">
             <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">

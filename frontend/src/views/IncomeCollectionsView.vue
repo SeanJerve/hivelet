@@ -736,7 +736,7 @@ const clusterGroups = computed(() => {
       // that is true everywhere.
       key: 'Linda',
       label: 'Linda Units',
-      desc: '2 Rooms (LF, LB) · Remitted directly to Linda',
+      desc: '2 Rooms (LF, LB)',
       hasShareColumn: false,
       units: ['LF', 'LB', '*LF', '*LB']
     }
@@ -763,7 +763,7 @@ const clusterGroups = computed(() => {
       totalWater: gWater,
       totalRemitted: gRemitted
     };
-  }).filter(g => g.records.length > 0);
+  }).filter(g => (q.value.trim() ? g.records.length > 0 : (selectedCluster.value === 'All' || selectedCluster.value === g.key)));
 });
 
 /**
@@ -1716,45 +1716,44 @@ const isDownloadOpen = ref(false);
             <template #card="{ row: r }">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="text-base font-semibold uppercase leading-none text-ink">{{ r.unit }}</p>
-                  <p class="mt-1.5 truncate text-sm text-ink-soft">{{ r.contact }}</p>
+                  <p class="text-lg font-bold uppercase leading-none text-ink">{{ r.unit }}</p>
+                  <p class="mt-1 truncate text-sm text-ink-soft">{{ r.contact }}</p>
                 </div>
-                <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
-                  <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-                  {{ peso(r.rent + r.water, 2) }}
-                </p>
+                <div class="flex items-start gap-2.5">
+                  <p class="tabular shrink-0 text-right text-lg font-bold text-brand">
+                    <span class="block text-xs font-normal text-ink-faint">Remitted</span>
+                    {{ peso(r.rent + r.water, 2) }}
+                  </p>
+                  <button
+                    type="button"
+                    class="press-plate icon-btn-plain row-action shrink-0 -mr-1"
+                    :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
+                    title="Edit"
+                    @click="startEditIncome(r)"
+                  >
+                    <Pencil class="size-4" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
 
-              <!-- The compact pencil the directory cards use, not a full-width button. -->
-              <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line/60 pt-2.5 text-xs">
                 <div>
-                  <dt class="text-xs text-ink-faint">Paid</dt>
-                  <dd class="text-ink">{{ r.datePaid }}</dd>
+                  <dt class="text-ink-faint">Paid</dt>
+                  <dd class="mt-0.5 font-medium text-ink">{{ r.datePaid }}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs text-ink-faint">Covering</dt>
-                  <dd class="text-ink">{{ r.rentFor }}</dd>
+                  <dt class="text-ink-faint">Covering</dt>
+                  <dd class="mt-0.5 font-medium text-ink">{{ r.rentFor }}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs text-ink-faint">Rent</dt>
-                  <dd class="tabular font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
+                  <dt class="text-ink-faint">Rent</dt>
+                  <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
-                  <dd class="tabular font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
+                  <dt class="text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
+                  <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
                 </div>
               </dl>
-              <div class="mt-3 flex justify-end">
-              <button
-                type="button"
-                class="press-plate icon-btn-plain row-action"
-                :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
-                title="Edit"
-                @click="startEditIncome(r)"
-              >
-                <Pencil class="size-4" aria-hidden="true" />
-              </button>
-              </div>
             </template>
           </RecordTable>
         </div>
@@ -1875,44 +1874,44 @@ const isDownloadOpen = ref(false);
       <template #card="{ row: r }">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="text-base font-semibold uppercase leading-none text-ink">{{ r.unit }}</p>
-            <p class="mt-1.5 truncate text-sm text-ink-soft">{{ r.cluster }}, {{ r.contact }}</p>
+            <p class="text-lg font-bold uppercase leading-none text-ink">{{ r.unit }}</p>
+            <p class="mt-1 truncate text-sm text-ink-soft">{{ r.cluster }}, {{ r.contact }}</p>
           </div>
-          <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
-            <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-            {{ peso(r.rent + r.water, 2) }}
-          </p>
+          <div class="flex items-start gap-2.5">
+            <p class="tabular shrink-0 text-right text-lg font-bold text-brand">
+              <span class="block text-xs font-normal text-ink-faint">Remitted</span>
+              {{ peso(r.rent + r.water, 2) }}
+            </p>
+            <button
+              type="button"
+              class="press-plate icon-btn-plain row-action shrink-0 -mr-1"
+              :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
+              title="Edit"
+              @click="startEditIncome(r)"
+            >
+              <Pencil class="size-4" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
-        <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+        <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line/60 pt-2.5 text-xs">
           <div>
-            <dt class="text-xs text-ink-faint">Paid</dt>
-            <dd class="text-ink">{{ r.datePaid }}</dd>
+            <dt class="text-ink-faint">Paid</dt>
+            <dd class="mt-0.5 font-medium text-ink">{{ r.datePaid }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-ink-faint">Covering</dt>
-            <dd class="text-ink">{{ r.rentFor }}</dd>
+            <dt class="text-ink-faint">Covering</dt>
+            <dd class="mt-0.5 font-medium text-ink">{{ r.rentFor }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-ink-faint">Rent</dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
+            <dt class="text-ink-faint">Rent</dt>
+            <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
+            <dt class="text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
+            <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
           </div>
         </dl>
-        <div class="mt-3 flex justify-end">
-        <button
-          type="button"
-          class="press-plate icon-btn-plain row-action"
-          :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
-          title="Edit"
-          @click="startEditIncome(r)"
-        >
-          <Pencil class="size-4" aria-hidden="true" />
-        </button>
-        </div>
       </template>
     </RecordTable>
 

@@ -1118,7 +1118,7 @@ async function handleEditExpense() {
           <th scope="colgroup" colspan="6" class="bg-canvas text-sm text-ink-soft">
             {{ group.dateStr }}
           </th>
-          <td class="num bg-canvas text-sm font-semibold text-ink">{{ peso(group.dayTotal, 2) }}</td>
+          <td class="num bg-canvas text-base font-semibold text-brand">{{ peso(group.dayTotal, 2) }}</td>
           <td class="bg-canvas"><span class="sr-only">that day</span></td>
         </tr>
         <tr v-for="e in group.records" :key="e.id" class="group">
@@ -1158,7 +1158,7 @@ async function handleEditExpense() {
       <template #card="{ row: group }">
         <div class="flex items-end justify-between gap-3 border-b border-line pb-3">
           <p class="text-sm text-ink-soft">{{ group.dateStr }}</p>
-          <p class="tabular text-2xl font-semibold leading-none tracking-tight text-ink">{{ money(group.dayTotal) }}</p>
+          <p class="tabular text-2xl font-semibold leading-none tracking-tight text-brand">{{ money(group.dayTotal) }}</p>
         </div>
 
         <ul class="divide-y divide-line">

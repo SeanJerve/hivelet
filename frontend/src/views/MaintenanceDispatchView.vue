@@ -637,43 +637,28 @@ function handleDeleteTicketPrompt() {
           <li
             v-for="t in col.tickets"
             :key="t.id"
-            class="rounded-2xl border border-line p-4 flex flex-col gap-3"
+            class="rounded-2xl border border-line p-4 flex flex-col gap-2.5"
           >
             <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <!--
-                  `break-words`: the title is the resident's own words from
-                  the ticket form (TenantTicketsView), free text, unbounded.
-                  `min-w-0` on the wrapper lets the card shrink to the column,
-                  but with no break-words on the text itself an unbroken run
-                  (a typo with no spaces is common on a phone) does not care
-                  that its wrapper shrank. Measured at the ordinary 1366px
-                  desktop width the board runs at: column 176px, title
-                  671px - 495px hidden by `body`'s `overflow-x: hidden`, not
-                  an edge case at some narrow width.
-                -->
-                <p class="text-sm font-medium leading-snug break-words">{{ t.title }}</p>
-                <p class="mt-0.5 text-xs text-ink-faint">
-                  Unit {{ t.unit.toUpperCase() }}, {{ t.category }}
-                </p>
-              </div>
+              <p class="text-base font-bold uppercase tracking-tight text-ink">
+                Unit {{ t.unit.toUpperCase() }}
+              </p>
               <StatusPill :tone="priorityTone(t.priority)">{{ t.priority }}</StatusPill>
             </div>
 
-            <dl class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
-              <div class="flex gap-1.5">
-                <dt class="text-ink-faint">Reported</dt>
-                <dd>{{ t.reported }}</dd>
-              </div>
-              <div class="flex gap-1.5">
-                <dt class="text-ink-faint">Technician</dt>
-                <dd>{{ t.technician || 'Unassigned' }}</dd>
-              </div>
-            </dl>
+            <p class="text-lg font-semibold leading-snug break-words text-ink">{{ t.title }}</p>
+
+            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-ink-faint">
+              <span>{{ t.category }}</span>
+              <span class="text-line" aria-hidden="true">·</span>
+              <span>Reported {{ t.reported }}</span>
+              <span class="text-line" aria-hidden="true">·</span>
+              <span>{{ t.technician || 'Unassigned' }}</span>
+            </div>
 
             <!-- Delete beside Manage (Sean, 2026-10-02: a visible delete on repairs); the same
                  confirmation and removal as the Manage dialog's own Delete repair. -->
-            <div class="flex items-center justify-between gap-2">
+            <div class="mt-1 flex items-center justify-between gap-2 border-t border-line/60 pt-3">
               <button type="button" class="pill-btn" @click="openEditModal(t)">
                 <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
                 Manage

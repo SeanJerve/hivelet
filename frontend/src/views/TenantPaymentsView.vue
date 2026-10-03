@@ -1031,7 +1031,12 @@ function refreshAll() {
               </span>
             </th>
             <td class="whitespace-nowrap text-ink-soft">{{ record.datePaid }}</td>
-            <td class="num font-semibold">{{ peso(record.amountPaid, 2) }}</td>
+            <td
+              class="num font-semibold"
+              :class="isVerified(record.status) ? 'text-brand' : 'text-ink'"
+            >
+              {{ peso(record.amountPaid, 2) }}
+            </td>
             <td class="whitespace-nowrap text-ink-soft">{{ record.paymentMethod }}</td>
             <td>
               <StatusPill :tone="statusTone(record.status)">
@@ -1050,7 +1055,10 @@ function refreshAll() {
             :style="{ animationDelay: `${Math.min(index, 9) * 30}ms` }"
           >
             <div class="min-w-0">
-              <p class="tabular text-lg font-semibold leading-none text-ink">
+              <p
+                class="tabular text-lg font-semibold leading-none"
+                :class="isVerified(record.status) ? 'text-brand' : 'text-ink'"
+              >
                 {{ peso(record.amountPaid, 2) }}
               </p>
               <p class="mt-1.5 text-sm text-ink-soft">{{ record.datePaid }}</p>
