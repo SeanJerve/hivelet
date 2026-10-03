@@ -1310,6 +1310,10 @@ async function handleOnboard() {
       :dismissible="false"
       @close="editModalTenant = null"
     >
+      <!-- The form holds the summary as well, so its Cancel / Save row can stay
+           on the bottom edge from the moment the dialog opens: a sticky row
+           cannot rise above the top of the box it is in (2026-10-03). -->
+      <form @submit.prevent="saveEdit" class="flex flex-col gap-5">
         <div class="rounded-2xl border border-line p-5">
           <div class="flex items-start justify-between gap-3 border-b border-line pb-3">
             <p class="text-sm font-semibold text-ink">On record</p>
@@ -1384,7 +1388,6 @@ async function handleOnboard() {
           </p>
         </div>
 
-        <form @submit.prevent="saveEdit" class="mt-6 space-y-5">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="ws-field">
               <label for="edit-unit">Unit</label>
@@ -1447,14 +1450,13 @@ async function handleOnboard() {
             a month.
           </p>
 
-          <!-- `.ws-actions` (index.css; Sean, 2026-10-01): Cancel and Save
-               changes as equal halves on a phone with Reset password and Move
-               them out on rows of their own beneath, all one height; from
-               640px the two record actions sit left and Save sits right. -->
-          <div class="ws-actions border-t border-line pt-5">
+          <!-- The two record actions are a row of their own, above the buttons that
+               stay on screen: pinned with Cancel and Save they were three rows, a
+               third of a phone's height (Loyd, 2026-10-03). -->
+          <div class="flex flex-wrap gap-2">
             <button
               type="button"
-              class="pill-btn-danger-quiet ws-action-apart"
+              class="pill-btn-danger-quiet"
               @click="openVacateFromModal(editModalTenant)"
             >
               <LogOut class="size-4" aria-hidden="true" />
@@ -1463,12 +1465,15 @@ async function handleOnboard() {
             <button
               v-if="editModalTenant.role === 'tenant' && editModalTenant.status !== 'vacated'"
               type="button"
-              class="pill-btn ws-action-apart"
+              class="pill-btn"
               @click="openResetFromModal(editModalTenant)"
             >
               <KeyRound class="size-4" aria-hidden="true" />
               <span>Reset password</span>
             </button>
+          </div>
+
+          <div class="ws-actions border-t border-line pt-5">
             <button type="button" class="pill-btn" @click="editModalTenant = null">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
@@ -1546,13 +1551,13 @@ async function handleOnboard() {
     >
 
         <!--
-          Laid out in pairs that belong together: email and phone, the unit and
-          the deposit filled in from it, the two dates, the household, and the
-          emergency contact's name beside their number. The contact's name used
-          to share a row with the deposit and their phone sat alone below it.
+          Laid out in pairs that belong together: the unit and the deposit filled
+          in from it, the two dates, the household, and the emergency contact's
+          name beside their number. Pairs on a phone too (Loyd, 2026-10-03: "it
+          looks too long"), now that a date field fits half the width on iOS.
         -->
-        <form @submit.prevent="handleOnboard" class="grid gap-5 sm:grid-cols-2">
-          <p v-if="openedFromQuickAction" class="ws-hint sm:col-span-2">
+        <form @submit.prevent="handleOnboard" class="grid grid-cols-2 gap-x-3 gap-y-4 sm:gap-5">
+          <p v-if="openedFromQuickAction" class="ws-hint col-span-2">
             Moving someone out?
             <button
               type="button"
@@ -1560,7 +1565,7 @@ async function handleOnboard() {
               @click="isOnboardModalOpen = false"
             >Choose them from the list</button>
           </p>
-          <div class="ws-field sm:col-span-2">
+          <div class="ws-field col-span-2">
             <label for="new-name">Full name</label>
             <input
               id="new-name"
@@ -1576,9 +1581,9 @@ async function handleOnboard() {
             the system issues a login ID and a one-time password, and the tenant gives
             their own email, phone and password at first sign-in. The name is hers.
           -->
-          <p class="ws-hint sm:col-span-2">
-            They get a login ID and a one-time password to sign in with. They add their own email and
-            phone number the first time they sign in.
+          <p class="ws-hint col-span-2">
+            They get a login ID and a one-time password, and add their own email and phone the first
+            time they sign in.
           </p>
           <div class="ws-field">
             <label for="new-unit">Unit</label>
@@ -1613,7 +1618,7 @@ async function handleOnboard() {
               class="ws-input w-full"
               required
             />
-            <p class="ws-hint">One month's rent. Change it if you agreed on another amount.</p>
+            <p class="ws-hint">One month's rent unless agreed otherwise.</p>
           </div>
           <div class="ws-field">
             <label for="new-move-in">Move-in date</label>
@@ -1647,7 +1652,7 @@ async function handleOnboard() {
               required
             />
           </div>
-          <div v-else class="hidden sm:block" aria-hidden="true" />
+          <div v-else aria-hidden="true" />
           <div class="ws-field">
             <label for="new-emerg-name">Emergency contact</label>
             <input
@@ -1658,7 +1663,7 @@ async function handleOnboard() {
             />
           </div>
           <div class="ws-field">
-            <label for="new-emerg-phone">Emergency contact's phone</label>
+            <label for="new-emerg-phone">Their phone</label>
             <input
               id="new-emerg-phone"
               v-model="newEmergPhone"
@@ -1667,14 +1672,14 @@ async function handleOnboard() {
             />
           </div>
 
-          <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft sm:col-span-2">
+          <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft col-span-2">
             <strong class="font-semibold text-ink">{{ newOccupantsPreview }}</strong>
             in the unit, so water is
             <strong class="tabular font-semibold text-ink">{{ peso(newWaterPreview) }}</strong>
             a month.
           </p>
 
-          <div class="ws-actions border-t border-line pt-5 sm:col-span-2">
+          <div class="ws-actions border-t border-line pt-5 col-span-2">
             <button type="button" class="pill-btn" @click="isOnboardModalOpen = false">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
