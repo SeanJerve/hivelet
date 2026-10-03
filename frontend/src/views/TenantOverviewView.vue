@@ -263,6 +263,12 @@ const dueDateCountdown = computed(() => {
 });
 
 const isSettled = computed(() => dueDateCountdown.value.severity === 'paid');
+/**
+ * "Settled" or "Not billed yet" is no figure, so on a phone the tile follows the
+ * Payments chart instead of opening the page (Loyd, 2026-10-03: what has
+ * something to show goes first). A failed load keeps its place at the top.
+ */
+const settledOnPhone = computed(() => !tenantDataLoadFailed.value && isSettled.value);
 
 /**
  * The configured per-occupant water rate (BR-014). The rate is the owner's to set,
@@ -628,7 +634,7 @@ const statusTone = computed(() => {
            cascade - 30ms apart, same rhythm as any other first-load list in
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
-      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" class="list-reveal-item order-1 md:order-none md:col-span-2 xl:col-span-5" style="animation-delay: 0ms">
+      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" :class="['list-reveal-item md:order-none md:col-span-2 xl:col-span-5', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
         <template v-if="!tenantDataLoadFailed && !isSettled && !(fromLedgerOnly && standingStatus === 'overdue')" #actions>
           <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
         </template>
@@ -729,7 +735,7 @@ const statusTone = computed(() => {
         :title="isSettled ? 'Latest bill' : 'Current bill'"
         to="/tenant/payments"
         to-label="Open payments and billing"
-        class="list-reveal-item order-3 md:order-none xl:col-span-4"
+        :class="['list-reveal-item md:order-none xl:col-span-4', !tenantDataLoadFailed && !tenantData.hasBill ? 'order-5' : 'order-3']"
         style="animation-delay: 30ms"
       >
         <UnavailableNote

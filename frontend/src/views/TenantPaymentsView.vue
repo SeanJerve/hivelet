@@ -238,6 +238,16 @@ const billsLoadFailed = ref(false);
  * requested yet. Same defect as `billsLoadFailed` above, from a different cause.
  */
 const loadingBills = ref(true);
+/**
+ * Loaded, and nothing owed: the bills tile says "Nothing is due", so on a phone
+ * it follows the month chart instead of opening the page (Loyd, 2026-10-03).
+ * A failed load is not this, and keeps its place.
+ */
+const nothingDue = computed(
+  () => !loadingBills.value && !billsLoadFailed.value && outstandingBills.value.length === 0 && !standingOwes.value
+);
+/** ...but only ahead of a chart that has months to draw: an empty one is no better. */
+const chartLeads = computed(() => nothingDue.value && rawReceipts.value.length > 0);
 const searchQuery = ref('');
 
 // Payment history records
@@ -767,7 +777,7 @@ function refreshAll() {
       ref="billsRegion"
       tabindex="-1"
       aria-label="Your bills"
-      :class="['outline-none grid gap-4', showRentTile && 'md:grid-cols-2']"
+      :class="['outline-none grid gap-4', showRentTile && 'md:grid-cols-2', chartLeads && 'max-md:order-2']"
     >
 
     <!-- Bills -->
@@ -955,8 +965,9 @@ function refreshAll() {
 
     <!-- The tenant's own months, drawn like the landlady's collections chart.
          Needs both the receipts and the standing, so it waits for, and fails
-         with, either. -->
-    <OverviewTile title="Your rent, month by month">
+         with, either. On a phone it comes before the bills when nothing is due
+         (Loyd, 2026-10-03: what has something to show goes first). -->
+    <OverviewTile title="Your rent, month by month" class="max-md:order-1">
       <PaymentMonths
         :receipts="rawReceipts"
         :waiting="waitingPayments"
@@ -969,7 +980,7 @@ function refreshAll() {
     </OverviewTile>
 
     <!-- Payment record -->
-    <OverviewTile title="Payment record">
+    <OverviewTile title="Payment record" class="max-md:order-3">
       <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
            Sean, 2026-10-01): search, and the filter button beside it holding
            the year and the order. -->
