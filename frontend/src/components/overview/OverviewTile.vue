@@ -58,7 +58,7 @@ const toneClass = computed(
           v-if="to"
           :to="to"
           :aria-label="toLabel || (title ? `Open ${title}` : 'Open')"
-          :class="['icon-btn group/goto', isDark && 'icon-btn-on-dark']"
+          :class="['icon-btn icon-btn-goto group/goto', isDark && 'icon-btn-on-dark']"
         >
           <!--
             A one-pixel nudge toward where the link leads, on hover only - the

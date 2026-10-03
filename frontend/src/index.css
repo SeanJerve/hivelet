@@ -2220,6 +2220,21 @@ html:has(> body[style*='overflow: hidden']) {
 }
 
 /*
+ * A tile's go-to arrow drops its ring on a phone (Loyd, 2026-10-03: "remove
+ * the circle border on the slanting arrows on everything on mobile, cleaner").
+ * The 44px box, and so the tap area, stays; it is pulled 12px toward the
+ * tile's edge so the bare arrow lines up with the content under it. The X on
+ * a dialog keeps its ring everywhere: it is the close control.
+ */
+@media (max-width: 767px) {
+  .icon-btn.icon-btn-goto {
+    border-color: transparent;
+    background-color: transparent;
+    margin-right: -0.75rem;
+  }
+}
+
+/*
  * A dialog's buttons stay on its bottom edge (Loyd, 2026-10-03). WsModal's own
  * footer is outside the scrolling body, so it does already. Five forms keep
  * their Cancel / Save row INSIDE the <form>, because a submit button has to be
