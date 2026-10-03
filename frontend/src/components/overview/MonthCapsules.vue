@@ -90,7 +90,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
 <template>
   <div class="flex flex-col gap-4 min-w-0">
     <div class="flex gap-3 min-w-0">
-      <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 text-xs text-ink-faint tabular text-right shrink-0', short ? 'h-28 md:h-48' : 'h-48']">
+      <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 max-sm:pb-9 text-xs text-ink-faint tabular text-right shrink-0', short ? 'h-28 md:h-48' : 'h-48']">
         <span v-for="t in ticks" :key="t">{{ compact(t) }}</span>
       </div>
 
@@ -145,18 +145,19 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
             </span>
             <span
               :class="[
-                'leading-4',
+                'leading-4 max-sm:flex max-sm:h-6 max-sm:items-center',
                 i === selected ? 'font-semibold text-ink' : 'text-ink-soft',
               ]"
             >
               <!--
                 Twelve months across 375px leaves about 30px a column, and "Jan"
-                does not fit that at a readable size. The initial does, the full
-                name is in each button's aria-label, and the selected month is
-                written out in full beneath the chart either way - so nothing is
-                only available by reading three letters.
+                does not fit that level. It was the initial alone, J F M A M J J
+                A S O N D, which Loyd found told her nothing (2026-10-03); on a
+                phone each name is now its three letters turned 45 degrees,
+                which fits the column, in a row 8px taller (the tick column's
+                `max-sm:pb-9` keeps ₱0 level with the bars' feet).
               -->
-              <span class="text-xs sm:hidden">{{ m.short.charAt(0) }}</span>
+              <span class="inline-block -rotate-45 text-[0.6875rem] sm:hidden">{{ m.short }}</span>
               <span class="hidden text-xs sm:inline">{{ m.short }}</span>
             </span>
           </button>
