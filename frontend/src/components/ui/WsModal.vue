@@ -202,6 +202,13 @@ onMounted(async () => {
  * and drops the movement, the same bargain as the close below.
  */
 const ENTER = { duration: 240, easing: 'cubic-bezier(0.33, 1, 0.68, 1)' };
+/**
+ * Below 640px the dialog is a sheet on the bottom edge (Loyd, 2026-10-03), so
+ * it rises into place rather than growing from its centre: a sheet that scales
+ * pulls its own bottom edge off the screen for the length of the animation.
+ */
+const isSheet = () => !window.matchMedia('(min-width: 640px)').matches;
+const offscreen = () => (isSheet() ? 'translateY(32px)' : 'translateY(12px) scale(0.96)');
 function enterMotion(): void {
   const el = overlay.value;
   if (!el || typeof el.animate !== 'function') return;
@@ -212,7 +219,7 @@ function enterMotion(): void {
       reduce
         ? [{ opacity: 0 }, { opacity: 1 }]
         : [
-            { opacity: 0, transform: 'translateY(12px) scale(0.96)' },
+            { opacity: 0, transform: offscreen() },
             { opacity: 1, transform: 'none' },
           ],
       ENTER
@@ -261,12 +268,16 @@ function leaveGhost(): void {
     if (ghostPanel) ghostPanel.style.transition = 'none';
     document.body.appendChild(ghost);
     ghost.scrollTop = el.scrollTop;
+    // The fields scroll inside the panel now, not the overlay.
+    const liveBody = el.querySelector<HTMLElement>('.ws-modal-body');
+    const ghostBody = ghost.querySelector<HTMLElement>('.ws-modal-body');
+    if (liveBody && ghostBody) ghostBody.scrollTop = liveBody.scrollTop;
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const timing = { duration: 160, easing: 'cubic-bezier(0.33, 1, 0.68, 1)', fill: 'forwards' as const };
     ghost.animate([{ opacity: 1 }, { opacity: 0 }], timing);
     if (ghostPanel && !reduce) {
-      ghostPanel.animate([{ transform: 'none' }, { transform: 'translateY(12px) scale(0.96)' }], timing);
+      ghostPanel.animate([{ transform: 'none' }, { transform: offscreen() }], timing);
     }
     // A timer, not `finished`: a hidden tab can pause the animation and the
     // copy must never outlive it.
@@ -289,9 +300,20 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <!--
+    The layout (Loyd, 2026-10-03: "it looks too long"). Below 640px the dialog
+    is a sheet along the bottom edge, full width, up to the screen's height
+    less a strip of the page behind it. From 640px it is a centred card. Either
+    way it is three rows: the title and X stay at the top, the buttons stay at
+    the bottom, and only the fields between them scroll. It used to be one
+    block the height of its content, so on a phone the title scrolled away and
+    Save was a long scroll down, under fields that read as a page of their own.
+    `index.css`, `.ws-modal-body`, keeps a form's own button row on the bottom
+    edge too, for the forms whose buttons have to sit inside the <form>.
+  -->
   <div
     ref="overlay"
-    class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overscroll-contain bg-scrim p-4 sm:p-6"
+    class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-end sm:items-center justify-center overflow-y-auto overscroll-contain bg-scrim sm:p-6"
     @click.self="dismissible && !mandatory && emit('close')"
     @keydown="onKeydown"
   >
@@ -303,16 +325,17 @@ onBeforeUnmount(() => {
       :aria-describedby="subtitle ? subtitleId : undefined"
       tabindex="-1"
       :class="[
-        'ws-modal-panel my-auto w-full rounded-tile bg-tile text-ink shadow-lift outline-none',
+        'ws-modal-panel flex w-full flex-col overflow-hidden bg-tile text-ink shadow-lift outline-none',
+        'mt-6 max-h-[calc(100dvh-1.5rem)] rounded-t-[1.75rem] sm:my-auto sm:max-h-[calc(100dvh-3rem)] sm:rounded-tile',
         widths[props.size],
       ]"
     >
-      <header class="flex items-start justify-between gap-4 border-b border-line p-5 sm:p-6">
-        <div class="min-w-0">
-          <h2 :id="titleId" :class="['text-lg font-semibold tracking-tight', tone === 'danger' && 'text-overdue']">
+      <header class="flex flex-none items-center justify-between gap-4 border-b border-line py-3 pl-5 pr-3 sm:py-4 sm:pl-6 sm:pr-4">
+        <div class="min-w-0 py-1">
+          <h2 :id="titleId" :class="['text-lg font-semibold leading-snug tracking-tight', tone === 'danger' && 'text-overdue']">
             {{ title }}
           </h2>
-          <p v-if="subtitle" :id="subtitleId" class="mt-1 text-sm text-ink-soft">{{ subtitle }}</p>
+          <p v-if="subtitle" :id="subtitleId" class="mt-0.5 text-sm text-ink-soft">{{ subtitle }}</p>
         </div>
         <!--
           Shown unless the dialog is genuinely mandatory. It used to be gated
@@ -334,16 +357,14 @@ onBeforeUnmount(() => {
       </header>
 
       <!--
-        `min-w-0` and `overflow-x-clip` (Sean, 2026-10-01: "the modal has
-        HORIZONTAL scrolling - really bad"). A field that will not shrink - a
-        native date control at the phone's 16px is the one that did - pushed the
-        body wider than the panel, and the overlay, which scrolls, scrolled
-        sideways with it. The fields themselves are fixed to shrink and stack;
-        this is the floor, so a dialog can never be dragged sideways again.
-        `clip` rather than `hidden`, so it does not become a scroll container
-        and the vertical axis, where PillSelect's menus open, stays visible.
+        `min-w-0` (Sean, 2026-10-01: "the modal has HORIZONTAL scrolling -
+        really bad"). A field that will not shrink - a native date control at
+        the phone's 16px is the one that did - pushed the body wider than the
+        panel. The fields themselves are fixed to shrink; this is the floor.
+        It scrolls on the vertical axis only, and a PillSelect's menu opening
+        near the bottom lengthens the scroll rather than being cut off.
       -->
-      <div class="p-5 sm:p-6 flex min-w-0 flex-col gap-5 overflow-x-clip">
+      <div class="ws-modal-body flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden overscroll-contain p-5 sm:gap-5 sm:p-6">
         <slot />
       </div>
 
@@ -351,7 +372,7 @@ onBeforeUnmount(() => {
            from 640px, one height. Sean, 2026-10-01. -->
       <footer
         v-if="$slots.actions"
-        class="ws-actions border-t border-line p-5 sm:p-6"
+        class="ws-actions ws-modal-foot flex-none border-t border-line px-5 pt-3 sm:p-6"
       >
         <slot name="actions" />
       </footer>

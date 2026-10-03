@@ -827,7 +827,7 @@ function triggerRecord() {
   <WsModal
     v-if="isOnsitePaymentModalOpen"
     :title="recorded ? 'Payment recorded' : 'Record payment'"
-    :subtitle="recorded ? undefined : 'Money handed over in person, or an online payment you are entering yourself.'"
+    :subtitle="recorded ? undefined : 'In person, or an online payment you are entering yourself.'"
     size="lg"
     :dismissible="false"
     @close="closeModal"
@@ -837,32 +837,7 @@ function triggerRecord() {
       id, so none of these fields had an accessible name and clicking a label
       focused nothing.
     -->
-    <!--
-      ON A PHONE THE FIELDS SCROLL AND THE BUTTONS DO NOT, and that is the fix
-      for what the client saw.
-
-      Measured in the running app at 375x812 before this change: the panel was
-      1296px tall, and the footer holding Cancel and "Record payment" began at
-      y=1227 in an 812px viewport - 415px below the fold, reached only by
-      scrolling the whole dialog. The actions live in `WsModal`'s own footer
-      slot, which sits after the body, so the only way to bring them on screen
-      is to stop the body being taller than the screen.
-
-      `dvh`, not `vh`: on a phone `vh` is the LARGE viewport, the one measured
-      with the browser's own bars hidden, so `60vh` is more than 60% of what is
-      actually visible while the address bar is showing - which is exactly the
-      state the modal opens in. `dvh` tracks the visible box, so the footer
-      stays on screen either way.
-
-      Everything is restored at `sm`: no cap, no scroller, no negative margin,
-      so the desktop dialog is the one that was there before.
-
-      `px-1.5 -mx-1.5` is not decoration. A scroll container clips on BOTH
-      axes - `overflow-y: auto` computes `overflow-x: auto` - and the workspace
-      focus ring is a 3px outline at 2px offset, so without 6px of room a
-      keyboard reader's ring would be sliced down the sides of every field in
-      this form. The negative margin cancels the padding so nothing moves.
-    -->
+    <!-- The fields used to cap their own height here so the footer stayed on a phone screen. WsModal's body scrolls and keeps its footer on screen itself now (2026-10-03), so nothing here does. -->
     <!-- What was just recorded, in place of the form. -->
     <div v-if="recorded" class="ws-reveal flex flex-col gap-4" role="status">
       <p class="flex items-start gap-2 text-sm leading-6 text-ink">
@@ -914,7 +889,7 @@ function triggerRecord() {
       v-else
       id="onsite-payment-form"
       @submit.prevent="triggerRecord"
-      class="flex flex-col gap-5 max-h-[60dvh] overflow-y-auto px-1.5 -mx-1.5 sm:mx-0 sm:max-h-none sm:overflow-visible sm:px-0"
+      class="flex flex-col gap-5"
     >
         <label class="ws-field">
           Unit

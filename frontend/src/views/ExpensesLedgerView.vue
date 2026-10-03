@@ -1185,34 +1185,17 @@ async function handleEditExpense() {
     <WsModal
       v-if="isAddOpen"
       title="Record expense"
-      subtitle="Add several from the same day at once if you need to."
+      subtitle="You can add several from one day at once."
       size="lg"
       :dismissible="false"
       @close="isAddOpen = false"
     >
 
         <form @submit.prevent="submitAddExpense">
-          <!--
-            THE `p-6` WAS A SECOND GUTTER INSIDE `WsModal`'S OWN.
-
-            The dialog body already carries `p-5 sm:p-6`, so on a phone this
-            form was inset twice - 20px from the panel and another 24px from
-            here - leaving 255px of a 375px screen for controls that then had
-            to be shared three ways (see the allocation row below, which was
-            crushed to nothing). Six pixels is kept rather than none because
-            this is a scroll container and a scroll container clips on both
-            axes: the workspace focus ring is a 3px outline at 2px offset, and
-            with no padding at all it would be sliced off every field in here.
-
-            `dvh` rather than `vh` on the phone cap: `vh` is measured against
-            the LARGE viewport, the one with the browser's bars hidden, so 70vh
-            of an 812px phone is 568px of a screen that is really showing about
-            700 - and the footer below went off the bottom. `dvh` tracks what is
-            actually visible. The desktop keeps the 70vh it had.
-          -->
-          <!-- No `sm:p-6` any more: at desktop it was a second 24px gutter inside the
-               dialog's own, so the fields sat 48px in from the edge the title uses. -->
-          <div class="p-1.5 -mx-1.5 space-y-4 text-xs text-ink max-h-[55dvh] overflow-y-auto sm:max-h-[70vh]">
+          <!-- No gutter of its own: WsModal's body has one, and a second left 255px of a
+               375px screen for the fields. The body scrolls and keeps the buttons on
+               screen itself now (2026-10-03), so this no longer caps its height. -->
+          <div class="space-y-4 text-xs text-ink">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
               Date it was spent
@@ -1396,9 +1379,8 @@ async function handleEditExpense() {
     >
 
         <form @submit.prevent="handleEditExpense">
-          <!-- Same double gutter and same `vh` cap as the add dialog above;
-               the reasoning is written out there. -->
-          <div class="p-1.5 -mx-1.5 space-y-4 text-xs text-ink max-h-[55dvh] overflow-y-auto sm:max-h-[70vh]">
+          <!-- Same as the add dialog above. -->
+          <div class="space-y-4 text-xs text-ink">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
               Date it was spent

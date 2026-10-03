@@ -697,7 +697,7 @@ function handleDeleteTicketPrompt() {
     <WsModal
       v-if="isLogOpen"
       title="Log a repair"
-      subtitle="For a repair you were told about or noticed yourself."
+      subtitle="A repair you were told about or noticed."
       :dismissible="false"
       @close="isLogOpen = false"
     >

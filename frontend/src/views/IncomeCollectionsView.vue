@@ -1956,24 +1956,9 @@ const isDownloadOpen = ref(false);
       @close="isEditOpen = false"
     >
 
-        <!--
-          The fields scroll; the buttons underneath them do not.
-
-          This dialog builds its own footer inside the form rather than using
-          `WsModal`'s actions slot, which is what makes that possible here -
-          capping the FIELDS leaves the footer pinned to the bottom of the
-          panel where it can always be reached. Measured at 375x812 before
-          this change, the form ran past the fold and "Update Collection" was
-          both below it and clipped sideways (see the footer's own note).
-
-          `dvh` rather than `vh` for the reason the payment modal states: `vh`
-          is the large viewport, measured with the phone's browser bars hidden,
-          and this dialog opens while they are showing. `px-1.5 -mx-1.5` keeps
-          the 3px focus ring from being clipped by the scroll container, which
-          clips on both axes. All of it is off again at `sm`.
-        -->
+        <!-- This form's own button row is kept on the bottom edge by `.ws-modal-body .ws-actions` (index.css) now, and WsModal's body does the scrolling (2026-10-03). -->
         <form @submit.prevent="handleEditIncome" class="text-xs">
-          <div class="space-y-4 max-h-[55dvh] overflow-y-auto px-1.5 -mx-1.5 sm:mx-0 sm:max-h-none sm:overflow-visible sm:px-0">
+          <div class="space-y-4">
           <!-- Room/Unit selector -->
           <div>
             <p

@@ -1328,6 +1328,34 @@ html:has(> body[style*='overflow: hidden']) {
   }
   input[type='date'].ws-input::-webkit-date-and-time-value {
     text-align: left;
+    margin: 0;
+  }
+  /*
+   * iOS Safari ignores `width` and `min-width` on a native date control: it
+   * sizes it to the date's own text plus the system padding, so at 16px it
+   * ran past the right edge of the move-in dialog, cut off by the dialog
+   * rather than fitted to it (Loyd, 2026-10-03, on an iPhone). Taking the
+   * native appearance away is what makes WebKit honour the width; the picker
+   * still opens on tap. Scoped to iOS (`-webkit-touch-callout` is iOS-only),
+   * because in desktop Chrome it would also hide the calendar button.
+   */
+  /* Half a phone's width is about 160px; a date and its calendar button fit
+     in that with the side padding trimmed from 18px to 14px. */
+  @media (max-width: 639px) {
+    input[type='date'].ws-input,
+    input[type='time'].ws-input,
+    input[type='month'].ws-input {
+      padding-inline: 0.875rem;
+    }
+  }
+  @supports (-webkit-touch-callout: none) {
+    input[type='date'].ws-input,
+    input[type='time'].ws-input,
+    input[type='month'].ws-input {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+    }
   }
 
   .ws-embedded-input,
@@ -2192,6 +2220,48 @@ html:has(> body[style*='overflow: hidden']) {
 }
 
 /*
+ * A dialog's buttons stay on its bottom edge (Loyd, 2026-10-03). WsModal's own
+ * footer is outside the scrolling body, so it does already. Five forms keep
+ * their Cancel / Save row INSIDE the <form>, because a submit button has to be
+ * in it, and that row scrolled away with the fields. Sticky to the bottom of
+ * `.ws-modal-body`, full bleed across its padding, on the tile colour so the
+ * fields pass under it. Unlayered, so it beats the row's own `mt-4 pt-5`.
+ *
+ * The home indicator: on a phone the sheet sits on the bottom edge, so the
+ * last row is lifted clear of it.
+ */
+.ws-modal-body {
+  --ws-modal-pad: 1.25rem;
+}
+@media (min-width: 640px) {
+  .ws-modal-body {
+    --ws-modal-pad: 1.5rem;
+  }
+}
+.ws-modal-body .ws-actions {
+  position: sticky;
+  /* A sticky box keeps clear of its scroller's padding; this puts it on the
+     panel's actual bottom edge instead of 20px above it. */
+  bottom: calc(-1 * var(--ws-modal-pad));
+  z-index: 2;
+  margin: auto calc(-1 * var(--ws-modal-pad)) calc(-1 * var(--ws-modal-pad));
+  padding: 0.75rem var(--ws-modal-pad) max(var(--ws-modal-pad), env(safe-area-inset-bottom));
+  background-color: var(--tile);
+  border-top: 1px solid var(--line);
+}
+.ws-modal-foot {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+@media (min-width: 640px) {
+  .ws-modal-body .ws-actions {
+    padding-top: 1rem;
+  }
+  .ws-modal-foot {
+    padding-bottom: 1.5rem;
+  }
+}
+
+/*
  * The two native <dialog> prompts on the public pages. `allow-discrete` on
  * `display` and `overlay` is what lets the closing frame render at all -
  * without it the element is removed before any of this can play.
@@ -2238,6 +2308,32 @@ dialog.ws-dialog[open]::backdrop {
 @starting-style {
   dialog.ws-dialog[open]::backdrop {
     opacity: 0;
+  }
+}
+
+/* On a phone the two public dialogs are sheets on the bottom edge, the same
+   as every WsModal (Loyd, 2026-10-03), and rise rather than grow. Unlayered,
+   so it beats the `m-auto` and `w-[min(...)]` on the elements themselves. */
+@media (max-width: 639px) {
+  dialog.ws-dialog {
+    margin: auto 0 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 1.5rem);
+    border-bottom: 0;
+    border-radius: 1.75rem 1.75rem 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    scale: none;
+    translate: 0 32px;
+  }
+  dialog.ws-dialog[open] {
+    translate: 0 0;
+  }
+  @starting-style {
+    dialog.ws-dialog[open] {
+      scale: none;
+      translate: 0 32px;
+    }
   }
 }
 
