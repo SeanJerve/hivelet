@@ -1173,7 +1173,7 @@ async function submitInquiry() {
       class="ws-dialog m-auto max-h-[calc(100dvh-2rem)] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-dim/70"
       @keydown.esc="closeInquiry"
     >
-      <div v-if="inquirySentTo" class="relative px-6 py-10 sm:px-12 sm:py-14">
+      <div v-if="inquirySentTo" class="relative px-5 pb-6 pt-6 sm:px-12 sm:py-14">
         <h2
           id="inquiry-dialog-title"
           ref="inquirySentHeading"
@@ -1201,7 +1201,7 @@ async function submitInquiry() {
         v-else
         ref="inquiryForm"
         novalidate
-        class="relative px-6 py-10 sm:px-12 sm:py-14"
+        class="relative px-5 pb-6 pt-6 sm:px-12 sm:py-14"
         @submit.prevent="submitInquiry"
       >
         <button

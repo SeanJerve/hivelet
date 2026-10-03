@@ -144,7 +144,7 @@ onBeforeUnmount(() => {
     @click="onDialogClick"
     @cancel="onCancel"
   >
-    <div class="relative px-8 py-12 sm:px-14 sm:py-16 text-center">
+    <div class="relative px-6 pb-8 pt-14 sm:px-14 sm:py-16 text-center">
       <button
         type="button"
         class="icon-btn absolute right-3 top-3"
