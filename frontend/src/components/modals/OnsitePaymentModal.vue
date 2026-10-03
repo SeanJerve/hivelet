@@ -21,7 +21,8 @@ import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
-import { ACKNOWLEDGEMENT_RECEIPT, isAcknowledgementReceipt, normalizeInvoiceNumber } from '@/lib/invoiceNumber';
+import { isAcknowledgementReceipt, normalizeInvoiceNumber } from '@/lib/invoiceNumber';
+import InvoiceField from '@/components/ui/InvoiceField.vue';
 
 const router = useRouter();
 
@@ -959,31 +960,20 @@ function triggerRecord() {
           </label>
 
           <!--
-            Typed OR picked (Sean, 2026-10-01): an invoice number, or
-            "Acknowledgement receipt" from the list when the slip has no number
-            (the "--" in her sheets). A native datalist: a text box that also
-            drops down, on a phone as well as a computer.
+            Typed, or ACK for a slip with no number (Sean, 2026-10-01; the "--"
+            in her sheets). The ACK button is inside the box (InvoiceField,
+            Loyd 2026-10-03), in place of a datalist that showed up as a
+            keyboard suggestion on a phone.
           -->
-          <label class="ws-field">
-            Invoice or acknowledgement receipt (if any)
-            <input
-              v-model="invoiceNum"
-              type="text"
-              list="onsite-invoice-kinds"
-              placeholder="INV#4627"
-              class="ws-input w-full font-mono"
-              autocomplete="off"
-            />
-            <datalist id="onsite-invoice-kinds">
-              <option :value="ACKNOWLEDGEMENT_RECEIPT" />
-            </datalist>
-            <span v-if="invoicePreview && invoicePreview !== invoiceNum.trim()" class="ws-reveal ws-hint">
+          <div class="ws-field">
+            <InvoiceField id="onsite-invoice" v-model="invoiceNum" label="Invoice or acknowledgement receipt (if any)" />
+            <span v-if="invoicePreview && !isAcknowledgementReceipt(invoicePreview) && invoicePreview !== invoiceNum.trim()" class="ws-reveal ws-hint">
               Saved as {{ invoicePreview }}
             </span>
             <span v-else-if="!invoiceNum.trim()" class="ws-hint">
-              Type the invoice number, or pick Acknowledgement receipt if the slip has no number.
+              Type the invoice number, or tap ACK if the slip has no number.
             </span>
-          </label>
+          </div>
         </div>
 
         <!--

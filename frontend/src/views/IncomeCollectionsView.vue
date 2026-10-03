@@ -3,7 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { periodEnd, propertyToday, formatDateOnly, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
-import { ACKNOWLEDGEMENT_RECEIPT } from '@/lib/invoiceNumber';
+import InvoiceField from '@/components/ui/InvoiceField.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { useRoute, useRouter } from 'vue-router';
@@ -2011,22 +2011,11 @@ const isDownloadOpen = ref(false);
           </div>
 
           <!-- Invoice number: optional, because not every payment has one. Typed,
-               or "Acknowledgement receipt" from the list for a slip with no
-               number (Sean, 2026-10-01), as on the Record payment form. -->
-          <label class="ws-field">
-            Invoice or acknowledgement receipt (if any)
-            <input
-              v-model="editInvoice"
-              type="text"
-              list="edit-invoice-kinds"
-              placeholder="INV#4627"
-              class="ws-input w-full font-mono"
-              autocomplete="off"
-            />
-            <datalist id="edit-invoice-kinds">
-              <option :value="ACKNOWLEDGEMENT_RECEIPT" />
-            </datalist>
-          </label>
+               or ACK for a slip with no number (Sean, 2026-10-01), with the
+               same in-box button as the Record payment form (InvoiceField). -->
+          <div class="ws-field">
+            <InvoiceField id="edit-invoice" v-model="editInvoice" label="Invoice or acknowledgement receipt (if any)" />
+          </div>
 
           <!-- Payment Method & Online Reference Number Row -->
           <!-- Full width on a phone on purpose, unlike the money pairs above:
