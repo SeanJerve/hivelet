@@ -1719,20 +1719,9 @@ const isDownloadOpen = ref(false);
                   <p class="text-lg font-bold uppercase leading-none text-ink">{{ r.unit }}</p>
                   <p class="mt-1 truncate text-sm text-ink-soft">{{ r.contact }}</p>
                 </div>
-                <div class="flex items-start gap-2.5">
-                  <p class="tabular shrink-0 text-right text-lg font-bold text-brand">
-                    <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-                    {{ peso(r.rent + r.water, 2) }}
-                  </p>
-                  <button
-                    type="button"
-                    class="press-plate icon-btn-plain row-action shrink-0 -mr-1"
-                    :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
-                    title="Edit"
-                    @click="startEditIncome(r)"
-                  >
-                    <Pencil class="size-4" aria-hidden="true" />
-                  </button>
+                <div class="shrink-0 text-right">
+                  <span class="block text-xs font-normal text-ink-faint">Remitted</span>
+                  <span class="tabular text-lg font-bold text-brand">{{ peso(r.rent + r.water, 2) }}</span>
                 </div>
               </div>
 
@@ -1754,6 +1743,18 @@ const isDownloadOpen = ref(false);
                   <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
                 </div>
               </dl>
+
+              <div class="mt-2.5 flex justify-end">
+                <button
+                  type="button"
+                  class="press-plate icon-btn-plain row-action"
+                  :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
+                  title="Edit"
+                  @click="startEditIncome(r)"
+                >
+                  <Pencil class="size-4" aria-hidden="true" />
+                </button>
+              </div>
             </template>
           </RecordTable>
         </div>
@@ -1877,20 +1878,9 @@ const isDownloadOpen = ref(false);
             <p class="text-lg font-bold uppercase leading-none text-ink">{{ r.unit }}</p>
             <p class="mt-1 truncate text-sm text-ink-soft">{{ r.cluster }}, {{ r.contact }}</p>
           </div>
-          <div class="flex items-start gap-2.5">
-            <p class="tabular shrink-0 text-right text-lg font-bold text-brand">
-              <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-              {{ peso(r.rent + r.water, 2) }}
-            </p>
-            <button
-              type="button"
-              class="press-plate icon-btn-plain row-action shrink-0 -mr-1"
-              :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
-              title="Edit"
-              @click="startEditIncome(r)"
-            >
-              <Pencil class="size-4" aria-hidden="true" />
-            </button>
+          <div class="shrink-0 text-right">
+            <span class="block text-xs font-normal text-ink-faint">Remitted</span>
+            <span class="tabular text-lg font-bold text-brand">{{ peso(r.rent + r.water, 2) }}</span>
           </div>
         </div>
 
@@ -1912,6 +1902,18 @@ const isDownloadOpen = ref(false);
             <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
           </div>
         </dl>
+
+        <div class="mt-2.5 flex justify-end">
+          <button
+            type="button"
+            class="press-plate icon-btn-plain row-action"
+            :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
+            title="Edit"
+            @click="startEditIncome(r)"
+          >
+            <Pencil class="size-4" aria-hidden="true" />
+          </button>
+        </div>
       </template>
     </RecordTable>
 

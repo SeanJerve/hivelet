@@ -1074,14 +1074,17 @@ async function handleOnboard() {
           </div>
         </div>
 
-        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span>{{ householdLabel(t) }}</span>
-            <span class="text-line" aria-hidden="true">·</span>
-            <span>Moved in {{ t.moveInDate }}</span>
-            <span class="text-line" aria-hidden="true">·</span>
-            <span>Deposit <strong class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</strong></span>
-          </div>
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
+          <span>{{ householdLabel(t) }}</span>
+          <span class="text-line" aria-hidden="true">·</span>
+          <span>Moved in {{ t.moveInDate }}</span>
+        </div>
+
+        <div class="mt-3 flex items-end justify-between gap-2">
+          <dl class="text-sm">
+            <dt class="text-xs text-ink-faint">Deposit</dt>
+            <dd class="mt-0.5 tabular text-lg font-bold text-brand">{{ peso(t.depositAmount) }}</dd>
+          </dl>
           <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
             <Pencil class="size-4" aria-hidden="true" />
           </button>
@@ -1260,14 +1263,17 @@ async function handleOnboard() {
               </div>
             </div>
 
-            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
-              <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span>{{ householdLabel(t) }}</span>
-                <span class="text-line" aria-hidden="true">·</span>
-                <span>Moved in {{ t.moveInDate }}</span>
-                <span class="text-line" aria-hidden="true">·</span>
-                <span>Deposit <strong class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</strong></span>
-              </div>
+            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
+              <span>{{ householdLabel(t) }}</span>
+              <span class="text-line" aria-hidden="true">·</span>
+              <span>Moved in {{ t.moveInDate }}</span>
+            </div>
+
+            <div class="mt-3 flex items-end justify-between gap-2">
+              <dl class="text-sm">
+                <dt class="text-xs text-ink-faint">Deposit</dt>
+                <dd class="mt-0.5 tabular text-lg font-bold text-brand">{{ peso(t.depositAmount) }}</dd>
+              </dl>
               <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
                 <Pencil class="size-4" aria-hidden="true" />
               </button>
