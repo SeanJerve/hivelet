@@ -176,12 +176,14 @@ onBeforeUnmount(() => {
 
 // No Activity entry (Sean, 2026-10-01): the adviser ruled the audit trail a
 // developer's record, not part of the site. The server still writes every row.
+// In order of how often she uses them (Loyd, 2026-10-03): the money first,
+// then the people and the units, then repairs and inquiries.
 const ADMIN_NAV = computed(() => [
   { to: '/admin/overview', aliases: ['/basis/overview'], label: 'Overview', icon: LayoutDashboard, badge: null, badgeColor: '' },
-  { to: '/admin/directory', aliases: ['/basis/directory'], label: 'Rooms and rates', icon: Building2, badge: null, badgeColor: '' },
-  { to: '/admin/tenants', aliases: ['/basis/tenants'], label: 'Tenants', icon: Users, badge: null, badgeColor: '' },
   { to: '/admin/income', aliases: ['/basis/income'], label: 'Monthly Income', icon: Wallet, badge: null, badgeColor: '' },
   { to: '/admin/expenses', aliases: ['/basis/expenses'], label: 'Monthly Expenses', icon: ReceiptText, badge: null, badgeColor: '' },
+  { to: '/admin/tenants', aliases: ['/basis/tenants'], label: 'Tenants', icon: Users, badge: null, badgeColor: '' },
+  { to: '/admin/directory', aliases: ['/basis/directory'], label: 'Rooms and rates', icon: Building2, badge: null, badgeColor: '' },
   { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Repairs', icon: Wrench, badge: urgentTicketsCount.value > 0 ? urgentTicketsCount.value : null, badgeColor: 'bg-overdue text-on-overdue' },
   { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Inquiries', icon: Inbox, badge: inquiriesCount.value > 0 ? inquiriesCount.value : null, badgeColor: 'bg-brand text-on-brand' },
 ]);
