@@ -1558,17 +1558,15 @@ const isDownloadOpen = ref(false);
 
             <!-- A closed section still says what it holds. Stacked under the title on
                  a phone for every cluster alike; it used to sit beside short titles
-                 and wrap under long ones, so sibling headers disagreed at 375. -->
-            <span class="flex flex-wrap items-center gap-x-5 gap-y-2">
-              <span class="sm:text-right">
-                <span class="block text-xs text-ink-faint">Remitted</span>
-                <span class="tabular block font-semibold text-brand">{{
-                  peso(group.totalRemitted, 2)
-                }}</span>
-              </span>
-              <StatusPill tone="neutral">
-                {{ group.records.length }} {{ group.records.length === 1 ? 'entry' : 'entries' }}
-              </StatusPill>
+                 and wrap under long ones, so sibling headers disagreed at 375.
+                 The remitted figure is the size of the Received tile's, whole
+                 pesos like it, and the entries count is gone (Loyd, 2026-10-03):
+                 the figure is what she opens a cluster for. -->
+            <span class="sm:text-right">
+              <span class="block text-xs text-ink-faint">Remitted</span>
+              <span class="tabular mt-1 block text-3xl font-semibold leading-none tracking-tight text-brand md:text-4xl">{{
+                peso(group.totalRemitted)
+              }}</span>
             </span>
           </button>
         </h2>
