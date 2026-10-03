@@ -1055,7 +1055,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           <div class="mt-auto flex flex-col gap-3 md:gap-4">
             <PhoneMore>
               <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-line pt-4 text-sm">
-                <span class="text-ink-soft">Rent and water entered for {{ CURRENT_YEAR }}</span>
+                <span class="text-ink-soft">Total for {{ CURRENT_YEAR }}</span>
                 <span class="font-semibold tabular">{{ peso(monthlyRevenue) }}</span>
               </div>
             </PhoneMore>
@@ -1099,14 +1099,14 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           <PhoneMore>
             <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
               <div>
-                <dt class="text-xs text-ink-faint">Rent and water entered</dt>
+                <dt class="text-xs text-ink-faint">Total entered</dt>
                 <dd class="text-lg font-semibold tabular">{{ peso(monthlyRevenue) }}</dd>
                 <dd class="text-xs text-ink-soft">
                   Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}
                 </dd>
               </div>
               <div>
-                <dt class="text-xs text-ink-faint">Average entered month</dt>
+                <dt class="text-xs text-ink-faint">Monthly average</dt>
                 <dd class="text-lg font-semibold tabular">{{ peso(liveRecordedAverage) }}</dd>
               </div>
               <div>
@@ -1148,7 +1148,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               />
             </div>
             <p class="mt-1.5 text-xs text-ink-faint tabular">
-              Monthly rent of occupied units {{ peso(c.revenue) }}
+              Total rent {{ peso(c.revenue) }}
             </p>
           </li>
         </ul>
@@ -1156,7 +1156,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile :title="`Operating cash flow, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6 max-md:order-5">
+      <OverviewTile :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6 max-md:order-5">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded, so net figures cannot be worked out."
@@ -1168,7 +1168,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         <template v-else>
           <div>
             <p class="text-xs text-ink-faint">
-              Net operating income, {{ MONTH_LONG[liveLatestCashMonth.monthNum - 1] }}
+              {{ MONTH_LONG[liveLatestCashMonth.monthNum - 1] }}
             </p>
             <p
               :class="[
@@ -1182,8 +1182,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           <template v-if="liveLatestCashMonth.noi >= 0">
             <SegmentBar
               :segments="[
-                { label: 'Operating expenses', value: liveLatestCashMonth.expenses, tone: 'night' },
-                { label: 'Net operating income', value: liveLatestCashMonth.noi, tone: 'bright' },
+                { label: 'Expenses', value: liveLatestCashMonth.expenses, tone: 'night' },
+                { label: 'Net', value: liveLatestCashMonth.noi, tone: 'bright' },
               ]"
               :label="`Of ${peso(liveLatestCashMonth.grossIncome)} in rent and water, ${peso(liveLatestCashMonth.expenses)} went to operating expenses and ${peso(liveLatestCashMonth.noi)} remained.`"
             />
@@ -1192,7 +1192,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             <ul class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-soft">
               <li class="flex items-center gap-1.5">
                 <span aria-hidden="true" class="size-2.5 rounded-full bg-series-night" />
-                Operating expenses
+                Expenses
               </li>
               <li class="flex items-center gap-1.5">
                 <span aria-hidden="true" class="size-2.5 rounded-full bg-brand-bright" />
@@ -1221,7 +1221,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                 <!-- On a phone the four columns did not fit 303px and Net, the figure
                      she reads this for, sat off-screen behind a sideways scroll. There
                      the spending moves under Rent and water as a second line. -->
-                <th scope="col" class="num hidden sm:table-cell">Operating</th>
+                <th scope="col" class="num hidden sm:table-cell">Expenses</th>
                 <th scope="col" class="num">Net</th>
               </tr>
             </thead>
@@ -1328,7 +1328,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
       </OverviewTile>
 
-      <OverviewTile :title="`Operating expenses, ${selectedArchiveYear}`" to="/admin/expenses" to-label="Open the expense ledger" class="xl:col-span-3">
+      <OverviewTile :title="`Expenses, ${selectedArchiveYear}`" to="/admin/expenses" to-label="Open the expense ledger" class="xl:col-span-3">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualExpenseTotal) }}</p>
@@ -1339,7 +1339,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
       </OverviewTile>
 
-      <OverviewTile :title="`Net operating income, ${selectedArchiveYear}`" class="xl:col-span-3">
+      <OverviewTile :title="`Net income, ${selectedArchiveYear}`" class="xl:col-span-3">
         <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" @retry="refreshAllData" />
         <div v-else>
           <p
@@ -1360,12 +1360,12 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           <MonthCapsules :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
           <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
             <div>
-              <dt class="text-xs text-ink-faint">Rent and water entered</dt>
+              <dt class="text-xs text-ink-faint">Total entered</dt>
               <dd class="text-lg font-semibold tabular">{{ peso(historicalAnnualGrossTotal) }}</dd>
               <dd class="text-xs text-ink-soft">All units</dd>
             </div>
             <div>
-              <dt class="text-xs text-ink-faint">Average entered month</dt>
+              <dt class="text-xs text-ink-faint">Monthly average</dt>
               <dd class="text-lg font-semibold tabular">{{ peso(historicalRecordedAverage) }}</dd>
             </div>
             <div v-if="historicalHighestMonth">
@@ -1421,8 +1421,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               <tr>
                 <th scope="col">Month</th>
                 <th scope="col" class="num">Rent and water</th>
-                <th scope="col" class="num">Operating expenses</th>
-                <th scope="col" class="num">Net operating income</th>
+                <th scope="col" class="num">Expenses</th>
+                <th scope="col" class="num">Net</th>
                 <th scope="col" class="num">Personal, not deducted</th>
               </tr>
             </thead>

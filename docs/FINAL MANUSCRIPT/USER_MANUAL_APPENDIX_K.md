@@ -150,7 +150,7 @@ as good as that.
 
 The first screen: **Needs your attention** (how many payments wait to be verified, and how many
 urgent repairs are open), **Rent and water** for this month, **Occupancy** (32 of 33 today), **Rent
-and water by month**, **Units by cluster**, **Operating cash flow** and **Open repair requests**.
+and water by month**, **Units by cluster**, **Net income** and **Open repair requests**.
 Personal spending is shown beside operating costs and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
 
