@@ -115,7 +115,7 @@ export function renderTenantHistoryWorkbook(
   scope: ReportScope
 ): { workbook: ExcelJS.Workbook; rowCount: number; people: HistoryPerson[] } {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'Hivelet';
+  workbook.creator = 'Fe Galang Da Silva Boarding House';
   workbook.created = new Date();
   workbook.subject = 'Who paid for each unit, from the payments in Monthly Income';
 

@@ -334,7 +334,7 @@ export function renderIncomeReportWorkbook(
   }
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Hivelet';
+  wb.creator = 'Fe Galang Da Silva Boarding House';
   wb.created = new Date();
 
   if (scope.kind === 'all') {
@@ -383,7 +383,8 @@ function addIncomeSheet(
     { width: 12 }, // 11 Deposit
   ];
 
-  const title = ws.addRow([`HIVELET — MONTHLY INCOME REPORT — ${period}`]);
+  // The business's name, not the system's (Loyd, 2026-10-03): this is her report.
+  const title = ws.addRow([`FE GALANG DA SILVA — MONTHLY INCOME REPORT — ${period}`]);
   title.font = { bold: true, size: 13, color: { argb: INK } };
   ws.mergeCells(title.number, 1, title.number, 11);
 
