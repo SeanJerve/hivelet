@@ -522,8 +522,23 @@ const arcUnits = computed<ArcUnit[]>(() =>
       .map((r) => ({ code: r.unitCode.toUpperCase(), cluster: c, occupied: isOccupied(r) }))
   )
 );
-/** The phone's occupancy bar counts the same units the arc draws. */
-const occupiedUnitsCount = computed(() => arcUnits.value.filter((u) => u.occupied).length);
+/**
+ * On a phone the tiles go in the order of what has something to show (Loyd,
+ * 2026-10-03). Needs your attention and this month's rent and water lead when
+ * they hold a figure, and when they are zero they move below occupancy and the
+ * month chart instead of opening the screen on "0, 0, ₱0". A failed load counts
+ * as something to show: "could not be loaded" is not a zero. Two tiles in the
+ * same place share a row; one alone takes the width.
+ */
+const attentionHasFigures = computed(
+  () => pendingPaymentsFailed.value || maintenanceTicketsFetchFailed.value || pendingCount.value > 0 || urgentTickets.value.length > 0
+);
+const monthHasFigures = computed(() => incomeRecordsFetchFailed.value || currentMonthRevenue.value > 0);
+const pairedOnPhone = computed(() => attentionHasFigures.value === monthHasFigures.value);
+const phonePlace = (leads: boolean) => [
+  leads ? 'max-md:order-1' : 'max-md:order-4',
+  !pairedOnPhone.value && 'max-md:col-span-2',
+];
 
 const liveClusterPerformance = computed(() =>
   CLUSTERS.map((clusterName) => {
@@ -906,13 +921,15 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
     <!--
       On a phone (Loyd, 2026-10-03): the first screen shows what needs her, this
       month's rent and water, occupancy and the month chart together. The first
-      two are half-width tiles side by side, occupancy is a single bar instead of
-      the arc, the chart is shorter, and the figures each tile adds after its
-      headline fold under "More" (PhoneMore). From 768px nothing changes.
+      two are half-width tiles side by side, the arc and the chart are smaller,
+      and the figures each tile adds after its headline fold under "More"
+      (PhoneMore). Which come first follows `phonePlace` above: CSS `order`, so
+      the reading order on a phone follows what is drawn, not the source. From
+      768px nothing changes.
     -->
     <div v-else-if="!isHistoricalMode" class="ws-reveal grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-12">
       <!-- What needs her action. The only dark tile on the screen. -->
-      <OverviewTile tone="night" title="Needs your attention" class="max-md:gap-3 max-md:p-4 md:col-span-2 xl:col-span-5">
+      <OverviewTile tone="night" title="Needs your attention" :class="['max-md:gap-3 max-md:p-4 md:col-span-2 xl:col-span-5', phonePlace(attentionHasFigures)]">
         <!--
           On a phone each half of this tile is one link, the count and its words
           together, instead of a count, a button and a link stacked: at half a
@@ -1013,7 +1030,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         phone-title="Rent and water"
         to="/admin/income"
         to-label="Open the income ledger"
-        class="max-md:gap-3 max-md:p-4 xl:col-span-4"
+        :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', phonePlace(monthHasFigures)]"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -1046,37 +1063,17 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Occupancy" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 max-md:gap-2 max-md:p-4 md:col-span-1 xl:col-span-3">
+      <OverviewTile title="Occupancy" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 md:col-span-1 xl:col-span-3">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
           @retry="refreshAllData"
         />
         <template v-else>
-          <!-- A phone gets the count and one bar, a unit to a segment, in place of
-               the arc: the arc is 170px tall at that width (Loyd, 2026-10-03). -->
-          <div class="flex flex-col gap-2 md:hidden">
-            <p class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <span class="text-2xl leading-none font-semibold tabular tracking-tight">{{ occupiedUnitsCount }}<span class="text-base text-ink-faint">/{{ totalRoomsCount }}</span></span>
-              <span class="text-sm text-ink-soft">units occupied</span>
-              <span class="ml-auto text-sm text-ink-soft">
-                <template v-if="totalRoomsCount && vacantUnits.length === totalRoomsCount">All vacant</template>
-                <template v-else-if="vacantUnits.length">Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}</template>
-                <template v-else>None vacant</template>
-              </span>
-            </p>
-            <div class="flex gap-0.5" aria-hidden="true">
-              <span
-                v-for="(u, n) in arcUnits"
-                :key="u.code"
-                class="bar-fill h-2.5 flex-1 origin-left rounded-full"
-                :class="u.occupied ? 'bg-brand' : 'hatch border border-line'"
-                :style="{ animationDelay: `${Math.min(n, 9) * 30}ms` }"
-              />
-            </div>
-          </div>
-          <OccupancyArc :units="arcUnits" class="max-md:hidden" />
-          <p class="text-center text-sm text-ink-soft max-md:hidden">
+          <!-- The arc on a phone as well (Loyd, 2026-10-03: "I need the semicircle"),
+               a little narrower there so the month chart still fits below it. -->
+          <OccupancyArc :units="arcUnits" class="max-md:max-w-[14rem]" />
+          <p class="text-center text-sm text-ink-soft">
             <template v-if="totalRoomsCount && vacantUnits.length === totalRoomsCount">All {{ totalRoomsCount }} units are vacant.</template>
             <template v-else-if="vacantUnits.length">
               Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
@@ -1090,7 +1087,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         :title="`Rent and water by month, ${CURRENT_YEAR}`"
         to="/admin/income"
         to-label="Open the income ledger"
-        class="col-span-2 max-md:gap-3 max-md:p-4 xl:col-span-8"
+        class="col-span-2 max-md:order-3 max-md:gap-3 max-md:p-4 xl:col-span-8"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -1124,7 +1121,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4">
+      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4 max-md:order-5">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -1159,7 +1156,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile :title="`Operating cash flow, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6">
+      <OverviewTile :title="`Operating cash flow, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6 max-md:order-5">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded, so net figures cannot be worked out."
@@ -1264,7 +1261,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         title="Open repair requests"
         to="/admin/tickets"
         to-label="Open repairs"
-        class="col-span-2 xl:col-span-6"
+        class="col-span-2 xl:col-span-6 max-md:order-5"
       >
         <UnavailableNote
           v-if="maintenanceTicketsFetchFailed"
