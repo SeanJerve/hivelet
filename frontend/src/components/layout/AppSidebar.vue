@@ -29,8 +29,7 @@ import {
   X,
   Home,
   CreditCard,
-  UserCheck,
-  Globe
+  UserCheck
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -370,17 +369,8 @@ onBeforeUnmount(() => {
         </router-link>
       </nav>
 
-      <!-- The way back to the public site from inside the workspace. Below the
-           section nav and quieter than it: it leaves the workspace. -->
-      <div class="mt-4 border-t border-line pt-4">
-        <router-link
-          to="/public"
-          class="press flex min-h-11 items-center gap-3 rounded-full px-4 text-sm font-medium text-ink-soft hover:bg-tile hover:text-ink"
-        >
-          <Globe class="size-4 shrink-0 text-ink-faint" aria-hidden="true" />
-          <span>Visit the website</span>
-        </router-link>
-      </div>
+      <!-- "Website" is in the account menu now (Loyd, 2026-10-03), beside Change
+           password and Sign out, not a row of its own under the sections. -->
     </aside>
 
     <!--
@@ -482,26 +472,6 @@ onBeforeUnmount(() => {
                   </router-link>
                 </nav>
 
-                <!--
-                  The straight divider above "Overview" (border-b on
-                  a plain div) sits on an element with no border-radius. This
-                  one used to put border-t directly on the rounded-full link
-                  below, so the line curved around the pill's corner instead
-                  of running straight. The divider now lives on this plain
-                  wrapping div, and rounded-full stays on the link itself,
-                  which is what every other row in this list uses for its own
-                  hover shape.
-                -->
-                <div class="mt-3 border-t border-line pt-3">
-                  <router-link
-                    to="/public"
-                    @click="closeMobileNav"
-                    class="press flex min-h-11 items-center gap-3 rounded-full px-4 text-sm font-medium text-ink-soft hover:bg-canvas hover:text-ink"
-                  >
-                    <Globe class="size-4 shrink-0 text-ink-faint" aria-hidden="true" />
-                    <span>Visit the website</span>
-                  </router-link>
-                </div>
               </div>
             </div>
           </div>

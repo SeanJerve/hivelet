@@ -557,12 +557,11 @@ onUnmounted(() => {
                     <span>My details</span>
                   </router-link>
 
-                  <!-- "Visit the website" while inside the workspace lives in
-                       AppSidebar's drawer only now (2026-09-24) - the same
-                       link in two menus at once was one too many. This entry
-                       covers the other direction: signed in but currently ON
-                       the public site, back to the dashboard. The wordmark
-                       already goes there too, but nothing said so. -->
+                  <!-- Between the website and the portal, one word each way
+                       (Loyd, 2026-10-03): "Dashboard" from the public site,
+                       "Website" from inside the portal. "Website" used to be
+                       the sidebar's last row and "Back to my dashboard" this
+                       one; both live here now. -->
                   <router-link
                     v-if="!hasSidebar"
                     :to="brandRoute"
@@ -570,7 +569,16 @@ onUnmounted(() => {
                     class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
                   >
                     <LayoutDashboard class="size-4 text-ink-soft" aria-hidden="true" />
-                    <span>Back to my dashboard</span>
+                    <span>Dashboard</span>
+                  </router-link>
+                  <router-link
+                    v-else
+                    to="/public"
+                    @click="isProfilePopoverOpen = false"
+                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
+                  >
+                    <Globe class="size-4 text-ink-soft" aria-hidden="true" />
+                    <span>Website</span>
                   </router-link>
 
                   <!--
@@ -680,7 +688,7 @@ onUnmounted(() => {
           @click="isMobilePublicNavOpen = false"
           class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
         >
-          Back to my dashboard
+          Dashboard
         </RouterLink>
       </div>
     </Transition>

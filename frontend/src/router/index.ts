@@ -207,7 +207,7 @@ router.beforeEach(async (to) => {
   }
 
   // A signed-in administrator is kept in the admin workspace, except for the
-  // website itself when she ASKS for it - "Visit the website" in the workspace
+  // website itself when she ASKS for it - "Website" in the account menu
   // (2026-09-24). It used to bounce her from /public and /category to the
   // dashboard, so she could never see what visitors see. `redirectedFrom`
   // separates a real visit from arriving there by redirect: `/` and the
