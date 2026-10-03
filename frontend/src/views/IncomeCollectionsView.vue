@@ -671,11 +671,14 @@ const monthRows = computed(() =>
   )
 );
 const monthRent = computed(() => monthRows.value.reduce((s, r) => s + r.rent, 0));
+/** Nothing to show (not a failed load): sent to the end on a phone. */
+const receivedIsEmpty = computed(() => !incomeRecordsFetchFailed.value && monthRent.value + monthWater.value === 0);
 const monthWater = computed(() => monthRows.value.reduce((s, r) => s + r.water, 0));
 // BR-035: half of each Boarding House row's Rent Amount, as `totalShare`.
 const monthShare = computed(() => monthRows.value.reduce((s, r) => s + (r.cluster === 'Boarding House' ? r.rent / 2 : 0), 0));
 
 /** Where the period's rent and water came from, by cluster: a true part-to-whole, like Expenses by area. */
+const splitIsEmpty = computed(() => !incomeRecordsFetchFailed.value && clusterSplit.value.length === 0);
 const clusterSplit = computed(() => {
   const totals = new Map<string, number>();
   for (const r of rows.value) totals.set(r.cluster, (totals.get(r.cluster) ?? 0) + r.rent + r.water);
@@ -1219,8 +1222,14 @@ const isDownloadOpen = ref(false);
       the data - read it in none, which is the same shape as the dispatch board
       that claimed zero repairs.
     -->
-    <div class="grid gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${focus.label}`" tone="night" class="max-md:gap-3 max-md:p-4 xl:col-span-4">
+    <!--
+      On a phone a tile with nothing in it goes to the end (Loyd, 2026-10-03,
+      the same rule as the Overview): a month with nothing entered yet would
+      otherwise open the page on ₱0 above the chart. A failed load is not a
+      zero and keeps its place. CSS order below 768px only.
+    -->
+    <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
+      <OverviewTile :title="`Received, ${focus.label}`" tone="night" :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', receivedIsEmpty && 'max-md:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
@@ -1253,7 +1262,7 @@ const isDownloadOpen = ref(false);
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it came from, ${periodWord}`" class="max-md:gap-3 max-md:p-4 xl:col-span-8">
+      <OverviewTile :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-md:order-last']">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.
@@ -1299,22 +1308,21 @@ const isDownloadOpen = ref(false);
           </p>
         </template>
       </OverviewTile>
-    </div>
 
-    <!--
-      What came in, month by month - the same capsules the overview and the
-      expenses ledger draw. "What it was made of" (a rent/water bar and the two
-      figures) stood beside it and repeated the Rent and Water tiles above word
-      for word; removed for less on screen (Sean, 2026-10-01).
-    -->
-    <div v-if="rows.length > 0 && showMonthChart">
+      <!--
+        What came in, month by month - the same capsules the overview and the
+        expenses ledger draw. "What it was made of" (a rent/water bar and the two
+        figures) stood beside it and repeated the Rent and Water tiles above word
+        for word; removed for less on screen (Sean, 2026-10-01). In the same grid
+        as the two tiles above since 2026-10-03, so an empty one can drop below it.
+      -->
       <OverviewTile
+        v-if="rows.length > 0 && showMonthChart"
         :title="`Rent and water by month, ${periodWord}`"
-        class="max-md:gap-3 max-md:p-4"
+        class="max-md:gap-3 max-md:p-4 xl:col-span-12"
       >
         <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short />
       </OverviewTile>
-
     </div>
 
     <!--

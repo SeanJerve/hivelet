@@ -444,6 +444,9 @@ const sumOf = (list: ExpenseRecord[]) => list.reduce((s, e) => s + e.splits.redu
 const isUtility = (e: ExpenseRecord) => /water|light|util/i.test(e.category);
 const isRepairOrCleaning = (e: ExpenseRecord) => /repair|janitorial|suppl/i.test(e.category);
 const monthTotal = computed(() => sumOf(monthEntries.value));
+/** Nothing to show (not a failed load): sent to the end on a phone. */
+const spentIsEmpty = computed(() => !expenseRecordsFetchFailed.value && monthTotal.value === 0);
+const splitIsEmpty = computed(() => !expenseRecordsFetchFailed.value && areaSplit.value.length === 0);
 const monthUtilities = computed(() => sumOf(monthEntries.value.filter(isUtility)));
 const monthRepairs = computed(() => sumOf(monthEntries.value.filter(isRepairOrCleaning)));
 
@@ -925,7 +928,9 @@ async function handleEditExpense() {
     </div>
 
     <!-- What was spent, and where it landed -->
-    <div class="grid gap-4 xl:grid-cols-12">
+    <!-- On a phone a tile with nothing in it goes to the end (Loyd, 2026-10-03,
+         the Overview's rule); a failed load keeps its place. -->
+    <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
       <!--
         The one dark tile on this screen, and the one figure the screen exists
         to state.
@@ -952,7 +957,7 @@ async function handleEditExpense() {
         which is the dark-tile idiom already in AdminOverviewView, not a new
         colour.
       -->
-      <OverviewTile :title="`Spent, ${focus.label}`" tone="night" class="max-md:gap-3 max-md:p-4 xl:col-span-4">
+      <OverviewTile :title="`Spent, ${focus.label}`" tone="night" :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', spentIsEmpty && 'max-md:order-last']">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           dark
@@ -979,7 +984,7 @@ async function handleEditExpense() {
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it landed, ${periodWord}`" class="max-md:gap-3 max-md:p-4 xl:col-span-8">
+      <OverviewTile :title="`Where it landed, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-md:order-last']">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.
