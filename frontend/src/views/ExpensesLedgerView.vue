@@ -695,6 +695,25 @@ function getPersonalOtherAmount(e: ExpenseRecord): number {
     .reduce((sum, s) => sum + s.amount, 0);
 }
 
+/**
+ * Where an expense landed, for the phone card's chips: the same four groups the
+ * desktop columns use, in their order, leaving out any that got nothing. One
+ * group alone carries no amount (it is the whole expense, already shown beside
+ * the description).
+ */
+function areaParts(e: ExpenseRecord): { label: string; amount: number | null }[] {
+  const parts = [
+    { label: 'Boarding house', amount: getAreaAmount(e, 'Boarding House') },
+    { label: 'Main house', amount: getAreaAmount(e, 'Main House') },
+    { label: 'Apartments', amount: getApartmentsAmount(e) },
+    { label: 'Other (personal)', amount: getPersonalOtherAmount(e) },
+  ].filter((p) => p.amount > 0);
+  return parts.length === 1 ? [{ label: parts[0].label, amount: null }] : parts;
+}
+
+/** Whole pesos unless there are centavos: ₱23,000 but ₱1,854.50. */
+const money = (n: number) => peso(n, Number.isInteger(Math.round(n * 100) / 100) ? 0 : 2);
+
 // Custom Confirmation State
 const isConfirmOpen = ref(false);
 const confirmTitle = ref('');
@@ -1128,62 +1147,54 @@ async function handleEditExpense() {
         </tr>
       </template>
 
+      <!--
+        A day on a phone (Loyd, 2026-10-03: "very confusing and no emphasized
+        value"). The day's total is the figure, large, beside a small date; each
+        expense under it is its description and amount, the kind beneath, and
+        where it landed as chips, with the pencil at the end of that row instead
+        of on a line of its own. A chip names the area alone when the whole
+        expense went there, and carries its share when it was split.
+      -->
       <template #card="{ row: group }">
-        <div class="flex items-baseline justify-between gap-3 border-b border-line pb-3">
-          <p class="text-sm font-semibold text-ink">{{ group.dateStr }}</p>
-          <p class="tabular text-sm font-semibold text-ink">{{ peso(group.dayTotal, 2) }}</p>
+        <div class="flex items-end justify-between gap-3 border-b border-line pb-3">
+          <p class="text-sm text-ink-soft">{{ group.dateStr }}</p>
+          <p class="tabular text-2xl font-semibold leading-none tracking-tight text-ink">{{ money(group.dayTotal) }}</p>
         </div>
 
-        <ul class="mt-3 space-y-4">
-          <li v-for="e in group.records" :key="e.id">
+        <ul class="divide-y divide-line">
+          <li v-for="e in group.records" :key="e.id" class="py-3 last:pb-0">
             <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <!--
-                  break-words: this is the phone card layout below lg, where
-                  the desktop `<th>` above has ws-table-wrap's own contained
-                  horizontal scroll to fall back on and this card does not.
-                  The description is typed freely (an invoice or supplier
-                  name), so an unbroken run - a run-together vendor name, a
-                  reference number - would otherwise run past the card.
-                -->
-                <p class="text-sm font-medium leading-snug break-words text-ink">{{ e.description }}</p>
-                <p class="mt-0.5 text-xs text-ink-faint">{{ e.category }}</p>
-              </div>
-              <p class="tabular shrink-0 text-sm font-semibold text-ink">
-                {{ peso(getExpenseTotal(e), 2) }}
-              </p>
+              <!--
+                break-words: the description is typed freely (an invoice or
+                supplier name), so an unbroken run would otherwise run past the
+                card, which has no sideways scroll to fall back on.
+              -->
+              <p class="min-w-0 text-sm font-medium leading-snug break-words text-ink">{{ e.description }}</p>
+              <!-- A day of one expense: its amount is the day's total above, not
+                   said a second time. -->
+              <p v-if="group.records.length > 1" class="tabular shrink-0 text-base font-semibold leading-snug text-ink">{{ money(getExpenseTotal(e)) }}</p>
             </div>
+            <p class="mt-0.5 text-xs text-ink-faint">{{ e.category }}</p>
 
-            <!-- The compact pencil the directory cards use: hover/focus-reveal,
-                 no border, not a full-width button. -->
-            <dl class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-              <div v-if="getAreaAmount(e, 'Boarding House')" class="flex gap-1.5">
-                <dt class="text-ink-faint">Boarding house</dt>
-                <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Boarding House'), 2) }}</dd>
-              </div>
-              <div v-if="getAreaAmount(e, 'Main House')" class="flex gap-1.5">
-                <dt class="text-ink-faint">Main house</dt>
-                <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Main House'), 2) }}</dd>
-              </div>
-              <div v-if="getApartmentsAmount(e)" class="flex gap-1.5">
-                <dt class="text-ink-faint">Apartments</dt>
-                <dd class="tabular text-ink">{{ peso(getApartmentsAmount(e), 2) }}</dd>
-              </div>
-              <div v-if="getPersonalOtherAmount(e)" class="flex gap-1.5">
-                <dt class="text-ink-faint">Other (personal)</dt>
-                <dd class="tabular text-ink">{{ peso(getPersonalOtherAmount(e), 2) }}</dd>
-              </div>
-            </dl>
-            <div class="mt-2 flex justify-end">
-            <button
-              type="button"
-              class="press-plate icon-btn-plain row-action"
-              :aria-label="`Edit ${e.description}`"
-              title="Edit"
-              @click="startEditExpense(e)"
-            >
-              <Pencil class="size-4" aria-hidden="true" />
-            </button>
+            <div class="mt-2 flex items-center gap-2">
+              <ul class="flex min-w-0 flex-1 flex-wrap gap-1.5" :aria-label="`Where ${e.description} landed`">
+                <li
+                  v-for="part in areaParts(e)"
+                  :key="part.label"
+                  class="inline-flex items-center gap-1.5 rounded-full bg-canvas px-2.5 py-1 text-xs text-ink-soft"
+                >
+                  {{ part.label }}<span v-if="part.amount !== null" class="tabular font-semibold text-ink">{{ money(part.amount) }}</span>
+                </li>
+              </ul>
+              <button
+                type="button"
+                class="press-plate icon-btn-plain row-action -my-2 -mr-2.5"
+                :aria-label="`Edit ${e.description}`"
+                title="Edit"
+                @click="startEditExpense(e)"
+              >
+                <Pencil class="size-4" aria-hidden="true" />
+              </button>
             </div>
           </li>
         </ul>
