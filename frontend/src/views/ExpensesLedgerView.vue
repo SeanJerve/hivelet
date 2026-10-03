@@ -952,7 +952,7 @@ async function handleEditExpense() {
         which is the dark-tile idiom already in AdminOverviewView, not a new
         colour.
       -->
-      <OverviewTile :title="`Spent, ${focus.label}`" tone="night" class="xl:col-span-4">
+      <OverviewTile :title="`Spent, ${focus.label}`" tone="night" class="max-md:gap-3 max-md:p-4 xl:col-span-4">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           dark
@@ -960,39 +960,43 @@ async function handleEditExpense() {
           @retry="fetchExpenses"
         />
         <template v-else>
-          <p class="tabular text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal) }}</p>
+          <p class="tabular text-3xl md:text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal) }}</p>
           <p class="text-sm leading-6 text-on-night-soft">
             {{ monthEntries.length === 0 ? 'Nothing entered yet' : `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}
           </p>
-          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1">
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
+          <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
+               cards there, so the graphs below are on the first screen). -->
+          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-white/10 pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-white/10 md:pt-1">
+            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-on-night-soft">Utilities</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(monthUtilities) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthUtilities) }}</dd>
             </div>
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
+            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-on-night-soft">Repairs and cleaning</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(monthRepairs) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRepairs) }}</dd>
             </div>
           </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it landed, ${periodWord}`" class="xl:col-span-8">
+      <OverviewTile :title="`Where it landed, ${periodWord}`" class="max-md:gap-3 max-md:p-4 xl:col-span-8">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.
         </p>
         <template v-else>
           <p class="flex flex-wrap items-baseline gap-x-2">
-            <span class="tabular text-2xl font-semibold leading-none text-ink">{{ peso(totalJuly) }}</span>
+            <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(totalJuly) }}</span>
             <span class="text-sm text-ink-soft">spent across {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</span>
           </p>
           <SegmentBar
             :segments="areaSplit"
             :label="`How ${peso(totalJuly)} divides across the property areas`"
           />
-          <ul class="flex flex-col gap-2.5">
-            <li v-for="a in areaSplit" :key="a.label" class="flex items-center justify-between gap-3 text-sm">
+          <!-- The legend in two columns on a phone, name and share; the amounts
+               from 768px (Loyd, 2026-10-03). -->
+          <ul class="grid grid-cols-2 gap-x-3 gap-y-2 max-md:text-xs md:flex md:flex-col md:gap-2.5">
+            <li v-for="a in areaSplit" :key="a.label" class="flex min-w-0 items-center justify-between gap-2 md:gap-3 md:text-sm">
               <span class="flex min-w-0 items-center gap-2">
                 <span
                   aria-hidden="true"
@@ -1012,11 +1016,11 @@ async function handleEditExpense() {
                 <span class="text-xs text-ink-faint tabular">
                   {{ totalJuly > 0 ? Math.round((a.value / totalJuly) * 100) : 0 }}%
                 </span>
-                <span class="tabular font-semibold">{{ peso(a.value) }}</span>
+                <span class="tabular font-semibold max-md:hidden">{{ peso(a.value) }}</span>
               </span>
             </li>
           </ul>
-          <p class="text-xs leading-5 text-ink-faint">
+          <p class="text-xs leading-5 text-ink-faint max-md:hidden">
             Main House and Other are personal spending.
           </p>
         </template>

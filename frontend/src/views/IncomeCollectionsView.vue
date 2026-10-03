@@ -1220,7 +1220,7 @@ const isDownloadOpen = ref(false);
       that claimed zero repairs.
     -->
     <div class="grid gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${focus.label}`" tone="night" class="xl:col-span-4">
+      <OverviewTile :title="`Received, ${focus.label}`" tone="night" class="max-md:gap-3 max-md:p-4 xl:col-span-4">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
@@ -1229,44 +1229,48 @@ const isDownloadOpen = ref(false);
         />
         <template v-else>
           <!-- Rent plus water, the Remitted column's figure, for the one month. -->
-          <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater) }}</p>
+          <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater) }}</p>
           <p class="text-sm leading-6 text-on-night-soft">
             {{ monthRows.length === 0 ? 'Nothing entered yet' : `From ${monthRows.length} ${monthRows.length === 1 ? 'payment' : 'payments'}` }}
           </p>
-          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1">
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
+          <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
+               cards there, so the graphs below are on the first screen). -->
+          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-white/10 pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-white/10 md:pt-1">
+            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-on-night-soft">Rent</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(monthRent) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRent) }}</dd>
             </div>
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
+            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-on-night-soft">Water</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(monthWater) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthWater) }}</dd>
             </div>
             <!-- BR-035: the label only; a system-computed figure, half of each row's Rent Amount. -->
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
+            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-on-night-soft">50% Share</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(monthShare) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthShare) }}</dd>
             </div>
           </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it came from, ${periodWord}`" class="xl:col-span-8">
+      <OverviewTile :title="`Where it came from, ${periodWord}`" class="max-md:gap-3 max-md:p-4 xl:col-span-8">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.
         </p>
         <template v-else>
           <p class="flex flex-wrap items-baseline gap-x-2">
-            <span class="tabular text-2xl font-semibold leading-none text-ink">{{ peso(collectedAltogether) }}</span>
+            <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(collectedAltogether) }}</span>
             <span class="text-sm text-ink-soft">received from {{ rows.length }} {{ rows.length === 1 ? 'payment' : 'payments' }}</span>
           </p>
           <SegmentBar
             :segments="clusterSplit"
             :label="`How ${peso(collectedAltogether)} divides across the clusters`"
           />
-          <ul class="flex flex-col gap-2.5">
-            <li v-for="c in clusterSplit" :key="c.label" class="flex items-center justify-between gap-3 text-sm">
+          <!-- The legend in two columns on a phone, name and share; the amounts
+               from 768px (Loyd, 2026-10-03). -->
+          <ul class="grid grid-cols-2 gap-x-3 gap-y-2 max-md:text-xs md:flex md:flex-col md:gap-2.5">
+            <li v-for="c in clusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-2 md:gap-3 md:text-sm">
               <span class="flex min-w-0 items-center gap-2">
                 <span
                   aria-hidden="true"
@@ -1286,11 +1290,11 @@ const isDownloadOpen = ref(false);
                 <span class="text-xs text-ink-faint tabular">
                   {{ collectedAltogether > 0 ? Math.round((c.value / collectedAltogether) * 100) : 0 }}%
                 </span>
-                <span class="tabular font-semibold">{{ peso(c.value) }}</span>
+                <span class="tabular font-semibold max-md:hidden">{{ peso(c.value) }}</span>
               </span>
             </li>
           </ul>
-          <p v-if="waterRatePerOccupant !== null" class="text-xs leading-5 text-ink-faint">
+          <p v-if="waterRatePerOccupant !== null" class="text-xs leading-5 text-ink-faint max-md:hidden">
             Water is {{ peso(waterRatePerOccupant) }} per person each month.
           </p>
         </template>
@@ -1306,8 +1310,9 @@ const isDownloadOpen = ref(false);
     <div v-if="rows.length > 0 && showMonthChart">
       <OverviewTile
         :title="`Rent and water by month, ${periodWord}`"
+        class="max-md:gap-3 max-md:p-4"
       >
-        <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" />
+        <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short />
       </OverviewTile>
 
     </div>
