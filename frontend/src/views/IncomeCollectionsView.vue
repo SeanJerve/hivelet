@@ -1148,51 +1148,48 @@ const isDownloadOpen = ref(false);
        only the browser's default ring and its search box had none. -->
   <div class="ws-focus space-y-6">
     <!-- Page header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-4">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
-        <!-- No subtitle under the name: "Every payment received, unit by unit"
-             said what the page plainly is (Sean, 2026-10-01, fewer words). -->
-        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-          Monthly Income
-        </h1>
-      </div>
-
-      <div class="ws-page-actions">
         <!--
-          One export, not two. A CSV button sat beside this one writing a flat
-          dump, while this writes her actual layout: month blocks, cluster
-          subtotals, Linda kept separate. Two buttons meant two files that
-          disagreed about what the ledger looks like.
-
-          "Download", not "Download 2026 for Excel" (Sean, 2026-10-01): the
-          long label made it the wider of the pair beside Record payment. The
-          year and the format are still in its name and its tooltip, and the
-          spreadsheet icon says Excel at a glance.
+          Download is a word on the eyebrow line, at the right, the way the
+          Overview's year sits on its date line (Loyd, 2026-10-03), so the
+          button row under the name holds the one action. It still opens the
+          month / year / everything dialog; the year and the format are in its
+          accessible name and tooltip.
         -->
-        <button
-          type="button"
-          class="pill-btn"
-          aria-haspopup="dialog"
-          :aria-label="`Download ${exportYear} for Excel`"
-          :title="`Download ${exportYear} for Excel`"
-          @click="isDownloadOpen = true"
-        >
-          <FileSpreadsheet class="size-4" aria-hidden="true" />
-          <span>Download</span>
-        </button>
+        <div class="flex items-center justify-between gap-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+          <button
+            type="button"
+            class="press relative -my-1 inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+            aria-haspopup="dialog"
+            :aria-label="`Download ${exportYear} for Excel`"
+            :title="`Download ${exportYear} for Excel`"
+            @click="isDownloadOpen = true"
+          >
+            <span>Download</span>
+            <FileSpreadsheet class="size-4" aria-hidden="true" />
+          </button>
+        </div>
+        <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <h1 class="text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+            Monthly Income
+          </h1>
 
-        <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
-        <button
-          type="button"
-          class="pill-btn-brand"
-          :disabled="writesUnavailable"
-          :title="writesUnavailable ? 'Needs a connection' : undefined"
-          @click="isOnsitePaymentModalOpen = true"
-        >
-          <Plus class="size-4" aria-hidden="true" />
-          <span>Record payment</span>
-        </button>
+          <div class="ws-page-actions">
+            <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
+            <button
+              type="button"
+              class="pill-btn-brand"
+              :disabled="writesUnavailable"
+              :title="writesUnavailable ? 'Needs a connection' : undefined"
+              @click="isOnsitePaymentModalOpen = true"
+            >
+              <Plus class="size-4" aria-hidden="true" />
+              <span>Record payment</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Month, year, or everything; the busy state and any failure live in it. -->
