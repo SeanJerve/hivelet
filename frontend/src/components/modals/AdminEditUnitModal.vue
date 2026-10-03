@@ -12,8 +12,8 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import { useRoute } from 'vue-router';
 
 const VISIBILITY_OPTIONS = [
-  { value: 'Published', label: 'Listed, and open to enquiries' },
-  { value: 'Hidden', label: 'Not listed, and closed to enquiries' },
+  { value: 'Published', label: 'Listed on the website' },
+  { value: 'Hidden', label: 'Hidden from the website' },
 ];
 
 const unit = ref<RoomItem | null>(null);
@@ -475,9 +475,7 @@ async function handleSave() {
                 <template v-if="occupantsSummary.count > 0">{{ occupantsSummary.text }}</template>
                 <template v-else>Nobody</template>
               </p>
-              <p class="ws-hint mt-0.5">
-                Counted from the tenancy records. Change it by moving someone in or out.
-              </p>
+              <p class="ws-hint mt-0.5">From the tenancy records.</p>
             </div>
             <StatusPill :tone="occupantsSummary.count > 0 ? 'paid' : 'neutral'">
               {{ occupantsSummary.count > 0 ? 'Occupied' : 'Vacant' }}
@@ -501,10 +499,7 @@ async function handleSave() {
         <label class="ws-field">
           On the public site
           <PillSelect v-model="editVisibility" :options="VISIBILITY_OPTIONS" aria-label="On the public site" widthClass="w-full" />
-          <span class="ws-hint">
-            Hiding a unit takes it off the public room pages and stops the enquiry form accepting
-            messages about it. Anyone already living there is unaffected.
-          </span>
+          <span class="ws-hint">Hidden units don't appear on the website or take inquiries.</span>
         </label>
 
         <!-- Plain text, not a disabled input: it cannot be edited here, and a
@@ -512,7 +507,6 @@ async function handleSave() {
         <div class="ws-field">
           <span>How it is billed</span>
           <p class="rounded-2xl bg-canvas px-4 py-3 text-sm text-ink">{{ billingRule }}</p>
-          <span class="ws-hint">The same for every unit, so it is not changed here.</span>
         </div>
 
         <!-- "Description", the word the unit's own details dialog uses for

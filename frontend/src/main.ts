@@ -120,7 +120,7 @@ const installedApp = () =>
  */
 const PAGE_DESCRIPTIONS: Record<string, string> = {
   Inquire: 'Ask about a unit at the Fe Galang Da Silva Boarding House in Legazpi City, or ask to arrange a viewing.',
-  InquiryThread: 'Read the reply to your enquiry about the Fe Galang Da Silva Boarding House, and write back.',
+  InquiryThread: 'Read the reply to your inquiry about the Fe Galang Da Silva Boarding House, and write back.',
   PrivacyPolicy: 'What the Fe Galang Da Silva Boarding House website collects, why, who else receives it, and your rights under the Data Privacy Act of 2012.',
   Terms: 'How the boarding house website and tenant portal may be used, including paying online, refunds and deposits.',
 }

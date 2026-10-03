@@ -733,7 +733,7 @@ function handleDeleteTicketPrompt() {
             <textarea v-model="logDesc" rows="3" class="ws-textarea w-full" required placeholder="The tenant says water drips from under the sink."></textarea>
           </label>
           <p v-if="logPriority === 'Emergency'" class="text-sm leading-6 text-ink-soft">
-            An emergency also marks the unit as under maintenance, the same as when a tenant reports one.
+            An emergency also marks the unit as under maintenance.
           </p>
         </template>
       </form>
