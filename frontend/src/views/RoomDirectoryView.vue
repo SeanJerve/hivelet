@@ -404,7 +404,7 @@ function applyRoomFilters(v: FilterDraft) {
                   <dd class="mt-0.5 tabular text-base font-bold text-brand">{{ peso(u.price) }}</dd>
                 </dl>
                 <div class="flex shrink-0 gap-1.5">
-                  <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
+                  <button type="button" class="press-plate icon-btn-plain row-action -mr-3 -mb-1" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
                     <Pencil class="size-4" aria-hidden="true" />
                   </button>
                 </div>
@@ -526,7 +526,7 @@ function applyRoomFilters(v: FilterDraft) {
             <dd class="mt-0.5 tabular text-base font-bold text-brand">{{ peso(u.price) }}</dd>
           </dl>
           <div class="flex shrink-0 gap-1.5">
-            <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
+            <button type="button" class="press-plate icon-btn-plain row-action -mr-3 -mb-1" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
               <Pencil class="size-4" aria-hidden="true" />
             </button>
           </div>

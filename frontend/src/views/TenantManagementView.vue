@@ -1085,7 +1085,7 @@ async function handleOnboard() {
             <dt class="text-xs text-ink-faint">Deposit</dt>
             <dd class="mt-0.5 tabular text-lg font-bold text-brand">{{ peso(t.depositAmount) }}</dd>
           </dl>
-          <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
+          <button type="button" class="press-plate icon-btn-plain row-action -mr-3 -mb-1" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
             <Pencil class="size-4" aria-hidden="true" />
           </button>
         </div>
@@ -1274,7 +1274,7 @@ async function handleOnboard() {
                 <dt class="text-xs text-ink-faint">Deposit</dt>
                 <dd class="mt-0.5 tabular text-lg font-bold text-brand">{{ peso(t.depositAmount) }}</dd>
               </dl>
-              <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
+              <button type="button" class="press-plate icon-btn-plain row-action -mr-3 -mb-1" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
                 <Pencil class="size-4" aria-hidden="true" />
               </button>
             </div>

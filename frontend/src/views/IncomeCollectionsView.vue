@@ -1721,7 +1721,7 @@ const isDownloadOpen = ref(false);
                 </div>
                 <div class="shrink-0 text-right">
                   <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-                  <span class="tabular text-lg font-bold text-brand">{{ peso(r.rent + r.water, 2) }}</span>
+                  <span class="tabular text-xl font-bold text-brand">{{ peso(r.rent + r.water, 2) }}</span>
                 </div>
               </div>
 
@@ -1736,18 +1736,18 @@ const isDownloadOpen = ref(false);
                 </div>
                 <div>
                   <dt class="text-ink-faint">Rent</dt>
-                  <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
+                  <dd class="tabular mt-0.5 text-base font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
                 </div>
                 <div>
                   <dt class="text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
-                  <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
+                  <dd class="tabular mt-0.5 text-base font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
                 </div>
               </dl>
 
               <div class="mt-2.5 flex justify-end">
                 <button
                   type="button"
-                  class="press-plate icon-btn-plain row-action"
+                  class="press-plate icon-btn-plain row-action -mr-3 -mb-1"
                   :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
                   title="Edit"
                   @click="startEditIncome(r)"
@@ -1880,7 +1880,7 @@ const isDownloadOpen = ref(false);
           </div>
           <div class="shrink-0 text-right">
             <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-            <span class="tabular text-lg font-bold text-brand">{{ peso(r.rent + r.water, 2) }}</span>
+            <span class="tabular text-xl font-bold text-brand">{{ peso(r.rent + r.water, 2) }}</span>
           </div>
         </div>
 
@@ -1895,18 +1895,18 @@ const isDownloadOpen = ref(false);
           </div>
           <div>
             <dt class="text-ink-faint">Rent</dt>
-            <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
+            <dd class="tabular mt-0.5 text-base font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
           </div>
           <div>
             <dt class="text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
-            <dd class="tabular mt-0.5 font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
+            <dd class="tabular mt-0.5 text-base font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
           </div>
         </dl>
 
         <div class="mt-2.5 flex justify-end">
           <button
             type="button"
-            class="press-plate icon-btn-plain row-action"
+            class="press-plate icon-btn-plain row-action -mr-3 -mb-1"
             :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
             title="Edit"
             @click="startEditIncome(r)"
