@@ -22,8 +22,13 @@ const props = withDefaults(
      * ledger says "Recorded" and "Not entered yet"; the marks stay the same.
      */
     terms?: Partial<Record<MonthKind, string>>;
+    /**
+     * Shorter bars below 768px, for the Overview, where this chart has to share
+     * a phone's first screen with three tiles (Loyd, 2026-10-03).
+     */
+    short?: boolean;
   }>(),
-  { terms: () => ({}) }
+  { terms: () => ({}), short: false }
 );
 
 const DEFAULT_TERMS: Record<MonthKind, string> = {
@@ -85,7 +90,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
 <template>
   <div class="flex flex-col gap-4 min-w-0">
     <div class="flex gap-3 min-w-0">
-      <div aria-hidden="true" class="flex flex-col justify-between h-48 pb-7 text-xs text-ink-faint tabular text-right shrink-0">
+      <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 text-xs text-ink-faint tabular text-right shrink-0', short ? 'h-28 md:h-48' : 'h-48']">
         <span v-for="t in ticks" :key="t">{{ compact(t) }}</span>
       </div>
 
@@ -93,7 +98,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <div
           role="group"
           :aria-label="label"
-          class="grid h-48 gap-0.5 sm:gap-2 sm:min-w-[26rem]"
+          :class="['grid gap-0.5 sm:gap-2 sm:min-w-[26rem]', short ? 'h-28 md:h-48' : 'h-48']"
           :style="{ gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))` }"
         >
           <button

@@ -9,6 +9,8 @@ import { ArrowUpRight } from 'lucide-vue-next';
 const props = withDefaults(
   defineProps<{
     title?: string;
+    /** A shorter title below 768px, for a tile that is half a phone's width. */
+    phoneTitle?: string;
     tone?: 'plain' | 'soft' | 'brand' | 'night';
     /** Where the tile's arrow leads. Omit when there is nowhere to go. */
     to?: string;
@@ -39,7 +41,10 @@ const toneClass = computed(
   >
     <header v-if="title || to || $slots.actions" class="flex items-start justify-between gap-3">
       <h2 v-if="title" :id="titleId" class="text-[0.9375rem] leading-5 font-semibold pt-2.5">
-        {{ title }}
+        <template v-if="phoneTitle">
+          <span class="md:hidden">{{ phoneTitle }}</span><span class="max-md:hidden">{{ title }}</span>
+        </template>
+        <template v-else>{{ title }}</template>
       </h2>
       <div class="flex items-center gap-2 shrink-0 ml-auto">
         <slot name="actions" />

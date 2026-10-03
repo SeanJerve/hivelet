@@ -42,6 +42,7 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
 import OccupancyArc from '@/components/overview/OccupancyArc.vue';
+import PhoneMore from '@/components/overview/PhoneMore.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
@@ -56,6 +57,7 @@ import {
   ArrowLeft,
   Search,
   DoorOpen,
+  ArrowUpRight,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -520,6 +522,8 @@ const arcUnits = computed<ArcUnit[]>(() =>
       .map((r) => ({ code: r.unitCode.toUpperCase(), cluster: c, occupied: isOccupied(r) }))
   )
 );
+/** The phone's occupancy bar counts the same units the arc draws. */
+const occupiedUnitsCount = computed(() => arcUnits.value.filter((u) => u.occupied).length);
 
 const liveClusterPerformance = computed(() =>
   CLUSTERS.map((clusterName) => {
@@ -899,16 +903,61 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       re-render, so the branch gets a fade-in rather than a jump cut. `ws-reveal`
       already handles the `prefers-reduced-motion` fallback.
     -->
-    <div v-else-if="!isHistoricalMode" class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+    <!--
+      On a phone (Loyd, 2026-10-03): the first screen shows what needs her, this
+      month's rent and water, occupancy and the month chart together. The first
+      two are half-width tiles side by side, occupancy is a single bar instead of
+      the arc, the chart is shorter, and the figures each tile adds after its
+      headline fold under "More" (PhoneMore). From 768px nothing changes.
+    -->
+    <div v-else-if="!isHistoricalMode" class="ws-reveal grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-12">
       <!-- What needs her action. The only dark tile on the screen. -->
-      <OverviewTile tone="night" title="Needs your attention" class="md:col-span-2 xl:col-span-5">
+      <OverviewTile tone="night" title="Needs your attention" class="max-md:gap-3 max-md:p-4 md:col-span-2 xl:col-span-5">
+        <!--
+          On a phone each half of this tile is one link, the count and its words
+          together, instead of a count, a button and a link stacked: at half a
+          phone's width those made the first row 400px tall (Loyd, 2026-10-03).
+          The payments themselves are one tap away on Monthly Income.
+        -->
+        <div class="flex flex-1 flex-col gap-3 md:hidden">
+          <UnavailableNote
+            v-if="pendingPaymentsFailed"
+            dark
+            message="Payments to verify could not be loaded."
+            @retry="refreshAllData"
+          />
+          <router-link v-else to="/admin/income?tab=verify" class="press group/att flex flex-col gap-1">
+            <span class="flex items-start justify-between gap-2">
+              <span class="text-4xl leading-none font-semibold tabular tracking-tight">{{ pendingCount }}</span>
+              <ArrowUpRight class="size-4 text-on-night-soft" aria-hidden="true" />
+            </span>
+            <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
+            <span v-if="pendingCount > 0" class="text-xs tabular text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
+          </router-link>
+          <UnavailableNote
+            v-if="maintenanceTicketsFetchFailed"
+            dark
+            class="mt-auto"
+            message="Repairs could not be loaded."
+            @retry="refreshAllData"
+          />
+          <router-link v-else to="/admin/tickets" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
+            <span class="flex items-start justify-between gap-2">
+              <span class="text-3xl leading-none font-semibold tabular">{{ urgentTickets.length }}</span>
+              <ArrowUpRight class="size-4 text-on-night-soft" aria-hidden="true" />
+            </span>
+            <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
+          </router-link>
+        </div>
+
         <UnavailableNote
           v-if="pendingPaymentsFailed"
           dark
+          class="max-md:hidden"
           message="The payments waiting for verification could not be loaded. There may still be some."
           @retry="refreshAllData"
         />
-        <div v-else>
+        <div v-else class="max-md:hidden">
           <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span class="text-5xl leading-none font-semibold tabular tracking-tight">{{ pendingCount }}</span>
             <span class="text-sm text-on-night-soft">
@@ -938,7 +987,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </router-link>
         </div>
 
-        <div class="mt-auto border-t border-white/10 pt-4">
+        <div class="mt-auto border-t border-white/10 pt-4 max-md:hidden">
           <UnavailableNote
             v-if="maintenanceTicketsFetchFailed"
             dark
@@ -961,9 +1010,10 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
 
       <OverviewTile
         :title="`Rent and water for ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
+        phone-title="Rent and water"
         to="/admin/income"
         to-label="Open the income ledger"
-        class="xl:col-span-4"
+        class="max-md:gap-3 max-md:p-4 xl:col-span-4"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -973,45 +1023,60 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         <template v-else>
           <div>
             <!--
-              `text-5xl` DID NOT FIT ON A PHONE, and this is the one figure on
-              the screen that is a peso amount at that size.
-
-              Measured in the running app at 375: an `OverviewTile` is
-              `p-5 sm:p-6`, so at a 343px content column the tile gives its
-              children 303px. Rendered at `text-5xl` in Plus Jakarta Sans,
-              "₱1,284,750.00" measures 327.7px - 24.7px past the edge, and the
-              tile reported 9px of its own scrollWidth overflow. A seven-figure
-              month is not hypothetical here; the ledger's own year total is
-              ₱8,086,250.
-
-              `text-4xl` brings the same string to 245.8px, which fits with
-              room to spare, and `sm:text-5xl` leaves every wider screen exactly
-              as it was. The count on the dark tile above keeps its `text-5xl`:
-              it is a small integer, not a peso figure.
+              `text-5xl` did not fit a phone: "₱1,284,750.00" is 327.7px in a
+              303px tile, and a seven-figure month is not hypothetical here. Half
+              a phone's width is less again, so `text-2xl` there; `text-4xl` on a
+              tablet, `text-5xl` from 640px as before.
             -->
-            <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl">{{ peso(currentMonthRevenue) }}</p>
+            <p class="text-2xl leading-none font-semibold tabular tracking-tight md:text-4xl lg:text-5xl">{{ peso(currentMonthRevenue) }}</p>
             <!-- The count only; "usually entered a week or two after" was
                  explanation she does not need on her own screen (Sean, 2026-10-01). -->
             <p class="mt-2 text-sm text-ink-soft">
-              {{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }} entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }} so far
+              <span class="md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }}, </span>{{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }}<span class="max-md:hidden"> entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }}</span> so far
             </p>
           </div>
-          <div class="mt-auto flex items-baseline justify-between gap-3 border-t border-line pt-4 text-sm">
-            <span class="text-ink-soft">Rent and water entered for {{ CURRENT_YEAR }}</span>
-            <span class="font-semibold tabular">{{ peso(monthlyRevenue) }}</span>
+          <div class="mt-auto flex flex-col gap-3 md:gap-4">
+            <PhoneMore>
+              <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-line pt-4 text-sm">
+                <span class="text-ink-soft">Rent and water entered for {{ CURRENT_YEAR }}</span>
+                <span class="font-semibold tabular">{{ peso(monthlyRevenue) }}</span>
+              </div>
+            </PhoneMore>
           </div>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Occupancy" to="/admin/directory" to-label="Open rooms and rates" class="xl:col-span-3">
+      <OverviewTile title="Occupancy" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 max-md:gap-2 max-md:p-4 md:col-span-1 xl:col-span-3">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
           @retry="refreshAllData"
         />
         <template v-else>
-          <OccupancyArc :units="arcUnits" />
-          <p class="text-center text-sm text-ink-soft">
+          <!-- A phone gets the count and one bar, a unit to a segment, in place of
+               the arc: the arc is 170px tall at that width (Loyd, 2026-10-03). -->
+          <div class="flex flex-col gap-2 md:hidden">
+            <p class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span class="text-2xl leading-none font-semibold tabular tracking-tight">{{ occupiedUnitsCount }}<span class="text-base text-ink-faint">/{{ totalRoomsCount }}</span></span>
+              <span class="text-sm text-ink-soft">units occupied</span>
+              <span class="ml-auto text-sm text-ink-soft">
+                <template v-if="totalRoomsCount && vacantUnits.length === totalRoomsCount">All vacant</template>
+                <template v-else-if="vacantUnits.length">Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}</template>
+                <template v-else>None vacant</template>
+              </span>
+            </p>
+            <div class="flex gap-0.5" aria-hidden="true">
+              <span
+                v-for="(u, n) in arcUnits"
+                :key="u.code"
+                class="bar-fill h-2.5 flex-1 origin-left rounded-full"
+                :class="u.occupied ? 'bg-brand' : 'hatch border border-line'"
+                :style="{ animationDelay: `${Math.min(n, 9) * 30}ms` }"
+              />
+            </div>
+          </div>
+          <OccupancyArc :units="arcUnits" class="max-md:hidden" />
+          <p class="text-center text-sm text-ink-soft max-md:hidden">
             <template v-if="totalRoomsCount && vacantUnits.length === totalRoomsCount">All {{ totalRoomsCount }} units are vacant.</template>
             <template v-else-if="vacantUnits.length">
               Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
@@ -1025,7 +1090,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         :title="`Rent and water by month, ${CURRENT_YEAR}`"
         to="/admin/income"
         to-label="Open the income ledger"
-        class="md:col-span-2 xl:col-span-8"
+        class="col-span-2 max-md:gap-3 max-md:p-4 xl:col-span-8"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -1033,31 +1098,33 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           @retry="refreshAllData"
         />
         <template v-else>
-          <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" />
-          <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
-            <div>
-              <dt class="text-xs text-ink-faint">Rent and water entered</dt>
-              <dd class="text-lg font-semibold tabular">{{ peso(monthlyRevenue) }}</dd>
-              <dd class="text-xs text-ink-soft">
-                Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}
-              </dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Average entered month</dt>
-              <dd class="text-lg font-semibold tabular">{{ peso(liveRecordedAverage) }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Expected each month</dt>
-              <dd class="text-lg font-semibold tabular">
-                {{ roomsFetchFailed ? 'Unavailable' : peso(baseMonthlyRunRate) }}
-              </dd>
-              <dd class="text-xs text-ink-soft">From the units occupied now</dd>
-            </div>
-          </dl>
+          <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" short />
+          <PhoneMore>
+            <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
+              <div>
+                <dt class="text-xs text-ink-faint">Rent and water entered</dt>
+                <dd class="text-lg font-semibold tabular">{{ peso(monthlyRevenue) }}</dd>
+                <dd class="text-xs text-ink-soft">
+                  Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-xs text-ink-faint">Average entered month</dt>
+                <dd class="text-lg font-semibold tabular">{{ peso(liveRecordedAverage) }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-ink-faint">Expected each month</dt>
+                <dd class="text-lg font-semibold tabular">
+                  {{ roomsFetchFailed ? 'Unavailable' : peso(baseMonthlyRunRate) }}
+                </dd>
+                <dd class="text-xs text-ink-soft">From the units occupied now</dd>
+              </div>
+            </dl>
+          </PhoneMore>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open rooms and rates" class="md:col-span-2 xl:col-span-4">
+      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -1092,7 +1159,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile :title="`Operating cash flow, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="md:col-span-2 xl:col-span-6">
+      <OverviewTile :title="`Operating cash flow, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded, so net figures cannot be worked out."
@@ -1197,7 +1264,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         title="Open repair requests"
         to="/admin/tickets"
         to-label="Open repairs"
-        class="md:col-span-2 xl:col-span-6"
+        class="col-span-2 xl:col-span-6"
       >
         <UnavailableNote
           v-if="maintenanceTicketsFetchFailed"
