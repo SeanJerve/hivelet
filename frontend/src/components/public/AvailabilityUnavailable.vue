@@ -81,7 +81,7 @@ function reload() {
           class="pill-btn-brand"
         >
           <Phone class="size-4" aria-hidden="true" />
-          Call {{ LANDLADY.phone }}
+          Call {{ LANDLADY.phoneShown }}
         </a>
 
         <RouterLink to="/inquire" class="pill-btn">

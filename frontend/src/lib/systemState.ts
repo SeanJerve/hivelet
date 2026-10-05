@@ -17,6 +17,7 @@ import { isAdmin, isAuthenticated } from './authStore';
 import { useToast, type ToastOptions } from './useToast';
 import { formatDateOnly } from './propertyDate';
 import { realEmail } from './contactDetails';
+import { showPhone } from './phoneFormat';
 
 const { showToast: triggerToast } = useToast();
 
@@ -592,6 +593,11 @@ export const TECHNICIANS = [
 export const LANDLADY = {
   gcash: "09274653938",
   phone: "09274653938",
+  /**
+   * The number as people read it, spaced like every other number on the site (technical
+   * evaluators, 3 Oct 2026). `phone` stays digits for the tel: links that dial it.
+   */
+  phoneShown: showPhone("09274653938"),
   property: "Fe Galang Da Silva Boarding House",
   address: "32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
 };

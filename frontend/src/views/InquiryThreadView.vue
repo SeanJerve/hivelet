@@ -356,7 +356,7 @@ watch(() => route.hash, syncWithAddress);
             No inquiry yet?
             <RouterLink to="/inquire" class="font-bold text-ink hover:text-brand">Send one</RouterLink>.
             Need help? Call
-            <a :href="`tel:${LANDLADY.phone}`" class="hover:text-ink font-semibold">{{ LANDLADY.phone }}</a>.
+            <a :href="`tel:${LANDLADY.phone}`" class="hover:text-ink font-semibold">{{ LANDLADY.phoneShown }}</a>.
           </p>
         </section>
       </div>

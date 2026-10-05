@@ -104,7 +104,7 @@ function describeLoginFailure(err: unknown): string | null {
     case 'RATE_LIMITED':
       return err.message;
     case 'ACCOUNT_INACTIVE':
-      return `This account is no longer active. If you still live here, call us on ${LANDLADY.phone}.`;
+      return `This account is no longer active. If you still live here, call us on ${LANDLADY.phoneShown}.`;
     case 'VALIDATION_FAILED':
       return 'Enter the email address or phone number on your account, and your password.';
     case 'NETWORK_ERROR':
@@ -239,7 +239,7 @@ async function handleQuickLogin(account: DemoAccount) {
               :href="`tel:${LANDLADY.phone}`"
               class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
             >
-              {{ LANDLADY.phone }}
+              {{ LANDLADY.phoneShown }}
             </a>
           </p>
         </div>
@@ -390,7 +390,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 <a
                   :href="`tel:${LANDLADY.phone}`"
                   class="font-semibold text-ink"
-                >{{ LANDLADY.phone }}</a> for a new one.
+                >{{ LANDLADY.phoneShown }}</a> for a new one.
               </p>
             </div>
           </div>
@@ -535,7 +535,7 @@ async function handleQuickLogin(account: DemoAccount) {
         <a
           :href="`tel:${LANDLADY.phone}`"
           class="font-semibold text-ink"
-        >{{ LANDLADY.phone }}</a>.
+        >{{ LANDLADY.phoneShown }}</a>.
       </p>
       <template #actions>
         <button type="button" class="pill-btn-brand" @click="showMovedOut = false">OK</button>

@@ -156,7 +156,7 @@ async function submitInquiry() {
     if (!defaultRoom) {
       formError.value =
         'Your message was not sent: every unit is taken or reserved at the moment, so none ' +
-        `is open for inquiries. Please try again in a few days, or call us on ${LANDLADY.phone}.`;
+        `is open for inquiries. Please try again in a few days, or call us on ${LANDLADY.phoneShown}.`;
       return;
     }
 
@@ -253,7 +253,7 @@ async function submitInquiry() {
               :href="`tel:${LANDLADY.phone}`"
               class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
             >
-              {{ LANDLADY.phone }}
+              {{ LANDLADY.phoneShown }}
             </a>
             <!-- Light or dark, at the top where a phone finds it (technical evaluators, 3 Oct 2026). -->
             <ThemeToggle class="self-center text-ink" />
@@ -338,7 +338,7 @@ async function submitInquiry() {
             <a
               :href="`tel:${LANDLADY.phone}`"
               class="press text-ink transition-colors font-semibold"
-            >{{ LANDLADY.phone }}</a>.
+            >{{ LANDLADY.phoneShown }}</a>.
           </p>
           <div class="mt-8 flex flex-wrap items-center gap-6">
             <RouterLink to="/public" :class="[conversation ? 'pill-btn' : 'pill-btn-brand', 'px-8']">Back to the property</RouterLink>

@@ -123,7 +123,7 @@ const portalRoute = computed(() => {
           <ul class="mt-1 text-sm">
             <li>
               <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
-                {{ LANDLADY.phone }}
+                {{ LANDLADY.phoneShown }}
               </a>
             </li>
           </ul>
