@@ -115,77 +115,69 @@ Based on the results of the study, the following conclusions were drawn:
 
 ## 5.3 Recommendations
 
+> **TEAM NOTE (5 Oct 2026).** Cut from sixteen to eight to meet the course guide (five to eight,
+> each with its basis in Chapter 4, grouped by audience, the lowest-rated characteristic among them).
+> The eight cut, and why, so the adviser can restore any:
+> - *Keep the five flagged invoice numbers in mind* and *keep taking backups*: merged into 2.
+> - *Supply the move-in dates*: merged into 1.
+> - *Move database logic into service modules and compute cash flow on the server (FR-019, FR-020)*:
+>   internal structure with no result in Chapter 4 behind it, and it reads as finishing a
+>   requirement.
+> - *SMS notifications*: no finding supports it; no tenant asked for it.
+> - *Keep the browser security policy enforced*: already done and graded A+ (4.4.8); a practice,
+>   not a recommendation.
+> - *Keep the in-person password reset*: recommends no change.
+> - *Sign in with Google for repeat enquirers*: a new feature with no finding behind it.
+> - *Offline recording of payments*: excluded by the delimitation in Section 1.4, which Chapter 4
+>   keeps.
+> - *Support for more than one property*: outside the scope in Section 1.4; may return as a fourth
+>   item for future researchers if the adviser wants one.
+
 Based on the summary and conclusions of the study, the following are recommended:
 
 **For the owner of the Fe Galang Da Silva Boarding House**
 
-1. Keep the five flagged invoice numbers in mind when reading older records. They stay exactly as
-   she wrote them, and the system lists them on every verification run so that they are never
-   mistaken for its own errors.
-2. Answer the questions that remain about how her records are kept, collected in one list for a
-   single sitting. The main ones are: whether the large figure at the bottom of her income sheet
-   is a year-to-date total; whether she may add her own expense categories; whether tenants may
-   report a cash payment for her to confirm; where the Penthouse's past spending belongs; whether
-   the spending she booked as personal rather than as a rental cost in 2025 is correct; and the
-   three missing months of receipts for one unit.
-3. Supply the move-in date of each current tenancy, which her workbook did not record, and the
-   move-out date of the one past tenancy that has none, since settling a deposit on move-out
-   depends on these dates.
-4. Keep taking a backup before any change to the records, as the team has done throughout.
+1. Answer the questions that remain about how her records are kept, collected in one list for a
+   single sitting (Chapter 4, Section 4.1.2): whether the large figure at the bottom of her income
+   sheet is a year-to-date total; whether she may add her own expense categories; whether tenants
+   may report a cash payment for her to confirm; where the Penthouse's past spending belongs;
+   whether the spending she booked as personal rather than as a rental cost in 2025 is correct; the
+   three missing months of receipts for one unit; and the move-in date of each current tenancy,
+   which her workbook did not record and on which settling a deposit at move-out depends.
+2. Keep taking a backup before any change to the records, as the team did throughout (Table 25),
+   and read the five flagged invoice numbers as history. They stay exactly as she wrote them, and
+   the system lists them on every verification run so that they are never mistaken for its own
+   errors (Section 4.1.1).
 
 **For the continued development of the system**
 
-5. Before accepting real GCash payments, move the Adyen account from test to live, which needs
-   the account's live endpoint configured. Until then, a GCash payment made through the portal
-   moves no real money. The public FAQ already tells tenants this and asks them to pay in person;
-   keep that note until the account is live. Also let the system refund a
-   GCash payment the owner
-   rejects. In this version, rejecting a payment keeps it out of the records but does not return
-   the money, which must be refunded from the Adyen Customer Area.
-6. Move the remaining database logic out of the route files into separate service modules, which
-   the system's architecture document sets as its target, and let one of them produce the cash
-   flow and profitability figures (FR-019, FR-020) that the overview now computes in the browser.
-7. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
+3. Before accepting real GCash payments, move the Adyen account from test to live, which needs the
+   account's live endpoint configured (Section 4.3.2). Until then, a GCash payment made through the
+   portal moves no real money; the public FAQ already tells tenants this and asks them to pay in
+   person, and that note should stay until the account is live. Also let the system refund a GCash
+   payment the owner rejects. Rejecting a payment keeps it out of the records but does not return the
+   money, which must then be refunded from the Adyen Customer Area; refunds were excluded from this
+   study by its delimitation (Section 1.4).
+4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested by a machine on every change and not only once by a
-   person.
-8. Consider sending notifications by SMS as well, since not every tenant opens the system daily.
-9. Keep the browser security policy enforced, and re-run the header scan against it. It was
-   switched from reporting to enforcing on 30 September 2026, after a GCash checkout on the live
-   site showed nothing it would block (Chapter 4, §4.4.8); any new outside service must be added
-   to it first.
-10. Keep the in-person password reset. The sign-in page answers "Forgot your password?" by sending
-    a tenant to the owner, who issues a new one-time password from the tenant list (Chapter 4,
-    §4.2.6); her own is reset by the team. A reset by email or SMS was left out on purpose: many
-    tenants have no email, SMS needs a paid provider, and everyone concerned sees the owner in
-    person. If tenants find asking her a burden, SMS is the channel to add. The lock on an account
-    after five wrong passwords is kept in the database and survives a server restart; the count of
-    attempts from one connection is kept in memory and does not, which could be moved to the
-    database if the site grows.
-11. Make the public page appear faster on phones. On a simulated slow mobile connection the page
-    is drawn in the browser only after its code arrives (Chapter 4, §4.3.6). Phones were sent
-    smaller photographs on 30 September 2026, which brought its largest element from 5.3 to 3.5
-    seconds in PageSpeed Insights. Pre-rendering the page, and serving the two typefaces from the
-    site itself instead of from Google's font service, whose stylesheet holds the first paint for
-    about three quarters of a second, would shorten it further.
-
-12. Offer "Sign in with Google" to people who send more than one enquiry. Today an enquiry's
-    conversation is opened by its private link, or by its reference code with the phone number
-    given (Chapter 4, §4.2.3 and §4.4.8), so a visitor who asks about several units holds one link
-    per enquiry, remembered only in the browser they used, and one who loses both link and code
-    must send a new enquiry. Signing in with an
-    existing Google account would gather a returning inquirer's conversations in one place without
-    the property running a password system for visitors; the private link would stay for those
-    who have no Google account.
+   person. The automated suites of Section 4.3.1 read and check, but they do not write, and the
+   screen-versus-database audit (Section 4.3.3) found defects that every suite had passed.
+5. Make the pages appear faster on phones. On a simulated slow mobile connection the public page
+   is drawn only after its code arrives, with its largest element at 3.5 seconds in PageSpeed
+   Insights, and the owner's overview moves as its figures arrive (a layout shift of 0.22; Sections
+   4.3.5 and 4.3.6). Pre-rendering the public page, serving the two typefaces from the site itself, and
+   reserving the space each figure will take would shorten and steady both.
+6. [DATA PENDING: the recommendation for the lowest-rated ISO/IEC 25010 characteristic in Table 22,
+   stating its composite mean and the change it calls for, from the items that scored lowest within
+   it and any comment the respondents wrote.]
 
 **For future researchers**
 
-13. Use this study's approach of checking a system against its own real data, not only against
-    test cases. Several of the most important defects in this study would have passed ordinary
-    testing.
-14. Study offline recording, so that a payment taken where there is no signal can be saved on the
-    device and sent once the connection returns.
-15. Extend the evaluation over a longer period of real use, with every tenant and several tenants
-    saving at the same moment (Chapter 4, §4.3.7, tested only reading at scale), ask tenants what
-    they find missing, since one said the system still felt lacking, and measure whether the owner's
-    time spent on record-keeping actually falls after adoption.
-16. Study support for more than one property, for owners who manage several small buildings.
+7. Use this study's approach of checking a system against its own real data, not only against test
+   cases. Several of the most important defects in this study, a tenant payment history that showed
+   nothing and a voided receipt shown as paid among them, passed every automated check and were
+   found only by comparing each screen with the records it claimed to show (Section 4.3.3).
+8. Extend the evaluation over a longer period of real use, with every tenant and with several
+   tenants saving at the same moment, which this study could test only for reading (Section 4.3.7);
+   ask tenants what they find missing, since one said the system still felt lacking; and measure
+   whether the owner's time spent on record-keeping actually falls after adoption.

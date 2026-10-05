@@ -511,7 +511,7 @@ the payment method depends on (Adyen Technical Support, personal communication, 
 end to end, so a fault that live onboarding would catch appeared here as an immediate refusal. In
 the live environment the setup is more controlled: some steps are handled by Adyen Support, and
 the merchant may be asked for further details. Going live is therefore treated as a separate step
-(Chapter 5, Recommendation 5).
+(Chapter 5, Recommendation 3).
 
 On 26 September 2026 a test payment passed end to end:
 - Adyen authorised it;
@@ -718,7 +718,7 @@ as a computer page and 81 as a phone page, and 100 for accessibility and best pr
 score of 66 is intended: the owner's pages tell search engines not to list them, so that her books
 never appear in search results. What held the signed-in page back was movement as the figures
 arrived on the computer (a layout shift of 0.22) and 0.7 seconds of script work on the emulated
-phone (Chapter 5, recommendation 11).
+phone (Chapter 5, recommendation 5).
 
 ### 4.3.6 Offline Use, Installation, Weak Connections and Simultaneous Users
 
@@ -793,7 +793,7 @@ connection. Later that morning phones were sent only the part of each photograph
 middle of the building photograph at full sharpness, half the file, and a smaller copy of the gate,
 a third of it. Google's PageSpeed Insights, which runs Lighthouse on Google's own servers, then
 scored the phone page 86 for performance with its largest element drawn at 3.5 seconds, against 76
-and 5.3 seconds in its run before the change (Chapter 5, recommendation 11). The real-device timings in Table 11 are the measurement
+and 5.3 seconds in its run before the change (Chapter 5, recommendation 5). The real-device timings in Table 11 are the measurement
 that decides how fast the system is for the owner and tenants.
 
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants
@@ -1099,8 +1099,7 @@ checkout on the live site then loaded Adyen with no report from the policy, the 
 to enforcing, and on the evening of 30 September the Observatory graded the site **A+, 115 of 100,
 with all 12 tests passed**; its remaining notes are recommendations, not failures (inline styles
 still allowed, and four optional isolation headers not set). **securityheaders.com graded the
-site A+** on 30 September at 10:18 PM, with all six headers it checks present (Chapter 5,
-recommendation 9).
+site A+** on 30 September at 10:18 PM, with all six headers it checks present.
 
 The same day the team checked, by hand and without any scanning tool, the protections a user meets.
 After five wrong passwords the test tenant's account locked for 15 minutes with a plain message. A

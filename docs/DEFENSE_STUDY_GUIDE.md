@@ -75,7 +75,7 @@ phone and computer) found no violation; 71 request handlers were reviewed for se
    one transaction (migration 018): all three happen or none.
    Reject keeps it out of every total.
 6. **Status today.** Adyen with GCash is configured and working on Adyen's test environment; moving the
-   account to live is the owner's step (Chapter 5, recommendation 5). The public FAQ says so.
+   account to live is the owner's step (Chapter 5, recommendation 3). The public FAQ says so.
 
 ### Flow 3. Signing in and staying in your lane
 

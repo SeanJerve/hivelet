@@ -124,7 +124,7 @@ These are checked by `npm run check:canon` or have been wrong before:
 ## What changed on 2026-09-28 that the chapters now reflect
 
 - **B-80 decided:** the public FAQ keeps offering GCash and now says no real money is charged yet
-  (Chapter 5, recommendation 5; Table 23).
+  (Chapter 5, recommendation 3; Table 23).
 - **B-81 closed:** the one tenancy ended without an end date got it (migration 059, applied); both
   checks now fail on any new one (Table 23).
 - **B-71 closed:** migration 054 applied; voiding a GCash settlement now reverses it on the bill.

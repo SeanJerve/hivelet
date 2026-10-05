@@ -86,8 +86,7 @@ on a phone. Use the unoccupied unit or blur tenant names; the manuscript is publ
       Table 5, marked CONFIRM)
 - [x] ~~The five flagged receipt numbers: check them against her receipt book.~~ Not needed:
       decided 2026-09-26 that historical records stay as she wrote them (Chapter 4, §4.1.1).
-- [ ] The open business questions listed in Chapter 5, recommendation 2, and the move-in dates
-      in recommendation 3. All are in `CLIENT_MEETING_QUESTIONS.md`, ready to ask in one sitting.
+- [ ] The open business questions and the move-in dates, listed in Chapter 5, recommendation 1. All are in `CLIENT_MEETING_QUESTIONS.md`, ready to ask in one sitting.
 - [x] ~~Whether the public site should keep telling visitors they can pay online with GCash while
       the gateway is still Adyen's test account~~ Decided by Sean 2026-09-28 (B-80): the FAQ keeps
       GCash and now says no real money is charged yet; pay in person until it goes live.
