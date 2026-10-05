@@ -19,6 +19,7 @@ import { useToast } from '@/lib/useToast';
 import { playSound } from '@/lib/sounds';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
+import RecentActions from '@/components/overview/RecentActions.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
@@ -601,6 +602,9 @@ const statusTone = computed(() => {
         {{ tenantData.room }}<template v-if="tenantData.floor">, {{ floorLabelFor(tenantData.floor) }}</template>
       </p>
     </header>
+
+    <!-- What they did last, under the greeting (Sean, 5 Oct: "action history"). -->
+    <RecentActions />
 
     <div
       v-if="submissionNotice"

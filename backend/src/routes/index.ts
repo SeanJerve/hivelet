@@ -20,6 +20,7 @@ import publicRouter from './public.js';
 import tenantRouter from './tenant.js';
 import adminRouter from './admin.js';
 import liveRouter from './live.js';
+import recentActionsRouter from './recentActions.js';
 
 const apiRouter = Router();
 
@@ -32,5 +33,7 @@ apiRouter.use(tenantRouter);
 apiRouter.use(adminRouter);
 // Keeps open pages current without a refresh (routes/live.ts, migration 068).
 apiRouter.use(liveRouter);
+// "Your recent actions" on each Overview (routes/recentActions.ts).
+apiRouter.use(recentActionsRouter);
 
 export default apiRouter;

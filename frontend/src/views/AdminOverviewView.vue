@@ -38,6 +38,7 @@ import { propertyToday } from '@/lib/propertyDate';
 import { pickedYear } from '@/lib/yearScope';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
+import RecentActions from '@/components/overview/RecentActions.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
@@ -878,6 +879,9 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </template>
       </div>
     </header>
+
+    <!-- What she did last, under the greeting (Sean, 5 Oct: "action history"). -->
+    <RecentActions />
 
     <QuickActionsFab v-if="!isHistoricalMode && !writesUnavailable" :actions="quickActions" />
 

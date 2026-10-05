@@ -205,6 +205,14 @@ before the redesign started.
 | reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
 | **writes** | `POST /admin/income-records` | record an on-site collection — the money path |
 
+### `components/overview/RecentActions.vue`
+
+1 call(s), **0 of them write**.
+
+| | Endpoint | What it is for |
+| :--- | :--- | :--- |
+| reads | `GET /auth/me/recent-actions` | the Overview’s "Your recent actions": the signed-in person’s own last three actions, as sentences (reads only) |
+
 ### `lib/authStore.ts`
 
 4 call(s), **3 of them write**.
@@ -249,4 +257,4 @@ before the redesign started.
 
 ---
 
-**21 files make 77 distinct calls, 37 of which write.** Generated 2026-10-05.
+**22 files make 78 distinct calls, 37 of which write.** Generated 2026-10-05.

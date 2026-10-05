@@ -1046,7 +1046,7 @@ followed by the fourteen comments of the technical evaluators who reviewed the s
 | Technical evaluators, 3 Oct 2026 | A tenant could not withdraw a repair request | A tenant can cancel a request until work on it starts, at most once an hour, with an optional reason; the owner is notified and the request is kept, marked as cancelled | Functional Suitability |
 | Technical evaluators, 3 Oct 2026 | Moving a tenant out recorded no reason | An optional reason, kept in the activity record with the move-out | Functional Suitability |
 | Technical evaluators, 3 Oct 2026 | Rows opened with "Show more" or "Show all" on the owner's lists could not be hidden again | "Show fewer" returns the list to its first page | Usability |
-| Technical evaluators, 3 Oct 2026 | Error handling on the history screens | A refresh that fails for a moment keeps the figures already on screen; only a load the user asked for reports a failure | Reliability |
+| Technical evaluators, 3 Oct 2026 | Action history, and its error handling | Each person's Overview shows their own last three actions in plain words, each linking to where it happened ("Recorded a payment: 2B, October 2026, ₱8,800."); a refresh that fails for a moment keeps the figures already on screen | Usability, Reliability |
 | Technical evaluators, 3 Oct 2026 | The footer was tall, with too much empty space | Spacing reduced and its columns placed side by side on a phone | Usability |
 | Technical evaluators, 3 Oct 2026 | The privacy policy's list of contents crowded the page on a phone | On a phone the list opens from a side panel; on wider screens it stays beside the text | Usability |
 | Survey results | [DATA PENDING] | | |

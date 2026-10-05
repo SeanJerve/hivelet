@@ -2190,6 +2190,16 @@ developers read it in the database. FR-029 and BR-028 are still met by the writi
 without the adviser's say. If it ever comes back, it comes back with its endpoint (`check:endpoints`
 fails a route nothing calls), and the old screen is in the parent of the commit "Remove the Activity screen from the site".
 
+**5 October 2026: "Your recent actions" is not this screen coming back.** The technical evaluators asked
+for an "action history", and Sean read it as each person seeing what they themselves did last. Each
+Overview now shows the signed-in person's **own** last three actions as sentences ("Recorded a payment:
+2B, October 2026, ₱8,800."), read from `audit_logs` by `GET /auth/me/recent-actions`
+(`services/recentActions.ts`). What keeps it on the right side of the ruling: no one sees anyone else's
+actions; there are no action codes, addresses or raw values; sign-ins, refused requests and downloads are
+never read; an action the sentence builder does not know is left out rather than shown as a code. It is a
+convenience for the person, like "recently" in any app, not the developer's record. `check-recent-actions.mjs`
+holds it to all of that (nine checks; three deliberate breaks caught).
+
 ---
 
 ## 4. Traps that cost real time

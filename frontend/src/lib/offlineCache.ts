@@ -48,6 +48,7 @@ const ADMIN_READS: ReadonlySet<string> = new Set([
   '/admin/tickets',
   '/admin/inquiries',
   '/admin/notifications',
+  '/auth/me/recent-actions',
   '/public/rates',
 ]);
 
@@ -61,6 +62,7 @@ const TENANT_READS: ReadonlySet<string> = new Set([
   '/tenant/my-tickets',
   '/tenant/my-profile',
   '/tenant/my-notifications',
+  '/auth/me/recent-actions',
   '/public/rates',
 ]);
 
