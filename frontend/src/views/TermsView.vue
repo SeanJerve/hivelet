@@ -183,7 +183,7 @@ const sections = Object.values(S);
       </ul>
       <p>
         For anything about a refund, contact the landlady on
-        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a>.
+        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phoneShown }}</a>.
       </p>
     </section>
 
@@ -198,7 +198,7 @@ const sections = Object.values(S);
         <strong>A ticket does not call or text anyone.</strong> It reaches the landlady inside
         Hivelet, and she sees it when she next checks. For anything urgent or dangerous, phone her
         directly on
-        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a>.
+        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phoneShown }}</a>.
       </p>
       <p>She decides when a ticket is resolved, and closes it.</p>
     </section>
@@ -245,7 +245,7 @@ const sections = Object.values(S);
       <address class="border-l-2 border-line pl-4">
         <strong>{{ LANDLADY.property }}</strong><br />
         {{ LANDLADY.address }}<br />
-        <a :href="`tel:${LANDLADY.phone}`" class="press inline-flex min-h-11 items-center">{{ LANDLADY.phone }}</a>
+        <a :href="`tel:${LANDLADY.phone}`" class="press inline-flex min-h-11 items-center">{{ LANDLADY.phoneShown }}</a>
       </address>
     </section>
   </LegalPage>

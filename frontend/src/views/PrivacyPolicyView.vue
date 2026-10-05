@@ -109,7 +109,7 @@ const sections = Object.values(S);
       <address class="mt-4 border-l-2 border-line pl-4">
         <strong>{{ LANDLADY.property }}</strong><br />
         {{ LANDLADY.address }}<br />
-        <a :href="`tel:${LANDLADY.phone}`" class="press inline-flex min-h-11 items-center">{{ LANDLADY.phone }}</a>
+        <a :href="`tel:${LANDLADY.phone}`" class="press inline-flex min-h-11 items-center">{{ LANDLADY.phoneShown }}</a>
       </address>
     </section>
 
@@ -393,7 +393,7 @@ const sections = Object.values(S);
       </ul>
       <p>
         To use any of them, contact the landlady by phone on
-        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a> or in person at the address
+        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phoneShown }}</a> or in person at the address
         above. Tenants can already see their bills, payments and tickets in the portal, and
         correct their own email address, phone number, password and emergency contact on the My
         details screen. For anything else, including your name, ask her.
