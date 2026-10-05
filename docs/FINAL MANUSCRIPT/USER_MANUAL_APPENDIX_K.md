@@ -91,7 +91,9 @@ phone the latest one shows; **Show 2 more** shows the rest. Only you see your ow
 Keep your email, phone number and the person to call **If something happens to you** up to date,
 then press **Save**. After your first sign-in you can sign in with your login ID, phone number or
 email. Your name can only be changed by the landlady. A phone number is spaced as you type it
-(0917 123 4567), and an email is checked as soon as you leave its box.
+(0917 123 4567), and an email is checked as soon as you leave its box. Both your number and the
+number of the person to call must be Philippine mobile numbers; if one is not, a note under the box
+says so and nothing is saved until it is corrected.
 
 ### 6. Install it on your phone / I-install sa cellphone
 
