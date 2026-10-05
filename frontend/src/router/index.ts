@@ -1,12 +1,14 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import {
   currentRole,
+  currentUser,
   isAuthenticated,
   restoreSession,
   homeRouteForRole,
   type Role,
 } from '@/lib/authStore';
 import { getStoredToken } from '@/lib/api';
+import { rememberLastPage } from '@/lib/lastPage';
 
 /**
  * Every view below used to be a static import, so a first-time visitor to
@@ -247,6 +249,12 @@ router.beforeEach(async (to) => {
   }
 
   return true;
+});
+
+// Each signed-in page is remembered, so signing in again comes back to it (lib/lastPage.ts).
+router.afterEach((to) => {
+  const user = currentUser.value;
+  if (user && to.meta.roles?.length) rememberLastPage(user.profileId, to.fullPath);
 });
 
 export default router;

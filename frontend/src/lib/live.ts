@@ -56,7 +56,17 @@ async function refreshEverything() {
   if (!isAuthenticated.value) return;
   const shared: Refresher[] = [fetchNotifications];
   if (isAdmin.value) {
-    shared.push(fetchIncomeRecords, fetchExpenseRecords, fetchRooms, fetchTenants, fetchMaintenanceTickets, fetchInquiries);
+    // Quietly: a refresh that fails for a moment keeps the figures on screen
+    // rather than turning them into "could not be loaded" (systemState.ts).
+    const quiet = { quiet: true };
+    shared.push(
+      () => fetchIncomeRecords(quiet),
+      () => fetchExpenseRecords(quiet),
+      () => fetchRooms(quiet),
+      () => fetchTenants(quiet),
+      () => fetchMaintenanceTickets(quiet),
+      () => fetchInquiries(quiet),
+    );
   }
   await Promise.allSettled([...shared, ...pageRefreshers].map((fn) => Promise.resolve().then(fn)));
 }

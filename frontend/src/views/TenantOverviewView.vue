@@ -321,7 +321,8 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
     tenantDataLoadFailed.value = false;
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
-    tenantDataLoadFailed.value = true;
+    // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+    if (!opts.quiet) tenantDataLoadFailed.value = true;
   } finally {
     loading.value = false;
   }

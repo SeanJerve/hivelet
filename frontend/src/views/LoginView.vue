@@ -10,6 +10,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import { LogIn, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next';
 import { login, authError, isAuthenticating, homeRouteForRole, MOVED_OUT_FLAG } from '@/lib/authStore';
+import { lastPageFor } from '@/lib/lastPage';
 import { showToast, LANDLADY } from '@/lib/systemState';
 import { ApiRequestError } from '@/lib/api';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -150,7 +151,9 @@ async function handleSubmit() {
     showToast('success', 'Signed In', `Welcome back, ${user.fullName}.`, { sound: false });
 
     const fallback = homeRouteForRole(user.role);
-    const target = redirectPath.value ?? fallback;
+    // No `?redirect=`: the page this person had open last, if any (lib/lastPage.ts).
+    const target =
+      redirectPath.value ?? lastPageFor(user.profileId, user.role === 'admin' ? '/admin' : '/tenant') ?? fallback;
     const isAdminTarget = target.startsWith('/admin');
 
     // A tenant following an /admin redirect is sent to their own home instead.
@@ -234,7 +237,7 @@ async function handleQuickLogin(account: DemoAccount) {
             <span class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</span>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
@@ -251,7 +254,7 @@ async function handleQuickLogin(account: DemoAccount) {
             <li>
               <RouterLink
                 to="/public"
-                class="press inline-flex min-h-11 items-center gap-1.5 underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+                class="press inline-flex min-h-11 items-center gap-1.5 hover:text-ink transition-colors font-semibold"
               >
                 <ArrowLeft class="size-3.5" aria-hidden="true" />
                 Home
@@ -375,7 +378,7 @@ async function handleQuickLogin(account: DemoAccount) {
               -->
               <button
                 type="button"
-                class="press mt-1 inline-flex min-h-11 items-center text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
+                class="press mt-1 inline-flex min-h-11 items-center text-xs text-ink-soft hover:text-ink transition-colors cursor-pointer font-semibold"
                 :aria-expanded="showForgot"
                 aria-controls="login-forgot"
                 @click="showForgot = !showForgot"
@@ -386,7 +389,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 Call
                 <a
                   :href="`tel:${LANDLADY.phone}`"
-                  class="font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+                  class="font-semibold text-ink"
                 >{{ LANDLADY.phone }}</a> for a new one.
               </p>
             </div>
@@ -422,13 +425,13 @@ async function handleQuickLogin(account: DemoAccount) {
           <p class="mt-1 flex flex-wrap gap-x-5 text-xs text-ink-soft">
             <RouterLink
               to="/terms"
-              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center hover:text-ink transition-colors font-semibold"
             >
               Terms of use
             </RouterLink>
             <RouterLink
               to="/privacy"
-              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center hover:text-ink transition-colors font-semibold"
             >
               Privacy policy
             </RouterLink>
@@ -531,7 +534,7 @@ async function handleQuickLogin(account: DemoAccount) {
         If you think this is a mistake, call
         <a
           :href="`tel:${LANDLADY.phone}`"
-          class="font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+          class="font-semibold text-ink"
         >{{ LANDLADY.phone }}</a>.
       </p>
       <template #actions>

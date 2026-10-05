@@ -592,8 +592,10 @@ function billTileTitle(bill: any): string {
  * about to return to; see `payTrigger`.
  */
 async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
-  if (!opts.quiet) loadingBills.value = true;
-  billsLoadFailed.value = false;
+  if (!opts.quiet) {
+    loadingBills.value = true;
+    billsLoadFailed.value = false;
+  }
   try {
     // Read together: with no open bill, the standing is what decides between
     // "Nothing is due" and an amount owed, so a failure of either is a failure.
@@ -605,11 +607,13 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
     ]);
     outstandingBills.value = (data ?? []).filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid');
     standing.value = st ?? null;
+    billsLoadFailed.value = false;
   } catch (err: any) {
     console.error('Failed to load bills:', err?.message || err);
     // "No bills" and "we could not read your bills" are different sentences, and
     // only one of them is safe to say to someone who may owe rent.
-    billsLoadFailed.value = true;
+    // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+    if (!opts.quiet) billsLoadFailed.value = true;
   } finally {
     loadingBills.value = false;
   }
@@ -639,8 +643,10 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
 useLiveRefresh(() => Promise.all([fetchOutstandingBills({ quiet: true }), fetchPaymentHistory({ quiet: true })]));
 
 async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
-  if (!opts.quiet) loadingHistory.value = true;
-  historyLoadFailed.value = false;
+  if (!opts.quiet) {
+    loadingHistory.value = true;
+    historyLoadFailed.value = false;
+  }
   try {
     const [payments, receipts] = await Promise.all([
       api.get<any[]>('/tenant/my-payments'),
@@ -694,9 +700,11 @@ async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
     waitingPayments.value = (payments ?? [])
       .filter((p) => p.verification_status === 'Pending Verification')
       .map((p) => ({ amount: Number(p.amount) || 0 }));
+    historyLoadFailed.value = false;
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
-    historyLoadFailed.value = true;
+    // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+    if (!opts.quiet) historyLoadFailed.value = true;
   } finally {
     loadingHistory.value = false;
   }
@@ -736,7 +744,7 @@ function refreshAll() {
              drops the checkout session. -->
         <RouterLink
           to="/terms#payments"
-          class="press inline-flex min-h-11 items-center text-sm text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+          class="press inline-flex min-h-11 items-center text-sm text-ink-soft hover:text-ink transition-colors font-semibold"
         >
           How paying online works
         </RouterLink>

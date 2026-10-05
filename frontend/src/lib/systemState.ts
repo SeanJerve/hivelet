@@ -273,6 +273,8 @@ export interface MaintenanceTicket {
   photo: string;
   tenantName?: string;
   tenantProfileId?: string;
+  /** Closed by the tenant themselves: they cancelled it before work started (POST /tenant/tickets/:id/cancel). */
+  cancelledByTenant?: boolean;
 }
 
 export interface Inquiry {
@@ -673,12 +675,12 @@ function mapOperationalStatus(status: string): UnitStatus {
 /**
  * Loads all rooms from the backend Supabase API and syncs reactive `rooms`
  */
-export async function fetchRooms(): Promise<RoomItem[]> {
+export async function fetchRooms(opts: { quiet?: boolean } = {}): Promise<RoomItem[]> {
   // The rates decide the per-unit billing line built below, so they are read
   // first. Cached after the first call, and a failure falls back to the seeded
   // figures rather than blocking the room list.
   await fetchWaterRates();
-  roomsFetchFailed.value = false;
+  if (!opts.quiet) roomsFetchFailed.value = false;
 
   try {
     // The endpoint follows the SIGNED-IN role, not the `activeRole` ref, which
@@ -814,6 +816,7 @@ export async function fetchRooms(): Promise<RoomItem[]> {
       });
 
       rooms.splice(0, rooms.length, ...mapped);
+      roomsFetchFailed.value = false;
       return mapped;
     }
   } catch (err) {
@@ -824,18 +827,19 @@ export async function fetchRooms(): Promise<RoomItem[]> {
     // this one being noticed.
     roomsLoaded.value = true;
   }
-  roomsFetchFailed.value = true;
+  // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+  if (!opts.quiet) roomsFetchFailed.value = true;
   return rooms;
 }
 
 /**
  * Loads all tenants from the backend Supabase API and syncs reactive `tenants`
  */
-export async function fetchTenants(): Promise<TenantRecord[]> {
+export async function fetchTenants(opts: { quiet?: boolean } = {}): Promise<TenantRecord[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
-  tenantsFetchFailed.value = false;
+  if (!opts.quiet) tenantsFetchFailed.value = false;
 
   try {
     const data = await api.get<any[]>('/admin/tenants');
@@ -893,12 +897,14 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
       });
 
       tenants.splice(0, tenants.length, ...mapped);
+      tenantsFetchFailed.value = false;
       return mapped;
     }
   } catch (err) {
     console.warn('fetchTenants error:', err);
   }
-  tenantsFetchFailed.value = true;
+  // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+  if (!opts.quiet) tenantsFetchFailed.value = true;
   return tenants;
 }
 
@@ -990,11 +996,11 @@ export function formatUnitOccupantsSummary(unitCode: string): { text: string; co
 /**
  * Loads all monthly income records from Supabase and syncs reactive `incomeRecords`
  */
-export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
+export async function fetchIncomeRecords(opts: { quiet?: boolean } = {}): Promise<IncomeRecord[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
-  incomeRecordsFetchFailed.value = false;
+  if (!opts.quiet) incomeRecordsFetchFailed.value = false;
 
   try {
     const res = await api.get<any>('/admin/income-records');
@@ -1104,24 +1110,26 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
       });
 
       incomeRecords.splice(0, incomeRecords.length, ...mapped);
+      incomeRecordsFetchFailed.value = false;
       return mapped;
     }
   } catch (err) {
     console.warn('fetchIncomeRecords error:', err);
   }
-  incomeRecordsFetchFailed.value = true;
+  // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+  if (!opts.quiet) incomeRecordsFetchFailed.value = true;
   return incomeRecords;
 }
 
 /**
  * Loads all expense entries and categories from Supabase and syncs reactive `expenseRecords`
  */
-export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
+export async function fetchExpenseRecords(opts: { quiet?: boolean } = {}): Promise<ExpenseRecord[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
 
-  expenseRecordsFetchFailed.value = false;
+  if (!opts.quiet) expenseRecordsFetchFailed.value = false;
 
   try {
     const res = await api.get<any[]>('/admin/expense-entries');
@@ -1203,6 +1211,7 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
       });
 
       expenseRecords.splice(0, expenseRecords.length, ...mapped);
+      expenseRecordsFetchFailed.value = false;
       return mapped;
     }
   } catch (err) {
@@ -1211,18 +1220,19 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
   // Reached on a thrown error AND on a response that is not an array, which
   // is the same shape the income loader uses. A `console.warn` was the only
   // signal this produced, and nobody is watching the console.
-  expenseRecordsFetchFailed.value = true;
+  // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+  if (!opts.quiet) expenseRecordsFetchFailed.value = true;
   return expenseRecords;
 }
 
 /**
  * Loads all maintenance tickets from Supabase and syncs reactive `maintenanceTickets`
  */
-export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
+export async function fetchMaintenanceTickets(opts: { quiet?: boolean } = {}): Promise<MaintenanceTicket[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
-  maintenanceTicketsFetchFailed.value = false;
+  if (!opts.quiet) maintenanceTicketsFetchFailed.value = false;
 
   try {
     const res = await api.get<any[]>('/admin/tickets');
@@ -1252,28 +1262,31 @@ export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
           status: statusMapped,
           photo: t.ticket_attachments?.[0]?.file_url || null,
           tenantName: t.profiles?.full_name || 'Tenant',
-          tenantProfileId: t.tenant_profile_id
+          tenantProfileId: t.tenant_profile_id,
+          cancelledByTenant: t.status === 'Closed' && !!t.closed_by && t.closed_by === t.tenant_profile_id,
         };
       });
 
       maintenanceTickets.splice(0, maintenanceTickets.length, ...mapped);
+      maintenanceTicketsFetchFailed.value = false;
       return mapped;
     }
   } catch (err) {
     console.warn('fetchMaintenanceTickets error:', err);
   }
-  maintenanceTicketsFetchFailed.value = true;
+  // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+  if (!opts.quiet) maintenanceTicketsFetchFailed.value = true;
   return maintenanceTickets;
 }
 
 /**
  * Loads all inquiries from Supabase and syncs reactive `inquiries`
  */
-export async function fetchInquiries(): Promise<Inquiry[]> {
+export async function fetchInquiries(opts: { quiet?: boolean } = {}): Promise<Inquiry[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
-  inquiriesFetchFailed.value = false;
+  if (!opts.quiet) inquiriesFetchFailed.value = false;
 
   try {
     const res = await api.get<any[]>('/admin/inquiries');
@@ -1305,12 +1318,14 @@ export async function fetchInquiries(): Promise<Inquiry[]> {
       });
 
       inquiries.splice(0, inquiries.length, ...mapped);
+      inquiriesFetchFailed.value = false;
       return mapped;
     }
   } catch (err) {
     console.warn('fetchInquiries error:', err);
   }
-  inquiriesFetchFailed.value = true;
+  // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+  if (!opts.quiet) inquiriesFetchFailed.value = true;
   return inquiries;
 }
 
