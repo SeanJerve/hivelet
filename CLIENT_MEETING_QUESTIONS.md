@@ -144,7 +144,12 @@ spending were counted as a cost of the rental business.
 ☐ Move only the ₱35,228 — the other two are correctly filed where they are
 ☐ Leave everything where it is; the Penthouse area is for future spending only
 
-### 2d. Linda's fixed water — which column is it?
+### 2d. Linda's fixed water — which column is it? · **CLOSED 2026-09-20: recorded separately, not remitted**
+
+> **Answered on 2026-09-20** (BR-040 and its errata): there is no fixed charge. Linda's units pay
+> ₱200 per occupant like every other unit, and that water is recorded in `linda_water_charge`,
+> remitted to Linda, and kept out of `remitted_amount`; migration 041's trigger routes it there
+> whichever way a row is entered. The question below is kept as it was asked.
 
 The two Linda units (**LF ₱400, LB ₱200**) pay a fixed water charge rather than the ₱200-per-head
 rate. The same money currently lands in **two different columns** depending on when the row was

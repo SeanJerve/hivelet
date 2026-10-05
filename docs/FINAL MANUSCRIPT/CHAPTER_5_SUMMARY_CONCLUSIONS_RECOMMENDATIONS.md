@@ -9,6 +9,9 @@
 > the decision to keep historical receipts as written; the owner's open questions).
 > **Updated 2026-10-01** from the testing day: summary item 3 and conclusion 3 filled from Chapter
 > 4's Tables 10, 11 and 11C; recommendation 15 widened. Items 4 and conclusion 4 wait on the survey.
+> **Updated 2026-10-05 (later):** conclusions 1 to 3 rewritten to open with whether each
+> objective was achieved, its evidence and the criterion (GUIDE_ALIGNMENT C1), the team's own
+> lessons kept after it; recommendation 2 lists only the owner's open questions.
 > **Updated 2026-10-05:** summary item 4 gained the technical evaluators' 3 October review, from
 > Chapter 4's Table 23 (fourteen comments, all addressed by 5 October). Its means still wait on
 > the survey export.
@@ -72,28 +75,39 @@ accomplished:
 
 Based on the results of the study, the following conclusions were drawn:
 
-1. **The main problem at the property was not the lack of a digital tool but the lack of
-   connection between records.** Each area of the business kept its own informal record, and
+1. **The first objective was achieved.** The existing practices were analysed in all four areas
+   the objective names, tenant management, financial tracking, communication and booking, and every
+   gap found was traced to a requirement and to the module that meets it (Chapter 4, Table 6). The
+   analysis shows that the main problem at the property was not the lack of a digital tool but the
+   lack of connection between records. Each area of the business kept its own informal record, and
    nothing checked one against another. The problems found in the owner's own records support the
    view in Chapter 2 that fragmentation, not the absence of technology, is the core problem in
    small-scale apartment management.
 
-2. **An integrated system can be built to fit a small, cash-based property without forcing it to
-   change how it works.** Hivelet keeps the owner's own report layout, her own invoice numbers
-   and cash as the main way to pay, and treats online payment as optional and subject to her
-   approval. Adopting the system therefore required no change to the owner's accounting practice.
+2. **The second objective was achieved.** All six features the objective names were developed and
+   are in use on the owner's real records: tenant and room management, booking and reservation
+   management, financial tracking with optional online payment, maintenance ticketing and
+   notification, role-based access control, and Progressive Web Application support (Chapter 4,
+   Sections 4.2.2 to 4.2.7). The system shows that an integrated system can be built to fit a
+   small, cash-based property without forcing it to change how it works. Hivelet keeps the owner's
+   own report layout, her own invoice numbers and cash as the main way to pay, and treats online
+   payment as optional and subject to her approval. Adopting the system therefore required no
+   change to the owner's accounting practice.
 
-3. **Automated verification is necessary when a system holds real financial records.** The most
-   serious defects found during development gave no error on screen. They were found only because
-   the system was checked against its own data and rules, and the checks now prevent them from
-   returning. **Automated checks are necessary but not sufficient**: comparing each screen with
-   the records it claims to show found six further defects, including a tenant payment history
-   that showed nothing although every check had passed. The owner's own walkthrough confirmed the
-   automated results for every function she exercised, and the tenants completed every task they
-   attempted. Its one failure, a ₱0 shown on a laptop without a connection, could not be reproduced
-   afterwards on the same version, and an Android phone showed a message later than the design
-   intends; both appeared only on a real device in the hands of its user, which is the same lesson
-   from the other side.
+3. **The third objective was achieved.** The system was pilot tested for functionality,
+   responsiveness and operational performance. Of the 83 tests executed across the automated,
+   system and acceptance levels, 82 passed (98.8 per cent), against the course standard of at
+   least 90 per cent with no critical defect open; no critical defect was found (Chapter 4, Tables
+   11E and 23A). Every screen measured was usable within about three seconds on a phone (Table 11).
+   The testing also shows that **automated verification is necessary when a system holds real
+   financial records, but not sufficient.** The most serious defects found during development gave
+   no error on screen and were found only because the system was checked against its own data and
+   rules; the checks now prevent them from returning. Comparing each screen with the records it
+   claims to show found six further defects, including a tenant payment history that showed
+   nothing although every check had passed. The walkthrough's one failure, a ₱0 shown on a laptop
+   without a connection, could not be reproduced afterwards on the same version, and an Android
+   phone showed a message later than the design intends; both appeared only on a real device in the
+   hands of its user, which is the same lesson from the other side.
 
 4. [DATA PENDING: conclusion on the ISO/IEC 25010 evaluation. State which characteristics scored
    highest and lowest, what the open comments said about the lowest, and what was changed as a
@@ -112,8 +126,8 @@ Based on the summary and conclusions of the study, the following are recommended
    single sitting. The main ones are: whether the large figure at the bottom of her income sheet
    is a year-to-date total; whether she may add her own expense categories; whether tenants may
    report a cash payment for her to confirm; where the Penthouse's past spending belongs; whether
-   Linda's fixed water counts as remitted money; whether the ₱2.56 million booked as personal in
-   2025 is correct; and the three missing months of receipts for one unit.
+   the spending she booked as personal rather than as a rental cost in 2025 is correct; and the
+   three missing months of receipts for one unit.
 3. Supply the move-in date of each current tenancy, which her workbook did not record, and the
    move-out date of the one past tenancy that has none, since settling a deposit on move-out
    depends on these dates.
