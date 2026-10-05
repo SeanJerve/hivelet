@@ -829,6 +829,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </template>
           <template v-else>{{ selectedArchiveYear }} archive</template>
         </h1>
+        <!-- What she did last, one quiet line (Sean, 6 Oct). From 1024px it is in the sidebar. -->
+        <RecentActions v-if="!isHistoricalMode" variant="line" class="mt-2 lg:hidden" />
         <!-- No line under the greeting (Sean, 2026-10-02): "Collections are entered
              through September" was a sentence about the data, not for her. The
              income tiles already mark a month with nothing entered. -->
@@ -1107,10 +1109,6 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </PhoneMore>
         </template>
       </OverviewTile>
-
-      <!-- What she did last (Sean, 5 Oct: "action history"). On a phone after the first screen
-           (attention, this month, occupancy, the chart); from 1024px it is in the sidebar. -->
-      <RecentActions class="col-span-2 max-md:order-3 xl:col-span-12 lg:hidden" />
 
       <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4 max-md:order-5">
         <UnavailableNote

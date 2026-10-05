@@ -601,6 +601,8 @@ const statusTone = computed(() => {
       <p v-if="tenantData.room || loading" class="mt-1 min-h-5 text-sm text-ink-soft">
         {{ tenantData.room }}<template v-if="tenantData.floor">, {{ floorLabelFor(tenantData.floor) }}</template>
       </p>
+      <!-- What they did last, one quiet line (Sean, 6 Oct). From 1024px it is in the sidebar. -->
+      <RecentActions variant="line" class="mt-2 lg:hidden" />
     </header>
 
     <div
@@ -810,10 +812,6 @@ const statusTone = computed(() => {
           Request a repair
         </router-link>
       </OverviewTile>
-
-      <!-- What they did last (Sean, 5 Oct: "action history"). On a phone below the bill and
-           repairs, so the money stays first; from 1024px it is in the sidebar on every page. -->
-      <RecentActions class="order-2 md:order-none md:col-span-2 xl:col-span-12 lg:hidden" />
 
       <OverviewTile
         title="Payments"

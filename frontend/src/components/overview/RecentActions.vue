@@ -11,8 +11,11 @@ let headingSeq = 0;
  * Where it shows (6 Oct 2026):
  *   - `rail`: the desktop sidebar, on every page, and the phone menu. The sidebar is always open
  *     from 1024px, so the list is in view wherever the person is, and the Overview keeps its top.
- *   - `tile`: the phone's Overview, below the bill and repairs, where someone coming back sees it
- *     without opening anything. A menu is opened to go somewhere, not to read.
+ *   - `line`: the phone's Overview, one quiet line under the greeting, styled like the date
+ *     above it (Sean, 6 Oct 2026: the card "is like a really big deal" and pushed the month chart
+ *     down). "Recently" at the left, the latest action at the right, its unit and month and how
+ *     long ago under it in light grey. Seen without opening anything; the menu holds all three.
+ *   - `tile`: the card the Overview used before (kept for a screen that wants the full three).
  *
  * Their own actions only, in sentences the server writes (GET /auth/me/recent-actions,
  * services/recentActions.ts), each linking to where it happened. It is NOT the audit trail the
@@ -32,11 +35,29 @@ import {
 } from '@/lib/recentActions';
 import Skeleton from '@/components/ui/Skeleton.vue';
 
-const props = withDefaults(defineProps<{ variant?: 'tile' | 'rail' }>(), { variant: 'tile' });
+const props = withDefaults(defineProps<{ variant?: 'tile' | 'rail' | 'line' }>(), { variant: 'tile' });
 /** A link was followed: the phone menu closes on it, as it does for its navigation links. */
 const emit = defineEmits<{ navigate: [] }>();
 
 const rail = computed(() => props.variant === 'rail');
+
+/**
+ * The latest action split for the one-line form: the server's sentence before its colon is the
+ * action ("Voided a payment"), the rest is what it was about ("3D, August 2026"). A sentence with
+ * no colon ("Paid ₱30,400 by GCash.") is all action, with only the time under it.
+ */
+const latest = computed(() => {
+  const a = actions.value[0];
+  if (!a) return null;
+  const text = a.text.replace(/\.$/, '');
+  const i = text.indexOf(': ');
+  return {
+    link: a.link,
+    at: a.at,
+    action: i > 0 ? text.slice(0, i) : text,
+    about: i > 0 ? text.slice(i + 2) : '',
+  };
+});
 // Unique per copy: on a phone the hidden desktop sidebar and the open menu both hold one.
 const headingId = `recent-actions-title-${++headingSeq}`;
 /** On a phone's Overview only the latest shows until asked. */
@@ -69,7 +90,27 @@ function when(iso: string): string {
 </script>
 
 <template>
+  <!-- One quiet line. Nothing at all when there is nothing to say: no card, no empty state. -->
+  <!-- Its place is held while loading, so the page does not jump when it arrives. -->
+  <div v-if="variant === 'line' && (latest || loading)" class="flex min-h-11 items-start justify-between gap-4">
+    <template v-if="latest">
+      <span class="pt-1 text-sm text-ink-faint">Recently</span>
+      <component
+        :is="latest.link ? RouterLink : 'div'"
+        v-bind="latest.link ? { to: latest.link } : {}"
+        :class="['-my-1 min-w-0 rounded-lg py-1 text-right', latest.link && 'press hover:text-ink']"
+        :aria-label="`Your latest action: ${latest.action}${latest.about ? `, ${latest.about}` : ''}, ${when(latest.at)}`"
+      >
+        <span class="block truncate text-sm font-medium text-ink-soft">{{ latest.action }}</span>
+        <span class="block truncate text-xs text-ink-faint">
+          <template v-if="latest.about">{{ latest.about }} · </template><time :datetime="latest.at">{{ when(latest.at) }}</time>
+        </span>
+      </component>
+    </template>
+  </div>
+
   <section
+    v-else-if="variant !== 'line'"
     :aria-labelledby="headingId"
     :class="rail ? 'px-4' : 'rounded-tile bg-tile px-4 py-3.5 sm:px-5 sm:py-4'"
   >
