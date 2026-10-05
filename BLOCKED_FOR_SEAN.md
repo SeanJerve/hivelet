@@ -33,6 +33,32 @@ thing did not work" is not.
 
 ## Open
 
+### B-100 — a test session on 4 Oct changed the owner's real books; 079 puts them back (WRITTEN, NOT APPLIED) · **OPEN: Sean to confirm**
+
+- **What happened:** 4 Oct 2026, 22:46 to 23:08 Manila, the administrator account, from an address that had
+  never signed in to it before (136.158.102.3; the team's usual is 103.200.32.3), most likely the evaluators
+  carrying on testing on the live site. Besides loydtest's test data, it changed **real records**:
+  1. **Voided a real receipt:** 3D, August 2026, Alejandro Delarosa, **₱8,700, INV#5245** ("Administrator
+     manual deletion"). Remitted fell from ₱8,222,900.00 (953 receipts) to **₱8,214,200.00 (952)**.
+  2. **Moved a real tenant out:** **Ann Kristine Diaz**, 3G (tenancy since 1 Jul 2026). 3G now reads vacant.
+  3. **Edited a real expense:** "BDO (fe) deposit", 24 Feb 2026, ₱63,000 personal. Two lines were added
+     (Back Apartment ₱5,000, Front Apartment ₱20,000), so it reads ₱88,000 and **February's operating
+     expenses read ₱25,000 high**.
+  4. **Added a test expense:** supplier "jjeijse_2323", 4 Oct, ₱11,000 across three areas.
+- **What I did:** read-only investigation (audit rows, the 30 Sep backup). Wrote
+  `database/migrations/079_undo_the_4_october_test_session.sql`. It puts back all four, each step guarded
+  on the row being exactly as the test left it, all in one block (any mismatch undoes everything). It voids
+  the test expense rather than deleting it, and writes one AUDIT_CORRECTION row. **Not applied, and not
+  dry-run:** you declined the dry run on 5 Oct, so nothing in the database has been touched.
+- **What Sean needs to do:** confirm none of the four was real. In particular, **did Ann Kristine Diaz
+  actually move out?** If not, say "apply 079" and Claude backs up and applies it through the Supabase
+  connector. If she did, 079 needs its step 4 removed first.
+- **How to know it worked:** Remitted ₱8,222,900.00 over 953 receipts; 3G occupied by Ann Kristine Diaz;
+  February 2026 operating expenses ₱25,000 lower; the jjeijse expense shown as voided.
+- **Also for the team:** give testers loydtest and the local test copy, not the owner's admin account. Every
+  write an admin makes on the live site lands in her books.
+- **Raised:** 2026-10-05 by Claude (Sean's machine)
+
 ### B-99 — the technical evaluators' 14 comments (3 Oct): all addressed on the live site; four things need a person · **OPEN (people only)**
 
 - **What was done (5 Oct, commits 055c6ff to 47b37fa, pushed to main):** every comment Eljohn relayed.
@@ -49,14 +75,14 @@ thing did not work" is not.
   harnesses), every suite that does not sign in passing, both builds, and a new
   `backend/scripts/check-ticket-cancel.mjs` (16 checks; three deliberate breaks each caught).
 - **What needs a person:**
-  1. **Ask the evaluators (through Eljohn) which screen "error handling action history" meant.** The
-     Activity page was removed on 1 Oct, so the fix went to the history screens (payments, repairs, the
-     Overview): a refresh that fails for a moment no longer replaces the figures with an error. If they
-     meant something else, write it here.
+  1. ~~Which screen "action history" meant~~ **Answered by Sean, 5 Oct:** show each person what they did
+     last. Done: "Your recent actions" under the greeting on both Overviews, the person's own last three
+     actions in sentences (`GET /auth/me/recent-actions`; judgement log 3.9 says why this is not the
+     Activity page coming back; `check-recent-actions.mjs`, 9 checks).
   2. **Try the new things on real phones with loydtest:** cancel a Submitted repair (then try a second
      within the hour: it should say how many minutes are left); attach a photo from an iPhone (it should
      arrive as JPG); type a phone number on an Android keyboard (the spacing should not jump the cursor).
-  3. **The survey export** (Google Form > Responses > Download CSV) into the repo, then
+  3. **The survey export** (Sean, 5 Oct: after midterms) (Google Form > Responses > Download CSV) into the repo, then
      `node scripts/survey/compute-survey.mjs responses.csv --method=A --out=tables.md`. It fills
      Tables 12 and 14 to 22, Table 22's summary, Table 23's survey row, Chapter 5's item 4 and
      conclusion 4, and the abstract. Nothing else in the chapters is blocked.
