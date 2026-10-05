@@ -1973,6 +1973,14 @@ If you add a scheduler, you are changing how this business works, not fixing a g
 
 ### 3.6b The receipt guard is code only, deliberately — and here is the work if you disagree
 
+> **Superseded in part (checked in `pg_indexes`, 5 Oct 2026).** The database now enforces it too:
+> `idx_one_invoice_per_unit_per_month` is UNIQUE on (room, invoice number, year, month) among live
+> (unvoided) rows, acknowledgement receipts excepted. Migration 033 made it, 040 narrowed it, and 066
+> renamed it. What stays code-only: since 066 the invoice number is optional, and a unique index
+> never treats two empty values as equal, so a receipt **with no invoice** is guarded only by the
+> server's read before the write (`.is('invoice_number', null)` in `POST /admin/income-records`).
+> The text below is the reasoning as it stood before 033.
+
 `POST /admin/income-records` refuses a duplicate receipt by reading first: room,
 invoice number, date, amount, **year and month**. That is a read-then-write, the
 same shape migration `024` had to close for the Adyen webhook, and it is
