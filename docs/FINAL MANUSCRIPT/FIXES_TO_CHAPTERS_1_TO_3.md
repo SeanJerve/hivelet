@@ -320,6 +320,36 @@ eight characteristics (Usability and Portability, no Safety), and Chapter 4 §4.
 instrument was built and answered on the 2011 characteristics, every item maps to one of them, and
 changing the model after the answers were collected would invalidate them.
 
+**H7. Declare the interpretation of mean scores in Chapter 3 (added 2026-10-05).** The course guide
+requires Chapter 4's verbal labels to be identical to the scale declared in Chapter 3 (GUIDE_ALIGNMENT
+D4). Chapter 3's Likert table (Table 4 in the List of Tables; captioned "Table 3" in the body, see
+section C) declares only what respondents chose, Strongly Agree to Strongly Disagree, which is
+right: those are the labels the survey showed. But Chapter 4 interprets the **means** with five
+ranges and quality labels (Chapter 4, Table 13) that Chapter 3 never declares.
+
+*Add after Chapter 3's Likert table:*
+
+> The mean of each item, and the composite mean of each characteristic, is interpreted with Table
+> 4A. The range from 1 to 5 is divided into five equal intervals of 0.80.
+>
+> **Table 4A.** Interpretation of Mean Scores
+>
+> | Mean score | Verbal interpretation |
+> | :--- | :--- |
+> | 4.21 – 5.00 | Very High Quality |
+> | 3.41 – 4.20 | High Quality |
+> | 2.61 – 3.40 | Moderate Quality |
+> | 1.81 – 2.60 | Low Quality |
+> | 1.00 – 1.80 | Very Low Quality |
+
+*Keep the two identical:* if the adviser prefers other labels (for example Very Satisfactory), change
+Table 4A and Chapter 4's Table 13 together, and every interpretation written in Chapter 4, 4.4.
+
+*Optional, same table:* the Description column ("The system has somehow functional completeness of
+tasks...") describes only Functional Suitability, while the scale rates all eight characteristics.
+A neutral description per point avoids that: 5 "The respondent strongly agrees with the statement",
+down to 1 "The respondent strongly disagrees with the statement".
+
 ## F. Optional improvements (not errors)
 
 - §2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would
