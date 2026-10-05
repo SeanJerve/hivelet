@@ -19,13 +19,32 @@ export interface ApiErrorShape {
   details?: Record<string, string[]>;
 }
 
+/** `emergencyContactPhone` or `emergency_contact_phone` as words: "Emergency contact phone". */
+function fieldWords(key: string): string {
+  const words = key.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * What a person reads when the server refuses input. Every validation refusal is worded for a
+ * developer ("Invalid onboard payload.") and most screens show `err.message` in a toast, so the
+ * owner read that sentence and not why (technical evaluators, 3 Oct 2026: error handling). When the
+ * server names the field, say the field and its reason; any other message is passed on unchanged.
+ */
+function readableMessage(error: ApiErrorShape): string {
+  if (error.code !== 'VALIDATION_FAILED' || !/^Invalid [\w ]+ payload\.?$/i.test(error.message ?? '')) return error.message;
+  const first = Object.entries(error.details ?? {}).find(([, reasons]) => Array.isArray(reasons) && reasons.length > 0);
+  if (!first) return 'Something in the form was not accepted. Check it and try again.';
+  return `${fieldWords(first[0])}: ${first[1][0]}`;
+}
+
 export class ApiRequestError extends Error {
   readonly status: number;
   readonly code: string;
   readonly details?: Record<string, string[]>;
 
   constructor(status: number, error: ApiErrorShape) {
-    super(error.message);
+    super(readableMessage(error));
     this.name = 'ApiRequestError';
     this.status = status;
     this.code = error.code;
