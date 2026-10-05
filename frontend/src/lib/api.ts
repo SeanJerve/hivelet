@@ -35,7 +35,22 @@ function readableMessage(error: ApiErrorShape): string {
   if (error.code !== 'VALIDATION_FAILED' || !/^Invalid [\w ]+ payload\.?$/i.test(error.message ?? '')) return error.message;
   const first = Object.entries(error.details ?? {}).find(([, reasons]) => Array.isArray(reasons) && reasons.length > 0);
   if (!first) return 'Something in the form was not accepted. Check it and try again.';
-  return `${fieldWords(first[0])}: ${first[1][0]}`;
+  return `${fieldWords(first[0])}: ${plainReason(first[1][0])}`;
+}
+
+/** zod's own default sentences, which reach the screen wherever a schema gives none, said plainly. */
+function plainReason(reason: string): string {
+  const r = String(reason ?? '').trim();
+  let m: RegExpMatchArray | null;
+  if (/^required$/i.test(r)) return 'This is needed.';
+  if ((m = r.match(/^String must contain at least (\d+) character/i))) return m[1] === '1' ? 'This cannot be empty.' : `Use at least ${m[1]} characters.`;
+  if ((m = r.match(/^String must contain at most (\d+) character/i))) return `Use at most ${m[1]} characters.`;
+  if (/^Expected number/i.test(r) || /^Number must be/i.test(r)) return 'Enter a valid amount or number.';
+  if (/^Invalid (uuid|enum value)|must be a UUID/i.test(r)) return 'That choice was not recognised. Reload the page and try again.';
+  if (/^Invalid email/i.test(r)) return 'Enter a full email address, for example name@gmail.com.';
+  if (!r) return 'Check this and try again.';
+  const sentence = r.charAt(0).toUpperCase() + r.slice(1);
+  return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;
 }
 
 export class ApiRequestError extends Error {
