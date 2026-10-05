@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { domId } from '@/lib/domId';
 import { showPhone } from '@/lib/phoneFormat';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
@@ -1493,7 +1494,7 @@ const isDownloadOpen = ref(false);
             type="button"
             class="press-plate flex w-full flex-col items-start gap-3 p-5 text-left hover:bg-canvas sm:flex-row sm:flex-wrap sm:justify-between sm:p-6"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
-            :aria-controls="`cluster-${group.key}`"
+            :aria-controls="`cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
           >
             <span class="min-w-0">
@@ -1532,7 +1533,7 @@ const isDownloadOpen = ref(false);
 
         <div
           v-if="isClusterOpen(group.key, groupIndex)"
-          :id="`cluster-${group.key}`"
+          :id="`cluster-${domId(group.key)}`"
           class="ws-reveal border-t border-line p-5 sm:p-6"
         >
           <RecordTable

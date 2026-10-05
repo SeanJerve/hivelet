@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { domId } from '@/lib/domId';
 import { showPhone } from '@/lib/phoneFormat';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
@@ -1161,7 +1162,7 @@ async function handleOnboard() {
             type="button"
             class="press-plate flex w-full items-baseline justify-between gap-3 px-5 py-4 text-left hover:bg-canvas"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
-            :aria-controls="`residents-cluster-${group.key}`"
+            :aria-controls="`residents-cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
           >
             <span class="flex items-center gap-2">
@@ -1192,7 +1193,7 @@ async function handleOnboard() {
         -->
         <div
           v-if="isClusterOpen(group.key, groupIndex)"
-          :id="`residents-cluster-${group.key}`"
+          :id="`residents-cluster-${domId(group.key)}`"
           class="ws-reveal border-t border-line p-5 sm:p-6"
         >
         <!--

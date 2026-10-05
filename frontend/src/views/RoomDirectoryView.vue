@@ -5,6 +5,7 @@
   @architectureRef docs/04_ARCHITECTURE.md
 -->
 <script setup lang="ts">
+import { domId } from '@/lib/domId';
 import { ref, computed, onMounted } from 'vue';
 import {
   rooms,
@@ -323,7 +324,7 @@ function applyRoomFilters(v: FilterDraft) {
             type="button"
             class="press-plate flex w-full flex-col gap-2.5 px-5 py-4 text-left hover:bg-canvas"
             :aria-expanded="isClusterOpen(clusterName, clusterIndex)"
-            :aria-controls="`cluster-units-${clusterName}`"
+            :aria-controls="`cluster-units-${domId(clusterName)}`"
             @click="toggleCluster(clusterName, clusterIndex)"
           >
             <span class="flex items-baseline justify-between gap-3">
@@ -360,7 +361,7 @@ function applyRoomFilters(v: FilterDraft) {
 
         <div
           v-if="isClusterOpen(clusterName, clusterIndex)"
-          :id="`cluster-units-${clusterName}`"
+          :id="`cluster-units-${domId(clusterName)}`"
           class="ws-reveal border-t border-line p-5 sm:p-6"
         >
           <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
