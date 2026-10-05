@@ -44,7 +44,7 @@ const PURPOSE = new Map([
   ['GET /public/rooms', 'the public unit catalogue'],
   ['GET /public/rooms/:id', 'one unit, for the detail modal'],
   ['GET /public/clusters', 'the five property clusters'],
-  ['GET /public/rates', 'the water rate and the two Linda fixed charges'],
+  ['GET /public/rates', 'the water rate per occupant (the Linda fields only mark which units have their money routed to Linda)'],
   ['POST /public/inquiries', 'a prospect sends an enquiry'],
   ['GET /auth/me/recent-actions', 'the Overview’s "Your recent actions": the signed-in person’s own last three actions, as sentences (reads only)'],
   ['GET /live/version', 'every page, every 5 s while visible: has anything its person can see changed? (reads only)'],

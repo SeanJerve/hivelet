@@ -35,7 +35,7 @@ before the redesign started.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
-| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
+| reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 | reads | `GET /public/rooms` | the public unit catalogue |
 | **writes** | `POST /public/inquiries` | a prospect sends an enquiry |
 
@@ -58,7 +58,7 @@ before the redesign started.
 | :--- | :--- | :--- |
 | **writes** | `DELETE /admin/income-records/:id` | void a receipt |
 | reads | `GET /admin/payments` | payments awaiting verification |
-| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
+| reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 | **writes** | `PATCH /admin/income-records/:id` | correct a receipt |
 | **writes** | `PATCH /admin/payments/:id/verify` | verify a payment — atomic, settles the bill and the ledger together |
 | **writes** | `POST /admin/income-records` | record an on-site collection — the money path |
@@ -122,7 +122,7 @@ before the redesign started.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
-| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
+| reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 | reads | `GET /tenant/my-bills` | my bills |
 | reads | `GET /tenant/my-income-records` | my receipts |
 | reads | `GET /tenant/my-payments` | my payments |
@@ -135,7 +135,7 @@ before the redesign started.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
-| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
+| reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 | reads | `GET /tenant/my-bills` | my bills |
 | reads | `GET /tenant/my-income-records` | my receipts |
 | reads | `GET /tenant/my-payments` | my payments |
@@ -202,7 +202,7 @@ before the redesign started.
 | :--- | :--- | :--- |
 | reads | `GET /admin/payments` | payments awaiting verification |
 | reads | `GET /admin/rooms` | the unit directory |
-| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
+| reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 | **writes** | `POST /admin/income-records` | record an on-site collection — the money path |
 
 ### `components/overview/RecentActions.vue`
@@ -253,7 +253,7 @@ before the redesign started.
 | reads | `GET /admin/inquiries` | enquiries from the public site |
 | reads | `GET /admin/tenants` | the resident directory |
 | reads | `GET /admin/tickets` | the maintenance board |
-| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
+| reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 
 ---
 

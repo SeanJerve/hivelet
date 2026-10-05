@@ -25,7 +25,8 @@
  *
  * LINDA
  * -----
- * LF and LB bill on fixed charges, not occupants × rate, and their money is
+ * LF and LB bill water at the same rate per occupant as every unit (BR-040; the
+ * fixed charge was retired 2026-09-20), but their money is recorded separately and
  * remitted directly to Linda rather than pooled. They are kept out of the grand
  * subtotal and given their own section, exactly as the source sheet does.
  *
@@ -77,7 +78,7 @@ const CLUSTER_ORDER: { code: string; label: string; units: string[]; subtotal: b
   { code: 'Front Apartment', label: 'Front Apartment', units: ['F1', 'F2F', 'F2B'], subtotal: true },
 ];
 
-/** Billed on fixed charges and remitted directly to Linda. Never in the grand subtotal. */
+/** Recorded separately and remitted directly to Linda. Never in the grand subtotal. */
 const LINDA_UNITS = ['LF', 'LB'];
 
 const MONTHS = [
@@ -105,10 +106,10 @@ interface LedgerRow {
   remitted_amount: number | null;
   linda_electricity_charge: number | null;
   /**
-   * BR-040's fixed water charge for LF and LB.
+   * LF's and LB's water (BR-040), at the same rate per occupant as every unit.
    *
-   * Their `water_payment` is 0 by design - they are not on the per-occupant
-   * model - so the money sits here and nowhere else. Until 2026-09-16 this
+   * Their `water_payment` is 0 by design - migration 041's trigger routes Linda's
+   * water here, because that money is remitted to Linda - so it sits here and nowhere else. Until 2026-09-16 this
    * column was not selected, not typed and not summed, and the LINDA section
    * of the workbook therefore reported zero water for both units against
    * PHP 18,600 actually collected across 62 rows.
@@ -401,14 +402,14 @@ function addIncomeSheet(
   const yearToDate = zero();
   const lindaYear = zero();
   /**
-   * The two fixed charges, carried across the year as well as within each month.
+   * Linda's two separate charges, carried across the year as well as within each month.
    *
    * They were accumulated per month and printed per month, and then dropped:
    * `lindaYear` is merged only from `lindaTotal`, which is the rent-and-remitted
    * shape and holds neither charge. So the Linda section reconciled month by
    * month and silently under-reported at the bottom of the page.
    *
-   * Real money, not a rounding: **18,600.00 fixed water and 12,035.76
+   * Real money, not a rounding: **18,600.00 Linda water and 12,035.76
    * electricity** across the three years the ledger covers (7,200 + 7,200 +
    * 4,200, and 5,860.76 + 3,900 + 2,275), from `monthly_income_records`.
    * Anyone totalling Linda for a year from the year line was 30,635.76 short
@@ -540,13 +541,13 @@ function addIncomeSheet(
     emitTotalRow('GRAND SUBTOTAL (excludes Linda)', grand, { strong: true, band: 'grand' });
     merge(yearToDate, grand);
 
-    // --- Linda: fixed charges, remitted directly to Linda, never pooled above ---
+    // --- Linda: recorded separately, remitted directly to Linda, never pooled above ---
     const lindaRows = LINDA_UNITS
       .map((u) => rows.filter((r) => r.room_number.toUpperCase() === u.toUpperCase()))
       .flat();
 
     if (lindaRows.length > 0) {
-      const lindaHeader = ws.addRow(['LINDA — fixed charges, remitted directly to Linda']);
+      const lindaHeader = ws.addRow(['LINDA — recorded separately, remitted directly to Linda']);
       lindaHeader.font = { bold: true, size: 10, italic: true, color: { argb: INK } };
       ws.mergeCells(lindaHeader.number, 1, lindaHeader.number, 11);
 

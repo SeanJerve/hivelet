@@ -283,9 +283,9 @@ is checked on every verification run against all 33 published units.
 ### 4.2.4 Financial Tracking and Payment Recording Module
 
 A bill carries rent and water as separate amounts. Water is the number of occupants multiplied by
-a rate the owner can change in the settings, currently ₱200 per occupant. The two Linda units are
-charged a fixed water amount instead and are kept out of the property's grand totals, as in the
-owner's own workbook. A bill is overdue from the day after its due date, as the owner confirmed.
+a rate the owner can change in the settings, currently ₱200 per occupant, for every unit. The two
+Linda units' money is recorded separately and kept out of the property's grand totals, as in the
+owner's own workbook (BR-040). A bill is overdue from the day after its due date, as the owner confirmed.
 
 Cash payments are recorded by the owner with the number of the invoice she issued, written INV#,
 or with none, since not every payment has an invoice. The system never makes up an invoice number. Online payments go through Adyen with GCash: a payment
@@ -315,6 +315,11 @@ a bill actually raised is shown as due.
 The system does not handle electricity. Every unit has its own meter and the tenant pays the
 electric company directly, as the owner confirmed on 18 September 2026.
 
+These results agree with Encarnacion et al. (2025) and Setty (2022), who found that bringing payment
+records into one structured ledger improves oversight and reduces administrative errors. This study
+adds one observation to theirs: the consolidation did not only prevent new errors, it exposed errors
+already present in the owner's records (Section 4.1.1).
+
 Every figure the owner reads is worked out by the system from the rules in Table 7B rather than
 typed, so the same inputs always give the same amount.
 
@@ -340,6 +345,11 @@ request, and when she marks a tenant's repair as done the tenant is notified. Th
 in-app notifications to the tenant when a payment is verified or declined, and to the owner when a
 payment, enquiry or request comment arrives. Opening a notification opens the record it is about,
 for example the payment waiting to be verified, rather than only the page it is on.
+
+This is the change Saputra et al. (2025) report, in which turning tenant complaints into recorded,
+traceable requests improved accountability and response management, and it bears on the
+responsiveness that Jing and Lim (2021) found central to residents' satisfaction: a request now
+carries its status from submission to closing, where before it left no record (Figure 4).
 
 ![Maintenance Requests Board](figures/figure-13-repairs-board.png)
 
@@ -416,6 +426,9 @@ connection and are not offered without it, and the copy is removed when the pers
 someone else signs in on the device. This stays within the delimitation in Section 1.4:
 current data and every change to it need an internet connection. Screens adapt to the device: tables on a computer become cards
 on a phone.
+As Biørn-Hansen et al. (2019) describe, one application served every device: the same code ran on
+the owner's laptop, an Android phone in Chrome and an iPhone in Safari during testing (Section
+4.3.7), with no separate mobile application to build or install from an app store.
 
 ![The Tenant Portal on a Mobile Phone](figures/figure-14-tenant-portal-phone.png)
 
@@ -586,6 +599,12 @@ prepared accordingly (the owner enters the receipts she holds first, or tenants 
 The lesson is the same one Section 4.3.1 draws, from the other side: **passing checks show that
 what was tested is correct, not that everything is.** Comparing each screen with the records it
 claims to show is now part of how the team verifies the system.
+
+This supports the observation of Magno et al. (2024) that digitizing records does not by itself
+remove fragmentation. Here every record was already in one database, yet the audit found six places
+where a screen disagreed with it. The consistency that Pressman and Maxim (2020) attribute to
+integrated systems had to be verified screen by screen; it did not follow from the shared database
+alone.
 
 ### 4.3.4 Functional Walkthrough Testing
 
@@ -786,11 +805,8 @@ that decides how fast the system is for the owner and tenants.
 > all three tenants (the sentence on consent below depends on it).
 
 The owner and three tenants used the live system for their own tasks on 30 September 2026, each on
-their own device and signed in to their own account, after giving written consent. A facilitator
-read each task aloud without showing where to tap; an observer recorded whether the task was
-completed without help, with help, or not at all, how long it took, and the number of wrong turns.
-Following the quality-in-use model of ISO/IEC 25010, completion measures effectiveness, time
-measures efficiency, and the survey in Section 4.4 measures satisfaction. The owner's session
+their own device and signed in to their own account, after giving written consent, by the
+procedure and measures described in Section 3.3. The owner's session
 followed the walkthrough (Table 10) and her real work of the day. The tenants came at different
 times in the evening: the first from 7:28 PM, the other two together from 8:08 PM, which is when
 the simultaneous session took place. The team repeated the offline and installation tests of Table
@@ -841,6 +857,11 @@ still felt lacking; I want more), which the team reads as a request for more fea
 difficulty, and which Chapter 5 takes up. The owner, asked what she would use first the next
 morning, said she would check the repair notifications.
 
+Mia et al. (2024) name limited technical capacity as a barrier when small Philippine enterprises
+adopt digital tools. The tenants' results locate that barrier precisely: the only help needed was at
+the first sign-in and in finding the unit and rent, the first two things a new user does, and none
+afterwards.
+
 The simultaneous session ran with two tenants, not all three, and the owner; the tests that depend
 on several tenants posting at once (C-03, C-04, C-06) were therefore not performed. Table 11B covers
 simultaneous reading only, so simultaneous saving by several real users remains untested. On the two
@@ -886,8 +907,8 @@ is classified in Table 23A; it was not critical, and no critical defect was foun
 > `scripts/survey/compute-survey.mjs` prints their rows in Tables 14 to 18 and 21. If none took
 > part, delete the row. Chapter 3 text: `FIXES_TO_CHAPTERS_1_TO_3.md` H4.
 
-The system was evaluated by three groups using a survey based on the ISO/IEC 25010 software
-quality model: the owner, the tenants, and technical evaluators (IT professionals, developers or IT
+The system was evaluated by three groups using a survey based on the product quality model of
+ISO/IEC 25010:2011, the edition on whose eight characteristics the instrument was built: the owner, the tenants, and technical evaluators (IT professionals, developers or IT
 faculty). Each group rated only what it is in a position to judge. Tenants use only the tenant
 portal, so they did not rate Security or Maintainability. Only technical evaluators rated
 Maintainability, because judging it requires reading the source code and documentation.
@@ -1259,11 +1280,12 @@ code branch. Table 24 lists what is needed to use the system, and Table 25 the d
 
 **Table 24.** Software and Hardware Requirements for Deployment
 
-| Side | Requirement |
-| :--- | :--- |
-| Owner and tenants | A current web browser (Chrome, Edge, Firefox or Safari) on a computer or phone, and an internet connection |
-| Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen merchant account with GCash (optional online payment) |
-| Administration | A computer that can run Node.js, used only for backups and verification runs |
+| Side | Requirement | Used in testing, 30 September 2026 |
+| :--- | :--- | :--- |
+| Owner | A current web browser on a computer, and an internet connection | The administrator laptop, Chrome; the team's laptop, a Dell XPS 15 on Windows 11 with Chrome 154, Edge and Firefox 157 (Table 11, §4.4.5) |
+| Tenants and visitors | A current web browser (Chrome, Edge, Firefox or Safari) on a phone or computer, and an internet connection | Infinix GT20 with Android and Chrome 154; iPhone 15 and iPhone 13 with Safari; the three tenants' own phones, models not recorded |
+| Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen merchant account with GCash (optional online payment) | Vercel; PostgreSQL 17.6 on Supabase; Adyen Web Drop-in 6.44 and API Library 32.0 (Table 7) |
+| Administration | A computer that can run Node.js, used only for backups and verification runs | Node.js 22.16 on the team's Windows 11 computer |
 
 **Table 25.** Deployment Plan and Strategies
 

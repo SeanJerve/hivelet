@@ -302,6 +302,24 @@ role-based access:*
 *Before pasting, open both pages and confirm the title, date and the 64-bit statement against the
 live page.* See also `GUIDE_ALIGNMENT_CH4_CH5.md` for the rest of the guide check.
 
+**H6. Name the ISO/IEC 25010 edition (added 2026-10-05).** The course guide asks for the edition to
+be named in Chapters 3 and 4 and used consistently. The instrument is built on the 2011 edition's
+eight characteristics (Usability and Portability, no Safety), and Chapter 4 §4.4 now says
+"ISO/IEC 25010:2011". Make Chapters 2 and 3 agree:
+
+*§2.4, at the first mention, and §3.3, where the instrument is described:* write
+**ISO/IEC 25010:2011** instead of ISO/IEC 25010, and cite it (ISO/IEC, 2011).
+
+*and to the References:*
+
+> International Organization for Standardization & International Electrotechnical Commission.
+> (2011). *Systems and software engineering: Systems and software Quality Requirements and
+> Evaluation (SQuaRE): System and software quality models* (ISO/IEC Standard No. 25010:2011).
+
+*Before pasting, check the title against iso.org.* If the panel asks why not the 2023 edition: the
+instrument was built and answered on the 2011 characteristics, every item maps to one of them, and
+changing the model after the answers were collected would invalidate them.
+
 ## F. Optional improvements (not errors)
 
 - §2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would

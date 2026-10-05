@@ -59,9 +59,8 @@ function toIsoDate(d: Date): string {
  * BR-014: ordinarily `occupants x water_rate_per_occupant`, with the rate read from
  * `system_settings` rather than hardcoded.
  *
- * BR-040: the two Linda units are on a fixed monthly water charge instead (LF P400,
- * LB P200), which does not vary with headcount. Both figures are corroborated by 31 months
- * of ledger data.
+ * BR-040: the two Linda units are billed the same way. Their fixed monthly charge (LF P400,
+ * LB P200) was retired on 2026-09-20 - see below; only where their money is recorded differs.
  *
  * @param roomNumber the unit's natural key, e.g. `2c` or `LF`
  * @param occupants  active headcount; values below 1 are treated as 1, since a let unit has
