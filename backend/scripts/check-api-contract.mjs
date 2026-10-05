@@ -13,6 +13,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { signInAsAdmin } from '../../scripts/lib/adminSignIn.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..', '..');
@@ -38,16 +39,6 @@ const tenantPass = allPasswords.length > 1 ? allPasswords.at(-1) : null;
 let pass = 0, fail = 0;
 const failures = [];
 
-async function login(email, password) {
-  const r = await fetch(`${BASE}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-  if (!r.ok) return null;
-  const j = await r.json();
-  return j?.data?.token ?? j?.token ?? null;
-}
 
 async function check(label, pathname, token) {
   const r = await fetch(`${BASE}${pathname}`, {
@@ -95,9 +86,11 @@ await check('public', '/public/rooms', null);
 await check('public', '/public/rates', null);
 
 // ---- admin --------------------------------------------------------------
-const adminToken = await login(adminEmail, adminPass);
-console.log(`\nADMIN (${adminEmail}) - token ${adminToken ? 'issued' : 'FAILED'}`);
-if (!adminToken) { fail++; failures.push('admin login failed'); }
+// Through the shared guard: a password already refused is not sent again (B-101).
+const { token: adminToken, reason: adminRefused } =
+  await signInAsAdmin({ root, base: BASE, email: adminEmail, password: adminPass });
+console.log(`\nADMIN (${adminEmail}) - token ${adminToken ? 'issued' : `FAILED: ${adminRefused}`}`);
+if (!adminToken) { fail++; failures.push(`admin sign-in: ${adminRefused}`); }
 else {
   for (const p of [
     '/auth/me', '/admin/rooms', '/admin/tenants', '/admin/bills', '/admin/payments',

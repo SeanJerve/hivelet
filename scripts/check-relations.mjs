@@ -59,6 +59,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { signInAsAdmin } from './lib/adminSignIn.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = process.env.API_BASE || 'http://127.0.0.1:5000/api';
@@ -90,15 +91,11 @@ function known(key, what) {
   pinned.push(`${key}: ${KNOWN[key] ?? what}`);
 }
 
-const res = await fetch(`${BASE}/auth/login`, {
-  method: 'POST', headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: adminEmail, password: adminPass }),
-}).catch(() => null);
-if (!res || !res.ok) {
-  console.error('Could not sign in. Is the backend running (npm run dev:backend)?');
+const { token, reason } = await signInAsAdmin({ root, base: BASE, email: adminEmail, password: adminPass });
+if (!token) {
+  console.error(`Could not sign in: ${reason}`);
   process.exit(1);
 }
-const token = (await res.json())?.data?.token;
 const get = async (p) => {
   const r = await fetch(BASE + p, { headers: { Authorization: `Bearer ${token}` } });
   if (!r.ok) return null;

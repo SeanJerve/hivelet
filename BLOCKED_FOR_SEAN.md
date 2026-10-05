@@ -33,6 +33,25 @@ thing did not work" is not.
 
 ## Open
 
+### B-101 — `credentials/creds.txt` still holds the admin password from before B-98; three failed sign-ins on the owner's account · **OPEN: Sean, 1 minute**
+
+- **What happened:** 5 Oct 2026, about 14:40 Manila, `npm run check:all` on Sean's machine. Three suites
+  (`check:api`, `check:relations`, and one repeat) signed in as **admin@hivelet.ph** with the password in
+  `credentials/creds.txt`, which is the value from **before** the 2 Oct rotation (B-98). All three were
+  refused (401). The account now reads **failed_login_count 3, not locked** (the lock comes at 5, for
+  15 minutes). Claude stopped running any suite that signs in once it saw this.
+- **What it means for the owner:** nothing yet. Her next correct sign-in resets the count to 0. If she
+  mistypes twice before that, she is locked out for 15 minutes.
+- **What Sean needs to do:** sign in to the live site once as the owner's account (resets the count), and
+  put the current password in `credentials/creds.txt` on this machine (and send it to Loyd's the usual
+  out-of-band way). **Running the suites meanwhile is now safe:** both suites that sign in as her
+  (`check:relations`, `check:api`) go through `scripts/lib/adminSignIn.mjs`, which records a refused
+  password's hash in `credentials/.admin-signin-refused` and never sends that password again. They
+  print "NOT attempted" and fail until `creds.txt` changes. Verified: both run, count stays at 3.
+- **How to know it worked:** `npm run check:relations` signs in and prints its OK lines; the account's
+  failed_login_count is 0.
+- **Raised:** 2026-10-05 by Claude (Sean's machine)
+
 ### B-100 — a test session on 4 Oct changed the owner's real books; 079 puts them back (WRITTEN, NOT APPLIED) · **OPEN: Sean to confirm**
 
 - **What happened:** 4 Oct 2026, 22:46 to 23:08 Manila, the administrator account, from an address that had
