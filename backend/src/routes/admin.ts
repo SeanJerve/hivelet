@@ -1444,10 +1444,6 @@ router.patch(
   })
 );
 
-const tenantStatusSchema = z.object({
-  account_status: z.enum(['active', 'inactive']),
-});
-
 /**
  * POST /api/admin/tenants/:profileId/reset-password
  * Issues a tenant a new one-time starting password (B-83).
@@ -2906,8 +2902,8 @@ router.post(
     const occupantsDiverge = carriedOccupants !== null && occupants !== carriedOccupants;
 
     /**
-     * `year` and `month` are the month the rent is FOR, taken from each span -
-     * not the month the cash arrived.
+     * Each row's `year` and `month` are the month the rent is FOR, read from its span
+     * (`span.year`, `span.month` below) - not the month the cash arrived.
      *
      * This read `isoDateParts(datePaid)`. That is right whenever the two agree,
      * which is most of the time, and wrong exactly when it matters: arrears paid
@@ -2923,7 +2919,6 @@ router.post(
      * `YYYY-MM-DD` string; it is simply being asked about the wrong date. The
      * spans are built from `periodStart`, which is itself such a string.)
      */
-    const { year, month } = { year: spans[0].year, month: spans[0].month };
 
     /**
      * The same receipt must not be recorded twice.

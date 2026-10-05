@@ -25,7 +25,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { queryInt } from '../utils/validators.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
-import { auditFromRequest, clientIp } from '../services/auditService.js';
+import { auditFromRequest } from '../services/auditService.js';
 import { computeBillAmounts, billPeriodFor, isOverdue, toCentavos, billAlreadyRaised }
   from '../services/billingService.js';
 import { readStanding } from '../services/standingService.js';

@@ -184,7 +184,7 @@ router.post(
    * endpoint is still throttled rather than being handed an unlimited supply of
    * cheap 403s.
    */
-  (req, _res, next) => {
+  (_req, _res, next) => {
     if (!config.allowPublicSignup) {
       next(
         ApiError.forbidden(
