@@ -13,8 +13,8 @@ let headingSeq = 0;
  *     from 1024px, so the list is in view wherever the person is, and the Overview keeps its top.
  *   - `line`: the phone's Overview, one quiet line under the greeting, styled like the date
  *     above it (Sean, 6 Oct 2026: the card "is like a really big deal" and pushed the month chart
- *     down). "Recently" at the left, the latest action at the right, its unit and month and how
- *     long ago under it in light grey. Seen without opening anything; plain text, not a link.
+ *     down). "Recently" with the date and time it was done at the far right; the latest action
+ *     and what it was about under it. Seen without opening anything; plain text, not a link.
  *   - `tile`: the card the Overview used before (kept for a screen that wants the full three).
  *
  * Their own actions only, in sentences the server writes (GET /auth/me/recent-actions,
@@ -72,6 +72,13 @@ if (props.variant === 'rail') {
 const dayKey = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: PROPERTY_TIMEZONE });
 const clock = (d: Date) => d.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', timeZone: PROPERTY_TIMEZONE });
 
+/** The date and time it was done, always both: "Oct 4, 11:00 PM". */
+function stamp(iso: string): string {
+  const d = new Date(iso);
+  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: PROPERTY_TIMEZONE });
+  return `${date}, ${clock(d)}`;
+}
+
 /** "Just now", "12 minutes ago", "Today, 3:12 PM", "Yesterday, 3:12 PM", "4 Oct, 10:59 PM". */
 function when(iso: string): string {
   const d = new Date(iso);
@@ -90,14 +97,18 @@ function when(iso: string): string {
 <template>
   <!-- One quiet line. Nothing at all when there is nothing to say: no card, no empty state. -->
   <!-- Its place is held while loading, so the page does not jump when it arrives. -->
-  <!-- Left-aligned, reading on from the greeting above it (Sean, 6 Oct): "Recently" and the
-       action on one line, what it was about and when under it in light grey. -->
-  <!-- Text to be seen, not a link (Sean, 6 Oct: "just make it seen"). -->
+  <!-- Left-aligned, reading on from the greeting above it. Text to be seen, not a link
+       (Sean, 6 Oct: "just make it seen"). -->
   <div v-if="variant === 'line' && (latest || loading)" class="min-h-10 min-w-0">
+    <!-- "Recently" with the date and time at the far right; the action and what it was about
+         under it (Sean, 6 Oct: the one-line form was crowded). -->
     <template v-if="latest">
-      <p class="truncate text-sm"><span class="text-ink-faint">Recently</span>{{ ' ' }}<span class="font-medium text-ink-soft">{{ latest.action }}</span></p>
-      <p class="truncate text-xs text-ink-faint">
-        <template v-if="latest.about">{{ latest.about }} · </template><time :datetime="latest.at">{{ when(latest.at) }}</time>
+      <p class="flex items-baseline justify-between gap-4 text-sm text-ink-faint">
+        <span>Recently</span>
+        <time :datetime="latest.at" class="shrink-0 text-xs tabular">{{ stamp(latest.at) }}</time>
+      </p>
+      <p class="truncate text-sm">
+        <span class="font-medium text-ink-soft">{{ latest.action }}</span><template v-if="latest.about">{{ ' ' }}<span class="text-ink-faint">{{ latest.about }}</span></template>
       </p>
     </template>
   </div>

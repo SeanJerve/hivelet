@@ -42,10 +42,10 @@ and it is not there yet, it appears once she records your receipt.
 *Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.*
 
 **Your recent actions** lists the last three things you did here (a repair request sent, a GCash
-payment started, your details updated), newest first. Tap one to go to it. On a computer it is in the
-menu on the left, under the sections, on every page. On a phone the latest one is on one line under the greeting
-(**Recently**, with what it was and when). Only you see your
-own actions.
+payment started, your details updated), newest first. On a computer it is in the menu on the left,
+under the sections, on every page, and clicking one goes to it. On a phone the latest one is under the
+greeting: **Recently**, with the date and time you did it at the right, and what you did on the line
+below. Only you see your own actions.
 *Ang huling tatlong ginawa ninyo dito.*
 
 ### 3. Payments and billing / Bayad at singil
@@ -173,9 +173,10 @@ Personal spending is shown beside operating costs and is not deducted from renta
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
 
 **Your recent actions** lists the last three things you did (a payment recorded, a GCash payment
-approved, a repair marked done), newest first; tap one to go to it. On a computer it is in the menu
-on the left, under the sections, on every page; on a phone the latest one is on one line under
-the greeting (**Recently**). It shows only your own actions, never anyone else's.
+approved, a repair marked done), newest first. On a computer it is in the menu on the left, under
+the sections, on every page, and clicking one goes to it. On a phone the latest one is under the
+greeting: **Recently**, with the date and time you did it at the right, and what you did on the line
+below. It shows only your own actions, never anyone else's.
 
 - **Record payment**, **Record expense** and **Move someone in/out** are at the top. **On a phone**,
   tap the green **+** at the bottom right to show them; tap it again to hide them.
