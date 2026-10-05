@@ -67,6 +67,25 @@ export function installStaleVersionRecovery(router: Router): void {
       if (hadController) stale = true;
       hadController = true;
     });
+
+    /**
+     * ASK FOR A NEW VERSION, rather than wait for the browser to (5 Oct 2026).
+     * Checked on the live site: after a deploy, a reload still drew the old
+     * version from the worker's cache, because the browser had not yet looked
+     * for a new worker; it came only after asking. An installed app is rarely
+     * reloaded at all. So the page asks when it comes back into view and every
+     * 15 minutes while it is open. A new version then takes over as above, and
+     * the next navigation loads it. Offline, the check fails quietly.
+     */
+    const checkForUpdate = () => {
+      navigator.serviceWorker.getRegistration().then((reg) => reg?.update()).catch(() => {});
+    };
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkForUpdate();
+    });
+    setInterval(() => {
+      if (document.visibilityState === 'visible') checkForUpdate();
+    }, 15 * 60 * 1000);
   }
   router.beforeEach((to, from) => {
     if (stale && from.matched.length > 0 && to.fullPath !== from.fullPath) {
