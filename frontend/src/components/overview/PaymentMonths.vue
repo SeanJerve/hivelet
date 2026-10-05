@@ -73,7 +73,9 @@ const headline = computed(() => {
   if (st.periodsDue > 0 && st.status === 'overdue') {
     // From the ledger alone: months after the last payment entered. Not "overdue" - the
     // landlady may not have entered a payment yet (Sean, 2026-10-01).
-    const months = st.periodsDue === 1 ? '1 month after that is' : `${st.periodsDue} months after that are`;
+    // 'After that' needs a payment to follow; with none recorded the months simply are not entered.
+    const after = st.paidThrough ? ' after that' : '';
+    const months = st.periodsDue === 1 ? `1 month${after} is` : `${st.periodsDue} months${after} are`;
     return {
       text: `${through}. ${months} not entered yet. If you have paid the landlady, it appears here once she enters it.`,
       tone: 'unentered' as const,

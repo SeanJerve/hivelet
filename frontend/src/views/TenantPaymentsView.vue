@@ -218,6 +218,29 @@ const rentFacts = computed(() => {
 });
 const standingOwes = computed(() => (standing.value?.owedPeriods.length ?? 0) > 0);
 const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
+
+/**
+ * The sentence under the amount owed, built in one place. It was three template blocks on
+ * separate lines, and Vue's whitespace condensing drops the newline between two blocks, so it
+ * rendered "No payment is recorded yet.1 month is not entered yet." (live, 5 Oct 2026).
+ */
+const standingSentence = computed(() => {
+  const st = standing.value;
+  if (!st || st.owedPeriods.length === 0) return '';
+  const parts = [st.paidThrough
+    ? `Your recorded payments cover rent up to ${formatDateOnly(st.paidThrough, longDate)}.`
+    : 'No payment is recorded yet.'];
+  if (st.status === 'overdue') {
+    // "After that" needs a payment to follow; with none recorded the months simply are not entered.
+    const months = st.paidThrough
+      ? (st.periodsDue > 1 ? `${st.periodsDue} months after that are` : 'The month after that is')
+      : (st.periodsDue > 1 ? `${st.periodsDue} months are` : '1 month is');
+    parts.push(`${months} not entered yet.`);
+  }
+  const next = st.owedPeriods[0]!;
+  parts.push(`Paying now covers ${formatDateOnly(next.start, longDate)} to ${formatDateOnly(next.end, longDate)}.`);
+  return parts.join(' ');
+});
 /**
  * Set when `/tenant/my-bills` could not be read.
  *
@@ -816,18 +839,7 @@ function refreshAll() {
         <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">
           {{ peso(standing.totalDue > 0 ? standing.totalDue : standing.perPeriod.totalAmount, 2) }}
         </p>
-        <p class="mt-2 text-sm leading-6 text-on-brand-soft">
-          <template v-if="standing.paidThrough">
-            Your recorded payments cover rent up to {{ formatDateOnly(standing.paidThrough, longDate) }}.
-          </template>
-          <template v-else>No payment is recorded yet.</template>
-          <template v-if="standing.status === 'overdue'">
-            {{ standing.periodsDue > 1 ? `${standing.periodsDue} months after that are` : 'The month after that is' }} not entered
-            yet.
-          </template>
-          Paying now covers {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
-          {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }}.
-        </p>
+        <p class="mt-2 text-sm leading-6 text-on-brand-soft">{{ standingSentence }}</p>
       </div>
       <!--
         The period is in the sentence above, not on the button. As a label,

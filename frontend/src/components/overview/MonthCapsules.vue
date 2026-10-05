@@ -59,11 +59,23 @@ const scaleMax = computed(() => {
   return 10 * magnitude;
 });
 
-const ticks = computed(() => [scaleMax.value, scaleMax.value / 2, 0]);
+/**
+ * The scale's labels. With no amount to draw (a tenant with nothing recorded yet) the top two read
+ * nothing rather than "₱1" and "₱0.5", a scale made up for an empty chart (live, 5 Oct 2026).
+ */
+const hasAmounts = computed(() =>
+  props.months.some((m) => (m.kind === 'recorded' || m.kind === 'expected') && (m.value ?? 0) > 0)
+);
+const ticks = computed(() =>
+  hasAmounts.value
+    ? [scaleMax.value, scaleMax.value / 2, 0].map(compact)
+    : ['', '', compact(0)]
+);
 
 function compact(value: number) {
   if (value >= 1_000_000) return `₱${(value / 1_000_000).toLocaleString('en-PH', { maximumFractionDigits: 1 })}M`;
-  if (value >= 1000) return `₱${Math.round(value / 1000).toLocaleString('en-PH')}k`;
+  // One decimal, so the middle of a ₱5k scale reads ₱2.5k, not a rounded ₱3k.
+  if (value >= 1000) return `₱${(value / 1000).toLocaleString('en-PH', { maximumFractionDigits: 1 })}k`;
   return `₱${value}`;
 }
 
@@ -91,7 +103,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
   <div class="flex flex-col gap-4 min-w-0">
     <div class="flex gap-3 min-w-0">
       <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 max-sm:pb-9 text-xs text-ink-faint tabular text-right shrink-0', short ? 'h-28 md:h-48' : 'h-48']">
-        <span v-for="t in ticks" :key="t">{{ compact(t) }}</span>
+        <span v-for="(t, i) in ticks" :key="i">{{ t }}</span>
       </div>
 
       <div class="overflow-x-auto min-w-0 flex-1 -mb-2 pb-2">
