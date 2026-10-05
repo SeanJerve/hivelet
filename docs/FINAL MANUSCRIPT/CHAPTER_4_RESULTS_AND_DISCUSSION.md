@@ -222,6 +222,22 @@ a bill actually raised is shown as due.
 The system does not handle electricity. Every unit has its own meter and the tenant pays the
 electric company directly, as the owner confirmed on 18 September 2026.
 
+Every figure the owner reads is worked out by the system from the rules in Table 7A rather than
+typed, so the same inputs always give the same amount.
+
+**Table 7A.** Business Rules for Computed Figures, with a Worked Example
+
+| Rule | What the system computes | Worked example |
+| :--- | :--- | :--- |
+| BR-014 Water fee | Water = number of occupants × ₱200 | Unit 2C with two occupants: 2 × ₱200 = ₱400 |
+| BR-038 Remitted amount | Remitted = Rent Amount + Water Payment | ₱8,500 + ₱400 = ₱8,900 |
+| BR-035 50% Share | A system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet | ₱8,500 ÷ 2 = ₱4,250 |
+| BR-033 Rent period | The period a payment covers, from the tenancy's anniversary date | Anniversary on the 13th: rent for 13 August to 12 September |
+| BR-010, BR-011, BR-012 Due date and overdue | Due on the date the billing cycle sets; overdue from the next day, with no grace period | Due 13 September: overdue from 14 September |
+| BR-039 Deposit | Equal to the rent in effect at move-in, set once | Moved in at ₱8,500: deposit ₱8,500 |
+| BR-040 Linda's units | Water at the same ₱200 per occupant, recorded separately and kept out of the remitted amount | Unit LF with two occupants: ₱400 recorded as Linda's water; remitted = rent only |
+| BR-045 Expense total | An expense entry's total = the sum of its allocations to property areas | ₱6,000 to the Boarding House + ₱2,000 to the Main House = ₱8,000 |
+
 ### 4.2.5 Maintenance Ticketing and Notification Module
 
 A tenant submits a request with a title, description and priority, and follows its status through
@@ -267,6 +283,30 @@ Other security measures in the system:
   is not shown in the application: its Activity screen was removed on 1 October 2026.
 - Messages from the payment gateway are accepted only with a valid HMAC signature.
 - A check for committed passwords and keys runs before every commit.
+
+Table 7B sets out which role may use which function. It is read from the permission table in the
+server's code, which every request is checked against before it reaches the data.
+
+**Table 7B.** Role and Privilege Matrix
+
+| Function | Visitor | Tenant | Administrator |
+| :--- | :---: | :---: | :---: |
+| View the public site, units and rates | Yes | Yes | Yes |
+| Send an inquiry and read the reply (private link or reference code) | Yes | Yes | Yes |
+| View and update their own details and password | No | Own | Own |
+| View a unit, its bills, payments and receipts | No | Own | All |
+| Pay a bill online with GCash | No | Own | No |
+| Send, follow and cancel a repair request | No | Own | All, and dispatch or close |
+| Receive notifications | No | Own | Own |
+| Manage units and rates | No | No | Yes |
+| Manage tenants: move in, move out, reset a password | No | No | Yes |
+| Record, verify, correct and void payments | No | No | Yes |
+| Income and expense ledgers, overview figures and workbook downloads | No | No | Yes |
+| Answer, close and delete inquiries | No | No | Yes |
+
+A prospect, someone recorded from an inquiry who has not moved in, holds a visitor's permissions.
+"Own" means the server reads the person from their sign-in token and returns only their own
+records; anyone else's answers "not found".
 
 ### 4.2.7 Progressive Web Application Implementation
 
@@ -320,7 +360,7 @@ Two results are worth discussing.
 
 First, the checks found problems that no one had written a check for. The five receipt anomalies
 in Section 4.1.1 came from the owner's historical records, not from the system. They are reported
-on every run instead of being quietly corrected, because only the owner's receipt book can say
+on every run instead of being quietly corrected, because only the owner's invoice book can say
 what each entry should read.
 
 Second, several serious defects found during development gave no error on screen at all. In one,
@@ -446,7 +486,7 @@ list already did.
 The tenant screens showed one thing that is not a defect of the system but matters to anyone using
 it. On 29 September 2026 the latest receipt in the ledger was dated 8 August 2026, so the portal
 told every one of the 32 tenants that they were behind by one or two periods. The screens were
-right about the records; the records were behind the owner's receipt book. A system that tenants
+right about the records; the records were behind the owner's invoice book. A system that tenants
 can see makes the owner's entry of receipts part of what they experience, and the testing day was
 prepared accordingly (the owner enters the receipts she holds first, or tenants are told).
 
@@ -720,6 +760,21 @@ within the 45 seconds the design sets, but the Android phone showed it only afte
 The message is correct but late on that phone, and it is recorded as a defect (Table 23).
 
 ---
+
+Table 11E brings the testing of Section 4.3 together by level.
+
+**Table 11E.** Summary of Test Execution by Level
+
+| Level | Activity (source) | Executed | Passed | Failed | Not performed or not applicable | Pass rate |
+| :--- | :--- | --: | --: | --: | --: | --: |
+| Unit and integration | Automated check suites, 29 September 2026 (Table 8) | 20 | 20 | 0 | 0 | 100% |
+| System | Functional walkthrough by the owner, 30 September 2026 (Table 10) | 25 | 24 | 1 | 5 | 96% |
+| Acceptance | Tenant tasks, 30 September 2026 (Table 11C) | 34 | 34 | 0 | 0 | 100% (91% without help) |
+| Acceptance | Simultaneous use by the owner and tenants (Table 11D) | 4 | 4 | 0 | 3 | 100% |
+| **All levels** | | **83** | **82** | **1** | **8** | **98.8%** |
+
+Every level passed at least 96 per cent of the tests executed. The one failure, at the system level,
+is classified in Table 23A; it was not critical, and no critical defect was found in any activity.
 
 ## 4.4 Evaluation of the System Based on ISO/IEC 25010
 
@@ -1081,6 +1136,27 @@ followed by the fourteen comments of the technical evaluators who reviewed the s
 | Survey results | [DATA PENDING] | | |
 
 ---
+
+Table 23A counts the defects found by each test activity in Sections 4.3 and 4.4, by their highest
+severity and what became of them. Severity follows four levels: **critical**, a wrong amount in the
+records or lost data; **high**, a wrong amount shown, a core task blocked, or a weakness that could be
+exploited; **medium**, a misleading display or a weakness with a workaround; **low**, usability,
+appearance or hardening.
+
+**Table 23A.** Defects Found, by Activity, Severity and Disposition
+
+| Activity | Found | Highest severity | Resolved | Open or accepted |
+| :--- | --: | :--- | --: | :--- |
+| Screen-versus-database audit, 26 and 29 September (Table 9) | 6 | High: a tenant's payments not shown; a voided receipt shown as paid | 6 | None |
+| Functional walkthrough, 30 September (Table 10) | 1 | Medium: ₱0 instead of "—" with the connection cut | 0 | 1 open: not reproduced on 1 October; to be tested again on the owner's laptop |
+| Testing day on phones, 30 September | 1 | Medium: the "cannot tell whether it was saved" message late on Android | 1 | Mitigated; to be tested again on the same phone |
+| Check of the evaluation account, 2 October | 1 | High: online payment refused for an amount owed | 1 | None |
+| Security review and outside probe, 2 October | 12 | High, operational: the hosting provider's visitor challenge could block payment notifications | 9 | 3 accepted as low risk: sign-in attempt limits counted per server instance, signing out not revoking a token, a wide connection policy |
+| Technical evaluators, 3 October | 14 | Medium: phone, email and photo validation | 14 | None |
+| **All activities** | **35** | | **31** | **1 open, 3 accepted** |
+
+No defect found in these activities was critical. The three accepted items are recorded in the
+security audit with the reason each was accepted.
 
 ## 4.5 Deployment Plan and Strategies
 

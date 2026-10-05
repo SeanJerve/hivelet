@@ -47,11 +47,11 @@ Build these before the defense; each is a small table or figure. "Have" means an
 | System architecture diagram | Check Chapter 3; not in Chapter 4 | Vue PWA → Express API on Vercel → Supabase PostgreSQL; Adyen |
 | Context diagram, data flow diagram, use case diagram | **Missing in Chapter 4** | Regenerate from the system as built; one notation throughout |
 | Entity-relationship diagram and a data dictionary extract | Mentioned, not an exhibit | Generate from the live schema (never from `FULL_DATABASE_SCHEMA.sql`); Crow's Foot |
-| Business rules table with **one worked example per computation** | **Missing as a table** | Water = occupants × ₱200; the bill (rent + water); overdue from the day after the due date; the 50% share per BR-035 wording only |
-| Role and privilege matrix (role × function, Yes/No) | **Missing as a table** | The permission matrix in the code: public, prospect, tenant, administrator |
+| Business rules table with **one worked example per computation** | **Have: Table 7A** (5 Oct 2026) | Water = occupants × ₱200; the bill (rent + water); overdue from the day after the due date; the 50% share per BR-035 wording only |
+| Role and privilege matrix (role × function, Yes/No) | **Have: Table 7B** (5 Oct 2026), from `config/rbac.ts` | The permission matrix in the code: public, prospect, tenant, administrator |
 | Deployment environment table (client-side hardware and software, **with versions**) | Partly: Table 24 | Add the landlady's laptop and the tenants' phones as actually used on 30 Sep |
-| **Test execution summary by level** (unit, integration, system, user acceptance: executed, passed, failed, pass rate) | **Missing** | Unit/integration: the check suites; system: the walkthrough (Table 10); acceptance: the testing day (Tables 11C, 11E). The course standard is **at least 90% passed, all critical defects resolved** |
-| Defect summary by severity and disposition (found, resolved, deferred) | Partly: Table 23 lists fixes | Add a severity column and the deferred items (e.g. B-86 until 064 runs) |
+| **Test execution summary by level** (unit, integration, system, user acceptance: executed, passed, failed, pass rate) | **Have: Table 11E** (5 Oct 2026): 82 of 83 executed tests passed, 98.8% | Unit/integration: the check suites; system: the walkthrough (Table 10); acceptance: the testing day (Tables 11C, 11E). The course standard is **at least 90% passed, all critical defects resolved** |
+| Defect summary by severity and disposition (found, resolved, deferred) | **Have: Table 23A** (5 Oct 2026): 35 found, 31 resolved, 1 open, 3 accepted | Add a severity column and the deferred items (e.g. B-86 until 064 runs) |
 | Worked computation of one weighted mean (rating, weight, frequency, product) | **Missing** | From the real survey: one indicator |
 | Summary table with a **rank** column and n per characteristic | Table 22 (pending) | `compute-survey.mjs` prints the numbers; add rank and n |
 
