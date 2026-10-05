@@ -107,10 +107,15 @@ thing did not work" is not.
   2. **Try the new things on real phones with loydtest:** cancel a Submitted repair (then try a second
      within the hour: it should say how many minutes are left); attach a photo from an iPhone (it should
      arrive as JPG); type a phone number on an Android keyboard (the spacing should not jump the cursor).
+     **Since 5 Oct night:** loydtest's My details will not save until its emergency contact number
+     (on file with ten digits, "0978 617 111") is corrected to a full mobile number. That is the new
+     check working, not a fault.
   3. **The survey export** (Sean, 5 Oct: after midterms) (Google Form > Responses > Download CSV) into the repo, then
      `node scripts/survey/compute-survey.mjs responses.csv --method=A --out=tables.md`. It fills
      Tables 12 and 14 to 22, Table 22's summary, Table 23's survey row, Chapter 5's item 4 and
-     conclusion 4, and the abstract. Nothing else in the chapters is blocked.
+     conclusion 4, and the abstract; since 5 Oct night also Table 12A (add how many forms each group
+     was given), Table 13A (a worked weighted mean) and the lowest characteristic for Chapter 5's
+     recommendation 6. Nothing else in the chapters is blocked.
   4. **How many technical evaluators there were**, and their roles, for Table 12 (§4.4.1).
 - **Raised:** 2026-10-05 by Claude (Sean's machine)
 
