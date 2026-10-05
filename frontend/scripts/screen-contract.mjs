@@ -95,6 +95,8 @@ const PURPOSE = new Map([
   ['PUT /tenant/my-profile', 'edit my details'],
   ['GET /tenant/my-notifications', 'my notifications'],
   ['POST /tenant/tickets', 'file a maintenance request, with photos'],
+  ['POST /tenant/tickets/:id/cancel', 'withdraw your own request while it is still Submitted; one an hour; an optional reason becomes a note'],
+  ['DELETE /admin/inquiries/:id', 'delete an inquiry and its conversation (audited)'],
   ['POST /tenant/tickets/:id/messages', 'reply on my ticket'],
   ['POST /tenant/payments/checkout', 'pay by GCash through Adyen'],
   ['POST /tenant/payments/adyen/verify-session', 'confirm the gateway session on return'],

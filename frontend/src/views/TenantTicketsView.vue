@@ -10,6 +10,8 @@
 -->
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import { currentUser } from '@/lib/authStore';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
@@ -18,6 +20,7 @@ import { writesUnavailable } from '@/lib/offlineCache';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { shrinkPhoto } from '@/lib/shrinkPhoto';
+import { PHOTO_ACCEPT, PHOTO_FORMAT_MESSAGE, isJpgOrPng } from '@/lib/photoFile';
 import { playSound } from '@/lib/sounds';
 import {
   Send,
@@ -56,6 +59,9 @@ interface TicketRow {
   status: string;
   created_at: string;
   resolved_at: string | null;
+  closed_at?: string | null;
+  /** Who closed it. The tenant themselves when they cancelled it (POST .../cancel). */
+  closed_by?: string | null;
   rooms?: { id: string; room_number: string } | null;
   ticket_attachments?: { id: string; file_url: string; file_type: string | null }[] | null;
 }
@@ -65,6 +71,49 @@ interface TicketNote {
   author: string;
   text: string;
   timestamp: string;
+}
+
+// ---- Cancelling a request ---------------------------------------------------
+/**
+ * A tenant may cancel their own request while it is still Submitted
+ * (technical evaluators, 3 Oct 2026). Not once it is In Progress: someone may
+ * already be on the way. At most one an hour; the server says how long is
+ * left. The reason is optional. A cancelled request is Closed with the tenant
+ * as the one who closed it, which is how this page tells it apart.
+ */
+function isCancelled(t: TicketRow): boolean {
+  return t.status === 'Closed' && !!t.closed_by && t.closed_by === currentUser.value?.profileId;
+}
+function canCancel(t: TicketRow): boolean {
+  return t.status === 'Submitted';
+}
+const cancelTarget = ref<TicketRow | null>(null);
+const cancelReason = ref('');
+const cancelling = ref(false);
+const cancelError = ref('');
+
+function askCancel(t: TicketRow) {
+  cancelTarget.value = t;
+  cancelReason.value = '';
+  cancelError.value = '';
+}
+
+async function confirmCancel() {
+  const t = cancelTarget.value;
+  if (!t || cancelling.value) return;
+  cancelling.value = true;
+  cancelError.value = '';
+  try {
+    await api.post(`/tenant/tickets/${t.id}/cancel`, { reason: cancelReason.value.trim() || undefined });
+    cancelTarget.value = null;
+    if (isTimelineOpen.value && activeTimelineTicket.value?.id === t.id) closeTimeline();
+    await fetchTickets({ quiet: true });
+    showToast('success', 'Request cancelled', `"${t.title}" is cancelled. The landlady has been told.`);
+  } catch (err: any) {
+    cancelError.value = err?.message || 'The request could not be cancelled. Try again.';
+  } finally {
+    cancelling.value = false;
+  }
 }
 
 // ---- Submission form state ------------------------------------------------
@@ -501,13 +550,17 @@ useLiveRefresh(async () => {
 });
 
 async function fetchTickets(opts: { quiet?: boolean } = {}) {
-  if (!opts.quiet) loadingTickets.value = true;
-  ticketsLoadFailed.value = false;
+  if (!opts.quiet) {
+    loadingTickets.value = true;
+    ticketsLoadFailed.value = false;
+  }
   try {
     tickets.value = (await api.get<TicketRow[]>('/tenant/my-tickets')) ?? [];
+    ticketsLoadFailed.value = false;
   } catch (err: any) {
     console.error('Failed to load tickets:', err?.message || err);
-    ticketsLoadFailed.value = true;
+    // A quiet refresh that fails leaves the page as it was (lib/live.ts).
+    if (!opts.quiet) ticketsLoadFailed.value = true;
   } finally {
     loadingTickets.value = false;
   }
@@ -536,6 +589,13 @@ const handlePhotoSelect = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (!file) return;
+
+  // JPG or PNG only (technical evaluators, 3 Oct 2026; lib/photoFile.ts).
+  if (!isJpgOrPng(file)) {
+    target.value = '';
+    await showTicketError(`${file.name} is not a JPG or PNG. ${PHOTO_FORMAT_MESSAGE}`);
+    return;
+  }
 
   /**
    * Shrunk in the browser first (`lib/shrinkPhoto.ts`), so a normal 3 MB phone
@@ -825,7 +885,7 @@ function formatDateTime(iso: string) {
                   <input
                     id="ticket-photo-input"
                     type="file"
-                    accept="image/*"
+                    :accept="PHOTO_ACCEPT"
                     class="hidden"
                     @change="handlePhotoSelect"
                   />
@@ -835,7 +895,7 @@ function formatDateTime(iso: string) {
                   >
                     <ImageIcon class="size-6 text-brand" aria-hidden="true" />
                     <span class="text-xs font-semibold text-ink">Add a photo</span>
-                    <span class="text-xs text-ink-soft">Optional. A photo helps show the problem.</span>
+                    <span class="text-xs text-ink-soft">Optional. JPG or PNG.</span>
                   </label>
                 </div>
 
@@ -1020,7 +1080,9 @@ function formatDateTime(iso: string) {
                   <div class="flex items-center gap-2.5 shrink-0">
                     <!-- Where the request has got to. The words are the meaning;
                          the marks repeat it. -->
+                    <StatusPill v-if="isCancelled(ticket)" tone="neutral">Cancelled</StatusPill>
                     <ol
+                      v-else
                       class="hidden sm:flex items-center gap-1.5"
                       :aria-label="`Progress: ${ticketStepLabel(ticket.status)}`"
                     >
@@ -1043,7 +1105,7 @@ function formatDateTime(iso: string) {
                         <span v-if="i < TICKET_STEPS.length - 1" aria-hidden="true" class="h-px w-4 bg-line" />
                       </li>
                     </ol>
-                    <span class="sm:hidden text-xs font-semibold text-ink">{{ ticketStepLabel(ticket.status) }}</span>
+                    <span v-if="!isCancelled(ticket)" class="sm:hidden text-xs font-semibold text-ink">{{ ticketStepLabel(ticket.status) }}</span>
                     <div class="p-1 rounded-lg text-ink-soft group-hover:text-ink transition-colors" aria-hidden="true">
                       <ChevronDown
                         :class="[ 'size-4 transition-transform duration-200 ease-[var(--ease-out)]', isTicketExpanded(ticket.id) ? 'rotate-180 text-brand' : '' ]"
@@ -1097,6 +1159,18 @@ function formatDateTime(iso: string) {
                     <StatusPill v-if="ticket.resolved_at" tone="paid">
                       Done {{ formatDate(ticket.resolved_at) }}
                     </StatusPill>
+                    <StatusPill v-else-if="isCancelled(ticket) && ticket.closed_at" tone="neutral">
+                      Cancelled {{ formatDate(ticket.closed_at) }}
+                    </StatusPill>
+
+                    <button
+                      v-if="canCancel(ticket) && !writesUnavailable"
+                      type="button"
+                      class="pill-btn pill-btn-compact ml-auto"
+                      @click.stop="askCancel(ticket)"
+                    >
+                      Cancel request
+                    </button>
 
                     <!-- View Timeline Button -->
                     <!--
@@ -1109,7 +1183,7 @@ function formatDateTime(iso: string) {
                     -->
                     <button
                       @click.stop="openTimeline(ticket)"
-                      class="pill-btn pill-btn-compact ml-auto"
+                      :class="['pill-btn pill-btn-compact', !(canCancel(ticket) && !writesUnavailable) && 'ml-auto']"
                     >
                       <ListChecks class="size-3.5 text-brand" aria-hidden="true" />
                       <span>Progress and notes</span>
@@ -1217,7 +1291,11 @@ function formatDateTime(iso: string) {
               409 ("This ticket is closed"), so the box only ever led to an error
               toast. Resolved tickets still take notes; the server allows them.
             -->
-            <p v-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
+            <p v-if="isCancelled(activeTimelineTicket)" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
+              You cancelled this request, so it cannot take new notes. If the problem comes back, report
+              it again from this page.
+            </p>
+            <p v-else-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
               This request is closed, so it cannot take new notes. If the problem has come back, report
               it again from this page.
             </p>
@@ -1251,5 +1329,30 @@ function formatDateTime(iso: string) {
           </div>
         </div>
       </WsModal>
+
+    <ConfirmDialog
+      v-if="cancelTarget"
+      title="Cancel this repair request?"
+      :message="`“${cancelTarget.title}” will be closed and the landlady told. You can cancel one request an hour, and only before work on it starts.`"
+      confirm-label="Cancel request"
+      cancel-label="Keep it"
+      destructive
+      :busy="cancelling"
+      @cancel="cancelTarget = null"
+      @confirm="confirmCancel"
+    >
+      <div class="ws-field mt-4">
+        <label for="cancel-reason">Reason <span class="text-ink-soft">(optional)</span></label>
+        <textarea
+          id="cancel-reason"
+          v-model="cancelReason"
+          rows="2"
+          maxlength="500"
+          class="ws-textarea w-full"
+          placeholder="For example: it fixed itself."
+        />
+      </div>
+      <p v-if="cancelError" role="alert" class="ws-reveal mt-3 text-sm leading-6 text-overdue break-words">{{ cancelError }}</p>
+    </ConfirmDialog>
   </div>
 </template>

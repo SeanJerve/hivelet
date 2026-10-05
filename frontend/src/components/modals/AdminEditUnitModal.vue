@@ -10,6 +10,7 @@ import { api, failureTitle } from '@/lib/api';
 import { Check, Loader2, Upload, ImageOff } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import { useRoute } from 'vue-router';
+import { PHOTO_ACCEPT, PHOTO_FORMAT_MESSAGE, isJpgOrPng } from '@/lib/photoFile';
 
 const VISIBILITY_OPTIONS = [
   { value: 'Published', label: 'Listed on the website' },
@@ -287,8 +288,10 @@ async function onFileSelected(event: Event) {
   const file = target.files?.[0];
   if (!file) return;
 
-  if (!file.type.startsWith('image/')) {
-    showToast('error', 'Not an image', 'Choose a JPG, PNG or WebP file.');
+  // JPG or PNG only (technical evaluators, 3 Oct 2026; lib/photoFile.ts).
+  if (!isJpgOrPng(file)) {
+    target.value = '';
+    showToast('error', 'Not a JPG or PNG', PHOTO_FORMAT_MESSAGE);
     return;
   }
 
@@ -386,7 +389,7 @@ async function handleSave() {
           <input
             ref="fileInputRef"
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            :accept="PHOTO_ACCEPT"
             class="sr-only"
             aria-label="Choose a photograph of this unit"
             @change="onFileSelected"
@@ -434,7 +437,7 @@ async function handleSave() {
                     ? `${uploadedFileName} (${uploadedFileSize})`
                     : showingFloorPlan
                       ? 'Shown on the public page'
-                      : 'PNG, JPG or WebP'
+                      : 'JPG or PNG'
                 }}
               </span>
 

@@ -647,6 +647,7 @@ function handleDeleteTicketPrompt() {
             </div>
 
             <p class="text-lg font-semibold leading-snug break-words text-ink">{{ t.title }}</p>
+            <StatusPill v-if="t.cancelledByTenant" tone="neutral" class="self-start">Cancelled by the tenant</StatusPill>
 
             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-ink-faint">
               <span>{{ t.category }}</span>

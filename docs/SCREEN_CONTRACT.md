@@ -78,7 +78,7 @@ before the redesign started.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
-| **writes** | `DELETE /admin/inquiries/:id` | — |
+| **writes** | `DELETE /admin/inquiries/:id` | delete an inquiry and its conversation (audited) |
 | reads | `GET /admin/inquiries/:id/messages` | what has already been said to a prospect |
 | **writes** | `PATCH /admin/inquiries/:id` | advance or close an enquiry |
 | **writes** | `POST /admin/inquiries/:id/messages` | reply to a prospect |
@@ -153,7 +153,7 @@ before the redesign started.
 
 ### `views/TenantTicketsView.vue`
 
-5 call(s), **2 of them write**.
+6 call(s), **3 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
@@ -161,6 +161,7 @@ before the redesign started.
 | reads | `GET /tenant/my-tickets` | my maintenance requests |
 | reads | `GET /tenant/tickets/:id/messages` | read my ticket thread - 404 for anyone else's |
 | **writes** | `POST /tenant/tickets` | file a maintenance request, with photos |
+| **writes** | `POST /tenant/tickets/:id/cancel` | withdraw your own request while it is still Submitted; one an hour; an optional reason becomes a note |
 | **writes** | `POST /tenant/tickets/:id/messages` | reply on my ticket |
 
 ## Shared code — stores, modals, components
@@ -248,4 +249,4 @@ before the redesign started.
 
 ---
 
-**21 files make 76 distinct calls, 36 of which write.** Generated 2026-10-02.
+**21 files make 77 distinct calls, 37 of which write.** Generated 2026-10-05.
