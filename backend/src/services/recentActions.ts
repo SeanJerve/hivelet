@@ -156,7 +156,7 @@ export async function recentActionsFor(profileId: string, role: ActorRole, limit
           if (nv.status === 'Checkout Session Initiated') {
             return { text: `Started a GCash payment${amount ? ` of ${amount}` : ''}.`, link: '/tenant/payments' };
           }
-          if (nv.status === 'Confirmed On Return') return { text: 'Paid by GCash.', link: '/tenant/payments' };
+          if (nv.status === 'Confirmed On Return') return { text: `Paid${amount ? ` ${amount}` : ''} by GCash.`, link: '/tenant/payments' };
           return null;
         }
         default:

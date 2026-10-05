@@ -114,5 +114,16 @@ check('a tenant reads their own in their own words', r.payload.data.map((a) => a
   'Sent a repair request: “Leaking faucet”.',
 ]);
 
+r = await ask('tenant', [
+  row('1', 'PAYMENT_RECORD', { entity_id: 'b1', new_values: { status: 'Confirmed On Return', adyenResultCode: 'Authorised' } }),
+  row('2', 'PAYMENT_RECORD', { entity_id: 'b1', new_values: { status: 'Checkout Session Initiated' } }),
+]);
+// The completed payment carries its amount, as the started one does: on 4 Oct a tenant read
+// "Paid by GCash." above "Started a GCash payment of ₱30,400." with nothing to tie the two.
+check('a completed GCash payment names its amount', r.payload.data.map((a) => a.text), [
+  'Paid ₱4,700 by GCash.',
+  'Started a GCash payment of ₱4,700.',
+]);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
