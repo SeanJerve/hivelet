@@ -126,9 +126,11 @@ No text below 12 px.
     every other icon-only button (pencil, eye, bin, copy) is `icon-btn-plain`, 44 px with no ring.
   - `pill-btn-compact` is the one smaller size. Dialog footers use `ws-actions`; page-title
     actions use `ws-page-actions` (`HANDOFF_TO_DESIGN.md` §0).
-- **Lists are narrowed by `ListToolbar`** (since 2026-10-01): view switch, search, and one
-  **Filters** button opening `FilterSheet`, applied on **Apply filters**. Do not put a row of
-  selects or chips above a list. `chip` and `chip-count` are still defined in `index.css`, but no
+- **Lists are narrowed by `ListToolbar`** (since 2026-10-01; dropdowns since 2026-10-05, the
+  technical evaluators' "drop down instead of a pop-up"): search, then each filter and "Show as" as a
+  labelled `PillSelect` that applies on pick. Below 640 px one **Filters** button drops them open
+  under the bar, two to a row. No dialog, no Apply step; `FilterSheet` is gone. Do not add a second
+  row of selects or chips above a list. `chip` and `chip-count` are still defined in `index.css`, but no
   screen uses them now (checked 2026-10-01).
 - **Fields** are `ws-field` wrapping the control, so the label names it without needing `for`.
   `ws-input`, `ws-select`, `ws-textarea` for the box; `ws-hint` for the sentence underneath, which

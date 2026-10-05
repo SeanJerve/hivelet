@@ -41,6 +41,11 @@ recorded, up to the date it shows ("Your recorded payments cover rent up to…")
 and it is not there yet, it appears once she records your receipt.
 *Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.*
 
+**Your recent actions**, under the greeting, lists the last three things you did here (a repair
+request sent, a GCash payment started, your details updated), newest first. Tap one to go to it. On a
+phone the latest one shows; **Show 2 more** shows the rest. Only you see your own actions.
+*Ang huling tatlong ginawa ninyo dito.*
+
 ### 3. Payments and billing / Bayad at singil
 
 - **Your rent**: the monthly rent, plus water at **₱200 per occupant per month**. *Tubig: ₱200 bawat
@@ -60,8 +65,9 @@ and it is not there yet, it appears once she records your receipt.
     payment yet. If you paid, it appears once she enters it, or ask her to check her records.
     *Kung "Not entered" pero nagbayad kayo, lalabas ito kapag naitala na ng landlady.*
   - **Show each month as a list** gives the same months as a table, with the receipt for each.
-- **Payment record**: every payment recorded for your unit, newest first. Search it, or tap
-  **Filters** to pick another **Year** or the **Order**, then **Apply filters**.
+- **Payment record**: every payment recorded for your unit, newest first. Search it, or pick another
+  **Year** or **Order** in the dropdowns above it (on a phone, tap **Filters** first). The list
+  changes as soon as you pick.
 - **Pay with GCash**: online payment. **Until the landlady announces it, online payments do not
   charge real money; pay her in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
 
@@ -69,16 +75,23 @@ and it is not there yet, it appears once she records your receipt.
 
 1. Open **Repairs**. Say what needs fixing, choose the kind of problem and **How urgent**, add the
    details. *Isulat kung ano ang sira at gaano kaapurahan.*
-2. **Add a photo** if you can. A normal phone photo is fine; it is made smaller before sending.
+2. **Add a photo** if you can, as a **JPG or PNG** (a phone camera's photos are). It is made smaller
+   before sending.
 3. Press **Send request**. It goes straight to the landlady and appears in **Your requests**.
 4. Open a request to follow it and to **add a note**. You get a notification when it is done.
-   **Filters** above your requests shows only **Open** or **Done** ones.
+   The **Show** dropdown above your requests shows only **Open** or **Done** ones (on a phone, under
+   **Filters**).
+5. **Changed your mind?** Open the request and press **Cancel request** while it is still
+   **Submitted**. You may give a reason. You can cancel one request an hour, and not once the landlady
+   has started on it; send her a note instead. A cancelled request stays in your list, marked
+   **Cancelled**. *Puwedeng i-cancel habang hindi pa sinisimulan ng landlady.*
 
 ### 5. My details / Aking detalye
 
 Keep your email, phone number and the person to call **If something happens to you** up to date,
 then press **Save**. After your first sign-in you can sign in with your login ID, phone number or
-email. Your name can only be changed by the landlady.
+email. Your name can only be changed by the landlady. A phone number is spaced as you type it
+(0917 123 4567), and an email is checked as soon as you leave its box.
 
 ### 6. Install it on your phone / I-install sa cellphone
 
@@ -117,12 +130,13 @@ House. The greeting at the top follows the time of day.
 has the same bar at the top:
 
 - **Search** narrows the list as you type.
-- **Filters** opens a window with every filter for that list (cluster, month, year, status, kind).
-  Where a list can be drawn two ways, **Show as** at the top of that window picks **By cluster** or
-  **As a list**. **Order** arranges the list: **By unit**, **By name (A to Z)**, **Newest first** or
-  **Oldest first**, whichever that list has (Repairs also has **Most urgent first**). Nothing changes
-  until you press **Apply filters**; **Reset** puts the choices back.
-  The filters in use are named under the bar; **Clear** removes them.
+- **The filters** are dropdowns beside the search, each named above it: cluster, month, year, status,
+  kind, whichever that list has. Where a list can be drawn two ways, **Show as** picks **By cluster**
+  or **As a list**. **Order** arranges the list: **By unit**, **By name (A to Z)**, **Newest first**
+  or **Oldest first** (Repairs also has **Most urgent first**). The list changes the moment you pick.
+  **On a phone**, tap **Filters** to open them under the bar, and tap it again to close them. The
+  filters in use are named under the bar; **Clear** removes them.
+- **Show more** and **Show all** under a long list open more of it; **Show fewer** closes it again.
 
 **Also on every screen:** a short ping means something was saved, or someone else's change has
 arrived. Tap a message at the top of the screen to close it. The phone's **Back** button goes back a
@@ -130,7 +144,7 @@ page and closes any window that was open on it. In the installed app, **pull dow
 page to reload it: the green hexagon turns until the figures are back, and grey outlines stand in
 for them meanwhile; the page does not go blank. **Light or dark:** your initials > **Appearance** > **System**, **Light** or
 **Dark** (System follows the phone or computer). On the public pages it is the sun/moon button at
-the foot of the page. **The green hexagon** turns in the middle of the screen the first time the site opens on a phone
+the top of the page. **The green hexagon** turns in the middle of the screen the first time the site opens on a phone
 or computer, when it is opened again after half an hour or more away, and when the public pages or
 the sign-in page are reloaded. Reloading one of your own screens during a visit shows grey outlines
 of the page instead while the figures load.
@@ -153,6 +167,10 @@ urgent repairs are open), **Rent and water** for this month, **Occupancy** (32 o
 and water by month**, **Units by cluster**, **Net income** and **Open repair requests**.
 Personal spending is shown beside operating costs and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
+
+**Your recent actions**, under the greeting, lists the last three things you did (a payment
+recorded, a GCash payment approved, a repair marked done), newest first; tap one to go to it. It
+shows only your own actions, never anyone else's.
 
 - **Record payment**, **Record expense** and **Move someone in/out** are at the top. **On a phone**,
   tap the green **+** at the bottom right to show them; tap it again to hide them.
@@ -238,10 +256,11 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
 - **Reset password** (in the same window): for a tenant who forgot theirs or lost the slip. Confirm,
   and their login ID and a new one-time password are shown. Their old password stops working and
   their phone is signed out. The login ID is also on their record (Edit), under **Login ID**.
-- **Move them out**: type the unit code to confirm. The tenant loses access at once, the unit
-  becomes free to let, and **their records stay**.
-- **Who lived where before**: **Filters** > choose a **Year** (and a **Month** if you like) >
-  **Apply filters**. The list then shows who paid for each unit then, read from your receipts: the months they paid,
+- **Move them out**: type the unit code to confirm, and add a **reason** if you like (kept with the
+  move-out; the tenant does not see it). The tenant loses access at once, the unit becomes free to
+  let, and **their records stay**.
+- **Who lived where before**: choose a **Year** (and a **Month** if you like) in the filters. The list
+  then shows who paid for each unit then, read from your receipts: the months they paid,
   or for one month what the receipt covered, when it was paid and its number. A name you wrote two
   ways in the same unit is shown once, with the other spelling under it; a tenant who moved units
   says which other unit they rented. **Download** asks **Month**, **Year** or **All** and saves
@@ -263,7 +282,9 @@ New requests from tenants appear here, marked by urgency. Open one (**Manage thi
 **Send technician**, move it to **In Progress**, or **Mark resolved** (the tenant is notified). **Log
 a repair** records one you were told about in person, or one for an empty unit. **Delete repair**
 (in **Manage this repair**, or the bin icon beside **Manage** on each card) removes a request for
-good after you confirm it. **Filters** > **Status** shows one stage only.
+good after you confirm it. **Status** in the filters shows one stage only. A request the tenant
+cancelled (they can, until work starts) is marked **Cancelled by the tenant**, with their reason as a
+note if they gave one.
 
 ### 8. Inquiries
 
