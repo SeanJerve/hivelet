@@ -156,7 +156,7 @@ The same 76 combinations (19 screens, light and dark, 375 and 1,366 px; axe-core
 
 | Finding | Screens | Cause | Fix |
 | :--- | :--- | :--- | :--- |
-| aria-valid-attr-value (critical) | Rooms and rates, Tenants, Monthly Income; every width and theme | : the cluster's label was its id, and 'BH' became 'Boarding House' on 2 Oct |  for both ends of the pair ( commit, 5 Oct) |
+| aria-valid-attr-value (critical) | Rooms and rates, Tenants, Monthly Income; every width and theme | `aria-controls="cluster-units-Boarding House"`: the cluster's label was its id, and 'BH' became 'Boarding House' on 2 Oct | `lib/domId.ts` for both ends of the pair (commit `8b68bb7`, 5 Oct) |
 | color-contrast, 4 nodes | Category page, 375 px light, once | Unit cards scanned mid fade-in | None needed: clean on a re-scan after 9 s |
 | scrollable-region-focusable | Overview, 375 px light, once (first sweep, interrupted by a reload) | Scanned mid-load | None needed: clean on re-scan |
 
