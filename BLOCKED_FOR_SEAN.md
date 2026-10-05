@@ -107,9 +107,14 @@ thing did not work" is not.
   2. **Try the new things on real phones with loydtest:** cancel a Submitted repair (then try a second
      within the hour: it should say how many minutes are left); attach a photo from an iPhone (it should
      arrive as JPG); type a phone number on an Android keyboard (the spacing should not jump the cursor).
-     **Since 5 Oct night:** loydtest's My details will not save until its emergency contact number
-     (on file with ten digits, "0978 617 111") is corrected to a full mobile number. That is the new
-     check working, not a fault.
+     **Done on the live site 6 Oct, 06:09 to 06:12 Manila, as loydtest, with Sean's go-ahead (in the
+     desktop browser):** cancelled "Rene" with a reason (Closed, closed_by the tenant, the reason as a
+     note, TICKET_CANCEL audited, one notification to the owner); sent "Test - please ignore" and
+     tried to cancel it at once: refused with "You can cancel another in 59 minutes", the request kept
+     Submitted (it stays open on the owner's board as a test request); corrected loydtest's
+     ten-digit emergency number to 0917 123 4567 and saved (PROFILE_UPDATE). The Overview's recent
+     actions showed all three. **Still for a real phone:** the iPhone photo (arrives as JPG) and the
+     Android keyboard spacing.
   3. **The survey export** (Sean, 5 Oct: after midterms) (Google Form > Responses > Download CSV) into the repo, then
      `node scripts/survey/compute-survey.mjs responses.csv --method=A --out=tables.md`. It fills
      Tables 12 and 14 to 22, Table 22's summary, Table 23's survey row, Chapter 5's item 4 and
