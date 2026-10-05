@@ -1052,13 +1052,15 @@ async function handleEditIncome() {
        * brand-new row has no previous payer to preserve. Only the edit above
        * leaves it alone.
        */
-      await api.post('/admin/income-records', {
-        ...payload,
-        contactName:
-          summary.residents.length > 0
-            ? summary.residents.join(', ')
-            : (room?.tenant || 'Walk-in Resident'),
-      });
+      // No one on file to name: say so rather than invent a payer. "Walk-in Resident" was sent
+      // here as the receipt's name, which would have entered her ledger as fact (5 Oct 2026).
+      const contactName = summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || '').trim();
+      if (!contactName) {
+        showToast('error', 'No one to name on the receipt',
+          `${editUnit.value.toUpperCase()} has no tenant on file. Record it from Record payment, where you can say who paid.`);
+        return;
+      }
+      await api.post('/admin/income-records', { ...payload, contactName });
     }
 
     await fetchIncomeRecords();

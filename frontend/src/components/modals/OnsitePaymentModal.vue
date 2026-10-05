@@ -744,7 +744,8 @@ function triggerRecord() {
           unit: selectedUnit.value.toUpperCase(),
           cluster: room?.cluster || 'Boarding House',
           datePaid: formatDateForDisplay(date.value),
-          contact: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || 'Walk-in Resident'),
+          // The name the server was sent (above); never an invented payer.
+          contact: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || ''),
           invoice: inv,
           rentFor: `${formattedStart} – ${formattedEnd}`,
           rent: Number(rentAmount.value) || 0,
