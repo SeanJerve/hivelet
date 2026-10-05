@@ -76,6 +76,12 @@ thing did not work" is not.
   February 2026 operating expenses ₱25,000 lower; the jjeijse expense shown as voided.
 - **Also for the team:** give testers loydtest and the local test copy, not the owner's admin account. Every
   write an admin makes on the live site lands in her books.
+- **Guards re-checked 6 Oct 2026, after midnight (read-only SELECTs, nothing written):** every check 079
+  makes still holds: the February expense has exactly the three lines the test left; the jjeijse expense is
+  live; the 3D receipt INV#5245 (₱8,700) is voided; tenancy 3e1506e8 ended 4 Oct and nobody else is in 3G.
+  Remitted is still ₱8,214,200.00 over 952. So 079 applies cleanly as written the moment you say so.
+  Also seen in the same session: loydtest's ₱30,400 GCash payment on 4 Oct, which Adyen's **test**
+  environment authorised, was rejected at 22:50 by that session. It is test data; nothing to undo.
 - **Raised:** 2026-10-05 by Claude (Sean's machine)
 
 ### B-99 — the technical evaluators' 14 comments (3 Oct): all addressed on the live site; four things need a person · **OPEN (people only)**
