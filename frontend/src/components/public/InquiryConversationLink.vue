@@ -51,7 +51,7 @@ async function copyLink() {
       Your reference code is
       <strong class="font-medium text-ink tracking-[0.08em] text-sm">{{ referenceCode }}</strong>.
       Write it down. If you lose the link, go to
-      <RouterLink to="/inquiry" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">hivelet.vercel.app/inquiry</RouterLink>
+      <RouterLink to="/inquiry" class="hover:text-ink font-semibold">hivelet.vercel.app/inquiry</RouterLink>
       and enter this code with your phone number.
     </p>
     <span class="sr-only" role="status" aria-live="polite">{{ copied ? 'Link copied' : '' }}</span>

@@ -37,9 +37,9 @@
  * the site that someone reads start to finish. `.legal-prose` styles the slotted elements with
  * the same tokens the utilities resolve to, so each view writes plain h2/h3/p/ul.
  */
-import { onMounted } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
-import { ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft, ListTree, X } from 'lucide-vue-next';
 
 export interface LegalSection {
   id: string;
@@ -86,6 +86,62 @@ function onHashClick(event: MouseEvent): void {
   jumpTo(id);
 }
 
+/**
+ * "On this page" in a side drawer below 1024px (technical evaluators, 3 Oct
+ * 2026: the policy was crowded on a phone, put the contents in a sidebar there).
+ * The list of every section used to sit above the text at 44px a row, a
+ * screen and more of links before the first word of the policy. Now a small
+ * button floats at the bottom right and opens the same list from the right
+ * edge. From 1024px the list stays the sticky column beside the text.
+ *
+ * A dialog in all but name: Escape and the backdrop close it, focus goes to
+ * its first link and comes back to the button, and Tab stays inside it.
+ */
+const drawerOpen = ref(false);
+const drawerRef = ref<HTMLElement | null>(null);
+const drawerButton = ref<HTMLButtonElement | null>(null);
+
+function closeDrawer(returnFocus = true) {
+  drawerOpen.value = false;
+  if (returnFocus) nextTick(() => drawerButton.value?.focus());
+}
+
+function pickFromDrawer(id: string) {
+  closeDrawer(false);
+  nextTick(() => jumpTo(id));
+}
+
+function onDrawerKey(event: KeyboardEvent) {
+  if (!drawerOpen.value) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeDrawer();
+    return;
+  }
+  if (event.key !== 'Tab' || !drawerRef.value) return;
+  const focusable = Array.from(drawerRef.value.querySelectorAll<HTMLElement>('a[href], button'));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+watch(drawerOpen, (open) => {
+  if (open) {
+    document.addEventListener('keydown', onDrawerKey);
+    nextTick(() => drawerRef.value?.querySelector<HTMLElement>('a[href]')?.focus());
+  } else {
+    document.removeEventListener('keydown', onDrawerKey);
+  }
+});
+onBeforeUnmount(() => document.removeEventListener('keydown', onDrawerKey));
+
 onMounted(() => {
   const id = decodeURIComponent(window.location.hash.slice(1));
   if (!id || !props.sections.some((s) => s.id === id)) return;
@@ -103,7 +159,7 @@ onMounted(() => {
           <li>
             <RouterLink
               to="/public"
-              class="press inline-flex min-h-11 items-center gap-1.5 underline underline-offset-4 decoration-1 decoration-ink-faint hover:text-ink hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center gap-1.5 hover:text-ink transition-colors font-semibold"
             >
               <ArrowLeft class="size-3.5" aria-hidden="true" />
               Home
@@ -140,14 +196,14 @@ onMounted(() => {
       >
         <nav
           aria-labelledby="legal-contents"
-          class="mb-10 border-b border-line pb-8 lg:sticky lg:top-24 lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:border-0 lg:pb-0"
+          class="hidden mb-10 border-b border-line pb-8 lg:block lg:sticky lg:top-24 lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:border-0 lg:pb-0"
         >
           <h2 id="legal-contents" class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">On this page</h2>
           <ol class="mt-2 text-sm sm:columns-2 sm:gap-8 lg:columns-1">
             <li v-for="s in sections" :key="s.id" class="break-inside-avoid">
               <a
                 :href="`#${s.id}`"
-                class="press flex min-h-11 items-center py-1 text-ink-soft underline underline-offset-4 decoration-1 decoration-ink-faint hover:text-ink hover:decoration-ink transition-colors"
+                class="press flex min-h-11 items-center py-1 text-ink-soft hover:text-ink transition-colors font-semibold"
               >
                 {{ s.title }}
               </a>
@@ -159,7 +215,58 @@ onMounted(() => {
           <slot />
         </article>
       </div>
+
+      <!-- Below 1024px: the contents behind one button, in a drawer from the right.
+           Sticky inside the page, not fixed: it rides at the bottom while the text
+           scrolls and stops where the text ends, so it never covers the footer. -->
+      <div class="sticky bottom-4 z-30 mt-8 flex justify-end lg:hidden">
+        <button
+          ref="drawerButton"
+          type="button"
+          class="pill-btn shadow-lift"
+          aria-haspopup="dialog"
+          :aria-expanded="drawerOpen"
+          @click="drawerOpen = true"
+        >
+          <ListTree class="size-4" aria-hidden="true" />
+          <span>On this page</span>
+        </button>
+      </div>
     </div>
+
+
+    <Teleport to="body">
+      <Transition name="legal-drawer">
+        <div v-if="drawerOpen" class="fixed inset-0 z-50 lg:hidden">
+          <div class="absolute inset-0 bg-night/40" aria-hidden="true" @click="closeDrawer()" />
+          <div
+            ref="drawerRef"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="legal-drawer-title"
+            class="legal-drawer-panel absolute inset-y-0 right-0 flex w-[min(20rem,86vw)] flex-col bg-tile shadow-lift font-editorial"
+          >
+            <div class="flex items-center justify-between gap-3 border-b border-line py-2 pl-5 pr-2">
+              <h2 id="legal-drawer-title" class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">On this page</h2>
+              <button type="button" class="icon-btn-plain" aria-label="Close the contents" @click="closeDrawer()">
+                <X class="size-4" aria-hidden="true" />
+              </button>
+            </div>
+            <ol class="flex-1 overflow-y-auto px-5 py-2 text-sm">
+              <li v-for="s in sections" :key="s.id">
+                <a
+                  :href="`#${s.id}`"
+                  class="press flex min-h-11 items-center py-1 text-ink-soft hover:text-ink transition-colors font-semibold"
+                  @click.prevent="pickFromDrawer(s.id)"
+                >
+                  {{ s.title }}
+                </a>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -223,14 +330,39 @@ onMounted(() => {
 }
 .legal-prose a {
   color: var(--ink);
-  text-decoration-line: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
-  text-decoration-color: var(--ink-faint);
+  font-weight: 600;
+  text-decoration-line: none;
   overflow-wrap: anywhere;
 }
 .legal-prose a:hover {
-  text-decoration-color: var(--ink);
+  color: var(--brand);
+}
+/* The contents drawer: in from the right edge it is anchored to, out the same way. */
+.legal-drawer-enter-active,
+.legal-drawer-leave-active {
+  transition: opacity 200ms var(--ease-out);
+}
+.legal-drawer-enter-active .legal-drawer-panel,
+.legal-drawer-leave-active .legal-drawer-panel {
+  transition: transform 240ms var(--ease-out);
+}
+.legal-drawer-enter-from,
+.legal-drawer-leave-to {
+  opacity: 0;
+}
+.legal-drawer-enter-from .legal-drawer-panel,
+.legal-drawer-leave-to .legal-drawer-panel {
+  transform: translateX(100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .legal-drawer-enter-active .legal-drawer-panel,
+  .legal-drawer-leave-active .legal-drawer-panel {
+    transition: none;
+  }
+  .legal-drawer-enter-from .legal-drawer-panel,
+  .legal-drawer-leave-to .legal-drawer-panel {
+    transform: none;
+  }
 }
 .legal-prose address {
   font-style: normal;

@@ -18,11 +18,13 @@
 import { ref, reactive, nextTick } from 'vue';
 import { Loader2, ArrowLeft, AlertCircle, ArrowUpRight } from 'lucide-vue-next';
 import { LANDLADY } from '@/lib/systemState';
+import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 import { api } from '@/lib/api';
 import { rememberInquiry, savedInquiries } from '@/lib/myInquiries';
 import InquiryConversationLink from '@/components/public/InquiryConversationLink.vue';
 import {
   validateInquiry,
+  problemOnLeave,
   serverFieldErrors,
   inquiryFailureMessage,
   type InquiryErrors,
@@ -48,6 +50,21 @@ const isSubmitting = ref(false);
 const errors = reactive<InquiryErrors>({});
 const formError = ref<string | null>(null);
 const formRef = ref<HTMLFormElement | null>(null);
+
+
+/**
+ * Checked when the visitor leaves the field, not only on Send (technical
+ * evaluators, 3 Oct 2026). An empty field waits for Send (problemOnLeave).
+ */
+function leave(field: 'email' | 'phone') {
+  const problem = problemOnLeave(field, {
+    name: inquiryName.value,
+    email: inquiryEmail.value,
+    phone: inquiryPhone.value,
+    message: inquiryMsg.value,
+  });
+  if (problem) errors[field] = problem;
+}
 
 function setErrors(next: InquiryErrors) {
   for (const key of Object.keys(errors) as (keyof InquiryErrors)[]) delete errors[key];
@@ -234,10 +251,12 @@ async function submitInquiry() {
             <span class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</span>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
+            <!-- Light or dark, at the top where a phone finds it (technical evaluators, 3 Oct 2026). -->
+            <ThemeToggle class="self-center text-ink" />
           </p>
         </div>
 
@@ -251,7 +270,7 @@ async function submitInquiry() {
             <li>
               <RouterLink
                 to="/public"
-                class="press inline-flex min-h-11 items-center gap-1.5 underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+                class="press inline-flex min-h-11 items-center gap-1.5 hover:text-ink transition-colors font-semibold"
               >
                 <ArrowLeft class="size-3.5" aria-hidden="true" />
                 Home
@@ -289,7 +308,7 @@ async function submitInquiry() {
           You sent an inquiry on {{ new Date(lastSaved.sentAt).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', day: 'numeric', month: 'short' }) }}.
           <RouterLink
             :to="`/inquiry#t=${encodeURIComponent(lastSaved.token)}`"
-            class="group/goto press inline-flex min-h-11 items-center gap-1 font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+            class="group/goto press inline-flex min-h-11 items-center gap-1 font-semibold text-ink"
           >
             Open your conversation
             <ArrowUpRight
@@ -318,14 +337,14 @@ async function submitInquiry() {
             If it is urgent, call
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press text-ink transition-colors font-semibold"
             >{{ LANDLADY.phone }}</a>.
           </p>
           <div class="mt-8 flex flex-wrap items-center gap-6">
             <RouterLink to="/public" :class="[conversation ? 'pill-btn' : 'pill-btn-brand', 'px-8']">Back to the property</RouterLink>
             <button
               type="button"
-              class="press inline-flex min-h-11 items-center text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
+              class="press inline-flex min-h-11 items-center text-xs text-ink-soft hover:text-ink transition-colors cursor-pointer font-semibold"
               @click="sendAnother"
             >
               Send another inquiry
@@ -385,6 +404,7 @@ async function submitInquiry() {
                 :aria-describedby="errors.email ? 'iq-email-error' : undefined"
                 :class="['ws-input mt-2', errors.email && 'border-overdue']"
                 @input="delete errors.email"
+                @blur="leave('email')"
               />
               <p v-if="errors.email" id="iq-email-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
                 {{ errors.email }}
@@ -399,6 +419,7 @@ async function submitInquiry() {
               <input
                 id="iq-phone"
                 v-model="inquiryPhone"
+                v-phone
                 type="tel"
                 autocomplete="tel"
                 required
@@ -406,6 +427,7 @@ async function submitInquiry() {
                 :aria-describedby="errors.phone ? 'iq-phone-error' : undefined"
                 :class="['ws-input mt-2', errors.phone && 'border-overdue']"
                 @input="delete errors.phone"
+                @blur="leave('phone')"
               />
               <p v-if="errors.phone" id="iq-phone-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
                 {{ errors.phone }}
@@ -477,7 +499,7 @@ async function submitInquiry() {
 
           <p class="mt-4 max-w-xl text-xs leading-relaxed text-ink-soft">
             Already sent one?
-            <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Read the reply</RouterLink>
+            <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center hover:text-ink font-semibold">Read the reply</RouterLink>
           </p>
         </form>
       </div>

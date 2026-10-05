@@ -71,12 +71,14 @@ import InquiryConversationLink from '@/components/public/InquiryConversationLink
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
 import {
   validateInquiry,
+  problemOnLeave,
   serverFieldErrors,
   inquiryFailureMessage,
   type InquiryErrors,
 } from '@/components/public/inquiryRules';
 import { AlertCircle, ArrowLeft, ArrowUpRight, Loader2, Send, X } from 'lucide-vue-next';
 import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
+import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -457,6 +459,21 @@ const inquirySentTo = ref<{ phone: string; email: string } | null>(null);
 const inquiryConversation = ref<{ token: string; referenceCode: string } | null>(null);
 const inquirySentHeading = ref<HTMLElement | null>(null);
 
+
+/**
+ * Checked when the visitor leaves the field, not only on Send (technical
+ * evaluators, 3 Oct 2026). An empty field waits for Send (problemOnLeave).
+ */
+function leave(field: 'email' | 'phone') {
+  const problem = problemOnLeave(field, {
+    name: inquiryName.value,
+    email: inquiryEmail.value,
+    phone: inquiryPhone.value,
+    message: inquiryMsg.value,
+  });
+  if (problem) inquiryErrors[field] = problem;
+}
+
 function setInquiryErrors(next: InquiryErrors) {
   for (const key of Object.keys(inquiryErrors) as (keyof InquiryErrors)[]) delete inquiryErrors[key];
   Object.assign(inquiryErrors, next);
@@ -609,14 +626,14 @@ async function submitInquiry() {
           <template v-if="!isAuthenticated">
             <RouterLink
               to="/inquire"
-              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center transition-colors font-semibold"
             >
               Inquire now
             </RouterLink>
             <span aria-hidden="true" class="pr-2">,</span>
             <RouterLink
               to="/login"
-              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center transition-colors font-semibold"
             >
               Sign in
             </RouterLink>
@@ -624,11 +641,13 @@ async function submitInquiry() {
           <template v-else>
             <RouterLink
               :to="portalRoute"
-              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center transition-colors font-semibold"
             >
               Portal
             </RouterLink>
           </template>
+          <!-- Light or dark, at the top where a phone finds it (technical evaluators, 3 Oct 2026). -->
+          <ThemeToggle class="ml-1 self-center text-ink" />
         </nav>
       </div>
     </header>
@@ -659,7 +678,7 @@ async function submitInquiry() {
           -->
           <RouterLink
             to="/public"
-            class="press -my-3.5 inline-flex min-h-11 items-center gap-1 hover:text-ink transition-colors underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+            class="press -my-3.5 inline-flex min-h-11 items-center gap-1 hover:text-ink transition-colors font-semibold"
           >
             <ArrowLeft class="size-3" aria-hidden="true" />
             Back
@@ -738,12 +757,7 @@ async function submitInquiry() {
               ]"
             >
               <span
-                :class="[
-                  'underline underline-offset-4 decoration-1 transition-colors',
-                  c.key === selectedCategoryKey
-                    ? 'decoration-ink'
-                    : 'decoration-line group-hover:decoration-ink',
-                ]"
+                :class="c.key === selectedCategoryKey ? 'font-semibold' : ''"
               >
                 {{ c.title }}<span class="ml-2 text-xs tabular-nums text-ink-faint">{{ countFor(c.key) }}</span>
               </span>
@@ -784,7 +798,7 @@ async function submitInquiry() {
           Try another kind above, or
           <RouterLink
             to="/inquire"
-            class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-block text-ink transition-colors font-semibold"
           >ask the landlady</RouterLink>
           when one will be free.
         </p>
@@ -1259,10 +1273,12 @@ async function submitInquiry() {
               :aria-invalid="inquiryErrors.phone ? 'true' : undefined"
               :aria-describedby="inquiryErrors.phone ? 'cq-phone-error' : undefined"
               @input="delete inquiryErrors.phone"
+              @blur="leave('phone')"
               v-model="inquiryPhone"
+              v-phone
               type="tel"
               required
-              placeholder="0917-000-0000"
+              placeholder="0917 123 4567"
               :class="['ws-input mt-2', inquiryErrors.phone && 'border-overdue']"
             />
             <p v-if="inquiryErrors.phone" id="cq-phone-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
@@ -1279,6 +1295,7 @@ async function submitInquiry() {
               :aria-invalid="inquiryErrors.email ? 'true' : undefined"
               :aria-describedby="inquiryErrors.email ? 'cq-email-error' : undefined"
               @input="delete inquiryErrors.email"
+              @blur="leave('email')"
               v-model="inquiryEmail"
               type="email"
               required
@@ -1350,7 +1367,7 @@ async function submitInquiry() {
           -->
           <button
             type="button"
-            class="press inline-flex min-h-11 items-center text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
+            class="press inline-flex min-h-11 items-center text-xs text-ink-soft hover:text-ink transition-colors cursor-pointer font-semibold"
             @click="closeInquiry"
           >
             Cancel

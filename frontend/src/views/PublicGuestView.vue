@@ -624,7 +624,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 :href="mapLinkUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="press inline-flex min-h-11 items-center gap-1.5 text-xs sm:text-sm font-bold text-brand hover:text-brand-strong underline underline-offset-4 decoration-brand/50 hover:decoration-brand transition-colors"
+                class="press inline-flex min-h-11 items-center gap-1.5 text-xs sm:text-sm font-bold text-brand hover:text-brand-strong transition-colors"
               >
                 <MapPin class="size-3.5 shrink-0 text-brand" aria-hidden="true" />
                 <span>Open in Google Maps</span>

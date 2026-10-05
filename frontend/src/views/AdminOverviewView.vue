@@ -1018,7 +1018,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                 urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
               </span>
             </p>
-            <router-link to="/admin/tickets" class="press inline-block py-1 text-sm font-semibold underline underline-offset-4">
+            <router-link to="/admin/tickets" class="press inline-block py-1 text-sm font-semibold">
               Open repairs
             </router-link>
           </div>

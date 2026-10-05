@@ -49,6 +49,7 @@ import { Menu, LogOut, LogIn, User, Bell, ChevronDown, Lock, Globe, LayoutDashbo
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { realEmail } from '@/lib/contactDetails';
 import ThemeChoice from '@/components/ui/ThemeChoice.vue';
+import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -357,17 +358,19 @@ onUnmounted(() => {
           <div v-if="!isAuthenticated" class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light text-white [text-shadow:0_1px_3px_rgb(0_0_0/0.6)]">
             <RouterLink
               to="/inquire"
-              class="press inline-flex min-h-11 items-center font-semibold underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+              class="press inline-flex min-h-11 items-center font-semibold transition-colors text-white"
             >
               Inquire now
             </RouterLink>
             <span aria-hidden="true" class="pr-2 text-white">,</span>
             <RouterLink
               to="/login"
-              class="press inline-flex min-h-11 min-w-11 items-center justify-center font-semibold underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+              class="press inline-flex min-h-11 min-w-11 items-center justify-center font-semibold transition-colors text-white"
             >
               Sign in
             </RouterLink>
+            <!-- Light or dark, at the top where a phone finds it (technical evaluators, 3 Oct 2026). -->
+            <ThemeToggle class="ml-1 self-center text-white hover:bg-white/10" />
           </div>
         </template>
         <!-- Other public routes (fallback) -->
@@ -614,6 +617,7 @@ onUnmounted(() => {
           nowhere, competing with the real one in the form below it.
         -->
         <template v-else>
+          <ThemeToggle v-if="!isLandingPage" class="text-ink" />
           <router-link
             v-if="route.path !== '/login' && !isLandingPage"
             to="/login"

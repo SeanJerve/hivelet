@@ -210,7 +210,7 @@ const rows = computed(() => [...months.value].reverse());
 
     <details class="group border-t border-line pt-3">
       <summary
-        class="press inline-flex min-h-11 cursor-pointer items-center text-sm text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+        class="press inline-flex min-h-11 cursor-pointer items-center text-sm text-ink-soft hover:text-ink transition-colors font-semibold"
       >
         <span class="group-open:hidden">Show each month as a list</span>
         <span class="hidden group-open:inline">Hide the list</span>

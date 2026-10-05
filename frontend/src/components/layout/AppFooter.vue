@@ -16,7 +16,6 @@
 import { computed } from 'vue';
 import { LANDLADY } from '@/lib/systemState';
 import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
-import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
 // The year on the copyright line follows the calendar rather than being typed
 // in, so it does not go stale every January.
@@ -31,11 +30,14 @@ const portalRoute = computed(() => {
 
 <template>
   <footer class="ws-focus on-dark w-full bg-night text-on-night font-editorial mt-auto">
-    <div class="ws-page ws-band">
+    <!-- Tighter than a page band (technical evaluators, 3 Oct 2026: "the footer is big,
+         too much blank space"): 32/40px of padding instead of 48/64, the columns
+         side by side from a phone up, and the policy row 32px under them, not 80. -->
+    <div class="ws-page py-8 sm:py-10">
 
-      <div class="grid gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
+      <div class="grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-4 lg:gap-10">
 
-        <div class="lg:col-span-2 max-w-sm">
+        <div class="col-span-2 max-w-sm">
           <!--
             The product mark, matching the header on every other page. It was
             the property's own name over three lines, above a sentence opening
@@ -63,9 +65,9 @@ const portalRoute = computed(() => {
             was. `mt-3` rather than `mt-5` for the same reason - the first
             link now brings 12px of its own.
           -->
-          <ul class="mt-3 text-sm">
+          <ul class="mt-1 text-sm">
             <li>
-              <RouterLink to="/public" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/public" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Overview
               </RouterLink>
             </li>
@@ -79,20 +81,20 @@ const portalRoute = computed(() => {
               also what `resolveSlug` falls back to.
             -->
             <li>
-              <RouterLink to="/category/studio" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/category/studio" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Rentable units
               </RouterLink>
             </li>
             <li v-if="!isAuthenticated">
               <!-- Was a second link to /public, which went nowhere in particular.
                    "Inquire now", the header's own word for this link. -->
-              <RouterLink to="/inquire" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/inquire" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Inquire now
               </RouterLink>
             </li>
             <li v-if="!isAuthenticated">
               <!-- 065: where someone who already asked reads Michelle's reply. -->
-              <RouterLink to="/inquiry" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/inquiry" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Your inquiries
               </RouterLink>
             </li>
@@ -100,14 +102,14 @@ const portalRoute = computed(() => {
               <RouterLink
                 v-if="!isAuthenticated"
                 to="/login"
-                class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
+                class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
               >
                 Sign in
               </RouterLink>
               <RouterLink
                 v-else
                 :to="portalRoute"
-                class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
+                class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
               >
                 Portal
               </RouterLink>
@@ -118,17 +120,17 @@ const portalRoute = computed(() => {
         <div>
           <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Contact</h2>
           <!-- Same 28 -> 44 as the Property column above. -->
-          <ul class="mt-3 text-sm">
+          <ul class="mt-1 text-sm">
             <li>
-              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 {{ LANDLADY.phone }}
               </a>
             </li>
           </ul>
 
           <!-- `mt-7`, not `mt-9`: the link above it now carries 12px of its own. -->
-          <h2 class="mt-7 text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Address</h2>
-          <p class="mt-5 max-w-xs text-sm leading-relaxed text-on-night-soft">
+          <h2 class="mt-4 text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Address</h2>
+          <p class="mt-2 max-w-xs text-sm leading-relaxed text-on-night-soft">
             {{ LANDLADY.address }}
           </p>
         </div>
@@ -145,7 +147,7 @@ const portalRoute = computed(() => {
         from `py-3`; `pt-4` rather than `pt-7`, because the links now bring
         14px of their own above the text.
       -->
-      <div class="mt-20 flex flex-col gap-3 border-t border-on-night/15 pt-4 text-xs text-on-night-soft sm:flex-row sm:items-center sm:justify-between">
+      <div class="mt-8 flex flex-col gap-1 border-t border-on-night/15 pt-4 text-xs text-on-night-soft sm:flex-row sm:items-center sm:justify-between">
         <p>© {{ year }} Hivelet. Fe Galang Da Silva Boarding House.</p>
         <nav aria-label="Policies">
           <ul class="flex flex-wrap gap-x-6">
@@ -168,10 +170,6 @@ const portalRoute = computed(() => {
               <RouterLink to="/privacy#browser" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Cookies
               </RouterLink>
-            </li>
-            <!-- Light or dark, for a visitor with no account menu to set it in (Sean, 2026-10-01). -->
-            <li>
-              <ThemeToggle class="-ml-2.5 text-on-night-soft hover:bg-white/10 hover:text-on-night" />
             </li>
           </ul>
         </nav>
