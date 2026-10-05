@@ -25,6 +25,11 @@
 > record first and corrected where it disagreed; each results file says what changed. **Still
 > pending:** the survey (Tables 12 and 14 to 22, the technical evaluators on Saturday 3 October),
 > Table 5's owner question, Table 25 stages 4 and 5, and the figures.
+>
+> **Updated 2026-10-05:** Table 23 gained the technical evaluators' fourteen comments from their
+> 3 October review (relayed by Eljohn) and the change made for each, all on the live site by
+> 5 October (commits 055c6ff to 47b37fa). The survey export is still the missing input for
+> Tables 12 and 14 to 22.
 
 This chapter presents the results of the study and discusses what they mean. It is organized by
 the four specific objectives in Section 1.2: the analysis of existing practices (4.1), the
@@ -964,8 +969,9 @@ documentation.
 | **Overall** | | |
 
 Objective 4 asks for the system to be evaluated **and optimized**. Table 23 records the changes
-made in response to feedback and testing. The first rows are changes already made during the
-pilot; the rows after them will come from the survey results.
+made in response to feedback and testing. The first rows are changes made during the pilot,
+followed by the fourteen comments of the technical evaluators who reviewed the system on
+3 October 2026, each addressed by 5 October; the last row will come from the survey results.
 
 **Table 23.** Optimizations Made in Response to Evaluation
 
@@ -1001,6 +1007,20 @@ pilot; the rows after them will come from the survey results.
 | Owner's use, 30 Sep 2026 | A payment the owner recorded, or a repair a tenant sent, did not appear on the other person's open screen until they refreshed it | Every open page checks for changes every 5 seconds while it is on screen and reloads only what changed | Usability, Reliability |
 | Walkthrough, 30 Sep 2026 (step 23b) | With the connection cut, the Overview's money tiles showed ₱0 instead of "—" | Not reproduced on 1 Oct 2026: on the current version, reloading the Overview with no connection shows "could not be loaded" on every tile and no ₱0. To be re-tested on the owner's laptop | Reliability |
 | Testing day on an Android phone, 30 Sep 2026 | On a connection that stops answering, the "cannot tell whether it was saved" message came after 60 to 80 seconds instead of 45 | Chrome slows the timers of a page that is not on screen, which a phone test takes the user out of; the deadline is now also checked against the clock the moment the page is on screen again, so a late message appears at once. To be re-tested on the Android phone | Reliability |
+| Technical evaluators, 3 Oct 2026 | On a phone, the light and dark mode switch sat at the foot of the footer, below every policy link | Moved to the top bar of every public page | Usability |
+| Technical evaluators, 3 Oct 2026 | An email address was checked only when the form was sent | Checked as soon as the visitor leaves the field | Usability |
+| Technical evaluators, 3 Oct 2026 | Links were underlined throughout the site | Underlines kept only in the footer; other links are shown in bold | Usability |
+| Technical evaluators, 3 Oct 2026 | "Send one", the way to start an inquiry from the inquiry lookup page, did not stand out | Shown in bold | Usability |
+| Technical evaluators, 3 Oct 2026 | Phone numbers were typed as one run of digits, and the inquiry form accepted any seven characters | Numbers are spaced as they are typed (0917 123 4567); an inquiry must give a Philippine mobile number, checked on the page and again by the server | Usability, Functional Suitability |
+| Technical evaluators, 3 Oct 2026 | Filters opened in a pop-up window and needed an Apply button | Each filter is a dropdown on the page that applies the moment it is chosen; on a phone the dropdowns open under the Filters button instead of in a window | Usability |
+| Technical evaluators, 3 Oct 2026 | After a session ran out, signing in again did not return to the page that had been open | Signing in returns each person to the page they last had open | Usability |
+| Technical evaluators, 3 Oct 2026 | Photos of any image format could be attached | JPG and PNG only, checked when the file is chosen and again by the server | Security, Functional Suitability |
+| Technical evaluators, 3 Oct 2026 | A tenant could not withdraw a repair request | A tenant can cancel a request until work on it starts, at most once an hour, with an optional reason; the owner is notified and the request is kept, marked as cancelled | Functional Suitability |
+| Technical evaluators, 3 Oct 2026 | Moving a tenant out recorded no reason | An optional reason, kept in the activity record with the move-out | Functional Suitability |
+| Technical evaluators, 3 Oct 2026 | Rows opened with "Show more" or "Show all" on the owner's lists could not be hidden again | "Show fewer" returns the list to its first page | Usability |
+| Technical evaluators, 3 Oct 2026 | Error handling on the history screens | A refresh that fails for a moment keeps the figures already on screen; only a load the user asked for reports a failure | Reliability |
+| Technical evaluators, 3 Oct 2026 | The footer was tall, with too much empty space | Spacing reduced and its columns placed side by side on a phone | Usability |
+| Technical evaluators, 3 Oct 2026 | The privacy policy's list of contents crowded the page on a phone | On a phone the list opens from a side panel; on wider screens it stays beside the text | Usability |
 | Survey results | [DATA PENDING] | | |
 
 ---

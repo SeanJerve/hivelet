@@ -33,6 +33,36 @@ thing did not work" is not.
 
 ## Open
 
+### B-99 — the technical evaluators' 14 comments (3 Oct): all addressed on the live site; four things need a person · **OPEN (people only)**
+
+- **What was done (5 Oct, commits 055c6ff to 47b37fa, pushed to main):** every comment Eljohn relayed.
+  Theme toggle moved to the top bar of each public page · email and phone checked when you leave the
+  field · underlines removed except in the footer · "Send one" bold · phones spaced as typed
+  (0917 123 4567), inquiries must give a PH mobile (page and server) · filters are dropdowns that apply
+  at once (on a phone they drop down under the Filters button; the pop-up is gone) · sign-in returns to
+  the last page viewed · photos JPG or PNG only (page and server) · a tenant can **cancel** a Submitted
+  repair, once an hour, optional reason, not once In Progress (`POST /tenant/tickets/:id/cancel`, no
+  schema change) · optional reason when moving a tenant out · "Show fewer" after Show more / Show all ·
+  a failed live refresh keeps the figures on screen · a shorter footer · the privacy policy's contents in
+  a side drawer on phones. Chapter 4 Table 23 and Chapter 5 §5.1 item 4 record them.
+- **Verified:** in the browser at 375 and 1280 (public pages directly; signed-in screens in the local
+  harnesses), every suite that does not sign in passing, both builds, and a new
+  `backend/scripts/check-ticket-cancel.mjs` (16 checks; three deliberate breaks each caught).
+- **What needs a person:**
+  1. **Ask the evaluators (through Eljohn) which screen "error handling action history" meant.** The
+     Activity page was removed on 1 Oct, so the fix went to the history screens (payments, repairs, the
+     Overview): a refresh that fails for a moment no longer replaces the figures with an error. If they
+     meant something else, write it here.
+  2. **Try the new things on real phones with loydtest:** cancel a Submitted repair (then try a second
+     within the hour: it should say how many minutes are left); attach a photo from an iPhone (it should
+     arrive as JPG); type a phone number on an Android keyboard (the spacing should not jump the cursor).
+  3. **The survey export** (Google Form > Responses > Download CSV) into the repo, then
+     `node scripts/survey/compute-survey.mjs responses.csv --method=A --out=tables.md`. It fills
+     Tables 12 and 14 to 22, Table 22's summary, Table 23's survey row, Chapter 5's item 4 and
+     conclusion 4, and the abstract. Nothing else in the chapters is blocked.
+  4. **How many technical evaluators there were**, and their roles, for Table 12 (§4.4.1).
+- **Raised:** 2026-10-05 by Claude (Sean's machine)
+
 ### B-98 — `credentials/creds.txt` is readable in the public repo's history (branch `design-from-lloyd`) · **DONE 2026-10-02 (Sean: addressed)**
 
 - **Closed by Sean the same evening.** At the time of closing, the branch `design-from-lloyd` was still on

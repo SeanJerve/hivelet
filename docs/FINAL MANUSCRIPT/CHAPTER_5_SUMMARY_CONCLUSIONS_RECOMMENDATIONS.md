@@ -9,6 +9,9 @@
 > the decision to keep historical receipts as written; the owner's open questions).
 > **Updated 2026-10-01** from the testing day: summary item 3 and conclusion 3 filled from Chapter
 > 4's Tables 10, 11 and 11C; recommendation 15 widened. Items 4 and conclusion 4 wait on the survey.
+> **Updated 2026-10-05:** summary item 4 gained the technical evaluators' 3 October review, from
+> Chapter 4's Table 23 (fourteen comments, all addressed by 5 October). Its means still wait on
+> the survey export.
 
 This chapter summarizes the study, states the conclusions drawn from its results, and gives
 recommendations for the owner, for the continued development of the system, and for future
@@ -59,7 +62,11 @@ accomplished:
 4. **The system was evaluated using ISO/IEC 25010** by the owner, the tenants and technical
    evaluators. [DATA PENDING: the overall mean and its interpretation, then one line per
    characteristic with its composite mean, in the order of Table 22.] Changes were made in response
-   to feedback and testing, recorded in Table 23.
+   to feedback and testing, recorded in Table 23. The technical evaluators who reviewed the live
+   system on 3 October 2026 made fourteen comments, mostly on usability and on checking what users
+   type: phone numbers and email addresses, photo formats, filters, and the placement of controls on
+   a phone. They also asked for two functions, cancelling a repair request and recording why a
+   tenant moved out. All fourteen were addressed on the live system by 5 October 2026.
 
 ## 5.2 Conclusions
 

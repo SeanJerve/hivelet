@@ -1,7 +1,22 @@
 # CONTINUE HERE — handoff for the next machine
 
 > [!IMPORTANT]
-> **0.0 — 2 October 2026, the day before the panel (Saturday 3 Oct evaluates the live site).**
+> **0.0 — 5 October 2026: the technical evaluators' comments, all addressed.**
+>
+> - **The 3 Oct evaluation came back** (14 comments, relayed by Eljohn). Every one is on the live site
+>   (commits 055c6ff to 47b37fa): theme toggle at the top of public pages; email and phone checked on
+>   leaving the field; underlines only in the footer; "Send one" bold; phones spaced as typed and PH
+>   mobiles required on inquiries; **filters are dropdowns that apply at once** (`ListToolbar.vue`; on a
+>   phone they drop down under Filters; `FilterSheet` is gone); sign-in returns to the last page
+>   (`lib/lastPage.ts`); photos JPG or PNG only; **tenants can cancel a Submitted repair**, one an hour
+>   (`POST /tenant/tickets/:id/cancel`, Closed with `closed_by` = the tenant, no schema change);
+>   optional move-out reason; "Show fewer"; a failed live refresh keeps the figures; a shorter
+>   footer; the privacy policy's contents in a drawer on phones.
+> - **Chapters:** Table 23 has a row per comment; Chapter 5 §5.1 item 4 mentions the review. The
+>   survey CSV is the one missing input (B-99). Next migration number is still **079**.
+> - **New check:** `backend/scripts/check-ticket-cancel.mjs` (run after `npm run build` in backend/).
+>
+> **0.0 (previous) — 2 October 2026, the day before the panel (Saturday 3 Oct evaluates the live site).**
 >
 > - **On the site since 1 Oct (frontend):** **Show as** (By cluster / As a list) is inside
 >   **Filters** on Rooms and rates, Tenants and Monthly Income; Monthly Income and Expenses open on
