@@ -22,6 +22,18 @@
 >   (`backend/scripts/check-contact-rules.mjs`, 7 checks, mutation-tested; loydtest's ten-digit one
 >   must be corrected before its My details saves); the owner's number reads **0927 465 3938**
 >   wherever it is shown; cluster section ids no longer contain spaces (axe, aria-valid-attr-value).
+> - **Later the same night:** server refusals now read as the field and its reason ("Emergency
+>   contact phone: Enter a Philippine mobile number...") and a 500 as "The server could not finish
+>   this. Check whether it was saved..." (`lib/api.ts`); Monthly Income no longer invents a payer
+>   ("Walk-in Resident") for a unit with no tenant; the owner's repair form takes a UUID roomId and
+>   4,000-character descriptions; axe re-run 76/76 clean after the fix; backend dead code removed;
+>   three high npm advisories in build tooling patched (esbuild via Vite 5 accepted: dev server only).
+> - **Survey tooling:** `compute-survey.mjs` now also prints Table 12A (response rate), 13A (a worked
+>   weighted mean), Table 22's n and rank, and the lowest characteristic for Chapter 5's
+>   recommendation 6. Tested on a synthetic file only.
+> - **Paper:** FIXES H6 (name ISO/IEC 25010:2011) and H7 (Chapter 3 declares the mean-score
+>   scale); the defense study guide covers the six diagrams; Appendix K and the design guideline
+>   updated. **079's guards re-checked read-only after midnight: all hold.**
 > - **Migrations:** 079 is written and **not applied** (B-100, wait for Sean). The next number is **080**.
 >
 > **0.0 (earlier) — 5 October 2026: the technical evaluators' comments, all addressed.**
