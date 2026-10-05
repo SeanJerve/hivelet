@@ -18,6 +18,7 @@ import {
   PageNumber,
   NumberFormat,
   HeadingLevel,
+  ImageRun,
 } from 'docx';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -332,6 +333,36 @@ function parseMarkdownTable(lines) {
   });
 }
 
+/** A PNG's size in pixels, from its IHDR chunk. */
+function pngSize(buf) {
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
+/**
+ * A figure: a markdown line `![alt](figures/file.png)`, relative to the chapter's folder.
+ * Fitted within the printable width (6 in, 576 px at 96 per inch) and 6.5 in of height, so a
+ * phone figure still leaves its caption room on the page; kept with the caption below it.
+ * A missing file stops the build rather than leaving a silent gap in the chapter.
+ */
+function createFigureImage(relPath) {
+  const file = path.join(path.dirname(inputMdPath), relPath);
+  const data = fs.readFileSync(file);
+  const { width, height } = pngSize(data);
+  const scale = Math.min(576 / width, 624 / height);
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    keepNext: true,
+    spacing: { before: 240, after: 120 },
+    children: [
+      new ImageRun({
+        type: 'png',
+        data,
+        transformation: { width: Math.round(width * scale), height: Math.round(height * scale) },
+      }),
+    ],
+  });
+}
+
 function convertMarkdownToDocxElements(mdContent) {
   const lines = mdContent.split(/\r?\n/);
   const elements = [];
@@ -411,6 +442,14 @@ function convertMarkdownToDocxElements(mdContent) {
       continue;
     } else if (tableLines.length > 0) {
       flushTable();
+    }
+
+    // 3b. Figures
+    const figure = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (figure) {
+      flushParagraph();
+      elements.push(createFigureImage(figure[2]));
+      continue;
     }
 
     // 4. Headings

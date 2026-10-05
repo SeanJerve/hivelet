@@ -75,7 +75,7 @@ the system as it stands that evening.
 | §4.4.8 Security, supporting evidence | Grades and screenshots from the four passive scanners in `TEAM_TASKS_WE_DO_OURSELVES.md` §2 | A team member. **Passive scanners only** | none |
 | §4.4.11 Table 23, the "Survey results" row | Low-scoring survey items, and what was changed because of them | Claude, from the survey | survey first |
 | §4.5 Table 25, stages 4 and 5 | Whether the owner and tenants have been trained and handed over, and whether the system has become her main record | The team, with the owner | none |
-| Figures 4 to 8 | Screenshots (directory, public catalogue and enquiry form, income ledger, repairs board, tenant portal on a phone). Use the vacant unit or blur names | A team member | none |
+| ~~Figures 4 to 8~~ **Done 5 Oct 2026** | Captured from the system as deployed that day, sample tenants, real units and rates (`figures/README.md`); placed in Chapter 4 and embedded in its .docx | Claude | none |
 | Chapter 5's `[DATA PENDING]` parts | Written last, from the finished Chapter 4 | Claude | all of the above |
 | Abstract | Needs the survey means | Claude | survey first |
 

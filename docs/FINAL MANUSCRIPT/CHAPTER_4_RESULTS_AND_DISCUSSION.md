@@ -24,7 +24,8 @@
 > testing-day rows added to Table 23. Parts A, T and C were checked against the system's activity
 > record first and corrected where it disagreed; each results file says what changed. **Still
 > pending:** the survey (Tables 12 and 14 to 22, the technical evaluators on Saturday 3 October),
-> Table 5's owner question, Table 25 stages 4 and 5, and the figures.
+> Table 5's owner question, Table 25 stages 4 and 5. (The figures were added on 5 October; see
+> `figures/README.md`.)
 >
 > **Updated 2026-10-05:** Table 23 gained the technical evaluators' fourteen comments from their
 > 3 October review (relayed by Eljohn) and the change made for each, all on the live site by
@@ -127,6 +128,11 @@ meeting and are named in Chapter 5 as recommendations.
 
 *Answers Objective 2. Each feature named in the objective has its own subsection.*
 
+Figures 4 to 8 show the system as it stood on 5 October 2026. The units, their rates and their
+status in Figures 4 and 5 are the property's own, as the public site shows them. To protect the
+tenants' privacy, the names, payments, expenses and repair requests in Figures 4, 6, 7 and 8 are
+sample records, and no real tenant's name or payment appears in any figure.
+
 ### 4.2.1 System Architecture and Technology Stack
 
 The system was built in three Agile iterations (Section 3.2). The first, from 24 July to 28 August
@@ -158,7 +164,10 @@ dates, so for the transferred tenancies the screen says the date is not recorded
 showing a guessed one. When the owner changes a room rate, a database
 trigger records the old rate, the new rate, the date and who made the change. Because the trigger
 runs inside the database, a rate cannot be changed through any path without being recorded.
-*Figure 4. Room and Rate Directory.* [SCREENSHOT PENDING]
+
+![Room and Rate Directory](figures/figure-4-rooms-and-rates.png)
+
+*Figure 4. Room and Rate Directory.*
 
 ### 4.2.3 Booking and Reservation Management Module
 
@@ -170,8 +179,13 @@ private link and a short reference code, and either one (the code together with 
 they gave) opens their conversation, where they can write back. No account is created and nothing
 is sent by text or email; the link's secret is stored only in hashed form, like a password. A reserved
 unit stays visible but accepts no new enquiries. The public site never shows a tenant's name; this
-is checked on every verification run against all 33 published units. *Figure 5. Public Unit
-Catalogue and Enquiry Form.* [SCREENSHOT PENDING]
+is checked on every verification run against all 33 published units.
+
+![Public unit catalogue](figures/figure-5a-public-unit-catalogue.png)
+
+![Enquiry form](figures/figure-5b-inquiry-form.png)
+
+*Figure 5. Public Unit Catalogue (top) and Enquiry Form (bottom).*
 
 ### 4.2.4 Financial Tracking and Payment Recording Module
 
@@ -189,8 +203,11 @@ tenant already has a payment for that month, including one still waiting for ver
 Income and expenses are shown on two pages named after the owner's two workbook sheets, **Monthly
 Income** and **Monthly Expenses**, in the same layout as those sheets, and can be exported as Excel
 files in that layout. Income is filed under the month the rent is for, not the
-day it was paid, so a late payment still counts toward the right month. *Figure 6. The Monthly
-Income Ledger.* [SCREENSHOT PENDING]
+day it was paid, so a late payment still counts toward the right month.
+
+![The Monthly Income Ledger](figures/figure-6-monthly-income.png)
+
+*Figure 6. The Monthly Income Ledger.*
 
 Tenants follow the same record from their side. The tenant's payments page shows **"Your rent,
 month by month"**: one sentence stating how far their payments reach ("Paid up to …") and what is
@@ -213,8 +230,11 @@ including a repair to an empty unit, which has no tenant to report it. Only the 
 request, and when she marks a tenant's repair as done the tenant is notified. The system also sends
 in-app notifications to the tenant when a payment is verified or declined, and to the owner when a
 payment, enquiry or request comment arrives. Opening a notification opens the record it is about,
-for example the payment waiting to be verified, rather than only the page it is on. *Figure 7.
-Maintenance Requests Board.* [SCREENSHOT PENDING]
+for example the payment waiting to be verified, rather than only the page it is on.
+
+![Maintenance Requests Board](figures/figure-7-repairs-board.png)
+
+*Figure 7. Maintenance Requests Board.*
 
 ### 4.2.6 Role-Based Access Control
 
@@ -262,7 +282,11 @@ expense records, repairs and inquiries. Paying, recording and every other action
 connection and are not offered without it, and the copy is removed when the person signs out or
 someone else signs in on the device. This stays within the delimitation in Section 1.4:
 current data and every change to it need an internet connection. Screens adapt to the device: tables on a computer become cards
-on a phone. *Figure 8. The Tenant Portal on a Mobile Phone.* [SCREENSHOT PENDING]
+on a phone.
+
+![The Tenant Portal on a Mobile Phone](figures/figure-8-tenant-portal-phone.png)
+
+*Figure 8. The Tenant Portal on a Mobile Phone.*
 
 ---
 
