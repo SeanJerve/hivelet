@@ -114,9 +114,9 @@ is to apply Word heading styles to every heading and insert an automatic table o
 - **Abstract and Acknowledgement** are both listed on page vii. The Acknowledgement page does not
   exist yet, and the Abstract page is blank.
 - **List of Tables:** "Table 2. Hardware Requirements" is titled "Workstation Hardware
-  Specifications" in the body, and Tables 5 to 10 are template entries. Replace with Tables 5 to 25
+  Specifications" in the body, and Tables 5 to 10 are template entries. Replace with Tables 5 to 25, with the lettered tables (7A to 7C, 11A to 11E, 23A)
   from Chapter 4.
-- **List of Figures:** add Figures 4 to 8 from Chapter 4.
+- **List of Figures:** add Figures 4 to 14 from Chapter 4 (4 to 9 the diagrams, 10 to 14 the screenshots).
 - **Appendices:** Appendix J shows page "10"; Appendix L still says "<System Name>"; the TOC calls
   the source code Appendix M but the body calls it Appendix N. Appendices C to M are not in the PDF
   yet.

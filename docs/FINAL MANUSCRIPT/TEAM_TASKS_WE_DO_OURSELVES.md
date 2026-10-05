@@ -75,7 +75,7 @@ On the workstation in Table 2 and a phone like the one in Table 3, time each scr
 Use the browser's developer tools (Network tab, "Load" time) or PageSpeed Insights, and write down
 the device, browser, network and date. **Measured numbers only.**
 
-### 5. Screenshots for Figures 4 to 8
+### 5. Screenshots for Figures 10 to 14 (numbered 4 to 8 until 5 Oct)
 
 Room directory, public catalogue and enquiry form, income ledger, maintenance board, tenant portal
 on a phone. Use the unoccupied unit or blur tenant names; the manuscript is public.

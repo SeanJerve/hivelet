@@ -15,7 +15,7 @@ adviser** for the items marked *Adviser*.
 | # | The guide expects | Our draft | Decision needed |
 | :-- | :--- | :--- | :--- |
 | D1 | Chapter 4 as **4.1 Needs Assessment Result, 4.2 Data Gathering Result, 4.3 The Developed System** (eight subsections: overview and architecture; process and data models; database design; modules and walkthrough; business rules; security and access control; deployment environment; testing results) and **4.4 Evaluation Result** | 4.1 Analysis of practices and requirements; 4.2 Development (one subsection per feature); 4.3 Pilot testing; 4.4 ISO/IEC 25010 evaluation; 4.5 Deployment plan | Keep ours (the guide calls Chapter 4 headings suggestive and says to follow the adviser) or re-cut to the guide's order. Our content maps across: 4.1 → 4.1 + 4.2; 4.2 → 4.3.1 and 4.3.4 to 4.3.6; 4.3 → 4.3.8; 4.4 → 4.4; 4.5 → 4.3.7 and an appendix |
-| D2 | Tables and figures numbered **with the chapter**: Table 4-1, Figure 4-1, restarting each chapter; captions **above** the exhibit, sentence case, inserted with Word's Insert Caption so the lists build themselves | Continuous numbering (Tables 5 to 25, Figures 4 to 8) | Renumber at the Word stage (our scripts print "Table 10", "Table 12" and so on; renumber after the results are pasted in, then update the List of Tables) |
+| D2 | Tables and figures numbered **with the chapter**: Table 4-1, Figure 4-1, restarting each chapter; captions **above** the exhibit, sentence case, inserted with Word's Insert Caption so the lists build themselves | Continuous numbering (Tables 5 to 25 with lettered tables, Figures 4 to 14) | Renumber at the Word stage (our scripts print "Table 10", "Table 12" and so on; renumber after the results are pasted in, then update the List of Tables) |
 | D3 | The **ISO/IEC 25010 edition named** in Chapters 3 and 4, and used consistently; the guide notes the 2011 edition is withdrawn and a *new* instrument should use 2023 | Our instrument uses the 2011 characteristics (Usability, Portability; no Safety) but no edition is written | Write **ISO/IEC 25010:2011** in §3.2.4 and §4.4 (the survey is already built and in use on 2011 names; switching now would invalidate it). Be ready for the panel question "why 2011?": the instrument was built on the 2011 model and every item maps to it |
 | D4 | The verbal labels in Chapter 4 **identical** to the scale declared in Chapter 3 | Chapter 4's Table 13 uses Very High / High / Moderate / Low / Very Low Quality | Confirm Chapter 3's scale table uses the same five labels and ranges; change whichever is wrong |
 
@@ -39,16 +39,16 @@ Build these before the defense; each is a small table or figure. "Have" means an
 
 | Guide exhibit | Status | Source for it |
 | :--- | :--- | :--- |
-| Current (as-is) process flow figure | **Missing** | The owner's workflow in §4.1.1 (spreadsheet, receipt book, cash, messages) |
+| Current (as-is) process flow figure | **Have: Figure 4** (5 Oct 2026), swimlanes | The owner's workflow in §4.1.1 and Table 5; the booking channel stays general until the owner answers Table 5's question |
 | Summary of identified problems with evidence | Have: Table 5 | Check each row names the method, the volume examined and the count |
 | Requirements and traceability (problem → requirement → module) | Have: Table 6 | |
 | Instrument administration and response rate (distributed, retrieved, valid, rate) | **Missing** | The testing day: consent forms, survey responses per group |
 | Respondent profile | Have: Table 12 (pending) | Add n per group and percentages that sum to 100 |
-| System architecture diagram | Check Chapter 3; not in Chapter 4 | Vue PWA → Express API on Vercel → Supabase PostgreSQL; Adyen |
-| Context diagram, data flow diagram, use case diagram | **Missing in Chapter 4** | Regenerate from the system as built; one notation throughout |
-| Entity-relationship diagram and a data dictionary extract | Mentioned, not an exhibit | Generate from the live schema (never from `FULL_DATABASE_SCHEMA.sql`); Crow's Foot |
-| Business rules table with **one worked example per computation** | **Have: Table 7A** (5 Oct 2026) | Water = occupants × ₱200; the bill (rent + water); overdue from the day after the due date; the 50% share per BR-035 wording only |
-| Role and privilege matrix (role × function, Yes/No) | **Have: Table 7B** (5 Oct 2026), from `config/rbac.ts` | The permission matrix in the code: public, prospect, tenant, administrator |
+| System architecture diagram | **Have: Figure 5** (5 Oct 2026) | Vue PWA → Express API on Vercel → Supabase PostgreSQL; Adyen with GCash |
+| Context diagram, data flow diagram, use case diagram | **Have: Figures 6, 7, 8** (5 Oct 2026); Yourdon-DeMarco for the DFDs, UML for use cases | Drawn from the routes and `rbac.ts` by `scripts/build-chapter-4-diagrams.mjs` |
+| Entity-relationship diagram and a data dictionary extract | **Have: Figure 9 and Table 7A** (5 Oct 2026) | From the live catalogue (21 tables, 37 foreign keys), never from `FULL_DATABASE_SCHEMA.sql`; Crow's Foot |
+| Business rules table with **one worked example per computation** | **Have: Table 7B** (5 Oct 2026; 7A until the data dictionary took that number) | Water = occupants × ₱200; the bill (rent + water); overdue from the day after the due date; the 50% share per BR-035 wording only |
+| Role and privilege matrix (role × function, Yes/No) | **Have: Table 7C** (5 Oct 2026), from `config/rbac.ts` | The permission matrix in the code: public, prospect, tenant, administrator |
 | Deployment environment table (client-side hardware and software, **with versions**) | Partly: Table 24 | Add the landlady's laptop and the tenants' phones as actually used on 30 Sep |
 | **Test execution summary by level** (unit, integration, system, user acceptance: executed, passed, failed, pass rate) | **Have: Table 11E** (5 Oct 2026): 82 of 83 executed tests passed, 98.8% | Unit/integration: the check suites; system: the walkthrough (Table 10); acceptance: the testing day (Tables 11C, 11E). The course standard is **at least 90% passed, all critical defects resolved** |
 | Defect summary by severity and disposition (found, resolved, deferred) | **Have: Table 23A** (5 Oct 2026): 35 found, 31 resolved, 1 open, 3 accepted | Add a severity column and the deferred items (e.g. B-86 until 064 runs) |

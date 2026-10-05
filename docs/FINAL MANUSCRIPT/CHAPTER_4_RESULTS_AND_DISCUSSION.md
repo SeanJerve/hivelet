@@ -27,6 +27,11 @@
 > Table 5's owner question, Table 25 stages 4 and 5. (The figures were added on 5 October; see
 > `figures/README.md`.)
 >
+> **Updated 2026-10-05 (night):** Figures 4 to 9 added, the diagrams the course guide expects
+> (as-is process, architecture, context, level 1 DFD, use case, ERD), drawn from the system by
+> `scripts/build-chapter-4-diagrams.mjs`; the screenshots are now Figures 10 to 14. Table 7A is a new
+> data dictionary extract, so the business rules and role matrix are now Tables 7B and 7C.
+>
 > **Updated 2026-10-05:** Table 23 gained the technical evaluators' fourteen comments from their
 > 3 October review (relayed by Eljohn) and the change made for each, all on the live site by
 > 5 October (commits 055c6ff to 47b37fa). The survey export is still the missing input for
@@ -65,6 +70,14 @@ problem it caused.
 | Financial tracking | Income and expense sheets typed by hand; invoices written in a paper book | Totals depend on manual arithmetic; nothing checks an invoice number against the book; one file on removable storage is the only copy |
 | Communication | Requests sent by messaging application or said in person | Requests are not recorded, so there is no way to follow a request to completion |
 | Booking | [CONFIRM WITH THE OWNER: how enquiries arrived before the system, for example walk-in, referral or phone] | No record of enquiries or which unit an enquiry was about |
+
+Figure 4 follows each of the four areas through the hands that touched it. Every path ends in a
+record kept apart from the others, or in no record at all, which is where each problem in Table 5
+begins.
+
+![The owner's process before the system](figures/figure-4-current-process.png)
+
+*Figure 4. The Owner's Process Before the System.*
 
 The strongest evidence for these problems came from the owner's own records. When her workbook was
 transferred into the system (937 income rows and 1,327 expense allocations), the transfer exposed
@@ -128,9 +141,9 @@ meeting and are named in Chapter 5 as recommendations.
 
 *Answers Objective 2. Each feature named in the objective has its own subsection.*
 
-Figures 4 to 8 show the system as it stood on 5 October 2026. The units, their rates and their
-status in Figures 4 and 5 are the property's own, as the public site shows them. To protect the
-tenants' privacy, the names, payments, expenses and repair requests in Figures 4, 6, 7 and 8 are
+Figures 4 to 9 model the system as built, and Figures 10 to 14 show its screens as they stood on 5
+October 2026. The units, their rates and their status in Figures 10 and 11 are the property's own, as the public site shows them. To protect the
+tenants' privacy, the names, payments, expenses and repair requests in Figures 10, 12, 13 and 14 are
 sample records, and no real tenant's name or payment appears in any figure.
 
 ### 4.2.1 System Architecture and Technology Stack
@@ -154,7 +167,87 @@ lists the technology used.
 | Hosting | Vercel | Serves the application at a public web address |
 
 Every change to the database structure or to stored records is written as a numbered migration
-file (more than fifty so far), so the history of the data can be reviewed and repeated.
+file (more than seventy by 5 October 2026), so the history of the data can be reviewed and repeated.
+
+**Architecture.** Figure 5 shows where each part of the system runs. The application is delivered to
+the browser as a Progressive Web Application and talks to one server program, an Express API that
+runs on Vercel as a serverless function. Only that API reads or writes the database: row-level
+security is switched on for every table and no rule opens a table to a browser, so a request that
+does not pass through the API's sign-in and role checks reaches no data. Payment details are typed
+into Adyen's own form and go from it to Adyen directly. The API only creates the payment session,
+and records a payment once Adyen confirms it (Section 4.2.4).
+
+![System architecture](figures/figure-5-system-architecture.png)
+
+*Figure 5. System Architecture.*
+
+**Process model.** Figure 6 is the context diagram: the system as one process, with the four parties
+outside it and the data that passes between them. Figure 7 opens that process into its eight
+processes and the stores each reads and writes. Two stores are written by nearly every process and
+are left out of Figure 7 for readability: the notifications, and the audit record of every change
+(Section 4.4.8). The tenants, tenancies and store D2 is drawn twice, marked by a second bar, to avoid
+crossing lines.
+
+![Context diagram](figures/figure-6-context-diagram.png)
+
+*Figure 6. Context Diagram.*
+
+![Level 1 data flow diagram](figures/figure-7-data-flow-level-1.png)
+
+*Figure 7. Level 1 Data Flow Diagram.*
+
+Figure 8 shows the same functions from the side of the people who use them. Each use case is a
+function the server grants to that role and refuses to every other (Table 7C); Sign in, own details,
+notifications and recent actions are shared by tenants and the owner, each seeing only their own.
+
+![Use case diagram](figures/figure-8-use-case-diagram.png)
+
+*Figure 8. Use Case Diagram.*
+
+**Data model.** Figure 9 is the entity-relationship diagram of the database as it stood on 5
+October 2026. It was drawn from the database's own catalogue of tables, keys and constraints, not
+from a design document, so it shows what the database enforces: 21 tables, each with a primary key,
+and 37 foreign keys. Rooms and profiles are the two centres of the design. Every bill, payment,
+receipt, tenancy, repair request and inquiry belongs to one unit, and every tenancy, bill and
+payment to one person. The owner's two ledgers are kept as she kept them, a Monthly Income table of
+receipts and a Monthly Expenses table whose entries are split across property areas.
+
+![Entity-relationship diagram](figures/figure-9-entity-relationship.png)
+
+*Figure 9. Entity-Relationship Diagram.*
+
+Several of the rules in Section 4.2.4 live in the database itself rather than in the program, so
+no screen or script can bypass them. One unit cannot have two active tenancies; one invoice number
+cannot be used twice for the same unit and month on receipts that stand; an online payment's
+gateway reference cannot be recorded twice; and the 50% Share and the remitted amount are computed
+columns, so they cannot disagree with the rent and water beside them. Table 7A describes the
+Monthly Income table, the one the owner reads most, as an extract of the data dictionary.
+
+**Table 7A.** Data Dictionary Extract: Monthly Income Records
+
+| Column | Type | Null | Key | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| id | uuid | No | PK | Identifies the receipt |
+| room_id | uuid | No | FK | The unit the payment is for (rooms) |
+| tenant_profile_id | uuid | Yes | FK | The tenant who paid, where one is recorded (profiles) |
+| assignment_id | uuid | Yes | FK | The tenancy the payment belongs to, where known (room_assignments) |
+| year, month | integer | No | | The ledger month the receipt is filed under |
+| date_paid | date | No | | The day the money was received |
+| contact_name | varchar(255) | No | | The name as written on the receipt |
+| invoice_number | varchar(100) | Yes | | The owner's own invoice number; not repeated for the same unit and month among receipts that are not voided |
+| rent_period_start, rent_period_end | date | No | | The period the rent covers (BR-033) |
+| rent_amount | numeric(10,2) | No | | The rent received |
+| occupants | integer | No | | The number of occupants that month |
+| water_payment | numeric(10,2) | No | | The water fee, ₱200 per occupant (BR-014) |
+| fifty_percent_share | numeric(10,2) | | Computed | A system-computed figure equal to half the row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet (BR-035) |
+| remitted_amount | numeric(10,2) | | Computed | Rent Amount plus Water Payment (BR-038) |
+| payment_method | enumeration | No | | Cash, GCash, Bank Transfer or Adyen Online |
+| verification_status | enumeration | No | | Verified, Pending Verification or Rejected |
+| transaction_reference | varchar(120) | Yes | | The gateway's reference for an online payment; never recorded twice |
+| is_linda_billing, linda_water_charge, linda_electricity_charge | boolean, numeric(10,2) | Yes | | The two Linda units' charges, recorded separately (BR-040) |
+| voided_at, voided_by, void_reason | timestamp, uuid, text | Yes | voided_by: FK | When, by whom and why a receipt was voided; a voided receipt is kept, never deleted |
+| created_at, updated_at | timestamp | Yes | | When the row was written and last changed |
+
 
 ### 4.2.2 Tenant and Room Management Module
 
@@ -165,9 +258,9 @@ showing a guessed one. When the owner changes a room rate, a database
 trigger records the old rate, the new rate, the date and who made the change. Because the trigger
 runs inside the database, a rate cannot be changed through any path without being recorded.
 
-![Room and Rate Directory](figures/figure-4-rooms-and-rates.png)
+![Room and Rate Directory](figures/figure-10-rooms-and-rates.png)
 
-*Figure 4. Room and Rate Directory.*
+*Figure 10. Room and Rate Directory.*
 
 ### 4.2.3 Booking and Reservation Management Module
 
@@ -181,11 +274,11 @@ is sent by text or email; the link's secret is stored only in hashed form, like 
 unit stays visible but accepts no new enquiries. The public site never shows a tenant's name; this
 is checked on every verification run against all 33 published units.
 
-![Public unit catalogue](figures/figure-5a-public-unit-catalogue.png)
+![Public unit catalogue](figures/figure-11a-public-unit-catalogue.png)
 
-![Enquiry form](figures/figure-5b-inquiry-form.png)
+![Enquiry form](figures/figure-11b-inquiry-form.png)
 
-*Figure 5. Public Unit Catalogue (top) and Enquiry Form (bottom).*
+*Figure 11. Public Unit Catalogue (top) and Enquiry Form (bottom).*
 
 ### 4.2.4 Financial Tracking and Payment Recording Module
 
@@ -205,9 +298,9 @@ Income** and **Monthly Expenses**, in the same layout as those sheets, and can b
 files in that layout. Income is filed under the month the rent is for, not the
 day it was paid, so a late payment still counts toward the right month.
 
-![The Monthly Income Ledger](figures/figure-6-monthly-income.png)
+![The Monthly Income Ledger](figures/figure-12-monthly-income.png)
 
-*Figure 6. The Monthly Income Ledger.*
+*Figure 12. The Monthly Income Ledger.*
 
 Tenants follow the same record from their side. The tenant's payments page shows **"Your rent,
 month by month"**: one sentence stating how far their payments reach ("Paid up to …") and what is
@@ -222,10 +315,10 @@ a bill actually raised is shown as due.
 The system does not handle electricity. Every unit has its own meter and the tenant pays the
 electric company directly, as the owner confirmed on 18 September 2026.
 
-Every figure the owner reads is worked out by the system from the rules in Table 7A rather than
+Every figure the owner reads is worked out by the system from the rules in Table 7B rather than
 typed, so the same inputs always give the same amount.
 
-**Table 7A.** Business Rules for Computed Figures, with a Worked Example
+**Table 7B.** Business Rules for Computed Figures, with a Worked Example
 
 | Rule | What the system computes | Worked example |
 | :--- | :--- | :--- |
@@ -248,9 +341,9 @@ in-app notifications to the tenant when a payment is verified or declined, and t
 payment, enquiry or request comment arrives. Opening a notification opens the record it is about,
 for example the payment waiting to be verified, rather than only the page it is on.
 
-![Maintenance Requests Board](figures/figure-7-repairs-board.png)
+![Maintenance Requests Board](figures/figure-13-repairs-board.png)
 
-*Figure 7. Maintenance Requests Board.*
+*Figure 13. Maintenance Requests Board.*
 
 ### 4.2.6 Role-Based Access Control
 
@@ -284,10 +377,10 @@ Other security measures in the system:
 - Messages from the payment gateway are accepted only with a valid HMAC signature.
 - A check for committed passwords and keys runs before every commit.
 
-Table 7B sets out which role may use which function. It is read from the permission table in the
+Table 7C sets out which role may use which function. It is read from the permission table in the
 server's code, which every request is checked against before it reaches the data.
 
-**Table 7B.** Role and Privilege Matrix
+**Table 7C.** Role and Privilege Matrix
 
 | Function | Visitor | Tenant | Administrator |
 | :--- | :---: | :---: | :---: |
@@ -324,9 +417,9 @@ someone else signs in on the device. This stays within the delimitation in Secti
 current data and every change to it need an internet connection. Screens adapt to the device: tables on a computer become cards
 on a phone.
 
-![The Tenant Portal on a Mobile Phone](figures/figure-8-tenant-portal-phone.png)
+![The Tenant Portal on a Mobile Phone](figures/figure-14-tenant-portal-phone.png)
 
-*Figure 8. The Tenant Portal on a Mobile Phone.*
+*Figure 14. The Tenant Portal on a Mobile Phone.*
 
 ---
 

@@ -348,7 +348,9 @@ function createFigureImage(relPath) {
   const file = path.join(path.dirname(inputMdPath), relPath);
   const data = fs.readFileSync(file);
   const { width, height } = pngSize(data);
-  const scale = Math.min(576 / width, 624 / height);
+  // 6 in wide at most, and 8.5 in tall, so a full-page diagram (the ERD) keeps a readable size
+  // with its caption on the same page.
+  const scale = Math.min(576 / width, 816 / height);
   return new Paragraph({
     alignment: AlignmentType.CENTER,
     keepNext: true,

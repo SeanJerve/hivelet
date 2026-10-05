@@ -11,7 +11,7 @@ computer, and it can be installed on a phone's home screen (Part 1, step 6).
 > for tenants: `TENANT_QUICK_GUIDE_PRINT.html` is the same text laid out to print, two per A4 sheet.
 > Change both together. Screenshots for the
 > manuscript's copy of this appendix: take them from the vacant unit `PH` or blur names, as for
-> Figures 4 to 8.
+> Figures 10 to 14.
 
 ---
 
