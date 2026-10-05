@@ -300,7 +300,19 @@ aligned figures, not a redesign.
   - The gateway is Adyen with GCash.
   - The property is 33 units, 32 of them occupied.
 - **Print only facts the system holds.** If a fact is an open question for the owner, the screen
-  says nothing about it until it is answered.
+  says nothing about it until it is answered. Never invent a value to fill a gap that is then
+  saved (a payer called "Walk-in Resident" was nearly written into her ledger, 5 Oct 2026): say
+  what is missing and where to give it.
+- **A refusal names the field and the reason**, under the field where there is one, and in the
+  toast otherwise: "Emergency contact phone: Enter a Philippine mobile number, for example 0917
+  123 4567." `lib/api.ts` turns the server's validation refusals into that shape; write a field's
+  own message to the same pattern (what to type, with an example). A server failure claims nothing
+  about whether the change was saved.
+- **Phone numbers are always spaced**: 0917 123 4567. Inputs take `v-phone`; a number from a
+  record goes through `showPhone`; the property's own number is `LANDLADY.phoneShown`. `tel:`
+  links keep the digits.
+- **An element id never carries a label with a space in it.** Build ids from `domId(label)`
+  (`lib/domId.ts`), or `aria-controls` names an element that does not exist.
 
 ---
 
