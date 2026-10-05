@@ -142,12 +142,11 @@ const config: UserConfig = {
       // day: nothing referenced either once the new pair landed, and leaving
       // them precached is the 471 KB `property-map.png` mistake again.
       //
-      // `fe-galang-building-portrait.webp` (2026-09-30) is the hero as an
-      // upright phone draws it (PublicGuestView.vue, <picture>). The app
-      // installs with start_url '/', so an installed phone opening offline
-      // lands on that hero; without its own file precached the picture would
-      // be blank there. The gate's 800-pixel copy stays out, like the gate.
-      includeAssets: ['favicon.svg', 'fe-galang-building.webp', 'fe-galang-building-portrait.webp'],
+      // The portrait crop of the hero (2026-09-30) was dropped on 6 Oct, when a
+      // phone's hero became half a screen and needed the whole photograph; the
+      // one file below is what every screen draws, offline included. The gate's
+      // 800-pixel copy stays out, like the gate.
+      includeAssets: ['favicon.svg', 'fe-galang-building.webp'],
       manifest: {
         name: 'Hivelet',
         short_name: 'Hivelet',

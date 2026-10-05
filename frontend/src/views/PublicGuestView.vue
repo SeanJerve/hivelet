@@ -306,16 +306,15 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       proportional to the full-bleed field at every viewport width.
     -->
     <!--
-      Full screen only when the screen stands upright. On a landscape screen a
-      full-height hero turned the page into a splash: the 2:1 photograph was
-      scaled to the screen's height, so its sides fell away, and nothing below
-      it showed (Sean, 6 Oct 2026). There the hero is a band of about 58% of
-      the height, never under 22rem so a phone on its side still fits the name,
-      and the picture spans the full width and gives up only a strip of sky
-      and of the plants. The bottom fade is shorter there (it covered over half
-      of the shorter band), and the name keeps 36px under its descender.
+      Half a screen on a phone held upright, full screen everywhere else (Sean,
+      6 Oct 2026). A full-height hero on a tall narrow screen scaled the 2:1
+      photograph to the screen's height and showed only a strip of its middle;
+      at half the height the same width shows about twice as much of the
+      building, and the page below starts within the first screen. Never under
+      20rem, so the name and its two lines still fit a small phone. The name
+      keeps its size.
     -->
-    <section class="on-dark relative w-full min-h-screen min-h-[100dvh] landscape:min-h-[22rem] landscape:h-[max(22rem,58svh)] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
+    <section class="on-dark relative w-full min-h-screen min-h-[100dvh] max-md:portrait:min-h-0 max-md:portrait:h-[max(20rem,50svh)] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
       <!-- Crisp entrance photograph background (unblurred, leveled) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
         <!--
@@ -325,33 +324,21 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           and it carries its intrinsic size so the box is reserved before the
           bytes land rather than after.
 
-          A phone held upright sees only the middle of this wide photograph:
-          the hero is at least a screen tall, so the picture is scaled to that
-          height and its sides fall off. The portrait file is that middle, the
-          centre 600 of its 1,790 pixels at full resolution (2026-09-30), so a
-          phone downloads half as much and shows the same pixels. The rule
-          only switches on while the screen is narrower than 2:3, where the
-          visible part is under 586 pixels wide and fits inside the crop with
-          room to spare; a wider screen, a tablet or a phone on its side, gets
-          the whole photograph as before.
+          One file for every screen. A phone used to get a 600-pixel portrait
+          crop of the middle (2026-09-30), which fitted while the hero was a
+          full screen tall; at half a screen a phone shows about 800 of the
+          photograph's 1,790 pixels across, wider than that crop, so it takes
+          the whole photograph like every other screen.
         -->
-        <picture>
-          <source
-            media="(max-aspect-ratio: 2/3)"
-            srcset="/fe-galang-building-portrait.webp"
-            width="600"
-            height="879"
-          />
-          <img
-            src="/fe-galang-building.webp"
-            alt="The boarding house seen from the courtyard"
-            class="w-full h-full object-cover object-center landscape:object-[center_38%]"
-            width="1790"
-            height="879"
-            fetchpriority="high"
-            decoding="async"
-          />
-        </picture>
+        <img
+          src="/fe-galang-building.webp"
+          alt="The boarding house seen from the courtyard"
+          class="w-full h-full object-cover object-center"
+          width="1790"
+          height="879"
+          fetchpriority="high"
+          decoding="async"
+        />
         <!--
           The scrim is the brand's own dark, not plain black. `--night` is
           #0f1b15 - a green-black - so the photograph sits under the same
@@ -359,10 +346,10 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           reading as a neutral stock header bolted onto a green product.
         -->
         <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/25 to-night/50" />
-        <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 landscape:sm:h-40 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
+        <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 max-md:portrait:h-32 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
       </div>
 
-      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-20 sm:pb-16 md:pb-12 lg:pb-6 landscape:lg:pb-9">
+      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-20 sm:pb-16 md:pb-12 lg:pb-6 max-md:portrait:pb-8">
         <!--
           "Boarding House" comes off the display line and sits under the name,
           at its left edge. It used to be pushed to the far right to line up
