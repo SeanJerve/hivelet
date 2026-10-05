@@ -4207,9 +4207,11 @@ router.get(
 
 const ticketCreateSchema = z.object({
   roomNumber: unitCode(20).optional(),
-  roomId: z.string().optional(),
+  // A UUID, so a malformed id is a 422 that names the field rather than a database error.
+  roomId: uuid.optional(),
   title: z.string().min(1).max(255),
-  description: z.string().min(1),
+  // The tenant's own form allows 4,000 characters (tenant.ts ticketSchema); the same here.
+  description: z.string().min(1).max(4000),
   category: z.string().max(100).optional(),
   priority: z.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
   assignedTechnician: z.string().max(160).optional(),
@@ -4372,14 +4374,14 @@ router.post(
 
 const ticketUpdateSchema = z.object({
   title: z.string().max(255).optional(),
-  description: z.string().optional(),
+  description: z.string().max(4000).optional(),
   category: z.string().max(100).optional(),
   priority: z.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
   status: z.enum(['Open', 'Submitted', 'In Progress', 'Resolved', 'Closed']).optional(),
   assigned_technician: z.string().max(160).optional(),
   assignedTechnician: z.string().max(160).optional(),
   roomNumber: unitCode(20).optional(),
-  roomId: z.string().optional(),
+  roomId: uuid.optional(),
 });
 
 /**
