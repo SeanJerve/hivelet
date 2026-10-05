@@ -101,17 +101,20 @@ const byGroup = Object.fromEntries(GROUPS.map((g) => [g.key, records.filter((r) 
 const unmatched = records.filter((r) => !groupOf(r[q1Col]));
 const missingItems = [];
 
-function scores(group, item) {
+function scores(group, item, answered) {
   const cols = columnsFor(item);
   if (!cols.length) missingItems.push(`${group.label}: ${item}`);
   const vals = [];
   for (const r of byGroup[group.key]) {
     const v = cols.map((i) => r[i]).find((x) => x != null && String(x).trim() !== '');
     const n = Number(String(v ?? '').trim().match(/^[1-5](?!\d)/)?.[0]); // "4", or a grid's "4 — Agree"
-    if (Number.isFinite(n) && n >= 1 && n <= 5) vals.push(n);
+    if (Number.isFinite(n) && n >= 1 && n <= 5) { vals.push(n); answered?.add(r); }
   }
   return vals;
 }
+
+/** The indicator with the most answers, for the worked computation the course guide asks for. */
+let worked = null;
 
 const out = [];
 const total = records.length;
@@ -126,12 +129,14 @@ for (const characteristic of ORDER) {
   out.push('', `**Table ${TABLE_NO[characteristic]}.** Evaluation Results for ${characteristic}`, '', '| Indicator | Rated by | Mean | SD | Interpretation |', '| :--- | :--- | ---: | ---: | :--- |');
   const groupMeans = [];
   const everyAnswer = [];
+  const answered = new Set();
   for (const g of GROUPS) {
     const block = g.items.find(([h]) => h === characteristic);
     if (!block) continue;
     const itemMeans = [];
     for (const item of block[1]) {
-      const v = scores(g, item);
+      const v = scores(g, item, answered);
+      if (!worked || v.length > worked.values.length) worked = { item, group: g.table.toLowerCase(), characteristic, values: v };
       everyAnswer.push(...v);
       const m = mean(v);
       if (m != null) itemMeans.push(m);
@@ -143,13 +148,37 @@ for (const characteristic of ORDER) {
   }
   const composite = method === 'A' ? mean(groupMeans) : mean(everyAnswer);
   out.push(`| **Composite mean** | | **${f2(composite)}** | | **${interpret(composite)}** |`);
-  summary.push([characteristic, composite]);
+  summary.push([characteristic, composite, answered.size]);
 }
 
-out.push('', '**Table 22.** Summary of Evaluation Results', '', '| Characteristic | Composite mean | Interpretation |', '| :--- | ---: | :--- |');
-for (const [c, m] of summary) out.push(`| ${c} | ${f2(m)} | ${interpret(m)} |`);
+// Rank 1 is the highest composite; ties share a rank. n is the number of respondents who rated the
+// characteristic at all (course guide: a rank column and n per characteristic).
+const ranked = summary.filter(([, m]) => m != null).map(([, m]) => m).sort((a, b) => b - a);
+const rankOf = (m) => (m == null ? '' : ranked.findIndex((x) => x.toFixed(2) === m.toFixed(2)) + 1);
+out.push('', '**Table 22.** Summary of Evaluation Results', '', '| Characteristic | n | Composite mean | Interpretation | Rank |', '| :--- | ---: | ---: | :--- | ---: |');
+for (const [c, m, n] of summary) out.push(`| ${c} | ${n} | ${f2(m)} | ${interpret(m)} | ${rankOf(m)} |`);
 const overall = mean(summary.map(([, m]) => m).filter((m) => m != null));
-out.push(`| **Overall** | **${f2(overall)}** | **${interpret(overall)}** |`);
+out.push(`| **Overall** | | **${f2(overall)}** | **${interpret(overall)}** | |`);
+const lowest = summary.filter(([, m]) => m != null).sort((a, b) => a[1] - b[1])[0];
+if (lowest) out.push('', `> Lowest-rated characteristic: **${lowest[0]}**, ${f2(lowest[1])} (${interpret(lowest[1])}). Chapter 5's recommendation 6 is written for it.`);
+
+// Table 13A: one weighted mean worked in full, WM = Σ(f × w) / N, with the item that has the most answers.
+if (worked && worked.values.length) {
+  const LABEL = { 5: 'Strongly Agree', 4: 'Agree', 3: 'Neutral', 2: 'Disagree', 1: 'Strongly Disagree' };
+  const N = worked.values.length;
+  let sum = 0;
+  out.push('', '**Table 13A.** Worked Computation of a Weighted Mean', '',
+    `Indicator: "${worked.item}" (${worked.characteristic}, rated by ${worked.group}).`, '',
+    '| Rating (w) | Meaning | Frequency (f) | f × w |', '| ---: | :--- | ---: | ---: |');
+  for (const w of [5, 4, 3, 2, 1]) {
+    const fr = worked.values.filter((v) => v === w).length;
+    sum += fr * w;
+    out.push(`| ${w} | ${LABEL[w]} | ${fr} | ${fr * w} |`);
+  }
+  const wm = sum / N;
+  out.push(`| **Total** | | **N = ${N}** | **Σ(f × w) = ${sum}** |`, '',
+    `WM = Σ(f × w) / N = ${sum} / ${N} = **${wm.toFixed(2)}**, which Table 13 reads as **${interpret(wm)}**.`);
+}
 out.push('', method === 'A'
   ? '> Composite = the mean of the group means (method A, §4.4.2): one owner is not outweighed by many tenants. Overall = the mean of the eight composites.'
   : '> Composite = the mean of every individual answer (method B, §4.4.2). Overall = the mean of the eight composites.');

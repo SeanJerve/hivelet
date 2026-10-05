@@ -943,6 +943,24 @@ Each item was rated on the five-point scale in Table 4. Mean scores are read usi
 means**, so that one owner is not outweighed by many tenants on functions only she uses. Whichever
 is chosen, write it here in one sentence.]
 
+Table 13A works one weighted mean in full, so that every mean in Tables 14 to 21 can be checked
+the same way: each rating is multiplied by the number of respondents who chose it, and the sum of
+the products is divided by the number of respondents, WM = Σ(f × w) / N.
+
+**Table 13A.** Worked Computation of a Weighted Mean [DATA PENDING]
+
+| Rating (w) | Meaning | Frequency (f) | f × w |
+| ---: | :--- | ---: | ---: |
+| 5 | Strongly Agree | | |
+| 4 | Agree | | |
+| 3 | Neutral | | |
+| 2 | Disagree | | |
+| 1 | Strongly Disagree | | |
+| **Total** | | **N =** | **Σ(f × w) =** |
+
+> **TEAM NOTE.** Printed by `compute-survey.mjs` for the indicator with the most answers, with the
+> sentence that goes under it ("WM = ... which Table 13 reads as ..."). Paste both.
+
 ### 4.4.3 Functional Suitability
 
 **Table 14.** Evaluation Results for Functional Suitability [DATA PENDING]
@@ -1183,17 +1201,21 @@ documentation.
 
 **Table 22.** Summary of Evaluation Results [DATA PENDING]
 
-| Characteristic | Composite mean | Interpretation |
-| :--- | ---: | :--- |
-| Functional Suitability | | |
-| Performance Efficiency | | |
-| Compatibility | | |
-| Usability | | |
-| Reliability | | |
-| Security | | |
-| Maintainability | | |
-| Portability | | |
-| **Overall** | | |
+| Characteristic | n | Composite mean | Interpretation | Rank |
+| :--- | ---: | ---: | :--- | ---: |
+| Functional Suitability | | | | |
+| Performance Efficiency | | | | |
+| Compatibility | | | | |
+| Usability | | | | |
+| Reliability | | | | |
+| Security | | | | |
+| Maintainability | | | | |
+| Portability | | | | |
+| **Overall** | | | | |
+
+> **TEAM NOTE.** n is the number of respondents who rated the characteristic, Rank 1 the highest
+> composite. `scripts/survey/compute-survey.mjs` prints this table with both columns, names the
+> lowest-rated characteristic (Chapter 5's recommendation 6 is written for it), and prints Table 13A.
 
 Objective 4 asks for the system to be evaluated **and optimized**. Table 23 records the changes
 made in response to feedback and testing. The first rows are changes made during the pilot,

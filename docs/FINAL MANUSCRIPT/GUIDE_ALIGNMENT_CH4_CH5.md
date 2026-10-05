@@ -52,8 +52,8 @@ Build these before the defense; each is a small table or figure. "Have" means an
 | Deployment environment table (client-side hardware and software, **with versions**) | **Have: Table 24** (5 Oct 2026), a column for what was used on 30 Sep; the tenants' own phone models were not recorded | Add the landlady's laptop and the tenants' phones as actually used on 30 Sep |
 | **Test execution summary by level** (unit, integration, system, user acceptance: executed, passed, failed, pass rate) | **Have: Table 11E** (5 Oct 2026): 82 of 83 executed tests passed, 98.8% | Unit/integration: the check suites; system: the walkthrough (Table 10); acceptance: the testing day (Tables 11C, 11E). The course standard is **at least 90% passed, all critical defects resolved** |
 | Defect summary by severity and disposition (found, resolved, deferred) | **Have: Table 23A** (5 Oct 2026): 35 found, 31 resolved, 1 open, 3 accepted | Add a severity column and the deferred items (e.g. B-86 until 064 runs) |
-| Worked computation of one weighted mean (rating, weight, frequency, product) | **Missing** | From the real survey: one indicator |
-| Summary table with a **rank** column and n per characteristic | Table 22 (pending) | `compute-survey.mjs` prints the numbers; add rank and n |
+| Worked computation of one weighted mean (rating, weight, frequency, product) | **Table 13A placeholder; printed by compute-survey.mjs** (5 Oct) | From the real survey: one indicator |
+| Summary table with a **rank** column and n per characteristic | **Table 22 has both columns; printed by compute-survey.mjs** (5 Oct) | `compute-survey.mjs` prints the numbers; add rank and n |
 
 ---
 
