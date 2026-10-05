@@ -11,6 +11,14 @@ worth doing it.
 > session carries the walkthrough, the tenant sessions and the survey follow, and the scans and
 > timings fit around them.
 
+> [!NOTE]
+> **Status, 6 October 2026 (read from Chapter 4, not from memory):** the walkthrough (Table 10), the
+> owner and tenant sessions (Tables 11C and 11D), the timings (Table 11), the passive scans (§4.4.8:
+> Observatory A+, securityheaders.com A+, PageSpeed) and the technical evaluators' review (3 Oct, Table
+> 23) are **done**, and the figures are in. **Still open:** the survey export (after midterms), the
+> composite-mean choice, the count of forms distributed (Table 12A), the owner's answers, and the
+> manuscript housekeeping in task 7.
+
 ## Part 1. The team's own tasks
 
 ### 1. Usability testing with real tenants and the landlady (feeds Chapter 4, §4.4)
@@ -19,22 +27,23 @@ This is the ISO/IEC 25010 survey. The questions are ready in
 `docs/chapter 4 tenative/ISO_25010_SURVEY_INSTRUMENT.md`, with step-by-step Google Forms
 instructions.
 
-- [ ] **Run the walkthrough first** (task 3). A survey should rate a system that already works,
+- [x] **Run the walkthrough first** (task 3). *Done 30 Sep: Table 10.* A survey should rate a system that already works,
       not find its bugs.
 - [ ] **Build the Google Form.** Change the group label "Resident" to "Tenant", since the system and
       Chapter 4 say Tenant. **Do not change any item wording** unless you change Chapter 4's tables
       to match.
-- [ ] **Owner session.** Sit with Mrs. Da Silva while she does her normal tasks in the system for
+- [x] **Owner session.** *Done 30 Sep: Table 10 and §4.3.7.* Sit with Mrs. Da Silva while she does her normal tasks in the system for
       at least a few days (recording a payment, checking the ledger, exporting a report), then have
       her answer the owner section. Write down anything she says out loud; it goes in the
       interpretation.
-- [ ] **Tenant sessions.** Ask tenants to sign in, look at their bill and payments, and submit one
+- [x] **Tenant sessions.** *Done 30 Sep with three tenants: Tables 11C and 11D.* Ask tenants to sign in, look at their bill and payments, and submit one
       maintenance request, then answer the tenant section (it is bilingual). Aim for as many of the
       32 occupied units as will agree.
-- [ ] **Technical evaluators.** Three to five IT faculty, developers or IT professionals. Give them
+- [x] **Technical evaluators.** *Reviewed 3 Oct: fourteen comments, all addressed (Table 23).* Three to five IT faculty, developers or IT professionals. Give them
       access to the repository and documentation before they answer; Maintainability cannot be
       judged from the screens alone.
-- [ ] **Export responses to Sheets** and send the file to Claude (Part 2).
+- [ ] **Export responses to Sheets** and send the file to Claude (Part 2). *Open (after midterms). Also count how
+      many forms each group was given, for Table 12A.*
 - [ ] **Decide the composite mean method** (Chapter 4, §4.4.2). Claude recommends the mean of the
       group means.
 
