@@ -9,12 +9,12 @@ let headingSeq = 0;
  * can see: I did these three things last time").
  *
  * Where it shows (6 Oct 2026):
- *   - `rail`: the desktop sidebar, on every page, and the phone menu. The sidebar is always open
+ *   - `rail`: the desktop sidebar, on every page (not the phone menu: Sean, 6 Oct). The sidebar is always open
  *     from 1024px, so the list is in view wherever the person is, and the Overview keeps its top.
  *   - `line`: the phone's Overview, one quiet line under the greeting, styled like the date
  *     above it (Sean, 6 Oct 2026: the card "is like a really big deal" and pushed the month chart
  *     down). "Recently" at the left, the latest action at the right, its unit and month and how
- *     long ago under it in light grey. Seen without opening anything; the menu holds all three.
+ *     long ago under it in light grey. Seen without opening anything; plain text, not a link.
  *   - `tile`: the card the Overview used before (kept for a screen that wants the full three).
  *
  * Their own actions only, in sentences the server writes (GET /auth/me/recent-actions,
@@ -36,8 +36,6 @@ import {
 import Skeleton from '@/components/ui/Skeleton.vue';
 
 const props = withDefaults(defineProps<{ variant?: 'tile' | 'rail' | 'line' }>(), { variant: 'tile' });
-/** A link was followed: the phone menu closes on it, as it does for its navigation links. */
-const emit = defineEmits<{ navigate: [] }>();
 
 const rail = computed(() => props.variant === 'rail');
 
@@ -92,20 +90,15 @@ function when(iso: string): string {
 <template>
   <!-- One quiet line. Nothing at all when there is nothing to say: no card, no empty state. -->
   <!-- Its place is held while loading, so the page does not jump when it arrives. -->
-  <div v-if="variant === 'line' && (latest || loading)" class="flex min-h-11 items-start justify-between gap-4">
+  <!-- Left-aligned, reading on from the greeting above it (Sean, 6 Oct): "Recently" and the
+       action on one line, what it was about and when under it in light grey. -->
+  <!-- Text to be seen, not a link (Sean, 6 Oct: "just make it seen"). -->
+  <div v-if="variant === 'line' && (latest || loading)" class="min-h-10 min-w-0">
     <template v-if="latest">
-      <span class="pt-1 text-sm text-ink-faint">Recently</span>
-      <component
-        :is="latest.link ? RouterLink : 'div'"
-        v-bind="latest.link ? { to: latest.link } : {}"
-        :class="['-my-1 min-w-0 rounded-lg py-1 text-right', latest.link && 'press hover:text-ink']"
-        :aria-label="`Your latest action: ${latest.action}${latest.about ? `, ${latest.about}` : ''}, ${when(latest.at)}`"
-      >
-        <span class="block truncate text-sm font-medium text-ink-soft">{{ latest.action }}</span>
-        <span class="block truncate text-xs text-ink-faint">
-          <template v-if="latest.about">{{ latest.about }} · </template><time :datetime="latest.at">{{ when(latest.at) }}</time>
-        </span>
-      </component>
+      <p class="truncate text-sm"><span class="text-ink-faint">Recently</span>{{ ' ' }}<span class="font-medium text-ink-soft">{{ latest.action }}</span></p>
+      <p class="truncate text-xs text-ink-faint">
+        <template v-if="latest.about">{{ latest.about }} · </template><time :datetime="latest.at">{{ when(latest.at) }}</time>
+      </p>
     </template>
   </div>
 
@@ -146,7 +139,6 @@ function when(iso: string): string {
             'group -mx-2 flex min-h-11 items-start justify-between gap-2 rounded-xl px-2 py-1.5',
             a.link && (rail ? 'press hover:bg-tile' : 'press hover:bg-canvas'),
           ]"
-          @click="a.link && emit('navigate')"
         >
           <span class="min-w-0">
             <span :class="['block break-words font-medium leading-snug', rail ? 'text-[0.8125rem] text-ink-soft group-hover:text-ink' : 'text-sm text-ink']">{{ a.text }}</span>

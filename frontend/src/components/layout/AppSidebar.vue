@@ -482,12 +482,7 @@ onBeforeUnmount(() => {
                   </router-link>
                 </nav>
 
-              </div>
-
-              <div class="border-t border-line pt-5">
-                <RecentActions variant="rail" @navigate="closeMobileNav" />
-              </div>
-            </div>
+              </div>            </div>
           </div>
     </Transition>
   </div>
