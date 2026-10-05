@@ -22,7 +22,10 @@ the system as it stands that evening.
 > **Survey results in one command (Claude or anyone):** export the Google Form responses as CSV,
 > then `node scripts/survey/compute-survey.mjs responses.csv --method=A --out=tables.md`. It prints
 > Tables 12 and 14 to 22 in Chapter 4's layout (item means, SD, group means, composites,
-> interpretations per Table 13) and every open comment grouped by question. It reads the items from
+> interpretations per Table 13) and every open comment grouped by question; since 5 Oct also
+> **Table 12A** (retrieved and valid per group; add how many were distributed), **Table 13A** (one
+> weighted mean worked in full), Table 22's **n and rank**, and the **lowest-rated characteristic**,
+> which Chapter 5's recommendation 6 is written for. It reads the items from
 > `build_survey_form.gs`, so it scores exactly what the form asked; it warns if a column is
 > missing. `--method=B` gives the other composite if the team chooses it (Q11).
 >
