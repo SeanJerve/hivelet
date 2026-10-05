@@ -47,6 +47,10 @@ db.from = (table) => {
           if (table === 'rooms') return resolve({ data: [{ id: 'r2b', room_number: '2b' }], error: null });
           if (table === 'maintenance_tickets') return resolve({ data: [{ id: 't1', title: 'Leaking faucet', room_id: 'r2b' }], error: null });
           if (table === 'bills') return resolve({ data: [{ id: 'b1', total_amount: 4700 }], error: null });
+          if (table === 'payments') return resolve({ data: [
+            { id: 'p1', amount: 30400, room_id: 'r2b', payment_method: 'Cash' },
+            { id: 'p2', amount: 8800, room_id: 'r2b', payment_method: 'Adyen Online' },
+          ], error: null });
           return resolve({ data: [], error: null });
         };
       }
@@ -123,6 +127,16 @@ r = await ask('tenant', [
 check('a completed GCash payment names its amount', r.payload.data.map((a) => a.text), [
   'Paid ₱4,700 by GCash.',
   'Started a GCash payment of ₱4,700.',
+]);
+
+r = await ask('admin', [
+  row('1', 'PAYMENT_VERIFY', { entity_id: 'p1', new_values: { verification_status: 'Rejected' } }),
+  row('2', 'PAYMENT_VERIFY', { entity_id: 'p2', new_values: { verification_status: 'Verified' } }),
+]);
+// A cash payment is verified and rejected too (loydtest's, 2 Oct); it was called "a GCash payment".
+check('a verified or rejected payment is named by how it was paid', r.payload.data.map((a) => a.text), [
+  'Rejected a cash payment of ₱30,400 from 2B.',
+  'Approved a GCash payment of ₱8,800 from 2B.',
 ]);
 
 console.log(`\n${pass} passed, ${fail} failed`);

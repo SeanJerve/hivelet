@@ -127,9 +127,15 @@ export async function recentActionsFor(profileId: string, role: ActorRole, limit
     lookup('maintenance_tickets', 'id, title, room_id', ticketIds),
     lookup('inquiries', 'id, prospect_name', inquiryIds),
     lookup('profiles', 'id, full_name', profileIds),
-    lookup('payments', 'id, amount, room_id', paymentIds),
+    lookup('payments', 'id, amount, room_id, payment_method', paymentIds),
     lookup('bills', 'id, total_amount', billIds),
   ]);
+  // A payment's unit is known only once the payment is read, after the first lookup of units; so
+  // "Approved a GCash payment of P8,800" never said which unit. Read those units now.
+  const paymentRoomIds = new Set(
+    [...payments.values()].map((p) => String(p.room_id ?? '')).filter((id) => id && !rooms.has(id))
+  );
+  if (paymentRoomIds.size) for (const [id, row] of await lookup('rooms', 'id, room_number', paymentRoomIds)) rooms.set(id, row);
   const roomOf = (id: unknown) => (id ? unitCode(rooms.get(String(id))?.room_number) : null);
 
   function describe(r: AuditRow): { text: string; link: string | null } | null {
@@ -178,7 +184,10 @@ export async function recentActionsFor(profileId: string, role: ActorRole, limit
         const payment = r.entity_id ? payments.get(r.entity_id) : undefined;
         const what = join(peso(payment?.amount), roomOf(payment?.room_id) ? `from ${roomOf(payment?.room_id)}` : null).replace(', from', ' from');
         const verdict = nv.verification_status === 'Rejected' ? 'Rejected' : 'Approved';
-        return { text: `${verdict} a GCash payment${what ? ` of ${what}` : ''}.`, link: '/admin/income?tab=verify' };
+        // Named by how it was paid: a cash payment can be verified or rejected too (2 Oct 2026).
+        const method = String(payment?.payment_method ?? '');
+        const kind = /adyen|gcash/i.test(method) ? 'a GCash payment' : /cash/i.test(method) ? 'a cash payment' : /bank/i.test(method) ? 'a bank transfer' : 'a payment';
+        return { text: `${verdict} ${kind}${what ? ` of ${what}` : ''}.`, link: '/admin/income?tab=verify' };
       }
       case 'PAYMENT_CORRECT': {
         if (!pv.room_id && !pv.month) return null;
