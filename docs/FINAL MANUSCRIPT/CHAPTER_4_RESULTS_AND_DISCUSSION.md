@@ -841,6 +841,17 @@ is chosen, write it here in one sentence.]
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
 
+An accessibility audit on 2 October 2026 extended the earlier scan (Section 4.3.6) to every kind of
+screen: 19 screens, eight public, seven of the owner's and four of the tenant's, each in light and
+dark mode at phone (375 pixels) and computer (1,366 pixels) widths, 76 scans in all with axe-core 4
+against WCAG 2.2 levels A and AA. None found a violation, nor did scans of the menus and forms in
+their open state. By keyboard alone, focus moved into every dialog, stayed inside it, and returned to
+the button that opened it when the dialog was closed with Escape; every focused control showed a
+visible outline; and with the device set to reduce motion, only fades remained. The audit used a
+local copy of the system with invented records, and no screen reader was tried, so these results show
+that the screens are built correctly for assistive technology, not that a user of one has tried them
+(`docs/AUDIT_2026-10-02_SECURITY_ACCESSIBILITY.md`, Section 2).
+
 ### 4.4.7 Reliability
 
 **Table 18.** Evaluation Results for Reliability [DATA PENDING]
@@ -906,6 +917,21 @@ the tenant had chosen their own. Two tenants who typed the owner's address into 
 kept out, and another tenant's repair number typed into the address bar gave "not found". The public
 pages showed no tenant names, and the owner's activity record listed the day's password changes and
 administrative actions without showing any password. All twelve checks passed.
+
+A security review of the code on 2 October 2026 read every one of the system's 71 request handlers.
+Every administrative route requires a signed-in administrator; every tenant route takes the tenant
+from the sign-in token, never from the request, and answers "not found" for another tenant's
+record; every request that changes data is checked against a schema before it is used; and every
+database function is callable by the server only. It found no high-severity problem in the code.
+Four low-severity improvements were made the same day: return addresses that a browser could read
+as another site are refused, the sign-in token's algorithm is named, a repair photo may no longer
+be an SVG document, and the page security policy gained two directives. Row-level security was added
+to three old backup tables that had been created without it (migration 076). Probed from outside
+without signing in, the live site refused every protected endpoint with 401, served none of its
+configuration or source files, and answered a request from a foreign website with a server error;
+that request is now refused with 403 before any route runs. The technical evaluators' review the
+next day led to two further input checks: phone numbers and photo formats are now checked by the
+server as well as the page (Table 23).
 
 The conversation a visitor has about an enquiry (Section 4.2.3) is reached without an account, so
 its link is itself the credential, what the W3C Technical Architecture Group calls a capability
@@ -1007,6 +1033,8 @@ followed by the fourteen comments of the technical evaluators who reviewed the s
 | Owner's use, 30 Sep 2026 | A payment the owner recorded, or a repair a tenant sent, did not appear on the other person's open screen until they refreshed it | Every open page checks for changes every 5 seconds while it is on screen and reloads only what changed | Usability, Reliability |
 | Walkthrough, 30 Sep 2026 (step 23b) | With the connection cut, the Overview's money tiles showed ₱0 instead of "—" | Not reproduced on 1 Oct 2026: on the current version, reloading the Overview with no connection shows "could not be loaded" on every tile and no ₱0. To be re-tested on the owner's laptop | Reliability |
 | Testing day on an Android phone, 30 Sep 2026 | On a connection that stops answering, the "cannot tell whether it was saved" message came after 60 to 80 seconds instead of 45 | Chrome slows the timers of a page that is not on screen, which a phone test takes the user out of; the deadline is now also checked against the clock the moment the page is on screen again, so a late message appears at once. To be re-tested on the Android phone | Reliability |
+| Team check of the evaluation account, 2 Oct 2026 | The tenant account prepared for the evaluators showed ₱30,400 owed, but paying online answered that there was nothing to pay: receipts voided on the testing day had left a payment counted against the bill | Online payment now skips a bill that is already covered and says when a receipt is missing; the account's bills were brought into line with its receipts (migration 077), with no other tenant's records changed | Functional Suitability, Reliability |
+| Security review, 2 Oct 2026 | A request sent from another website received a server error (500) instead of a refusal | Refused with 403 before any route runs | Security |
 | Technical evaluators, 3 Oct 2026 | On a phone, the light and dark mode switch sat at the foot of the footer, below every policy link | Moved to the top bar of every public page | Usability |
 | Technical evaluators, 3 Oct 2026 | An email address was checked only when the form was sent | Checked as soon as the visitor leaves the field | Usability |
 | Technical evaluators, 3 Oct 2026 | Links were underlined throughout the site | Underlines kept only in the footer; other links are shown in bold | Usability |
