@@ -11,7 +11,7 @@ import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
-import { Plus, X, Loader2, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
+import { Plus, Loader2, FileSpreadsheet, Pencil, Trash2 } from 'lucide-vue-next';
 import { orderOptions, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -19,19 +19,10 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { focusMonth, MONTH_SHORT } from '@/lib/focusMonth';
-import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter } from '@/components/ui/listToolbar';
 
-interface ApiExpense {
-  id: string;
-  expense_date: string;
-  invoice_supplier: string;
-  category_code: string;
-  total_expenses: number;
-  expense_property_allocations?: { property_area: string; amount: number }[];
-}
 
 interface ApiCat {
   code: string;
@@ -296,14 +287,6 @@ function removeAllocation(entryIndex: number, allocIndex: number) {
 
 
 // Convert DB code to frontend category string
-function getFrontendCategory(code: string): string {
-  // `6a`, `6b` and `6c` are their own categories - PhilHealth, SSS and
-  // Allowances, 46 entries between them. This collapsed every code beginning
-  // with 6 into plain `6`, so re-saving one of those rows moved its money into
-  // Salaries.
-  const match = categoryOptions.value.find((c) => c.startsWith(`${code} —`));
-  return match || categoryOptions.value.find((c) => c.startsWith('10 —')) || '10 — Others';
-}
 
 // Convert frontend category string to DB code
 function getDbCategoryCode(catStr: string): string {
@@ -844,7 +827,6 @@ async function handleEditExpense() {
   isSubmitting.value = true;
   try {
     const oldId = editingExpense.value.id;
-    const oldDesc = editingExpense.value.description;
     
 
     const payload = {

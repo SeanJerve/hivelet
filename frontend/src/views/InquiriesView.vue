@@ -5,7 +5,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { useRouter } from 'vue-router';
-import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, roomsLoaded, fetchRooms, showToast, type Inquiry } from '@/lib/systemState';
+import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, roomsLoaded, fetchRooms, showToast } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';

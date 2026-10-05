@@ -6,17 +6,15 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { 
-  rooms, 
+import {
+  rooms,
   roomsFetchFailed,
-  fetchRooms as fetchRoomsState, 
+  fetchRooms as fetchRoomsState,
   fetchTenants,
   formatUnitOccupantsSummary,
-  isAdminEditUnitModalOpen, 
-  activeAdminEditUnit, 
-  isRoomDetailModalOpen,
-  activeRoomDetail,
-  type RoomItem 
+  isAdminEditUnitModalOpen,
+  activeAdminEditUnit,
+  type RoomItem,
 } from '@/lib/systemState';
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';

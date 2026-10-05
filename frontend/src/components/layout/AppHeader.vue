@@ -70,11 +70,6 @@ const userInitials = computed(() => {
   return name.slice(0, 2).toUpperCase();
 });
 
-const userRoleLabel = computed(() => {
-  if (isAdmin.value) return 'Admin';
-  if (isTenant.value) return 'Tenant';
-  return 'Guest';
-});
 
 const isAdminRoute = computed(() => 
   route.path.startsWith('/admin') || route.path.startsWith('/basis')

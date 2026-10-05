@@ -19,7 +19,7 @@ import PillSelect from '@/components/ui/PillSelect.vue';
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
-import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-vue-next';
+import { Check, Loader2, Users, AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { isAcknowledgementReceipt, normalizeInvoiceNumber } from '@/lib/invoiceNumber';
 import InvoiceField from '@/components/ui/InvoiceField.vue';
@@ -240,19 +240,6 @@ function occupantsFor(
   return Number(room?.occupants ?? 0);
 }
 
-/**
- * Per head for every unit, LF and LB included. They were a flat 400 and 200
- * (BR-040), retired by the owner on 2026-09-20 - `computeWaterFee` in
- * backend/src/services/billingService.ts: a third person in LF bills 600. So
- * with three people in LF this form pre-filled 400 and validated against it,
- * the landlady typing the correct 600 off the receipt against a baseline that
- * was wrong. `lindaFixedWaterCharges` from `/public/rates` is not read here:
- * settingsService's own docblock says that number is a routing flag and "must
- * not be treated as" the charge.
- */
-function waterBaselineFor(_unitCode: string, occupants: number): number {
-  return occupants * (waterRatePerOccupant.value ?? 200);
-}
 
 /**
  * `unitOccupantsSummary` is in this list because the calculation READS it.

@@ -7,13 +7,10 @@
  */
 
 import { ref, reactive } from 'vue';
-import { 
-  CANONICAL_UNITS, 
-  type RentableUnit, 
-  type Cluster, 
-  type UnitStatus, 
-  peso, 
-  CLUSTERS
+import {
+  CANONICAL_UNITS,
+  type Cluster,
+  type UnitStatus,
 } from './canonicalUnits';
 import { api } from './api';
 import { isAdmin, isAuthenticated } from './authStore';

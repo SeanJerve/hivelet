@@ -19,21 +19,14 @@ import {
 } from '@/lib/systemState';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
-import { 
-  Plus, 
-  Wrench, 
-  CheckCircle2, 
-  UserCheck, 
-  Pencil, 
-  Trash2, 
-  X, 
-  Loader2, 
-  ReceiptText,
+import {
+  Plus,
+  CheckCircle2,
+  UserCheck,
+  Pencil,
+  Trash2,
+  Loader2,
   Check,
-  ChevronDown,
-  AlertTriangle,
-  Clock,
-  AlertCircle
 } from 'lucide-vue-next';
 import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import Skeleton from '@/components/ui/Skeleton.vue';

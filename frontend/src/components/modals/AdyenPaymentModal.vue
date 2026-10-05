@@ -20,11 +20,9 @@ import { api, ApiRequestError } from '@/lib/api';
 import { playSound } from '@/lib/sounds';
 import {
   ShieldCheck,
-  X,
   Loader2,
   AlertCircle,
   CheckCircle2,
-  Lock
 } from 'lucide-vue-next';
 
 interface BillInfo {

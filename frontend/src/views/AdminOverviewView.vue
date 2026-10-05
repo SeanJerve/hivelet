@@ -54,7 +54,6 @@ import {
   ReceiptText,
   ChevronDown,
   Check,
-  FileSpreadsheet,
   ArrowLeft,
   Search,
   DoorOpen,
@@ -377,20 +376,7 @@ const currentMonthRecordCount = computed(
 );
 
 /** The latest month of this year that has any collection entered, or 0. */
-const lastRecordedMonth = computed(() =>
-  liveIncomeRecords.value.reduce((m, r) => Math.max(m, r.month ?? 0), 0)
-);
 
-/**
- * Said when this month has nothing entered. Collection happens in person and is
- * typed in afterwards, so an empty month is usually one not yet entered rather
- * than one with no income (CLIENT_MEETING_QUESTIONS.md 2b).
- */
-const ledgerNote = computed(() => {
-  if (incomeRecordsFetchFailed.value || currentMonthRecordCount.value > 0) return '';
-  if (lastRecordedMonth.value === 0) return `No collections are entered for ${CURRENT_YEAR} yet.`;
-  return `Collections are entered through ${MONTH_LONG[lastRecordedMonth.value - 1]}.`;
-});
 
 // Base monthly run-rate from currently occupied rooms, at the configured water
 // rate (BR-014). Every unit is billed per head, Linda's included - see

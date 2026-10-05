@@ -12,7 +12,6 @@ import {
   isMobileSidebarOpen,
   inquiries,
   maintenanceTickets,
-  incomeRecords,
   fetchInquiries,
   fetchMaintenanceTickets,
 } from '@/lib/systemState';

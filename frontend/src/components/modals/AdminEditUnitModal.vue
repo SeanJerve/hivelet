@@ -5,7 +5,7 @@ import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
 import { planFor } from '@/lib/floorPlans';
 import type { UnitStatus } from '@/lib/canonicalUnits';
-import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
+import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { Check, Loader2, Upload, ImageOff } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';

@@ -8,18 +8,17 @@ import InvoiceField from '@/components/ui/InvoiceField.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { useRoute, useRouter } from 'vue-router';
-import { 
-  incomeRecords, 
-  fetchIncomeRecords, 
-  isOnsitePaymentModalOpen, 
-  rooms, 
+import {
+  incomeRecords,
+  fetchIncomeRecords,
+  isOnsitePaymentModalOpen,
+  rooms,
   roomsFetchFailed,
-  showToast, 
-  fetchTenants, 
+  showToast,
   formatUnitOccupantsSummary,
   incomeRecordsFetchFailed,
   asListedUnitCode,
-  type IncomeRecord
+  type IncomeRecord,
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
@@ -40,7 +39,6 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import type { CapsuleMonth } from '@/components/overview/types';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
-import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
@@ -49,22 +47,6 @@ const route = useRoute();
 const router = useRouter();
 const activeTab = ref<'ledger' | 'verify'>('ledger');
 
-interface ApiIncome {
-  id: string;
-  room_id: string;
-  date_paid: string;
-  contact_name: string;
-  invoice_number: string;
-  rent_period_start: string;
-  rent_period_end: string;
-  rent_amount: number;
-  occupants: number;
-  fifty_percent_share: number;
-  water_payment: number;
-  remitted_amount: number;
-  payment_method: string;
-  rooms?: { room_number: string; cluster_code: string };
-}
 
 interface ApiPendingPayment {
   id: string;
@@ -174,11 +156,6 @@ watch(filterYear, (year) => {
   pickedYear.value = year;
 }, { flush: 'sync' });
 
-function formatDateForDisplay(dStr: string): string {
-  const d = new Date(dStr);
-  if (isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-}
 
 /** "1 head" / "2 heads" - the water line always read "heads", plural, down to "1 heads". */
 function headsLabel(n: number): string {
@@ -367,25 +344,6 @@ async function loadWaterRates() {
   }
 }
 
-/**
- * The water rate as text, for the places this screen states it - the Water
- * tile and the Linda reference card both quote the same figure now that
- * there is only one rate on the property.
- *
- * It already fetches this, to validate what the owner types. It used to print
- * it again as a literal - "₱200 a head, each month" - so the screen could
- * tell her one rate while the field beside it enforced another. The moment
- * she changes the rate in settings, the copy she reads and the rule she is
- * held to disagree, on the same page.
- *
- * Names no figure it does not have. A rate is the kind of thing that is
- * either known or worth saying is not.
- */
-function perOccupantWaterText(): string {
-  return waterRatePerOccupant.value !== null
-    ? `${peso(waterRatePerOccupant.value)} a head, each month`
-    : 'Per registered occupant, each month';
-}
 
 /**
  * Arriving from "See it in Monthly Income" on the payment form (Sean,
