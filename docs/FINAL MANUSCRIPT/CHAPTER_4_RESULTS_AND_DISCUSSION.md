@@ -1038,7 +1038,11 @@ An accessibility audit on 2 October 2026 extended the earlier scan (Section 4.3.
 screen: 19 screens, eight public, seven of the owner's and four of the tenant's, each in light and
 dark mode at phone (375 pixels) and computer (1,366 pixels) widths, 76 scans in all with axe-core 4
 against WCAG 2.2 levels A and AA. None found a violation, nor did scans of the menus and forms in
-their open state. By keyboard alone, focus moved into every dialog, stayed inside it, and returned to
+their open state. The 76 scans were repeated on 5 October 2026, after the changes made for the
+technical evaluators. They found one defect, on three screens: the name of a cluster had become part
+of an element's identifier, and a name with a space in it made the identifier invalid, so assistive
+technology could not tell which section a button opens. It was corrected the same night, and the
+repeated scans found no violation. By keyboard alone, focus moved into every dialog, stayed inside it, and returned to
 the button that opened it when the dialog was closed with Escape; every focused control showed a
 visible outline; and with the device set to reduce motion, only fades remained. The audit used a
 local copy of the system with invented records, and no screen reader was tried, so these results show

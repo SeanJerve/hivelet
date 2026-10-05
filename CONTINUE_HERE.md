@@ -1,7 +1,30 @@
 # CONTINUE HERE — handoff for the next machine
 
 > [!IMPORTANT]
-> **0.0 — 5 October 2026: the technical evaluators' comments, all addressed.**
+> **0.0 — 5 October 2026, night (Sean asleep; Claude on his machine, on his standing go-ahead).**
+>
+> - **Do not expect the sign-in suites to pass until `credentials/creds.txt` has the current admin
+>   password** (B-101). Three refused attempts on the owner's account (it locks at 5); both suites now
+>   refuse to resend a refused password (`scripts/lib/adminSignIn.mjs`), so running them is safe, just red.
+> - **Chapter 4:** Figures **4 to 9** are new diagrams drawn from the system by
+>   `scripts/build-chapter-4-diagrams.mjs` (as-is swimlanes, architecture, context, level 1 DFD, use
+>   cases, an ERD from the live catalogue: 21 tables, 37 FKs); the screenshots are now **10 to 14**.
+>   **Table 7A** is a data dictionary extract, so the rules and role matrix are now **7B and 7C**.
+>   ISO/IEC 25010:2011 named; 4.3.7's procedure moved to FIXES H2; five comparisons with Chapter 2
+>   studies; Table 24 lists the devices used on 30 Sep. §4.2.4 still had BR-040's retired fixed charge.
+> - **Chapter 5:** recommendations cut from 16 to **8** (course guide C4), each tied to its Chapter 4
+>   section; number 6 waits on the survey (the lowest-rated characteristic). The eight cut are in a
+>   team note with reasons. Every reference by number was renumbered.
+> - **System, from re-auditing the live site as loydtest (read-only):** the workbook's Linda header
+>   no longer says "fixed charges"; recent actions say "Paid ₱30,400 by GCash."; tenant Payments no
+>   longer says "1 month after that" with no payment, runs "yet.1 month" together, or labels an
+>   empty chart ₱1/₱0.5; **emergency contact numbers must be a PH mobile** on every screen and route
+>   (`backend/scripts/check-contact-rules.mjs`, 7 checks, mutation-tested; loydtest's ten-digit one
+>   must be corrected before its My details saves); the owner's number reads **0927 465 3938**
+>   wherever it is shown; cluster section ids no longer contain spaces (axe, aria-valid-attr-value).
+> - **Migrations:** 079 is written and **not applied** (B-100, wait for Sean). The next number is **080**.
+>
+> **0.0 (earlier) — 5 October 2026: the technical evaluators' comments, all addressed.**
 >
 > - **The 3 Oct evaluation came back** (14 comments, relayed by Eljohn). Every one is on the live site
 >   (commits 055c6ff to 47b37fa): theme toggle at the top of public pages; email and phone checked on

@@ -148,3 +148,16 @@ shows them greyed offline and enabled online.
 | Lighthouse, mobile, landing page (through this sandbox's proxy, ~700 ms TTFB) | Performance 80, Accessibility 100, Best Practices 100, SEO 100. Sign-in: SEO 66 because it is `noindex` on purpose |
 | 13 public pages at 320, 375 (light) and 1366 (dark) | no horizontal overflow, one `h1` each, no broken image, every image has `alt` |
 | Page titles | were "Hivelet" on every tab; a browser tab now reads "<page> · Hivelet" (`a08fa95`, WCAG 2.4.2), the installed app still "Hivelet" |
+
+
+## 5. Accessibility re-run, 5 October 2026 (night)
+
+The same 76 combinations (19 screens, light and dark, 375 and 1,366 px; axe-core 4.10.2, WCAG 2.0/2.1 A and AA, 2.2 AA) on the local build with the harnesses, after the technical evaluators' changes.
+
+| Finding | Screens | Cause | Fix |
+| :--- | :--- | :--- | :--- |
+| aria-valid-attr-value (critical) | Rooms and rates, Tenants, Monthly Income; every width and theme | : the cluster's label was its id, and 'BH' became 'Boarding House' on 2 Oct |  for both ends of the pair ( commit, 5 Oct) |
+| color-contrast, 4 nodes | Category page, 375 px light, once | Unit cards scanned mid fade-in | None needed: clean on a re-scan after 9 s |
+| scrollable-region-focusable | Overview, 375 px light, once (first sweep, interrupted by a reload) | Scanned mid-load | None needed: clean on re-scan |
+
+After the fix: **76 of 76 clean.** No screen reader was tried; this shows the markup is right, not that a user of one has tried it.
