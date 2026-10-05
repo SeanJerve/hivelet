@@ -88,6 +88,10 @@ function showAllUnits(name: string) {
   shownUnits.value[name] = getUnitsForCluster(name).length;
 }
 
+function showFewerUnits(name: string) {
+  shownUnits.value[name] = UNITS_PER_STEP;
+}
+
 function toggleCluster(name: string, index: number) {
   openClusters.value[name] = !isClusterOpen(name, index);
 }
@@ -418,8 +422,10 @@ function applyRoomFilters(v: FilterDraft) {
             :remaining="unitsRemaining(clusterName)"
             :next-step="Math.min(8, unitsRemaining(clusterName)) || 8"
             noun="unit"
+            :first-page="UNITS_PER_STEP"
             @more="showMoreUnits(clusterName)"
             @all="showAllUnits(clusterName)"
+            @less="showFewerUnits(clusterName)"
           />
         </div>
       </div>

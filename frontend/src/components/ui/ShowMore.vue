@@ -3,7 +3,7 @@
  * The one control for lengthening a capped list. A register, a trail and a
  * stack of cards all grow the same way, so the reader learns it once.
  */
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp } from 'lucide-vue-next';
 
 const props = defineProps<{
   shown: number;
@@ -12,9 +12,11 @@ const props = defineProps<{
   nextStep: number;
   /** Singular noun, e.g. "payment". */
   noun: string;
+  /** The first page's size: "Show fewer" appears once more than this is showing. */
+  firstPage?: number;
 }>();
 
-const emit = defineEmits<{ more: []; all: [] }>();
+const emit = defineEmits<{ more: []; all: []; less: [] }>();
 
 /**
  * Pluralise the counter's noun.
@@ -46,6 +48,12 @@ function plural(n: number) {
     <button type="button" class="pill-btn-quiet" @click="emit('all')">
       Show all {{ total }}
     </button>
+    <!-- Back to the first page, so what was opened can be closed again
+         (technical evaluators, 3 Oct 2026). -->
+    <button v-if="firstPage && shown > firstPage" type="button" class="pill-btn-quiet" @click="emit('less')">
+      <ChevronUp class="size-4" aria-hidden="true" />
+      <span>Show fewer</span>
+    </button>
     <p aria-live="polite" class="basis-full text-center text-sm text-ink-soft">
       {{ shown }} of {{ total }} {{ plural(total) }}
     </p>
@@ -56,7 +64,11 @@ function plural(n: number) {
     here is what tells the reader their click landed and finished the job,
     rather than the row of buttons just vanishing.
   -->
-  <p v-else-if="total > nextStep" class="ws-reveal mt-3 text-center text-sm text-ink-soft">
-    All {{ total }} {{ plural(total) }}
-  </p>
+  <div v-else-if="total > nextStep" class="ws-reveal mt-3 flex flex-wrap items-center justify-center gap-3">
+    <p class="text-sm text-ink-soft">All {{ total }} {{ plural(total) }}</p>
+    <button v-if="firstPage && total > firstPage" type="button" class="pill-btn-quiet" @click="emit('less')">
+      <ChevronUp class="size-4" aria-hidden="true" />
+      <span>Show fewer</span>
+    </button>
+  </div>
 </template>

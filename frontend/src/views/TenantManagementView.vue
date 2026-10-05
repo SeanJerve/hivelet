@@ -628,6 +628,10 @@ function showAllResidents(key: string, total: number) {
   shownResidents.value[key] = total;
 }
 
+function showFewerResidents(key: string) {
+  shownResidents.value[key] = RESIDENTS_PER_STEP;
+}
+
 const groupedRows = computed(() => {
   const byCluster = new Map<Cluster | 'unassigned', TenantRecord[]>();
   for (const t of rows.value) {
@@ -755,8 +759,12 @@ async function saveEdit() {
   }
 }
 
+/** Why they are leaving, if she wants to say. Optional (technical evaluators, 3 Oct 2026). */
+const vacateReason = ref('');
+
 function openVacateFromModal(t: TenantRecord) {
   editModalTenant.value = null;
+  vacateReason.value = '';
   vacateModalTenant.value = t;
 }
 
@@ -764,7 +772,9 @@ async function confirmVacate() {
   if (!vacateModalTenant.value) return;
   isSubmitting.value = true;
   try {
-    await api.post(`/admin/tenants/${vacateModalTenant.value.id}/vacate`);
+    await api.post(`/admin/tenants/${vacateModalTenant.value.id}/vacate`, {
+      reason: vacateReason.value.trim() || undefined,
+    });
     await fetchTenants();
     await fetchRooms();
     // Amber, but a completed move-out, so it pings like the rest (Sean, 2026-10-01).
@@ -1287,8 +1297,10 @@ async function handleOnboard() {
             :remaining="residentsRemaining(group.key, group.residents.length)"
             :next-step="Math.min(8, residentsRemaining(group.key, group.residents.length)) || 8"
             noun="tenant"
+            :first-page="RESIDENTS_PER_STEP"
             @more="showMoreResidents(group.key)"
             @all="showAllResidents(group.key, group.residents.length)"
+            @less="showFewerResidents(group.key)"
           />
         </div>
       </section>
@@ -1523,6 +1535,18 @@ async function handleOnboard() {
       <p class="text-sm leading-6 text-ink-soft">
         Their receipts, payments and repair requests stay in the ledger.
       </p>
+      <div class="ws-field">
+        <label for="vacate-reason">Reason <span class="text-ink-soft">(optional)</span></label>
+        <textarea
+          id="vacate-reason"
+          v-model="vacateReason"
+          rows="2"
+          maxlength="300"
+          class="ws-textarea w-full"
+          placeholder="For example: lease ended."
+        />
+        <p class="ws-hint">Kept with the move-out in the activity record. The tenant does not see it.</p>
+      </div>
     </ConfirmDialog>
 
     <!-- Onboard Tenant Modal -->
@@ -1545,7 +1569,7 @@ async function handleOnboard() {
             Moving someone out?
             <button
               type="button"
-              class="press font-semibold text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+              class="press font-semibold text-ink"
               @click="isOnboardModalOpen = false"
             >Choose them from the list</button>
           </p>
@@ -1646,7 +1670,9 @@ async function handleOnboard() {
             <input
               id="new-emerg-phone"
               v-model="newEmergPhone"
-              placeholder="09280000000"
+              type="tel"
+              v-phone
+              placeholder="0917 123 4567"
               class="ws-input w-full"
             />
           </div>

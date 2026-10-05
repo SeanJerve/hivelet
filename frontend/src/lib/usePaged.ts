@@ -30,5 +30,10 @@ export function usePaged<T>(rows: Ref<T[]>, pageSize = 10) {
     shown.value = rows.value.length;
   }
 
-  return { visible, remaining, nextStep, shown, showMore, showEverything, pageSize };
+  /** Back to the first page: what was opened can be closed again. */
+  function showFewer() {
+    shown.value = pageSize;
+  }
+
+  return { visible, remaining, nextStep, shown, showMore, showEverything, showFewer, pageSize };
 }

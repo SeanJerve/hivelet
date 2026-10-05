@@ -56,7 +56,7 @@ const props = withDefaults(
   { pageSize: 10, emptyTitle: 'Nothing here', emptyNote: '', noun: 'row', flat: false }
 );
 
-const { visible, remaining, nextStep, showMore, showEverything } = usePaged(
+const { visible, remaining, nextStep, showMore, showEverything, showFewer } = usePaged(
   toRef(props, 'rows'),
   props.pageSize
 );
@@ -182,8 +182,10 @@ onUnmounted(() => {
         :remaining="remaining"
         :next-step="nextStep || pageSize"
         :noun="noun"
+        :first-page="pageSize"
         @more="showMore"
         @all="showEverything"
+        @less="showFewer"
       />
     </template>
   </div>
