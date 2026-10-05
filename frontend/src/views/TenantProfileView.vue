@@ -26,6 +26,7 @@ import {
   emailProblem,
   phoneDigits,
   phoneProblem,
+  emergencyPhoneProblem,
   realEmail,
 } from '@/lib/contactDetails';
 import { formatPhone } from '@/lib/phoneFormat';
@@ -77,6 +78,7 @@ const errorNotice = ref('');
 /** Said under the field it is about, from the page's own check or the server's. */
 const emailError = ref('');
 const phoneError = ref('');
+const ecPhoneError = ref('');
 const isPasswordOpen = ref(false);
 
 const phoneChanged = computed(
@@ -187,6 +189,7 @@ async function handleSave() {
   errorNotice.value = '';
   emailError.value = '';
   phoneError.value = '';
+  ecPhoneError.value = '';
 
   // Only what changed is checked and sent. An email that was never set can stay
   // unset here (the sign-in step asks for it); one on file cannot be cleared.
@@ -194,7 +197,10 @@ async function handleSave() {
   const sendPhone = phoneChanged.value;
   if (emailChanged) emailError.value = emailProblem(form.value.email);
   if (sendPhone) phoneError.value = phoneProblem(form.value.phone_number);
-  if (emailError.value || phoneError.value) {
+  // Sent on every save, so checked on every save: a number on file from before the check would
+  // otherwise be refused by the server with no word under its field.
+  ecPhoneError.value = emergencyPhoneProblem(form.value.emergency_contact_phone);
+  if (emailError.value || phoneError.value || ecPhoneError.value) {
     await focusFirstInvalid();
     return;
   }
@@ -240,7 +246,8 @@ async function handleSave() {
     if (err instanceof ApiRequestError && (err.status === 409 || err.status === 422) && err.details) {
       emailError.value = err.details.email?.[0] ?? '';
       phoneError.value = err.details.phone_number?.[0] ?? '';
-      if (emailError.value || phoneError.value) {
+      ecPhoneError.value = err.details.emergency_contact_phone?.[0] ?? '';
+      if (emailError.value || phoneError.value || ecPhoneError.value) {
         errorNotice.value = 'Nothing was saved. Check the field marked below.';
         await focusFirstInvalid();
         return;
@@ -269,7 +276,7 @@ async function handleSave() {
  */
 async function focusFirstInvalid() {
   await nextTick();
-  document.getElementById(emailError.value ? 'email' : 'phone')?.focus();
+  document.getElementById(emailError.value ? 'email' : phoneError.value ? 'phone' : 'ec-phone')?.focus();
 }
 
 function handleReset() {
@@ -278,6 +285,7 @@ function handleReset() {
   errorNotice.value = '';
   emailError.value = '';
   phoneError.value = '';
+  ecPhoneError.value = '';
 }
 </script>
 
@@ -493,10 +501,16 @@ function handleReset() {
                   v-model="form.emergency_contact_phone"
                   v-phone
                   type="tel"
+                  inputmode="tel"
                   placeholder="0917 123 4567"
-                  class="ws-input"
+                  :class="['ws-input tabular', ecPhoneError && 'border-overdue']"
+                  :aria-invalid="ecPhoneError ? 'true' : undefined"
+                  :aria-describedby="ecPhoneError ? 'ec-phone-error' : undefined"
                   required
+                  @input="ecPhoneError = ''"
+                  @blur="ecPhoneError = emergencyPhoneProblem(form.emergency_contact_phone)"
                 />
+                <p v-if="ecPhoneError" id="ec-phone-error" class="ws-reveal text-sm text-overdue">{{ ecPhoneError }}</p>
               </div>
             </div>
           </div>

@@ -35,6 +35,7 @@ import { randomUUID } from 'node:crypto';
 import {
   assertContactAvailable,
   isPhMobile,
+  emergencyPhone,
   isPlaceholderEmail,
   phoneDigits,
   placeholderEmailFor,
@@ -586,7 +587,7 @@ const tenantOnboardSchema = z.object({
     .pipe(z.string().min(2, 'Full name is required.').max(255)),
   phone: z.string().max(50).optional(),
   emergencyContactName: z.string().max(255).optional(),
-  emergencyContactPhone: z.string().max(50).optional(),
+  emergencyContactPhone: emergencyPhone.optional(),
   occupation: z.string().max(100).optional(),
   facebookUrl: z.string().optional(),   // facebook_url is TEXT, unbounded
   roomNumber: unitCode(20).optional(),
@@ -1146,7 +1147,7 @@ const tenantUpdateSchema = z.object({
   phone: z.string().max(50).optional(),
   email: z.string().max(255).optional(),
   emergencyContactName: z.string().max(255).optional(),
-  emergencyContactPhone: z.string().max(50).optional(),
+  emergencyContactPhone: emergencyPhone.optional(),
   occupation: z.string().max(100).optional(),
   facebookUrl: z.string().optional(),   // facebook_url is TEXT, unbounded
   roomNumber: unitCode(20).optional(),

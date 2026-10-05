@@ -12,7 +12,7 @@ import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { copyText } from '@/lib/copyText';
-import { EMAIL_NOT_SET } from '@/lib/contactDetails';
+import { EMAIL_NOT_SET, emergencyPhoneProblem } from '@/lib/contactDetails';
 import { UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -152,6 +152,7 @@ const newHasRoommates = ref<'no' | 'yes'>(d0.hasRoommates);
 const newRoommateQty = ref<number>(d0.roommateQty);
 const newEmergName = ref(d0.emergName);
 const newEmergPhone = ref(d0.emergPhone);
+const newEmergPhoneError = ref('');
 
 /** Every field the onboarding form owns, back to an empty form. */
 function resetOnboardForm() {
@@ -791,6 +792,11 @@ async function confirmVacate() {
 }
 
 async function handleOnboard() {
+  newEmergPhoneError.value = emergencyPhoneProblem(newEmergPhone.value);
+  if (newEmergPhoneError.value) {
+    document.getElementById('new-emerg-phone')?.focus();
+    return;
+  }
   if (!newUnit.value) {
     showToast('error', 'Choose a unit', 'Pick the unit they are moving into.');
     return;
@@ -1674,10 +1680,16 @@ async function handleOnboard() {
               id="new-emerg-phone"
               v-model="newEmergPhone"
               type="tel"
+              inputmode="tel"
               v-phone
               placeholder="0917 123 4567"
-              class="ws-input w-full"
+              :class="['ws-input w-full tabular', newEmergPhoneError && 'border-overdue']"
+              :aria-invalid="newEmergPhoneError ? 'true' : undefined"
+              :aria-describedby="newEmergPhoneError ? 'new-emerg-phone-error' : undefined"
+              @input="newEmergPhoneError = ''"
+              @blur="newEmergPhoneError = emergencyPhoneProblem(newEmergPhone)"
             />
+            <p v-if="newEmergPhoneError" id="new-emerg-phone-error" class="ws-reveal text-sm text-overdue">{{ newEmergPhoneError }}</p>
           </div>
 
           <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft col-span-2">

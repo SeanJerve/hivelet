@@ -23,6 +23,7 @@ import { auditFromRequest, clientIp } from '../services/auditService.js';
 import {
   contactEmail,
   contactPhone,
+  emergencyPhone,
   ownProfileUpdateSchema,
   pickChanged,
   refuseOwnNameChange,
@@ -115,7 +116,7 @@ const registerSchema = z.object({
     .pipe(z.string().min(2, 'Full name is required.').max(255)),
   phoneNumber: z.string().max(50).optional(),
   emergencyContactName: z.string().max(255).optional(),
-  emergencyContactPhone: z.string().max(50).optional(),
+  emergencyContactPhone: emergencyPhone.optional(),
   occupation: z.string().max(100).optional(),
   facebookUrl: z.string().optional(),
   /**

@@ -192,11 +192,22 @@ export function contactClash(err: { code?: string; message?: string } | null | u
  * but not cleared: the phone is what they sign in with, and a cleared email
  * would only become a placeholder again. Lengths match the column widths.
  */
+/**
+ * An emergency contact's number: optional, and a Philippine mobile when given, the same rule as
+ * the tenant's own (technical evaluators, 3 Oct 2026: "number validation"). Until 5 Oct it was any
+ * string up to 50 characters on every route, and one on file had ten digits.
+ */
+export const emergencyPhone = z
+  .string()
+  .trim()
+  .max(50)
+  .refine((v) => v === '' || isPhMobile(v), 'Enter a Philippine mobile number, for example 0917 123 4567.');
+
 export const ownProfileUpdateSchema = z.object({
   email: contactEmail.optional(),
   phone_number: contactPhone.optional(),
   emergency_contact_name: z.string().trim().max(255).nullable().optional(),
-  emergency_contact_phone: z.string().trim().max(50).nullable().optional(),
+  emergency_contact_phone: emergencyPhone.nullable().optional(),
   occupation: z.string().trim().max(100).nullable().optional(),
   facebook_url: z.string().trim().max(2048).nullable().optional(),
 });

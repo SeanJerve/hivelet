@@ -63,6 +63,12 @@ export function emailProblem(raw: string): string {
 }
 
 /** The message for a sign-in phone field, or '' when it is fine. Mirrors `contactPhone`. */
+/** An emergency contact's number: blank, or a Philippine mobile (the server's `emergencyPhone`). */
+export function emergencyPhoneProblem(raw: string): string {
+  if (!raw.trim()) return '';
+  return isPhMobile(raw) ? '' : 'Enter a Philippine mobile number, for example 0917 123 4567.';
+}
+
 export function phoneProblem(raw: string): string {
   if (!raw.trim()) return 'Enter your mobile number. It is what you sign in with.';
   if (!isPhMobile(raw)) return 'Enter a Philippine mobile number, for example 0917 123 4567.';
