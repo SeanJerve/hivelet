@@ -932,6 +932,11 @@ configuration or source files, and answered a request from a foreign website wit
 that request is now refused with 403 before any route runs. The technical evaluators' review the
 next day led to two further input checks: phone numbers and photo formats are now checked by the
 server as well as the page (Table 23).
+On 5 October 2026, Supabase's own security advisor raised no warning on the database. Its only
+notes were informational, one for each of the 24 tables: row-level security is on and no policy grants
+access. That is the intended design: the public keys can read and write nothing, and every request
+goes through the server, which checks the user's role first. The same day, `npm audit` found no
+known vulnerability in the production dependencies of the frontend, the backend or the project root.
 
 The conversation a visitor has about an enquiry (Section 4.2.3) is reached without an account, so
 its link is itself the credential, what the W3C Technical Architecture Group calls a capability
