@@ -81,3 +81,12 @@ export const vPhone: Directive<HTMLInputElement> = {
     el.removeEventListener('input', onInput);
   },
 };
+
+/**
+ * A number on file, for display: spaced when it is a number, and anything else
+ * ("—", "Not on file") left exactly as it is.
+ */
+export function showPhone(raw: string | null | undefined): string {
+  const value = String(raw ?? '');
+  return value.replace(/\D/g, '').length >= 7 ? formatPhone(value) : value;
+}

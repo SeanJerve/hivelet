@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { showPhone } from '@/lib/phoneFormat';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
@@ -564,7 +565,7 @@ async function handleSendReply() {
                   :href="`tel:${activeInquiry.phone}`"
                   class="press tabular inline-flex min-h-[2.75rem] items-center gap-1.5 py-1 font-semibold text-ink hover:text-brand"
                 >
-                  <Phone class="size-3.5" aria-hidden="true" />{{ activeInquiry.phone }}
+                  <Phone class="size-3.5" aria-hidden="true" />{{ showPhone(activeInquiry.phone) }}
                 </a>
                 <a
                   v-if="activeInquiry.email"

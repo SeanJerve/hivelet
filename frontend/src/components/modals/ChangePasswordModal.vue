@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { showPhone } from '@/lib/phoneFormat';
 /**
  * Change your own password.
  *
@@ -407,7 +408,7 @@ async function submit() {
           />
           <span v-if="phoneError" id="cp-phone-error" class="ws-reveal text-sm text-overdue">{{ phoneError }}</span>
           <span v-else-if="phoneChanged" id="cp-phone-hint" class="ws-reveal text-sm font-medium text-verify">
-            You will sign in with this new number from now on, not {{ phoneOnFile }}.
+            You will sign in with this new number from now on, not {{ showPhone(phoneOnFile) }}.
           </span>
           <span v-else id="cp-phone-hint" class="ws-hint">
             {{

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { showPhone } from '@/lib/phoneFormat';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { periodEnd, propertyToday, formatDateOnly, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
@@ -1437,7 +1438,7 @@ const isDownloadOpen = ref(false);
                 <p class="text-sm font-medium break-words">{{ p.profiles?.full_name || 'Name not on file' }}</p>
                 <!-- Upper case, as the ledger below and the reject dialog print it. -->
                 <p class="mt-0.5 text-xs text-ink-faint">
-                  Unit {{ String(p.rooms?.room_number || '').toUpperCase() || 'not on file' }}<template v-if="p.profiles?.phone_number">, {{ p.profiles.phone_number }}</template>
+                  Unit {{ String(p.rooms?.room_number || '').toUpperCase() || 'not on file' }}<template v-if="p.profiles?.phone_number">, {{ showPhone(p.profiles.phone_number) }}</template>
                 </p>
               </div>
               <StatusPill tone="verify">Waiting for you</StatusPill>
@@ -2126,7 +2127,7 @@ const isDownloadOpen = ref(false);
           </template>
           <template v-if="openedPayment.profiles?.phone_number">
             <dt class="text-ink-faint">Phone</dt>
-            <dd>{{ openedPayment.profiles.phone_number }}</dd>
+            <dd>{{ showPhone(openedPayment.profiles.phone_number) }}</dd>
           </template>
         </dl>
 

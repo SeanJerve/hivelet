@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { showPhone } from '@/lib/phoneFormat';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
@@ -490,6 +491,8 @@ const rows = computed(() => {
       t.name.toLowerCase().includes(query) ||
       t.unitCode.toLowerCase().includes(query) ||
       t.phone.includes(query) ||
+      // By digits too: numbers show spaced (0917 123 4567) whatever way they were stored.
+      (query.replace(/\D/g, '').length >= 3 && t.phone.replace(/\D/g, '').includes(query.replace(/\D/g, ''))) ||
       t.email.toLowerCase().includes(query)
     );
   });
@@ -1043,7 +1046,7 @@ async function handleOnboard() {
         <tr class="group">
           <th scope="row">
             <span class="block font-semibold text-ink">{{ t.name }}</span>
-            <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
+            <span class="tabular block text-xs font-normal text-ink-soft">{{ showPhone(t.phone) }}</span>
           </th>
           <td class="font-semibold uppercase text-ink">{{ t.unitCode }}</td>
           <td>{{ householdLabel(t) }}</td>
@@ -1076,7 +1079,7 @@ async function handleOnboard() {
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-lg font-semibold leading-snug text-ink">{{ t.name }}</p>
-            <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
+            <p class="tabular mt-0.5 text-sm text-ink-soft">{{ showPhone(t.phone) }}</p>
           </div>
           <div class="shrink-0 text-right">
             <span class="block text-xs font-normal text-ink-faint">Unit</span>
@@ -1233,7 +1236,7 @@ async function handleOnboard() {
               >
                 <th scope="row">
                   <span class="block font-semibold text-ink">{{ t.name }}</span>
-                  <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
+                  <span class="tabular block text-xs font-normal text-ink-soft">{{ showPhone(t.phone) }}</span>
                 </th>
                 <td class="font-semibold uppercase text-ink">{{ t.unitCode }}</td>
                 <td>{{ householdLabel(t) }}</td>
@@ -1265,7 +1268,7 @@ async function handleOnboard() {
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
                 <p class="text-lg font-semibold leading-snug text-ink">{{ t.name }}</p>
-                <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
+                <p class="tabular mt-0.5 text-sm text-ink-soft">{{ showPhone(t.phone) }}</p>
               </div>
               <div class="shrink-0 text-right">
                 <span class="block text-xs font-normal text-ink-faint">Unit</span>
@@ -1333,7 +1336,7 @@ async function handleOnboard() {
             </div>
             <div>
               <dt class="text-xs text-ink-faint">Phone</dt>
-              <dd class="tabular mt-0.5 text-ink">{{ editModalTenant.phone }}</dd>
+              <dd class="tabular mt-0.5 text-ink">{{ showPhone(editModalTenant.phone) }}</dd>
             </div>
             <!-- Deposit sits beside Phone: with Email between them, Phone and
                  Anniversary each had an empty column beside them at 375. -->
@@ -1377,7 +1380,7 @@ async function handleOnboard() {
                 v-if="onFile(editModalTenant.emergencyContact.phone)"
                 class="tabular truncate text-xs text-ink-soft"
               >
-                {{ editModalTenant.emergencyContact.phone }}
+                {{ showPhone(editModalTenant.emergencyContact.phone) }}
               </dd>
             </div>
           </dl>
