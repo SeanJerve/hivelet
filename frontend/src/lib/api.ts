@@ -32,6 +32,11 @@ function fieldWords(key: string): string {
  * server names the field, say the field and its reason; any other message is passed on unchanged.
  */
 function readableMessage(error: ApiErrorShape): string {
+  // The server masks every 500 to "Internal server error." (errorHandler.ts) so no database text
+  // leaks; say what that means for the person, without claiming whether anything was saved.
+  if (error.code === 'INTERNAL') {
+    return 'The server could not finish this. Check whether it was saved before trying again.';
+  }
   if (error.code !== 'VALIDATION_FAILED' || !/^Invalid [\w ]+ payload\.?$/i.test(error.message ?? '')) return error.message;
   const first = Object.entries(error.details ?? {}).find(([, reasons]) => Array.isArray(reasons) && reasons.length > 0);
   if (!first) return 'Something in the form was not accepted. Check it and try again.';
