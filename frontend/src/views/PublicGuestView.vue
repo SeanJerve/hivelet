@@ -305,7 +305,17 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       Type uses fluid typography: `clamp(2.5rem, 8vw, 7rem)` to keep the display line
       proportional to the full-bleed field at every viewport width.
     -->
-    <section class="on-dark relative w-full min-h-screen min-h-[100dvh] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
+    <!--
+      Full screen only when the screen stands upright. On a landscape screen a
+      full-height hero turned the page into a splash: the 2:1 photograph was
+      scaled to the screen's height, so its sides fell away, and nothing below
+      it showed (Sean, 6 Oct 2026). There the hero is a band of about 58% of
+      the height, never under 22rem so a phone on its side still fits the name,
+      and the picture spans the full width and gives up only a strip of sky
+      and of the plants. The bottom fade is shorter there (it covered over half
+      of the shorter band), and the name keeps 36px under its descender.
+    -->
+    <section class="on-dark relative w-full min-h-screen min-h-[100dvh] landscape:min-h-[22rem] landscape:h-[max(22rem,58svh)] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
       <!-- Crisp entrance photograph background (unblurred, leveled) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
         <!--
@@ -335,7 +345,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           <img
             src="/fe-galang-building.webp"
             alt="The boarding house seen from the courtyard"
-            class="w-full h-full object-cover object-center"
+            class="w-full h-full object-cover object-center landscape:object-[center_38%]"
             width="1790"
             height="879"
             fetchpriority="high"
@@ -349,10 +359,10 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           reading as a neutral stock header bolted onto a green product.
         -->
         <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/25 to-night/50" />
-        <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
+        <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 landscape:sm:h-40 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
       </div>
 
-      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-20 sm:pb-16 md:pb-12 lg:pb-6">
+      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-20 sm:pb-16 md:pb-12 lg:pb-6 landscape:lg:pb-9">
         <!--
           "Boarding House" comes off the display line and sits under the name,
           at its left edge. It used to be pushed to the far right to line up
