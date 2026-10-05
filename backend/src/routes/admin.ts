@@ -97,6 +97,20 @@ router.get(
   })
 );
 
+/**
+ * A unit photograph: JPG or PNG only (technical evaluators, 3 Oct 2026), as
+ * the page sends it (compressImage writes JPEG), or an https:// address. Blank
+ * leaves the photo as it is. Nothing else reaches room_photos.file_url, which
+ * the public pages render.
+ */
+const unitPhoto = z
+  .string()
+  .refine(
+    (v) => v.trim() === '' || /^https:\/\//i.test(v) || /^data:image\/(jpeg|jpg|png);base64,/i.test(v),
+    'Choose a photo in JPG or PNG format.'
+  )
+  .optional();
+
 const roomInsertSchema = z.object({
   cluster_code: z.string().min(1).max(50),
   room_number: unitCode(20),
@@ -134,7 +148,7 @@ const roomInsertSchema = z.object({
   operational_status: z.enum(['Available', 'Reserved', 'Occupied', 'Under Maintenance']).optional(),
   visibility_status: z.enum(['Published', 'Hidden']).optional(),
   is_linda_unit: z.boolean().optional(),
-  photo: z.string().optional(),
+  photo: unitPhoto,
 });
 
 /**
@@ -249,7 +263,7 @@ const roomUpdateSchema = z.object({
   operational_status: z.enum(['Available', 'Reserved', 'Occupied', 'Under Maintenance']).optional(),
   visibility_status: z.enum(['Published', 'Hidden']).optional(),
   available_from: z.string().nullish(),
-  photo: z.string().optional(),
+  photo: unitPhoto,
 });
 
 /**
@@ -1663,11 +1677,19 @@ router.post(
 
     if (updateError) throw ApiError.internal(updateError.message);
 
+    // An optional reason for the move-out (technical evaluators, 3 Oct 2026),
+    // kept in the activity record beside the move-out itself. Never required:
+    // most move-outs are a lease ending, which needs no explaining.
+    const vacateReason = z
+      .object({ reason: z.string().trim().max(300).optional() })
+      .safeParse(req.body ?? {});
+    const reason = vacateReason.success ? vacateReason.data.reason || null : null;
+
     await auditFromRequest(req, {
       action: 'TENANT_DEACTIVATE',
       entityType: 'PROFILE',
       entityId: req.params.profileId,
-      newValues: { account_status: 'inactive' }
+      newValues: { account_status: 'inactive', ...(reason ? { reason } : {}) }
     });
 
     res.status(200).json({ success: true, data: withoutCredentials(updatedProfile) });

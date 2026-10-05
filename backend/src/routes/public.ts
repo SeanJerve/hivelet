@@ -31,6 +31,7 @@ import { applyNotificationItem } from '../services/adyenWebhookHandler.js';
 import { config } from '../config/env.js';
 import { notificationService } from '../services/notificationService.js';
 import { issueCredentials, findThreadInquiry, readThreadMessages } from '../services/inquiryThread.js';
+import { phoneDigits } from '../services/contactDetails.js';
 import QRCode from 'qrcode';
 
 const router = Router();
@@ -116,7 +117,14 @@ const inquirySchema = z.object({
   roomId: z.string().uuid('A valid room must be selected.'),
   prospectName: z.string().min(2).max(120),
   prospectEmail: z.string().email(),
-  prospectPhone: z.string().min(7).max(30),
+  // A Philippine mobile, 09XX XXX XXXX or +63 (technical evaluators, 3 Oct
+  // 2026). Stored as typed; every comparison reads the digits (phoneKey).
+  prospectPhone: z
+    .string()
+    .trim()
+    .min(7)
+    .max(30)
+    .refine((v) => /^09\d{9}$/.test(phoneDigits(v)), 'Enter a Philippine mobile number, for example 0917 123 4567.'),
   message: z.string().min(5).max(2000),
 });
 

@@ -451,7 +451,7 @@ router.get(
        */
       .select(
         'id, title, description, category, priority, status, created_at, resolved_at, ' +
-          'closed_at, rooms:room_id (id, room_number), ' +
+          'closed_at, closed_by, rooms:room_id (id, room_number), ' +
           'ticket_attachments (id, file_url, file_type)'
       )
       .eq('tenant_profile_id', req.user!.profileId)
@@ -505,11 +505,13 @@ const ticketSchema = z.object({
           .string()
           .min(1)
           .refine(
-            // A raster image only: an SVG is a document that can carry script, and
-            // the photo is shown as a link the administrator opens (audit
-            // 2026-10-02, S-5). shrinkPhoto sends JPEG; phones send JPEG or HEIC.
-            (v) => /^https:\/\//i.test(v) || /^data:image\/(?!svg)[a-z0-9.+-]+;base64,/i.test(v),
-            'Attachment must be an https:// URL or a base64-encoded photo (not SVG).'
+            // JPG or PNG only (technical evaluators, 3 Oct 2026). An SVG was
+            // already refused, being a document that can carry script and shown
+            // as a link the administrator opens (audit 2026-10-02, S-5). The page
+            // checks the file first and shrinkPhoto sends JPEG; this holds for
+            // anything that calls the endpoint directly.
+            (v) => /^https:\/\//i.test(v) || /^data:image\/(jpeg|jpg|png);base64,/i.test(v),
+            'Attach a photo in JPG or PNG format.'
           ),
         fileType: z.string().max(80).optional(),
       })
@@ -709,6 +711,115 @@ router.post(
     });
 
     res.status(201).json({ success: true, data });
+  })
+);
+
+/**
+ * POST /api/tenant/tickets/:ticketId/cancel
+ * A tenant withdraws their own repair request (technical evaluators, 3 Oct 2026).
+ *
+ * ONLY WHILE IT IS STILL SUBMITTED. Once the landlady has started it (In
+ * Progress) someone may already be on the way, so from then on it is hers to
+ * close, and the tenant is told to send a note instead.
+ *
+ * AT MOST ONE CANCELLATION AN HOUR per tenant, so the board cannot be churned
+ * by filing and withdrawing requests. The answer names the minutes left.
+ *
+ * NOTHING IS DELETED. A cancelled request is Closed with `closed_by` = the
+ * tenant (the administrator's own closes carry her id), which is how both
+ * sides tell "cancelled by the tenant" from "closed by the landlady" without a
+ * new status. The reason is optional; when given it is added to the request's
+ * notes so the landlady reads it where she reads everything else.
+ */
+const CANCEL_WINDOW_MS = 60 * 60 * 1000;
+const cancelSchema = z.object({ reason: z.string().trim().max(500).optional() });
+
+router.post(
+  '/tenant/tickets/:ticketId/cancel',
+  requirePermission(PERMISSIONS.TICKET_CREATE_OWN),
+  requireUuidParam('ticketId', 'Ticket'),
+  asyncHandler(async (req, res) => {
+    const parsed = cancelSchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      throw ApiError.validation('Invalid cancellation.', parsed.error.flatten().fieldErrors);
+    }
+    const me = req.user!.profileId;
+    const reason = parsed.data.reason || '';
+
+    const { data: ticket, error: ticketError } = await db
+      .from('maintenance_tickets')
+      .select('id, title, status, tenant_profile_id')
+      .eq('id', req.params.ticketId)
+      .maybeSingle<{ id: string; title: string; status: string; tenant_profile_id: string }>();
+    if (ticketError) throw ApiError.internal(ticketError.message);
+    // 404 rather than 403: another tenant's request does not exist for this one.
+    if (!ticket || ticket.tenant_profile_id !== me) throw ApiError.notFound('Ticket not found.');
+    if (ticket.status === 'In Progress') {
+      throw ApiError.conflict(
+        'The landlady has already started on this request, so it can no longer be cancelled. Send her a note on it instead.'
+      );
+    }
+    if (ticket.status !== 'Submitted') throw ApiError.conflict('This request is already finished or closed.');
+
+    const since = new Date(Date.now() - CANCEL_WINDOW_MS).toISOString();
+    const { data: recent, error: recentError } = await db
+      .from('maintenance_tickets')
+      .select('closed_at')
+      .eq('tenant_profile_id', me)
+      .eq('closed_by', me)
+      .gte('closed_at', since)
+      .order('closed_at', { ascending: false })
+      .limit(1);
+    if (recentError) throw ApiError.internal(recentError.message);
+    if (recent && recent.length > 0 && recent[0].closed_at) {
+      const nextAt = new Date(recent[0].closed_at).getTime() + CANCEL_WINDOW_MS;
+      const minutes = Math.max(1, Math.ceil((nextAt - Date.now()) / 60000));
+      throw ApiError.tooManyRequests(
+        `You can cancel one request an hour. You can cancel another in ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}.`
+      );
+    }
+
+    // Guarded on the status it was read with: if the landlady started it a
+    // moment ago, nothing changes and the tenant is told so.
+    const closedAt = new Date().toISOString();
+    const { data: updated, error: updateError } = await db
+      .from('maintenance_tickets')
+      .update({ status: 'Closed', closed_at: closedAt, closed_by: me })
+      .eq('id', ticket.id)
+      .eq('status', 'Submitted')
+      .select('id, status, closed_at, closed_by');
+    if (updateError) throw ApiError.internal(updateError.message);
+    if (!updated || updated.length === 0) {
+      throw ApiError.conflict('This request changed a moment ago and can no longer be cancelled. Reload to see it.');
+    }
+
+    if (reason) {
+      const noteResult = await db.from('ticket_messages').insert({
+        ticket_id: ticket.id,
+        sender_id: me,
+        message_body: `Cancelled this request. Reason: ${reason}`,
+      });
+      warnIfWriteFailed(noteResult, `Ticket ${ticket.id} cancellation note`);
+    }
+
+    await auditFromRequest(req, {
+      action: 'TICKET_CANCEL',
+      entityType: 'TICKET',
+      entityId: ticket.id,
+      previousValues: { status: 'Submitted' },
+      newValues: { status: 'Closed', closed_by: me, reason: reason || null },
+    });
+
+    await notificationService.notify({
+      title: 'Repair request cancelled',
+      message: `The tenant cancelled "${ticket.title}".${reason ? ` Reason: ${reason.slice(0, 120)}` : ''}`,
+      type: 'Maintenance',
+      priority: 'Low',
+      relatedEntityType: 'TICKET',
+      relatedEntityId: ticket.id,
+    });
+
+    res.status(200).json({ success: true, data: updated[0] });
   })
 );
 

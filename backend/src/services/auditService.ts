@@ -38,6 +38,8 @@ export type AuditAction =
   | 'TICKET_CREATE'
   | 'TICKET_STATUS_CHANGE'
   | 'TICKET_CLOSE'
+  // A tenant withdrawing their own Submitted request (POST /tenant/tickets/:id/cancel).
+  | 'TICKET_CANCEL'
   | 'TICKET_DELETE'
   | 'TICKET_MESSAGE_SEND'
   | 'INQUIRY_MESSAGE_SEND'
