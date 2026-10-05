@@ -41,9 +41,11 @@ recorded, up to the date it shows ("Your recorded payments cover rent up to…")
 and it is not there yet, it appears once she records your receipt.
 *Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.*
 
-**Your recent actions**, under the greeting, lists the last three things you did here (a repair
-request sent, a GCash payment started, your details updated), newest first. Tap one to go to it. On a
-phone the latest one shows; **Show 2 more** shows the rest. Only you see your own actions.
+**Your recent actions** lists the last three things you did here (a repair request sent, a GCash
+payment started, your details updated), newest first. Tap one to go to it. On a computer it is in the
+menu on the left, under the sections, on every page. On a phone it is on the Overview below your bill
+and repairs (the latest one shows; **Show 2 more** shows the rest), and in the menu. Only you see your
+own actions.
 *Ang huling tatlong ginawa ninyo dito.*
 
 ### 3. Payments and billing / Bayad at singil
@@ -170,9 +172,10 @@ and water by month**, **Units by cluster**, **Net income** and **Open repair req
 Personal spending is shown beside operating costs and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
 
-**Your recent actions**, under the greeting, lists the last three things you did (a payment
-recorded, a GCash payment approved, a repair marked done), newest first; tap one to go to it. It
-shows only your own actions, never anyone else's.
+**Your recent actions** lists the last three things you did (a payment recorded, a GCash payment
+approved, a repair marked done), newest first; tap one to go to it. On a computer it is in the menu
+on the left, under the sections, on every page; on a phone it is on the Overview after the month
+chart, and in the menu. It shows only your own actions, never anyone else's.
 
 - **Record payment**, **Record expense** and **Move someone in/out** are at the top. **On a phone**,
   tap the green **+** at the bottom right to show them; tap it again to hide them.

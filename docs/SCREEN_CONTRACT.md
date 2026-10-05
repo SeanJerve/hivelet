@@ -205,14 +205,6 @@ before the redesign started.
 | reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 | **writes** | `POST /admin/income-records` | record an on-site collection — the money path |
 
-### `components/overview/RecentActions.vue`
-
-1 call(s), **0 of them write**.
-
-| | Endpoint | What it is for |
-| :--- | :--- | :--- |
-| reads | `GET /auth/me/recent-actions` | the Overview’s "Your recent actions": the signed-in person’s own last three actions, as sentences (reads only) |
-
 ### `lib/authStore.ts`
 
 4 call(s), **3 of them write**.
@@ -242,6 +234,14 @@ before the redesign started.
 | :--- | :--- | :--- |
 | reads | `GET /live/version` | every page, every 5 s while visible: has anything its person can see changed? (reads only) |
 
+### `lib/recentActions.ts`
+
+1 call(s), **0 of them write**.
+
+| | Endpoint | What it is for |
+| :--- | :--- | :--- |
+| reads | `GET /auth/me/recent-actions` | "Your recent actions" (the desktop sidebar on every page, the phone menu and the phone Overview): the signed-in person’s own last three actions, as sentences, one shared request (reads only) |
+
 ### `lib/systemState.ts`
 
 6 call(s), **0 of them write**.
@@ -257,4 +257,4 @@ before the redesign started.
 
 ---
 
-**22 files make 78 distinct calls, 37 of which write.** Generated 2026-10-05.
+**22 files make 78 distinct calls, 37 of which write.** Generated 2026-10-06.

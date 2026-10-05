@@ -603,9 +603,6 @@ const statusTone = computed(() => {
       </p>
     </header>
 
-    <!-- What they did last, under the greeting (Sean, 5 Oct: "action history"). -->
-    <RecentActions />
-
     <div
       v-if="submissionNotice"
       role="status"
@@ -813,6 +810,10 @@ const statusTone = computed(() => {
           Request a repair
         </router-link>
       </OverviewTile>
+
+      <!-- What they did last (Sean, 5 Oct: "action history"). On a phone below the bill and
+           repairs, so the money stays first; from 1024px it is in the sidebar on every page. -->
+      <RecentActions class="order-2 md:order-none md:col-span-2 xl:col-span-12 lg:hidden" />
 
       <OverviewTile
         title="Payments"

@@ -46,7 +46,7 @@ const PURPOSE = new Map([
   ['GET /public/clusters', 'the five property clusters'],
   ['GET /public/rates', 'the water rate per occupant (the Linda fields only mark which units have their money routed to Linda)'],
   ['POST /public/inquiries', 'a prospect sends an enquiry'],
-  ['GET /auth/me/recent-actions', 'the Overview’s "Your recent actions": the signed-in person’s own last three actions, as sentences (reads only)'],
+  ['GET /auth/me/recent-actions', '"Your recent actions" (the desktop sidebar on every page, the phone menu and the phone Overview): the signed-in person’s own last three actions, as sentences, one shared request (reads only)'],
   ['GET /live/version', 'every page, every 5 s while visible: has anything its person can see changed? (reads only)'],
   ['POST /public/inquiries/thread', 'the sender of an inquiry opens its conversation, by its link or reference code and phone (reads only)'],
   ['POST /public/inquiries/thread/messages', 'the sender of an inquiry writes back to Michelle'],

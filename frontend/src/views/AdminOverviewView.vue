@@ -866,9 +866,6 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       </div>
     </header>
 
-    <!-- What she did last, under the greeting (Sean, 5 Oct: "action history"). -->
-    <RecentActions />
-
     <QuickActionsFab v-if="!isHistoricalMode && !writesUnavailable" :actions="quickActions" />
 
     <div
@@ -1110,6 +1107,10 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </PhoneMore>
         </template>
       </OverviewTile>
+
+      <!-- What she did last (Sean, 5 Oct: "action history"). On a phone after the first screen
+           (attention, this month, occupancy, the chart); from 1024px it is in the sidebar. -->
+      <RecentActions class="col-span-2 max-md:order-3 xl:col-span-12 lg:hidden" />
 
       <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4 max-md:order-5">
         <UnavailableNote

@@ -17,6 +17,7 @@ import {
 } from '@/lib/systemState';
 import { isAuthenticated, isAdmin } from '@/lib/authStore';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
+import RecentActions from '@/components/overview/RecentActions.vue';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -312,8 +313,8 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <!-- Desktop Sidebar (Borderless Canvas Navigation) -->
-    <aside class="sticky top-16 hidden h-[calc(100dvh-5rem)] w-60 shrink-0 lg:block py-6 pr-2">
-      <nav class="grid gap-1">
+    <aside class="sticky top-16 hidden h-[calc(100dvh-5rem)] w-60 shrink-0 lg:flex lg:flex-col py-6 pr-2">
+      <nav class="grid shrink-0 gap-1">
         <router-link
           v-for="item in activeNav"
           :key="item.to"
@@ -370,6 +371,16 @@ onBeforeUnmount(() => {
 
       <!-- "Website" is in the account menu now (Loyd, 2026-10-03), beside Change
            password and Sign out, not a row of its own under the sections. -->
+
+      <!--
+        The person's last three actions, under the sections on every page (Sean, 6 Oct
+        2026): the sidebar is always open from 1024px, so they are in view wherever the
+        person is, and the Overview keeps its first screen for the figures. It scrolls on
+        its own if a short window leaves it less room than the list needs.
+      -->
+      <div class="mt-6 min-h-0 overflow-y-auto border-t border-line pt-5">
+        <RecentActions variant="rail" />
+      </div>
     </aside>
 
     <!--
@@ -471,6 +482,10 @@ onBeforeUnmount(() => {
                   </router-link>
                 </nav>
 
+              </div>
+
+              <div class="border-t border-line pt-5">
+                <RecentActions variant="rail" @navigate="closeMobileNav" />
               </div>
             </div>
           </div>
