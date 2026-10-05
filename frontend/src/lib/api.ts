@@ -52,7 +52,7 @@ function plainReason(reason: string): string {
   if ((m = r.match(/^String must contain at most (\d+) character/i))) return `Use at most ${m[1]} characters.`;
   if (/^Expected number/i.test(r) || /^Number must be/i.test(r)) return 'Enter a valid amount or number.';
   if (/^Invalid (uuid|enum value)|must be a UUID/i.test(r)) return 'That choice was not recognised. Reload the page and try again.';
-  if (/^Invalid email/i.test(r)) return 'Enter a full email address, for example name@gmail.com.';
+  if (/^Invalid email/i.test(r)) return 'Enter a full email address, for example you@email.com.';
   if (!r) return 'Check this and try again.';
   const sentence = r.charAt(0).toUpperCase() + r.slice(1);
   return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;

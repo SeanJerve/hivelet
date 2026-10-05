@@ -161,3 +161,18 @@ The same 76 combinations (19 screens, light and dark, 375 and 1,366 px; axe-core
 | scrollable-region-focusable | Overview, 375 px light, once (first sweep, interrupted by a reload) | Scanned mid-load | None needed: clean on re-scan |
 
 After the fix: **76 of 76 clean.** No screen reader was tried; this shows the markup is right, not that a user of one has tried it.
+
+## 6. Dependency re-audit, 6 October 2026 (after midnight)
+
+New advisories had appeared since the 5 Oct run. `npm audit --package-lock-only` (the registry's
+bulk endpoint; plain `npm audit` in `frontend/` falls back to a retired endpoint and errors with
+"Invalid package tree", which is the endpoint, not the tree: `npm ls` is clean).
+
+| Package | Severity | Where | Done |
+| :--- | :--- | :--- | :--- |
+| brace-expansion 2.1.4 and 5.0.9 | High (CPU or stack exhaustion on crafted patterns) | Build tooling: minimatch under vue-tsc and workbox-build | `npm update` to 2.1.7 and 5.0.12, inside the ranges their parents allow |
+| fast-uri 3.1.6 | High (URI parsing) | Build tooling: ajv under workbox-build | `npm update` to 3.1.8 |
+| esbuild 0.21.5 (via Vite 5) | Moderate: any website can send requests to the **development server** and read the answers | `npm run dev` on a developer's machine only | **Accepted**: the fix is Vite 8, three major versions, not taken the week of the defense. Never run the dev server while browsing untrusted sites; the deployed site is a static build and does not include esbuild |
+
+`npm audit --omit=dev` (what ships): **0** in root, frontend and backend, so Chapter 4 §4.4.8's sentence
+stands. vue-tsc and the production build pass on the updated lockfile.
