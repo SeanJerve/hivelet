@@ -124,6 +124,19 @@ for (const g of GROUPS) out.push(`| ${g.table} | ${byGroup[g.key].length} | ${to
 out.push(`| **Total** | **${total}** | 100% |`);
 if (unmatched.length) out.push('', `> ${unmatched.length} response(s) had an unrecognised answer to Q1 and are left out.`);
 
+// Table 12A, instrument administration. Distributed is the team's own count (the form cannot know
+// how many were handed out); retrieved is every response from the group; valid is a response that
+// answered every rated item of its own section.
+const itemsOf = (g) => g.items.flatMap(([, list]) => list);
+const isValid = (g, r) => itemsOf(g).every((item) => columnsFor(item).some((i) => /^[1-5](?!\d)/.test(String(r[i] ?? '').trim())));
+out.push('', '**Table 12A.** Instrument Administration and Response Rate', '',
+  '| Group | Distributed | Retrieved | Valid | Response rate |', '| :--- | ---: | ---: | ---: | ---: |');
+for (const g of GROUPS) {
+  const got = byGroup[g.key];
+  out.push(`| ${g.table} | [team] | ${got.length} | ${got.filter((r) => isValid(g, r)).length} | valid / distributed |`);
+}
+out.push(`| **Total** | [team] | **${total - unmatched.length}** | **${GROUPS.reduce((n, g) => n + byGroup[g.key].filter((r) => isValid(g, r)).length, 0)}** | |`);
+
 const summary = [];
 for (const characteristic of ORDER) {
   out.push('', `**Table ${TABLE_NO[characteristic]}.** Evaluation Results for ${characteristic}`, '', '| Indicator | Rated by | Mean | SD | Interpretation |', '| :--- | :--- | ---: | ---: | :--- |');

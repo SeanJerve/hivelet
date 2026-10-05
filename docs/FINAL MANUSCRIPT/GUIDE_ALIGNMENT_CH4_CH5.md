@@ -42,7 +42,7 @@ Build these before the defense; each is a small table or figure. "Have" means an
 | Current (as-is) process flow figure | **Have: Figure 4** (5 Oct 2026), swimlanes | The owner's workflow in §4.1.1 and Table 5; the booking channel stays general until the owner answers Table 5's question |
 | Summary of identified problems with evidence | Have: Table 5 | Check each row names the method, the volume examined and the count |
 | Requirements and traceability (problem → requirement → module) | Have: Table 6 | |
-| Instrument administration and response rate (distributed, retrieved, valid, rate) | **Missing** | The testing day: consent forms, survey responses per group |
+| Instrument administration and response rate (distributed, retrieved, valid, rate) | **Table 12A placeholder** (5 Oct); compute-survey.mjs prints retrieved and valid; distributed is the team's count | The testing day: consent forms, survey responses per group |
 | Respondent profile | Have: Table 12 (pending) | Add n per group and percentages that sum to 100 |
 | System architecture diagram | **Have: Figure 5** (5 Oct 2026) | Vue PWA → Express API on Vercel → Supabase PostgreSQL; Adyen with GCash |
 | Context diagram, data flow diagram, use case diagram | **Have: Figures 6, 7, 8** (5 Oct 2026); Yourdon-DeMarco for the DFDs, UML for use cases | Drawn from the routes and `rbac.ts` by `scripts/build-chapter-4-diagrams.mjs` |

@@ -925,6 +925,20 @@ Maintainability, because judging it requires reading the source code and documen
 | Prospective tenants | | |
 | **Total** | | 100% |
 
+**Table 12A.** Instrument Administration and Response Rate [DATA PENDING]
+
+| Group | Distributed | Retrieved | Valid | Response rate |
+| :--- | ---: | ---: | ---: | ---: |
+| Owner / administrator | | | | |
+| Tenants | | | | |
+| Technical evaluators | | | | |
+| Prospective tenants | | | | |
+| **Total** | | | | |
+
+> **TEAM NOTE.** `compute-survey.mjs` prints Retrieved and Valid (a response that answered every
+> rated item of its own section). **Distributed** is ours to count: how many owners, tenants,
+> evaluators and prospects were given the form. Response rate = valid / distributed.
+
 ### 4.4.2 Interpretation of Scores
 
 Each item was rated on the five-point scale in Table 4. Mean scores are read using Table 13.
