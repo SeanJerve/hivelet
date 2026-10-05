@@ -383,6 +383,7 @@ async function submit() {
             :aria-invalid="emailError ? 'true' : undefined"
             :aria-describedby="emailError ? 'cp-email-error' : 'cp-email-hint'"
             @input="emailError = ''"
+            @blur="email.trim() && (emailError = emailProblem(email))"
           />
           <span v-if="emailError" id="cp-email-error" class="ws-reveal text-sm text-overdue">{{ emailError }}</span>
           <span v-else id="cp-email-hint" class="ws-hint">One you check. You can change it later in My details.</span>
@@ -392,6 +393,7 @@ async function submit() {
           Your mobile number
           <input
             v-model="phone"
+            v-phone
             type="tel"
             autocomplete="tel"
             inputmode="tel"
@@ -401,6 +403,7 @@ async function submit() {
             :aria-invalid="phoneError ? 'true' : undefined"
             :aria-describedby="phoneError ? 'cp-phone-error' : 'cp-phone-hint'"
             @input="phoneError = ''"
+            @blur="phone.trim() && (phoneError = phoneProblem(phone))"
           />
           <span v-if="phoneError" id="cp-phone-error" class="ws-reveal text-sm text-overdue">{{ phoneError }}</span>
           <span v-else-if="phoneChanged" id="cp-phone-hint" class="ws-reveal text-sm font-medium text-verify">

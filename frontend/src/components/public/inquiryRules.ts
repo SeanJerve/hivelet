@@ -16,7 +16,7 @@
  * Mirrored from `inquirySchema` in backend/src/routes/public.ts:
  *   prospectName   min 2,  max 120
  *   prospectEmail  z.string().email()
- *   prospectPhone  min 7,  max 30
+ *   prospectPhone  a Philippine mobile number, 09XX XXX XXXX or +63 (since 5 Oct 2026)
  *   message        min 5,  max 2000
  * The server still enforces them. This only means a visitor never has to meet
  * its wording.
@@ -50,6 +50,23 @@ export const EMAIL_PATTERN = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-.]*)[A-Z0-9_+-]@([A-
 
 export const MESSAGE_MAX = 2000;
 
+/** The digits of a number with a leading 63 folded to 0, as the server reads it. */
+function phMobileDigits(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  return /^63\d{10}$/.test(digits) ? `0${digits.slice(2)}` : digits;
+}
+
+/**
+ * One field's note, for when the visitor LEAVES it (technical evaluators,
+ * 3 Oct 2026: check the email when you leave the field, not only on Send).
+ * An empty field says nothing yet: "required" waits for Send, so tabbing
+ * through the form does not paint every field red.
+ */
+export function problemOnLeave(field: InquiryField, input: InquiryInput): string | undefined {
+  if (!input[field].trim()) return undefined;
+  return validateInquiry(input)[field];
+}
+
 /** Every rule, every field, at once: a visitor fixes the lot in one pass. */
 export function validateInquiry(input: InquiryInput): InquiryErrors {
   const errors: InquiryErrors = {};
@@ -68,9 +85,11 @@ export function validateInquiry(input: InquiryInput): InquiryErrors {
   else if (!EMAIL_PATTERN.test(email))
     errors.email = 'That does not look like a complete email address, for example name@example.com.';
 
+  // A Philippine mobile (technical evaluators, 3 Oct 2026: number validation).
+  // The same rule as `phoneDigits` in lib/contactDetails.ts: 63 folds to 0.
   if (!phone) errors.phone = 'Please enter a number the landlady can call.';
-  else if (phone.length < 7) errors.phone = 'That number looks too short. Please include the whole number.';
-  else if (phone.length > 30) errors.phone = 'That number is too long. Please enter one number only.';
+  else if (!/^09\d{9}$/.test(phMobileDigits(phone)))
+    errors.phone = 'Enter a Philippine mobile number, for example 0917 123 4567.';
 
   if (message.length < 5)
     errors.message = 'Please write your question. A few words is enough.';

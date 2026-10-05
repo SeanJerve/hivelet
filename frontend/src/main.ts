@@ -8,6 +8,7 @@ import { warmRoutes } from './lib/warmRoutes'
 import { installStaleVersionRecovery } from './lib/staleVersion'
 import { installTheme } from './lib/theme'
 import { CATEGORIES } from './lib/unitCategories'
+import { vPhone } from './lib/phoneFormat'
 import './index.css'
 
 // An open page that outlived a deploy loads the new version on its next
@@ -191,6 +192,8 @@ window.addEventListener('error', dismissSplash, { once: true })
 window.setTimeout(dismissSplash, SPLASH_CAP_MS)
 
 const app = createApp(App)
+// Every phone field spaces its number as it is typed (lib/phoneFormat.ts).
+app.directive('phone', vPhone)
 app.use(createPinia())
 app.use(router)
 app.mount('#app')

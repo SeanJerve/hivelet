@@ -222,7 +222,7 @@ watch(() => route.hash, syncWithAddress);
         <section v-else-if="thread" aria-labelledby="thread-heading">
           <button
             type="button"
-            class="press inline-flex min-h-11 items-center gap-1.5 text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink"
+            class="press inline-flex min-h-11 items-center gap-1.5 text-xs text-ink-soft hover:text-ink font-semibold"
             @click="backToList"
           >
             <ArrowLeft class="size-3.5" aria-hidden="true" />
@@ -285,7 +285,7 @@ watch(() => route.hash, syncWithAddress);
           </form>
           <p v-else class="mt-8 text-sm text-ink-soft">
             This conversation is closed.
-            <RouterLink to="/inquire" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Send a new inquiry</RouterLink>
+            <RouterLink to="/inquire" class="hover:text-ink font-semibold">Send a new inquiry</RouterLink>
             to ask something else.
           </p>
         </section>
@@ -336,11 +336,12 @@ watch(() => route.hash, syncWithAddress);
             <input
               id="find-phone"
               v-model="phoneInput"
+              v-phone
               class="ws-input mt-2"
               type="tel"
               inputmode="tel"
               autocomplete="tel"
-              placeholder="0917-000-0000"
+              placeholder="0917 123 4567"
               :aria-describedby="lookupError ? 'find-error' : undefined"
             />
             <p v-if="lookupError" id="find-error" class="mt-2 text-xs leading-relaxed text-overdue" role="alert">
@@ -353,9 +354,9 @@ watch(() => route.hash, syncWithAddress);
 
           <p class="mt-10 text-xs leading-relaxed text-ink-soft">
             No inquiry yet?
-            <RouterLink to="/inquire" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">Send one</RouterLink>.
+            <RouterLink to="/inquire" class="font-bold text-ink hover:text-brand">Send one</RouterLink>.
             Need help? Call
-            <a :href="`tel:${LANDLADY.phone}`" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink">{{ LANDLADY.phone }}</a>.
+            <a :href="`tel:${LANDLADY.phone}`" class="hover:text-ink font-semibold">{{ LANDLADY.phone }}</a>.
           </p>
         </section>
       </div>

@@ -28,6 +28,7 @@ import {
   phoneProblem,
   realEmail,
 } from '@/lib/contactDetails';
+import { formatPhone } from '@/lib/phoneFormat';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { showToast } from '@/lib/systemState';
 import { RouterLink } from 'vue-router';
@@ -146,9 +147,11 @@ async function fetchProfile() {
       // empty means "not set yet", and the template says so. This once fell back
       // to 'tenant@hivelet.com', shown to the tenant as though it were theirs.
       email: realEmail(data?.email),
-      phone_number: data?.phone_number || '',
+      // Spaced as the field shows them (lib/phoneFormat.ts), so the field's own
+      // formatting is not mistaken for a change she made.
+      phone_number: formatPhone(data?.phone_number || ''),
       emergency_contact_name: data?.emergency_contact_name || '',
-      emergency_contact_phone: data?.emergency_contact_phone || '',
+      emergency_contact_phone: formatPhone(data?.emergency_contact_phone || ''),
     };
     savedSnapshot.value = { ...form.value };
   } catch (err: any) {
@@ -291,7 +294,7 @@ function handleReset() {
       <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
         <RouterLink
           to="/privacy"
-          class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+          class="press hover:text-ink transition-colors font-semibold"
         >
           How your details are kept and used
         </RouterLink>
@@ -420,6 +423,7 @@ function handleReset() {
                 :aria-invalid="emailError ? 'true' : undefined"
                 :aria-describedby="emailError ? 'email-error' : 'email-hint'"
                 @input="emailError = ''"
+                @blur="form.email.trim() && form.email.trim() !== savedSnapshot.email.trim() && (emailError = emailProblem(form.email))"
               />
               <p v-if="emailError" id="email-error" class="ws-reveal text-sm text-overdue">{{ emailError }}</p>
               <p v-else id="email-hint" class="ws-hint">
@@ -432,6 +436,7 @@ function handleReset() {
               <input
                 id="phone"
                 v-model="form.phone_number"
+                v-phone
                 type="tel"
                 autocomplete="tel"
                 inputmode="tel"
@@ -440,6 +445,7 @@ function handleReset() {
                 :aria-invalid="phoneError ? 'true' : undefined"
                 :aria-describedby="phoneError ? 'phone-error' : 'phone-hint'"
                 @input="phoneError = ''"
+                @blur="form.phone_number.trim() && phoneChanged && (phoneError = phoneProblem(form.phone_number))"
               />
               <p v-if="phoneError" id="phone-error" class="ws-reveal text-sm text-overdue">{{ phoneError }}</p>
               <p v-else-if="phoneChanged && form.phone_number.trim()" id="phone-hint" class="ws-reveal text-sm font-medium text-verify">
@@ -485,8 +491,9 @@ function handleReset() {
                 <input
                   id="ec-phone"
                   v-model="form.emergency_contact_phone"
+                  v-phone
                   type="tel"
-                  placeholder="0918-987-6543"
+                  placeholder="0917 123 4567"
                   class="ws-input"
                   required
                 />
