@@ -19,8 +19,10 @@ const check = (label, actual, expected) => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${label}`);
   if (!ok) console.log(`        got  ${JSON.stringify(actual)}\n        want ${JSON.stringify(expected)}`);
 };
+// As naive as Supabase's editor, which treats "--" and ";" inside a quoted string as a comment and
+// a statement end (a "Buil;ding" and an "Al--Sur" in her workbook broke the first preview, 2026-09-30).
 async function runLikeTheEditor(db, sql) {
-  const code = sql.split('\n').filter((l) => !l.trim().startsWith('--')).join('\n');
+  const code = sql.replace(/--.*$/gm, '');
   const parts = []; let cur = '', inBody = false;
   for (let i = 0; i < code.length; i++) {
     if (code.startsWith('$$', i)) { inBody = !inBody; cur += '$$'; i++; continue; }
@@ -28,7 +30,9 @@ async function runLikeTheEditor(db, sql) {
     cur += code[i];
   }
   if (cur.trim()) parts.push(cur);
-  for (const s of parts) { await db.exec(s); await db.exec('DISCARD TEMP'); }
+  let last;
+  for (const s of parts) { last = await db.exec(s); await db.exec('DISCARD TEMP'); }
+  return last.at(-1).rows;
 }
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 
@@ -75,7 +79,7 @@ const one = async (s) => (await db.query(s)).rows[0];
 const count = async () => (await one('SELECT count(*)::int n FROM monthly_expense_entries')).n;
 const before = await count();
 
-const d = (await db.query(diag)).rows;
+const d = await runLikeTheEditor(db, diag);
 const val = (k) => d.find((r) => r.k === k)?.value;
 check('preview: every workbook line before August is read', Number(val(1)), fix.length);
 check('preview: all but the edited and the duplicated lines pair up', Number(val(3)), fix.length - 2);
@@ -103,7 +107,7 @@ check('064: one record, counting what moved and what was left', [rec.moved, rec.
 
 await runLikeTheEditor(db, m064);
 check('run twice: nothing moves, no second record', (await one(`SELECT count(*)::int n FROM audit_logs`)).n, 1);
-const d2 = (await db.query(diag)).rows;
+const d2 = await runLikeTheEditor(db, diag);
 check('preview afterwards: "will move" reads 0', d2.find((r) => r.k === 4)?.value, '0');
 
 console.log(`\n${pass} passed, ${fail} failed`);
