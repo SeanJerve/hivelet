@@ -841,7 +841,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         From 768px only (Sean, 2026-10-01: on a phone the row under the greeting
         was "too much"; there the same three actions open from the floating
         button, QuickActionsFab, below). Record payment, the primary, is last
-        at the right edge, as on Monthly Income. The year moved to the date
+        at the right edge, as on Monthly Income. All three green, as they are
+        in the floating button on a phone (Sean, 6 Oct 2026). The year moved to the date
         line above. "Back to 2026" in an archive year stays on every size: the
         floating button is for the live year's actions only.
       -->
@@ -853,9 +854,9 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             v-for="a in writesUnavailable ? [] : headerActions"
             :key="a.to"
             :to="a.to"
-            :class="a.primary ? 'pill-btn-brand' : 'pill-btn'"
+            class="pill-btn-brand"
           >
-            <component :is="a.icon" :class="['size-4', !a.primary && 'text-ink-soft']" aria-hidden="true" />
+            <component :is="a.icon" class="size-4" aria-hidden="true" />
             {{ a.label }}
           </router-link>
         </template>
