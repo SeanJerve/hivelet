@@ -905,22 +905,30 @@ html:has(> body[style*='overflow: hidden']) {
     transform: scale(0.97);
   }
 
-  /* The ringed icon button: close (X) and go-to (ArrowUpRight) only. Any other
-     icon-only control is `.icon-btn-plain`, below (Sean, 2026-10-01). */
+  /* Close (X) and go-to (ArrowUpRight). No ring since 6 Oct 2026 (Sean: "remove all circle
+     borders on all arrows and x", the phone never had them): the bare icon in a 44px box, so
+     the tap area is unchanged, with the same hover tint as `.icon-btn-plain` below. The border
+     stays, transparent, so nothing that sizes against it moves. */
   .icon-btn {
     width: 2.75rem;
     height: 2.75rem;
     flex-shrink: 0;
+    background-color: transparent;
+    color: var(--ink);
+    border: 1px solid transparent;
+  }
+  @media (hover: hover) {
+    .icon-btn:hover:not(:disabled) {
+      background-color: color-mix(in srgb, var(--ink) 7%, transparent);
+    }
   }
 
-  .pill-btn,
-  .icon-btn {
+  .pill-btn {
     background-color: var(--tile);
     color: var(--ink);
     border: 1px solid var(--line);
   }
-  .pill-btn:hover:not(:disabled),
-  .icon-btn:hover:not(:disabled) {
+  .pill-btn:hover:not(:disabled) {
     border-color: var(--hatch);
   }
 
@@ -1098,10 +1106,11 @@ html:has(> body[style*='overflow: hidden']) {
   .icon-btn.icon-btn-on-dark {
     background-color: transparent;
     color: inherit;
-    border-color: rgba(255, 255, 255, 0.3);
   }
-  .icon-btn.icon-btn-on-dark:hover:not(:disabled) {
-    border-color: rgba(255, 255, 255, 0.6);
+  @media (hover: hover) {
+    .icon-btn.icon-btn-on-dark:hover:not(:disabled) {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
   }
 
   .pill-btn:disabled,
@@ -1116,7 +1125,7 @@ html:has(> body[style*='overflow: hidden']) {
   /*
    * Two kinds of icon button, and only two (Sean, 2026-10-01).
    *
-   * `.icon-btn` above wears a ring, and the ring now means one of two things:
+   * `.icon-btn` above (no ring since 6 Oct 2026) means one of two things:
    * it closes something (the X on every dialog, notice and panel) or it goes
    * somewhere (the ArrowUpRight on an Overview tile). Everything else that is
    * only an icon - the pencil on a row, the eye beside it, a bin that takes a
@@ -2229,18 +2238,12 @@ html:has(> body[style*='overflow: hidden']) {
 }
 
 /*
- * A tile's go-to arrow drops its ring on a phone (Loyd, 2026-10-03: "remove
- * the circle border on the slanting arrows on everything on mobile, cleaner").
- * The 44px box, and so the tap area, stays; it is pulled 12px toward the
- * tile's edge so the bare arrow lines up with the content under it. The X on
- * a dialog keeps its ring everywhere: it is the close control.
+ * A tile's go-to arrow has no ring (Loyd, 2026-10-03, on a phone; Sean, 6 Oct 2026, everywhere,
+ * with the X). The 44px box, and so the tap area, stays; it is pulled 12px toward the tile's edge
+ * so the bare arrow lines up with the content under it.
  */
-@media (max-width: 767px) {
-  .icon-btn.icon-btn-goto {
-    border-color: transparent;
-    background-color: transparent;
-    margin-right: -0.75rem;
-  }
+.icon-btn.icon-btn-goto {
+  margin-right: -0.75rem;
 }
 
 /*

@@ -121,9 +121,10 @@ No text below 12 px.
   - `pill-btn-quiet` is the second choice beside a real button, with no box.
   - `pill-btn-light` sits on a brand or night tile.
   - `pill-btn-night` exists for a dark action on a light tile.
-  - `icon-btn` is a 44 px circle that needs an `aria-label`. On a dark tile add
-    `icon-btn-on-dark`. **Since 2026-10-01 only the X (close) and ArrowUpRight (go to) wear it;**
-    every other icon-only button (pencil, eye, bin, copy) is `icon-btn-plain`, 44 px with no ring.
+  - `icon-btn` is a 44 px icon button that needs an `aria-label`. On a dark tile add
+    `icon-btn-on-dark`. **Since 2026-10-01 only the X (close) and ArrowUpRight (go to) use it;**
+    every other icon-only button (pencil, eye, bin, copy) is `icon-btn-plain`. **Since 2026-10-06
+    neither has a ring** (Sean: the phone never had one); `icon-btn` keeps the box and a hover tint.
   - `pill-btn-compact` is the one smaller size. Dialog footers use `ws-actions`; page-title
     actions use `ws-page-actions` (`HANDOFF_TO_DESIGN.md` §0).
 - **Lists are narrowed by `ListToolbar`** (since 2026-10-01; dropdowns since 2026-10-05, the
