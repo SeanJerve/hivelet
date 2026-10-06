@@ -1190,10 +1190,10 @@ const isDownloadOpen = ref(false);
       On a phone a tile with nothing in it goes to the end (Loyd, 2026-10-03,
       the same rule as the Overview): a month with nothing entered yet would
       otherwise open the page on ₱0 above the chart. A failed load is not a
-      zero and keeps its place. CSS order below 768px only.
+      zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not entered yet" opened the page).
     -->
     <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${focus.label}`" tone="night" :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', receivedIsEmpty && 'max-md:order-last']">
+      <OverviewTile :title="`Received, ${focus.label}`" tone="night" :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
@@ -1229,7 +1229,7 @@ const isDownloadOpen = ref(false);
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-md:order-last']">
+      <OverviewTile :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.
@@ -1958,7 +1958,9 @@ const isDownloadOpen = ref(false);
               How they paid
               <PillSelect v-model="editMethod" :options="editMethodOptions" aria-label="How they paid" widthClass="w-full" />
             </label>
-            <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
+            <!-- Only when the method has one (GCash, bank transfer): a greyed-out box under Cash,
+                 the usual case, was a field nobody could use. -->
+            <label v-if="methodHasReference" class="ws-field">
               Their reference number
               <input v-model="editReference" type="text" :placeholder="editMethod === 'Bank Transfer' ? 'Bank reference' : 'GCash reference'" class="ws-input w-full" :disabled="!methodHasReference" :required="methodHasReference" />
             </label>

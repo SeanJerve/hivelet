@@ -975,7 +975,9 @@ function triggerRecord() {
             How they paid
             <PillSelect v-model="paymentMethod" :options="PAYMENT_METHOD_OPTIONS" aria-label="How they paid" widthClass="w-full" />
           </label>
-          <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
+          <!-- Only when the method has one (GCash, bank transfer): a greyed-out box under Cash,
+                 the usual case, was a field nobody could use. -->
+            <label v-if="methodHasReference" class="ws-field">
             Their reference number
             <input
               v-model="transactionReference"
