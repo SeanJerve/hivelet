@@ -314,14 +314,12 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       screen under 480px tall (a phone held sideways), where a quarter is too
       little for the line.
 
-      Half a screen on a phone held upright (Sean, 6 Oct 2026). A full-height hero on a tall narrow screen scaled the 2:1
-      photograph to the screen's height and showed only a strip of its middle;
-      at half the height the same width shows about twice as much of the
-      building, and the page below starts within the first screen. Never under
-      20rem, so the name and its two lines still fit a small phone. The name
-      keeps its size.
+      A phone held upright gets the same three quarters (Sean, 7 Oct 2026; it
+      had half a screen, which also showed the address and the next section):
+      the photograph, then only the "33 Units, 4 Floors" line under it. The
+      name keeps its size.
     -->
-    <section class="on-dark relative w-full min-h-[75vh] min-h-[75svh] [@media(max-height:480px)]:min-h-[68svh] max-md:portrait:min-h-0 max-md:portrait:h-[max(20rem,50svh)] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
+    <section class="on-dark relative w-full min-h-[75vh] min-h-[75svh] [@media(max-height:480px)]:min-h-[68svh] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
       <!-- Crisp entrance photograph background (unblurred, leveled) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
         <!--
@@ -422,11 +420,16 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       counting.
     -->
     <section aria-label="Property at a glance" class="w-full bg-canvas font-editorial">
-      <div class="ws-page ws-content ws-band">
+      <div class="ws-page ws-content ws-band max-md:portrait:pt-0!">
 
-        <h2 class="text-center font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(1.9rem,6vw,5.25rem)]">
-          33 Units, 4 Floors
-        </h2>
+        <!-- On a phone held upright the heading fills the quarter of the screen under the
+             three-quarter hero, so the first screen is the photograph and this line only, and the
+             address starts below it (Sean, 7 Oct 2026). -->
+        <div class="max-md:portrait:flex max-md:portrait:min-h-[25vh] max-md:portrait:min-h-[25svh] max-md:portrait:items-center max-md:portrait:justify-center">
+          <h2 class="text-center font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(1.9rem,6vw,5.25rem)]">
+            33 Units, 4 Floors
+          </h2>
+        </div>
 
         <p class="mt-14 text-center text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
           32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
