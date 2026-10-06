@@ -15,6 +15,12 @@
 > **Updated 2026-10-05:** summary item 4 gained the technical evaluators' 3 October review, from
 > Chapter 4's Table 23 (fourteen comments, all addressed by 5 October). Its means still wait on
 > the survey export.
+> **Updated 2026-10-06 (evening):** realigned with Chapter 4's ISO framework (the adviser: the
+> evaluation must be aligned with ISO). Summary items 3 and 4 and conclusions 3 and 4 now speak in
+> ISO/IEC 25010 characteristics and the ISO/IEC 25040 process; conclusion 4 states what the
+> measured evidence shows and waits on the survey only for the ratings; recommendation 8 names
+> what the evaluation did not cover and the 2023 edition. Item 3's suite run is dated 29 September,
+> as in Chapter 4's Table 8.
 
 This chapter summarizes the study, states the conclusions drawn from its results, and gives
 recommendations for the owner, for the continued development of the system, and for future
@@ -44,8 +50,10 @@ accomplished:
    PostgreSQL database on Supabase, in three Agile iterations, and it holds the owner's real
    records: 937 income rows and 1,327 expense allocations across 33 units.
 
-3. **The system was pilot tested.** Twenty automated check suites, run against the live system on
-   28 September 2026, all passed, including 490 report reconciliation checks, 78 access control
+3. **The system was pilot tested** for functionality, responsiveness and operational performance,
+   each test planned as a measure of the ISO/IEC 25010:2011 characteristics those qualities belong
+   to (Chapter 4, Table 7D). Twenty automated check suites, run against the live system on
+   29 September 2026, all passed, including 490 report reconciliation checks, 78 access control
    and endpoint checks and 73 payment gateway checks. In live use the system raised a correct bill,
    recorded and voided a receipt without changing the ledger total, and was corrected the same day
    after the client reviewed it on a phone. A screen-by-screen comparison with the live records
@@ -62,9 +70,17 @@ accomplished:
    screen measured was usable within about three seconds on a phone and a little over two on a
    laptop.
 
-4. **The system was evaluated using ISO/IEC 25010** by the owner, the tenants and technical
-   evaluators. [DATA PENDING: the overall mean and its interpretation, then one line per
-   characteristic with its composite mean, in the order of Table 22.] Changes were made in response
+4. **The system was evaluated using ISO/IEC 25010:2011**, following the five steps of the ISO/IEC
+   25040 evaluation process. Each of the eight characteristics was judged on measured evidence from
+   the tests and on the ratings of the owner, the tenants and technical evaluators. Twenty-seven of
+   the model's thirty-one sub-characteristics had a measured result and twenty-five were rated by at
+   least one survey item; user interface aesthetics and reusability were not evaluated. On the
+   measured evidence, every feature named in the objectives was present, no request failed under
+   several times the property's load, every protection tried held and all three outside security
+   scanners graded the site A+, and nine tasks in ten were done without help. Two Reliability
+   results fell short of the design, both on a real device without a connection. [DATA PENDING: the
+   overall mean and its interpretation, then one line per characteristic with its composite mean,
+   in the order of Table 22.] Changes were made in response
    to feedback and testing, recorded in Table 23. The technical evaluators who reviewed the live
    system on 3 October 2026 made fourteen comments, mostly on usability and on checking what users
    type: phone numbers and email addresses, photo formats, filters, and the placement of controls on
@@ -95,7 +111,8 @@ Based on the results of the study, the following conclusions were drawn:
    change to the owner's accounting practice.
 
 3. **The third objective was achieved.** The system was pilot tested for functionality,
-   responsiveness and operational performance. Of the 83 tests executed across the automated,
+   responsiveness and operational performance, measured as the Functional Suitability, Performance
+   Efficiency and Reliability of ISO/IEC 25010:2011. Of the 83 tests executed across the automated,
    system and acceptance levels, 82 passed (98.8 per cent), against the course standard of at
    least 90 per cent with no critical defect open; no critical defect was found (Chapter 4, Tables
    11E and 23A). Every screen measured was usable within about three seconds on a phone (Table 11).
@@ -109,9 +126,17 @@ Based on the results of the study, the following conclusions were drawn:
    phone showed a message later than the design intends; both appeared only on a real device in the
    hands of its user, which is the same lesson from the other side.
 
-4. [DATA PENDING: conclusion on the ISO/IEC 25010 evaluation. State which characteristics scored
-   highest and lowest, what the open comments said about the lowest, and what was changed as a
-   result. Do not write a conclusion that the survey does not support.]
+4. **The fourth objective was achieved in its measured part; the ratings complete it.** The system
+   was evaluated on all eight characteristics of ISO/IEC 25010:2011 by the process of ISO/IEC 25040,
+   and optimized in response (Chapter 4, Table 23). On every sub-characteristic that was measured,
+   it met the criterion of at least 90 per cent passed with no critical defect for Functional
+   Suitability, Performance Efficiency, Compatibility, Usability, Security, Maintainability and
+   Portability (Tables 14A to 21A). Reliability met them except in two results,
+   both offline on a real device: a figure that could not be loaded was once shown as ₱0, and on one
+   phone a stalled save was reported late. No defect found was critical. [DATA PENDING: the overall
+   composite mean and its interpretation (Table 22); which characteristics were rated highest and
+   lowest; whether each rating agrees with its measured result (Table 22A), and what the open
+   comments said where they disagree. Do not write a conclusion that the survey does not support.]
 
 ## 5.3 Recommendations
 
@@ -180,4 +205,9 @@ Based on the summary and conclusions of the study, the following are recommended
 8. Extend the evaluation over a longer period of real use, with every tenant and with several
    tenants saving at the same moment, which this study could test only for reading (Section 4.3.7);
    ask tenants what they find missing, since one said the system still felt lacking; and measure
-   whether the owner's time spent on record-keeping actually falls after adoption.
+   whether the owner's time spent on record-keeping actually falls after adoption. Such a study
+   should also measure what this one could not: availability as a share of time over months of use,
+   and the two sub-characteristics no instrument here covered, user interface aesthetics and
+   reusability (Chapter 4, Table 22A). A new instrument should be built on ISO/IEC 25010:2023, which
+   adds Safety, since this study's 2011 instrument can only show where its results fall in the newer
+   model (Table 12C).
