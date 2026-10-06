@@ -237,6 +237,29 @@ Fourteen comments on 3 October: input checks (phone, email, photo formats), the 
 of controls on a phone, cancelling a repair, a move-out reason, a recent-actions view. All fourteen
 were on the live site by 5 October (Chapter 4, Table 23).
 
+**How is your evaluation aligned with ISO?**
+Through the ISO/IEC 25000 (SQuaRE) family, used for both testing and evaluation. The quality model is
+ISO/IEC 25010:2011: eight characteristics, thirty-one sub-characteristics, plus quality in use. Every
+test was planned as a measure of a sub-characteristic (Chapter 4, Table 7D), stated as a ratio in the
+form of ISO/IEC 25023, for example 24 of 25 executed walkthrough steps correct = 0.96 for functional
+correctness. Every survey item was assigned to one sub-characteristic before anyone answered (Chapter
+3, Table 4B). The evaluation follows the five steps of ISO/IEC 25040 (Table 12B), and the tenants'
+tasks give quality in use, effectiveness and efficiency, in the manner of ISO/IEC 25022 (Table 22B).
+So each characteristic has measured evidence (Tables 14A to 21A) beside its rating (Tables 14 to 21).
+
+**Which edition, and why not 2023?**
+2011. The survey was built and answered on the 2011 characteristics, and changing the model after the
+answers would change what people were asked. Table 12C shows where every result falls in the 2023
+edition: Usability is now Interaction Capability, Portability is Flexibility, and the new Safety
+characteristic matches our fail-safe results (never ₱0 for a figure that could not load; a save that
+may not have arrived says so). Recommendation 8 tells future researchers to build on 2023.
+
+**What did you not evaluate?**
+Of the thirty-one sub-characteristics, twenty-seven were measured and twenty-five rated. User interface
+aesthetics and reusability were neither, so the study draws no conclusion about them. Availability
+and co-existence rest on the survey alone; availability over months of use is in recommendation 8
+(Chapter 4, Table 22A).
+
 **What are the system's limits today?**
 Adyen is still on its test environment, and a rejected GCash payment must be refunded from the Adyen
 Customer Area: both are Chapter 5's recommendation 3. Notifications are in-app only (no SMS), and

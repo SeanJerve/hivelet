@@ -19,6 +19,19 @@ adviser** for the items marked *Adviser*.
 | D3 | The **ISO/IEC 25010 edition named** in Chapters 3 and 4, and used consistently; the guide notes the 2011 edition is withdrawn and a *new* instrument should use 2023 | Our instrument uses the 2011 characteristics (Usability, Portability; no Safety) but no edition is written | **Chapter 4 done 5 Oct** (§4.4 names ISO/IEC 25010:2011); Chapters 2 and 3: paste FIXES H6. Write **ISO/IEC 25010:2011** in §3.2.4 and §4.4 (the survey is already built and in use on 2011 names; switching now would invalidate it). Be ready for the panel question "why 2011?": the instrument was built on the 2011 model and every item maps to it |
 | D4 | The verbal labels in Chapter 4 **identical** to the scale declared in Chapter 3 | Chapter 4's Table 13 uses Very High / High / Moderate / Low / Very Low Quality | **Checked 5 Oct:** Chapter 3 declares only the agreement labels (right: the survey shows them) and no mean ranges. Paste FIXES H7 (a Table 4A identical to Table 13). Confirm Chapter 3's scale table uses the same five labels and ranges; change whichever is wrong |
 
+**D5 (6 Oct 2026, adviser's instruction): the evaluation aligned with ISO. Done in Chapters 4 and 5;
+Chapter 3 needs FIXES H8.** The adviser asked that the evaluation be aligned with ISO. Chapter 4 now
+uses the ISO/IEC 25000 (SQuaRE) family throughout: the 25010:2011 model with its thirty-one
+sub-characteristics (Table 7D maps every test to them; Tables 14A to 21A give each characteristic its
+measured evidence), the five steps of ISO/IEC 25040 (Table 12B), measures in the ratio form of ISO/IEC
+25023 and, for the tenants' tasks, ISO/IEC 25022 quality in use (Table 22B), and a crosswalk to the
+2023 edition (Table 12C). Table 22A sets measured and rated evidence side by side: 27 of 31
+sub-characteristics measured, 25 rated, 2 (user interface aesthetics, reusability) neither. Chapter 5's
+summary items 3 and 4, conclusions 3 and 4 and recommendation 8 follow it. **Paste FIXES H8 into
+Chapters 2 and 3** (the framework paragraph, Table 4B assigning every survey item to a
+sub-characteristic, the 29119 test levels, §2.4's list of characteristics, five references). The
+survey items and Tables 14 to 22 did not change, so the responses already collected still fill them.
+
 ---
 
 ## 2. Fix now (no test data needed)

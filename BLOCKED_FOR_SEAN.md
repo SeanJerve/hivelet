@@ -33,6 +33,19 @@ thing did not work" is not.
 
 ## Open
 
+### B-102 — F2F: the September receipt was voided this morning, so `check:ledger` now fails BR-014 (4 tenancies, was 3) · **OPEN: the owner, one question**
+
+- **What happened (read-only, 6 Oct evening).** The admin account voided F2F's September 2026 receipt
+  (₱8,000 rent, ₱800 water for 4 occupants, entered 30 Sep) at 10:59 AM on 6 Oct, reason
+  "Administrator manual deletion". With it voided, F2F's latest standing row is July 2026: 1
+  occupant and ₱0 water. The tenancy still says **4** (unchanged since 27 Aug), so BR-014 now lists
+  F2F as billing water for 4 where her last row says 1.
+- **Nothing is broken and nothing was changed.** Sean said this morning's changes are correct. The
+  check is doing its job: it reports a disagreement only the owner can settle.
+- **Ask her:** how many people live in F2F now? If 4, the July row is simply older and the check's
+  baseline goes from 3 to 4 (`backend/scripts/check-ledger*`, BR-014). If 1, the tenancy needs a new
+  migration (next number **080**) setting it to 1, after `npm run backup`.
+
 ### B-101 — `credentials/creds.txt` still holds the admin password from before B-98; three failed sign-ins on the owner's account · **OPEN: Sean, 1 minute**
 
 - **What happened:** 5 Oct 2026, about 14:40 Manila, `npm run check:all` on Sean's machine. Three suites

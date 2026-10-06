@@ -5,6 +5,15 @@ Chapters 4 and 5?"** Written 2026-09-28 by Sean's session, after reviewing both 
 the system as it stands that evening.
 
 > [!IMPORTANT]
+> **2026-10-06: Chapters 4 and 5 are realigned to ISO** (the adviser: the evaluation must be
+> aligned with ISO). Every test is now reported as a measure of an ISO/IEC 25010:2011
+> sub-characteristic, §4.4 follows the ISO/IEC 25040 process, and each characteristic has a
+> measured-evidence table (14A to 21A) beside its survey table. **Chapter 3 must say the same:
+> paste `FIXES_TO_CHAPTERS_1_TO_3.md` H8.** When the survey export arrives, fill Tables 12 to 22 as
+> before with `compute-survey.mjs`, then copy each composite mean into Table 22A's last column and
+> write its paragraph (the team note under it says how), then Chapter 5's conclusion 4.
+
+> [!IMPORTANT]
 > **2026-09-30: the one set of instructions for the day is `docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md`.** It covers the
 > prospective tenants as a fourth group, the observation method the adviser asked for, and, at its
 > end, what each result becomes in these chapters.
@@ -76,6 +85,7 @@ the system as it stands that evening.
 | §4.4.1 respondents; §4.4.3 to 4.4.10, Tables 12 to 22 | The Google Form responses exported to Sheets | Team runs the ISO/IEC 25010 survey | Q7 to Q11 |
 | §4.4.2 how the overall score is computed | The team's choice: A (average of the group averages, recommended) or B | The team | Q11 |
 | §4.4.8 Security, supporting evidence | Grades and screenshots from the four passive scanners in `TEAM_TASKS_WE_DO_OURSELVES.md` §2 | A team member. **Passive scanners only** | none |
+| §4.4.11 Table 22A, the composite-mean column and its paragraph | Table 22's composite means, read beside the measured results | Claude, from the survey | survey first |
 | §4.4.11 Table 23, the "Survey results" row | Low-scoring survey items, and what was changed because of them | Claude, from the survey | survey first |
 | §4.5 Table 25, stages 4 and 5 | Whether the owner and tenants have been trained and handed over, and whether the system has become her main record | The team, with the owner | none |
 | ~~Figures 4 to 14~~ **Done 5 Oct 2026** | Diagrams 4 to 9 drawn from the system by `scripts/build-chapter-4-diagrams.mjs`; screenshots 10 to 14 captured from the system as deployed that day, sample tenants, real units and rates (`figures/README.md`); placed in Chapter 4 and embedded in its .docx | Claude | none |
