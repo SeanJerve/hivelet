@@ -6,6 +6,7 @@
 -->
 <script setup lang="ts">
 import { domId } from '@/lib/domId';
+import { rememberFilters } from '@/lib/savedFilters';
 import { ref, computed, onMounted } from 'vue';
 import {
   rooms,
@@ -115,6 +116,8 @@ onMounted(() => {
 });
 
 const roomOrder = ref<RowOrder>('unit');
+// Kept for the tab (lib/savedFilters.ts).
+rememberFilters('rooms', { status: selectedStatus, cluster, view: viewMode, order: roomOrder });
 const filteredRooms = computed(() => {
   const matched = rooms.filter((u) => {
     const matchesCluster = cluster.value === 'All' || u.cluster === cluster.value;
@@ -259,10 +262,10 @@ function applyRoomFilters(v: FilterDraft) {
     <div v-if="roomsFetchFailed" class="ws-reveal flex flex-col items-start gap-3 rounded-tile bg-verify-soft p-5 sm:p-6" role="alert">
       <div>
         <p class="text-base font-semibold text-verify">
-          These rates could not be loaded, and may be out of date.
+          The current rates could not be loaded.
         </p>
         <p class="mt-1 text-sm leading-6 text-verify">
-          Below is the built-in list, not the live database. Do not quote a rate from it.
+          The list below may be out of date. Please do not quote a rate from it until they load.
         </p>
       </div>
       <button type="button" class="pill-btn" :disabled="isLoading" @click="fetchRooms">Try again</button>

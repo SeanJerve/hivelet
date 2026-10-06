@@ -43,9 +43,9 @@ and it is not there yet, it appears once she records your receipt.
 
 **Your recent actions** lists the last three things you did here (a repair request sent, a GCash
 payment started, your details updated), newest first. On a computer it is in the menu on the left,
-under the sections, on every page, and clicking one goes to it. On a phone the latest one is under the
+under the sections, on every page, headed **Recently**. On a phone the latest one is under the
 greeting: **Recently**, with the date and time you did it at the right, and what you did on the line
-below. Only you see your own actions.
+below. It is there to be read, not clicked. Only you see your own actions.
 *Ang huling tatlong ginawa ninyo dito.*
 
 ### 3. Payments and billing / Bayad at singil
@@ -174,11 +174,11 @@ figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when t
 
 **Your recent actions** lists the last three things you did (a payment recorded, a GCash payment
 approved, a repair marked done), newest first. On a computer it is in the menu on the left, under
-the sections, on every page, and clicking one goes to it. On a phone the latest one is under the
+the sections, on every page, headed **Recently**. On a phone the latest one is under the
 greeting: **Recently**, with the date and time you did it at the right, and what you did on the line
-below. It shows only your own actions, never anyone else's.
+below. It is there to be read, not clicked. It shows only your own actions, never anyone else's.
 
-- **Record payment**, **Record expense** and **Move someone in/out** are at the top. **On a phone**,
+- **Record payment**, **Record expense** and **Move someone in/out** are the green buttons at the top. **On a phone**,
   tap the green **+** at the bottom right to show them; tap it again to hide them.
 - **Another year:** tap the year beside the date (for example **2026 ⌄**) and choose one.
   **Back to 2026** returns to this year.

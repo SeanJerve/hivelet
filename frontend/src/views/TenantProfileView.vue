@@ -314,7 +314,7 @@ function handleReset() {
     <!-- No form at all on a failed read: see the catch in `fetchProfile`. -->
     <div v-else-if="loadFailed" class="ws-reveal rounded-tile bg-tile p-5 sm:p-6">
       <UnavailableNote
-        message="Your details could not be loaded, so they are not shown here. What is on file has not changed. The form comes back once they load, so a save cannot put blanks over them."
+        message="Your details could not be loaded. Nothing on file has changed. Please try again in a moment."
         @retry="fetchProfile"
       />
     </div>

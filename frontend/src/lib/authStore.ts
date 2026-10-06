@@ -5,6 +5,7 @@
 import { computed, reactive, readonly, ref } from 'vue';
 import { api, setStoredToken, getStoredToken, ApiRequestError } from './api';
 import { claimOfflineCopy, clearOfflineCopy } from './offlineCache';
+import { forgetSavedFilters } from './savedFilters';
 
 export type Role = 'guest' | 'prospect' | 'tenant' | 'admin';
 
@@ -146,6 +147,8 @@ function clearSession(): void {
   // person's figures, names or notifications offline (lib/offlineCache.ts;
   // Sean, 2026-10-02).
   void clearOfflineCopy();
+  // Each list's remembered filters too (lib/savedFilters.ts).
+  forgetSavedFilters();
   try {
     localStorage.removeItem(CACHED_SESSION_KEY);
   } catch {

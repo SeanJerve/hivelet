@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
+import { rememberFilters } from '@/lib/savedFilters';
 import { api } from '@/lib/api';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
@@ -294,6 +295,8 @@ const paymentHistory = ref<Array<{
 const currentYear = Number(propertyToday().slice(0, 4));
 const selectedYear = ref(currentYear);
 const sortOrder = ref<'latest' | 'oldest'>('latest');
+// Kept for the tab (lib/savedFilters.ts).
+rememberFilters('my-payments', { year: selectedYear, order: sortOrder });
 /**
  * Set when `/tenant/my-payments` could not be read.
  *
@@ -822,7 +825,7 @@ function refreshAll() {
          all-clear below can only be reached by a list that actually loaded. -->
     <OverviewTile v-else-if="billsLoadFailed" class="ws-reveal" title="Bills">
       <UnavailableNote
-        message="Your bills could not be loaded. This is not the same as having none. Try again, and tell the landlady if it keeps failing."
+        message="Your bills could not be loaded. Please try again, and tell the landlady if it keeps happening."
         @retry="refreshAll"
       />
     </OverviewTile>
@@ -1013,7 +1016,7 @@ function refreshAll() {
 
       <UnavailableNote
         v-if="historyLoadFailed"
-        message="Your payment history could not be loaded. This does not mean no payments were recorded."
+        message="Your payment history could not be loaded. Anything already recorded is safe."
         @retry="refreshAll"
       />
       <RecordTable

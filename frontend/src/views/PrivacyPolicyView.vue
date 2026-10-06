@@ -28,7 +28,7 @@
  *   browser storage          lib/api.ts (token), lib/authStore.ts (session snapshot, cleared on
  *                            sign-out), BookViewingPrompt.vue (dismissal flag), and three
  *                            sessionStorage entries: lib/yearScope.ts (the year picked on the
- *                            admin screens), authStore.ts PASSWORD_CHANGED_FLAG (read once
+ *                            admin screens), lib/savedFilters.ts (each list's filters, cleared on sign-out), authStore.ts PASSWORD_CHANGED_FLAG (read once
  *                            after a forced password change) and MOVED_OUT_FLAG (read once by
  *                            the sign-in page, added 2026-09-30), lib/offlineCache.ts (IndexedDB
  *                            `hivelet-offline`: the signed-in person's allowlisted reads from the
@@ -300,8 +300,8 @@ const sections = Object.values(S);
           did, so it is not shown again.
         </li>
         <li>
-          <strong>While a tab is open:</strong> on the landlady's screens, the year she chose to
-          look at; after you set a new password, a one-time note so the confirmation still
+          <strong>While a tab is open:</strong> the year and the filters chosen on each list, so a
+          list is as you left it when you come back to it (cleared when you sign out); after you set a new password, a one-time note so the confirmation still
           shows once the page reloads; and, if your account was closed when you moved out, a
           one-time note so the sign-in page can say so. All are gone when the tab closes.
         </li>

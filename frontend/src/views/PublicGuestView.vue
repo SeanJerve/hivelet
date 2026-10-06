@@ -98,7 +98,7 @@ const FAQS = computed(() => [
   },
   {
     q: 'What payment methods does the boarding house accept?',
-    a: 'You can pay online with GCash through the portal, or pay in person on site. Either way it is recorded against your unit and you can see it in your own account. Note: Hivelet is a capstone project still in development. Online GCash payments run on Adyen\'s test account, so no real money is charged yet. Pay your rent in person until online payment goes live.',
+    a: 'You can pay online with GCash through the portal, or pay in person on site. Either way it is recorded against your unit and you can see it in your own account. Online GCash payment is not live yet, so for now please pay in person.',
   },
   {
     q: 'What do I need to move in?',

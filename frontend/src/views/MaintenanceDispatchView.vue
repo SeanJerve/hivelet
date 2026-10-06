@@ -3,6 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
+import { rememberFilters } from '@/lib/savedFilters';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { 
   maintenanceTickets, 
@@ -51,6 +52,8 @@ const statusFilterOptions = [
 
 /** The toolbar's one filter (components/ui/ListToolbar.vue); `statusFilter` stays the state. */
 const repairOrder = ref<RowOrder | 'urgent'>('urgent');
+// Kept for the tab (lib/savedFilters.ts).
+rememberFilters('repairs', { status: statusFilter, order: repairOrder });
 const repairFilters = computed<ToolbarFilter[]>(() => [
   { key: 'status', label: 'Status', value: statusFilter.value, defaultValue: 'All', options: statusFilterOptions },
   {
@@ -602,7 +605,7 @@ function handleDeleteTicketPrompt() {
     -->
     <UnavailableNote
       v-else-if="maintenanceTicketsFetchFailed"
-      message="The repair requests could not be loaded. That is not the same as there being none."
+      message="The repair requests could not be loaded. There may still be open ones."
       @retry="fetchTickets"
     />
 

@@ -2,6 +2,7 @@
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { propertyToday } from '@/lib/propertyDate';
+import { rememberFilters } from '@/lib/savedFilters';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
@@ -362,6 +363,8 @@ const filtered = computed(() => {
 });
 
 const expenseOrder = ref<RowOrder>('newest');
+// Kept for the tab, with the year in lib/yearScope.ts (lib/savedFilters.ts).
+rememberFilters('expenses', { kind: selectedCategory, month: filterMonth, order: expenseOrder });
 // Group filtered expenses by Date
 const groupedExpenses = computed(() => {
   const groups: Record<string, ExpenseRecord[]> = {};
@@ -534,7 +537,7 @@ function submitAddExpense() {
             unconfirmed > 0 ? 'Not confirmed' : count > 0 ? 'Some expenses were not saved' : 'Expenses not saved',
             unconfirmed > 0
               ? `${failed.length} of ${results.length} could not be confirmed: ${failed.join(', ')}. ` +
-                'The server took too long to answer, so ' +
+                'This took too long to answer, so ' +
                 (failed.length === 1
                   ? 'it may already be saved. It is still in the form: check the ledger before saving it again.'
                   : 'they may already be saved. They are still in the form: check the ledger before saving them again.')
@@ -875,43 +878,45 @@ async function handleEditExpense() {
     <div class="flex flex-col gap-4">
       <div>
         <!--
-          Download is a word on the eyebrow line, at the right, the way the
-          Overview's year sits on its date line (Loyd, 2026-10-03), so the
-          button row under the name holds the one action. It still opens the
-          month / year / everything dialog; the year and the format are in its
-          accessible name and tooltip.
+          Download sits in the row with Record expense, centred on it, at every width
+          (Sean, 6 Oct 2026: on the eyebrow line above the button the two read as
+          one stack, "not positioned and oriented right"). From 640px: Download
+          then the button, the primary last at the right edge as on the Overview.
+          On a phone the button leads at the left and Download takes the right
+          edge. It still opens the month / year / everything dialog; the year and
+          the format are in its accessible name and tooltip.
         -->
-        <div class="flex items-center justify-between gap-4">
-          <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
-          <button
-            type="button"
-            class="press relative -my-1 inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
-            aria-haspopup="dialog"
-            :aria-label="`Download ${exportYear} for Excel`"
-            :title="`Download ${exportYear} for Excel`"
-            @click="isDownloadOpen = true"
-          >
-            <span>Download</span>
-            <FileSpreadsheet class="size-4" aria-hidden="true" />
-          </button>
-        </div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <h1 class="text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
             Monthly Expenses
           </h1>
 
-          <div class="ws-page-actions">
-            <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
+          <div class="flex flex-row-reverse items-center justify-between gap-5 sm:flex-row sm:justify-end">
             <button
               type="button"
-              class="pill-btn-brand"
-              :disabled="writesUnavailable"
-              :title="writesUnavailable ? 'Needs a connection' : undefined"
-              @click="isAddOpen = true"
+              class="press relative inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+              aria-haspopup="dialog"
+              :aria-label="`Download ${exportYear} for Excel`"
+              :title="`Download ${exportYear} for Excel`"
+              @click="isDownloadOpen = true"
             >
-              <Plus class="size-4" aria-hidden="true" />
-              <span>Record expense</span>
+              <span>Download</span>
+              <FileSpreadsheet class="size-4" aria-hidden="true" />
             </button>
+            <div class="ws-page-actions w-auto">
+              <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
+              <button
+                type="button"
+                class="pill-btn-brand"
+                :disabled="writesUnavailable"
+                :title="writesUnavailable ? 'Needs a connection' : undefined"
+                @click="isAddOpen = true"
+              >
+                <Plus class="size-4" aria-hidden="true" />
+                <span>Record expense</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -962,7 +967,7 @@ async function handleEditExpense() {
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           dark
-          message="Expenses could not be loaded. That is not the same as nothing being spent."
+          message="Expenses could not be loaded. Check your connection and try again."
           @retry="fetchExpenses"
         />
         <template v-else>
@@ -1059,7 +1064,7 @@ async function handleEditExpense() {
       </p>
       <!-- The heading says it when nothing matches; the failure keeps its line. -->
       <p v-if="expenseRecordsFetchFailed" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-        This is not the same as there being no expenses. Reload the page to try again.
+        Check your connection, then reload the page to try again.
       </p>
     </div>
 

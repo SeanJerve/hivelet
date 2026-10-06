@@ -645,7 +645,7 @@ const statusTone = computed(() => {
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           dark
-          message="Your bill could not be loaded. This is not the same as owing nothing."
+          message="Your bill could not be loaded, so the amount due is not shown. Please try again."
           @retry="fetchTenantData"
         />
         <template v-else-if="!isSettled">
@@ -822,7 +822,7 @@ const statusTone = computed(() => {
       >
         <UnavailableNote
           v-if="tenantDataLoadFailed"
-          message="Your payments could not be loaded. That does not mean none are recorded."
+          message="Your payments could not be loaded. Anything already recorded is safe."
           @retry="fetchTenantData"
         />
         <p

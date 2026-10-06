@@ -157,7 +157,7 @@ const rows = computed(() => [...months.value].reverse());
 
   <UnavailableNote
     v-else-if="failed"
-    message="Your months could not be loaded. This does not mean nothing was paid. Try again, and tell the landlady if it keeps failing."
+    message="Your rent history could not be loaded. Please try again, and tell the landlady if it keeps happening."
     @retry="$emit('retry')"
   />
 

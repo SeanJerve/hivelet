@@ -18,13 +18,13 @@ let headingSeq = 0;
  *   - `tile`: the card the Overview used before (kept for a screen that wants the full three).
  *
  * Their own actions only, in sentences the server writes (GET /auth/me/recent-actions,
- * services/recentActions.ts), each linking to where it happened. It is NOT the audit trail the
+ * services/recentActions.ts). Plain text everywhere, never a link: to be seen, not opened
+ * (Sean, 6 Oct 2026). Headed "Recently" in the sidebar too, as on the phone. It is NOT the audit trail the
  * adviser kept off the site (judgement log 3.9): no codes, no other people, no addresses. One
  * shared store (lib/recentActions.ts) serves every place it appears.
  */
 import { computed, onMounted, ref, watch } from 'vue';
-import { RouterLink, useRoute } from 'vue-router';
-import { ArrowUpRight } from 'lucide-vue-next';
+import { useRoute } from 'vue-router';
 import { useLiveRefresh } from '@/lib/live';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import {
@@ -50,7 +50,6 @@ const latest = computed(() => {
   const text = a.text.replace(/\.$/, '');
   const i = text.indexOf(': ');
   return {
-    link: a.link,
     at: a.at,
     action: i > 0 ? text.slice(0, i) : text,
     about: i > 0 ? text.slice(i + 2) : '',
@@ -119,7 +118,7 @@ function when(iso: string): string {
     :class="rail ? 'px-4' : 'rounded-tile bg-tile px-4 py-3.5 sm:px-5 sm:py-4'"
   >
     <h2 :id="headingId" class="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-ink-faint">
-      Your recent actions
+      Recently
     </h2>
 
     <div v-if="loading" :class="['mt-2.5 grid gap-3', !rail && 'sm:grid-cols-3']" aria-busy="true">
@@ -143,24 +142,10 @@ function when(iso: string): string {
 
     <ol v-else :class="['mt-1.5 grid', rail ? 'gap-0.5' : 'gap-x-4 sm:grid-cols-3']">
       <li v-for="(a, i) in actions" :key="a.id" :class="['min-w-0', !rail && i > 0 && !expanded && 'max-sm:hidden']">
-        <component
-          :is="a.link ? RouterLink : 'div'"
-          v-bind="a.link ? { to: a.link } : {}"
-          :class="[
-            'group -mx-2 flex min-h-11 items-start justify-between gap-2 rounded-xl px-2 py-1.5',
-            a.link && (rail ? 'press hover:bg-tile' : 'press hover:bg-canvas'),
-          ]"
-        >
-          <span class="min-w-0">
-            <span :class="['block break-words font-medium leading-snug', rail ? 'text-[0.8125rem] text-ink-soft group-hover:text-ink' : 'text-sm text-ink']">{{ a.text }}</span>
-            <time :datetime="a.at" class="mt-0.5 block text-xs text-ink-faint">{{ when(a.at) }}</time>
-          </span>
-          <ArrowUpRight
-            v-if="a.link"
-            class="mt-0.5 size-4 shrink-0 text-ink-faint opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-            aria-hidden="true"
-          />
-        </component>
+        <div class="py-1.5">
+          <span :class="['block break-words font-medium leading-snug', rail ? 'text-[0.8125rem] text-ink-soft' : 'text-sm text-ink']">{{ a.text }}</span>
+          <time :datetime="a.at" class="mt-0.5 block text-xs text-ink-faint">{{ when(a.at) }}</time>
+        </div>
       </li>
     </ol>
     <button

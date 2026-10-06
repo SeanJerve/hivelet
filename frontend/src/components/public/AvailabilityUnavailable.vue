@@ -71,8 +71,7 @@ function reload() {
         visitor who assumes otherwise simply leaves.
       -->
       <p class="mt-5 max-w-xl text-xs sm:text-sm text-ink-soft leading-relaxed">
-        That does not mean nothing is vacant. The list is out of reach for the moment,
-        so please call us directly.
+        Units may still be free. Please call us directly for now.
       </p>
 
       <div class="mt-8 flex flex-wrap items-center gap-3">

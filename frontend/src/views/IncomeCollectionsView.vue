@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { domId } from '@/lib/domId';
+import { rememberFilters } from '@/lib/savedFilters';
 import { showPhone } from '@/lib/phoneFormat';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
@@ -735,6 +736,8 @@ const clusterGroups = computed(() => {
  */
 type IncomeGroupBy = 'cluster' | 'unit' | 'name';
 const incomeGroupBy = ref<IncomeGroupBy>('cluster');
+// Kept for the tab, with the year in lib/yearScope.ts (lib/savedFilters.ts).
+rememberFilters('income', { cluster: selectedCluster, month: filterMonth, view: viewMode, order: incomeOrder, group: incomeGroupBy });
 const displayGroups = computed(() => {
   if (incomeGroupBy.value === 'cluster') return clusterGroups.value;
   const byUnit = incomeGroupBy.value === 'unit';
@@ -961,7 +964,7 @@ async function handleEditIncome() {
   if (!editingIncome.value) return;
   const invalid = Number(editRent.value) < 0 || Number(editWater.value) < 0;
   if (invalid) {
-    showToast('error', 'Validation Error', 'Amounts cannot be negative.');
+    showToast('error', 'Check the amounts', 'An amount cannot be below zero.');
     return;
   }
 
@@ -992,11 +995,11 @@ async function handleEditIncome() {
   const waterVal = Number(editWater.value) || 0;
   if (waterVal !== 0) {
     if (waterVal < waterBaseline) {
-      showToast('error', 'Water Payment Error', `Water payment for ${unitUpper} cannot be lower than the limit of ₱${waterBaseline} for ${occupants} occupant(s) unless it is ₱0.`);
+      showToast('error', 'Water Payment Error', `Water for ${unitUpper} is ₱0, or at least ₱${waterBaseline} for ${occupants} ${occupants === 1 ? 'occupant' : 'occupants'}.`);
       return;
     }
     if (waterVal % perOccupantRate !== 0) {
-      showToast('error', 'Water Payment Error', `Water payment must be paid in whole multiples of ₱${perOccupantRate} (e.g. 0, ${perOccupantRate}, ${perOccupantRate * 2}, ${perOccupantRate * 3}).`);
+      showToast('error', 'Water Payment Error', `Water goes up in steps of ₱${perOccupantRate}: ₱0, ₱${perOccupantRate}, ₱${perOccupantRate * 2}, ₱${perOccupantRate * 3} and so on.`);
       return;
     }
   }
@@ -1113,43 +1116,45 @@ const isDownloadOpen = ref(false);
     <div class="flex flex-col gap-4">
       <div>
         <!--
-          Download is a word on the eyebrow line, at the right, the way the
-          Overview's year sits on its date line (Loyd, 2026-10-03), so the
-          button row under the name holds the one action. It still opens the
-          month / year / everything dialog; the year and the format are in its
-          accessible name and tooltip.
+          Download sits in the row with Record payment, centred on it, at every width
+          (Sean, 6 Oct 2026: on the eyebrow line above the button the two read as
+          one stack, "not positioned and oriented right"). From 640px: Download
+          then the button, the primary last at the right edge as on the Overview.
+          On a phone the button leads at the left and Download takes the right
+          edge. It still opens the month / year / everything dialog; the year and
+          the format are in its accessible name and tooltip.
         -->
-        <div class="flex items-center justify-between gap-4">
-          <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
-          <button
-            type="button"
-            class="press relative -my-1 inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
-            aria-haspopup="dialog"
-            :aria-label="`Download ${exportYear} for Excel`"
-            :title="`Download ${exportYear} for Excel`"
-            @click="isDownloadOpen = true"
-          >
-            <span>Download</span>
-            <FileSpreadsheet class="size-4" aria-hidden="true" />
-          </button>
-        </div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <h1 class="text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
             Monthly Income
           </h1>
 
-          <div class="ws-page-actions">
-            <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
+          <div class="flex flex-row-reverse items-center justify-between gap-5 sm:flex-row sm:justify-end">
             <button
               type="button"
-              class="pill-btn-brand"
-              :disabled="writesUnavailable"
-              :title="writesUnavailable ? 'Needs a connection' : undefined"
-              @click="isOnsitePaymentModalOpen = true"
+              class="press relative inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+              aria-haspopup="dialog"
+              :aria-label="`Download ${exportYear} for Excel`"
+              :title="`Download ${exportYear} for Excel`"
+              @click="isDownloadOpen = true"
             >
-              <Plus class="size-4" aria-hidden="true" />
-              <span>Record payment</span>
+              <span>Download</span>
+              <FileSpreadsheet class="size-4" aria-hidden="true" />
             </button>
+            <div class="ws-page-actions w-auto">
+              <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
+              <button
+                type="button"
+                class="pill-btn-brand"
+                :disabled="writesUnavailable"
+                :title="writesUnavailable ? 'Needs a connection' : undefined"
+                @click="isOnsitePaymentModalOpen = true"
+              >
+                <Plus class="size-4" aria-hidden="true" />
+                <span>Record payment</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1192,7 +1197,7 @@ const isDownloadOpen = ref(false);
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
-          message="The collections could not be loaded, so no total is shown. That is not the same as nothing having been collected."
+          message="The collections could not be loaded, so no total is shown. Check your connection and try again."
           @retry="fetchIncome"
         />
         <template v-else>
@@ -1365,7 +1370,7 @@ const isDownloadOpen = ref(false);
 
       <OverviewTile v-else-if="pendingPaymentsError" class="ws-reveal" title="Payments to verify">
         <UnavailableNote
-          message="The verification queue could not be loaded. This does not mean there is nothing to verify, it means we could not ask."
+          message="The payments to verify could not be loaded. There may still be some waiting."
           @retry="fetchPayments()"
         />
       </OverviewTile>
@@ -1382,10 +1387,10 @@ const isDownloadOpen = ref(false);
           real money until the account is live. The tenant's pay dialog says the
           same; this is the side where verifying would mark a bill paid with
           nothing collected. Remove with the change that wires the live account.
+          Reworded without "test" for the live demo (Sean, 6 Oct 2026); the instruction is the same.
         -->
         <p class="ws-reveal rounded-2xl bg-verify-soft px-4 py-3 text-sm leading-6 text-ink">
-          Online GCash payments still run on Adyen's test account, so no real money reaches you yet.
-          Reject these until online payment goes live.
+          Online GCash payment is not live yet, so no money has reached you. Reject these for now.
         </p>
         <ul class="grid gap-4 md:grid-cols-2">
           <li
