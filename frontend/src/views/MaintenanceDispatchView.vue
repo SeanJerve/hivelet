@@ -605,7 +605,7 @@ function handleDeleteTicketPrompt() {
     -->
     <UnavailableNote
       v-else-if="maintenanceTicketsFetchFailed"
-      message="The repair requests could not be loaded. That is not the same as there being none."
+      message="The repair requests could not be loaded. There may still be open ones."
       @retry="fetchTickets"
     />
 

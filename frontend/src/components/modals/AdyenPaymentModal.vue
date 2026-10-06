@@ -390,13 +390,14 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       the terms already say it; this dialog did not, so a tenant could finish a
       GCash payment, read "Payment received", and believe the rent was paid -
       and a verified test payment marks a real bill Paid with nothing collected.
-      The words are the FAQ's own. True for as long as adyenService.ts talks only
+      The words are the FAQ's own, reworded calmer for the live demo (Sean, 6 Oct
+      2026: keep it, without "test"). True for as long as adyenService.ts talks only
       to Adyen's test host (ADYEN_CHECKOUT_HOST); remove it in the same change
       that wires the live account.
     -->
     <p class="rounded-2xl bg-verify-soft px-4 py-3 text-sm leading-6 text-ink">
-      Online GCash payments run on Adyen's test account, so no real money is charged yet. Pay
-      your rent in person until online payment goes live.
+      Online GCash payment is not live yet, so no money is charged. Please pay your rent in
+      person for now.
     </p>
 
     <!--
@@ -444,9 +445,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
         history once she has.
       </p>
       <p v-else class="max-w-sm text-sm leading-6 text-ink-soft">
-        The gateway is sending us the signed confirmation now, and the record usually appears
-        within a few seconds. It then waits for the landlady to verify it. Nothing further is
-        needed from you.
+        We are confirming it with the payment provider, which usually takes a few seconds. It then waits for the landlady to verify it. Nothing more is needed from you.
       </p>
     </div>
 

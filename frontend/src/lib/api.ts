@@ -35,7 +35,7 @@ function readableMessage(error: ApiErrorShape): string {
   // The server masks every 500 to "Internal server error." (errorHandler.ts) so no database text
   // leaks; say what that means for the person, without claiming whether anything was saved.
   if (error.code === 'INTERNAL') {
-    return 'The server could not finish this. Check whether it was saved before trying again.';
+    return 'Something went wrong on our side. Check whether it was saved before trying again.';
   }
   if (error.code !== 'VALIDATION_FAILED' || !/^Invalid [\w ]+ payload\.?$/i.test(error.message ?? '')) return error.message;
   const first = Object.entries(error.details ?? {}).find(([, reasons]) => Array.isArray(reasons) && reasons.length > 0);
@@ -267,7 +267,7 @@ async function sendRequest<T, M = Record<string, unknown>>(
       throw new ApiRequestError(0, {
         code: 'TIMEOUT',
         message:
-          'The server took too long to answer, so we cannot tell whether this was saved. ' +
+          'This took too long to answer, so we cannot tell whether it was saved. ' +
           'Check the list before trying again, so it is not sent twice.',
       });
     }
@@ -287,7 +287,7 @@ async function sendRequest<T, M = Record<string, unknown>>(
     console.warn(`[api] ${method} ${API_BASE}${path.split('?')[0]} did not reach the server:`, cause);
     throw new ApiRequestError(0, {
       code: 'NETWORK_ERROR',
-      message: 'We could not reach the server. Check your connection and try again.',
+      message: 'We could not connect. Check your connection and try again.',
     });
   } finally {
     clearTimeout(timer);
@@ -327,8 +327,8 @@ async function sendRequest<T, M = Record<string, unknown>>(
     const unreadable = new ApiRequestError(response.status, {
       code: response.ok ? 'MALFORMED_RESPONSE' : 'UNKNOWN',
       message: response.ok
-        ? 'The server sent a reply the application could not read.'
-        : `Request failed with status ${response.status}.`,
+        ? 'The reply could not be read. Check whether this was saved before trying again.'
+        : 'Something went wrong. Please try again.',
     });
     // Same handling a parseable failure gets. A 401 is a dead session whether or
     // not whatever answered it could be read.
@@ -339,7 +339,7 @@ async function sendRequest<T, M = Record<string, unknown>>(
   if (!response.ok) {
     const error = (payload.error as ApiErrorShape | undefined) ?? {
       code: 'UNKNOWN',
-      message: `Request failed with status ${response.status}.`,
+      message: 'Something went wrong. Please try again.',
     };
     const apiError = new ApiRequestError(response.status, error);
 

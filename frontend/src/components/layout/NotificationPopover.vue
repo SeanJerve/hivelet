@@ -454,7 +454,7 @@ onUnmounted(() => {
           <AlertTriangle class="mx-auto size-8 text-verify" aria-hidden="true" />
           <p class="mt-3 text-sm font-semibold text-ink">Notifications could not be loaded</p>
           <p class="mt-1 text-sm leading-6 text-ink-soft">
-            This does not mean there are none. Check your connection and try again.
+            Check your connection and try again.
           </p>
           <button
             type="button"

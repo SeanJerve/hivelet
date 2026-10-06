@@ -451,7 +451,7 @@ async function handleSendReply() {
           -->
           <div v-else-if="inquiriesFetchFailed" class="ws-reveal p-4">
             <UnavailableNote
-              message="The inquiries could not be loaded. That is not the same as there being none."
+              message="The inquiries could not be loaded. There may still be new ones waiting."
               @retry="fetchInquiries"
             />
           </div>

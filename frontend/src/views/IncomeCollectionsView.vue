@@ -964,7 +964,7 @@ async function handleEditIncome() {
   if (!editingIncome.value) return;
   const invalid = Number(editRent.value) < 0 || Number(editWater.value) < 0;
   if (invalid) {
-    showToast('error', 'Validation Error', 'Amounts cannot be negative.');
+    showToast('error', 'Check the amounts', 'An amount cannot be below zero.');
     return;
   }
 
@@ -995,11 +995,11 @@ async function handleEditIncome() {
   const waterVal = Number(editWater.value) || 0;
   if (waterVal !== 0) {
     if (waterVal < waterBaseline) {
-      showToast('error', 'Water Payment Error', `Water payment for ${unitUpper} cannot be lower than the limit of ₱${waterBaseline} for ${occupants} occupant(s) unless it is ₱0.`);
+      showToast('error', 'Water Payment Error', `Water for ${unitUpper} is ₱0, or at least ₱${waterBaseline} for ${occupants} ${occupants === 1 ? 'occupant' : 'occupants'}.`);
       return;
     }
     if (waterVal % perOccupantRate !== 0) {
-      showToast('error', 'Water Payment Error', `Water payment must be paid in whole multiples of ₱${perOccupantRate} (e.g. 0, ${perOccupantRate}, ${perOccupantRate * 2}, ${perOccupantRate * 3}).`);
+      showToast('error', 'Water Payment Error', `Water goes up in steps of ₱${perOccupantRate}: ₱0, ₱${perOccupantRate}, ₱${perOccupantRate * 2}, ₱${perOccupantRate * 3} and so on.`);
       return;
     }
   }
@@ -1197,7 +1197,7 @@ const isDownloadOpen = ref(false);
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
-          message="The collections could not be loaded, so no total is shown. That is not the same as nothing having been collected."
+          message="The collections could not be loaded, so no total is shown. Check your connection and try again."
           @retry="fetchIncome"
         />
         <template v-else>
@@ -1370,7 +1370,7 @@ const isDownloadOpen = ref(false);
 
       <OverviewTile v-else-if="pendingPaymentsError" class="ws-reveal" title="Payments to verify">
         <UnavailableNote
-          message="The verification queue could not be loaded. This does not mean there is nothing to verify, it means we could not ask."
+          message="The payments to verify could not be loaded. There may still be some waiting."
           @retry="fetchPayments()"
         />
       </OverviewTile>
@@ -1387,10 +1387,10 @@ const isDownloadOpen = ref(false);
           real money until the account is live. The tenant's pay dialog says the
           same; this is the side where verifying would mark a bill paid with
           nothing collected. Remove with the change that wires the live account.
+          Reworded without "test" for the live demo (Sean, 6 Oct 2026); the instruction is the same.
         -->
         <p class="ws-reveal rounded-2xl bg-verify-soft px-4 py-3 text-sm leading-6 text-ink">
-          Online GCash payments still run on Adyen's test account, so no real money reaches you yet.
-          Reject these until online payment goes live.
+          Online GCash payment is not live yet, so no money has reached you. Reject these for now.
         </p>
         <ul class="grid gap-4 md:grid-cols-2">
           <li

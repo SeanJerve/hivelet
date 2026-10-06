@@ -140,9 +140,8 @@ const sections = Object.values(S);
         verification, and the bill stays on your balance.
       </p>
       <p>
-        Hivelet is a capstone project still in development. Online GCash payments run on Adyen's
-        test account, so no real money is charged yet. Pay your rent in person until online
-        payment goes live.
+        Online GCash payment is not live yet, so no money is charged through the portal. Please
+        pay your rent in person for now.
       </p>
       <ul>
         <li>

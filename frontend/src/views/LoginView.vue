@@ -109,7 +109,7 @@ function describeLoginFailure(err: unknown): string | null {
       return 'Enter the email address or phone number on your account, and your password.';
     case 'NETWORK_ERROR':
     case 'TIMEOUT':
-      return 'You were not signed in because this page could not reach the server. Check your connection and try again.';
+      return 'You were not signed in because we could not connect. Check your connection and try again.';
   }
   if (err.status >= 500 || err.code === 'MALFORMED_RESPONSE') {
     return 'You were not signed in because of a problem on our side. Please try again in a moment.';
@@ -148,7 +148,7 @@ async function handleSubmit() {
     password.value = '';
 
     // Signing in is not one of the actions that ping (Sean, 2026-10-01).
-    showToast('success', 'Signed In', `Welcome back, ${user.fullName}.`, { sound: false });
+    showToast('success', 'Signed in', `Welcome back, ${user.fullName}.`, { sound: false });
 
     const fallback = homeRouteForRole(user.role);
     // No `?redirect=`: the page this person had open last, if any (lib/lastPage.ts).

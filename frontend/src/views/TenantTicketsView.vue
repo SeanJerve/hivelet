@@ -1016,7 +1016,7 @@ function formatDateTime(iso: string) {
             -->
             <UnavailableNote
               v-else-if="ticketsLoadFailed"
-              message="Your requests could not be loaded. That is not the same as having none. Anything you already sent is still with the landlady."
+              message="Your requests could not be loaded. Anything you already sent is still with the landlady."
               @retry="fetchTickets"
             />
 
@@ -1268,7 +1268,7 @@ function formatDateTime(iso: string) {
               class="mb-3 rounded-xl border border-verify-soft bg-verify-soft/60 px-3.5 py-2.5 text-xs text-ink-soft"
             >
               <strong class="text-ink">Replies could not be loaded.</strong>
-              That does not mean nobody has answered. Close this and open it again to retry.
+              Close this and open it again to try once more.
             </p>
 
             <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">

@@ -537,7 +537,7 @@ function submitAddExpense() {
             unconfirmed > 0 ? 'Not confirmed' : count > 0 ? 'Some expenses were not saved' : 'Expenses not saved',
             unconfirmed > 0
               ? `${failed.length} of ${results.length} could not be confirmed: ${failed.join(', ')}. ` +
-                'The server took too long to answer, so ' +
+                'This took too long to answer, so ' +
                 (failed.length === 1
                   ? 'it may already be saved. It is still in the form: check the ledger before saving it again.'
                   : 'they may already be saved. They are still in the form: check the ledger before saving them again.')
@@ -967,7 +967,7 @@ async function handleEditExpense() {
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           dark
-          message="Expenses could not be loaded. That is not the same as nothing being spent."
+          message="Expenses could not be loaded. Check your connection and try again."
           @retry="fetchExpenses"
         />
         <template v-else>
@@ -1064,7 +1064,7 @@ async function handleEditExpense() {
       </p>
       <!-- The heading says it when nothing matches; the failure keeps its line. -->
       <p v-if="expenseRecordsFetchFailed" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-        This is not the same as there being no expenses. Reload the page to try again.
+        Check your connection, then reload the page to try again.
       </p>
     </div>
 

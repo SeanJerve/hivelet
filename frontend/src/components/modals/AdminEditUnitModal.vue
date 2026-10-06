@@ -327,7 +327,7 @@ async function handleSave() {
     // Nothing recoverable happens on a miss, so it is an error, not a quiet no-op.
     if (!matched) {
       throw new Error(
-        `No unit numbered "${unit.value.unitCode.toUpperCase()}" came back from the server, so nothing was saved. Reload the unit list and try again.`
+        `Unit ${unit.value.unitCode.toUpperCase()} could not be found, so nothing was saved. Reload the unit list and try again.`
       );
     }
 

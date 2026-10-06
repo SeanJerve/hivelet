@@ -708,6 +708,12 @@ you.
 > GCash payments run on Adyen's test account, no real money is charged yet, pay in person until it
 > goes live (`PublicGuestView.vue` FAQ). The Verify risk stays: do not Verify an online payment as
 > real money until the account is live.
+>
+> **Reworded 2026-10-06 by Sean, for the live demo:** kept in all four places (Pay with GCash
+> dialog, Terms, FAQ, the owner's To verify list) but without "test account" or "capstone project":
+> "Online GCash payment is not live yet, so no money is charged. Please pay your rent in person for
+> now." The owner's line still says to reject them. Remove all four with the change that wires the
+> live account.
 
 - **What the site says:** the public FAQ (`frontend/src/views/PublicGuestView.vue`, "What payment
   methods does the boarding house accept?"): *"You can pay online with GCash through the portal,
