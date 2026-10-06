@@ -139,8 +139,15 @@ function spanClass(index: number) {
     <div class="flex flex-wrap items-center gap-2 sm:items-end sm:gap-3">
       <!-- `min-w-0 flex-1` on the search so it takes what the Filters button
            leaves on a phone, down to 320px; `sm:max-w-80` keeps it the 20rem
-           every register's search box has been on a wide screen. -->
-      <div v-if="searchLabel" class="relative min-w-0 flex-1 sm:max-w-80">
+           every register's search box has been on a wide screen.
+
+           `sm:min-w-60` so it wraps instead of shrinking. Its flex-basis is 0,
+           so with five or six dropdowns beside it (Monthly Income) nothing ever
+           made the row wrap: the dropdowns kept their widths and the search
+           was squeezed to its icon, under "Show as" (Sean, 6 Oct 2026). With a
+           floor, the dropdowns go to the next row and the search keeps 15rem
+           or more. -->
+      <div v-if="searchLabel" class="relative min-w-0 flex-1 sm:min-w-60 sm:max-w-80">
         <Search
           class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
           aria-hidden="true"
