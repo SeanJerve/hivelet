@@ -306,15 +306,22 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       proportional to the full-bleed field at every viewport width.
     -->
     <!--
-      Half a screen on a phone held upright, full screen everywhere else (Sean,
-      6 Oct 2026). A full-height hero on a tall narrow screen scaled the 2:1
+      Three quarters of the screen (Sean, 6 Oct 2026: "so that only the text 33
+      units and floors can be seen with the hero section"): the first screen is
+      the photograph with "33 Units, 4 Floors" under it, and the page reads on.
+      `svh`, the screen with a phone's toolbars showing, so the line clears them
+      on first paint; `vh` first for a browser without it. Two thirds on a
+      screen under 480px tall (a phone held sideways), where a quarter is too
+      little for the line.
+
+      Half a screen on a phone held upright (Sean, 6 Oct 2026). A full-height hero on a tall narrow screen scaled the 2:1
       photograph to the screen's height and showed only a strip of its middle;
       at half the height the same width shows about twice as much of the
       building, and the page below starts within the first screen. Never under
       20rem, so the name and its two lines still fit a small phone. The name
       keeps its size.
     -->
-    <section class="on-dark relative w-full min-h-screen min-h-[100dvh] max-md:portrait:min-h-0 max-md:portrait:h-[max(20rem,50svh)] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
+    <section class="on-dark relative w-full min-h-[75vh] min-h-[75svh] [@media(max-height:480px)]:min-h-[68svh] max-md:portrait:min-h-0 max-md:portrait:h-[max(20rem,50svh)] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
       <!-- Crisp entrance photograph background (unblurred, leveled) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
         <!--

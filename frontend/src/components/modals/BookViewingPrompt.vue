@@ -128,6 +128,7 @@ onMounted(() => {
   if (alreadyDismissed() || isAuthenticated.value) return;
   window.addEventListener('offline', onOffline);
   dialogRef.value?.showModal();
+  dialogRef.value?.focus();
 });
 
 onBeforeUnmount(() => {
@@ -137,10 +138,18 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <!--
+    Focus starts on the dialog itself (`tabindex="-1"`, focused in onMounted):
+    showModal() otherwise focuses its first control, the X, and with nothing
+    clicked yet Chrome draws the keyboard ring round it on arrival, the circle
+    Sean removed from every X (6 Oct 2026). `autofocus` on the dialog is the
+    spec's way and Chromium ignored it (tested). Tab reaches the X, ring and all.
+  -->
   <dialog
     ref="dialogRef"
+    tabindex="-1"
     aria-labelledby="viewing-prompt-title"
-    class="ws-dialog m-auto w-[min(34rem,calc(100vw-2rem))] overflow-hidden rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-dim/70"
+    class="ws-dialog outline-none m-auto w-[min(34rem,calc(100vw-2rem))] overflow-hidden rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-dim/70"
     @click="onDialogClick"
     @cancel="onCancel"
   >
