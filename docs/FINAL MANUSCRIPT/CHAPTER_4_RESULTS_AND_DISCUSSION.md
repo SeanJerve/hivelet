@@ -36,11 +36,35 @@
 > 3 October review (relayed by Eljohn) and the change made for each, all on the live site by
 > 5 October (commits 055c6ff to 47b37fa). The survey export is still the missing input for
 > Tables 12 and 14 to 22.
+>
+> **Updated 2026-10-06 (evening): realigned to ISO**, as the adviser asked (the evaluation must be
+> aligned with ISO). Nothing measured changed; every number below was already in this chapter or in
+> `docs/TESTING_DAY/results/`. What is new: the chapter opening names the ISO/IEC 25000 (SQuaRE)
+> standards used; **Table 7D** maps each test activity to the 25010 characteristics it measured,
+> and each 4.3 subsection says which; **Table 12B** lays §4.4 out as the five steps of ISO/IEC 25040;
+> **Table 12C** places the 2011 characteristics in the 2023 edition (the "why 2011?" answer);
+> **Tables 14A to 21A** give each characteristic its measured evidence, sub-characteristic by
+> sub-characteristic, beside the survey table; **Table 22A** sets measured and rated evidence side
+> by side (27 of 31 sub-characteristics measured, 25 rated, 2 neither); **Table 22B** reports quality
+> in use. The Compatibility row uses the testing day's browser matrix (CO-01 to CO-06), which the
+> chapter had not reported. **Chapter 3 must declare the same framework: paste
+> `FIXES_TO_CHAPTERS_1_TO_3.md` H8** (its Table 4B assigns every survey item to a sub-characteristic,
+> which §4.4 relies on). The survey's items and Tables 14 to 22 are unchanged, so
+> `compute-survey.mjs` still fills them as before.
 
 This chapter presents the results of the study and discusses what they mean. It is organized by
 the four specific objectives in Section 1.2: the analysis of existing practices (4.1), the
 development of the system (4.2), pilot testing (4.3), and evaluation and optimization based on
 ISO/IEC 25010 (4.4). It closes with the deployment plan (4.5).
+
+The testing and the evaluation are aligned with one set of international standards, the ISO/IEC
+25000 series on software quality (SQuaRE), as declared in Section 3.3. The quality model is that of
+ISO/IEC 25010:2011, which divides product quality into eight characteristics and thirty-one
+sub-characteristics and defines a separate model of quality in use. Each test in Section 4.3 is
+reported as a measure of one or more of those sub-characteristics, in the form ISO/IEC 25023 uses
+for product quality and ISO/IEC 25022 for quality in use, and Section 4.4 follows the five steps of
+the evaluation process in ISO/IEC 25040. Every characteristic is therefore judged on two kinds of
+evidence: what was measured in testing, and how the system's users rated it.
 
 ---
 
@@ -440,7 +464,32 @@ the owner's laptop, an Android phone in Chrome and an iPhone in Safari during te
 
 *Answers Objective 3: functionality, responsiveness and operational performance.*
 
+The three qualities Objective 3 names correspond to characteristics of ISO/IEC 25010:2011:
+functionality to **Functional Suitability**, responsiveness to the time behaviour of **Performance
+Efficiency**, and operational performance to its capacity and to **Reliability**. The pilot tests
+measured these and five more characteristics, because a test written for one quality often
+measures another as well: the walkthrough that showed a function works also showed that one tenant
+cannot reach another's records. Table 7D lists each test activity with the characteristics it
+measured. Each measure is reported in Section 4.3 and brought together by characteristic in
+Section 4.4, where it stands beside the survey's ratings.
+
+**Table 7D.** Test Activities and the ISO/IEC 25010:2011 Characteristics They Measured
+
+| Test activity (Section) | Test level | Characteristics measured (sub-characteristics) |
+| :--- | :--- | :--- |
+| Automated verification (4.3.1) | Unit and integration | Functional Suitability (correctness); Security (confidentiality, integrity, authenticity); Compatibility (interoperability); Maintainability (testability) |
+| Use in the live environment (4.3.2) | System, in operation | Functional Suitability (correctness); Compatibility (interoperability); Reliability (recoverability) |
+| Screen-versus-database audit (4.3.3) | System | Functional Suitability (correctness); Reliability (maturity) |
+| Functional walkthrough (4.3.4) | System | Functional Suitability (completeness, correctness); Usability (user error protection); Security (confidentiality); Reliability (fault tolerance) |
+| Responsiveness (4.3.5) | System | Performance Efficiency (time behaviour, resource utilization) |
+| Offline, installation, weak connections and simultaneous users (4.3.6) | System | Reliability (fault tolerance); Performance Efficiency (capacity); Portability (installability, adaptability); Usability (accessibility) |
+| User acceptance testing (4.3.7) | Acceptance | Quality in use (effectiveness, efficiency, context coverage); Usability (learnability, operability); Security (confidentiality) |
+
 ### 4.3.1 Automated Verification
+
+*Measures Functional Suitability (functional correctness); Security (confidentiality, integrity,
+authenticity); Compatibility (interoperability, with the payment gateway and the Excel reports);
+Maintainability (testability).*
 
 Twenty automated check suites were written during development. They run against the live system
 and **perform no writes**, which is what makes them safe to run against the owner's real records.
@@ -476,6 +525,9 @@ check that fails if it returns. This is the main argument for automated verifica
 that holds real money: the most dangerous defects are the silent ones.
 
 ### 4.3.2 Use in the Live Environment
+
+*Measures Functional Suitability (functional correctness); Compatibility (interoperability, with
+the payment gateway); Reliability (recoverability).*
 
 The system has run at a public address since September 2026 with the owner's real records. The
 following real events are part of the pilot:
@@ -534,6 +586,8 @@ touched. The audit trail was not edited either: it keeps the record of the testi
 entry saying what was removed and why.
 
 ### 4.3.3 Screen-versus-Database Audit
+
+*Measures Functional Suitability (functional correctness) and Reliability (maturity).*
 
 The automated suites prove that each part of the system is correct on its own. They do not prove
 that a screen shows a person what the database holds for that person. On 26 September 2026 a team
@@ -608,6 +662,9 @@ alone.
 
 ### 4.3.4 Functional Walkthrough Testing
 
+*Measures Functional Suitability (functional completeness and correctness); Usability (user error
+protection); Security (confidentiality); Reliability (fault tolerance).*
+
 A 26-step walkthrough (30 rows in Table 10, counting the sub-steps 15b, 19b, 22b and 23b) exercises every function that writes data exactly once. It runs against the
 one unoccupied unit so that no real tenancy, receipt or expense is touched. The owner performed it
 herself on 30 September 2026 on the administrator's laptop in Google Chrome, signed in to her own
@@ -674,6 +731,8 @@ guard against a double void was not reached from the screen.
 
 ### 4.3.5 Responsiveness and Operational Performance
 
+*Measures Performance Efficiency (time behaviour and resource utilization).*
+
 Performance was measured on 30 September 2026 on the live system, on a laptop in Google Chrome 154
 over the boarding house's Wi-Fi and on a phone. First loads were taken with the browser's cache
 cleared. Page loads on the laptop were read from the browser's developer tools (the time until the
@@ -721,6 +780,9 @@ arrived on the computer (a layout shift of 0.22) and 0.7 seconds of script work 
 phone (Chapter 5, recommendation 5).
 
 ### 4.3.6 Offline Use, Installation, Weak Connections and Simultaneous Users
+
+*Measures Reliability (fault tolerance); Performance Efficiency (capacity); Portability
+(installability and adaptability); Usability (accessibility).*
 
 > **TEAM NOTE.** Tables 11A to 11D are new (29 September 2026). Renumber every table after
 > Table 11 when this chapter goes into the Word file. The measurements are in
@@ -797,6 +859,9 @@ and 5.3 seconds in its run before the change (Chapter 5, recommendation 5). The 
 that decides how fast the system is for the owner and tenants.
 
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants
+
+*Measures quality in use (effectiveness, efficiency and context coverage); Usability (learnability
+and operability); Security (confidentiality).*
 
 > **TEAM NOTE.** Filled on 1 October 2026 from `docs/TESTING_DAY/results/` (Parts A, T, C, O). Part T
 > and Part C were corrected against the system's activity record before use; each file says what
@@ -875,7 +940,8 @@ The message is correct but late on that phone, and it is recorded as a defect (T
 
 ---
 
-Table 11E brings the testing of Section 4.3 together by level.
+Table 11E brings the testing of Section 4.3 together by test level, using the levels of ISO/IEC/IEEE
+29119 (Section 3.2.4): unit and integration, system, and acceptance.
 
 **Table 11E.** Summary of Test Execution by Level
 
@@ -907,11 +973,52 @@ is classified in Table 23A; it was not critical, and no critical defect was foun
 > `scripts/survey/compute-survey.mjs` prints their rows in Tables 14 to 18 and 21. If none took
 > part, delete the row. Chapter 3 text: `FIXES_TO_CHAPTERS_1_TO_3.md` H4.
 
-The system was evaluated by three groups using a survey based on the product quality model of
-ISO/IEC 25010:2011, the edition on whose eight characteristics the instrument was built: the owner, the tenants, and technical evaluators (IT professionals, developers or IT
-faculty). Each group rated only what it is in a position to judge. Tenants use only the tenant
-portal, so they did not rate Security or Maintainability. Only technical evaluators rated
-Maintainability, because judging it requires reading the source code and documentation.
+The evaluation followed the five steps of the evaluation process in ISO/IEC 25040, set out in Table
+12B. The quality model is that of ISO/IEC 25010:2011, the edition on whose eight characteristics the
+instrument was built. Each characteristic was judged on two kinds of evidence:
+
+- **Measured quality**: the results of the tests in Section 4.3, each expressed as a measure of a
+  sub-characteristic in the manner of ISO/IEC 25023, for example the proportion of executed
+  walkthrough steps that gave the correct result.
+- **Rated quality**: the survey, in which each item is assigned to one sub-characteristic (Chapter
+  3, Table 4B), so that every mean in Tables 14 to 21 belongs to a named part of the model.
+
+The survey was answered by three groups: the owner, the tenants, and technical evaluators (IT
+professionals, developers or IT faculty). Each group rated only what it is in a position to judge.
+Tenants use only the tenant portal, so they did not rate Security or Maintainability. Only
+technical evaluators rated Maintainability, because judging it requires reading the source code and
+documentation.
+
+**Table 12B.** The Evaluation Process, Following ISO/IEC 25040
+
+| Step | What it required | How it was carried out |
+| :--- | :--- | :--- |
+| 1. Establish the evaluation requirements | The purpose, the product, the quality model and who judges it | Objective 4; the live system at its public address; ISO/IEC 25010:2011, eight characteristics; the owner, tenants and technical evaluators (Section 3.3) |
+| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Table 7D); survey items assigned to sub-characteristics (Chapter 3, Table 4B); criteria: Table 13 for every mean, and for tests the course standard of at least 90 per cent passed with no critical defect open |
+| 3. Design the evaluation | The activities, their order and schedule | Measurements on 29 September 2026; the walkthrough and acceptance test on 30 September; the technical evaluators' review on 3 October; the survey after each group's use of the system |
+| 4. Execute the evaluation | Take the measures and apply the criteria | Section 4.3 (measured) and Tables 14 to 21 (rated) |
+| 5. Conclude the evaluation | Review the results, report them, and act on them | Tables 22 and 22A, and the changes made in response (Table 23) |
+
+ISO/IEC 25010 was revised in 2023. The revision keeps six of the eight characteristics, renames
+Usability as *Interaction Capability* and Portability as *Flexibility*, and adds a ninth, *Safety*.
+Because the survey was built and answered on the 2011 characteristics, its results are reported on
+them; changing the model after the answers were given would change what the respondents were asked.
+Table 12C shows where each result falls in the revised model, so that the evaluation can be read
+against either edition.
+
+**Table 12C.** The 2011 Characteristics and Their Place in ISO/IEC 25010:2023
+
+| ISO/IEC 25010:2011 (this evaluation) | ISO/IEC 25010:2023 | What changed |
+| :--- | :--- | :--- |
+| Functional Suitability | Functional Suitability | Unchanged |
+| Performance Efficiency | Performance Efficiency | Unchanged |
+| Compatibility | Compatibility | Unchanged |
+| Usability | Interaction Capability | Renamed; user interface aesthetics became user engagement, accessibility was divided into inclusivity and user assistance, and self-descriptiveness was added |
+| Reliability | Reliability | Maturity renamed faultlessness |
+| Security | Security | Resistance added |
+| Maintainability | Maintainability | Unchanged |
+| Portability | Flexibility | Renamed; scalability added |
+| (no counterpart) | Safety | New. Its fail-safe and hazard-warning sub-characteristics correspond to results reported here under Reliability: a figure that cannot be loaded is never shown as ₱0, and a save that may not have arrived says so (Sections 4.3.4 and 4.3.6) |
 
 ### 4.4.1 Respondents
 
@@ -1000,6 +1107,19 @@ the products is divided by the number of respondents, WM = Σ(f × w) / N.
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
 
+**Table 14A.** Measured Evidence for Functional Suitability
+
+| Sub-characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Functional completeness | Features named in Objective 2 that were implemented, X = A / B | 6 / 6 = 1.00 | Sections 4.2.2 to 4.2.7 |
+| Functional completeness | Functional requirements implemented in full or in part, X = A / B | 41 / 44 = 0.93 (25 as worded); the other 3 reach the owner in another form | Section 4.1.2 |
+| Functional correctness | Report reconciliation checks that agreed with the database, X = A / B | 490 / 490 = 1.00 | Table 8 |
+| Functional correctness | Executed walkthrough steps that gave the expected result, X = A / B | 24 / 25 = 0.96 | Table 10 |
+| Functional correctness | Screens whose figures matched the database, after correction | 9 / 9, after 6 defects were corrected | Table 9 |
+| Functional appropriateness | Tenant tasks completed, X = A / B | 34 / 34 = 1.00 | Table 11C |
+
+Every feature the objective names is present, and between 96 and 100 per cent of the executed checks of correctness gave the right result. The one incorrect result, the ₱0 of walkthrough step 23b, concerns a figure that could not be loaded rather than a computed amount, and is reported under Reliability.
+
 [DATA PENDING: interpretation paragraph. Read the open comments first; they explain low scores.]
 
 ### 4.4.4 Performance Efficiency
@@ -1021,6 +1141,19 @@ the products is divided by the number of respondents, WM = Σ(f × w) / N.
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
 
+**Table 15A.** Measured Evidence for Performance Efficiency
+
+| Sub-characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Time behaviour | Longest time until a screen was usable, real devices | 3.05 s on a phone (tenant portal, first load); 2.30 s on a laptop (a year exported to Excel) | Table 11 |
+| Time behaviour | Time within which 95 per cent of requests were answered under load | 0.52 s (public pages); 0.80 s (the owner's data) | Table 11B |
+| Resource utilization | Code a visitor's browser downloads for the payments page | About 20 kB; the 194 kB payment library only when a payment starts | Table 23 |
+| Resource utilization | Script work on an emulated mid-range phone, the owner's Overview | 0.7 s | Section 4.3.5 |
+| Capacity | Failed requests with 12 simultaneous users, X = A / B | 0 / 1,085 = 0.00 | Table 11B |
+| Capacity | Failed requests with 6 simultaneous readers of the owner's records, X = A / B | 0 / 285 = 0.00 | Table 11B |
+
+No request failed at several times the property's own load, and no screen took longer than about three seconds on a phone. The script work on a phone is the one measure that leaves room for improvement (Chapter 5, recommendation 5).
+
 ### 4.4.5 Compatibility
 
 **Table 16.** Evaluation Results for Compatibility [DATA PENDING]
@@ -1039,6 +1172,17 @@ the products is divided by the number of respondents, WM = Σ(f × w) / N.
 | The system coexists with other applications without interference. | Technical | | |
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
+
+**Table 16A.** Measured Evidence for Compatibility
+
+| Sub-characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Co-existence | Not measured by a test; rated in the survey only | | |
+| Interoperability | Device and browser combinations on which sign-in, the pages and installation worked, X = A / B | 5 / 5 = 1.00 (Android Chrome 154, iPhone Safari, Windows Chrome 154, Edge and Firefox 157); Samsung Internet not tried | Compatibility matrix, 30 September 2026 |
+| Interoperability | Payment gateway message checks passed, X = A / B | 73 / 73 = 1.00 | Table 8 |
+| Interoperability | Exported workbooks opened in a spreadsheet program in the owner's layout | Opened (walkthrough step 23); 490 / 490 month-by-month checks against the database | Tables 8 and 10 |
+
+The system exchanged data correctly with the two outside systems it depends on, the payment gateway and the owner's spreadsheet program, and worked on every browser tried. Co-existence with other applications on the same device was not tested on its own, so it rests on the survey.
 
 ### 4.4.6 Usability
 
@@ -1065,6 +1209,19 @@ the products is divided by the number of respondents, WM = Σ(f × w) / N.
 | The interface is operable for users with limited technical background. | Technical | | |
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
+
+**Table 17A.** Measured Evidence for Usability
+
+| Sub-characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Appropriateness recognizability | Tenant tasks completed without help, X = A / B | 31 / 34 = 0.91 | Table 11C |
+| Learnability | Tasks that needed help after the first sign-in and finding the unit | 0; all 3 tasks that needed help were among those first two | Table 11C |
+| Operability | Mean wrong turns per task; median time per task | 0.2; 60 s | Table 11C |
+| User error protection | Wrong inputs the system refused when tried, X = A / B | 3 / 3 (a duplicate phone number, a duplicate invoice number, a typed water amount); the double-void guard could not be reached from the screen | Table 10, steps 9, 18, 19 and 19b |
+| User interface aesthetics | Not measured and not rated | | |
+| Accessibility | Automated scans with a WCAG 2.2 level A or AA violation, X = A / B | 0 / 76 after the correction of 5 October 2026; Lighthouse accessibility score 100 | Sections 4.3.5 and 4.4.6 |
+
+Nine tasks in ten were done without help, and the only help needed was in the first two things a new user does. The instrument did not ask about appearance, so user interface aesthetics is not evaluated in this study.
 
 An accessibility audit on 2 October 2026 extended the earlier scan (Section 4.3.6) to every kind of
 screen: 19 screens, eight public, seven of the owner's and four of the tenant's, each in light and
@@ -1103,6 +1260,20 @@ that the screens are built correctly for assistive technology, not that a user o
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
 
+**Table 18A.** Measured Evidence for Reliability
+
+| Sub-characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Maturity | Critical defects among those found in testing, X = A / B | 0 / 35; 31 resolved, 1 open, 3 accepted | Table 23A |
+| Availability | Not measured as a share of time over a period; rated in the survey only | | |
+| Fault tolerance | Addresses that opened with no connection, X = A / B | 10 / 10 = 1.00 | Table 11A |
+| Fault tolerance | A figure that could not be loaded shown as unavailable, not as ₱0 | Failed once on the testing day (step 23b); not reproduced on 1 October; open | Tables 10 and 23A |
+| Fault tolerance | A stalled save reports within the 45 seconds designed | iPhone within 45 s; Android after 60 to 80 s, since mitigated | Section 4.3.7 |
+| Recoverability | Ledger after a receipt was recorded and voided | Returned to its 937 rows and its previous total | Section 4.3.2 |
+| Recoverability | Typed text kept when a send failed | Kept on both phones; sent once the connection returned on one | Section 4.3.7 |
+
+The system failed safely in most of the conditions tried, and no defect found was critical. Two results fell short of the design, both on a real device without a connection (step 23b and the late message on Android), and availability over time was not measured (Chapter 5, recommendation 8).
+
 ### 4.4.8 Security
 
 Tenants did not rate Security. They see only their own portal and cannot judge how the rest of the
@@ -1124,6 +1295,22 @@ system is protected.
 | Authentication and session handling follow accepted practice. | Technical | | |
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
+
+**Table 19A.** Measured Evidence for Security
+
+| Sub-characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Confidentiality | Another tenant's record requested by its number | Answered "not found" (walkthrough step 17); each tenant saw only their own unit (C-02) | Tables 10 and 11D |
+| Confidentiality | Protections a user meets that held when tried by hand, X = A / B | 12 / 12 = 1.00 | Later in this section |
+| Confidentiality | Tables with row-level security and no rule opening them to a browser | Every table; no warning from the database's security advisor | Sections 4.2.6 and 4.4.8 |
+| Integrity | Payment gateway messages accepted only with a valid signature: checks passed, X = A / B | 73 / 73 = 1.00 | Table 8 |
+| Integrity | Requests that change data checked against a schema before use | Every one, in all 71 request handlers read | Later in this section |
+| Non-repudiation, accountability | Administrator actions written to an audit trail the application cannot edit or delete | Every administrator action | Section 4.2.6 |
+| Authenticity | Account after five wrong passwords | Locked for 15 minutes | Later in this section |
+| Authenticity | Grades from three passive external scans | SSL Labs A+; Mozilla HTTP Observatory A+ (115, 12 of 12 tests); securityheaders.com A+ | Later in this section |
+| All | High-severity problems found by the code review | 0 | Later in this section |
+
+Every protection tried held, and all three outside scanners graded the site A+, the evidence for which follows.
 
 Three passive external scans, which read the public site the way a browser does, were run as
 supporting evidence. **Qualys SSL Labs graded the HTTPS setup A+** on 29 September 2026 (TLS 1.2
@@ -1191,6 +1378,18 @@ documentation.
 | A change in one part of the system is unlikely to disturb unrelated parts. | Technical | | |
 | **Composite mean** | | | |
 
+**Table 20A.** Measured Evidence for Maintainability
+
+| Sub-characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Modularity | Routes whose access comes from the one permission matrix, checked on every run, X = A / B | 55 / 55 = 1.00 | Section 4.2.6 |
+| Reusability | Not measured and not rated | | |
+| Analysability | Changes to the database kept as numbered, reviewable migrations | Every change; more than 70 by 5 October 2026 | Section 4.2.1 |
+| Modifiability | The water rate changed without a change to the code | Changed in the settings | Section 4.2.4 |
+| Testability | Automated suites that run against the live system without writing to it, passing, X = A / B | 20 / 20 = 1.00 | Table 8 |
+
+The system can be checked as a whole on every change without touching the owner's records. Reusability was neither measured nor asked about.
+
 ### 4.4.10 Portability
 
 **Table 21.** Evaluation Results for Portability [DATA PENDING]
@@ -1211,6 +1410,17 @@ documentation.
 | **Technical evaluator mean** | | | |
 | **Composite mean** | | | |
 
+**Table 21A.** Measured Evidence for Portability
+
+| Sub-characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Adaptability | Screens wider than the window at 360, 390, 768 and 1,366 pixels | 0 (seven public pages and the owner's eight screens) | Section 4.3.6 |
+| Adaptability | Kinds of device on which the same code ran | 3: a laptop in Chrome, an Android phone in Chrome, an iPhone in Safari | Section 4.2.7 |
+| Installability | Installation requirements of a Progressive Web Application | Met; installed from the browser on an Android phone and an iPhone, with no app store | Tables 11A and Section 4.3.7 |
+| Replaceability | The owner's workbook reproduced by the system | Monthly Income and Monthly Expenses, exported in her layout and checked against the database month by month (490 / 490); she has not yet made it her main record | Section 4.2.4, Tables 8 and 25 |
+
+One code base served every screen size and device tried and installed without an app store. Whether the system replaces the workbook in practice is the last stage of the deployment plan (Table 25).
+
 ### 4.4.11 Summary of Evaluation Results and Optimization
 
 **Table 22.** Summary of Evaluation Results [DATA PENDING]
@@ -1230,6 +1440,46 @@ documentation.
 > **TEAM NOTE.** n is the number of respondents who rated the characteristic, Rank 1 the highest
 > composite. `scripts/survey/compute-survey.mjs` prints this table with both columns, names the
 > lowest-rated characteristic (Chapter 5's recommendation 6 is written for it), and prints Table 13A.
+
+Table 22A sets the two kinds of evidence side by side. Of the thirty-one sub-characteristics of
+ISO/IEC 25010:2011, twenty-seven have a measured result in Tables 14A to 21A and twenty-five are
+rated by at least one survey item. Two, user interface aesthetics and reusability, have neither,
+and no conclusion is drawn about them.
+
+**Table 22A.** Measured and Rated Evidence by Characteristic [rated column DATA PENDING]
+
+| Characteristic | Sub-characteristics | Measured | Rated | Measured result (Tables 14A to 21A) | Composite mean (Table 22) |
+| :--- | ---: | ---: | ---: | :--- | ---: |
+| Functional Suitability | 3 | 3 | 3 | All six features present; 96 to 100 per cent of correctness checks passed | |
+| Performance Efficiency | 3 | 3 | 3 | No request failed under load; every screen usable within 3.05 s on a phone | |
+| Compatibility | 2 | 1 | 2 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct | |
+| Usability | 6 | 5 | 4 | 91 per cent of tasks without help; 0 accessibility violations in 76 scans | |
+| Reliability | 4 | 3 | 4 | No critical defect; one fail-safe result open and one late message, both offline on a real device | |
+| Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | |
+| Maintainability | 5 | 4 | 4 | 20 of 20 suites pass without writing to the records; every change a numbered migration | |
+| Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | |
+| **All** | **31** | **27** | **25** | | |
+
+> **TEAM NOTE.** When the survey is in, copy each characteristic's composite mean from Table 22
+> into the last column, then write one paragraph under this table saying, for each
+> characteristic, whether the rating agrees with the measured result. Where they disagree (for
+> example a low rating on a characteristic whose measures all passed), the open comments usually
+> say why, and that disagreement is worth more to the panel than the agreements.
+
+ISO/IEC 25010:2011 also defines quality in use, the quality of the system as experienced by its
+users in their own context. The acceptance test of Section 4.3.7 measured it directly, in the
+manner of ISO/IEC 25022, and Table 22B reports those measures.
+
+**Table 22B.** Quality in Use (30 September 2026)
+
+| Characteristic | Measure | Result | Source |
+| :--- | :--- | :--- | :--- |
+| Effectiveness | Tasks completed, X = A / B | 34 / 34 = 1.00; without help 31 / 34 = 0.91 | Table 11C |
+| Effectiveness | The owner's walkthrough steps executed that passed, X = A / B | 24 / 25 = 0.96 | Table 10 |
+| Efficiency | Median time per task; mean wrong turns per task | 60 s; 0.2 | Table 11C |
+| Satisfaction | Not measured with a satisfaction scale. The open answers: two of three tenants found nothing confusing, and one said the system still felt lacking | | Section 4.3.7 |
+| Freedom from risk | Records of the owner changed or lost by testing | None: the 937 income rows were untouched, and the records each test created were removed or voided afterwards by reviewed changes | Sections 4.3.2 and 4.3.4 |
+| Context coverage | Contexts in which the tasks were done | The owner's laptop in Chrome; an Android phone in Chrome; an iPhone in Safari; with no connection and on a stalled one; the owner and two tenants at the same time (reading; saving at the same moment was not tested) | Sections 4.3.6 and 4.3.7 |
 
 Objective 4 asks for the system to be evaluated **and optimized**. Table 23 records the changes
 made in response to feedback and testing. The first rows are changes made during the pilot,
