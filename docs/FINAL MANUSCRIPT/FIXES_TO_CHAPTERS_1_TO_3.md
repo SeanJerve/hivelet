@@ -350,10 +350,124 @@ tasks...") describes only Functional Suitability, while the scale rates all eigh
 A neutral description per point avoids that: 5 "The respondent strongly agrees with the statement",
 down to 1 "The respondent strongly disagrees with the statement".
 
+**H8. Align the testing and the evaluation with ISO (added 2026-10-06).** The adviser asked for
+the evaluation to be aligned with ISO. Chapter 4 now reports every test as a measure of an ISO/IEC
+25010:2011 sub-characteristic (Table 7D, Tables 14A to 21A), follows the ISO/IEC 25040 evaluation
+process (Table 12B), reports quality in use (Table 22B) and places the results in the 2023 edition
+(Table 12C). Chapter 3 must declare the same framework, or Chapter 4 cites standards Chapter 3
+never names (course guide: Chapter 4 cites only what Chapters 2 and 3 cite). Paste all four parts.
+
+*(a) §3.3 Evaluation Procedure: add as its first paragraph.*
+
+> The testing and the evaluation followed the ISO/IEC 25000 series of standards on software
+> quality, Systems and software Quality Requirements and Evaluation (SQuaRE). The quality model was
+> that of ISO/IEC 25010:2011, which divides the quality of a software product into eight
+> characteristics and thirty-one sub-characteristics, and defines a separate model of quality in
+> use, the quality experienced by users in their own context (ISO/IEC, 2011). The evaluation
+> followed the five steps of the evaluation process in ISO/IEC 25040: establishing the evaluation
+> requirements, specifying the evaluation, designing it, executing it and concluding it (ISO/IEC,
+> 2011b). Each characteristic was judged on two kinds of evidence. Measured quality came from the
+> tests described in Section 3.2.4, each expressed as a measure of a sub-characteristic in the
+> form ISO/IEC 25023 uses, a ratio X = A / B such as the number of executed test steps that gave the
+> correct result over the number executed (ISO/IEC, 2016b). Rated quality came from the survey
+> questionnaire, in which every item was assigned to one sub-characteristic before it was answered
+> (Table 4B). Quality in use was measured during the user acceptance test as effectiveness (tasks
+> completed), efficiency (time and wrong turns per task) and the contexts covered, following ISO/IEC
+> 25022 (ISO/IEC, 2016a). The survey used the 2011 edition's characteristics; the 2023 revision of
+> ISO/IEC 25010, which renames Usability and Portability and adds Safety, was used only to show
+> where each result falls in the newer model.
+
+*(b) §3.3, after the paragraph on the instrument: add Table 4B.* Item numbers are those of each
+group's section of the questionnaire (O = owner or administrator, T = tenants, E = technical
+evaluators, P = prospective tenants; delete the P column if no prospect answered).
+
+> **Table 4B.** Survey Items and Tests Assigned to the ISO/IEC 25010:2011 Sub-characteristics
+>
+> | Characteristic | Sub-characteristic | O | T | E | P | Measured by (Section 3.2.4) |
+> | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+> | Functional Suitability | Functional completeness | 1 | 1, 3 | 1 | 1 | Requirements traceability; walkthrough |
+> | | Functional correctness | 2, 3, 4, 6 | | 2, 3, 5 | | Automated verification; screen-versus-database audit; walkthrough |
+> | | Functional appropriateness | 5 | 2 | 4 | 2, 3 | User acceptance test |
+> | Performance Efficiency | Time behaviour | 7, 8 | 9, 10 | 6, 7 | 7, 8 | Load and response times on real devices |
+> | | Resource utilization | | | 8 | | Lighthouse; size of the code downloaded |
+> | | Capacity | 9 | | | | Simultaneous-user test |
+> | Compatibility | Co-existence | 12 | 15 | 11 | | (rated only) |
+> | | Interoperability | 10, 11 | 14 | 9, 10 | 10 | Browser matrix; gateway checks; export checks |
+> | Usability | Appropriateness recognizability | 13 | 4 | 12 | 4 | User acceptance test |
+> | | Learnability | 17 | 8 | 16 | | User acceptance test |
+> | | Operability | 14 | 5, 6 | 13 | 5 | User acceptance test |
+> | | User error protection | 15, 16 | 7 | 14, 15 | 6 | Walkthrough |
+> | | User interface aesthetics | | | | | (not evaluated) |
+> | | Accessibility | | | | | Accessibility scans (axe-core, WCAG 2.2 A and AA) |
+> | Reliability | Maturity | | 12 | | 9 | Defect log |
+> | | Availability | 18 | 11 | | | (rated only) |
+> | | Fault tolerance | 20 | 13 | 17, 19 | | Offline and weak-connection tests; walkthrough |
+> | | Recoverability | 19, 21 | | 18, 20 | | Live use; offline tests |
+> | Security | Confidentiality | 22, 23 | | 21, 22 | | Walkthrough; manual protection checks; code review |
+> | | Integrity | | | | | Gateway signature checks; code review |
+> | | Non-repudiation | | | | | Audit trail |
+> | | Accountability | 24 | | 23 | | Audit trail |
+> | | Authenticity | 25 | | 24, 25 | | Manual protection checks; passive external scans |
+> | Maintainability | Modularity | | | 30 | | Permission matrix check |
+> | | Reusability | | | | | (not evaluated) |
+> | | Analysability | | | 26, 27 | | Migration history |
+> | | Modifiability | | | 28 | | Configurable settings |
+> | | Testability | | | 29 | | Automated verification |
+> | Portability | Adaptability | 26 | 16, 17 | 31 | 11 | Screen widths; devices used |
+> | | Installability | 27, 28 | 18 | 32, 33 | 12 | Installation tests |
+> | | Replaceability | | | | | Export in the owner's layout |
+
+*(c) §3.2.4 Testing (H1): add as the last sentence of its first paragraph.*
+
+> The test levels, unit and integration, system, and acceptance, are those defined in ISO/IEC/IEEE
+> 29119-1 (ISO/IEC/IEEE, 2022), and each test was planned as a measure of the ISO/IEC 25010
+> sub-characteristics listed in Table 4B.
+
+*(d) §2.4, where ISO/IEC 25010 is first described (replaces the optional note in section F).*
+
+> ISO/IEC 25010:2011 defines eight characteristics of product quality: functional suitability,
+> performance efficiency, compatibility, usability, reliability, security, maintainability and
+> portability, divided into thirty-one sub-characteristics. It also defines a model of quality in
+> use, with five characteristics: effectiveness, efficiency, satisfaction, freedom from risk and
+> context coverage (ISO/IEC, 2011a). The 2023 revision renamed usability as interaction capability
+> and portability as flexibility, added safety as a ninth characteristic, and moved quality in use
+> into a separate standard (ISO/IEC, 2023).
+
+*References (add; the 2011 entry from H6 becomes 2011a):*
+
+> International Organization for Standardization & International Electrotechnical Commission.
+> (2011b). *Systems and software engineering: Systems and software Quality Requirements and
+> Evaluation (SQuaRE): Evaluation process* (ISO/IEC Standard No. 25040:2011).
+>
+> International Organization for Standardization & International Electrotechnical Commission.
+> (2016a). *Systems and software engineering: Systems and software Quality Requirements and
+> Evaluation (SQuaRE): Measurement of quality in use* (ISO/IEC Standard No. 25022:2016).
+>
+> International Organization for Standardization & International Electrotechnical Commission.
+> (2016b). *Systems and software engineering: Systems and software Quality Requirements and
+> Evaluation (SQuaRE): Measurement of system and software product quality* (ISO/IEC Standard
+> No. 25023:2016).
+>
+> International Organization for Standardization & International Electrotechnical Commission.
+> (2023). *Systems and software engineering: Systems and software Quality Requirements and
+> Evaluation (SQuaRE): Product quality model* (ISO/IEC Standard No. 25010:2023).
+>
+> International Organization for Standardization, International Electrotechnical Commission &
+> Institute of Electrical and Electronics Engineers. (2022). *Software and systems engineering:
+> Software testing: Part 1: General concepts* (ISO/IEC/IEEE Standard No. 29119-1:2022).
+
+*Before pasting, check each title and year on iso.org.* ISO/IEC 25040 has a newer edition than
+2011; cite 2011 only if the adviser accepts it alongside the 2011 model, otherwise cite the current
+edition, whose five steps are the same. If the panel asks why the measures are not the coded ones
+in ISO/IEC 25023 (for example a measure's identifier): the measures follow its form, a ratio of
+counts for a named sub-characteristic, using the counts the tests produced; the study did not
+compute every measure the standard lists, and says which sub-characteristics it did not evaluate
+(Chapter 4, Table 22A).
+
 ## F. Optional improvements (not errors)
 
-- §2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would
-  match Objective 4.
+- ~~§2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would
+  match Objective 4.~~ Now required, with paste-ready text: section H8 (d).
 - ~~§3.2.4 Testing describes unit and integration testing. Consider describing the suites and the
   walkthrough instead.~~ Now a required fix with paste-ready text: section H1.
 - Chapter 3 is written in the future tense ("will be used"). Where the work is done, the past or
