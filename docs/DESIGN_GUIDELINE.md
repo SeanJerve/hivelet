@@ -278,7 +278,7 @@ into a sliver and put the bottom of the screen behind the whole ledger.
 | Tenant overview | Amount due (brand) · Current or latest bill · Repairs (night) · Payments · Unit |
 | Repairs (dispatch) | Filters · a board of three columns: to dispatch, in progress, done. A ticket is a card with one Manage button |
 | Income | Four figure tiles · tabs: Ledger or To verify · the queue is one decision card per payment, the ledger keeps its grouped tables |
-| Expenses | Spent in this view · Where it landed (one bar across the five property areas) · filters · ledger table |
+| Expenses | Spent in this view · Where it went (one bar across the five property areas) · filters · ledger table |
 | Room directory | Inventory tiles · filters · a section per cluster, headed by one mark per unit, then the unit cards |
 | Tenant payments | Bills, one card each with Pay · Payment record with filters and a table |
 

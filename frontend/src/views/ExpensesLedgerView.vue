@@ -970,10 +970,12 @@ async function handleEditExpense() {
           message="Expenses could not be loaded. Check your connection and try again."
           @retry="fetchExpenses"
         />
+        <!-- Nothing entered for the month: said, not shown as ₱0 (as on Monthly Income). -->
+        <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
         <template v-else>
           <p class="tabular text-3xl md:text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal) }}</p>
           <p class="text-sm leading-6 text-on-night-soft">
-            {{ monthEntries.length === 0 ? 'Nothing entered yet' : `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}
+            {{ `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}
           </p>
           <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
                cards there, so the graphs below are on the first screen). -->
@@ -990,7 +992,7 @@ async function handleEditExpense() {
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it landed, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-md:order-last']">
+      <OverviewTile :title="`Where it went, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-md:order-last']">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.

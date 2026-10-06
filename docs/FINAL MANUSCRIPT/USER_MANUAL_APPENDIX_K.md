@@ -224,7 +224,7 @@ payment goes live it runs on Adyen's test account and no real money arrives, so 
 month (for example "Received, October 2026"), with its rent, water and 50% Share. Beside it, **Where
 it came from** is the **year**: the year's total and how it divides across the clusters, and below
 that the year month by month. Monthly Expenses is laid out the same way ("Spent, October 2026" with
-utilities and repairs; **Where it landed** is the year by area). **Filters** > **Month** shows
+utilities and repairs; **Where it went** is the year by area). **Filters** > **Month** shows
 another month in the dark card; **Filters** > **Year** picks another year, or **All years** for
 everything since the records began. **Filters** > **Group by** gathers the payments by **Cluster**
 (the usual view), by **Unit**, or by **Tenant (A to Z)**.

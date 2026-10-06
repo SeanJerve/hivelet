@@ -1200,11 +1200,14 @@ const isDownloadOpen = ref(false);
           message="The collections could not be loaded, so no total is shown. Check your connection and try again."
           @retry="fetchIncome"
         />
+        <!-- A month with nothing entered says so instead of a ₱0 total and three ₱0 lines: the
+             records cannot tell an empty month from one not typed in yet (Sean, honest states). -->
+        <p v-else-if="monthRows.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
         <template v-else>
           <!-- Rent plus water, the Remitted column's figure, for the one month. -->
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater) }}</p>
           <p class="text-sm leading-6 text-on-night-soft">
-            {{ monthRows.length === 0 ? 'Nothing entered yet' : `From ${monthRows.length} ${monthRows.length === 1 ? 'payment' : 'payments'}` }}
+            {{ `From ${monthRows.length} ${monthRows.length === 1 ? 'payment' : 'payments'}` }}
           </p>
           <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
                cards there, so the graphs below are on the first screen). -->
