@@ -178,6 +178,11 @@ function getUnitsForCluster(clusterName: string) {
  * The values are honest; only the labels were not. What a unit's payment
  * standing actually is lives in the income ledger, which is its own screen.
  */
+/**
+ * Only an exception wears a pill (Sean, 26 Sep: no badge for the obvious default). 32 of the 33
+ * units are occupied, so "Occupied" on every card said nothing; Vacant, Reserved and Being
+ * repaired still stand out, and the status filter still counts every state.
+ */
 function getStatusLabel(status: UnitStatus) {
   if (status === 'vacant') return 'Vacant';
   if (status === 'settled') return 'Occupied';
@@ -381,7 +386,7 @@ function applyRoomFilters(v: FilterDraft) {
                     </p>
                     <p class="mt-1.5 text-sm text-ink-soft">{{ u.type }}</p>
                   </div>
-                  <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
+                  <StatusPill v-if="u.status !== 'settled'" :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
                 </div>
 
                 <!-- Label above value, and the name wraps: it was truncated at
@@ -496,7 +501,7 @@ function applyRoomFilters(v: FilterDraft) {
             {{ tenantLine(u.unitCode) }}
           </td>
           <td>
-            <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
+            <StatusPill v-if="u.status !== 'settled'" :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
           </td>
           <td class="num">
             <div class="inline-flex items-center justify-end gap-2">
@@ -516,7 +521,7 @@ function applyRoomFilters(v: FilterDraft) {
             </p>
             <p class="mt-1.5 text-sm text-ink-soft">{{ u.cluster }}, {{ u.type }}</p>
           </div>
-          <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
+          <StatusPill v-if="u.status !== 'settled'" :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
         </div>
 
         <dl class="mt-4 border-t border-line pt-3 text-sm">
