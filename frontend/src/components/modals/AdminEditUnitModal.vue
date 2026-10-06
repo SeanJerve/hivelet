@@ -8,7 +8,6 @@ import type { UnitStatus } from '@/lib/canonicalUnits';
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { Check, Loader2, Upload, ImageOff } from 'lucide-vue-next';
-import StatusPill from '@/components/overview/StatusPill.vue';
 import { useRoute } from 'vue-router';
 import { PHOTO_ACCEPT, PHOTO_FORMAT_MESSAGE, isJpgOrPng } from '@/lib/photoFile';
 
@@ -469,7 +468,8 @@ async function handleSave() {
           />
         </label>
 
-        <!-- Read from the tenancy records, not typed here. -->
+        <!-- Read from the tenancy records, not typed here. No Occupied or Vacant pill: the name,
+             or "Nobody", already says it, and Status is the next field down. -->
         <div class="ws-field">
           <span>Who lives here</span>
           <div class="flex items-center justify-between gap-3 rounded-2xl bg-canvas px-4 py-3">
@@ -480,9 +480,6 @@ async function handleSave() {
               </p>
               <p class="ws-hint mt-0.5">From the tenancy records.</p>
             </div>
-            <StatusPill :tone="occupantsSummary.count > 0 ? 'paid' : 'neutral'">
-              {{ occupantsSummary.count > 0 ? 'Occupied' : 'Vacant' }}
-            </StatusPill>
           </div>
         </div>
 
