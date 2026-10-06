@@ -143,16 +143,6 @@
      second half of the motion is still on screen. Controls answering a press
      keep `--ease-out`; that SHOULD be instant. */
   --ease-out-soft: cubic-bezier(0.33, 1, 0.68, 1);
-
-  /* The named "easeOutBack" curve (easings.dev) - overshoots the target by
-     design before settling, rather than approaching it and stopping. Reserved
-     for a chart or figure arriving on first paint (a bar growing to its
-     measured height, a tile's number appearing): a real thing arriving with
-     weight, not a control answering a click. Never on anything a person can
-     trigger repeatedly - the "no bounce in most UI" rule stays for buttons,
-     menus and toggles; this is the deliberate exception for data, not a
-     replacement for `--ease-out`. */
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 :root {

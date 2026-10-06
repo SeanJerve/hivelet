@@ -248,7 +248,9 @@ async function submitInquiry() {
           </RouterLink>
 
           <p class="flex flex-wrap items-baseline justify-end gap-x-3">
-            <span class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</span>
+            <!-- The label from 640px only: with it the bar wrapped to two rows on a 390px phone,
+                 "Hivelet" alone on the first; the tappable number says what it is. -->
+            <span class="hidden text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft sm:inline">Contact us</span>
             <a
               :href="`tel:${LANDLADY.phone}`"
               class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
