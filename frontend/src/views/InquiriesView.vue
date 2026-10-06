@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { showPhone } from '@/lib/phoneFormat';
+import { rememberFilters } from '@/lib/savedFilters';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
@@ -208,6 +209,8 @@ const inquiryFilters = computed<ToolbarFilter[]>(() => [
 
 // Filters > Order (Sean, 2026-10-02, every list).
 const inquiryOrder = ref<RowOrder>('newest');
+// Kept for the tab (lib/savedFilters.ts).
+rememberFilters('inquiries', { status: statusFilter, order: inquiryOrder });
 const filteredInquiries = computed(() => {
   return sortRows(inquiries.filter(inq => {
     const matchesSearch =

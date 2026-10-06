@@ -6,6 +6,7 @@
 -->
 <script setup lang="ts">
 import { domId } from '@/lib/domId';
+import { rememberFilters } from '@/lib/savedFilters';
 import { ref, computed, onMounted } from 'vue';
 import {
   rooms,
@@ -115,6 +116,8 @@ onMounted(() => {
 });
 
 const roomOrder = ref<RowOrder>('unit');
+// Kept for the tab (lib/savedFilters.ts).
+rememberFilters('rooms', { status: selectedStatus, cluster, view: viewMode, order: roomOrder });
 const filteredRooms = computed(() => {
   const matched = rooms.filter((u) => {
     const matchesCluster = cluster.value === 'All' || u.cluster === cluster.value;

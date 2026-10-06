@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
+import { rememberFilters } from '@/lib/savedFilters';
 import { api } from '@/lib/api';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
@@ -294,6 +295,8 @@ const paymentHistory = ref<Array<{
 const currentYear = Number(propertyToday().slice(0, 4));
 const selectedYear = ref(currentYear);
 const sortOrder = ref<'latest' | 'oldest'>('latest');
+// Kept for the tab (lib/savedFilters.ts).
+rememberFilters('my-payments', { year: selectedYear, order: sortOrder });
 /**
  * Set when `/tenant/my-payments` could not be read.
  *

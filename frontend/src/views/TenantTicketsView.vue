@@ -12,6 +12,7 @@
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { currentUser } from '@/lib/authStore';
+import { rememberFilters } from '@/lib/savedFilters';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
@@ -206,6 +207,8 @@ const activeRoomId = ref<string | null>(null);
 
 // Status filter chips. 'All' is the default so nothing is hidden on first paint.
 const statusFilter = ref<'All' | 'Open' | 'Resolved'>('All');
+// Kept for the tab (lib/savedFilters.ts).
+rememberFilters('my-repairs', { status: statusFilter });
 /** The toolbar's one filter (components/ui/ListToolbar.vue); `statusFilter` stays the state. */
 const ticketFilters = computed<ToolbarFilter[]>(() => [
   { key: 'status', label: 'Show', value: statusFilter.value, defaultValue: 'All', options: ticketFilterOptions },

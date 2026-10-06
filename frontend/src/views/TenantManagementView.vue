@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { domId } from '@/lib/domId';
+import { rememberFilters } from '@/lib/savedFilters';
 import { showPhone } from '@/lib/phoneFormat';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
@@ -514,6 +515,8 @@ const rows = computed(() => {
 /** How to look at the same rows: flat and alphabetical, or split by cluster. */
 type ViewMode = 'list' | 'grouped';
 const viewMode = ref<ViewMode>('grouped');
+// Kept for the tab (lib/savedFilters.ts).
+rememberFilters('tenants', { year: historyYear, month: historyMonth, status: statusFilter, order: tenantOrder, view: viewMode });
 
 /**
  * The toolbar's switch and filters (components/ui/ListToolbar.vue, Sean,
