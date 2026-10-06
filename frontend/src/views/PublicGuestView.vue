@@ -314,7 +314,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       screen under 480px tall (a phone held sideways), where a quarter is too
       little for the line.
 
-      A phone held upright gets the same three quarters (Sean, 7 Oct 2026; it
+      A phone held upright gets the same three quarters (Sean, 6 Oct 2026, evening; it
       had half a screen, which also showed the address and the next section):
       the photograph, then only the "33 Units, 4 Floors" line under it. The
       name keeps its size.
@@ -424,7 +424,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
         <!-- On a phone held upright the heading fills the quarter of the screen under the
              three-quarter hero, so the first screen is the photograph and this line only, and the
-             address starts below it (Sean, 7 Oct 2026). -->
+             address starts below it (Sean, 6 Oct 2026). -->
         <div class="max-md:portrait:flex max-md:portrait:min-h-[25vh] max-md:portrait:min-h-[25svh] max-md:portrait:items-center max-md:portrait:justify-center">
           <h2 class="text-center font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(1.9rem,6vw,5.25rem)]">
             33 Units, 4 Floors
