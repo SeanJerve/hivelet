@@ -1,7 +1,20 @@
 # CONTINUE HERE — handoff for the next machine
 
 > [!IMPORTANT]
-> **0.0 — 5 October 2026, night (Sean asleep; Claude on his machine, on his standing go-ahead).**
+> **0.0 — 6 October 2026, evening. Next: the survey CSV (Sean sends it 7 Oct).**
+>
+> - **Chapters 4 and 5 realigned to ISO** (adviser: the evaluation must be aligned with ISO). Every
+>   test is a measure of an ISO/IEC 25010:2011 sub-characteristic (Table 7D, Tables 14A to 21A); §4.4
+>   follows ISO/IEC 25040 (Table 12B), with a 2023 crosswalk (12C), measured beside rated (22A) and
+>   quality in use (22B). **Chapter 3 needs FIXES H8 pasted.** With the CSV: run
+>   `compute-survey.mjs`, fill Tables 12 to 22, copy each composite mean into Table 22A's last column
+>   and write its paragraph, then Chapter 5's conclusion 4 and the abstract.
+> - **Website:** phone hero three quarters with only "33 Units, 4 Floors" below; two polish rounds
+>   (no Occupied pills, "Not entered yet" instead of ₱0 month cards, reference field only for
+>   GCash or bank, inquiry header on one row). All live, Vercel green on 6c02b4c.
+> - **Open:** B-101 (creds), B-102 (F2F headcount, owner), B-100 (079, Sean). Next migration **080**.
+>
+> **0.0 (previous) — 5 October 2026, night (Sean asleep; Claude on his machine, on his standing go-ahead).**
 >
 > - **Do not expect the sign-in suites to pass until `credentials/creds.txt` has the current admin
 >   password** (B-101). Three refused attempts on the owner's account (it locks at 5); both suites now
