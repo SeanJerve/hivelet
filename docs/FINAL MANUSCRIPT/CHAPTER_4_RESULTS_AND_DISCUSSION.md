@@ -51,6 +51,14 @@
 > `FIXES_TO_CHAPTERS_1_TO_3.md` H8** (its Table 4B assigns every survey item to a sub-characteristic,
 > which §4.4 relies on). The survey's items and Tables 14 to 22 are unchanged, so
 > `compute-survey.mjs` still fills them as before.
+>
+> **Updated 2026-10-07: the survey is in.** Six responses (owner 1, tenants 3, prospect 1, technical
+> evaluator 1), exported by Lloyd. Tables 12, 12A (but Distributed), 13A and 14 to 22 filled by
+> `compute-survey.mjs --method=A` (the mean of the group means; method B is reported in one sentence
+> in §4.4.2); one interpretation paragraph per characteristic, each read against its measured table;
+> Table 22A's rated column and its paragraph; four survey rows in Table 23; satisfaction comments in
+> Table 22B. Overall **4.53, Very High Quality**; lowest Maintainability 4.00 (one rater) and
+> Usability 4.12. The export's name column was removed before use (B-103).
 
 This chapter presents the results of the study and discusses what they mean. It is organized by
 the four specific objectives in Section 1.2: the analysis of existing practices (4.1), the
@@ -960,18 +968,11 @@ is classified in Table 23A; it was not critical, and no critical defect was foun
 
 *Answers Objective 4.*
 
-> **TEAM NOTE.** Everything in this section waits on the survey. The items in each table are
-> copied word for word from `docs/chapter 4 tenative/ISO_25010_SURVEY_INSTRUMENT.md`. If the
-> wording in the Google Form changes, change it here too. Section 3.3 must also name the
-> technical evaluators as a third group, or the Maintainability table has no respondents that
-> Chapter 3 accounts for (see `FIXES_TO_CHAPTERS_1_TO_3.md`).
->
-> **TEAM NOTE (2026-09-30).** If prospective tenants answered the survey (its Section 5), they are a
-> fourth group: add them to the paragraph below ("...the owner, the tenants, prospective tenants who
-> used only the public website, and technical evaluators... Prospective tenants did not rate
-> Security or Maintainability, which a visitor cannot observe.") and keep their row in Table 12.
-> `scripts/survey/compute-survey.mjs` prints their rows in Tables 14 to 18 and 21. If none took
-> part, delete the row. Chapter 3 text: `FIXES_TO_CHAPTERS_1_TO_3.md` H4.
+> **TEAM NOTE.** Filled on 7 October 2026 from the Google Form export (six responses, names removed:
+> `docs/TESTING_DAY/results/ISO_IEC_25010_Software_Quality_Assessment.csv`) by
+> `scripts/survey/compute-survey.mjs --method=A`. The items are word for word the form's. Chapter 3
+> must name all four respondent groups (FIXES H2 and H4) and the framework (H8). Still the team's:
+> the Distributed column of Table 12A.
 
 The evaluation followed the five steps of the evaluation process in ISO/IEC 25040, set out in Table
 12B. The quality model is that of ISO/IEC 25010:2011, the edition on whose eight characteristics the
@@ -983,11 +984,12 @@ instrument was built. Each characteristic was judged on two kinds of evidence:
 - **Rated quality**: the survey, in which each item is assigned to one sub-characteristic (Chapter
   3, Table 4B), so that every mean in Tables 14 to 21 belongs to a named part of the model.
 
-The survey was answered by three groups: the owner, the tenants, and technical evaluators (IT
-professionals, developers or IT faculty). Each group rated only what it is in a position to judge.
-Tenants use only the tenant portal, so they did not rate Security or Maintainability. Only
-technical evaluators rated Maintainability, because judging it requires reading the source code and
-documentation.
+The survey was answered by four groups: the owner, the tenants, prospective tenants who used only
+the public website, and technical evaluators (IT professionals, developers or IT faculty). Each
+group rated only what it is in a position to judge. Tenants use only the tenant portal, so they did
+not rate Security or Maintainability, and prospective tenants, who see only the public website,
+rated neither. Only technical evaluators rated Maintainability, because judging it requires reading
+the source code and documentation.
 
 **Table 12B.** The Evaluation Process, Following ISO/IEC 25040
 
@@ -1022,29 +1024,42 @@ against either edition.
 
 ### 4.4.1 Respondents
 
-**Table 12.** Distribution of Respondents [DATA PENDING]
+**Table 12.** Distribution of Respondents
 
 | Group | Number | Percent |
 | :--- | ---: | ---: |
-| Owner / administrator | | |
-| Tenants | | |
-| Technical evaluators | | |
-| Prospective tenants | | |
-| **Total** | | 100% |
+| Owner / administrator | 1 | 16.67% |
+| Tenants | 3 | 50.00% |
+| Technical evaluators | 1 | 16.67% |
+| Prospective tenants | 1 | 16.67% |
+| **Total** | **6** | 100% |
 
-**Table 12A.** Instrument Administration and Response Rate [DATA PENDING]
+Six people answered, each after using the system and each after giving consent on the form's
+first page: the prospective tenant on the afternoon of 30 September 2026, after browsing the public
+site and sending an inquiry; the three tenants that evening, after their tasks in Section 4.3.7;
+the owner that night, after her walkthrough (Section 4.3.4); and one technical evaluator on 4
+October, the day after the evaluators' review of the live system (Table 23). Three of the four
+groups therefore have one respondent each. For those groups a mean is one person's rating and no
+standard deviation can be computed, and the results below describe how these six people rated the
+system, not a sample from which a wider population can be inferred.
+
+**Table 12A.** Instrument Administration and Response Rate
 
 | Group | Distributed | Retrieved | Valid | Response rate |
 | :--- | ---: | ---: | ---: | ---: |
-| Owner / administrator | | | | |
-| Tenants | | | | |
-| Technical evaluators | | | | |
-| Prospective tenants | | | | |
-| **Total** | | | | |
+| Owner / administrator | 1 | 1 | 1 | 100% |
+| Tenants | [team] | 3 | 3 | valid / distributed |
+| Technical evaluators | [team] | 1 | 1 | valid / distributed |
+| Prospective tenants | [team] | 1 | 1 | valid / distributed |
+| **Total** | [team] | **6** | **6** | |
 
-> **TEAM NOTE.** `compute-survey.mjs` prints Retrieved and Valid (a response that answered every
-> rated item of its own section). **Distributed** is ours to count: how many owners, tenants,
-> evaluators and prospects were given the form. Response rate = valid / distributed.
+> **TEAM NOTE.** Filled 7 Oct 2026 from the form export (`docs/TESTING_DAY/results/`, names
+> removed). Retrieved and Valid are from `compute-survey.mjs` (valid = answered every rated item of
+> its own section). **Distributed is still ours to count**: the owner's is 1 (the one administrator);
+> for the tenants, prospects and technical evaluators, write how many were given the form or its QR
+> code, then the response rate = valid / distributed. If the form went only to the three tenants and
+> one prospect who tested, write 3 and 1 (100%). How many evaluators reviewed the site on 3 October?
+> One answered.
 
 ### 4.4.2 Interpretation of Scores
 
@@ -1060,52 +1075,58 @@ Each item was rated on the five-point scale in Table 4. Mean scores are read usi
 | 1.81 – 2.60 | Low Quality |
 | 1.00 – 1.80 | Very Low Quality |
 
-[DECISION PENDING: state how the composite mean is computed. We recommend the **mean of the group
-means**, so that one owner is not outweighed by many tenants on functions only she uses. Whichever
-is chosen, write it here in one sentence.]
+The composite mean of each characteristic is the mean of the group means, so that one owner is not
+outweighed by three tenants on functions only she uses; the overall mean is the mean of the eight
+composites. Averaging every response together instead gives an overall mean of 4.55 rather than 4.53,
+with the same interpretation and the same highest and two lowest characteristics.
 
 Table 13A works one weighted mean in full, so that every mean in Tables 14 to 21 can be checked
 the same way: each rating is multiplied by the number of respondents who chose it, and the sum of
 the products is divided by the number of respondents, WM = Σ(f × w) / N.
 
-**Table 13A.** Worked Computation of a Weighted Mean [DATA PENDING]
+**Table 13A.** Worked Computation of a Weighted Mean
+
+Indicator: "I can see my own unit details, my bill, and what I still owe." (Functional Suitability, rated by tenants).
 
 | Rating (w) | Meaning | Frequency (f) | f × w |
 | ---: | :--- | ---: | ---: |
-| 5 | Strongly Agree | | |
-| 4 | Agree | | |
-| 3 | Neutral | | |
-| 2 | Disagree | | |
-| 1 | Strongly Disagree | | |
-| **Total** | | **N =** | **Σ(f × w) =** |
+| 5 | Strongly Agree | 3 | 15 |
+| 4 | Agree | 0 | 0 |
+| 3 | Neutral | 0 | 0 |
+| 2 | Disagree | 0 | 0 |
+| 1 | Strongly Disagree | 0 | 0 |
+| **Total** | | **N = 3** | **Σ(f × w) = 15** |
 
-> **TEAM NOTE.** Printed by `compute-survey.mjs` for the indicator with the most answers, with the
-> sentence that goes under it ("WM = ... which Table 13 reads as ..."). Paste both.
+WM = Σ(f × w) / N = 15 / 3 = **5.00**, which Table 13 reads as **Very High Quality**.
 
 ### 4.4.3 Functional Suitability
 
-**Table 14.** Evaluation Results for Functional Suitability [DATA PENDING]
+**Table 14.** Evaluation Results for Functional Suitability
 
-| Indicator | Rated by | Mean | Interpretation |
-| :--- | :--- | ---: | :--- |
-| The system lets me manage tenant records, units, and the number of occupants in each unit. | Owner | | |
-| The system computes rent and water charges correctly, without me doing the arithmetic myself. | Owner | | |
-| Payments I receive in person are recorded accurately against the correct unit and month. | Owner | | |
-| Online payments made by tenants appear correctly for me to verify before they are settled. | Owner | | |
-| Maintenance requests can be submitted, followed, and closed within the system. | Owner | | |
-| The financial reports the system produces match the records I keep. | Owner | | |
-| **Owner mean** | | | |
-| I can see my own unit details, my bill, and what I still owe. | Tenants | | |
-| I can submit a maintenance request and follow what happens to it. | Tenants | | |
-| I can see a record of the payments I have made. | Tenants | | |
-| **Tenant mean** | | | |
-| The system provides the functions required for tenant, unit, and occupancy management. | Technical | | |
-| Rent and water charges are computed correctly and consistently. | Technical | | |
-| Payment recording and verification behave correctly for both in-person and online payments. | Technical | | |
-| The maintenance ticketing workflow supports submission, tracking, and closure. | Technical | | |
-| Generated reports agree with the records held in the database. | Technical | | |
-| **Technical evaluator mean** | | | |
-| **Composite mean** | | | |
+| Indicator | Rated by | Mean | SD | Interpretation |
+| :--- | :--- | ---: | ---: | :--- |
+| The system lets me manage tenant records, units, and the number of occupants in each unit. | Owner | 5.00 |  | Very High Quality |
+| The system computes rent and water charges correctly, without me doing the arithmetic myself. | Owner | 5.00 |  | Very High Quality |
+| Payments I receive in person are recorded accurately against the correct unit and month. | Owner | 5.00 |  | Very High Quality |
+| Online payments made by tenants appear correctly for me to verify before they are settled. | Owner | 5.00 |  | Very High Quality |
+| Maintenance requests can be submitted, followed, and closed within the system. | Owner | 5.00 |  | Very High Quality |
+| The financial reports the system produces match the records I keep. | Owner | 4.00 |  | High Quality |
+| **Owner mean** | | **4.83** | | Very High Quality |
+| I can see my own unit details, my bill, and what I still owe. | Tenants | 5.00 | 0.00 | Very High Quality |
+| I can submit a maintenance request and follow what happens to it. | Tenants | 5.00 | 0.00 | Very High Quality |
+| I can see a record of the payments I have made. | Tenants | 5.00 | 0.00 | Very High Quality |
+| **Tenant mean** | | **5.00** | | Very High Quality |
+| The system provides the functions required for tenant, unit, and occupancy management. | Technical | 5.00 |  | Very High Quality |
+| Rent and water charges are computed correctly and consistently. | Technical | 5.00 |  | Very High Quality |
+| Payment recording and verification behave correctly for both in-person and online payments. | Technical | 5.00 |  | Very High Quality |
+| The maintenance ticketing workflow supports submission, tracking, and closure. | Technical | 3.00 |  | Moderate Quality |
+| Generated reports agree with the records held in the database. | Technical | 5.00 |  | Very High Quality |
+| **Technical evaluator mean** | | **4.60** | | Very High Quality |
+| I could find which kinds of units the boarding house has and how much they cost. | Prospects | 5.00 |  | Very High Quality |
+| I could see enough about a unit (its floor, how many people can stay, its floor plan) to decide whether to ask about it. | Prospects | 5.00 |  | Very High Quality |
+| I could send an inquiry about a unit without difficulty. | Prospects | 5.00 |  | Very High Quality |
+| **Prospective tenant mean** | | **5.00** | | Very High Quality |
+| **Composite mean** | | **4.86** | | **Very High Quality** |
 
 **Table 14A.** Measured Evidence for Functional Suitability
 
@@ -1120,26 +1141,35 @@ the products is divided by the number of respondents, WM = Σ(f × w) / N.
 
 Every feature the objective names is present, and between 96 and 100 per cent of the executed checks of correctness gave the right result. The one incorrect result, the ₱0 of walkthrough step 23b, concerns a figure that could not be loaded rather than a computed amount, and is reported under Reliability.
 
-[DATA PENDING: interpretation paragraph. Read the open comments first; they explain low scores.]
+Every group rated Functional Suitability Very High Quality (composite 4.86, second of eight), and
+the tenants and the prospective tenant gave every item 5. The ratings agree with the measured
+evidence. The lowest item was the technical evaluator's 3.00 for the maintenance workflow
+(submission, tracking and closure). The same evaluators had asked the day before for tenants to be
+able to withdraw a request, which was added on 5 October (Table 23), after the rating was given.
+The owner gave 4.00 to the reports matching the records she keeps, her one item below 5, without
+giving a reason.
 
 ### 4.4.4 Performance Efficiency
 
-**Table 15.** Evaluation Results for Performance Efficiency [DATA PENDING]
+**Table 15.** Evaluation Results for Performance Efficiency
 
-| Indicator | Rated by | Mean | Interpretation |
-| :--- | :--- | ---: | :--- |
-| The system responds quickly when I move between screens. | Owner | | |
-| Financial reports are produced without a long wait. | Owner | | |
-| The system stays responsive even when many records are shown at once. | Owner | | |
-| **Owner mean** | | | |
-| The system opens quickly. | Tenants | | |
-| The system responds without delay when I move between screens. | Tenants | | |
-| **Tenant mean** | | | |
-| Response times are acceptable for the expected number of users and records. | Technical | | |
-| Report generation completes within a reasonable time. | Technical | | |
-| The system uses client and server resources efficiently. | Technical | | |
-| **Technical evaluator mean** | | | |
-| **Composite mean** | | | |
+| Indicator | Rated by | Mean | SD | Interpretation |
+| :--- | :--- | ---: | ---: | :--- |
+| The system responds quickly when I move between screens. | Owner | 5.00 |  | Very High Quality |
+| Financial reports are produced without a long wait. | Owner | 4.00 |  | High Quality |
+| The system stays responsive even when many records are shown at once. | Owner | 5.00 |  | Very High Quality |
+| **Owner mean** | | **4.67** | | Very High Quality |
+| The system opens quickly. | Tenants | 5.00 | 0.00 | Very High Quality |
+| The system responds without delay when I move between screens. | Tenants | 5.00 | 0.00 | Very High Quality |
+| **Tenant mean** | | **5.00** | | Very High Quality |
+| Response times are acceptable for the expected number of users and records. | Technical | 4.00 |  | High Quality |
+| Report generation completes within a reasonable time. | Technical | 4.00 |  | High Quality |
+| The system uses client and server resources efficiently. | Technical | 4.00 |  | High Quality |
+| **Technical evaluator mean** | | **4.00** | | High Quality |
+| The website opens quickly. | Prospects | 4.00 |  | High Quality |
+| The pages respond without delay when I move around the website. | Prospects | 4.00 |  | High Quality |
+| **Prospective tenant mean** | | **4.00** | | High Quality |
+| **Composite mean** | | **4.42** | | **Very High Quality** |
 
 **Table 15A.** Measured Evidence for Performance Efficiency
 
@@ -1154,24 +1184,32 @@ Every feature the objective names is present, and between 96 and 100 per cent of
 
 No request failed at several times the property's own load, and no screen took longer than about three seconds on a phone. The script work on a phone is the one measure that leaves room for improvement (Chapter 5, recommendation 5).
 
+Performance Efficiency was rated Very High Quality (4.42) but sixth of eight. The tenants gave every
+item 5; the technical evaluator and the prospective tenant gave every item 4, and the owner gave 4 to
+the wait for financial reports and 5 to the rest. This matches the measurements: no request failed,
+but the slowest screens took two to three seconds on a phone, and on a simulated slow phone Google's
+PageSpeed Insights drew the public page's largest element at 3.4 to 3.6 seconds (Section 4.3.5).
+
 ### 4.4.5 Compatibility
 
-**Table 16.** Evaluation Results for Compatibility [DATA PENDING]
+**Table 16.** Evaluation Results for Compatibility
 
-| Indicator | Rated by | Mean | Interpretation |
-| :--- | :--- | ---: | :--- |
-| The system works correctly in the browser I normally use. | Owner | | |
-| Reports exported from the system open correctly in my spreadsheet program. | Owner | | |
-| I can use the system at the same time as the other applications on my device. | Owner | | |
-| **Owner mean** | | | |
-| The system works correctly in the browser I normally use. | Tenants | | |
-| I can use the system at the same time as my other apps. | Tenants | | |
-| **Tenant mean** | | | |
-| The system operates correctly across current mainstream browsers. | Technical | | |
-| Exported files conform to formats that other applications can read. | Technical | | |
-| The system coexists with other applications without interference. | Technical | | |
-| **Technical evaluator mean** | | | |
-| **Composite mean** | | | |
+| Indicator | Rated by | Mean | SD | Interpretation |
+| :--- | :--- | ---: | ---: | :--- |
+| The system works correctly in the browser I normally use. | Owner | 5.00 |  | Very High Quality |
+| Reports exported from the system open correctly in my spreadsheet program. | Owner | 5.00 |  | Very High Quality |
+| I can use the system at the same time as the other applications on my device. | Owner | 5.00 |  | Very High Quality |
+| **Owner mean** | | **5.00** | | Very High Quality |
+| The system works correctly in the browser I normally use. | Tenants | 4.67 | 0.58 | Very High Quality |
+| I can use the system at the same time as my other apps. | Tenants | 4.67 | 0.58 | Very High Quality |
+| **Tenant mean** | | **4.67** | | Very High Quality |
+| The system operates correctly across current mainstream browsers. | Technical | 5.00 |  | Very High Quality |
+| Exported files conform to formats that other applications can read. | Technical | 5.00 |  | Very High Quality |
+| The system coexists with other applications without interference. | Technical | 5.00 |  | Very High Quality |
+| **Technical evaluator mean** | | **5.00** | | Very High Quality |
+| The website works correctly in the browser I normally use. | Prospects | 4.00 |  | High Quality |
+| **Prospective tenant mean** | | **4.00** | | High Quality |
+| **Composite mean** | | **4.67** | | **Very High Quality** |
 
 **Table 16A.** Measured Evidence for Compatibility
 
@@ -1184,31 +1222,40 @@ No request failed at several times the property's own load, and no screen took l
 
 The system exchanged data correctly with the two outside systems it depends on, the payment gateway and the owner's spreadsheet program, and worked on every browser tried. Co-existence with other applications on the same device was not tested on its own, so it rests on the survey.
 
+Compatibility was rated Very High Quality (4.67). The owner and the technical evaluator gave every
+item 5; two tenants each gave one of the two items 4, and the prospective tenant gave 4. The
+ratings agree with the browser matrix, on which every combination tried worked. Co-existence, which
+no test measured, was rated 4.67 by the tenants and 5 by the owner and the evaluator.
+
 ### 4.4.6 Usability
 
-**Table 17.** Evaluation Results for Usability [DATA PENDING]
+**Table 17.** Evaluation Results for Usability
 
-| Indicator | Rated by | Mean | Interpretation |
-| :--- | :--- | ---: | :--- |
-| I can tell what each screen is for without being taught. | Owner | | |
-| The words and labels used match the way I actually talk about my property. | Owner | | |
-| Before anything is changed or deleted, the system asks me to confirm and tells me what will happen. | Owner | | |
-| When something goes wrong, the message tells me what to do about it. | Owner | | |
-| I was able to learn the system without technical help. | Owner | | |
-| **Owner mean** | | | |
-| I can tell what each screen is for without being taught. | Tenants | | |
-| The words used in the system are easy to understand. | Tenants | | |
-| It is clear how much I owe and what the amount is made up of. | Tenants | | |
-| When something goes wrong, the message tells me what to do about it. | Tenants | | |
-| I was able to use the system without anyone explaining it to me. | Tenants | | |
-| **Tenant mean** | | | |
-| The interface is understandable without prior training. | Technical | | |
-| Terminology is consistent across the system and appropriate to the users. | Technical | | |
-| Destructive actions require confirmation and state their consequence. | Technical | | |
-| Error messages are actionable rather than technical. | Technical | | |
-| The interface is operable for users with limited technical background. | Technical | | |
-| **Technical evaluator mean** | | | |
-| **Composite mean** | | | |
+| Indicator | Rated by | Mean | SD | Interpretation |
+| :--- | :--- | ---: | ---: | :--- |
+| I can tell what each screen is for without being taught. | Owner | 3.00 |  | Moderate Quality |
+| The words and labels used match the way I actually talk about my property. | Owner | 4.00 |  | High Quality |
+| Before anything is changed or deleted, the system asks me to confirm and tells me what will happen. | Owner | 5.00 |  | Very High Quality |
+| When something goes wrong, the message tells me what to do about it. | Owner | 5.00 |  | Very High Quality |
+| I was able to learn the system without technical help. | Owner | 3.00 |  | Moderate Quality |
+| **Owner mean** | | **4.00** | | High Quality |
+| I can tell what each screen is for without being taught. | Tenants | 4.00 | 0.00 | High Quality |
+| The words used in the system are easy to understand. | Tenants | 5.00 | 0.00 | Very High Quality |
+| It is clear how much I owe and what the amount is made up of. | Tenants | 4.33 | 0.58 | Very High Quality |
+| When something goes wrong, the message tells me what to do about it. | Tenants | 4.67 | 0.58 | Very High Quality |
+| I was able to use the system without anyone explaining it to me. | Tenants | 4.33 | 0.58 | Very High Quality |
+| **Tenant mean** | | **4.47** | | Very High Quality |
+| The interface is understandable without prior training. | Technical | 3.00 |  | Moderate Quality |
+| Terminology is consistent across the system and appropriate to the users. | Technical | 3.00 |  | Moderate Quality |
+| Destructive actions require confirmation and state their consequence. | Technical | 3.00 |  | Moderate Quality |
+| Error messages are actionable rather than technical. | Technical | 3.00 |  | Moderate Quality |
+| The interface is operable for users with limited technical background. | Technical | 3.00 |  | Moderate Quality |
+| **Technical evaluator mean** | | **3.00** | | Moderate Quality |
+| I could tell what each part of the website is for without being taught. | Prospects | 5.00 |  | Very High Quality |
+| The words used on the website are easy to understand. | Prospects | 5.00 |  | Very High Quality |
+| When I made a mistake in the inquiry form, the message told me what to fix. | Prospects | 5.00 |  | Very High Quality |
+| **Prospective tenant mean** | | **5.00** | | Very High Quality |
+| **Composite mean** | | **4.12** | | **High Quality** |
 
 **Table 17A.** Measured Evidence for Usability
 
@@ -1222,6 +1269,22 @@ The system exchanged data correctly with the two outside systems it depends on, 
 | Accessibility | Automated scans with a WCAG 2.2 level A or AA violation, X = A / B | 0 / 76 after the correction of 5 October 2026; Lighthouse accessibility score 100 | Sections 4.3.5 and 4.4.6 |
 
 Nine tasks in ten were done without help, and the only help needed was in the first two things a new user does. The instrument did not ask about appearance, so user interface aesthetics is not evaluated in this study.
+
+Usability was rated **High Quality (4.12), the lowest of the characteristics that all four groups
+rated**, and seventh of eight overall. The ratings divide by group. The prospective tenant gave every
+item 5 and the tenants 4.47. The owner gave 4.00, with 3 for being able to tell what each screen is
+for without being taught and for learning the system without technical help. The technical evaluator
+gave 3 to all five items. Two facts explain most of this. The evaluator answered on the night of 4
+October, after the review of 3 October and before its fourteen comments, eleven of them about
+usability, were acted on the next day (Table 23), so the rating describes the system before those
+changes. And the owner's walkthrough was read to her step by step (Section 4.3.4), so she learned the
+system with help, as her answer says. Here the rating and the measurement disagree, and both are
+right: the tenants completed nine tasks in ten without help and the screens passed every
+accessibility check, but those measure whether a task can be done and whether the screens are built
+correctly, not how easily a first-time user finds their way. Mia et al. (2024) name limited
+technical capacity as a barrier for small Philippine enterprises adopting digital tools; the owner's
+two ratings of 3 place that barrier at the start of use, where the tenants' need for help also fell
+(Section 4.3.7). Chapter 5 takes this up in recommendation 6.
 
 An accessibility audit on 2 October 2026 extended the earlier scan (Section 4.3.6) to every kind of
 screen: 19 screens, eight public, seven of the owner's and four of the tenant's, each in light and
@@ -1240,25 +1303,27 @@ that the screens are built correctly for assistive technology, not that a user o
 
 ### 4.4.7 Reliability
 
-**Table 18.** Evaluation Results for Reliability [DATA PENDING]
+**Table 18.** Evaluation Results for Reliability
 
-| Indicator | Rated by | Mean | Interpretation |
-| :--- | :--- | ---: | :--- |
-| The system is available whenever I need it during the day. | Owner | | |
-| Records I enter are still there when I come back to them. | Owner | | |
-| When information cannot be loaded, the system says so instead of showing a wrong amount. | Owner | | |
-| After an interruption, nothing I had already recorded was lost. | Owner | | |
-| **Owner mean** | | | |
-| The system is available whenever I try to use it. | Tenants | | |
-| The information shown to me is correct and up to date. | Tenants | | |
-| When something cannot be loaded, the system says so instead of showing a wrong amount. | Tenants | | |
-| **Tenant mean** | | | |
-| The system handles failure of a request without presenting incorrect data. | Technical | | |
-| Recorded data is retained reliably. | Technical | | |
-| The system distinguishes clearly between "no data" and "data could not be loaded". | Technical | | |
-| The system recovers from interruption without data loss. | Technical | | |
-| **Technical evaluator mean** | | | |
-| **Composite mean** | | | |
+| Indicator | Rated by | Mean | SD | Interpretation |
+| :--- | :--- | ---: | ---: | :--- |
+| The system is available whenever I need it during the day. | Owner | 5.00 |  | Very High Quality |
+| Records I enter are still there when I come back to them. | Owner | 5.00 |  | Very High Quality |
+| When information cannot be loaded, the system says so instead of showing a wrong amount. | Owner | 5.00 |  | Very High Quality |
+| After an interruption, nothing I had already recorded was lost. | Owner | 5.00 |  | Very High Quality |
+| **Owner mean** | | **5.00** | | Very High Quality |
+| The system is available whenever I try to use it. | Tenants | 4.33 | 1.15 | Very High Quality |
+| The information shown to me is correct and up to date. | Tenants | 4.33 | 0.58 | Very High Quality |
+| When something cannot be loaded, the system says so instead of showing a wrong amount. | Tenants | 4.00 | 1.00 | High Quality |
+| **Tenant mean** | | **4.22** | | Very High Quality |
+| The system handles failure of a request without presenting incorrect data. | Technical | 3.00 |  | Moderate Quality |
+| Recorded data is retained reliably. | Technical | 5.00 |  | Very High Quality |
+| The system distinguishes clearly between "no data" and "data could not be loaded". | Technical | 5.00 |  | Very High Quality |
+| The system recovers from interruption without data loss. | Technical | 4.00 |  | High Quality |
+| **Technical evaluator mean** | | **4.25** | | Very High Quality |
+| The information shown (units, rates, availability) looks correct and up to date. | Prospects | 5.00 |  | Very High Quality |
+| **Prospective tenant mean** | | **5.00** | | Very High Quality |
+| **Composite mean** | | **4.62** | | **Very High Quality** |
 
 **Table 18A.** Measured Evidence for Reliability
 
@@ -1274,27 +1339,35 @@ that the screens are built correctly for assistive technology, not that a user o
 
 The system failed safely in most of the conditions tried, and no defect found was critical. Two results fell short of the design, both on a real device without a connection (step 23b and the late message on Android), and availability over time was not measured (Chapter 5, recommendation 8).
 
+Reliability was rated Very High Quality (4.62). The owner gave every item 5. The tenants' ratings
+spread more than on any other characteristic: one tenant rated both availability and the notice
+when something cannot be loaded 3, where the other two gave 4 or 5. The technical evaluator gave 3 to the system
+handling a failed request without presenting incorrect data. **That rating agrees with the one
+open defect of the testing**: in the walkthrough the Overview showed ₱0 instead of "—" with the
+connection cut (step 23b), a failed request presented as a figure. The ratings and the measurements
+point at the same weakness.
+
 ### 4.4.8 Security
 
 Tenants did not rate Security. They see only their own portal and cannot judge how the rest of the
 system is protected.
 
-**Table 19.** Evaluation Results for Security [DATA PENDING]
+**Table 19.** Evaluation Results for Security
 
-| Indicator | Rated by | Mean | Interpretation |
-| :--- | :--- | ---: | :--- |
-| Only I can reach the financial records. | Owner | | |
-| A tenant can see only their own information. | Owner | | |
-| I can see a record of the actions taken in the system and who took them. | Owner | | |
-| I can change my password myself when I need to. | Owner | | |
-| **Owner mean** | | | |
-| Access to functions and records is correctly restricted by role. | Technical | | |
-| A tenant account cannot reach administrative data. | Technical | | |
-| Administrative actions are recorded in an auditable trail. | Technical | | |
-| Credentials are handled and stored appropriately. | Technical | | |
-| Authentication and session handling follow accepted practice. | Technical | | |
-| **Technical evaluator mean** | | | |
-| **Composite mean** | | | |
+| Indicator | Rated by | Mean | SD | Interpretation |
+| :--- | :--- | ---: | ---: | :--- |
+| Only I can reach the financial records. | Owner | 5.00 |  | Very High Quality |
+| A tenant can see only their own information. | Owner | 5.00 |  | Very High Quality |
+| I can see a record of the actions taken in the system and who took them. | Owner | 5.00 |  | Very High Quality |
+| I can change my password myself when I need to. | Owner | 5.00 |  | Very High Quality |
+| **Owner mean** | | **5.00** | | Very High Quality |
+| Access to functions and records is correctly restricted by role. | Technical | 5.00 |  | Very High Quality |
+| A tenant account cannot reach administrative data. | Technical | 5.00 |  | Very High Quality |
+| Administrative actions are recorded in an auditable trail. | Technical | 5.00 |  | Very High Quality |
+| Credentials are handled and stored appropriately. | Technical | 3.00 |  | Moderate Quality |
+| Authentication and session handling follow accepted practice. | Technical | 4.00 |  | High Quality |
+| **Technical evaluator mean** | | **4.40** | | Very High Quality |
+| **Composite mean** | | **4.70** | | **Very High Quality** |
 
 **Table 19A.** Measured Evidence for Security
 
@@ -1311,6 +1384,15 @@ system is protected.
 | All | High-severity problems found by the code review | 0 | Later in this section |
 
 Every protection tried held, and all three outside scanners graded the site A+, the evidence for which follows.
+
+Security was rated Very High Quality (4.70) by the owner and the technical evaluator, the two groups
+who rated it. The owner gave every item 5. The evaluator gave 5 to role restriction, to a tenant
+being kept out of administrative data and to the audit trail, 4 to authentication and session
+handling, and 3 to the handling and storage of credentials. The 4 agrees with the code review, which
+accepted two low-risk session weaknesses: sign-in attempt limits counted per server instance, and
+signing out not revoking a token already issued (Table 23A). The 3 is not explained by the measured
+evidence, in which passwords are stored only as bcrypt hashes and accounts lock after five wrong
+attempts, and the evaluator gave no reason on the form; it is reported as given.
 
 Three passive external scans, which read the public site the way a browser does, were run as
 supporting evidence. **Qualys SSL Labs graded the HTTPS setup A+** on 29 September 2026 (TLS 1.2
@@ -1367,48 +1449,65 @@ conversation only.
 Only technical evaluators rated Maintainability, after being given access to the source code and
 documentation.
 
-**Table 20.** Evaluation Results for Maintainability [DATA PENDING]
+**Table 20.** Evaluation Results for Maintainability
 
-| Indicator | Rated by | Mean | Interpretation |
-| :--- | :--- | ---: | :--- |
-| The codebase is organized so that a change can be located and made confidently. | Technical | | |
-| The system is documented sufficiently for another developer to maintain it. | Technical | | |
-| Changes to configurable values do not require code changes. | Technical | | |
-| Automated checks exist that would catch a regression. | Technical | | |
-| A change in one part of the system is unlikely to disturb unrelated parts. | Technical | | |
-| **Composite mean** | | | |
+| Indicator | Rated by | Mean | SD | Interpretation |
+| :--- | :--- | ---: | ---: | :--- |
+| The codebase is organized so that a change can be located and made confidently. | Technical | 4.00 |  | High Quality |
+| The system is documented sufficiently for another developer to maintain it. | Technical | 4.00 |  | High Quality |
+| Changes to configurable values do not require code changes. | Technical | 4.00 |  | High Quality |
+| Automated checks exist that would catch a regression. | Technical | 4.00 |  | High Quality |
+| A change in one part of the system is unlikely to disturb unrelated parts. | Technical | 4.00 |  | High Quality |
+| **Technical evaluator mean** | | **4.00** | | High Quality |
+| **Composite mean** | | **4.00** | | **High Quality** |
 
 **Table 20A.** Measured Evidence for Maintainability
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Modularity | Routes whose access comes from the one permission matrix, checked on every run, X = A / B | 55 / 55 = 1.00 | Section 4.2.6 |
+| Modularity | Database calls made through service modules rather than inside the request handlers, X = A / B | 50 / 204 = 0.25; the owner's handlers are one file of 5,120 lines | The server's code, counted 7 October 2026 |
 | Reusability | Not measured and not rated | | |
 | Analysability | Changes to the database kept as numbered, reviewable migrations | Every change; more than 70 by 5 October 2026 | Section 4.2.1 |
 | Modifiability | The water rate changed without a change to the code | Changed in the settings | Section 4.2.4 |
 | Testability | Automated suites that run against the live system without writing to it, passing, X = A / B | 20 / 20 = 1.00 | Table 8 |
 
-The system can be checked as a whole on every change without touching the owner's records. Reusability was neither measured nor asked about.
+The system can be checked as a whole on every change without touching the owner's records. Its
+parts are less separate than its checks: three database calls in four are written inside the request
+handlers, so the rules for one record are spread across the handlers that touch it. Reusability was
+neither measured nor asked about.
+
+Maintainability was rated High Quality (4.00), **the lowest composite of the eight**. It rests on
+one respondent: only technical evaluators rated it, and one answered, giving every item 4. With one
+rating and no spread, the result says that the evaluator found the code base, its documentation,
+its configuration, its checks and its separation of parts good but not excellent, and no more. The
+measured evidence agrees with that reading. Testability and analysability measured strongly (Table
+20A), but modularity did not: three database calls in four sit inside the request handlers, which is
+what the item about a change in one part disturbing another asks about. Chapter 5 takes this up in
+recommendation 6.
 
 ### 4.4.10 Portability
 
-**Table 21.** Evaluation Results for Portability [DATA PENDING]
+**Table 21.** Evaluation Results for Portability
 
-| Indicator | Rated by | Mean | Interpretation |
-| :--- | :--- | ---: | :--- |
-| The system works on the devices I already own. | Owner | | |
-| I can install the system on my phone without going to an app store. | Owner | | |
-| I did not need to install any other software to use the system. | Owner | | |
-| **Owner mean** | | | |
-| The system works on my own phone or computer. | Tenants | | |
-| I can open the system on more than one device. | Tenants | | |
-| I did not need to install anything extra to use it. | Tenants | | |
-| **Tenant mean** | | | |
-| The system can be deployed to another environment without modification. | Technical | | |
-| The client installs on a mobile device without an application store. | Technical | | |
-| The system does not depend on software the target environment is unlikely to have. | Technical | | |
-| **Technical evaluator mean** | | | |
-| **Composite mean** | | | |
+| Indicator | Rated by | Mean | SD | Interpretation |
+| :--- | :--- | ---: | ---: | :--- |
+| The system works on the devices I already own. | Owner | 5.00 |  | Very High Quality |
+| I can install the system on my phone without going to an app store. | Owner | 5.00 |  | Very High Quality |
+| I did not need to install any other software to use the system. | Owner | 5.00 |  | Very High Quality |
+| **Owner mean** | | **5.00** | | Very High Quality |
+| The system works on my own phone or computer. | Tenants | 5.00 | 0.00 | Very High Quality |
+| I can open the system on more than one device. | Tenants | 4.67 | 0.58 | Very High Quality |
+| I did not need to install anything extra to use it. | Tenants | 5.00 | 0.00 | Very High Quality |
+| **Tenant mean** | | **4.89** | | Very High Quality |
+| The system can be deployed to another environment without modification. | Technical | 4.00 |  | High Quality |
+| The client installs on a mobile device without an application store. | Technical | 5.00 |  | Very High Quality |
+| The system does not depend on software the target environment is unlikely to have. | Technical | 5.00 |  | Very High Quality |
+| **Technical evaluator mean** | | **4.67** | | Very High Quality |
+| The website works on my own phone. | Prospects | 5.00 |  | Very High Quality |
+| I did not need to install anything to use it. | Prospects | 5.00 |  | Very High Quality |
+| **Prospective tenant mean** | | **5.00** | | Very High Quality |
+| **Composite mean** | | **4.89** | | **Very High Quality** |
 
 **Table 21A.** Measured Evidence for Portability
 
@@ -1421,50 +1520,68 @@ The system can be checked as a whole on every change without touching the owner'
 
 One code base served every screen size and device tried and installed without an app store. Whether the system replaces the workbook in practice is the last stage of the deployment plan (Table 25).
 
+Portability was rated highest of the eight (4.89, Very High Quality). Every group gave 5 to the
+system working on their own device and needing nothing else installed; the one item below 5 was the
+tenants' opening it on more than one device, which one tenant rated 4. The rating agrees with the
+measurement: the same code was installed on an Android phone and an iPhone without an app store.
+
 ### 4.4.11 Summary of Evaluation Results and Optimization
 
-**Table 22.** Summary of Evaluation Results [DATA PENDING]
+**Table 22.** Summary of Evaluation Results
 
 | Characteristic | n | Composite mean | Interpretation | Rank |
 | :--- | ---: | ---: | :--- | ---: |
-| Functional Suitability | | | | |
-| Performance Efficiency | | | | |
-| Compatibility | | | | |
-| Usability | | | | |
-| Reliability | | | | |
-| Security | | | | |
-| Maintainability | | | | |
-| Portability | | | | |
-| **Overall** | | | | |
+| Functional Suitability | 6 | 4.86 | Very High Quality | 2 |
+| Performance Efficiency | 6 | 4.42 | Very High Quality | 6 |
+| Compatibility | 6 | 4.67 | Very High Quality | 4 |
+| Usability | 6 | 4.12 | High Quality | 7 |
+| Reliability | 6 | 4.62 | Very High Quality | 5 |
+| Security | 2 | 4.70 | Very High Quality | 3 |
+| Maintainability | 1 | 4.00 | High Quality | 8 |
+| Portability | 6 | 4.89 | Very High Quality | 1 |
+| **Overall** | | **4.53** | **Very High Quality** | |
 
-> **TEAM NOTE.** n is the number of respondents who rated the characteristic, Rank 1 the highest
-> composite. `scripts/survey/compute-survey.mjs` prints this table with both columns, names the
-> lowest-rated characteristic (Chapter 5's recommendation 6 is written for it), and prints Table 13A.
+The six respondents rated the system **Very High Quality overall (4.53)**. Six of the eight
+characteristics were rated Very High Quality, Portability highest (4.89) and Functional Suitability
+next (4.86). Two were rated High Quality: Usability (4.12), the lowest of the characteristics every
+group rated, and Maintainability (4.00), the lowest composite, which rests on a single technical
+evaluator. No characteristic, and no group mean, fell below High Quality; the lowest single ratings
+were 3, Moderate Quality, given by the owner to two Usability items, by one tenant to two Reliability
+items, and by the technical evaluator to eight items across four characteristics. n is the number of respondents who rated the
+characteristic, and Rank 1 is the highest composite.
 
 Table 22A sets the two kinds of evidence side by side. Of the thirty-one sub-characteristics of
 ISO/IEC 25010:2011, twenty-seven have a measured result in Tables 14A to 21A and twenty-five are
 rated by at least one survey item. Two, user interface aesthetics and reusability, have neither,
 and no conclusion is drawn about them.
 
-**Table 22A.** Measured and Rated Evidence by Characteristic [rated column DATA PENDING]
+**Table 22A.** Measured and Rated Evidence by Characteristic
 
 | Characteristic | Sub-characteristics | Measured | Rated | Measured result (Tables 14A to 21A) | Composite mean (Table 22) |
 | :--- | ---: | ---: | ---: | :--- | ---: |
-| Functional Suitability | 3 | 3 | 3 | All six features present; 96 to 100 per cent of correctness checks passed | |
-| Performance Efficiency | 3 | 3 | 3 | No request failed under load; every screen usable within 3.05 s on a phone | |
-| Compatibility | 2 | 1 | 2 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct | |
-| Usability | 6 | 5 | 4 | 91 per cent of tasks without help; 0 accessibility violations in 76 scans | |
-| Reliability | 4 | 3 | 4 | No critical defect; one fail-safe result open and one late message, both offline on a real device | |
-| Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | |
-| Maintainability | 5 | 4 | 4 | 20 of 20 suites pass without writing to the records; every change a numbered migration | |
-| Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | |
-| **All** | **31** | **27** | **25** | | |
+| Functional Suitability | 3 | 3 | 3 | All six features present; 96 to 100 per cent of correctness checks passed | 4.86 |
+| Performance Efficiency | 3 | 3 | 3 | No request failed under load; every screen usable within 3.05 s on a phone | 4.42 |
+| Compatibility | 2 | 1 | 2 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct | 4.67 |
+| Usability | 6 | 5 | 4 | 91 per cent of tasks without help; 0 accessibility violations in 76 scans | 4.12 |
+| Reliability | 4 | 3 | 4 | No critical defect; one fail-safe result open and one late message, both offline on a real device | 4.62 |
+| Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | 4.70 |
+| Maintainability | 5 | 4 | 4 | 20 of 20 suites pass without writing to the records; every change a numbered migration; but 154 of 204 database calls inside the request handlers | 4.00 |
+| Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | 4.89 |
+| **All** | **31** | **27** | **25** | | **4.53** |
 
-> **TEAM NOTE.** When the survey is in, copy each characteristic's composite mean from Table 22
-> into the last column, then write one paragraph under this table saying, for each
-> characteristic, whether the rating agrees with the measured result. Where they disagree (for
-> example a low rating on a characteristic whose measures all passed), the open comments usually
-> say why, and that disagreement is worth more to the panel than the agreements.
+For seven of the eight characteristics the two kinds of evidence agree: for six, a strong measured
+result and a rating of Very High Quality, and for Maintainability, discussed below, a weaker result
+on both. The agreement is closest where it matters most. The one low rating on
+Reliability, a failed request presented as data, names the one defect the testing left open.
+**The two disagree on Usability.** Every measure of it was met, yet it was rated below every
+characteristic but one. The difference lies in what each kind of evidence can see. The measures show
+that the tasks can be done and that the screens are built correctly; the ratings record how hard the
+system was to learn for its owner, who learned it with help, and how it looked to a technical
+evaluator the night before fourteen changes were made in response to that evaluator's group. Neither
+cancels the other, and the lesson for the evaluation is the one Section 4.3.3 drew for testing:
+passing measures show what was measured. Maintainability, rated lowest, rests on one person's rating,
+but here the measurement agrees with it: the system is easy to test and to trace, and its database
+logic is not yet separated from its request handlers.
 
 ISO/IEC 25010:2011 also defines quality in use, the quality of the system as experienced by its
 users in their own context. The acceptance test of Section 4.3.7 measured it directly, in the
@@ -1477,14 +1594,14 @@ manner of ISO/IEC 25022, and Table 22B reports those measures.
 | Effectiveness | Tasks completed, X = A / B | 34 / 34 = 1.00; without help 31 / 34 = 0.91 | Table 11C |
 | Effectiveness | The owner's walkthrough steps executed that passed, X = A / B | 24 / 25 = 0.96 | Table 10 |
 | Efficiency | Median time per task; mean wrong turns per task | 60 s; 0.2 | Table 11C |
-| Satisfaction | Not measured with a satisfaction scale. The open answers: two of three tenants found nothing confusing, and one said the system still felt lacking | | Section 4.3.7 |
+| Satisfaction | Not measured with a satisfaction scale. The open answers: two of three tenants found nothing confusing during their tasks, and one said the system still felt lacking; on the survey form the owner wrote "Beautiful system!" and a tenant named the ease of seeing their rent and asked for the deposit paid and the electric bill to be shown | | Sections 4.3.7 and 4.4 |
 | Freedom from risk | Records of the owner changed or lost by testing | None: the 937 income rows were untouched, and the records each test created were removed or voided afterwards by reviewed changes | Sections 4.3.2 and 4.3.4 |
 | Context coverage | Contexts in which the tasks were done | The owner's laptop in Chrome; an Android phone in Chrome; an iPhone in Safari; with no connection and on a stalled one; the owner and two tenants at the same time (reading; saving at the same moment was not tested) | Sections 4.3.6 and 4.3.7 |
 
 Objective 4 asks for the system to be evaluated **and optimized**. Table 23 records the changes
 made in response to feedback and testing. The first rows are changes made during the pilot,
 followed by the fourteen comments of the technical evaluators who reviewed the system on
-3 October 2026, each addressed by 5 October; the last row will come from the survey results.
+3 October 2026, each addressed by 5 October; the last four rows come from the survey.
 
 **Table 23.** Optimizations Made in Response to Evaluation
 
@@ -1536,7 +1653,10 @@ followed by the fourteen comments of the technical evaluators who reviewed the s
 | Technical evaluators, 3 Oct 2026 | Action history, and its error handling | Each person's Overview shows their own last three actions in plain words, each linking to where it happened ("Recorded a payment: 2B, October 2026, ₱8,800."); a refresh that fails for a moment keeps the figures already on screen; when the server refuses an entry, the message names the field and the reason ("Emergency contact phone: Enter a Philippine mobile number") instead of a technical code | Usability, Reliability |
 | Technical evaluators, 3 Oct 2026 | The footer was tall, with too much empty space | Spacing reduced and its columns placed side by side on a phone | Usability |
 | Technical evaluators, 3 Oct 2026 | The privacy policy's list of contents crowded the page on a phone | On a phone the list opens from a side panel; on wider screens it stays beside the text | Usability |
-| Survey results | [DATA PENDING] | | |
+| Survey, 30 September to 4 October 2026 | The technical evaluator rated all five Usability items 3, on 4 October | Answered before the fourteen changes above, eleven of them to usability, went live on 5 October; no further change | Usability |
+| Survey, 30 September 2026 | The owner rated 3 her telling what each screen is for, and learning the system, without help | No change to the screens; the user manual (Appendix K) describes every screen in her words, and training at hand-over is stage 4 of Table 25 (Chapter 5, recommendation 6) | Usability |
+| Survey, 4 October 2026 | The technical evaluator rated 3 a failed request being handled without presenting incorrect data | The same defect as walkthrough step 23b (₱0 instead of "—"): not reproduced on 1 October; to be tested again on the owner's laptop | Reliability |
+| Survey, 30 September 2026 | A tenant asked for the deposit paid and the electric bill to be shown | Not changed. The deposit is recorded for every tenancy but shown only to the owner; the electric bill is outside the system, since each tenant pays the electric company directly (Section 4.2.4) | Functional Suitability |
 
 ---
 
