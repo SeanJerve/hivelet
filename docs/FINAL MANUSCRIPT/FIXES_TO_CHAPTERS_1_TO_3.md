@@ -206,9 +206,9 @@ the work will be done by the time the paper is read; if the manuscript is submit
 > account on their own device while a facilitator read the tasks without indicating where to tap
 > and an observer completed the observation sheet. Screen recordings and photographs were taken
 > only with the tester's permission. Each tester answered the survey immediately after their
-> session, without the researchers viewing their answers. Page load times were measured on the
-> workstation in Table 2 and the phone in Table 3, three times per screen, and the median was
-> recorded.
+> session, without the researchers viewing their answers. Page load times were measured once per
+> screen on the workstation in Table 2 and the phone in Table 3, with the browser's cache cleared
+> for a first load.
 >
 > **Statistical treatment.** For each survey item the weighted mean was computed as
 >
@@ -229,7 +229,8 @@ the work will be done by the time the paper is read; if the manuscript is submit
 > Privacy Act of 2012 (Republic Act No. 10173). Participation was voluntary and could be withdrawn
 > at any time without any effect on a tenant's tenancy. Each tenant used only their own account,
 > which shows only their own records, and received an individual starting password in person, which
-> they replaced at first sign-in. Survey responses were anonymous. Names, contact details and
+> they replaced at first sign-in. Giving a name on the survey was optional; names were removed
+> before the responses were analysed, and none appears in this paper. Names, contact details and
 > amounts are hidden in every figure in this paper, and faces appear only with consent. Recordings
 > and notes were kept by the research team and are deleted after the defense.
 
@@ -349,6 +350,10 @@ Table 4A and Chapter 4's Table 13 together, and every interpretation written in 
 tasks...") describes only Functional Suitability, while the scale rates all eight characteristics.
 A neutral description per point avoids that: 5 "The respondent strongly agrees with the statement",
 down to 1 "The respondent strongly disagrees with the statement".
+
+*Corrected 7 Oct 2026 (audit): H2 now says each screen was timed once (Chapter 4, §4.3.5's team
+note: one value per screen was written down, not the median of three), and H3 no longer says the
+survey was anonymous (the form asked for an optional name; the names were removed, B-103).*
 
 **H8. Align the testing and the evaluation with ISO (added 2026-10-06).** The adviser asked for
 the evaluation to be aligned with ISO. Chapter 4 now reports every test as a measure of an ISO/IEC

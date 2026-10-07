@@ -750,7 +750,7 @@ figures the user came for were on screen, or until the file was saved.
 
 > **TEAM NOTE.** Source: `docs/TESTING_DAY/results/PF_TIMINGS_Eljohn.md`. Three runs were timed per
 > screen but only one value was written down, so each figure is a single run, not the median of
-> three that Chapter 3 describes: say so in Chapter 3's procedure, or re-time. **Before pasting:**
+> three; Chapter 3's procedure now says one run (FIXES H2, corrected 7 Oct). **Before pasting:**
 > make the column headings name the actual laptop and phone, and make sure Chapter 3's Tables 2 and 3
 > list the same devices (the sheet names a Dell XPS 15; the phones used that day were an Infinix
 > GT20 on Wi-Fi and an iPhone 15 on mobile data, and the sheet does not say which phone each time
