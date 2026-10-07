@@ -17,6 +17,7 @@ import { requireAuth, requirePasswordCurrent } from '../middleware/auth.js';
 import { rateLimit, failureLimit } from '../middleware/rateLimit.js';
 import { config } from '../config/env.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { timesBreached } from '../utils/breachedPassword.js';
 import { ApiError } from '../utils/ApiError.js';
 import { permissionsForRole } from '../config/rbac.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
@@ -334,6 +335,17 @@ router.post(
     const parsed = passwordSchema.safeParse(req.body);
     if (!parsed.success) {
       throw ApiError.validation('Invalid password payload.', parsed.error.flatten().fieldErrors);
+    }
+
+    // A password from a public breach list passes the length and character rules ("Password123"),
+    // so it is checked against Pwned Passwords by k-anonymity (utils/breachedPassword.ts). Fails
+    // open: when the service cannot be reached the change goes ahead on the rules above.
+    if (((await timesBreached(parsed.data.newPassword)) ?? 0) > 0) {
+      throw ApiError.validation('Invalid password payload.', {
+        newPassword: [
+          'This password has appeared in a data breach elsewhere, so it is easy to guess. Choose another.',
+        ],
+      });
     }
 
     const { email, phoneNumber } = parsed.data;
