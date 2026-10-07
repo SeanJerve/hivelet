@@ -40,6 +40,7 @@ uploads/*
 # Agent / Tool scratch
 .agent/
 .agents/
+.claude/worktrees/
 
 # Credentials & seeded demo accounts
 # Untracked 2026-09-13: both files held plaintext passwords for accounts that
