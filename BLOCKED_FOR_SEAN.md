@@ -33,6 +33,18 @@ thing did not work" is not.
 
 ## Open
 
+### B-104 — the application's database role can TRUNCATE the audit trail; 080 revokes it (WRITTEN, NOT APPLIED) · **OPEN: Sean, 1 minute**
+
+- **Found 7 Oct 2026** (read-only, writing `docs/PROJECT_DOCUMENTS/05`): on `audit_logs`, `service_role`
+  holds INSERT, REFERENCES, SELECT, TRIGGER and **TRUNCATE**. UPDATE and DELETE were removed so the
+  trail cannot be edited (Chapter 4 says so), but TRUNCATE empties the whole table. The application
+  never calls it and PostgREST does not expose it; a direct SQL connection with the service key could.
+- **To do:** `npm run backup`, then run `database/migrations/080_audit_log_no_truncate.sql` in the
+  Supabase SQL editor. It changes no row and is safe to run twice.
+- **How to know it worked:** `SELECT grantee, privilege_type FROM information_schema.role_table_grants
+  WHERE table_schema='public' AND table_name='audit_logs';` lists service_role without TRUNCATE.
+  Then the next migration number is **081**.
+
 ### B-103 — the survey export with every respondent's full name was pushed to the PUBLIC repo (cd7ea3f, 7 Oct 09:54) · **OPEN: Sean, decide today**
 
 - **What happened.** Lloyd's commit `cd7ea3f` added
