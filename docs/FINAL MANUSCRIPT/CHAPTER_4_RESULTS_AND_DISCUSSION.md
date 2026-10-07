@@ -58,7 +58,8 @@
 > in §4.4.2); one interpretation paragraph per characteristic, each read against its measured table;
 > Table 22A's rated column and its paragraph; four survey rows in Table 23; satisfaction comments in
 > Table 22B. Overall **4.53, Very High Quality**; lowest Maintainability 4.00 (one rater) and
-> Usability 4.12. The export's name column was removed before use (B-103).
+> Usability 4.12. The export's name column was removed before use (B-103). Later the same day: Table
+> 12A's Distributed (6 of 6, 100%) and Table 25's stages 4 and 5, from Sean.
 
 This chapter presents the results of the study and discusses what they mean. It is organized by
 the four specific objectives in Section 1.2: the analysis of existing practices (4.1), the
@@ -971,8 +972,9 @@ is classified in Table 23A; it was not critical, and no critical defect was foun
 > **TEAM NOTE.** Filled on 7 October 2026 from the Google Form export (six responses, names removed:
 > `docs/TESTING_DAY/results/ISO_IEC_25010_Software_Quality_Assessment.csv`) by
 > `scripts/survey/compute-survey.mjs --method=A`. The items are word for word the form's. Chapter 3
-> must name all four respondent groups (FIXES H2 and H4) and the framework (H8). Still the team's:
-> the Distributed column of Table 12A.
+> must name all four respondent groups (FIXES H2 and H4) and the framework (H8). Table 12A's
+> Distributed column and Table 25's stages 4 and 5 were confirmed by Sean on 7 October: the form
+> went only to the six who used the system, and the system is not yet her main record.
 
 The evaluation followed the five steps of the evaluation process in ISO/IEC 25040, set out in Table
 12B. The quality model is that of ISO/IEC 25010:2011, the edition on whose eight characteristics the
@@ -1048,18 +1050,15 @@ system, not a sample from which a wider population can be inferred.
 | Group | Distributed | Retrieved | Valid | Response rate |
 | :--- | ---: | ---: | ---: | ---: |
 | Owner / administrator | 1 | 1 | 1 | 100% |
-| Tenants | [team] | 3 | 3 | valid / distributed |
-| Technical evaluators | [team] | 1 | 1 | valid / distributed |
-| Prospective tenants | [team] | 1 | 1 | valid / distributed |
-| **Total** | [team] | **6** | **6** | |
+| Tenants | 3 | 3 | 3 | 100% |
+| Technical evaluators | 1 | 1 | 1 | 100% |
+| Prospective tenants | 1 | 1 | 1 | 100% |
+| **Total** | **6** | **6** | **6** | **100%** |
 
-> **TEAM NOTE.** Filled 7 Oct 2026 from the form export (`docs/TESTING_DAY/results/`, names
-> removed). Retrieved and Valid are from `compute-survey.mjs` (valid = answered every rated item of
-> its own section). **Distributed is still ours to count**: the owner's is 1 (the one administrator);
-> for the tenants, prospects and technical evaluators, write how many were given the form or its QR
-> code, then the response rate = valid / distributed. If the form went only to the three tenants and
-> one prospect who tested, write 3 and 1 (100%). How many evaluators reviewed the site on 3 October?
-> One answered.
+The form was given only to those who had used the system for the evaluation: the administrator, the
+three tenants and the prospective tenant who took part on 30 September, and the technical evaluator.
+Every one of them answered, and every answer was complete.
+
 
 ### 4.4.2 Interpretation of Scores
 
@@ -1703,8 +1702,8 @@ code branch. Table 24 lists what is needed to use the system, and Table 25 the d
 | 1. Environment preparation | Hosting, database and gateway set up; security settings applied | Done |
 | 2. Record transfer | The owner's workbook transferred: 937 income rows and 1,327 expense allocations | Done |
 | 3. Pilot use | The system used alongside the owner's existing records; differences investigated | In progress |
-| 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | In progress: every tenant account prepared with its own starting password on 29 September 2026. [DATA PENDING: training and hand-over dates] |
-| 5. Full transition | The system becomes the owner's main record once both records agree | [DATA PENDING] |
+| 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | Begun: every tenant account prepared with its own starting password on 29 September 2026; the owner and three tenants shown the system and using it on their own accounts on 30 September 2026 (Section 4.3.7); the first change taken from the owner's own practice, acknowledgement receipts for payments with no invoice number, made on 1 October 2026. The hand-over of the user manual is still to come |
+| 5. Full transition | The system becomes the owner's main record once both records agree | Not yet: as of 7 October 2026 the system has not become the owner's main record and runs beside her own records |
 
 Three risks are managed deliberately:
 

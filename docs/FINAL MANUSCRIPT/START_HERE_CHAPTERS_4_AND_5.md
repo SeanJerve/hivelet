@@ -8,9 +8,10 @@ the system as it stands that evening.
 > **2026-10-07: the survey is in and both chapters are complete except what only people can supply.**
 > Six responses (owner, three tenants, a prospect, one technical evaluator), method A, overall
 > **4.53 Very High Quality**; Tables 12 to 22, 22A, 23's survey rows, Chapter 5's summary 4,
-> conclusion 4 and recommendation 6, and a new `ABSTRACT.md` are filled. **Still the team's:** Table
-> 12A's Distributed column, Table 25 stages 4 and 5, pasting FIXES H8 into Chapters 2 and 3, and
-> making the repository private (B-103: the export with names was public).
+> conclusion 4 and recommendation 6, and a new `ABSTRACT.md` are filled, and Table 12A (100%
+> response) and Table 25's stages 4 and 5 from Sean's answers. **No pending marker is left in
+> either chapter.** Still the team's: pasting FIXES H8 into Chapters 2 and 3, and making the
+> repository private (B-103: the export with names was public).
 
 > [!IMPORTANT]
 > **2026-10-06: Chapters 4 and 5 are realigned to ISO** (the adviser: the evaluation must be
