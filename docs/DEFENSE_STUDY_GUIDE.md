@@ -260,6 +260,24 @@ aesthetics and reusability were neither, so the study draws no conclusion about 
 and co-existence rest on the survey alone; availability over months of use is in recommendation 8
 (Chapter 4, Table 22A).
 
+**"Is your login secure?" (the five things a login checklist asks)**
+- *Token in browser storage:* yes, it is, and that is the honest weak point. An injected script could
+  read it, so the defence is keeping scripts out: the Content Security Policy is enforced (scripts
+  only from the site and Adyen; Observatory A+), and no screen inserts raw HTML. The cookie fix is in
+  recommendation 3.
+- *Admin check on the client?* No. The whole admin router is gated on the server (requireAuth +
+  requireAdmin); the menu the browser hides is only convenience. Walkthrough step 17 and the manual
+  checks tried it.
+- *Anyone can sign up as anyone?* No. Public sign-up is closed and the live site refuses it; only the
+  administrator creates tenant accounts, each with a one-time starting password changed at first
+  sign-in. No second factor exists (recommendation 3).
+- *Brute force?* Five wrong passwords lock an account for 15 minutes (in the database), plus 30
+  failures per address per 15 minutes; password changes are limited too. There is no public
+  password-reset endpoint: only the owner resets a tenant's password.
+- *Password rules and leaks?* 10 characters, a letter and a number, checked by the server and shown in
+  the dialog; and since 7 Oct a breached password is refused (Pwned Passwords, k-anonymity).
+  `node backend/scripts/check-auth-hardening.mjs` proves all of this, mutation-tested.
+
 **What did the survey say, and what is the weakest part?**
 Six respondents (the owner, three tenants, a prospect, one technical evaluator) rated it 4.53, Very
 High Quality, every characteristic at least High Quality (Chapter 4, Table 22). Lowest:

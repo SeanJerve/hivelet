@@ -401,7 +401,10 @@ made during data corrections, and no client role has any access to them.
 
 Other security measures in the system:
 
-- Passwords are stored as bcrypt hashes, never as plain text.
+- Passwords are stored as bcrypt hashes, never as plain text. A new password must have at least
+  ten characters, a letter and a number, checked by the server, and since 7 October 2026 it is also
+  refused if it appears in a public list of breached passwords. Only the first five characters of
+  its SHA-1 hash are sent to the list's service, so the password itself never leaves the server.
 - An account locks after repeated failed sign-ins. The lock is checked before the password is
   compared, and it is kept per account so that an attacker cannot avoid it by changing address.
 - A new account must change its password at first sign-in, and changing a password ends every
@@ -1443,6 +1446,16 @@ reference code opens the conversation only together with the phone number given 
 Look-ups are rate-limited (30 per 15 minutes from one address), and each link opens one
 conversation only.
 
+Two weaknesses remain by design and are named here. The sign-in token is kept in the browser's own
+storage, where a script injected into the page could read it. What stands against that is the
+enforced Content Security Policy, which lets the browser run scripts only from the site itself and
+from Adyen, and the fact that no screen inserts raw HTML: every value shown is escaped. Keeping the
+token in a cookie that no script can read would remove the weakness itself. And signing in takes a
+password only; there is no second factor, even for the administrator. Public sign-up is closed (a
+request to create an account is refused, checked on the live site on 7 October 2026), so no one can
+create an account for themselves, but whoever learns the owner's password can use her account. Both
+are left to Chapter 5, recommendation 3.
+
 ### 4.4.9 Maintainability
 
 Only technical evaluators rated Maintainability, after being given access to the source code and
@@ -1638,6 +1651,7 @@ followed by the fourteen comments of the technical evaluators who reviewed the s
 | Testing day on an Android phone, 30 Sep 2026 | On a connection that stops answering, the "cannot tell whether it was saved" message came after 60 to 80 seconds instead of 45 | Chrome slows the timers of a page that is not on screen, which a phone test takes the user out of; the deadline is now also checked against the clock the moment the page is on screen again, so a late message appears at once. To be re-tested on the Android phone | Reliability |
 | Team check of the evaluation account, 2 Oct 2026 | The tenant account prepared for the evaluators showed ₱30,400 owed, but paying online answered that there was nothing to pay: receipts voided on the testing day had left a payment counted against the bill | Online payment now skips a bill that is already covered and says when a receipt is missing; the account's bills were brought into line with its receipts (migration 077), with no other tenant's records changed | Functional Suitability, Reliability |
 | Security review, 2 Oct 2026 | A request sent from another website received a server error (500) instead of a refusal | Refused with 403 before any route runs | Security |
+| Security review, 7 Oct 2026 | A new password that met the length and character rules could still be a well-known breached one ("Password123" appears 1,505,362 times in Pwned Passwords) | A new password is checked against Pwned Passwords before it is saved; only five characters of its hash leave the server, and if the service cannot be reached the rules alone apply | Security |
 | Technical evaluators, 3 Oct 2026 | On a phone, the light and dark mode switch sat at the foot of the footer, below every policy link | Moved to the top bar of every public page | Usability |
 | Technical evaluators, 3 Oct 2026 | An email address was checked only when the form was sent | Checked as soon as the visitor leaves the field | Usability |
 | Technical evaluators, 3 Oct 2026 | Links were underlined throughout the site | Underlines kept only in the footer; other links are shown in bold | Usability |

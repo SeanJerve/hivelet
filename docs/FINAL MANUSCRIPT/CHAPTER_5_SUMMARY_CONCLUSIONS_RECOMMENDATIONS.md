@@ -192,7 +192,9 @@ Based on the summary and conclusions of the study, the following are recommended
    person, and that note should stay until the account is live. Also let the system refund a GCash
    payment the owner rejects. Rejecting a payment keeps it out of the records but does not return the
    money, which must then be refunded from the Adyen Customer Area; refunds were excluded from this
-   study by its delimitation (Section 1.4).
+   study by its delimitation (Section 1.4). Before real money moves through the system, also keep the
+   sign-in token in a cookie that no script on the page can read, and add a second sign-in factor for
+   the administrator's account, the two weaknesses Chapter 4 names (Section 4.4.8).
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested by a machine on every change and not only once by a
    person. The automated suites of Section 4.3.1 read and check, but they do not write, and the
