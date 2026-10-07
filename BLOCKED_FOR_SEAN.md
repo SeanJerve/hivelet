@@ -33,6 +33,27 @@ thing did not work" is not.
 
 ## Open
 
+### B-103 — the survey export with every respondent's full name was pushed to the PUBLIC repo (cd7ea3f, 7 Oct 09:54) · **OPEN: Sean, decide today**
+
+- **What happened.** Lloyd's commit `cd7ea3f` added
+  `docs/TESTING_DAY/results/ISO_IEC_25010_Software_Quality_Assessment.csv`. Its "Full Name (optional)"
+  column held the names of all six respondents: three tenants, the administrator, a prospect and a
+  technical evaluator. `gh repo view` says the repository is **PUBLIC**. The form told respondents
+  their answers were anonymous, and Chapter 3's ethics text (FIXES H3) says survey responses were
+  anonymous, under the Data Privacy Act.
+- **Done (7 Oct, Claude).** The tracked file now has that column blank; every other cell unchanged
+  and `compute-survey.mjs` gives identical tables. The raw root-level export
+  (`IEC-25010-Software-Quality-Assessment.csv`) is gitignored. The names are in no manuscript file.
+- **Not done, needs you.** The names are still in git history at `cd7ea3f`, readable by anyone. Either:
+  1. **make the repository private** (GitHub > Settings > General > Danger Zone > Change visibility;
+     also B-98), which stops new readers at once; or
+  2. rewrite history to drop the file from `cd7ea3f` and force-push (`git filter-repo --path
+     docs/TESTING_DAY/results/ISO_IEC_25010_Software_Quality_Assessment.csv --invert-paths`, then
+     re-add the redacted copy). This breaks every clone, including Lloyd's, and anyone who already
+     copied the repo keeps the names. Option 1 first; option 2 only if the adviser asks.
+- **Going forward:** export the form with the name column removed, or make the question go away
+  (SURVEY_FORM_REVIEW.md fix 2 already asked for it to be deleted).
+
 ### B-102 — F2F: the September receipt was voided this morning, so `check:ledger` now fails BR-014 (4 tenancies, was 3) · **OPEN: the owner, one question**
 
 - **What happened (read-only, 6 Oct evening).** The admin account voided F2F's September 2026 receipt

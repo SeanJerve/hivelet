@@ -102,3 +102,6 @@ frontend/_harness-*.html
 
 # Field-test screenshots (scripts/field-tests) - may show live pages; not for the repository
 scripts/field-tests/shots/
+
+# Raw survey exports carry respondents' names (7 Oct 2026, B-103): keep them off the public repo
+/IEC-25010-Software-Quality-Assessment.csv
