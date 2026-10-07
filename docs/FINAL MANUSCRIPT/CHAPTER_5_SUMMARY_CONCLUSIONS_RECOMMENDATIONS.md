@@ -21,6 +21,9 @@
 > measured evidence shows and waits on the survey only for the ratings; recommendation 8 names
 > what the evaluation did not cover and the 2023 edition. Item 3's suite run is dated 29 September,
 > as in Chapter 4's Table 8.
+> **Updated 2026-10-07: the survey is in.** Summary item 4, conclusion 4 and recommendation 6 filled
+> from Chapter 4's Tables 22 and 22A and the measured modularity row of Table 20A; recommendation 8
+> names the tenant's request. Nothing marked pending is left in this chapter.
 
 This chapter summarizes the study, states the conclusions drawn from its results, and gives
 recommendations for the owner, for the continued development of the system, and for future
@@ -72,15 +75,19 @@ accomplished:
 
 4. **The system was evaluated using ISO/IEC 25010:2011**, following the five steps of the ISO/IEC
    25040 evaluation process. Each of the eight characteristics was judged on measured evidence from
-   the tests and on the ratings of the owner, the tenants and technical evaluators. Twenty-seven of
+   the tests and on the ratings of the owner, the tenants, a prospective tenant and a technical
+   evaluator. Twenty-seven of
    the model's thirty-one sub-characteristics had a measured result and twenty-five were rated by at
    least one survey item; user interface aesthetics and reusability were not evaluated. On the
    measured evidence, every feature named in the objectives was present, no request failed under
    several times the property's load, every protection tried held and all three outside security
    scanners graded the site A+, and nine tasks in ten were done without help. Two Reliability
-   results fell short of the design, both on a real device without a connection. [DATA PENDING: the
-   overall mean and its interpretation, then one line per characteristic with its composite mean,
-   in the order of Table 22.] Changes were made in response
+   results fell short of the design, both on a real device without a connection, and three of
+   every four database calls were written inside the server's request handlers. Six respondents
+   rated the system 4.53 overall, which Table 13 reads as Very High Quality: Functional Suitability
+   4.86, Performance Efficiency 4.42, Compatibility 4.67, Usability 4.12, Reliability 4.62, Security
+   4.70, Maintainability 4.00 and Portability 4.89. Usability and Maintainability were read as High
+   Quality and the other six as Very High Quality. Changes were made in response
    to feedback and testing, recorded in Table 23. The technical evaluators who reviewed the live
    system on 3 October 2026 made fourteen comments, mostly on usability and on checking what users
    type: phone numbers and email addresses, photo formats, filters, and the placement of controls on
@@ -126,17 +133,20 @@ Based on the results of the study, the following conclusions were drawn:
    phone showed a message later than the design intends; both appeared only on a real device in the
    hands of its user, which is the same lesson from the other side.
 
-4. **The fourth objective was achieved in its measured part; the ratings complete it.** The system
-   was evaluated on all eight characteristics of ISO/IEC 25010:2011 by the process of ISO/IEC 25040,
-   and optimized in response (Chapter 4, Table 23). On every sub-characteristic that was measured,
-   it met the criterion of at least 90 per cent passed with no critical defect for Functional
-   Suitability, Performance Efficiency, Compatibility, Usability, Security, Maintainability and
-   Portability (Tables 14A to 21A). Reliability met them except in two results,
-   both offline on a real device: a figure that could not be loaded was once shown as ₱0, and on one
-   phone a stalled save was reported late. No defect found was critical. [DATA PENDING: the overall
-   composite mean and its interpretation (Table 22); which characteristics were rated highest and
-   lowest; whether each rating agrees with its measured result (Table 22A), and what the open
-   comments said where they disagree. Do not write a conclusion that the survey does not support.]
+4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
+   ISO/IEC 25010:2011 by the process of ISO/IEC 25040, and optimized in response (Chapter 4, Table
+   23). Its users rated it Very High Quality overall (4.53), and every characteristic at least High
+   Quality on the scale of Table 13 (Table 22). The measured evidence supports
+   the ratings for every characteristic but Usability, and on Reliability it names the same weakness the lowest
+   rating names: a request that fails must never be shown as a figure (Table 22A). The two
+   characteristics rated lowest show what each kind of evidence can see. Usability (4.12) met every
+   measure, yet the owner and the technical evaluator rated it lowest, because the measures show that
+   a task can be done and the ratings record how hard it was to learn; the evaluator's rating was
+   also given before the fourteen changes made for that evaluator's group. Maintainability (4.00)
+   rests on one evaluator, but the measurement agrees: the system is easy to test and trace, while
+   its database logic is not yet separated from its request handlers. These results come from six
+   people over one week, three of the four groups with one respondent each; they describe how those
+   people rated the system, not how every user would.
 
 ## 5.3 Recommendations
 
@@ -192,9 +202,15 @@ Based on the summary and conclusions of the study, the following are recommended
    Insights, and the owner's overview moves as its figures arrive (a layout shift of 0.22; Sections
    4.3.5 and 4.3.6). Pre-rendering the public page, serving the two typefaces from the site itself, and
    reserving the space each figure will take would shorten and steady both.
-6. [DATA PENDING: the recommendation for the lowest-rated ISO/IEC 25010 characteristic in Table 22,
-   stating its composite mean and the change it calls for, from the items that scored lowest within
-   it and any comment the respondents wrote.]
+6. Strengthen the two characteristics rated lowest. **Maintainability** (4.00, the lowest; Chapter
+   4, Section 4.4.9): move the database work now written inside the request handlers, three calls in
+   four, into service modules, one per kind of record, so that a rule about a payment or a tenancy
+   is changed in one place, and have the result reviewed by more than one developer, since the
+   rating rests on one. **Usability** (4.12; Section 4.4.6): the owner rated learning the system
+   without help 3, so the hand-over in stage 4 of the deployment plan (Table 25) should take her
+   through each screen with the user manual (Appendix K) before she uses the system alone, and the
+   first-time steps where tenants needed help, signing in and finding their unit and rent, should be
+   the first things a new tenant is shown.
 
 **For future researchers**
 
@@ -204,7 +220,9 @@ Based on the summary and conclusions of the study, the following are recommended
    found only by comparing each screen with the records it claimed to show (Section 4.3.3).
 8. Extend the evaluation over a longer period of real use, with every tenant and with several
    tenants saving at the same moment, which this study could test only for reading (Section 4.3.7);
-   ask tenants what they find missing, since one said the system still felt lacking; and measure
+   ask tenants what they find missing, since one said the system still felt lacking and another
+   asked to see the deposit they paid, which the system records but shows only to the owner; and
+   measure
    whether the owner's time spent on record-keeping actually falls after adoption. Such a study
    should also measure what this one could not: availability as a share of time over months of use,
    and the two sub-characteristics no instrument here covered, user interface aesthetics and
