@@ -79,7 +79,7 @@ Build these before the defense; each is a small table or figure. "Have" means an
 | C3 | **Summary is descriptive** (past tense, no judgments), one paragraph per objective | Mostly descriptive | Keep; remove any "effective" or "successfully" judgment |
 | C4 | **Five to eight recommendations**, evidence-linked, grouped by audience, **none that finishes a feature promised in the objectives** | **Done 5 Oct: eight**, grouped by audience, each with its Chapter 4 basis; number 6 is the lowest-rated characteristic, waiting on the survey; the eight cut are in a team note with reasons. Was: sixteen | Cut to the strongest 6 to 8, each with its basis (the lowest-rated characteristic, a delimitation, a test finding, a user comment). The lowest-rated characteristic **must** appear |
 | C5 | **No citations in Chapter 5** | None | Keep |
-| C6 | **The abstract's last sentence restates the achievement of the general objective** and agrees with the conclusions | Abstract not yet rewritten | Write it last, after 5.2 |
+| C6 | **The abstract's last sentence restates the achievement of the general objective** and agrees with the conclusions | Abstract not yet rewritten | **Done 7 Oct:** `ABSTRACT.md`; its last sentence restates the general objective of Section 1.2 |
 | C7 | No claims of impact, satisfaction or "error-free" that were not measured | The draft avoids them | Keep; "users are satisfied" only if the survey measured satisfaction |
 
 ---

@@ -5,6 +5,14 @@ Chapters 4 and 5?"** Written 2026-09-28 by Sean's session, after reviewing both 
 the system as it stands that evening.
 
 > [!IMPORTANT]
+> **2026-10-07: the survey is in and both chapters are complete except what only people can supply.**
+> Six responses (owner, three tenants, a prospect, one technical evaluator), method A, overall
+> **4.53 Very High Quality**; Tables 12 to 22, 22A, 23's survey rows, Chapter 5's summary 4,
+> conclusion 4 and recommendation 6, and a new `ABSTRACT.md` are filled. **Still the team's:** Table
+> 12A's Distributed column, Table 25 stages 4 and 5, pasting FIXES H8 into Chapters 2 and 3, and
+> making the repository private (B-103: the export with names was public).
+
+> [!IMPORTANT]
 > **2026-10-06: Chapters 4 and 5 are realigned to ISO** (the adviser: the evaluation must be
 > aligned with ISO). Every test is now reported as a measure of an ISO/IEC 25010:2011
 > sub-characteristic, §4.4 follows the ISO/IEC 25040 process, and each characteristic has a
@@ -83,14 +91,14 @@ the system as it stands that evening.
 | §4.3.5 Table 11, responsiveness | Load times per screen, with device, browser, network and date | A team member on a real laptop and phone | Q13 |
 | §4.3.7 Tables 11C and 11D, acceptance test | Observation sheets and defect log from the testing day (`TESTING_DAY_TEST_CASES.md` parts T and C) | The team, with the owner and tenants | none |
 | §4.4.1 respondents; §4.4.3 to 4.4.10, Tables 12 to 22 | The Google Form responses exported to Sheets | Team runs the ISO/IEC 25010 survey | Q7 to Q11 |
-| §4.4.2 how the overall score is computed | The team's choice: A (average of the group averages, recommended) or B | The team | Q11 |
+| ~~§4.4.2 how the overall score is computed~~ **Done 7 Oct:** method A (mean of the group means); B's overall (4.55) given in one sentence | | | |
 | §4.4.8 Security, supporting evidence | Grades and screenshots from the four passive scanners in `TEAM_TASKS_WE_DO_OURSELVES.md` §2 | A team member. **Passive scanners only** | none |
-| §4.4.11 Table 22A, the composite-mean column and its paragraph | Table 22's composite means, read beside the measured results | Claude, from the survey | survey first |
-| §4.4.11 Table 23, the "Survey results" row | Low-scoring survey items, and what was changed because of them | Claude, from the survey | survey first |
+| ~~§4.4.11 Table 22A~~ **Done 7 Oct** | | | |
+| ~~§4.4.11 Table 23, the survey rows~~ **Done 7 Oct**: four rows | | | |
 | §4.5 Table 25, stages 4 and 5 | Whether the owner and tenants have been trained and handed over, and whether the system has become her main record | The team, with the owner | none |
 | ~~Figures 4 to 14~~ **Done 5 Oct 2026** | Diagrams 4 to 9 drawn from the system by `scripts/build-chapter-4-diagrams.mjs`; screenshots 10 to 14 captured from the system as deployed that day, sample tenants, real units and rates (`figures/README.md`); placed in Chapter 4 and embedded in its .docx | Claude | none |
 | Chapter 5's `[DATA PENDING]` parts | Written last, from the finished Chapter 4 | Claude | all of the above |
-| Abstract | Needs the survey means | Claude | survey first |
+| ~~Abstract~~ **Done 7 Oct: `ABSTRACT.md`**, about 310 words | | | |
 
 ## Order of work
 

@@ -260,6 +260,16 @@ aesthetics and reusability were neither, so the study draws no conclusion about 
 and co-existence rest on the survey alone; availability over months of use is in recommendation 8
 (Chapter 4, Table 22A).
 
+**What did the survey say, and what is the weakest part?**
+Six respondents (the owner, three tenants, a prospect, one technical evaluator) rated it 4.53, Very
+High Quality, every characteristic at least High Quality (Chapter 4, Table 22). Lowest:
+Maintainability, 4.00, from one evaluator who gave every item 4, and the code agrees, since three
+database calls in four sit inside the request handlers (Table 20A). Next: Usability, 4.12. The owner
+rated learning without help 3, and the evaluator rated every usability item 3 on 4 October, the night
+before the fourteen changes that evaluator's group asked for. Recommendation 6 covers both. Be ready
+for "only six respondents?": yes, and three groups with one each; Section 4.4.1 says the results
+describe these six people, not a population.
+
 **What are the system's limits today?**
 Adyen is still on its test environment, and a rejected GCash payment must be refunded from the Adyen
 Customer Area: both are Chapter 5's recommendation 3. Notifications are in-app only (no SMS), and
