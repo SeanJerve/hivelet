@@ -287,7 +287,7 @@ thing did not work" is not.
   names and run it once with `.env`.
 - **Raised:** 2026-10-02 by Claude, from the download-scope work (merged 75fb103)
 
-### B-94 — Vercel "Security Checkpoint" challenges every visitor, `/api` included · **OPEN, needs the Vercel owner**
+### B-94 — Vercel "Security Checkpoint" challenges every visitor, `/api` included · **RESOLVED (checked 2026-10-08: `/public` and `/api/public/rates` answer 200 to a plain scripted request, no `x-vercel-mitigated` challenge)**
 
 - **2 Oct evening: the challenge is off.** From a cloud session, `/`, `/public`, `/sw.js`,
   `/api/health`, `/api/public/rates` and all 64 service-worker precache files answer 200 with no
