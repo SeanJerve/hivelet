@@ -3,7 +3,7 @@
  * "Are you sure?" on the workspace dialog. The confirm button says what will
  * happen rather than "Confirm", and a destructive one is styled as destructive.
  */
-import { ref, computed, useId } from 'vue';
+import { ref, computed, watch, nextTick, useId } from 'vue';
 import WsModal from '@/components/ui/WsModal.vue';
 
 const props = withDefaults(
@@ -47,6 +47,26 @@ const phraseSatisfied = computed(() => {
 });
 
 const confirmDisabled = computed(() => props.busy || !phraseSatisfied.value);
+
+/**
+ * Focus back on the dialog when a request it started is over (audit
+ * 2026-10-09). Both buttons disable themselves while busy, and a disabled
+ * button drops focus to <body>: after a refused Reset password the keyboard
+ * was left nowhere, the next Tab started from the top of the dialog and a
+ * screen reader announced nothing. If the dialog is still open, the request
+ * failed, so the confirm button (the one just pressed) takes it back.
+ */
+const confirmButton = ref<HTMLButtonElement | null>(null);
+watch(
+  () => props.busy,
+  async (busy, was) => {
+    if (busy || !was) return;
+    await nextTick();
+    if (document.activeElement === document.body || document.activeElement === null) {
+      confirmButton.value?.focus();
+    }
+  }
+);
 </script>
 
 <template>
@@ -94,6 +114,7 @@ const confirmDisabled = computed(() => props.busy || !phraseSatisfied.value);
     <template #actions>
       <button type="button" class="pill-btn" :disabled="busy" @click="emit('cancel')">{{ cancelLabel }}</button>
       <button
+        ref="confirmButton"
         type="button"
         :class="destructive ? 'pill-btn-danger' : 'pill-btn-brand'"
         :disabled="confirmDisabled"
