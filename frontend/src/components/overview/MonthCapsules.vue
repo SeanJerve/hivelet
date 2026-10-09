@@ -106,7 +106,10 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <span v-for="(t, i) in ticks" :key="i">{{ t }}</span>
       </div>
 
-      <div class="overflow-x-auto min-w-0 flex-1 -mb-2 pb-2">
+      <!-- max-sm:pr-2 (audit 2026-10-09): the turned "Dec" reached 6px past the
+           last column, so on a phone the chart scrolled sideways by that much
+           and "Dec" was clipped at the tile's edge. -->
+      <div class="overflow-x-auto min-w-0 flex-1 -mb-2 pb-2 max-sm:pr-2">
         <div
           role="group"
           :aria-label="label"

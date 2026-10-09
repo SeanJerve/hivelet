@@ -548,6 +548,12 @@ const totalRemitted = computed(() => rows.value.reduce((s, r) => s + r.rent + r.
  * heads), Remitted, edit. Sized so a seven-figure total
  * ("P1,485,000.00", 89px at 14px) fits on one line; percentages broke
  * "P4,500.00" in two.
+ *
+ * The table's floor (`min-width` on the RecordTable below) is 52.5rem, not the
+ * 55.25rem it was: the table takes over at 1280 (`xl`), where the cluster panel
+ * gives it 844px, so a 884px floor scrolled the ledger 40px sideways and put
+ * the edit pencils behind the scroll on the commonest laptop width. 840px
+ * leaves Who 196px for a name and an invoice number (audit 2026-10-09).
  */
 const CLUSTER_TABLE_COLS = ['3.5rem', '6.5rem', '', '7rem', '6.25rem', '6.25rem', '7rem', '4rem'];
 
@@ -1260,7 +1266,8 @@ const isDownloadOpen = ref(false);
                     c.tone === 'faint' && 'bg-ink-faint',
                   ]"
                 />
-                <span class="truncate">{{ c.label }}</span>
+                <!-- Wraps rather than truncates (audit 2026-10-09): at 320 the two-column key cut "Boarding House" to "Boarding ..." and "Other Expenses / Personal" even at 375, and nothing else on the tile names the cluster. -->
+                <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
               </span>
               <span class="flex shrink-0 items-baseline gap-3">
                 <span class="text-xs text-ink-faint tabular">
@@ -1554,7 +1561,7 @@ const isDownloadOpen = ref(false);
             :page-size="8"
             empty-title="Nothing in this cluster"
             :cols="CLUSTER_TABLE_COLS"
-            min-width="55.25rem"
+            min-width="52.5rem"
             table-from="xl"
           >
             <template #head>

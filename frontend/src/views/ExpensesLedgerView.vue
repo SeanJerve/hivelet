@@ -1023,7 +1023,8 @@ async function handleEditExpense() {
                     a.tone === 'faint' && 'bg-ink-faint',
                   ]"
                 />
-                <span class="truncate">{{ a.label }}</span>
+                <!-- Wraps rather than truncates (audit 2026-10-09): at 320 the two-column key cut "Boarding House" to "Boarding ..." and "Other Expenses / Personal" even at 375, and nothing else on the tile names the area. -->
+                <span class="min-w-0 break-words leading-snug">{{ a.label }}</span>
               </span>
               <span class="flex shrink-0 items-baseline gap-3">
                 <span class="text-xs text-ink-faint tabular">

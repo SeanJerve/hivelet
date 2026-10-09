@@ -676,7 +676,10 @@ function onFile(value: string | null | undefined) {
  * people is the fact worth reading, not a yes/no badge.
  */
 /** Tenant (takes the rest), Unit, Household, Moved in, Deposit, edit. */
-const RESIDENT_TABLE_COLS = ['', '9%', '19%', '15%', '13%', '6%'];
+// The edit column is a fixed 4.75rem (the 44px pencil plus the cell's 12px and
+// 20px padding), not 6%: at 1280 6% was 51px, the pencil spilled out of its cell
+// and the cluster table scrolled 5px sideways (audit 2026-10-09).
+const RESIDENT_TABLE_COLS = ['', '9%', '19%', '15%', '13%', '4.75rem'];
 
 function householdLabel(t: TenantRecord) {
   const mates = t.roommateQty ?? Math.max(0, (t.occupants || 1) - 1);
