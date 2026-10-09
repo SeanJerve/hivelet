@@ -1028,7 +1028,16 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           @retry="refreshAllData"
         />
         <template v-else>
-          <div>
+          <!-- Nothing entered for the month says so, as Monthly Income's and Monthly
+               Expenses' month tiles have since 03d98b2: this tile alone still read
+               "₱0 / 0 payments entered for October so far" while Monthly Income said
+               "Not entered yet" for the same month (audit 2026-10-09). -->
+          <div v-if="currentMonthRecordCount === 0">
+            <p class="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Not entered yet</p>
+            <!-- The phone's title is only "Rent and water", so the month goes here. -->
+            <p class="mt-2 text-sm text-ink-soft md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }} {{ CURRENT_YEAR }}</p>
+          </div>
+          <div v-else>
             <!--
               `text-5xl` did not fit a phone: "₱1,284,750.00" is 327.7px in a
               303px tile, and a seven-figure month is not hypothetical here. Half
@@ -1281,7 +1290,10 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                   {{ t.unit }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician === 'Unassigned' ? 'no one assigned yet' : t.technician }}</template>
                 </span>
               </span>
-              <StatusPill :tone="t.priority === 'Emergency' || t.priority === 'High' ? 'overdue' : 'neutral'">
+              <!-- High is amber, as on Repairs, the bell and the tenant's own list; it was
+                   red here alone, so one ticket changed colour between two screens
+                   (audit 2026-10-09). Both still count as urgent above. -->
+              <StatusPill :tone="t.priority === 'Emergency' ? 'overdue' : t.priority === 'High' ? 'verify' : 'neutral'">
                 {{ t.priority }}
               </StatusPill>
             </li>
