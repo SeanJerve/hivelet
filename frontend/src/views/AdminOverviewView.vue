@@ -1201,7 +1201,11 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             sideways. Its sibling at "Month by month" has had the wrapper all
             along; this one was simply missed.
           -->
-          <div class="ws-table-wrap">
+          <!-- @container (audit 2026-10-09): the switch to the three-column shape
+               follows the tile's width, not the screen's. At 1280 this tile is half
+               a row (389px) and the four columns needed 407, so Net - the figure she
+               reads it for - was cut off behind a sideways scroll on a laptop. -->
+          <div class="ws-table-wrap @container">
           <table class="ws-table">
             <caption class="sr-only">Collections, operating expenses and net operating income by month</caption>
             <thead>
@@ -1211,7 +1215,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                 <!-- On a phone the four columns did not fit 303px and Net, the figure
                      she reads this for, sat off-screen behind a sideways scroll. There
                      the spending moves under Rent and water as a second line. -->
-                <th scope="col" class="num hidden sm:table-cell">Expenses</th>
+                <th scope="col" class="num hidden @[26rem]:table-cell">Expenses</th>
                 <th scope="col" class="num">Net</th>
               </tr>
             </thead>
@@ -1225,14 +1229,14 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                 <th scope="row">{{ d.month }}</th>
                 <td class="num">
                   {{ peso(d.grossIncome) }}
-                  <span class="block text-xs font-normal text-ink-faint sm:hidden">
+                  <span class="block text-xs font-normal text-ink-faint @[26rem]:hidden">
                     {{ d.hasExpenses ? `spent ${peso(d.expenses)}` : 'spending not entered' }}
                   </span>
                 </td>
                 <!-- A month with no expense entries is not entered, the same as a
                      month with no collections: "P0" read as a month that cost
                      nothing, and its Net as pure profit. -->
-                <td class="num text-ink-soft hidden sm:table-cell">
+                <td class="num text-ink-soft hidden @[26rem]:table-cell">
                   <StatusPill v-if="!d.hasExpenses" tone="unentered">Not entered</StatusPill>
                   <template v-else>{{ peso(d.expenses) }}</template>
                 </td>

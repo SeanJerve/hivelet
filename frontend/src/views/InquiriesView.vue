@@ -406,8 +406,10 @@ async function handleSendReply() {
     </div>
 
     <div class="grid min-h-[620px] grid-cols-1 gap-4 xl:grid-cols-12">
-      <!-- The enquiries -->
-      <div class="flex flex-col overflow-hidden rounded-tile bg-tile xl:col-span-4">
+      <!-- The enquiries. Five twelfths on a laptop, four from 2xl (audit 2026-10-09):
+           at a third of 1280 the list was 287px and its two dropdowns, two to a
+           row since the toolbar fix, still read "All i..." and "Newest ...". -->
+      <div class="flex flex-col overflow-hidden rounded-tile bg-tile xl:col-span-5 2xl:col-span-4">
         <div class="space-y-3 border-b border-line p-4">
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it. -->
@@ -522,7 +524,7 @@ async function handleSendReply() {
       <div
         v-if="activeInquiry"
         ref="detailPanel"
-        class="ws-reveal flex min-h-[550px] scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile xl:col-span-8"
+        class="ws-reveal flex min-h-[550px] scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile xl:col-span-7 2xl:col-span-8"
       >
         <div class="border-b border-line p-5 sm:p-6">
           <!-- Delete sits top right, level with the name, at every width (Sean, 2026-10-02). -->
@@ -704,7 +706,7 @@ async function handleSendReply() {
 
       <div
         v-else
-        class="grid place-items-center rounded-tile bg-tile p-12 text-center xl:col-span-8"
+        class="grid place-items-center rounded-tile bg-tile p-12 text-center xl:col-span-7 2xl:col-span-8"
       >
         <div>
           <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
