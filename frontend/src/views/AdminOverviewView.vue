@@ -1420,16 +1420,22 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           message="Income or expenses could not be loaded, so net figures cannot be worked out."
           @retry="refreshAllData"
         />
-        <div v-else class="ws-table-wrap">
-          <table class="ws-table">
+        <!-- @container (audit 2026-10-09), as the live year's Net income table: below 34rem of
+             its own width the five columns scrolled sideways (246 of 495px at 320) with Net
+             out of sight. There Expenses and Personal go under Rent and water, a note
+             under the table says Personal is not deducted, and the month is its three
+             letters. -->
+        <div v-else class="ws-table-wrap @container">
+          <!-- Cells 4px a side in that shape: at 320 the three columns needed 270px of 246. -->
+          <table class="ws-table @max-[34rem]:[&_:is(th,td)]:px-1!">
             <caption class="sr-only">Collections, expenses and net operating income by month, {{ selectedArchiveYear }}</caption>
             <thead>
               <tr>
                 <th scope="col">Month</th>
                 <th scope="col" class="num">Rent and water</th>
-                <th scope="col" class="num">Expenses</th>
+                <th scope="col" class="num hidden @[34rem]:table-cell">Expenses</th>
                 <th scope="col" class="num">Net</th>
-                <th scope="col" class="num">Personal, not deducted</th>
+                <th scope="col" class="num hidden @[34rem]:table-cell">Personal, not deducted</th>
               </tr>
             </thead>
             <tbody>
@@ -1439,22 +1445,30 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                 class="list-reveal-item"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
-                <th scope="row">{{ MONTH_LONG[d.monthNum - 1] }}</th>
+                <th scope="row">
+                  <span class="@[34rem]:hidden">{{ d.month }}</span>
+                  <span class="hidden @[34rem]:inline">{{ MONTH_LONG[d.monthNum - 1] }}</span>
+                </th>
                 <td class="num">
                   <StatusPill v-if="!d.hasIncome" tone="unentered">Not entered</StatusPill>
                   <template v-else>{{ peso(d.grossIncome) }}</template>
+                  <span class="block whitespace-nowrap text-xs font-normal text-ink-faint @[34rem]:hidden">
+                    {{ d.hasExpenses ? `spent ${peso(d.expenses)}` : 'spending not entered' }}
+                  </span>
+                  <span class="block whitespace-nowrap text-xs font-normal text-ink-faint @[34rem]:hidden">personal {{ peso(d.personalExpenses) }}</span>
                 </td>
-                <td class="num text-ink-soft">
+                <td class="num text-ink-soft hidden @[34rem]:table-cell">
                   <StatusPill v-if="!d.hasExpenses" tone="unentered">Not entered</StatusPill>
                   <template v-else>{{ peso(d.expenses) }}</template>
                 </td>
                 <td :class="['num font-semibold', d.noi < 0 && 'text-overdue']">
                   {{ d.hasIncome && d.hasExpenses ? peso(d.noi) : '' }}
                 </td>
-                <td class="num text-ink-faint">{{ peso(d.personalExpenses) }}</td>
+                <td class="num text-ink-faint hidden @[34rem]:table-cell">{{ peso(d.personalExpenses) }}</td>
               </tr>
             </tbody>
           </table>
+          <p class="px-1 pt-2 text-xs leading-5 text-ink-faint @[34rem]:hidden">Personal spending is listed under each month and not deducted from Net.</p>
         </div>
       </OverviewTile>
 
