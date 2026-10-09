@@ -106,7 +106,7 @@ function toggleCluster(key: string, index: number) {
 }
 
 const monthsList = [
-  { val: 'All', label: 'All Months' },
+  { val: 'All', label: 'All months' }, // sentence case, as Tenants' 'All months' and every other 'All ...' option (audit 2026-10-09)
   { val: 'Jan', label: 'January' },
   { val: 'Feb', label: 'February' },
   { val: 'Mar', label: 'March' },

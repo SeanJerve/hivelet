@@ -192,6 +192,10 @@ function spanClass(index: number) {
         :id="panelId"
         :class="[
           'w-full sm:flex sm:w-auto sm:flex-wrap sm:items-end sm:gap-3 sm:@max-lg:grid sm:@max-lg:w-full sm:@max-lg:grid-cols-2 sm:@max-lg:gap-2',
+          // Four dropdowns in a toolbar too narrow for all four in a row (Tenants, Rooms
+          // and rates, Expenses at 768 and 1024) wrapped three and one, the last alone on
+          // its line. There they sit two and two, at their usual widths (audit 2026-10-09).
+          controlCount === 4 && 'sm:@lg:@max-[51rem]:grid sm:@lg:@max-[51rem]:w-full sm:@lg:@max-[51rem]:grid-cols-[repeat(2,auto)] sm:@lg:@max-[51rem]:justify-start',
           panelOpen ? 'ws-reveal grid grid-cols-2 gap-2' : 'hidden',
         ]"
       >
