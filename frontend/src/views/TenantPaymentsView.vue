@@ -547,7 +547,20 @@ onMounted(async () => {
    * see their normal payments page.
    */
   const payBillId = params.get('pay');
-  if (payBillId) {
+  /*
+   * `?pay=current`: the overview's Pay button when no bill is raised - the
+   * "Not entered yet" tile, which is most residents most of the time, since
+   * bills are raised on demand. It sent no `pay` at all, so the tap landed
+   * here with the checkout closed and the resident had to find and press
+   * Pay with GCash a second time (audit 2026-10-09). Opened only when this
+   * page would offer that same button (the no-bill tile below).
+   */
+  if (payBillId === 'current') {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    if (outstandingBills.value.length === 0 && standing.value && standingOwes.value && !writesUnavailable.value) {
+      openAdyenModalForCurrentPeriod();
+    }
+  } else if (payBillId) {
     window.history.replaceState({}, document.title, window.location.pathname);
     const target = outstandingBills.value.find((b: any) => b.id === payBillId);
     // Not while a payment on it waits for verification: the checkout refuses
