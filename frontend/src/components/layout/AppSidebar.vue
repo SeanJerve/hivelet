@@ -423,8 +423,10 @@ onBeforeUnmount(() => {
           >
             <div class="space-y-6">
               <div class="flex items-center justify-between pb-4 border-b border-line">
+                <!-- text-xl, the header's mark (AppHeader): at text-base the menu's
+                     "Hivelet" read as a different, smaller wordmark (audit 2026-10-09). -->
                 <div>
-                  <span class="font-display text-base font-semibold tracking-tight text-ink">Hivelet</span>
+                  <span class="font-display text-xl font-semibold tracking-tight text-ink">Hivelet</span>
                 </div>
                 <button 
                   @click="closeMobileNav" 

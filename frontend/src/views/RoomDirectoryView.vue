@@ -335,8 +335,12 @@ function applyRoomFilters(v: FilterDraft) {
             :aria-controls="`cluster-units-${domId(clusterName)}`"
             @click="toggleCluster(clusterName, clusterIndex)"
           >
-            <span class="flex items-baseline justify-between gap-3">
-              <span class="flex items-center gap-2">
+            <!-- By the header's own width (audit 2026-10-09): at 320 "Boarding House"
+                 and "22 of 22 occupied" each broke over two lines side by side. Below
+                 16rem the count goes under the name, in line with its text. -->
+            <span class="@container block">
+            <span class="flex flex-col gap-0.5 @[16rem]:flex-row @[16rem]:items-baseline @[16rem]:justify-between @[16rem]:gap-3">
+              <span class="flex min-w-0 items-center gap-2">
                 <ChevronDown
                   :class="[
                     'size-4 shrink-0 text-ink-soft transition-transform duration-200 ease-[var(--ease-out)]',
@@ -346,10 +350,11 @@ function applyRoomFilters(v: FilterDraft) {
                 />
                 <span class="text-[0.9375rem] font-semibold text-ink">{{ clusterName }}</span>
               </span>
-              <span class="tabular text-xs text-ink-soft">
+              <span class="tabular shrink-0 whitespace-nowrap pl-6 text-xs text-ink-soft @[16rem]:pl-0">
                 {{ clusterOccupancy(clusterName).occupied }} of
                 {{ clusterOccupancy(clusterName).total }} occupied
               </span>
+            </span>
             </span>
             <span class="flex gap-1" aria-hidden="true">
               <span
