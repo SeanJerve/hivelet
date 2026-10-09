@@ -233,14 +233,21 @@ async function handleQuickLogin(account: DemoAccount) {
             Hivelet
           </RouterLink>
 
+          <!--
+            Inquire's bar exactly (audit 2026-10-09): the theme toggle up here, where the
+            evaluators asked for it on every public page (3 Oct) and where Inquire, the
+            landing page and the category pages have it, rather than under the form;
+            and "Contact us" from 640px, as there, so the bar keeps one row on a phone.
+          -->
           <p class="flex flex-wrap items-baseline justify-end gap-x-3">
-            <span class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</span>
+            <span class="hidden text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft sm:inline">Contact us</span>
             <a
               :href="`tel:${LANDLADY.phone}`"
               class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
             >
               {{ LANDLADY.phoneShown }}
             </a>
+            <ThemeToggle class="self-center text-ink" />
           </p>
         </div>
 
@@ -436,8 +443,6 @@ async function handleQuickLogin(account: DemoAccount) {
             >
               Privacy policy
             </RouterLink>
-            <!-- Light or dark: this page has no footer to carry it (Sean, 2026-10-01). -->
-            <ThemeToggle class="-ml-2.5" />
           </p>
         </form>
       </div>
