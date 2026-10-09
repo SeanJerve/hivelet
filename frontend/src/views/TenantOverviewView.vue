@@ -552,7 +552,9 @@ function handlePayOnline() {
   // it. A resident tapping it twice on a slow connection got two navigations
   // queued instead of one obviously-busy button.
   payingOnline.value = true;
-  router.push({ path: '/tenant/payments', query: { pay: activeBillId.value || undefined } });
+  // `current` when no bill is raised: Payments opens its own no-bill checkout
+  // (see `?pay=current` there) instead of arriving closed (audit 2026-10-09).
+  router.push({ path: '/tenant/payments', query: { pay: activeBillId.value || 'current' } });
 }
 
 /**

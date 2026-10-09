@@ -17,9 +17,63 @@ export interface ToastItem {
   title: string;
   message: string;
   duration?: number;
+  /**
+   * The dialog that was on top when this was raised (audit 2026-10-09). It is
+   * shown INSIDE that dialog, under its title, instead of in the stack at the
+   * top of the screen - see `heldBy` below.
+   */
+  dialogId?: string;
+  /** When it was raised, so a dialog closing can tell a read message from a new one. */
+  at: number;
 }
 
 const toasts = ref<ToastItem[]>([]);
+
+/**
+ * The WsModal instances open now, the last one on top (audit 2026-10-09).
+ *
+ * WHY A MESSAGE RAISED UNDER A DIALOG IS SHOWN IN IT
+ * --------------------------------------------------------------------------
+ * The stack sits at the top of the screen, above every dialog (z-60). On a
+ * phone a long dialog is a sheet whose header starts 24px from the top, so a
+ * refused save's toast (Not saved / Could not save) landed squarely on the
+ * dialog's title and X - measured at 375px on Edit tenant, Edit unit and
+ * Manage this repair. A tap on the toast dismissed it (audit 2026-10-01), but
+ * the reason the save was refused was then gone after four seconds, while the
+ * form it was about was still open in front of her. The design guideline puts
+ * a refusal "in the toast otherwise"; inside an open dialog the toast is now
+ * drawn by the dialog itself, where it covers nothing and stays readable.
+ */
+const openDialogs = ref<string[]>([]);
+
+/** True while `id` is an open dialog, so the dialog (not the stack) shows it. */
+export function heldBy(toast: ToastItem): boolean {
+  return !!toast.dialogId && openDialogs.value.includes(toast.dialogId);
+}
+
+export function registerDialog(id: string): void {
+  openDialogs.value = [...openDialogs.value, id];
+}
+
+/**
+ * The dialog has gone. A refusal it has shown for a moment was read there,
+ * and the form it explained is closed, so it goes with it. Anything else - a
+ * confirmation, or a refusal raised in the same instant as the close - moves
+ * to the stack for the rest of its usual time.
+ */
+export function unregisterDialog(id: string): void {
+  openDialogs.value = openDialogs.value.filter((d) => d !== id);
+  // A refusal held past its time is always older than this, so one that has
+  // already had its four seconds never reappears in the stack.
+  const now = Date.now();
+  for (const t of toasts.value.filter((t) => t.dialogId === id)) {
+    if ((t.type === 'error' || t.type === 'warning') && now - t.at > 1000) dismissToast(t.id);
+  }
+}
+
+function dismissToast(id: string) {
+  toasts.value = toasts.value.filter(t => t.id !== id);
+}
 
 export function useToast() {
   function showToast(
@@ -30,7 +84,11 @@ export function useToast() {
     options: ToastOptions = {}
   ) {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const item: ToastItem = { id, type, title, message, duration };
+    const dialogId = openDialogs.value[openDialogs.value.length - 1];
+    // One message at a time inside a dialog: pressing Save twice after a refusal
+    // must not pile two copies of the same refusal under its title.
+    if (dialogId) toasts.value = toasts.value.filter((t) => t.dialogId !== dialogId);
+    const item: ToastItem = { id, type, title, message, duration, dialogId, at: Date.now() };
     toasts.value.push(item);
     // The one place a saved action pings (lib/sounds.ts): every success toast
     // here is a completed save, once per action. lib/live.ts stays quiet for 4 s
@@ -40,14 +98,16 @@ export function useToast() {
 
     if (duration > 0) {
       setTimeout(() => {
+        // A refusal shown inside an open dialog stays until it is dismissed, the
+        // dialog closes, or the next message replaces it: the form it explains
+        // is still in front of her, and four seconds is less than it takes to
+        // read the reason and find the field.
+        const t = toasts.value.find((x) => x.id === id);
+        if (t && heldBy(t) && (t.type === 'error' || t.type === 'warning')) return;
         dismissToast(id);
       }, duration);
     }
     return id;
-  }
-
-  function dismissToast(id: string) {
-    toasts.value = toasts.value.filter(t => t.id !== id);
   }
 
   return { toasts, showToast, dismissToast };

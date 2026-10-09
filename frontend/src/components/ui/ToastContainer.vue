@@ -12,10 +12,14 @@
  * them no separate place, and splitting the stack in two to get an assertive
  * one would reorder what sighted readers see.
  */
-import { useToast } from '../../lib/useToast';
+import { computed } from 'vue';
+import { useToast, heldBy } from '../../lib/useToast';
 import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-vue-next';
 
 const { toasts, dismissToast } = useToast();
+// A message raised while a dialog is open is drawn inside that dialog, under
+// its title, not up here over its X (lib/useToast.ts, audit 2026-10-09).
+const shown = computed(() => toasts.value.filter((t) => !heldBy(t)));
 
 const iconTone: Record<string, string> = {
   success: 'text-brand-bright',
@@ -47,7 +51,7 @@ const iconTone: Record<string, string> = {
     -->
     <TransitionGroup name="toast">
       <div
-        v-for="toast in toasts"
+        v-for="toast in shown"
         :key="toast.id"
         class="on-dark pointer-events-auto flex w-full cursor-pointer items-start gap-3 rounded-2xl bg-night p-4 text-on-night shadow-lift"
         @click="dismissToast(toast.id)"

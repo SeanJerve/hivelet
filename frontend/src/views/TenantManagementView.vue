@@ -54,7 +54,10 @@ const justCopiedPassword = ref(false);
 const resetModalTenant = ref<TenantRecord | null>(null);
 
 function openResetFromModal(t: TenantRecord) {
-  editModalTenant.value = null;
+  // The editor stays open under the confirmation (audit 2026-10-09), so
+  // Cancel returns to it with whatever was typed; it closes when the reset
+  // (or the move-out below) goes through. Manage this repair and Record
+  // payment already worked this way; this one dropped her back on the list.
   resetModalTenant.value = t;
 }
 
@@ -65,6 +68,7 @@ async function confirmResetPassword() {
   try {
     const result = await api.post<{ temporaryPassword: string; loginId?: string | null }>(`/admin/tenants/${t.id}/reset-password`);
     resetModalTenant.value = null;
+    editModalTenant.value = null;
     onboardedCredentials.value = { name: t.name, loginId: result.loginId ?? null, password: result.temporaryPassword, reason: 'reset' };
   } catch (err: any) {
     showToast('error', failureTitle(err, 'Password not reset'), err?.message || 'Nothing was changed.');
@@ -724,6 +728,8 @@ async function saveEdit() {
   );
   if (unitChanged && isOccupiedByOther && targetUnit !== '—' && targetUnit !== 'none') {
     showToast('error', 'Unit already occupied', `Someone already lives in ${editUnitCode.value.toUpperCase()}.`);
+    // Focus to the field it is about (audit 2026-10-09).
+    document.getElementById('edit-unit')?.focus();
     return;
   }
 
@@ -774,7 +780,6 @@ async function saveEdit() {
 const vacateReason = ref('');
 
 function openVacateFromModal(t: TenantRecord) {
-  editModalTenant.value = null;
   vacateReason.value = '';
   vacateModalTenant.value = t;
 }
@@ -791,6 +796,7 @@ async function confirmVacate() {
     // Amber, but a completed move-out, so it pings like the rest (Sean, 2026-10-01).
     showToast('warning', 'Moved out', `${vacateModalTenant.value.unitCode} is free to let again.`, { sound: true });
     vacateModalTenant.value = null;
+    editModalTenant.value = null;
   } catch (err: any) {
     showToast('error', failureTitle(err, 'Could not move them out'), err?.message || 'Nothing was changed.');
   } finally {
@@ -805,12 +811,16 @@ async function handleOnboard() {
     return;
   }
   if (!newUnit.value) {
+  // The reason shows inside the dialog; focus goes to the field it is about
+  // (audit 2026-10-09), as the emergency phone above already did.
     showToast('error', 'Choose a unit', 'Pick the unit they are moving into.');
+    document.getElementById('new-unit')?.focus();
     return;
   }
   const isOccupied = tenants.some(t => t.status === 'active' && t.unitCode.toLowerCase() === newUnit.value.toLowerCase());
   if (isOccupied) {
     showToast('error', 'Unit already occupied', `Someone already lives in ${newUnit.value.toUpperCase()}.`);
+    document.getElementById('new-unit')?.focus();
     return;
   }
 

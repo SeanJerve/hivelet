@@ -949,6 +949,7 @@ function handleDeleteIncome(id: string, invoice: string | null, unit: string) {
         if (idx !== -1) {
           incomeRecords.splice(idx, 1);
         }
+        isEditOpen.value = false;
         showToast('success', 'Payment deleted', invoice ? `Invoice ${invoice} is no longer in the ledger.` : 'The payment is no longer in the ledger.');
       } catch (err: any) {
         showToast('error', failureTitle(err, 'Delete failed'), err.message || 'Server error occurred');
@@ -962,7 +963,11 @@ function handleDeleteFromModal() {
   const id = editingIncome.value.id || '';
   const inv = editingIncome.value.invoice;
   const u = editingIncome.value.unit;
-  isEditOpen.value = false;
+  // The editor stays open under the confirmation (audit 2026-10-09). It used
+  // to close first, so Cancel on "Delete this payment?" dropped her back on the
+  // list with the editor and any change in it gone - while Manage this repair
+  // and Record payment kept theirs. It closes once the action succeeds; a
+  // refusal is then shown inside it, where the record still is.
   handleDeleteIncome(id, inv, u);
 }
 
@@ -1001,11 +1006,15 @@ async function handleEditIncome() {
   const waterVal = Number(editWater.value) || 0;
   if (waterVal !== 0) {
     if (waterVal < waterBaseline) {
-      showToast('error', 'Water Payment Error', `Water for ${unitUpper} is ₱0, or at least ₱${waterBaseline} for ${occupants} ${occupants === 1 ? 'occupant' : 'occupants'}.`);
+      // Sentence case like "Check the amounts", and focus to the field it is
+      // about; the reason shows inside the dialog (audit 2026-10-09).
+      showToast('error', 'Check the water', `Water for ${unitUpper} is ₱0, or at least ₱${waterBaseline} for ${occupants} ${occupants === 1 ? 'occupant' : 'occupants'}.`);
+      document.getElementById('edit-water')?.focus();
       return;
     }
     if (waterVal % perOccupantRate !== 0) {
-      showToast('error', 'Water Payment Error', `Water goes up in steps of ₱${perOccupantRate}: ₱0, ₱${perOccupantRate}, ₱${perOccupantRate * 2}, ₱${perOccupantRate * 3} and so on.`);
+      showToast('error', 'Check the water', `Water goes up in steps of ₱${perOccupantRate}: ₱0, ₱${perOccupantRate}, ₱${perOccupantRate * 2}, ₱${perOccupantRate * 3} and so on.`);
+      document.getElementById('edit-water')?.focus();
       return;
     }
   }
@@ -1955,7 +1964,7 @@ const isDownloadOpen = ref(false);
             </label>
             <label class="ws-field">
               Water
-              <input v-model.number="editWater" type="number" min="0" step="any" class="ws-input w-full" required />
+              <input id="edit-water" v-model.number="editWater" type="number" min="0" step="any" class="ws-input w-full" required />
             </label>
           </div>
 

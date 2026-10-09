@@ -111,7 +111,12 @@ async function confirmCancel() {
     await fetchTickets({ quiet: true });
     showToast('success', 'Request cancelled', `"${t.title}" is cancelled. The landlady has been told.`);
   } catch (err: any) {
-    cancelError.value = err?.message || 'The request could not be cancelled. Try again.';
+    // Led by what did not happen, as the request and note errors on this page are
+    // ("Your request was not sent. ...") - the server's reason alone, e.g. a
+    // one-an-hour refusal, did not say the request is still open (audit 2026-10-09).
+    cancelError.value = err?.message
+      ? `Your request was not cancelled. ${err.message}`
+      : 'Your request was not cancelled. Try again.';
   } finally {
     cancelling.value = false;
   }
@@ -273,8 +278,12 @@ const filteredTickets = computed(() => {
 const openCount = computed(
   () => tickets.value.filter((t) => !RESOLVED_STATES.includes(t.status)).length
 );
+// Cancelled ones counted apart (audit 2026-10-09): "2 open, 2 done" counted a request
+// the resident cancelled as done, beside its own Cancelled pill. The Done filter
+// still lists them; this only stops the count calling them fixed.
+const cancelledCount = computed(() => tickets.value.filter((t) => isCancelled(t)).length);
 const resolvedCount = computed(
-  () => tickets.value.filter((t) => RESOLVED_STATES.includes(t.status)).length
+  () => tickets.value.filter((t) => RESOLVED_STATES.includes(t.status) && !isCancelled(t)).length
 );
 
 // ---- Timeline Modal state -------------------------------------------------
@@ -315,14 +324,38 @@ const noteError = ref('');
  * own stage rather than folded into Resolved, because they are different
  * outcomes to the person who filed the ticket.
  */
+/*
+ * "Done", not "Resolved" (audit 2026-10-09): the list, its filter, its pill
+ * ("Done 3 Oct") and the count ("2 open, 2 done") all call this state Done, and
+ * the dialog opened from the same row called it Resolved - two words for one
+ * state on one screen. The key is still the enum value.
+ */
 const TIMELINE_STAGES = [
   { key: 'Submitted',   label: 'Submitted',   desc: 'The landlady has your request.' },
   { key: 'In Progress', label: 'In progress', desc: 'Work on it is underway.' },
-  { key: 'Resolved',    label: 'Resolved',    desc: 'The problem has been fixed.' },
+  { key: 'Resolved',    label: 'Done',        desc: 'The problem has been fixed.' },
   { key: 'Closed',      label: 'Closed',      desc: 'This request is closed.' },
 ];
 
+/*
+ * A request the resident cancelled is Closed in the database, and the four
+ * stages above put it at the last one - with "Done: The problem has been fixed"
+ * ticked on the way, about a problem nobody fixed (audit 2026-10-09). The list
+ * already tells the two apart (`isCancelled`, the Cancelled pill); the dialog
+ * now does too. Cancelling is only allowed while Submitted, so these two
+ * stages are the whole of its history.
+ */
+const CANCELLED_STAGES = [
+  { key: 'Submitted', label: 'Submitted', desc: 'The landlady had your request.' },
+  { key: 'Closed',    label: 'Cancelled', desc: 'You cancelled this request.' },
+];
+
+const timelineStages = computed(() =>
+  activeTimelineTicket.value && isCancelled(activeTimelineTicket.value) ? CANCELLED_STAGES : TIMELINE_STAGES,
+);
+
 function getStageIndex(status: string): number {
+  if (activeTimelineTicket.value && isCancelled(activeTimelineTicket.value)) return 1;
   if (status === 'Closed') return 3;
   if (status === 'Resolved') return 2;
   if (status === 'In Progress') return 1;
@@ -969,7 +1002,7 @@ function formatDateTime(iso: string) {
             <p class="mt-1 min-h-6 text-sm leading-6 text-ink-soft">
               <template v-if="ticketsLoadFailed">Not loaded</template>
               <template v-else-if="loadingTickets"></template>
-              <template v-else>{{ openCount }} open, {{ resolvedCount }} done</template>
+              <template v-else>{{ openCount }} open, {{ resolvedCount }} done<template v-if="cancelledCount">, {{ cancelledCount }} cancelled</template></template>
             </p>
           </div>
 
@@ -1152,9 +1185,20 @@ function formatDateTime(iso: string) {
                   </div>
 
                   <!-- Footer: classification metadata + View Timeline button -->
+                  <!--
+                    `@container` and one group for the two buttons (audit 2026-10-09). They
+                    were loose items in the pills' wrapping row with `ml-auto` on the first,
+                    so wherever the row ran out of room - every phone, and the narrow
+                    requests column at 1024px - "Cancel request" sat flush right and
+                    "Progress and notes" dropped under it flush left: two buttons, two
+                    alignments. Grouped, they wrap together; in a card under 28rem they
+                    take a row of their own and fill it, side by side or one above the
+                    other, and from 28rem they sit at the end of the pills as before.
+                  -->
                   <div
-                    class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-line bg-tile"
+                    class="@container px-5 py-3 border-t border-line bg-tile"
                   >
+                  <div class="flex flex-wrap items-center gap-2">
                     <StatusPill :tone="priorityTone(ticket.priority)">
                       {{ priorityWord(ticket.priority) }}
                     </StatusPill>
@@ -1166,10 +1210,11 @@ function formatDateTime(iso: string) {
                       Cancelled {{ formatDate(ticket.closed_at) }}
                     </StatusPill>
 
+                    <div class="flex w-full flex-wrap gap-2 *:grow @md:ml-auto @md:w-auto @md:*:grow-0">
                     <button
                       v-if="canCancel(ticket) && !writesUnavailable"
                       type="button"
-                      class="pill-btn pill-btn-compact ml-auto"
+                      class="pill-btn pill-btn-compact"
                       @click.stop="askCancel(ticket)"
                     >
                       Cancel request
@@ -1185,13 +1230,16 @@ function formatDateTime(iso: string) {
                       under a finger, as this did.
                     -->
                     <button
+                      type="button"
                       @click.stop="openTimeline(ticket)"
-                      :class="['pill-btn pill-btn-compact', !(canCancel(ticket) && !writesUnavailable) && 'ml-auto']"
+                      class="pill-btn pill-btn-compact"
                     >
                       <ListChecks class="size-3.5 text-brand" aria-hidden="true" />
                       <span>Progress and notes</span>
                       <ChevronRight class="size-3" aria-hidden="true" />
                     </button>
+                    </div>
+                  </div>
                   </div>
                 </div>
               </article>
@@ -1217,7 +1265,7 @@ function formatDateTime(iso: string) {
             <p class="text-xs font-semibold text-ink-soft mb-4">Progress</p>
             <div class="space-y-0">
               <div
-                v-for="(stage, index) in TIMELINE_STAGES"
+                v-for="(stage, index) in timelineStages"
                 :key="index"
                 class="flex gap-4"
               >
@@ -1230,7 +1278,7 @@ function formatDateTime(iso: string) {
                     <span v-else class="text-xs font-semibold">{{ index + 1 }}</span>
                   </div>
                   <div
-                    v-if="index < TIMELINE_STAGES.length - 1"
+                    v-if="index < timelineStages.length - 1"
                     :class="[ 'w-0.5 flex-1 min-h-[28px]', index < getStageIndex(activeTimelineTicket.status) ? 'bg-brand' : 'bg-line' ]"
                   />
                 </div>

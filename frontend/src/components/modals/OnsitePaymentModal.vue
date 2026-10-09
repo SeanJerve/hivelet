@@ -664,6 +664,8 @@ function triggerRecord() {
 
   if (occCount < 1) {
     showToast('error', 'How many people live there?', 'Enter at least one occupant. Water is worked out from this number.');
+    // Focus to the field it is about; the reason shows inside the dialog (audit 2026-10-09).
+    document.getElementById('onsite-occupants')?.focus();
     return;
   }
 
@@ -903,6 +905,7 @@ function triggerRecord() {
           <label class="ws-field">
             Occupants
             <input
+              id="onsite-occupants"
               v-model.number="occupantsInput"
               type="number"
               min="1"

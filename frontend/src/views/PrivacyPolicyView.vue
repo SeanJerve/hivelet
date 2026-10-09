@@ -393,7 +393,8 @@ const sections = Object.values(S);
       </ul>
       <p>
         To use any of them, contact the landlady by phone on
-        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phoneShown }}</a> or in person at the address
+        <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
+        <a :href="`tel:${LANDLADY.phone}`" class="whitespace-nowrap">{{ LANDLADY.phoneShown }}</a> or in person at the address
         above. Tenants can already see their bills, payments and tickets in the portal, and
         correct their own email address, phone number, password and emergency contact on the My
         details screen. For anything else, including your name, ask her.

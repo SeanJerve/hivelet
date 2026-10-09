@@ -182,7 +182,8 @@ const sections = Object.values(S);
       </ul>
       <p>
         For anything about a refund, contact the landlady on
-        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phoneShown }}</a>.
+        <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
+        <a :href="`tel:${LANDLADY.phone}`" class="whitespace-nowrap">{{ LANDLADY.phoneShown }}</a>.
       </p>
     </section>
 
@@ -197,7 +198,8 @@ const sections = Object.values(S);
         <strong>A ticket does not call or text anyone.</strong> It reaches the landlady inside
         Hivelet, and she sees it when she next checks. For anything urgent or dangerous, phone her
         directly on
-        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phoneShown }}</a>.
+        <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
+        <a :href="`tel:${LANDLADY.phone}`" class="whitespace-nowrap">{{ LANDLADY.phoneShown }}</a>.
       </p>
       <p>She decides when a ticket is resolved, and closes it.</p>
     </section>
