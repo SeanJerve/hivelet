@@ -260,7 +260,10 @@ async function handleSave() {
       showToast('error', 'Could not confirm', err.message);
       return;
     }
-    errorNotice.value = `Save failed: ${err?.message || err}`;
+    // "Nothing was saved.", the words this form's own validation refusal uses two
+    // branches up; "Save failed: <reason>" was the one engineering-voiced message
+    // on the tenant's pages (audit 2026-10-09).
+    errorNotice.value = `Nothing was saved. ${err?.message || err}`;
     showToast('error', 'Not saved', err?.message || 'Your details could not be saved.');
   } finally {
     saving.value = false;
@@ -351,9 +354,11 @@ function handleReset() {
       </div>
 
       <!-- Who you are here -->
+      <!-- `bg-brand`, the colour of the same initials in the header button and the account
+           menu above this page; it was the only `bg-night` one (audit 2026-10-09). -->
       <div class="flex flex-col items-center gap-5 rounded-tile bg-tile p-5 text-center sm:flex-row sm:p-6 sm:text-left">
         <span
-          class="grid size-20 shrink-0 place-items-center rounded-full bg-night text-2xl font-semibold text-on-night"
+          class="grid size-20 shrink-0 place-items-center rounded-full bg-brand text-2xl font-semibold text-on-brand"
           aria-hidden="true"
         >
           {{ initials }}
@@ -410,9 +415,13 @@ function handleReset() {
                 :value="form.full_name"
                 type="text"
                 readonly
-                class="ws-input"
+                class="ws-input cursor-default bg-canvas text-ink-soft"
                 required
               />
+              <!-- `bg-canvas text-ink-soft` (audit 2026-10-09): it was drawn exactly like the
+                   email and mobile fields beside it, so it still looked typeable; a tap put a
+                   caret in a box that took no typing. Recessed and quieter, it reads as a
+                   fact on file, which the hint under it then explains. -->
               <p class="ws-hint">
                 The landlady keeps your name on your tenancy record. Ask her if it needs changing.
               </p>
