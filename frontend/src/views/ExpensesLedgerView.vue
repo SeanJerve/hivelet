@@ -1065,9 +1065,13 @@ async function handleEditExpense() {
         <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
         <template v-else>Nothing matches</template>
       </p>
-      <!-- The heading says it when nothing matches; the failure keeps its line. -->
+      <!-- The failure keeps its line; nothing matching gets a hint, as Tenants and
+           Rooms and rates give one (audit 2026-10-09: the title stood alone). -->
       <p v-if="expenseRecordsFetchFailed" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
         Check your connection, then reload the page to try again.
+      </p>
+      <p v-else class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+        {{ q.trim() ? 'Try a word from the description or the kind of expense, or change the filters.' : 'Try another kind, month or year.' }}
       </p>
     </div>
 

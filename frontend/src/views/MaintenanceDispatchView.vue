@@ -611,6 +611,11 @@ function handleDeleteTicketPrompt() {
 
     <!-- One column until xl: at 1024 three columns were 202px and a title beside its priority pill had 28px. -->
     <div v-else class="ws-reveal grid gap-4 xl:grid-cols-3">
+      <!-- A search that empties the board says so once, as Inquiries does; three
+           "Nothing here." alone read as no repairs at all (audit 2026-10-09). -->
+      <p v-if="q.trim() && columns.every((c) => c.tickets.length === 0)" class="text-sm text-ink-soft xl:col-span-3" role="status">
+        No repair matches “{{ q.trim() }}”.
+      </p>
       <section
         v-for="col in columns"
         :key="col.key"

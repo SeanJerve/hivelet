@@ -1499,6 +1499,11 @@ const isDownloadOpen = ref(false);
         class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
       >
         <p class="text-base font-semibold text-ink">Nothing matches</p>
+        <!-- The sentence the comment above promises, as Tenants and Rooms and rates
+             give one (audit 2026-10-09): the title alone stood in an empty tile. -->
+        <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+          {{ q.trim() ? 'Try a unit, a name or an invoice number, or change the filters.' : 'Try another month, year or cluster.' }}
+        </p>
       </div>
 
       <section
@@ -1748,6 +1753,7 @@ const isDownloadOpen = ref(false);
       :page-size="12"
       table-from="xl"
       empty-title="Nothing matches"
+      :empty-note="q.trim() ? 'Try a unit, a name or an invoice number, or change the filters.' : 'Try another month, year or cluster.'"
     >
       <template #head>
         <tr>
