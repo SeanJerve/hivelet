@@ -1032,6 +1032,9 @@ function refreshAll() {
         message="Your payment history could not be loaded. Anything already recorded is safe."
         @retry="refreshAll"
       />
+      <!-- A search that finds nothing is "Nothing to show" with the term in double quotes, as on
+           Repairs. It said "Nothing recorded" over the payments the resident does have, and
+           quoted the term 'like this' (audit 2026-10-09). -->
       <RecordTable
         v-else
         :rows="filteredPayments"
@@ -1039,12 +1042,12 @@ function refreshAll() {
         :caption="`Your payments in ${selectedYear}`"
         noun="payment"
         :page-size="8"
-        :empty-title="loadingHistory ? 'Loading your payments' : 'Nothing recorded'"
+        :empty-title="loadingHistory ? 'Loading your payments' : searchQuery.trim() ? 'Nothing to show' : 'Nothing recorded'"
         :empty-note="
           loadingHistory
             ? 'Your payment record is still being read. This is not the same as having none.'
             : searchQuery.trim()
-              ? `Nothing matches '${searchQuery.trim()}' in ${selectedYear}.`
+              ? `Nothing matches &quot;${searchQuery.trim()}&quot; in ${selectedYear}.`
               : `No payments are on record for ${selectedYear}.`
         "
       >
