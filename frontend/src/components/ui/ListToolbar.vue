@@ -130,12 +130,15 @@ const filterButtonLabel = computed(() =>
 
 /** On a phone, an odd last dropdown spans both columns instead of sitting alone in half a row. */
 function spanClass(index: number) {
-  return controlCount.value % 2 === 1 && index === controlCount.value - 1 ? 'col-span-2 sm:col-span-1' : '';
+  return controlCount.value % 2 === 1 && index === controlCount.value - 1 ? 'col-span-2 sm:col-span-1 sm:@max-lg:col-span-2' : '';
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <!-- @container: in a narrow column (Inquiries' list beside the thread on a laptop) the toolbar
+       lays out by its own width, not the screen's - full-width search, the dropdowns two to a row
+       under it - instead of wrapping each dropdown onto its own line (Sean, 2026-10-09). -->
+  <div class="@container flex flex-col gap-2">
     <div class="flex flex-wrap items-center gap-2 sm:items-end sm:gap-3">
       <!-- `min-w-0 flex-1` on the search so it takes what the Filters button
            leaves on a phone, down to 320px; `sm:max-w-80` keeps it the 20rem
@@ -147,7 +150,7 @@ function spanClass(index: number) {
            was squeezed to its icon, under "Show as" (Sean, 6 Oct 2026). With a
            floor, the dropdowns go to the next row and the search keeps 15rem
            or more. -->
-      <div v-if="searchLabel" class="relative min-w-0 flex-1 sm:min-w-60 sm:max-w-80">
+      <div v-if="searchLabel" class="relative min-w-0 flex-1 sm:min-w-60 sm:max-w-80 sm:@max-lg:max-w-none sm:@max-lg:basis-full">
         <Search
           class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
           aria-hidden="true"
@@ -188,7 +191,7 @@ function spanClass(index: number) {
         v-if="controlCount > 0"
         :id="panelId"
         :class="[
-          'w-full sm:flex sm:w-auto sm:flex-wrap sm:items-end sm:gap-3',
+          'w-full sm:flex sm:w-auto sm:flex-wrap sm:items-end sm:gap-3 sm:@max-lg:grid sm:@max-lg:w-full sm:@max-lg:grid-cols-2 sm:@max-lg:gap-2',
           panelOpen ? 'ws-reveal grid grid-cols-2 gap-2' : 'hidden',
         ]"
       >
@@ -200,7 +203,7 @@ function spanClass(index: number) {
             :model-value="(view as string)"
             :options="viewOptions"
             :aria-label="viewLabel"
-            width-class="w-full sm:w-44"
+            width-class="w-full sm:w-44 sm:@max-lg:w-full"
             @update:model-value="setView"
           />
         </div>
@@ -214,7 +217,7 @@ function spanClass(index: number) {
             :model-value="filter.value"
             :options="options"
             :aria-label="filter.label"
-            width-class="w-full sm:w-48"
+            width-class="w-full sm:w-48 sm:@max-lg:w-full"
             @update:model-value="setFilter(filter.key, $event)"
           />
         </div>
