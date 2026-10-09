@@ -177,6 +177,7 @@ const rows = computed(() => [...months.value].reverse());
     <MonthCapsules
       :months="capsules"
       :terms="capsuleTerms"
+      :decimals="2"
       :label="`Your rent by month, ${capsules[0]!.long} to ${capsules.at(-1)!.long}`"
     />
 

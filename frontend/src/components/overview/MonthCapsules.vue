@@ -27,8 +27,15 @@ const props = withDefaults(
      * a phone's first screen with three tiles (Loyd, 2026-10-03).
      */
     short?: boolean;
+    /**
+     * Centavos in the selected month's figure. 0 for the landlady's ledgers,
+     * which count whole pesos throughout; 2 on the tenant's payments page, where
+     * every other figure in the same card ("₱16,800.00") has them and the month
+     * alone read "₱8,400 paid" (audit 2026-10-09).
+     */
+    decimals?: number;
   }>(),
-  { terms: () => ({}), short: false }
+  { terms: () => ({}), short: false, decimals: 0 }
 );
 
 const DEFAULT_TERMS: Record<MonthKind, string> = {
@@ -81,7 +88,7 @@ function compact(value: number) {
 
 function describe(m: CapsuleMonth) {
   // Amount kinds read "₱4,700 recorded"; the other two are their term alone.
-  if (m.kind === 'recorded' || m.kind === 'expected') return `${peso(m.value ?? 0)} ${term(m.kind).toLowerCase()}`;
+  if (m.kind === 'recorded' || m.kind === 'expected') return `${peso(m.value ?? 0, props.decimals)} ${term(m.kind).toLowerCase()}`;
   return term(m.kind);
 }
 
