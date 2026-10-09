@@ -292,7 +292,29 @@ watch(() => route.hash, syncWithAddress);
 
         <!-- No link: the enquiries this browser sent, and the code form. -->
         <section v-else aria-labelledby="find-heading">
-          <h1 id="find-heading" class="text-2xl sm:text-3xl font-medium tracking-[-0.02em] text-ink">
+          <!--
+            The breadcrumb and heading of its two sibling forms, Inquire and Sign in
+            (audit 2026-10-09). This page is where both of them send a visitor
+            ("Read the reply", "Your inquiries" in the footer), and it alone had no
+            way home in the page and a smaller heading: 24px against their 28px on a
+            phone, 30px against 43px at 1440.
+          -->
+          <nav aria-label="Breadcrumb">
+            <ol class="flex flex-wrap items-center gap-x-2 text-xs text-ink-soft">
+              <li>
+                <RouterLink
+                  to="/public"
+                  class="press inline-flex min-h-11 items-center gap-1.5 hover:text-ink transition-colors font-semibold"
+                >
+                  <ArrowLeft class="size-3.5" aria-hidden="true" />
+                  Home
+                </RouterLink>
+              </li>
+              <li aria-hidden="true" class="text-ink-faint">/</li>
+              <li aria-current="page" class="text-ink">Your inquiries</li>
+            </ol>
+          </nav>
+          <h1 id="find-heading" class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
             Your inquiries
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
