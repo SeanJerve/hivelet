@@ -943,6 +943,7 @@ function handleDeleteIncome(id: string, invoice: string | null, unit: string) {
         if (idx !== -1) {
           incomeRecords.splice(idx, 1);
         }
+        isEditOpen.value = false;
         showToast('success', 'Payment deleted', invoice ? `Invoice ${invoice} is no longer in the ledger.` : 'The payment is no longer in the ledger.');
       } catch (err: any) {
         showToast('error', failureTitle(err, 'Delete failed'), err.message || 'Server error occurred');
@@ -956,7 +957,11 @@ function handleDeleteFromModal() {
   const id = editingIncome.value.id || '';
   const inv = editingIncome.value.invoice;
   const u = editingIncome.value.unit;
-  isEditOpen.value = false;
+  // The editor stays open under the confirmation (audit 2026-10-09). It used
+  // to close first, so Cancel on "Delete this payment?" dropped her back on the
+  // list with the editor and any change in it gone - while Manage this repair
+  // and Record payment kept theirs. It closes once the action succeeds; a
+  // refusal is then shown inside it, where the record still is.
   handleDeleteIncome(id, inv, u);
 }
 

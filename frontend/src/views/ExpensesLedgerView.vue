@@ -791,7 +791,11 @@ function handleDeleteFromEditModal() {
   if (!editingExpense.value) return;
   const id = editingExpense.value.id;
   const desc = editingExpense.value.description;
-  isEditOpen.value = false;
+  // The editor stays open under the confirmation (audit 2026-10-09). It used
+  // to close first, so Cancel on "Delete this ...?" dropped her back on the
+  // list with the editor and any change in it gone - while Manage this repair
+  // and Record payment kept theirs. It closes once the action succeeds; a
+  // refusal is then shown inside it, where the record still is.
   handleDeleteExpense(id, desc);
 }
 
@@ -806,6 +810,7 @@ function handleDeleteExpense(id: string, description: string) {
         if (index !== -1) {
           expenseRecords.splice(index, 1);
         }
+        isEditOpen.value = false;
         showToast('success', 'Expense deleted', `"${description}" is no longer in the ledger.`);
       } catch (err: any) {
         showToast('error', failureTitle(err, 'Not deleted'), err.message || 'The expense is still in the ledger. Please try again.');

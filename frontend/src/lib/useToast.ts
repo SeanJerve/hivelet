@@ -56,18 +56,18 @@ export function registerDialog(id: string): void {
 }
 
 /**
- * The dialog has gone. What it showed and has been on screen for a moment was
- * read there, and the dialog it described is closed, so it goes with it. One
- * raised in the same instant as the close (a save that succeeds and closes
- * its form) has not been seen yet, and moves to the stack for its usual time.
+ * The dialog has gone. A refusal it has shown for a moment was read there,
+ * and the form it explained is closed, so it goes with it. Anything else - a
+ * confirmation, or a refusal raised in the same instant as the close - moves
+ * to the stack for the rest of its usual time.
  */
 export function unregisterDialog(id: string): void {
   openDialogs.value = openDialogs.value.filter((d) => d !== id);
-  // A young one keeps the timer it was raised with; one held past its time is
-  // always older than this, so it never moves to the stack.
+  // A refusal held past its time is always older than this, so one that has
+  // already had its four seconds never reappears in the stack.
   const now = Date.now();
   for (const t of toasts.value.filter((t) => t.dialogId === id)) {
-    if (now - t.at > 1000) dismissToast(t.id);
+    if ((t.type === 'error' || t.type === 'warning') && now - t.at > 1000) dismissToast(t.id);
   }
 }
 
