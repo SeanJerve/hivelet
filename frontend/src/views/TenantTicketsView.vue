@@ -1152,9 +1152,20 @@ function formatDateTime(iso: string) {
                   </div>
 
                   <!-- Footer: classification metadata + View Timeline button -->
+                  <!--
+                    `@container` and one group for the two buttons (audit 2026-10-09). They
+                    were loose items in the pills' wrapping row with `ml-auto` on the first,
+                    so wherever the row ran out of room - every phone, and the narrow
+                    requests column at 1024px - "Cancel request" sat flush right and
+                    "Progress and notes" dropped under it flush left: two buttons, two
+                    alignments. Grouped, they wrap together; in a card under 28rem they
+                    take a row of their own and fill it, side by side or one above the
+                    other, and from 28rem they sit at the end of the pills as before.
+                  -->
                   <div
-                    class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-line bg-tile"
+                    class="@container px-5 py-3 border-t border-line bg-tile"
                   >
+                  <div class="flex flex-wrap items-center gap-2">
                     <StatusPill :tone="priorityTone(ticket.priority)">
                       {{ priorityWord(ticket.priority) }}
                     </StatusPill>
@@ -1166,10 +1177,11 @@ function formatDateTime(iso: string) {
                       Cancelled {{ formatDate(ticket.closed_at) }}
                     </StatusPill>
 
+                    <div class="flex w-full flex-wrap gap-2 *:grow @md:ml-auto @md:w-auto @md:*:grow-0">
                     <button
                       v-if="canCancel(ticket) && !writesUnavailable"
                       type="button"
-                      class="pill-btn pill-btn-compact ml-auto"
+                      class="pill-btn pill-btn-compact"
                       @click.stop="askCancel(ticket)"
                     >
                       Cancel request
@@ -1185,13 +1197,16 @@ function formatDateTime(iso: string) {
                       under a finger, as this did.
                     -->
                     <button
+                      type="button"
                       @click.stop="openTimeline(ticket)"
-                      :class="['pill-btn pill-btn-compact', !(canCancel(ticket) && !writesUnavailable) && 'ml-auto']"
+                      class="pill-btn pill-btn-compact"
                     >
                       <ListChecks class="size-3.5 text-brand" aria-hidden="true" />
                       <span>Progress and notes</span>
                       <ChevronRight class="size-3" aria-hidden="true" />
                     </button>
+                    </div>
+                  </div>
                   </div>
                 </div>
               </article>
