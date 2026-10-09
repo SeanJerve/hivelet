@@ -2283,6 +2283,27 @@ html:has(> body[style*='overflow: hidden']) {
 }
 
 /*
+ * A PillSelect that is a form field reads like the fields beside it (audit
+ * 2026-10-09). Its trigger carries the toolbar's look - 14px, weight 500, 14px
+ * of side padding - and in a form that put "1A, Tenant 14 (Boarding House)"
+ * beside an Occupants box whose text was 16px on a phone (the iOS zoom rule
+ * above), regular weight, and started 4px further in. Measured at 375 in
+ * Record payment, Manage this repair and Edit tenant: two type sizes and two
+ * left edges down one column. Inside `.ws-field` it now takes `.ws-input`'s
+ * numbers; the list toolbars, which are not fields, keep theirs. Unlayered,
+ * because the trigger's own sizes are Tailwind utilities.
+ */
+.ws-field button[role='combobox'] {
+  padding-inline: 1.125rem;
+  font-weight: 400;
+}
+@media (max-width: 639px) {
+  .ws-field button[role='combobox'] {
+    font-size: 1rem;
+  }
+}
+
+/*
  * The two native <dialog> prompts on the public pages. `allow-discrete` on
  * `display` and `overlay` is what lets the closing frame render at all -
  * without it the element is removed before any of this can play.
