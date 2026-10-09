@@ -645,12 +645,17 @@ function handleDeleteTicketPrompt() {
             <p class="text-lg font-semibold leading-snug break-words text-ink">{{ t.title }}</p>
             <StatusPill v-if="t.cancelledByTenant" tone="neutral" class="self-start">Cancelled by the tenant</StatusPill>
 
-            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-ink-faint">
-              <span>{{ t.category }}</span>
-              <span class="text-line" aria-hidden="true">·</span>
-              <span>Reported {{ t.reported }}</span>
-              <span class="text-line" aria-hidden="true">·</span>
-              <span>{{ t.technician || 'Unassigned' }}</span>
+            <!-- By the card's own width (audit 2026-10-09): in a board column at 1280
+                 (206px) the three facts wrapped one to a line, each with a dot left
+                 hanging at its end. Narrow, they stack without dots; one line from 24rem. -->
+            <div class="@container">
+              <div class="flex flex-col gap-y-1 text-xs text-ink-faint @sm:flex-row @sm:flex-wrap @sm:items-center @sm:gap-x-2.5">
+                <span>{{ t.category }}</span>
+                <span class="hidden text-line @sm:inline" aria-hidden="true">·</span>
+                <span>Reported {{ t.reported }}</span>
+                <span class="hidden text-line @sm:inline" aria-hidden="true">·</span>
+                <span>{{ t.technician || 'Unassigned' }}</span>
+              </div>
             </div>
 
             <!-- Delete beside Manage (Sean, 2026-10-02: a visible delete on repairs); the same
