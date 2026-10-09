@@ -547,7 +547,20 @@ onMounted(async () => {
    * see their normal payments page.
    */
   const payBillId = params.get('pay');
-  if (payBillId) {
+  /*
+   * `?pay=current`: the overview's Pay button when no bill is raised - the
+   * "Not entered yet" tile, which is most residents most of the time, since
+   * bills are raised on demand. It sent no `pay` at all, so the tap landed
+   * here with the checkout closed and the resident had to find and press
+   * Pay with GCash a second time (audit 2026-10-09). Opened only when this
+   * page would offer that same button (the no-bill tile below).
+   */
+  if (payBillId === 'current') {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    if (outstandingBills.value.length === 0 && standing.value && standingOwes.value && !writesUnavailable.value) {
+      openAdyenModalForCurrentPeriod();
+    }
+  } else if (payBillId) {
     window.history.replaceState({}, document.title, window.location.pathname);
     const target = outstandingBills.value.find((b: any) => b.id === payBillId);
     // Not while a payment on it waits for verification: the checkout refuses
@@ -1019,6 +1032,9 @@ function refreshAll() {
         message="Your payment history could not be loaded. Anything already recorded is safe."
         @retry="refreshAll"
       />
+      <!-- A search that finds nothing is "Nothing to show" with the term in double quotes, as on
+           Repairs. It said "Nothing recorded" over the payments the resident does have, and
+           quoted the term 'like this' (audit 2026-10-09). -->
       <RecordTable
         v-else
         :rows="filteredPayments"
@@ -1026,12 +1042,12 @@ function refreshAll() {
         :caption="`Your payments in ${selectedYear}`"
         noun="payment"
         :page-size="8"
-        :empty-title="loadingHistory ? 'Loading your payments' : 'Nothing recorded'"
+        :empty-title="loadingHistory ? 'Loading your payments' : searchQuery.trim() ? 'Nothing to show' : 'Nothing recorded'"
         :empty-note="
           loadingHistory
             ? 'Your payment record is still being read. This is not the same as having none.'
             : searchQuery.trim()
-              ? `Nothing matches '${searchQuery.trim()}' in ${selectedYear}.`
+              ? `Nothing matches &quot;${searchQuery.trim()}&quot; in ${selectedYear}.`
               : `No payments are on record for ${selectedYear}.`
         "
       >

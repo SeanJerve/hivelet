@@ -104,7 +104,7 @@ function describeLoginFailure(err: unknown): string | null {
     case 'RATE_LIMITED':
       return err.message;
     case 'ACCOUNT_INACTIVE':
-      return `This account is no longer active. If you still live here, call us on ${LANDLADY.phoneShown}.`;
+      return `This account is no longer active. If you still live here, call us on ${LANDLADY.phoneShown.replace(/ /g, '\u00a0')}.`; // no-break: the number never splits over two lines (audit 2026-10-09)
     case 'VALIDATION_FAILED':
       return 'Enter the email address or phone number on your account, and your password.';
     case 'NETWORK_ERROR':
@@ -233,14 +233,21 @@ async function handleQuickLogin(account: DemoAccount) {
             Hivelet
           </RouterLink>
 
+          <!--
+            Inquire's bar exactly (audit 2026-10-09): the theme toggle up here, where the
+            evaluators asked for it on every public page (3 Oct) and where Inquire, the
+            landing page and the category pages have it, rather than under the form;
+            and "Contact us" from 640px, as there, so the bar keeps one row on a phone.
+          -->
           <p class="flex flex-wrap items-baseline justify-end gap-x-3">
-            <span class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</span>
+            <span class="hidden text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft sm:inline">Contact us</span>
             <a
               :href="`tel:${LANDLADY.phone}`"
               class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
             >
               {{ LANDLADY.phoneShown }}
             </a>
+            <ThemeToggle class="self-center text-ink" />
           </p>
         </div>
 
@@ -387,9 +394,10 @@ async function handleQuickLogin(account: DemoAccount) {
               </button>
               <p v-show="showForgot" id="login-forgot" class="ws-reveal max-w-xl text-sm leading-6 text-ink-soft">
                 Call
+                <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
                 <a
                   :href="`tel:${LANDLADY.phone}`"
-                  class="font-semibold text-ink"
+                  class="whitespace-nowrap font-semibold text-ink"
                 >{{ LANDLADY.phoneShown }}</a> for a new one.
               </p>
             </div>
@@ -435,8 +443,6 @@ async function handleQuickLogin(account: DemoAccount) {
             >
               Privacy policy
             </RouterLink>
-            <!-- Light or dark: this page has no footer to carry it (Sean, 2026-10-01). -->
-            <ThemeToggle class="-ml-2.5" />
           </p>
         </form>
       </div>
@@ -532,9 +538,10 @@ async function handleQuickLogin(account: DemoAccount) {
       </p>
       <p class="text-sm leading-6 text-ink-soft">
         If you think this is a mistake, call
+        <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
         <a
           :href="`tel:${LANDLADY.phone}`"
-          class="font-semibold text-ink"
+          class="whitespace-nowrap font-semibold text-ink"
         >{{ LANDLADY.phoneShown }}</a>.
       </p>
       <template #actions>
