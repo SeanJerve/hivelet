@@ -2299,14 +2299,19 @@ html:has(> body[style*='overflow: hidden']) {
  * Below 360px it stays 14px. Its half-width cell there is 136px, and at 16px
  * "Living alone" no longer fitted where at 14px it had; a dropdown does not
  * zoom the page on focus, so the iOS reason for 16px does not apply to it.
+ *
+ * `form` as well as `.ws-field`: the resident's Report it form labels its
+ * fields by hand, and its Category and How urgent sat at 14px/500 between a
+ * 16px title box and a 16px Details box (measured at 375). No list toolbar
+ * is inside a <form>.
  */
-.ws-field button[role='combobox'] {
+:is(.ws-field, form) button[role='combobox'] {
   padding-inline: 1.125rem 0.75rem;
   column-gap: 0.375rem;
   font-weight: 400;
 }
 @media (min-width: 360px) and (max-width: 639px) {
-  .ws-field button[role='combobox'] {
+  :is(.ws-field, form) button[role='combobox'] {
     font-size: 1rem;
   }
 }
