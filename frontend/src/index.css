@@ -2292,12 +2292,20 @@ html:has(> body[style*='overflow: hidden']) {
  * left edges down one column. Inside `.ws-field` it now takes `.ws-input`'s
  * numbers; the list toolbars, which are not fields, keep theirs. Unlayered,
  * because the trigger's own sizes are Tailwind utilities.
+ *
+ * The text starts where an input's does; the chevron side is 12px with a 6px
+ * gap rather than 18 and 8, so the larger phone text still fits a half-width
+ * cell: "Choose a unit" in Move someone in at 375 needs 103px and had 100.
+ * Below 360px it stays 14px. Its half-width cell there is 136px, and at 16px
+ * "Living alone" no longer fitted where at 14px it had; a dropdown does not
+ * zoom the page on focus, so the iOS reason for 16px does not apply to it.
  */
 .ws-field button[role='combobox'] {
-  padding-inline: 1.125rem;
+  padding-inline: 1.125rem 0.75rem;
+  column-gap: 0.375rem;
   font-weight: 400;
 }
-@media (max-width: 639px) {
+@media (min-width: 360px) and (max-width: 639px) {
   .ws-field button[role='combobox'] {
     font-size: 1rem;
   }
