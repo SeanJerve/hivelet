@@ -169,6 +169,36 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
+/**
+ * A button that disables itself while its request runs - Save, Record
+ * payment, Reset password, every form's submit - drops keyboard focus to
+ * <body> the moment it is disabled (audit 2026-10-09: measured in Chrome, a
+ * `blur` with no related target). After a refused save the dialog was still
+ * open but focus was outside it: the next Tab started over from the top of
+ * the page's order, and a screen reader was left on nothing. Focus is parked
+ * on the dialog itself, which is named by its title, and handed back to the
+ * same button when it is enabled again, so Enter tries again from where the
+ * keyboard was.
+ */
+let parkedFor: MutationObserver | null = null;
+function onFocusOut(e: FocusEvent) {
+  const lost = e.target as HTMLElement | null;
+  if (e.relatedTarget || !lost || !(lost as HTMLButtonElement).disabled || !panel.value) return;
+  const host = panel.value;
+  queueMicrotask(() => {
+    if (!host.isConnected || (document.activeElement && document.activeElement !== document.body)) return;
+    host.focus({ preventScroll: true });
+    parkedFor?.disconnect();
+    parkedFor = new MutationObserver(() => {
+      if ((lost as HTMLButtonElement).disabled) return;
+      parkedFor?.disconnect();
+      parkedFor = null;
+      if (document.activeElement === host && lost.isConnected) lost.focus({ preventScroll: true });
+    });
+    parkedFor.observe(lost, { attributes: true, attributeFilter: ['disabled'] });
+  });
+}
+
 onMounted(async () => {
   previouslyFocused = document.activeElement as HTMLElement | null;
   /**
@@ -307,6 +337,7 @@ function leaveGhost(): void {
 
 onBeforeUnmount(() => {
   leaveGhost();
+  parkedFor?.disconnect();
   unregisterDialog(dialogId);
   document.removeEventListener('keydown', onDocumentKeydown);
   // Only the last holder to let go releases the page behind it.
@@ -335,6 +366,7 @@ onBeforeUnmount(() => {
     class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-end sm:items-center justify-center overflow-y-auto overscroll-contain bg-scrim sm:p-6"
     @click.self="dismissible && !mandatory && emit('close')"
     @keydown="onKeydown"
+    @focusout="onFocusOut"
   >
     <div
       ref="panel"
