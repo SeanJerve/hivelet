@@ -387,9 +387,10 @@ async function handleQuickLogin(account: DemoAccount) {
               </button>
               <p v-show="showForgot" id="login-forgot" class="ws-reveal max-w-xl text-sm leading-6 text-ink-soft">
                 Call
+                <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
                 <a
                   :href="`tel:${LANDLADY.phone}`"
-                  class="font-semibold text-ink"
+                  class="whitespace-nowrap font-semibold text-ink"
                 >{{ LANDLADY.phoneShown }}</a> for a new one.
               </p>
             </div>
@@ -532,9 +533,10 @@ async function handleQuickLogin(account: DemoAccount) {
       </p>
       <p class="text-sm leading-6 text-ink-soft">
         If you think this is a mistake, call
+        <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
         <a
           :href="`tel:${LANDLADY.phone}`"
-          class="font-semibold text-ink"
+          class="whitespace-nowrap font-semibold text-ink"
         >{{ LANDLADY.phoneShown }}</a>.
       </p>
       <template #actions>

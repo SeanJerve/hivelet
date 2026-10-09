@@ -337,9 +337,10 @@ async function submitInquiry() {
           <InquiryConversationLink v-if="conversation" :token="conversation.token" :reference-code="conversation.referenceCode" />
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
             If it is urgent, call
+            <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press text-ink transition-colors font-semibold"
+              class="press whitespace-nowrap text-ink transition-colors font-semibold"
             >{{ LANDLADY.phoneShown }}</a>.
           </p>
           <div class="mt-8 flex flex-wrap items-center gap-6">
