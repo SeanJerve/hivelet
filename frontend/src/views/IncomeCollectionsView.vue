@@ -1581,6 +1581,9 @@ const isDownloadOpen = ref(false);
                      row (Loyd, 2026-10-03); the workbook keeps its column. -->
                 <th scope="col" class="num">
                   <template v-if="group.key === 'Linda'">Electricity</template>
+                  <!-- axe, empty-table-header (audit 2026-10-09): the blank slot's
+                       header still says what the column is to a screen reader. -->
+                  <span v-else class="sr-only">Electricity, Linda Units only</span>
                 </th>
                 <!-- Heads sits under the water it sets, as on the phone cards
                      ("Water, 2 heads"); a column of its own made the ledger
