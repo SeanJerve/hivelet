@@ -156,7 +156,7 @@ async function submitInquiry() {
     if (!defaultRoom) {
       formError.value =
         'Your message was not sent: every unit is taken or reserved at the moment, so none ' +
-        `is open for inquiries. Please try again in a few days, or call us on ${LANDLADY.phoneShown}.`;
+        `is open for inquiries. Please try again in a few days, or call us on ${LANDLADY.phoneShown.replace(/ /g, '\u00a0')}.`; // no-break: the number never splits over two lines (audit 2026-10-09)
       return;
     }
 
@@ -392,6 +392,8 @@ async function submitInquiry() {
               </p>
             </div>
             <div>
+              <!-- Example placeholders, as the same fields have in the unit page's "Ask about
+                   unit" dialog and on Your inquiries; the labels above stay (audit 2026-10-09). -->
               <label
                 for="iq-email"
                 class="block text-xs text-ink-faint"
@@ -403,6 +405,7 @@ async function submitInquiry() {
                 type="email"
                 autocomplete="email"
                 required
+                placeholder="you@email.com"
                 :aria-invalid="errors.email ? 'true' : undefined"
                 :aria-describedby="errors.email ? 'iq-email-error' : undefined"
                 :class="['ws-input mt-2', errors.email && 'border-overdue']"
@@ -426,6 +429,7 @@ async function submitInquiry() {
                 type="tel"
                 autocomplete="tel"
                 required
+                placeholder="0917 123 4567"
                 :aria-invalid="errors.phone ? 'true' : undefined"
                 :aria-describedby="errors.phone ? 'iq-phone-error' : undefined"
                 :class="['ws-input mt-2', errors.phone && 'border-overdue']"

@@ -104,7 +104,7 @@ function describeLoginFailure(err: unknown): string | null {
     case 'RATE_LIMITED':
       return err.message;
     case 'ACCOUNT_INACTIVE':
-      return `This account is no longer active. If you still live here, call us on ${LANDLADY.phoneShown}.`;
+      return `This account is no longer active. If you still live here, call us on ${LANDLADY.phoneShown.replace(/ /g, '\u00a0')}.`; // no-break: the number never splits over two lines (audit 2026-10-09)
     case 'VALIDATION_FAILED':
       return 'Enter the email address or phone number on your account, and your password.';
     case 'NETWORK_ERROR':

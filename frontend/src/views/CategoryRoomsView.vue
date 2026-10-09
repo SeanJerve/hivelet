@@ -1255,12 +1255,41 @@ async function submitInquiry() {
               @input="delete inquiryErrors.name"
               v-model="inquiryName"
               type="text"
+              autocomplete="name"
               autofocus
               required
               :class="['ws-input mt-2', inquiryErrors.name && 'border-overdue']"
             />
             <p v-if="inquiryErrors.name" id="cq-name-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
               {{ inquiryErrors.name }}
+            </p>
+          </div>
+
+          <!--
+            Email, then phone, with autocomplete (audit 2026-10-09): the order and the
+            autofill of the Inquire page, which sends the same inquiry. The two forms
+            asked for these in opposite orders, and only that one let the browser
+            fill them in.
+          -->
+          <div>
+            <label for="cq-email" class="block text-xs text-ink-faint">
+              Email address
+            </label>
+            <input
+              id="cq-email"
+              :aria-invalid="inquiryErrors.email ? 'true' : undefined"
+              :aria-describedby="inquiryErrors.email ? 'cq-email-error' : undefined"
+              @input="delete inquiryErrors.email"
+              @blur="leave('email')"
+              v-model="inquiryEmail"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder="you@email.com"
+              :class="['ws-input mt-2', inquiryErrors.email && 'border-overdue']"
+            />
+            <p v-if="inquiryErrors.email" id="cq-email-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+              {{ inquiryErrors.email }}
             </p>
           </div>
 
@@ -1277,33 +1306,13 @@ async function submitInquiry() {
               v-model="inquiryPhone"
               v-phone
               type="tel"
+              autocomplete="tel"
               required
               placeholder="0917 123 4567"
               :class="['ws-input mt-2', inquiryErrors.phone && 'border-overdue']"
             />
             <p v-if="inquiryErrors.phone" id="cq-phone-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
               {{ inquiryErrors.phone }}
-            </p>
-          </div>
-
-          <div>
-            <label for="cq-email" class="block text-xs text-ink-faint">
-              Email address
-            </label>
-            <input
-              id="cq-email"
-              :aria-invalid="inquiryErrors.email ? 'true' : undefined"
-              :aria-describedby="inquiryErrors.email ? 'cq-email-error' : undefined"
-              @input="delete inquiryErrors.email"
-              @blur="leave('email')"
-              v-model="inquiryEmail"
-              type="email"
-              required
-              placeholder="you@email.com"
-              :class="['ws-input mt-2', inquiryErrors.email && 'border-overdue']"
-            />
-            <p v-if="inquiryErrors.email" id="cq-email-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
-              {{ inquiryErrors.email }}
             </p>
           </div>
 
