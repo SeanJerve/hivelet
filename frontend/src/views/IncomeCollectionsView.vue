@@ -1000,11 +1000,15 @@ async function handleEditIncome() {
   const waterVal = Number(editWater.value) || 0;
   if (waterVal !== 0) {
     if (waterVal < waterBaseline) {
-      showToast('error', 'Water Payment Error', `Water for ${unitUpper} is ₱0, or at least ₱${waterBaseline} for ${occupants} ${occupants === 1 ? 'occupant' : 'occupants'}.`);
+      // Sentence case like "Check the amounts", and focus to the field it is
+      // about; the reason shows inside the dialog (audit 2026-10-09).
+      showToast('error', 'Check the water', `Water for ${unitUpper} is ₱0, or at least ₱${waterBaseline} for ${occupants} ${occupants === 1 ? 'occupant' : 'occupants'}.`);
+      document.getElementById('edit-water')?.focus();
       return;
     }
     if (waterVal % perOccupantRate !== 0) {
-      showToast('error', 'Water Payment Error', `Water goes up in steps of ₱${perOccupantRate}: ₱0, ₱${perOccupantRate}, ₱${perOccupantRate * 2}, ₱${perOccupantRate * 3} and so on.`);
+      showToast('error', 'Check the water', `Water goes up in steps of ₱${perOccupantRate}: ₱0, ₱${perOccupantRate}, ₱${perOccupantRate * 2}, ₱${perOccupantRate * 3} and so on.`);
+      document.getElementById('edit-water')?.focus();
       return;
     }
   }
@@ -1944,7 +1948,7 @@ const isDownloadOpen = ref(false);
             </label>
             <label class="ws-field">
               Water
-              <input v-model.number="editWater" type="number" min="0" step="any" class="ws-input w-full" required />
+              <input id="edit-water" v-model.number="editWater" type="number" min="0" step="any" class="ws-input w-full" required />
             </label>
           </div>
 

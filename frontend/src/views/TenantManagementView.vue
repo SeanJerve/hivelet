@@ -725,6 +725,8 @@ async function saveEdit() {
   );
   if (unitChanged && isOccupiedByOther && targetUnit !== '—' && targetUnit !== 'none') {
     showToast('error', 'Unit already occupied', `Someone already lives in ${editUnitCode.value.toUpperCase()}.`);
+    // Focus to the field it is about (audit 2026-10-09).
+    document.getElementById('edit-unit')?.focus();
     return;
   }
 
@@ -806,12 +808,16 @@ async function handleOnboard() {
     return;
   }
   if (!newUnit.value) {
+  // The reason shows inside the dialog; focus goes to the field it is about
+  // (audit 2026-10-09), as the emergency phone above already did.
     showToast('error', 'Choose a unit', 'Pick the unit they are moving into.');
+    document.getElementById('new-unit')?.focus();
     return;
   }
   const isOccupied = tenants.some(t => t.status === 'active' && t.unitCode.toLowerCase() === newUnit.value.toLowerCase());
   if (isOccupied) {
     showToast('error', 'Unit already occupied', `Someone already lives in ${newUnit.value.toUpperCase()}.`);
+    document.getElementById('new-unit')?.focus();
     return;
   }
 
