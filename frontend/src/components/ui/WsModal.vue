@@ -13,9 +13,10 @@
  * It owns chrome only. What goes inside, and what the buttons do, stays with
  * the screen that opens it.
  */
-import { ref, onMounted, onBeforeUnmount, nextTick, useId } from 'vue';
-import { X } from 'lucide-vue-next';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, useId } from 'vue';
+import { X, CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-vue-next';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
+import { useToast, registerDialog, unregisterDialog } from '@/lib/useToast';
 
 const props = withDefaults(
   defineProps<{
@@ -64,6 +65,22 @@ const emit = defineEmits<{ close: [] }>();
 
 const titleId = useId();
 const subtitleId = useId();
+const dialogId = useId();
+
+/**
+ * Messages raised while this is the top dialog (audit 2026-10-09). The stack
+ * at the top of the screen used to draw them over this dialog's title and X on
+ * a phone; they are drawn here instead, under the title, and a refusal stays
+ * until it is dismissed or the dialog closes. Reasoning in `lib/useToast.ts`.
+ */
+const { toasts, dismissToast } = useToast();
+const messages = computed(() => toasts.value.filter((t) => t.dialogId === dialogId));
+const messageTone = {
+  success: { box: 'bg-brand-soft', icon: 'text-brand', is: CheckCircle2 },
+  warning: { box: 'bg-verify-soft', icon: 'text-verify', is: AlertTriangle },
+  error: { box: 'bg-overdue-soft', icon: 'text-overdue', is: AlertCircle },
+  info: { box: 'bg-canvas', icon: 'text-ink-soft', is: Info },
+} as const;
 const panel = ref<HTMLElement | null>(null);
 const overlay = ref<HTMLElement | null>(null);
 let previouslyFocused: HTMLElement | null = null;
@@ -166,6 +183,7 @@ onMounted(async () => {
    * two counters that cannot see each other, whichever closes last winning.
    */
   lockBodyScroll();
+  registerDialog(dialogId);
   document.addEventListener('keydown', onDocumentKeydown);
   enterMotion();
   await nextTick();
@@ -289,6 +307,7 @@ function leaveGhost(): void {
 
 onBeforeUnmount(() => {
   leaveGhost();
+  unregisterDialog(dialogId);
   document.removeEventListener('keydown', onDocumentKeydown);
   // Only the last holder to let go releases the page behind it.
   unlockBodyScroll();
@@ -355,6 +374,37 @@ onBeforeUnmount(() => {
           <X class="size-4" aria-hidden="true" />
         </button>
       </header>
+
+      <!--
+        The dialog's own message line (audit 2026-10-09): a refused save, a
+        problem with what was typed, a confirmation. Under the title rather
+        than over it, outside the scrolling fields so it is on screen wherever
+        the form was scrolled to. The live region is here from the moment the
+        dialog opens, so a screen reader announces what arrives in it (the
+        reason ToastContainer keeps one region for the stack, B-61); the stack
+        does not draw these, so they are not read twice.
+      -->
+      <div role="status" aria-live="polite" class="flex-none">
+        <div
+          v-for="m in messages"
+          :key="m.id"
+          :class="['ws-reveal flex items-start gap-3 border-b border-line py-3 pl-5 pr-3 sm:pl-6 sm:pr-4', messageTone[m.type].box]"
+        >
+          <component :is="messageTone[m.type].is" :class="['mt-0.5 size-5 shrink-0', messageTone[m.type].icon]" aria-hidden="true" />
+          <div class="min-w-0 flex-1 py-0.5">
+            <p class="break-words text-sm font-semibold leading-snug text-ink">{{ m.title }}</p>
+            <p v-if="m.message" class="mt-0.5 break-words text-sm leading-6 text-ink-soft">{{ m.message }}</p>
+          </div>
+          <button
+            type="button"
+            class="icon-btn -my-1.5 shrink-0"
+            aria-label="Dismiss this message"
+            @click="dismissToast(m.id)"
+          >
+            <X class="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
 
       <!--
         `min-w-0` (Sean, 2026-10-01: "the modal has HORIZONTAL scrolling -
