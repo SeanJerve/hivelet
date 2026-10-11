@@ -978,8 +978,8 @@ async function submitInquiry() {
           <!--
             Side padding only beside the plan (`lg:px-10`, off the divider). Stacked under
             it, the panel's own 24-32px pushed the unit's name, figures and Ask button in
-            from every other left edge on the page - plan, title, "The 22 units of this
-            kind" - by 24px on a phone and 32px at 768 (audit 2026-10-09).
+            from every other left edge on the page - plan, title, the heading over this
+            kind's units - by 24px on a phone and 32px at 768 (audit 2026-10-09).
           -->
           <div class="flex flex-col justify-between lg:px-10 py-10 sm:py-12">
             <div>
