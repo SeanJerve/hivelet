@@ -60,6 +60,11 @@
 > Table 22B. Overall **4.53, Very High Quality**; lowest Maintainability 4.00 (one rater) and
 > Usability 4.12. The export's name column was removed before use (B-103). Later the same day: Table
 > 12A's Distributed (6 of 6, 100%) and Table 25's stages 4 and 5, from Sean.
+>
+> **Updated 2026-10-11:** Table 6A added in §4.2.1, the three iterations phase by phase (the phases
+> of §3.2), from `docs/12_ITERATION_HISTORY.md` and the commit history. The ISO evaluation is
+> reported once, in the third iteration, because §3.3 places it in actual use; the first two
+> iterations' Testing and Review rows carry their own evidence instead.
 
 This chapter presents the results of the study and discusses what they mean. It is organized by
 the four specific objectives in Section 1.2: the analysis of existing practices (4.1), the
@@ -184,9 +189,29 @@ sample records, and no real tenant's name or payment appears in any figure.
 The system was built in three Agile iterations (Section 3.2). The first, from 24 July to 28 August
 2026, built a working system and transferred the owner's records into it. The second, from 12 to
 14 September 2026, checked that the system and its documents said the same thing, corrected 22
-recorded errors, and added automated checks. The third, still in progress, closes the questions
-that need the owner's answer and refines the system from client feedback and testing. Table 7
-lists the technology used.
+recorded errors, and added automated checks. The third, from 15 September 2026 to the defense,
+took the owner's answers to the open questions, put the system in her and her tenants' hands, and
+refined it from their feedback, the testing and the evaluation. Table 6A shows what each iteration
+did in each phase of the life cycle in Section 3.2.
+
+**Table 6A.** The Three Iterations, Phase by Phase
+
+| Phase (Section 3.2) | Iteration 1: Construction (24 Jul to 28 Aug 2026, 95 commits) | Iteration 2: Verification and correction (12 to 14 Sep 2026, 87 commits) | Iteration 3: Consolidation and testing (15 Sep 2026 onward, 1,447 commits to 9 Oct) |
+| :--- | :--- | :--- | :--- |
+| Requirements | The owner's workbook (Monthly Income and Monthly Expenses) and the interviews and observation of Section 4.1 taken as the baseline; payments cash only | The owner settled four questions on 13 September: 33 units, no grace period, no automatic rent increase, and tenants recorded without needing an email address | The owner's answers of 17 and 19 to 20 September: the advance is the deposit, rent and water stay one bill, and a rate for each of the 33 units; acknowledgement receipts for payments with no invoice number (1 October) |
+| Design | Screens for the visitor, the tenant and the owner over one permission matrix; the ledgers laid out as her workbook is | The business rule register rebuilt, 49 rules each with its evidence; the automatic rent increase removed from scope | The owner's review on a phone (23 September) and the design rules the screens now follow; the tenant and owner overviews reworked |
+| Development | Public site, tenant and owner portals, ledgers, repairs, inquiries, notifications and audit trail; 937 income rows and 1,327 expense allocations transferred | Fifteen defects in behaviour corrected, among them a partial payment that left no debt and cash recorded with nothing written to the books; the Excel downloads | Adyen with GCash working end to end on the test account (26 September); updates every five seconds; offline reading; the breached-password check (7 October) |
+| Testing | Checked by demonstration only; no automated check existed | Seven automated check suites, over 100 assertions, each defect covered by one | The screen-versus-database audit (26 and 29 September, six defects); 20 suites (29 September); the testing day with the owner and three tenants (30 September); the technical evaluators' review (3 October) |
+| Deployment | Run from the team's machines against the live database | Unchanged | Hosted on Vercel from 24 September; tenant accounts prepared on 29 September; in use beside the owner's own records (Table 25) |
+| Review | The Module 01 submission, whose documents became Iteration 2's input | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 23); the ISO/IEC 25010 survey (Section 4.4) |
+
+Each iteration was tested and reviewed, but by different means. The formal evaluation against
+ISO/IEC 25010 was carried out once, in the third iteration, because Section 3.3 places it during
+actual use in the deployment environment, and only the third iteration put the system in use. The
+first two iterations were checked by the means available at the time: demonstration in the first,
+and in the second the automated checks and the correction of the recorded errors.
+
+Table 7 lists the technology used.
 
 **Table 7.** Technology Stack of the Developed System
 

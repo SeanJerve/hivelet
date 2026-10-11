@@ -4,8 +4,8 @@
 **Client:** Mrs. Fe Galang Da Silva, proprietor — Legazpi City, Albay
 **Team:** Bicol University Group 4 — IT 124 Capstone Project 2
 **Method:** Agile, three planned iterations
-**This document covers:** Iteration 1 (complete), Iteration 2 (complete), Iteration 3 (planned)
-**Last updated:** 2026-09-14
+**This document covers:** Iteration 1 (complete), Iteration 2 (complete), Iteration 3 (in progress, to the defense)
+**Last updated:** 2026-10-11 (Section 5.0 added; Sections 1 to 4 are as of 2026-09-14)
 
 ---
 
@@ -51,12 +51,12 @@ becomes something different in character from Iteration 1 — see Section 4.
 | | **Iteration 1** | **Iteration 2** | **Iteration 3** |
 | :--- | :--- | :--- | :--- |
 | **Name** | Construction | Verification and Correction | Consolidation |
-| **Status** | Complete | Complete | Planned |
+| **Status** | Complete | Complete | In progress |
 | **Goal** | Build a working system against the client's existing paper and spreadsheet workflow | Establish that what was built and what was documented are the same thing, and correct where they are not | Close the client-gated decisions and extract the service layer |
 | **Dominant activity** | Feature development | Audit, correction, regression-proofing | Elicitation, then implementation |
-| **Commits** | 95 | 87 | — |
+| **Commits** | 95 | 87 | 1,447 (to 9 Oct) |
 | **Entry condition** | Client workflow documented | Module 01 submitted | Nine client decisions answered |
-| **Exit condition** | A demonstrable system | Every claim traceable to evidence | — |
+| **Exit condition** | A demonstrable system | Every claim traceable to evidence | Chapters 4 and 5 complete; the system in use beside the owner's records |
 
 The shape of the project is worth stating directly, because it is the central lesson of
 the engagement: **Iteration 1 built the system; Iteration 2 discovered that a
@@ -327,9 +327,30 @@ legend never defined. `check:rules` now prevents all three.
 
 ---
 
-## 5. Iteration 3 — Consolidation
+## 5. Iteration 3 — Consolidation and testing
 
-**Planned.** Entry condition: the nine client decisions in Section 2.4 are answered.
+**2026-09-15 onward · 1,447 commits to 2026-10-09.** Entry condition was the client
+decisions in Section 2.4; the owner answered on 17 and 19 to 20 September
+(`CLIENT_ANSWERS_2026-09-17.md`). Section 5.1 below is the scope as planned on 14 September,
+kept as written.
+
+### 5.0 What Iteration 3 has done, phase by phase
+
+Chapter 4's Table 6A carries the same rows for all three iterations.
+
+| Phase | What happened | Evidence |
+| :--- | :--- | :--- |
+| Requirements | The advance is the deposit (OD-04 closed); rent and water stay one bill; a rate for each of the 33 units; acknowledgement receipts for payments with no invoice number (1 Oct) | `CLIENT_ANSWERS_2026-09-17.md`; `docs/13_AUDIT_JUDGEMENT_LOG.md` sixteenth sweep |
+| Design | The owner's review on a phone (23 Sep); `docs/DESIGN_GUIDELINE.md`; the overviews reworked | Chapter 4 Table 23 |
+| Development | Adyen with GCash end to end on the test account (26 Sep); updates every five seconds; offline reading; recent actions; the breached-password check (7 Oct); migrations to 080 | `git log`; `database/migrations/` |
+| Testing | Screen-versus-database audit (26 and 29 Sep, six defects, all fixed); 20 suites (29 Sep); the testing day with the owner and three tenants (30 Sep); the technical evaluators (3 Oct) | Chapter 4 Tables 8 to 11E; `docs/TESTING_DAY/results/` |
+| Deployment | Vercel from 24 Sep (`029a00b`); tenant accounts prepared 29 Sep; in use beside her own records, not yet her main record | Chapter 4 Table 25 |
+| Review | The evaluators' 14 comments acted on by 5 Oct; the ISO/IEC 25010 survey, six respondents, overall 4.53 | Chapter 4 Table 23 and Section 4.4 |
+
+**Why the ISO evaluation appears only here.** Chapter 3 §3.3 places it during actual use in
+the deployment environment, and Iteration 3 is the first in which anyone but the team used the
+system. Iterations 1 and 2 were tested and reviewed by the means that existed then
+(demonstration; the check suites and the errata), and are not given survey results they never had.
 
 ### 5.1 Scope
 
