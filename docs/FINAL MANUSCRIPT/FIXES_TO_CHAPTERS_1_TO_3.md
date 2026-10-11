@@ -19,7 +19,7 @@ version (15) was wrong: the live database is **PostgreSQL 17.6**, read with `sel
 | A3 | p.26, §2.4, Optional Online Payment Feature | "input or simulate digital payment transactions" | See B1 below |
 | A4 | p.28, Table 1 and the two paragraphs after it | HTML5, JavaScript, MySQL | See B2 to B4 below |
 | A5 | p.33, §3.2.3 | HTML5 / JavaScript / MySQL, and "to simulate or record digital payments" | See B5 below |
-| A6 | p.34, §3.2.5 | "deployed to a university-managed server environment" | See B6 below |
+| A6 | p.34, §3.2.5 | "deployed to a university-managed server environment" | See B6 below. **Settled (team, 11 Oct 2026):** the university server was dropped after the adviser told the team to deploy on its own hosting; the system has run on Vercel since 24 September 2026 |
 | A7 | p.35, §3.3 | Survey goes to "the property owner and tenants" only | See B7 below. Chapter 4 also uses technical evaluators, the only group that rates Maintainability |
 
 ## B. Paste-ready replacements
@@ -144,7 +144,7 @@ in the first pass.
 | G3 | p.24, §2.4, Progressive Web Application | "without requiring installation" | "without requiring installation from an app store". Chapter 4, §4.2.7 says the app **can** be installed on a phone, and the Portability survey asks about exactly that |
 | G4 | p.33, §3.2.2 Design | "covering three user roles: public users, tenants, and administrators" | Keep; it matches the system. The code also stores a *prospect*, but that is only the saved record of a visitor who sent an enquiry, with the same rights as the public, so it is not a fourth kind of user. Chapter 4, §4.2.6 now says so |
 | G7 | p.43-44, References | **Ullah et al. (2021) is cited four times in the body** (§1.1 twice, §2.1.1, §2.1.6) and once in Chapter 4, §4.1.1, **but is not in the reference list** | Add its full APA entry. Only the team has the source; check the author names, title and year against it. Checked by extracting every in-text citation from the PDF text on 2026-09-28: every other citation has a reference entry, and Monteverde et al. (2023) and Thevaraju et al. (2019) are listed but cited nowhere (C7) |
-| G5 | p.28, §3.1.1, and p.33, §3.2.2 | Figma used for the interface prototypes | **Team to confirm.** No Figma file or link is in the repository. If the prototypes were made some other way, name that instead; a panel member may ask to see them |
+| G5 | p.28, §3.1.1, and p.33, §3.2.2 | Figma used for the interface prototypes | See G8 below. **Settled (team, 11 Oct 2026):** Figma was not used. The screens were designed directly as working prototypes in code, with AI assistance, and refined with the owner. Do not make Figma files now to match the old sentence; change the sentence to match what was done |
 
 **G6. §1.4, the delimitation sentence on online payment (p.7).** Replace from "Additionally, the
 supplementary online payment feature" to "direct banking integration."
@@ -154,6 +154,31 @@ supplementary online payment feature" to "direct banking integration."
 > the administrator verifies it. The feature explicitly excludes refunds, which are made from the
 > gateway's own dashboard, automated reconciliation against bank records, and direct banking
 > integration.
+
+**G8. Figma (G5). Two sentences to replace.**
+
+§3.1.1, p.28. Replace "Additionally, Figma will be utilized during the design phase to create user
+interface prototypes for both administrative and tenant modules prior to actual system
+development." with:
+
+> Additionally, the user interface was prototyped directly in code rather than in a separate design
+> tool: each screen was built as a working prototype in Vue and Tailwind CSS, generated with the
+> help of an AI coding assistant and reviewed by the researchers, so that the landlady and the
+> tenants could try it on their own phones with real data. The design rules the screens follow,
+> covering colour, type, layout and wording, are recorded in the system's design guideline.
+
+§3.2.2, p.33. Replace "The researchers develop wireframes and UI/UX designs using Figma, covering
+three user roles: public users, tenants, and administrators." with:
+
+> The researchers develop the interface as working prototypes in code, covering three user roles:
+> public users, tenants, and administrators. Each prototype is reviewed with the landlady on the
+> device she uses, and the findings are applied in the next iteration (Chapter 4, Table 23).
+
+If the panel asks to see the design, show the running system, Figures 10 to 14, and
+`docs/DESIGN_GUIDELINE.md` (or `docs/PROJECT_DOCUMENTS/04_DESIGN_BRIEF.md`, its short brief).
+**Check with the adviser** whether the course asks for AI assistance to be disclosed in a
+particular place (Chapter 3, the acknowledgements, or a separate statement). The first sentence
+above discloses it; keep it unless the adviser says otherwise.
 
 ## H. The testing method, written for Chapter 3 (added 2026-09-29)
 
