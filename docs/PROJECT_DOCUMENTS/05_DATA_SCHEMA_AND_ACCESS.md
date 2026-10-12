@@ -101,10 +101,10 @@ A prospect holds a visitor's permissions.
 
 - **Financial records are voided, never deleted**: a voided receipt keeps its row, its reason and who
   voided it, and leaves every total. Historical receipts stay exactly as the owner wrote them.
-- **The audit trail** cannot be changed or row-deleted by the application: its role holds INSERT and
-  SELECT, not UPDATE or DELETE. **One gap, found 7 October 2026:** the role still holds TRUNCATE,
-  which would empty the whole table. Nothing in the application calls it, and Supabase's REST interface
-  does not offer it. Migration `080_audit_log_no_truncate.sql` revokes it (written, not yet applied: B-104).
+- **The audit trail** cannot be changed, row-deleted or emptied by the application: its role holds
+  INSERT, REFERENCES, SELECT and TRIGGER only. It also held TRUNCATE, which would empty the whole
+  table, until migration `080_audit_log_no_truncate.sql` revoked it on 12 October 2026 (B-104;
+  checked in `information_schema.role_table_grants` the same evening).
 - **Inquiries** can be deleted by the administrator (audited).
 - **Moved-out tenants** keep their records; their accounts are deactivated.
 - Every change to live data is a reviewed, numbered migration run after a backup.
