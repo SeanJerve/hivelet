@@ -48,6 +48,9 @@ export type AuditAction =
   | 'EXPENSE_CREATE'
   | 'EXPENSE_UPDATE'
   | 'EXPENSE_VOID'
+  // A kind of expense of the owner's own, beside the thirteen built in
+  // (owner, 2026-10-12; POST /admin/expense-categories).
+  | 'EXPENSE_CATEGORY_CREATE'
   // Exporting the ledger is a read, but it removes a full year of the owner's
   // financial records from the system in one file. BR-048 makes authorship of
   // these ledgers admin-only; knowing when a copy left is part of the same
@@ -63,6 +66,8 @@ export type AuditEntityType =
   | 'PAYMENT'
   | 'INCOME_RECORD'
   | 'EXPENSE_ENTRY'
+  // A row of `fixed_expense_categories`; keyed by code, so logged under the zero id.
+  | 'EXPENSE_CATEGORY'
   | 'TICKET'
   /**
    * The trail itself, for an export of it. `audit_logs.entity_type` is a
