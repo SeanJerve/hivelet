@@ -426,8 +426,10 @@
   border-color: var(--on-night);
   color: #101713;
 }
-[data-theme='dark'] .pill-btn-light:hover:not(:disabled) {
-  background-color: #d3e8db;
+@media (hover: hover) {
+  [data-theme='dark'] .pill-btn-light:hover:not(:disabled) {
+    background-color: #d3e8db;
+  }
 }
 
 /*
@@ -918,8 +920,10 @@ html:has(> body[style*='overflow: hidden']) {
     color: var(--ink);
     border: 1px solid var(--line);
   }
-  .pill-btn:hover:not(:disabled) {
-    border-color: var(--hatch);
+  @media (hover: hover) {
+    .pill-btn:hover:not(:disabled) {
+      border-color: var(--hatch);
+    }
   }
 
   .pill-btn-brand {
@@ -927,9 +931,11 @@ html:has(> body[style*='overflow: hidden']) {
     color: var(--on-brand);
     border: 1px solid var(--brand);
   }
-  .pill-btn-brand:hover:not(:disabled) {
-    background-color: var(--brand-strong);
-    border-color: var(--brand-strong);
+  @media (hover: hover) {
+    .pill-btn-brand:hover:not(:disabled) {
+      background-color: var(--brand-strong);
+      border-color: var(--brand-strong);
+    }
   }
 
   .pill-btn-night {
@@ -937,8 +943,10 @@ html:has(> body[style*='overflow: hidden']) {
     color: var(--on-night);
     border: 1px solid var(--night);
   }
-  .pill-btn-night:hover:not(:disabled) {
-    background-color: var(--night-raised);
+  @media (hover: hover) {
+    .pill-btn-night:hover:not(:disabled) {
+      background-color: var(--night-raised);
+    }
   }
 
   /* For use on the brand and night tiles. */
@@ -947,8 +955,10 @@ html:has(> body[style*='overflow: hidden']) {
     color: var(--ink);
     border: 1px solid var(--tile);
   }
-  .pill-btn-light:hover:not(:disabled) {
-    background-color: var(--brand-soft);
+  @media (hover: hover) {
+    .pill-btn-light:hover:not(:disabled) {
+      background-color: var(--brand-soft);
+    }
   }
 
   /* A pill with no box around it, for the second choice beside a real button:
@@ -976,9 +986,11 @@ html:has(> body[style*='overflow: hidden']) {
       color 0.15s var(--ease-out),
       transform 0.16s var(--ease-out);
   }
-  .pill-btn-quiet:hover:not(:disabled) {
-    background-color: var(--tile);
-    color: var(--ink);
+  @media (hover: hover) {
+    .pill-btn-quiet:hover:not(:disabled) {
+      background-color: var(--tile);
+      color: var(--ink);
+    }
   }
 
   /* One filter chip, used by every screen that narrows a list. Selected is the
@@ -1010,8 +1022,10 @@ html:has(> body[style*='overflow: hidden']) {
       color 0.15s var(--ease-out),
       transform 0.16s var(--ease-out);
   }
-  .chip:hover:not(:disabled) {
-    color: var(--ink);
+  @media (hover: hover) {
+    .chip:hover:not(:disabled) {
+      color: var(--ink);
+    }
   }
   .chip[aria-pressed='true'] {
     background-color: var(--ink);
@@ -1053,17 +1067,21 @@ html:has(> body[style*='overflow: hidden']) {
     color: var(--on-overdue);
     border: 1px solid var(--overdue);
   }
-  .pill-btn-danger:hover:not(:disabled) {
-    background-color: var(--overdue-strong);
-    border-color: var(--overdue-strong);
+  @media (hover: hover) {
+    .pill-btn-danger:hover:not(:disabled) {
+      background-color: var(--overdue-strong);
+      border-color: var(--overdue-strong);
+    }
   }
   .pill-btn-danger-quiet {
     background-color: var(--tile);
     color: var(--overdue);
     border: 1px solid var(--overdue-soft);
   }
-  .pill-btn-danger-quiet:hover:not(:disabled) {
-    background-color: var(--overdue-soft);
+  @media (hover: hover) {
+    .pill-btn-danger-quiet:hover:not(:disabled) {
+      background-color: var(--overdue-soft);
+    }
   }
   .pill-btn-danger:disabled,
   .pill-btn-danger-quiet:disabled {
@@ -1618,25 +1636,17 @@ html:has(> body[style*='overflow: hidden']) {
   }
 
   /*
-   * A touch screen fires :hover on tap and leaves it stuck there until
-   * something else is touched, so a hover style on a phone is a state the
-   * reader cannot clear. Gating it keeps hover for the devices that have a
-   * pointer; press feedback above is what a touch device gets instead, and it
-   * is the better signal anyway.
+   * A touch screen fires :hover on tap and leaves it stuck there until something else is touched,
+   * so a hover style on a phone is a state the reader cannot clear. Every hover above is therefore
+   * written inside @media (hover: hover), as Tailwind's own hover: classes are, and a phone simply
+   * never matches it; press feedback is what a touch device gets instead.
+   *
+   * Until 12 Oct 2026 the pill hovers were unconditional and a (hover: none) block here undid three
+   * of them with `inherit`, which took the PARENT's colours: a tapped pill lost its own background
+   * and border until something else was touched, and the go-to arrow, listed too, drew a ring in
+   * the parent's border colour (Sean: "it shows a circle border"). Five pills were never listed,
+   * so their hover colour stuck after a tap.
    */
-  /* `.icon-btn` is not in this list (Sean, 12 Oct: the go-to arrow showed a circle when tapped).
-     Its hover is already gated to (hover: hover), so there was nothing to undo, and `inherit`
-     gave its transparent border the parent's border colour, the ink: a tapped arrow stayed
-     "hovered" and drew a ring. */
-  @media (hover: none) {
-    .pill-btn:hover:not(:disabled),
-    .chip:hover:not(:disabled),
-    .pill-btn-quiet:hover:not(:disabled) {
-      background-color: inherit;
-      border-color: inherit;
-      color: inherit;
-    }
-  }
 
   @media (prefers-reduced-motion: reduce) {
     /*
