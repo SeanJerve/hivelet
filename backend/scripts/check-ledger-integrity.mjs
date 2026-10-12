@@ -1072,8 +1072,13 @@ if (live.length) {
    * month to month and she maintains it by hand. This does not assert what the
    * count SHOULD be - only that the system and her book disagree, which is a
    * question worth putting to her rather than an error to correct in code.
+   *
+   * 1 since 2026-10-12. Migration 081 set 1h, B3B and B3F to 2, as the owner confirmed (B-33),
+   * which settled three of the four. The one left is F2F (B-102): its September receipt was
+   * voided on 6 Oct, leaving July's "1 occupant" as her latest row against a tenancy of 4, and
+   * the owner's answer was "just record 4" - the tenancy is right and stays at 4.
    */
-  const OCCUPANT_DRIFT_BASELINE = 3;
+  const OCCUPANT_DRIFT_BASELINE = 1;
   const occDrift = [];
   for (const a of anniv) {
     const led = newestPeriod.get(a.room_id);
