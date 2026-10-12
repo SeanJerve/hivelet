@@ -123,7 +123,7 @@ The system shall automatically compute an expense entry's row total, each Proper
 The system shall automatically roll each expense category's cumulative total forward from the previous month.
 
 ### FR-041 Fixed Expense Category Dropdown
-The system shall present the fixed expense category list (with Salaries sub-lines 6a/6b/6c) as a dropdown when tagging an expense entry.
+The system shall present the fixed expense category list (with Salaries sub-lines 6a/6b/6c) as a dropdown when tagging an expense entry. Since 2026-10-12 (owner's answer to OD-08) the dropdown also lets the administrator add a category of her own after the thirteen; the thirteen are not edited.
 
 ### FR-042 Expense/Category Reconciliation Check
 The system shall be able to verify that the sum of category "this month" totals equals the sum of Property Area bottom totals for the same month.

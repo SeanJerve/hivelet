@@ -60,7 +60,7 @@ Every expense entry is tagged to exactly one category, from a fixed, static list
 | 9 | Fuel and Oil |
 | 10 | Others |
 
-6a/6b/6c are sub-lines under category 6 (Salaries), not independent top-level categories. This list is fixed system-wide and is not editable per month.
+6a/6b/6c are sub-lines under category 6 (Salaries), not independent top-level categories. This list is system-wide and is not editable per month. These thirteen come built in and cannot be renamed or removed; the landlady can add her own kinds of expense after them (owner, 2026-10-12: "Keep the 13, but she should also have the ability to add her own"), numbered 11, 12, ... in the order she adds them.
 
 ---
 
@@ -132,4 +132,4 @@ These are not resolved by this document and must not be silently assumed during 
 1. **"Main House" scope**: confirm what "Main House Expenses" refers to — it has no corresponding unit cluster in `09_MONTHLY_INCOME_REPORT.md`.
 2. **Date format**: the spreadsheet shows `D-MMM-YY` (matching the Income report), but the verbal description of this feature stated `DD/MM/YYYY`. Confirm which is authoritative for entry and display.
 3. **Cumulative reset**: confirm whether the Category cumulative column (Section 6.2) ever resets (e.g. at calendar year start) or runs indefinitely.
-4. **Category edits**: confirm whether the fixed category list (Section 3) can ever be edited/extended by the administrator, or is permanently hardcoded.
+4. **Category edits**: confirm whether the fixed category list (Section 3) can ever be edited/extended by the administrator, or is permanently hardcoded. **Answered 2026-10-12:** keep the 13, and she can add her own (Section 3). The 13 are not edited.

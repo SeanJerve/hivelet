@@ -246,6 +246,11 @@ TOTAL**.
    expense; the total is worked out for you. **Choose an area** for each new part; each area can
    be given once, so two amounts for the same area go in as one.
 4. **Add another expense** records the next one without closing the form.
+5. A kind of expense that is not in the list: open **Kind of expense**, choose **Add a new kind…**
+   at the bottom, type its name and press **Add kind**. It is added after your 13, numbered 11,
+   12 and so on, and chosen for that expense; it is also in **Filters** > **Kind of expense** and
+   in the workbook's category summary. Your 13 stay as they are. A kind you add cannot be renamed
+   or removed, so check the spelling.
 
 Editing and **Delete expense** work as for payments. Monthly Expenses also opens on **this year**,
 with **All years** in **Filters** > **Year**. **Download** asks **Month**, **Year** or **All**, as

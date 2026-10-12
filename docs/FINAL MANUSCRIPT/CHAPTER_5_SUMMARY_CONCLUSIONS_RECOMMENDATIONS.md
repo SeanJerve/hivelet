@@ -174,7 +174,7 @@ Based on the summary and conclusions of the study, the following are recommended
 
 1. Answer the questions that remain about how her records are kept, collected in one list for a
    single sitting (Chapter 4, Section 4.1.2): whether the large figure at the bottom of her income
-   sheet is a year-to-date total; whether she may add her own expense categories; whether tenants
+   sheet is a year-to-date total; whether tenants
    may report a cash payment for her to confirm; where the Penthouse's past spending belongs;
    whether the spending she booked as personal rather than as a rental cost in 2025 is correct; the
    three missing months of receipts for one unit; and the move-in date of each current tenancy,
