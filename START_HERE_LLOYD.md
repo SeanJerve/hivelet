@@ -36,7 +36,7 @@ machine against the live database at 18:40**:
 
 | # | What | Who | Then |
 | :--- | :--- | :--- | :--- |
-| 1 | **Her August, September and October 2026 receipts.** On 12 October the system holds August for 15 of 32 units and nothing for September or October. Lloyd said the file comes on 13 October | Lloyd, with her book | Entered as numbered migrations (082 onward) after a backup, each receipt checked against the book; or she records them herself through **Record payment** |
+| 1 | **Her August, September and October 2026 receipts.** On 12 October the system holds August for 15 of the 32 occupied units and nothing for September or October. Lloyd said the file comes on 13 October | Lloyd, with her book | Entered as numbered migrations (082 onward) after a backup, each receipt checked against the book; or she records them herself through **Record payment** |
 | 2 | **The move-in date of each current tenancy.** Her workbook never recorded them; settling a deposit at move-out depends on them (Ch. 5 rec. 1) | The owner | One migration with the dates |
 | 3 | **Her own expense kinds** (answer 13: keep the 13 and let her add her own) | Being built on `feature/owner-expense-kinds` | Merge when it is verified |
 | 4 | **Hand the user manual to the owner** (`docs/FINAL MANUSCRIPT/USER_MANUAL_APPENDIX_K.md`, Part 2), screen by screen, and **write down the date** | Lloyd | Chapter 4 Table 25 stage 4 then says when; her lowest rating was learning without help |
