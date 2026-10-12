@@ -55,6 +55,13 @@ const tenantData = ref({
   roomType: '',
   floor: 0,
   occupants: 0,
+  /**
+   * The deposit held for this tenancy (`room_assignments.deposit_amount`): one month, held while
+   * the tenant lives here and set against repairs at move-out (the owner, 19 Sep; B-31). Shown
+   * because a tenant asked to see it in the survey (Chapter 4, Table 23). 0 means none on record,
+   * and says so rather than printing ₱0.00.
+   */
+  deposit: 0,
   photoUrl: '',
   /**
   /**
@@ -340,6 +347,7 @@ async function applyTenantData() {
       tenantData.value.roomType = activeRoom.rooms?.cluster_code || '';
       tenantData.value.floor = activeRoom.rooms?.floor || 0;
       tenantData.value.occupants = activeRoom.occupant_count || 0;
+      tenantData.value.deposit = Number(activeRoom.deposit_amount) || 0;
 
       // `rooms` has no photo of its own; photos live in `room_photos`, with
       // `is_primary` picking the one to lead with.
@@ -949,7 +957,8 @@ const statusTone = computed(() => {
           </div>
           <!-- No "Building" row: it showed the cluster code ("Boarding House"), which means
                nothing to a resident, about a place they already live in. -->
-          <dl class="grid grid-cols-3 gap-x-4 gap-y-3 text-sm">
+          <!-- Two by two since the deposit joined (Sean, 12 Oct): three across left it alone on a row. -->
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
               <dt class="text-xs text-ink-faint">Type</dt>
               <dd class="font-medium">{{ tenantData.roomDetails || 'Not on file' }}</dd>
@@ -961,6 +970,10 @@ const statusTone = computed(() => {
             <div>
               <dt class="text-xs text-ink-faint">Occupants</dt>
               <dd class="font-medium">{{ tenantData.occupants || 'Not on file' }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Deposit</dt>
+              <dd class="font-medium tabular">{{ tenantData.deposit > 0 ? peso(tenantData.deposit, 2) : 'Not on file' }}</dd>
             </div>
           </dl>
         </template>
