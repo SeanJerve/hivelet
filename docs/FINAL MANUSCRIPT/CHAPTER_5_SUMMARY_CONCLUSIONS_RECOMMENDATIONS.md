@@ -172,13 +172,10 @@ Based on the summary and conclusions of the study, the following are recommended
 
 **For the owner of the Fe Galang Da Silva Boarding House**
 
-1. Answer the questions that remain about how her records are kept, collected in one list for a
-   single sitting (Chapter 4, Section 4.1.2): whether the large figure at the bottom of her income
-   sheet is a year-to-date total; whether tenants
-   may report a cash payment for her to confirm; where the Penthouse's past spending belongs;
-   whether the spending she booked as personal rather than as a rental cost in 2025 is correct; the
-   three missing months of receipts for one unit; and the move-in date of each current tenancy,
-   which her workbook did not record and on which settling a deposit at move-out depends.
+1. Record the move-in date of each current tenancy, the one question about her records still open
+   (Chapter 4, Section 4.1.2). Her workbook did not record it, and settling a deposit at move-out
+   depends on it. Keep the system's receipts up to date with her receipt book as well, since the
+   system can become her main record only once the two agree (Table 25).
 2. Keep taking a backup before any change to the records, as the team did throughout (Table 25),
    and read the five flagged invoice numbers as history. They stay exactly as she wrote them, and
    the system lists them on every verification run so that they are never mistaken for its own

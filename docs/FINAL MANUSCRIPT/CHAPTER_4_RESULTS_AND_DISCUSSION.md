@@ -172,8 +172,13 @@ applying any automatic increase), that a tenant does not need an email address t
 and (on 12 October 2026) that her thirteen expense categories stay as they are while she may add
 her own beside them.
 On 20 September 2026 she gave the current rate of every unit, and every one agreed with her own
-receipts. **The questions still waiting for her answer** are collected in one list for a single
-meeting and are named in Chapter 5 as recommendations.
+receipts. The remaining questions were collected in one list and answered on 12 October 2026: the
+figure at the bottom of her income sheet is a year-to-date total; the thirteen expense categories
+stay, and she may add her own; tenants do not report cash payments, because the administrators
+record every payment; the spending she booked as personal in 2025 was a renovation of her house;
+past Penthouse spending stays where it was filed; and the three months with no receipt for one unit
+stay blank. One question is still open, the move-in date of each current tenancy, and it is named
+in Chapter 5 as a recommendation.
 
 ---
 

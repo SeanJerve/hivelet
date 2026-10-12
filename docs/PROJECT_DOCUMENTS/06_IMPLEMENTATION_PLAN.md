@@ -16,16 +16,16 @@ The system was built in three Agile iterations (Chapter 3, §3.2).
 | **Iteration 2: Verification and correction** | 12 to 14 Sep 2026 | Checked that the system and its documents said the same thing: 22 recorded errors corrected; the business rule register rebuilt; automated check suites; the Excel exports | Every claim traceable to evidence |
 | **Iteration 3: Consolidation and testing** | 15 Sep 2026 onward | The owner's answers (rates, overdue rule, water, Linda's units); Adyen with GCash working end to end on the test account (26 Sep); the screen-versus-database audit (6 defects fixed); the phone review fixes; live updates every 5 seconds; offline reading; the testing day (30 Sep); the technical evaluators' 14 comments (3 to 5 Oct); recent actions; ISO-aligned evaluation and the survey (6 to 7 Oct); breached-password check | Chapter 4 and 5 complete |
 
-Database changes: numbered migrations 001 to 079 (079 written, waiting on B-100), and 080 written on 7 Oct (B-104).
+Database changes: numbered migrations 001 to 081, all applied (079, 080 and 081 on 12 Oct 2026, after the owner's answers).
 
 ## 2. Before the defense (in this order)
 
 | # | What | Who | Why first |
 | :--- | :--- | :--- | :--- |
-| 1 | Confirm Ann Kristine Diaz did not move out, then run **079** after a backup (B-100) | Sean | The owner's real books are wrong: 3G shows vacant, a ₱8,700 receipt is voided, February expenses read ₱25,000 high |
+| 1 | ~~Confirm the 3G tenancy, then run **079**~~ **Done 12 Oct** (the owner confirmed it was testing; 079 applied after a backup) | Lloyd's machine | The owner's real books are wrong: 3G shows vacant, a ₱8,700 receipt is voided, February expenses read ₱25,000 high |
 | 2 | Make the repository private (B-103, B-98) | Sean | Survey respondents' names are in its history |
-| 3 | Run **080** (B-104) | Sean | Closes the audit-trail TRUNCATE gap; one line, changes no row |
-| 4 | Put the current admin password in `credentials/creds.txt` (B-101), then `npm run check:all` | Sean | Four suites cannot sign in; Table 8's "all 20 pass" dates from 29 Sep |
+| 3 | ~~Run **080**~~ **Done 12 Oct** (B-104) | Lloyd's machine | Closes the audit-trail TRUNCATE gap; one line, changes no row |
+| 4 | Sign in once as the owner so her failed sign-in count resets (B-101). Her password is not stored (answer 19), so the two suites that sign in as her stay off | Sean | Four suites cannot sign in; Table 8's "all 20 pass" dates from 29 Sep |
 | 5 | Re-test walkthrough step 23b on the owner's laptop | A team member | The one open defect, and the lowest Reliability rating points at it |
 | 6 | Paste Chapters 4 and 5, the abstract and FIXES A to H8 into the Word file; renumber tables per chapter; regenerate the lists; delete team notes | Docs lane | The manuscript is still the 18 Sep version |
 | 7 | Fix the appendices: L's "&lt;System Name&gt;"; D to H to match Figures 6 to 9; J as the survey used; add the consent form | Docs lane | |
