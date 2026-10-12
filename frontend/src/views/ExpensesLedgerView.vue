@@ -3,7 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { propertyToday } from '@/lib/propertyDate';
 import { rememberFilters } from '@/lib/savedFilters';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
@@ -21,6 +21,8 @@ import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { focusMonth, MONTH_SHORT } from '@/lib/focusMonth';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import NewExpenseKindDialog from '@/components/modals/NewExpenseKindDialog.vue';
+import type { ExpenseKind } from '@/components/modals/NewExpenseKindDialog.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter } from '@/components/ui/listToolbar';
 
@@ -117,6 +119,51 @@ const categoryOptions = computed<string[]>(() => {
 
 /** The first option, whichever list is in force. */
 const defaultCategory = () => categoryOptions.value[0] ?? EXPENSE_CATEGORIES[0];
+
+/**
+ * Her own kinds of expense (owner, 2026-10-12: "Keep the 13, but she should
+ * also have the ability to add her own").
+ *
+ * "Add a new kind..." is the last choice in the Kind of expense list of both
+ * dialogs. Picking it does not change the expense's kind: it opens
+ * NewExpenseKindDialog over the dialog, and the kind it adds is put in the list
+ * and chosen for the expense it was opened from. Cancel leaves the kind as it was.
+ *
+ * Offered only when the list came from `/admin/expense-categories`. When that
+ * read failed the options are rebuilt from the ledger's rows (above), and adding
+ * to `dbCategories` then would replace that whole list with the one new kind.
+ * Not offered offline either: adding needs the server.
+ */
+const NEW_KIND = '__new_kind__';
+const canAddKind = computed(() => dbCategories.value.length > 0 && !writesUnavailable.value);
+const kindPickerOptions = computed(() => [
+  ...categoryOptions.value.map((c) => ({ value: c, label: c })),
+  ...(canAddKind.value ? [{ value: NEW_KIND, label: 'Add a new kind…' }] : []),
+]);
+/** Which expense the new kind is for: an entry of Record expense by index, or the one being edited. */
+const newKindFor = ref<number | 'edit' | null>(null);
+
+function pickRecordKind(index: number, value: string | number) {
+  if (value === NEW_KIND) newKindFor.value = index;
+  else formEntries.value[index].category = String(value);
+}
+function pickEditKind(value: string | number) {
+  if (value === NEW_KIND) newKindFor.value = 'edit';
+  else editCategory.value = String(value);
+}
+
+async function onKindCreated(kind: ExpenseKind) {
+  dbCategories.value = [...dbCategories.value, kind];
+  const option = `${kind.code} — ${kind.name}`;
+  const target = newKindFor.value;
+  if (target === 'edit') editCategory.value = option;
+  else if (typeof target === 'number' && formEntries.value[target]) formEntries.value[target].category = option;
+  newKindFor.value = null;
+  // Raised once the small dialog has gone (after the render that removes it),
+  // so it shows in the one underneath rather than vanishing with it.
+  await nextTick();
+  showToast('success', 'Kind added', `"${option}" is in the list and chosen for this expense.`);
+}
 
 // Filter selectors
 const filterMonth = ref('All');
@@ -1288,7 +1335,8 @@ async function handleEditExpense() {
 
                   <label class="ws-field">
                     Kind of expense
-                    <PillSelect v-model="entry.category" :options="categoryOptions" aria-label="Kind of expense" widthClass="w-full" />
+                    <!-- "Add a new kind…" at the foot of the list opens NewExpenseKindDialog (owner, 2026-10-12). -->
+                    <PillSelect :model-value="entry.category" :options="kindPickerOptions" aria-label="Kind of expense" widthClass="w-full" @update:model-value="pickRecordKind(index, $event)" />
                   </label>
                 </div>
 
@@ -1440,7 +1488,7 @@ async function handleEditExpense() {
 
               <label class="ws-field">
                 Kind of expense
-                <PillSelect v-model="editCategory" :options="categoryOptions" aria-label="Kind of expense" widthClass="w-full" />
+                <PillSelect :model-value="editCategory" :options="kindPickerOptions" aria-label="Kind of expense" widthClass="w-full" @update:model-value="pickEditKind($event)" />
               </label>
             </div>
 
@@ -1539,6 +1587,16 @@ async function handleEditExpense() {
           </div>
         </form>
     </WsModal>
+
+    <!-- A kind of her own, over whichever expense dialog asked for it. Out here,
+         not inside that dialog's <form>: its own form's submit would bubble
+         into the expense form's and record the expense. -->
+    <NewExpenseKindDialog
+      v-if="newKindFor !== null"
+      :existing="dbCategories"
+      @created="onKindCreated"
+      @close="newKindFor = null"
+    />
 
     <!-- Confirmation -->
     <ConfirmDialog
