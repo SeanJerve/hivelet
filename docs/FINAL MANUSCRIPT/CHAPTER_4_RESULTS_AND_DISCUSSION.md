@@ -46,7 +46,7 @@ compares each practice with the problem it caused.
 | Tenant management | Tenant details kept in the income sheet and in the owner's memory | No single record of who lives in which unit, since when, or how many occupants |
 | Financial tracking | Income and expense sheets typed by hand; invoices written in a paper book | Totals depend on manual arithmetic; nothing checks an invoice number against the book; one file on removable storage is the only copy |
 | Communication | Requests sent by messaging application or said in person | Requests are not recorded, so there is no way to follow a request to completion |
-| Booking | [CONFIRM WITH THE OWNER: how enquiries arrived before the system, for example walk-in, referral or phone] | No record of enquiries or which unit an enquiry was about |
+| Booking | Enquiries arrived through Facebook, referrals from other people, contact and text messages, or walk-ins in person | No record of enquiries or which unit an enquiry was about |
 
 Figure 4 follows each area through the hands that touched it. Every path ends in a record kept apart
 from the others, or in no record at all, which is where each problem in Table 5 begins.
@@ -172,11 +172,7 @@ the owner kept them. Several rules live in the database itself, so no screen or 
 them: one unit cannot have two active tenancies, one invoice number cannot be used twice for the same
 unit and month, a gateway reference cannot be recorded twice, and the 50% Share and the remitted
 amount are computed columns. Table 7A is an extract of the data dictionary for the table the owner
-reads most.
-
-> **TEAM NOTE.** The guide (Q4.3.3-4) puts the complete data dictionary in the Appendices. It is not
-> there yet; `docs/PROJECT_DOCUMENTS/05_DATA_SCHEMA_AND_ACCESS.md` lists every table and can be the
-> basis for it.
+reads most; the complete dictionary, every column of all 24 tables, is in Appendix N.
 
 *Figure 9. Entity-relationship diagram.*
 
@@ -537,6 +533,10 @@ payment form's confirmation step makes unlikely without ruling out; and two peop
 record in different ways at once was not tried.
 
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants
+
+> **TEAM NOTE.** Once the owner has signed the acceptance form (Appendix O), add after this section's first
+> paragraph: "The owner's signed acceptance form is in Appendix O." If she does not accept it yet, say what she
+> asked for instead. The guide does not allow UAT results without a signed form (Q4.3.8-4).
 
 The owner and three tenants used the live system for their own tasks on 30 September 2026, each on
 their own device and account, after giving written consent, by the procedure in Section 3.3. Where an
