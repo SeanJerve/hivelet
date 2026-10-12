@@ -774,7 +774,7 @@ Performance was measured on 30 September 2026 on the live system, on a laptop in
 over the boarding house's Wi-Fi and on a phone. First loads were taken with the browser's cache
 cleared. Page loads on the laptop were read from the browser's developer tools (the time until the
 page had finished loading); the other times were taken with a stopwatch, from the tap until the
-figures the user came for were on screen, or until the file was saved.
+figures the user came for were on screen, or until the file was saved. Table 11 gives the times.
 
 > **TEAM NOTE.** Source: `docs/TESTING_DAY/results/PF_TIMINGS_Eljohn.md`. Three runs were timed per
 > screen but only one value was written down, so each figure is a single run, not the median of
@@ -831,7 +831,8 @@ application is installed, and when several people use it at once. The measuremen
 Google Chrome 154 driven by an automated browser (Playwright) on an Acer Nitro ANV15-52 laptop
 (Intel Core i5-13420H, 16 GB) on a home broadband connection, using Chrome's phone emulation
 (390 × 844 pixels). Every attempt to save data was blocked inside the browser, so the tests wrote
-nothing to the owner's records.
+nothing to the owner's records. Table 11A gives the results without a connection and once installed,
+and Table 11B those with several people using the system at once.
 
 **Table 11A.** Offline and Installation Behavior (29 September 2026)
 
@@ -918,7 +919,8 @@ Where an observer's sheet and the system's activity record disagreed, the activi
 since it records every sign-in, sign-out, request, note and saved change with its time. A task the
 record shows was never done is counted as not attempted. On this rule the third tenant's session
 counts only the tasks the record confirms, because the times on that tenant's sheet fall before the
-account's first sign-in.
+account's first sign-in. Table 11C gives each task's result, and Table 11D the session in which the
+owner and two tenants used the system at the same time.
 
 **Table 11C.** Tenant Task Results (30 September 2026)
 
@@ -1054,6 +1056,8 @@ against either edition.
 
 ### 4.4.1 Respondents
 
+Table 12 shows the respondents by group.
+
 **Table 12.** Distribution of Respondents
 
 | Group | Number | Percent |
@@ -1071,7 +1075,8 @@ the owner that night, after her walkthrough (Section 4.3.4); and one technical e
 October, the day after the evaluators' review of the live system (Table 23). Three of the four
 groups therefore have one respondent each. For those groups a mean is one person's rating and no
 standard deviation can be computed, and the results below describe how these six people rated the
-system, not a sample from which a wider population can be inferred.
+system, not a sample from which a wider population can be inferred. Table 12A shows how many forms
+were given out and returned in each group.
 
 **Table 12A.** Instrument Administration and Response Rate
 
@@ -1128,6 +1133,8 @@ WM = Σ(f × w) / N = 15 / 3 = **5.00**, which Table 13 reads as **Very High Qua
 
 ### 4.4.3 Functional Suitability
 
+Table 14 gives the ratings for Functional Suitability by group, and Table 14A the measured evidence for it.
+
 **Table 14.** Evaluation Results for Functional Suitability
 
 | Indicator | Rated by | Mean | SD | Interpretation |
@@ -1178,6 +1185,8 @@ giving a reason.
 
 ### 4.4.4 Performance Efficiency
 
+Table 15 gives the ratings for Performance Efficiency by group, and Table 15A the measured evidence for it.
+
 **Table 15.** Evaluation Results for Performance Efficiency
 
 | Indicator | Rated by | Mean | SD | Interpretation |
@@ -1219,6 +1228,8 @@ PageSpeed Insights drew the public page's largest element at 3.4 to 3.6 seconds 
 
 ### 4.4.5 Compatibility
 
+Table 16 gives the ratings for Compatibility by group, and Table 16A the measured evidence for it.
+
 **Table 16.** Evaluation Results for Compatibility
 
 | Indicator | Rated by | Mean | SD | Interpretation |
@@ -1255,6 +1266,8 @@ ratings agree with the browser matrix, on which every combination tried worked. 
 no test measured, was rated 4.67 by the tenants and 5 by the owner and the evaluator.
 
 ### 4.4.6 Usability
+
+Table 17 gives the ratings for Usability by group, and Table 17A the measured evidence for it.
 
 **Table 17.** Evaluation Results for Usability
 
@@ -1330,6 +1343,8 @@ that the screens are built correctly for assistive technology, not that a user o
 
 ### 4.4.7 Reliability
 
+Table 18 gives the ratings for Reliability by group, and Table 18A the measured evidence for it.
+
 **Table 18.** Evaluation Results for Reliability
 
 | Indicator | Rated by | Mean | SD | Interpretation |
@@ -1378,6 +1393,8 @@ point at the same weakness.
 
 Tenants did not rate Security. They see only their own portal and cannot judge how the rest of the
 system is protected.
+
+Table 19 gives the ratings for Security by group, and Table 19A the measured evidence for it.
 
 **Table 19.** Evaluation Results for Security
 
@@ -1486,6 +1503,8 @@ are left to Chapter 5, recommendation 3.
 Only technical evaluators rated Maintainability, after being given access to the source code and
 documentation.
 
+Table 20 gives the ratings for Maintainability by group, and Table 20A the measured evidence for it.
+
 **Table 20.** Evaluation Results for Maintainability
 
 | Indicator | Rated by | Mean | SD | Interpretation |
@@ -1524,6 +1543,8 @@ what the item about a change in one part disturbing another asks about. Chapter 
 recommendation 6.
 
 ### 4.4.10 Portability
+
+Table 21 gives the ratings for Portability by group, and Table 21A the measured evidence for it.
 
 **Table 21.** Evaluation Results for Portability
 

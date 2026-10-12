@@ -378,9 +378,10 @@ function convertMarkdownToDocxElements(mdContent) {
       currentParagraphLines = [];
       if (text.length > 0) {
         // Check if paragraph is a table title like **Table 5.** ...
-        if (/^\*\*Table\s+\d+\.\*\*/i.test(text)) {
+        // Lettered tables (7A, 22B) are captions too; until 12 Oct they fell through to body text.
+        if (/^\*\*Table\s+\d+[A-Z]?\.\*\*/i.test(text)) {
           elements.push(createTableCaption(text));
-        } else if (/^\*\([^)]+\)\*$/i.test(text) || /^\*Figure\s+\d+\./i.test(text)) {
+        } else if (/^\*\([^)]+\)\*$/i.test(text) || /^\*Figure\s+\d+[a-z]?\./i.test(text)) {
           // Figure placeholder
           elements.push(
             new Paragraph({
