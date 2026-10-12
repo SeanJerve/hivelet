@@ -697,8 +697,11 @@ function areaParts(e: ExpenseRecord): { label: string; amount: number | null }[]
   return parts.length === 1 ? [{ label: parts[0].label, amount: null }] : parts;
 }
 
-/** Whole pesos unless there are centavos: ₱23,000 but ₱1,854.50. */
-const money = (n: number) => peso(n, Number.isInteger(Math.round(n * 100) / 100) ? 0 : 2);
+/**
+ * Always with centavos, ₱23,000.00 and ₱1,854.50, as Monthly Income shows them (Lloyd,
+ * 2026-10-12: "show centavos in Monthly Expenses"; it was whole pesos unless there were centavos).
+ */
+const money = (n: number) => peso(n, 2);
 
 // Custom Confirmation State
 const isConfirmOpen = ref(false);
@@ -993,7 +996,7 @@ async function handleEditExpense() {
         <!-- Nothing entered for the month: said, not shown as ₱0 (as on Monthly Income). -->
         <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
         <template v-else>
-          <p class="tabular text-3xl md:text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal) }}</p>
+          <p class="tabular text-3xl md:text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal, 2) }}</p>
           <p class="text-sm leading-6 text-on-night-soft">
             {{ `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}
           </p>
@@ -1002,11 +1005,11 @@ async function handleEditExpense() {
           <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-white/10 pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-white/10 md:pt-1">
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-on-night-soft">Utilities</dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthUtilities) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthUtilities, 2) }}</dd>
             </div>
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-on-night-soft">Repairs and cleaning</dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRepairs) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRepairs, 2) }}</dd>
             </div>
           </dl>
         </template>
@@ -1019,7 +1022,7 @@ async function handleEditExpense() {
         </p>
         <template v-else>
           <p class="flex flex-wrap items-baseline gap-x-2">
-            <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(totalJuly) }}</span>
+            <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(totalJuly, 2) }}</span>
             <span class="text-sm text-ink-soft">spent across {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</span>
           </p>
           <SegmentBar
@@ -1050,7 +1053,7 @@ async function handleEditExpense() {
                 <span class="text-xs text-ink-faint tabular">
                   {{ totalJuly > 0 ? Math.round((a.value / totalJuly) * 100) : 0 }}%
                 </span>
-                <span class="tabular font-semibold max-md:hidden">{{ peso(a.value) }}</span>
+                <span class="tabular font-semibold max-md:hidden">{{ peso(a.value, 2) }}</span>
               </span>
             </li>
           </ul>

@@ -722,6 +722,11 @@ export async function fetchRooms(opts: { quiet?: boolean } = {}): Promise<RoomIt
          * and returns the listed spelling. `waterChargeFor` and
          * `buildBillingRule` uppercase their own argument, so they do not care
          * what arrives.
+         *
+         * SUPERSEDED FOR DISPLAY (Lloyd for the owner, 2026-10-12): unit codes are SHOWN in
+         * capitals ("1A") on every screen, and that is the decision - the screens capitalise at
+         * display time, as they have since 25 Sep. This value still carries the database's own
+         * spelling, so comparisons and saves are unaffected; only what the page prints is upper.
          */
         const unitCode = r.room_number || '';
         const isLinda = r.is_linda_unit || cluster === 'Linda Units';

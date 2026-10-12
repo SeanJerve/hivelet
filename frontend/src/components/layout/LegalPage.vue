@@ -55,9 +55,12 @@ const props = defineProps<{
   sections: readonly LegalSection[];
 }>();
 
-/** "24 September 2026". UTC on both sides so no viewer's zone can move the day. */
+/**
+ * "September 24, 2026": month first, like every other date on the site (Lloyd, 2026-10-12; it
+ * was "24 September 2026"). UTC on both sides so no viewer's zone can move the day.
+ */
 function longDate(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

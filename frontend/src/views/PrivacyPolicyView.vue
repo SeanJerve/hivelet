@@ -50,8 +50,9 @@
  * WHAT IT DELIBERATELY DOES NOT SAY
  * ---------------------------------
  * No named data protection officer, no NPC registration, and no email address for requests.
- * Asked on 2026-09-24: the first two are unknown, and requests go to the landlady by phone or
- * in person, which is what the page says. It names nobody as a developer, and gives no date for
+ * Asked on 2026-09-24; answered 2026-10-12 (Lloyd, for the owner): the boarding house is not
+ * registered with the NPC and has no designated officer, and she does not need either - so the
+ * page names neither, and requests go to the landlady by phone or in person, which is what it says. It names nobody as a developer, and gives no date for
  * the developers' access ending, because that is undecided.
  *
  * Two items left this list on 2026-09-24: the database's location (B-60, confirmed on the
