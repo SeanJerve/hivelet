@@ -195,9 +195,10 @@ Based on the summary and conclusions of the study, the following are recommended
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested by a machine on every change and not only once by a
    person. The automated suites of Section 4.3.1 read and check, but they do not write, and the
-   screen-versus-database audit (Section 4.3.3) found defects that every suite had passed. Include
-   the simultaneous saves of Table 11F, which were run once during development, so that the rules
-   refusing a second save are checked on every change as well.
+   screen-versus-database audit (Section 4.3.3) found defects that every suite had passed. Extend
+   the rule that refuses a second copy of a receipt to receipts with no invoice number and to
+   acknowledgement receipts, which it does not yet cover when two arrive at the same instant
+   (Section 4.3.6).
 5. Make the pages appear faster on phones. On a simulated slow mobile connection the public page
    is drawn only after its code arrives, with its largest element at 3.5 seconds in PageSpeed
    Insights, and the owner's overview moves as its figures arrive (a layout shift of 0.22; Sections

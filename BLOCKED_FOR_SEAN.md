@@ -33,6 +33,24 @@ thing did not work" is not.
 
 ## Open
 
+### B-105 — two identical receipts with no invoice number (or two acknowledgement receipts) sent at the same instant are both saved · **OPEN: Sean, a decision**
+
+- **Found 12 Oct 2026** writing `check:concurrency` (backend/scripts/check-concurrency.mjs, the 21st suite).
+  The live index (`pg_indexes`, read the same day) is
+  `UNIQUE (room_id, invoice_number, year, month) WHERE voided_at IS NULL AND invoice_number IS DISTINCT
+  FROM 'Acknowledgement receipt'`. A NULL never equals a NULL in a unique index, so a receipt with no
+  number is not covered either. The handler's own read refuses the copy **one after another** (tested),
+  but two at the same instant both pass it; the suite prints this as a `note:` line every run.
+- **How likely:** low. Record payment asks for confirmation and disables its button until the save returns,
+  so a double-click cannot send it twice. What is left: a retry after a 45-second timeout, or two people
+  entering the same no-number receipt at the same moment.
+- **Options:** (a) leave it, as Chapter 4 §4.3.6 and Chapter 5 recommendation 4 now say; (b) migration 082:
+  a second partial unique index for receipts with no number, on (room_id, year, month, date_paid,
+  rent_amount) WHERE invoice_number IS NULL AND voided_at IS NULL, after checking the live rows hold no
+  such pair (a genuine second no-number payment of the same amount on the same day would then need a
+  number); acknowledgement receipts the same way. (b) changes what she can enter, so it is hers or yours.
+- **Raised:** 2026-10-12 by Claude (Sean's machine)
+
 ### 2026-10-12 — Note for Sean, from Lloyd (read this first)
 
 **Lloyd says: "I love you very very much XOXOXOXO."**

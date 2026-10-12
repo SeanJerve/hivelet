@@ -219,8 +219,11 @@ not care whether two or ten requests arrive together. Load is a separate questio
 12 simulated visitors and 6 simulated readers of the owner's records with no failed request
 (Table 11B), several times the property's own load. **Say "simulated" when you quote 12 and 6.**
 Those were a script on Lloyd's laptop on 29 September, not people. What was not tested: two people
-changing the same record in different ways at once, and these tests are not yet in the automated
-suites (Chapter 5, recommendation 4).
+changing the same record in different ways at once. And know the one gap: the rule covers receipts
+with an invoice number; two identical receipts with no number (or two acknowledgement receipts) sent
+at the same instant would both be saved. The form's confirm step and disabled button make it
+unlikely (Chapter 4, Section 4.3.6). Since 12 October the tests run on every change
+(`check:concurrency`, the twenty-first suite).
 
 **How do you know the totals are right?**
 Twenty automated check suites, including 545 reconciliations of the workbook against the database,

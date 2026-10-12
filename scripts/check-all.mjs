@@ -54,6 +54,7 @@ const SUITES = [
   ['backend', 'check:reports', 'the exported workbooks agree with the database, month by month'],
   ['backend', 'check:adyen', 'HMAC signature verification'],
   ['backend', 'check:billing', 'water, grace, period and receipt-allocation arithmetic'],
+  ['backend', 'check:concurrency', 'the same receipt or checkout sent many times at once is saved once'],
   ['backend', 'check:api', 'endpoint, RBAC, perimeter and input checks'],
 ];
 

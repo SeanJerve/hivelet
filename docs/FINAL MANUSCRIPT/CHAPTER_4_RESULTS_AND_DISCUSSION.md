@@ -938,11 +938,21 @@ were removed: the rule could not have been created while a duplicate remained, a
 between 18 and 20 September 2026 is in the records (checked 12 October 2026).
 
 Because these rules are kept by the database, they hold however many people save at once: ten
-requests arriving together meet the same refusal as two. Two things were not tested. Two people
-changing the same record in different ways at the same moment, for example the owner closing a
-repair while its tenant cancels it, was not tried, and these tests were run once during
-development and are not among the automated suites of Section 4.3.1, so they are not repeated on
-every change (Chapter 5, recommendation 4).
+requests arriving together meet the same refusal as two. Since 12 October 2026 the tests are
+repeated on every run of the automated suites by a twenty-first suite, which sends the same receipt
+up to ten times at once, and the same checkout five times, to the system's own request handlers
+against a stand-in database that keeps the same two rules. It passes 15 checks, and each of four
+deliberate faults in the handlers made it fail. The rules themselves were confirmed in the live
+database's catalogue the same day.
+
+Three limits remain. The rule covers receipts that carry an invoice number: a receipt with no
+number, or an acknowledgement receipt, is refused by the program when it is entered a second time,
+but two sent at the same instant would both be saved. The payment form makes that unlikely, since
+it asks for confirmation and then disables its button until the save returns, but it does not rule
+it out. Two people changing the same record in different ways at the same moment, for example the
+owner closing a repair while its tenant cancels it, was not tried. And the suite proves how the
+program answers a refused save, not that the live database still holds the rule; that is checked in
+the catalogue.
 
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants
 
