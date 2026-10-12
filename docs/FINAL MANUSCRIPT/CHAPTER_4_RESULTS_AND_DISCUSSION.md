@@ -823,16 +823,24 @@ phone (Chapter 5, recommendation 5).
 
 > **TEAM NOTE.** Tables 11A to 11D are new (29 September 2026). Renumber every table after
 > Table 11 when this chapter goes into the Word file. The measurements are in
-> `PRE_TESTING_AUDIT_2026-09-29.md`, with the device and time of each.
+> `PRE_TESTING_AUDIT_2026-09-29.md`, with the device and time of each. **Table 11B's users are
+> simulated**: a script on Lloyd's laptop (`scripts/field-tests/simultaneous-readers.mjs`), run the
+> evening before the testing day, not people. Table 11F (added 12 Oct) is lettered F, not C, so that
+> 11C to 11E keep the numbers other documents cite; the Word renumbering puts it in order. Its
+> sources: migration `033` and commit `28071ea` (receipts), migration `051` and commit `31ec9ff`
+> (checkouts).
 
 Before the system was used by its tenants, the behavior a real day of use would test was measured
 on the live system on 29 September 2026: what happens without a connection, on a weak one, when the
-application is installed, and when several people use it at once. The measurements were taken with
+application is installed, and when many requests arrive at once. The measurements were taken with
 Google Chrome 154 driven by an automated browser (Playwright) on an Acer Nitro ANV15-52 laptop
 (Intel Core i5-13420H, 16 GB) on a home broadband connection, using Chrome's phone emulation
 (390 × 844 pixels). Every attempt to save data was blocked inside the browser, so the tests wrote
-nothing to the owner's records. Table 11A gives the results without a connection and once installed,
-and Table 11B those with several people using the system at once.
+nothing to the owner's records. Table 11A gives the results without a connection and once installed.
+Table 11B gives those of a load test, in which a script on the same laptop played several users at
+once, each pausing a quarter to three quarters of a second between requests, as a person reading a
+page does. These were simulated users, not people; the owner and tenants using the system together
+are reported in Section 4.3.7 (Table 11D).
 
 **Table 11A.** Offline and Installation Behavior (29 September 2026)
 
@@ -848,9 +856,9 @@ and Table 11B those with several people using the system at once.
 | Public page on a slow connection (400 kbps, 400 ms), first visit | Units on screen after 4.6 seconds |
 | The same page, returning visitor | Units on screen after 0.3 seconds, because the installed application already holds its files |
 
-**Table 11B.** Simultaneous Users, Read Operations (29 September 2026)
+**Table 11B.** Simulated Simultaneous Users, Read Operations (29 September 2026)
 
-| Test | Users at once | Duration | Requests | Errors | Slowest 5% took longer than |
+| Test | Simulated users at once | Duration | Requests | Errors | Slowest 5% took longer than |
 | :--- | --: | --: | --: | --: | --: |
 | Public pages and public data, live site | 12 | 60 s | 1,085 | 0 | 0.52 s |
 | The owner's ten main data requests, live database | 6 | 45 s | 285 | 0 | 0.80 s |
@@ -895,6 +903,41 @@ a third of it. Google's PageSpeed Insights, which runs Lighthouse on Google's ow
 scored the phone page 86 for performance with its largest element drawn at 3.5 seconds, against 76
 and 5.3 seconds in its run before the change (Chapter 5, recommendation 5). The real-device timings in Table 11 are the measurement
 that decides how fast the system is for the owner and tenants.
+
+**Simultaneous saves.** Reading at the same time tests capacity; saving at the same time tests
+correctness, because two requests that arrive together can each pass a check before either has
+been saved. This was tested by sending the same request several times in the same instant. That
+reproduces a double click, a retry after a timeout, or two people pressing Save together, with
+closer timing than people can produce by hand. Table 11F gives the results.
+
+**Table 11F.** Simultaneous Saves (19 and 24 September 2026)
+
+| Test | Before the change | After the change |
+| :--- | :--- | :--- |
+| The same receipt sent twice at once, live system | Both saved: 2 rows | 1 saved, 1 refused: 1 row |
+| The same receipt sent five times at once, live system | All five saved: 5 rows | 1 saved, 4 refused: 1 row |
+| One receipt covering three months, live system | | Saved as 3 rows, June to August 2026, as before |
+| Two GCash checkouts opened on one bill at once, payment code with a stand-in database | Both opened, so both payments could be recorded | 1 opened, 1 refused |
+| A checkout 16 minutes after one was abandoned | | Opened: an abandoned checkout holds the bill for 15 minutes, not for good |
+
+Neither fault showed an error: the server answered every duplicate receipt as saved. Neither
+could be fixed in the program alone, since a check followed by a save can always be outrun by a
+second request. Each fix is therefore a rule in the database itself, which refuses the second save
+whatever order the requests arrive in: a receipt number is accepted once per unit per month among
+receipts that stand, and a bill is held for 15 minutes from the moment a checkout is opened on it.
+The database already refused, in the same way, a second active tenancy on one unit, a second bill
+for one tenant in one period, and a gateway payment recorded twice, and the saves that change
+several records together, such as settling a payment against bills or splitting an expense across
+areas, each run as one database operation, so none is left half done. The rows these tests wrote
+were removed: the rule could not have been created while a duplicate remained, and no row saved
+between 18 and 20 September 2026 is in the records (checked 12 October 2026).
+
+Because these rules are kept by the database, they hold however many people save at once: ten
+requests arriving together meet the same refusal as two. Two things were not tested. Two people
+changing the same record in different ways at the same moment, for example the owner closing a
+repair while its tenant cancels it, was not tried, and these tests were run once during
+development and are not among the automated suites of Section 4.3.1, so they are not repeated on
+every change (Chapter 5, recommendation 4).
 
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants
 
@@ -1215,8 +1258,8 @@ Table 15 gives the ratings for Performance Efficiency by group, and Table 15A th
 | Time behavior | Time within which 95 per cent of requests were answered under load | 0.52 s (public pages); 0.80 s (the owner's data) | Table 11B |
 | Resource utilization | Code a visitor's browser downloads for the payments page | About 20 kB; the 194 kB payment library only when a payment starts | Table 23 |
 | Resource utilization | Script work on an emulated mid-range phone, the owner's Overview | 0.7 s | Section 4.3.5 |
-| Capacity | Failed requests with 12 simultaneous users, X = A / B | 0 / 1,085 = 0.00 | Table 11B |
-| Capacity | Failed requests with 6 simultaneous readers of the owner's records, X = A / B | 0 / 285 = 0.00 | Table 11B |
+| Capacity | Failed requests with 12 simulated simultaneous users, X = A / B | 0 / 1,085 = 0.00 | Table 11B |
+| Capacity | Failed requests with 6 simulated simultaneous readers of the owner's records, X = A / B | 0 / 285 = 0.00 | Table 11B |
 
 No request failed at several times the property's own load, and no screen took longer than about three seconds on a phone. The script work on a phone is the one measure that leaves room for improvement (Chapter 5, recommendation 5).
 

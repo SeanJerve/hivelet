@@ -66,7 +66,7 @@ members separately, never written in a document). Names only:
 | Requirement | Target | Measured (Chapter 4) |
 | :--- | :--- | :--- |
 | Performance | A screen usable within about 3 s on a phone | Slowest 3.05 s (tenant portal, first load, phone) |
-| Capacity | Several times the property's own load without failure | 0 of 1,085 requests failed with 12 simultaneous users |
+| Capacity | Several times the property's own load without failure | 0 of 1,085 requests failed with 12 simulated simultaneous users |
 | Security | No high-severity weakness; passive scanners graded | Code review: 0 high; SSL Labs, Observatory, securityheaders.com all A+ |
 | Accessibility | WCAG 2.2 A and AA | 0 violations in 76 axe scans (19 screens, light and dark, phone and computer) |
 | Compatibility | Current Chrome, Edge, Firefox, Safari on Android, iPhone, Windows | 5 of 5 combinations tried passed |

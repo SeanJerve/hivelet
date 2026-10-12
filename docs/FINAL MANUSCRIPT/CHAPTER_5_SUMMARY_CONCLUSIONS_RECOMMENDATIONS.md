@@ -64,8 +64,8 @@ accomplished:
    When testing ended, every record it had created was removed by one reviewed change, leaving the
    owner's 937 income rows untouched. Measured on the live system on 29 September 2026, the
    application opened without a connection and said plainly what it could not do, could be
-   installed on a phone, and answered 1,085 requests from twelve simultaneous visitors and 285 from
-   six simultaneous readers of the owner's records without a single error.
+   installed on a phone, and answered 1,085 requests from twelve simulated simultaneous visitors and 285 from
+   six simulated readers of the owner's records without a single error.
    On 30 September 2026 the owner performed the walkthrough herself: 24 of its 30 rows passed the
    first time, one failed (with the connection cut, the Overview showed ₱0 instead of "—"), and
    five were not performed as written. Three tenants completed every task they attempted, 31 of 34
@@ -198,7 +198,9 @@ Based on the summary and conclusions of the study, the following are recommended
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested by a machine on every change and not only once by a
    person. The automated suites of Section 4.3.1 read and check, but they do not write, and the
-   screen-versus-database audit (Section 4.3.3) found defects that every suite had passed.
+   screen-versus-database audit (Section 4.3.3) found defects that every suite had passed. Include
+   the simultaneous saves of Table 11F, which were run once during development, so that the rules
+   refusing a second save are checked on every change as well.
 5. Make the pages appear faster on phones. On a simulated slow mobile connection the public page
    is drawn only after its code arrives, with its largest element at 3.5 seconds in PageSpeed
    Insights, and the owner's overview moves as its figures arrive (a layout shift of 0.22; Sections
@@ -220,8 +222,8 @@ Based on the summary and conclusions of the study, the following are recommended
    cases. Several of the most important defects in this study, a tenant payment history that showed
    nothing and a voided receipt shown as paid among them, passed every automated check and were
    found only by comparing each screen with the records it claimed to show (Section 4.3.3).
-8. Extend the evaluation over a longer period of real use, with every tenant and with several
-   tenants saving at the same moment, which this study could test only for reading (Section 4.3.7);
+8. Extend the evaluation over a longer period of real use, with every tenant, and with two
+   people changing the same record at the same moment, which this study did not test (Section 4.3.6);
    ask tenants what they find missing, since one said the system still felt lacking and another
    asked to see the deposit they paid, which the system records but shows only to the owner; and
    measure whether the owner's time spent on record-keeping actually falls after adoption. Such a study

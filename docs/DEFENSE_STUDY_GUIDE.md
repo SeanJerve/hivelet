@@ -208,6 +208,20 @@ The page waits 45 seconds at most. If no answer came, it says it cannot tell whe
 arrived and to check before sending again, because sending twice could record a payment twice.
 The duplicate check and the unique index catch a repeated receipt anyway.
 
+**Only the owner and two tenants used it at the same time. How do you know it holds with ten?**
+Because the danger is not the number of people but two saves reaching the server in the same
+instant, and that was tested directly, with closer timing than people can manage (Chapter 4,
+Table 11F). On 19 September the same receipt was sent five times at once and five rows were
+written. The fix is a rule in the database, one receipt number per unit per month, so the second
+save is refused whatever order the requests come in: five at once then gave one saved and four
+refused. The GCash checkout got the same treatment on 24 September. A rule in the database does
+not care whether two or ten requests arrive together. Load is a separate question: a script played
+12 simulated visitors and 6 simulated readers of the owner's records with no failed request
+(Table 11B), several times the property's own load. **Say "simulated" when you quote 12 and 6.**
+Those were a script on Lloyd's laptop on 29 September, not people. What was not tested: two people
+changing the same record in different ways at once, and these tests are not yet in the automated
+suites (Chapter 5, recommendation 4).
+
 **How do you know the totals are right?**
 Twenty automated check suites, including 545 reconciliations of the workbook against the database,
 a ledger integrity check, and targeted tests that drive the real handlers. A new check is only
