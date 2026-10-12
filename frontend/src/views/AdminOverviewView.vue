@@ -935,7 +935,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           />
           <router-link v-else to="/admin/income?tab=verify" class="press group/att flex flex-col gap-1">
             <span class="flex items-start justify-between gap-2">
-              <span class="text-4xl leading-none font-semibold tabular tracking-tight">{{ pendingCount }}</span>
+              <span class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl">{{ pendingCount }}</span>
               <ArrowUpRight class="size-4 text-on-night-soft" aria-hidden="true" />
             </span>
             <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
@@ -950,7 +950,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           />
           <router-link v-else to="/admin/tickets" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
             <span class="flex items-start justify-between gap-2">
-              <span class="text-3xl leading-none font-semibold tabular">{{ urgentTickets.length }}</span>
+              <span class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl">{{ urgentTickets.length }}</span>
               <ArrowUpRight class="size-4 text-on-night-soft" aria-hidden="true" />
             </span>
             <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
@@ -966,7 +966,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         />
         <div v-else class="max-md:hidden">
           <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span class="text-5xl leading-none font-semibold tabular tracking-tight">{{ pendingCount }}</span>
+            <span class="text-4xl leading-none font-semibold tabular tracking-tight lg:text-5xl">{{ pendingCount }}</span>
             <span class="text-sm text-on-night-soft">
               {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
             </span>
@@ -1040,11 +1040,15 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           <div v-else>
             <!--
               `text-5xl` did not fit a phone: "₱1,284,750.00" is 327.7px in a
-              303px tile, and a seven-figure month is not hypothetical here. Half
-              a phone's width is less again, so `text-2xl` there; `text-4xl` on a
-              tablet, `text-5xl` from 640px as before.
+              303px tile. Half a phone's width is less again, so `text-3xl` there,
+              the size of Monthly Income's and Monthly Expenses' month figures,
+              `text-4xl` on a tablet and `text-5xl` from 1024px. The counts beside
+              it in "Needs your attention" use the same steps: Loyd (2026-10-03)
+              saw a 0 there larger than the rent figure next to it. Below 360px the
+              tile's text is 106px wide, which "₱141,000" fills at `text-2xl`, so
+              all three step down together there.
             -->
-            <p class="text-2xl leading-none font-semibold tabular tracking-tight md:text-4xl lg:text-5xl">{{ peso(currentMonthRevenue) }}</p>
+            <p class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl md:text-4xl lg:text-5xl">{{ peso(currentMonthRevenue) }}</p>
             <!-- The count only; "usually entered a week or two after" was
                  explanation she does not need on her own screen (Sean, 2026-10-01). -->
             <p class="mt-2 text-sm text-ink-soft">

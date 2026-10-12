@@ -880,7 +880,7 @@ function refreshAll() {
     </OverviewTile>
 
     <OverviewTile v-else-if="outstandingBills.length === 0" tone="soft" class="ws-reveal" title="Bills">
-      <p class="text-2xl font-semibold tracking-tight">Nothing is due</p>
+      <p class="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Nothing is due</p>
       <!-- This used to promise "your next monthly statement will be issued on the
            5th". There is no scheduled bill generator and there is deliberately not
            one: collection happens in person, so a nightly run would raise bills
