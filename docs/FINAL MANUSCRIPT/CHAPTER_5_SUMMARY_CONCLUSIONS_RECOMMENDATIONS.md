@@ -98,7 +98,7 @@ accomplished:
 
 Based on the results of the study, the following conclusions were drawn:
 
-1. **The first objective was achieved.** The existing practices were analysed in all four areas
+1. **The first objective was achieved.** The existing practices were analyzed in all four areas
    the objective names, tenant management, financial tracking, communication and booking, and every
    gap found was traced to a requirement and to the module that meets it (Chapter 4, Table 6). The
    analysis shows that the main problem at the property was not the lack of a digital tool but the
@@ -224,8 +224,7 @@ Based on the summary and conclusions of the study, the following are recommended
    tenants saving at the same moment, which this study could test only for reading (Section 4.3.7);
    ask tenants what they find missing, since one said the system still felt lacking and another
    asked to see the deposit they paid, which the system records but shows only to the owner; and
-   measure
-   whether the owner's time spent on record-keeping actually falls after adoption. Such a study
+   measure whether the owner's time spent on record-keeping actually falls after adoption. Such a study
    should also measure what this one could not: availability as a share of time over months of use,
    and the two sub-characteristics no instrument here covered, user interface aesthetics and
    reusability (Chapter 4, Table 22A). A new instrument should be built on ISO/IEC 25010:2023, which

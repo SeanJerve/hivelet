@@ -200,7 +200,7 @@ did in each phase of the life cycle in Section 3.2.
 | :--- | :--- | :--- | :--- |
 | Requirements | The owner's workbook (Monthly Income and Monthly Expenses) and the interviews and observation of Section 4.1 taken as the baseline; payments cash only | The owner settled four questions on 13 September: 33 units, no grace period, no automatic rent increase, and tenants recorded without needing an email address | The owner's answers of 17 and 19 to 20 September: the advance is the deposit, rent and water stay one bill, and a rate for each of the 33 units; acknowledgement receipts for payments with no invoice number (1 October) |
 | Design | Screens for the visitor, the tenant and the owner over one permission matrix; the ledgers laid out as her workbook is | The business rule register rebuilt, 49 rules each with its evidence; the automatic rent increase removed from scope | The owner's review on a phone (23 September) and the design rules the screens now follow; the tenant and owner overviews reworked |
-| Development | Public site, tenant and owner portals, ledgers, repairs, inquiries, notifications and audit trail; 937 income rows and 1,327 expense allocations transferred | Fifteen defects in behaviour corrected, among them a partial payment that left no debt and cash recorded with nothing written to the books; the Excel downloads | Adyen with GCash working end to end on the test account (26 September); updates every five seconds; offline reading; the breached-password check (7 October) |
+| Development | Public site, tenant and owner portals, ledgers, repairs, inquiries, notifications and audit trail; 937 income rows and 1,327 expense allocations transferred | Fifteen defects in behavior corrected, among them a partial payment that left no debt and cash recorded with nothing written to the books; the Excel downloads | Adyen with GCash working end to end on the test account (26 September); updates every five seconds; offline reading; the breached-password check (7 October) |
 | Testing | Checked by demonstration only; no automated check existed | Seven automated check suites, over 100 assertions, each defect covered by one | The screen-versus-database audit (26 and 29 September, six defects); 20 suites (29 September); the testing day with the owner and three tenants (30 September); the technical evaluators' review (3 October) |
 | Deployment | Run from the team's machines against the live database | Unchanged | Hosted on Vercel from 24 September; tenant accounts prepared on 29 September; in use beside the owner's own records (Table 25) |
 | Review | The Module 01 submission, whose documents became Iteration 2's input | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 23); the ISO/IEC 25010 survey (Section 4.4) |
@@ -502,7 +502,7 @@ the owner's laptop, an Android phone in Chrome and an iPhone in Safari during te
 *Answers Objective 3: functionality, responsiveness and operational performance.*
 
 The three qualities Objective 3 names correspond to characteristics of ISO/IEC 25010:2011:
-functionality to **Functional Suitability**, responsiveness to the time behaviour of **Performance
+functionality to **Functional Suitability**, responsiveness to the time behavior of **Performance
 Efficiency**, and operational performance to its capacity and to **Reliability**. The pilot tests
 measured these and five more characteristics, because a test written for one quality often
 measures another as well: the walkthrough that showed a function works also showed that one tenant
@@ -518,7 +518,7 @@ Section 4.4, where it stands beside the survey's ratings.
 | Use in the live environment (4.3.2) | System, in operation | Functional Suitability (correctness); Compatibility (interoperability); Reliability (recoverability) |
 | Screen-versus-database audit (4.3.3) | System | Functional Suitability (correctness); Reliability (maturity) |
 | Functional walkthrough (4.3.4) | System | Functional Suitability (completeness, correctness); Usability (user error protection); Security (confidentiality); Reliability (fault tolerance) |
-| Responsiveness (4.3.5) | System | Performance Efficiency (time behaviour, resource utilization) |
+| Responsiveness (4.3.5) | System | Performance Efficiency (time behavior, resource utilization) |
 | Offline, installation, weak connections and simultaneous users (4.3.6) | System | Reliability (fault tolerance); Performance Efficiency (capacity); Portability (installability, adaptability); Usability (accessibility) |
 | User acceptance testing (4.3.7) | Acceptance | Quality in use (effectiveness, efficiency, context coverage); Usability (learnability, operability); Security (confidentiality) |
 
@@ -603,7 +603,7 @@ the merchant may be asked for further details. Going live is therefore treated a
 (Chapter 5, Recommendation 3).
 
 On 26 September 2026 a test payment passed end to end:
-- Adyen authorised it;
+- Adyen authorized it;
 - its signed notification reached the system;
 - it appeared as Pending Verification in the administrator's verification queue;
 - it was rejected there, and the tenant's bill stayed owed.
@@ -768,7 +768,7 @@ guard against a double void was not reached from the screen.
 
 ### 4.3.5 Responsiveness and Operational Performance
 
-*Measures Performance Efficiency (time behaviour and resource utilization).*
+*Measures Performance Efficiency (time behavior and resource utilization).*
 
 Performance was measured on 30 September 2026 on the live system, on a laptop in Google Chrome 154
 over the boarding house's Wi-Fi and on a phone. First loads were taken with the browser's cache
@@ -825,7 +825,7 @@ phone (Chapter 5, recommendation 5).
 > Table 11 when this chapter goes into the Word file. The measurements are in
 > `PRE_TESTING_AUDIT_2026-09-29.md`, with the device and time of each.
 
-Before the system was used by its tenants, the behaviour a real day of use would test was measured
+Before the system was used by its tenants, the behavior a real day of use would test was measured
 on the live system on 29 September 2026: what happens without a connection, on a weak one, when the
 application is installed, and when several people use it at once. The measurements were taken with
 Google Chrome 154 driven by an automated browser (Playwright) on an Acer Nitro ANV15-52 laptop
@@ -833,7 +833,7 @@ Google Chrome 154 driven by an automated browser (Playwright) on an Acer Nitro A
 (390 × 844 pixels). Every attempt to save data was blocked inside the browser, so the tests wrote
 nothing to the owner's records.
 
-**Table 11A.** Offline and Installation Behaviour (29 September 2026)
+**Table 11A.** Offline and Installation Behavior (29 September 2026)
 
 | Test | Result |
 | :--- | :--- |
@@ -967,7 +967,7 @@ afterwards.
 The simultaneous session ran with two tenants, not all three, and the owner; the tests that depend
 on several tenants posting at once (C-03, C-04, C-06) were therefore not performed. Table 11B covers
 simultaneous reading only, so simultaneous saving by several real users remains untested. On the two
-phones the offline behaviour matched Table 11A: both installed the application from the browser
+phones the offline behavior matched Table 11A: both installed the application from the browser
 (Chrome offered "Add to Home screen" rather than an installation prompt), opened it without a
 connection with the notice shown, kept typed text when a send failed, and showed no personal data after signing out; sending the kept text once the connection returned is confirmed
 by the activity record on one of the two phones. One result differed. On a
@@ -1202,8 +1202,8 @@ giving a reason.
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
-| Time behaviour | Longest time until a screen was usable, real devices | 3.05 s on a phone (tenant portal, first load); 2.30 s on a laptop (a year exported to Excel) | Table 11 |
-| Time behaviour | Time within which 95 per cent of requests were answered under load | 0.52 s (public pages); 0.80 s (the owner's data) | Table 11B |
+| Time behavior | Longest time until a screen was usable, real devices | 3.05 s on a phone (tenant portal, first load); 2.30 s on a laptop (a year exported to Excel) | Table 11 |
+| Time behavior | Time within which 95 per cent of requests were answered under load | 0.52 s (public pages); 0.80 s (the owner's data) | Table 11B |
 | Resource utilization | Code a visitor's browser downloads for the payments page | About 20 kB; the 194 kB payment library only when a payment starts | Table 23 |
 | Resource utilization | Script work on an emulated mid-range phone, the owner's Overview | 0.7 s | Section 4.3.5 |
 | Capacity | Failed requests with 12 simultaneous users, X = A / B | 0 / 1,085 = 0.00 | Table 11B |
@@ -1666,7 +1666,7 @@ followed by the fourteen comments of the technical evaluators who reviewed the s
 | Mobile review, 26 Sep 2026 | On phones, every tap flashed a grey box, short pages scrolled slightly, and the notification panel could end under the browser's toolbar | Tap highlight removed; pages and the panel sized to the visible screen height | Usability, Portability |
 | Check review, 28 Sep 2026 | Two checks disagreed on how many ended tenancies had no end date (2 and 1): the tenant list never sent end dates, and one real record had none | The list now sends end dates; the record was given its date (migration 059); both checks now fail on any new case | Reliability |
 | Team review, 28 Sep 2026 | The public FAQ offered online GCash payment while the gateway is still Adyen's test account | The FAQ now says online payments charge no real money yet and asks tenants to pay in person | Functional Suitability |
-| Pre-testing audit, 29 Sep 2026 | Every tenant account shared one password that the development team had used, so a tenant given it could have signed in as a neighbour | Each tenant given their own starting password, handed over in person, with a new password required at first sign-in; every earlier session ended | Security |
+| Pre-testing audit, 29 Sep 2026 | Every tenant account shared one password that the development team had used, so a tenant given it could have signed in as a neighbor | Each tenant given their own starting password, handed over in person, with a new password required at first sign-in; every earlier session ended | Security |
 | Lighthouse audit, 30 Sep 2026 | The public page jumped while it loaded: the footer showed on an empty page and was pushed down when the page arrived (layout shift 0.50; desktop performance score 76) | The page's space is held until it loads; layout shift 0, desktop performance score 95, measured on the live site | Performance Efficiency, Usability |
 | Pre-testing audit, 29 Sep 2026 | A tenant who forgot their password had no way back in, and the owner no way to help | The owner can reset a tenant's password from the tenant list; the tenant gets a one-time password and chooses their own at next sign-in | Usability, Security |
 | Pre-testing audit, 29 Sep 2026 | The window that makes a tenant set their own password did not say which password it wanted, and had no way out | It asks for the starting password by name and offers Sign out | Usability |

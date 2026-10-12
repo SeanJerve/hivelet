@@ -243,7 +243,7 @@ TOTAL**.
 1. **Monthly Expenses** > **Record expense**.
 2. The date, the invoice or supplier, amount, category, and the property **area** it was for.
 3. One expense for several areas: **Split across another area**. The parts must add up to the
-   expense; the total is worked out for you. **Choose the area** for each new part; each area can
+   expense; the total is worked out for you. **Choose an area** for each new part; each area can
    be given once, so two amounts for the same area go in as one.
 4. **Add another expense** records the next one without closing the form.
 
@@ -294,7 +294,7 @@ note if they gave one.
 
 ### 8. Inquiries
 
-Messages from people asking about a unit. Reply (**Save reply**), **Close inquiry** when settled, or
+Messages from people asking about a unit. Type a reply and press the arrow (**Send reply**), **Close inquiry** when settled, or
 **Move them in** to start a tenancy with the details already filled in. **Delete** (on any inquiry)
 asks **"Delete this inquiry?"** and then removes it and its conversation for good; it cannot be
 undone. **Filters** > **Status**
@@ -319,13 +319,13 @@ The system opens without a connection, with a thin bar at the top (**"No connect
 unavailable"**), and shows what each screen last loaded on this device: the Overview's figures, the tenants, both ledgers, repairs,
 inquiries and the notifications. Nothing can be recorded, moved or marked read until the connection
 returns, so **Record payment**, **Record expense**, **Move someone in**, the buttons in **Manage
-this repair** and **Log a repair**, and **Save reply** and **Close inquiry** are greyed out ("Needs
+this repair** and **Log a repair**, and **Send reply** and **Close inquiry** are greyed out ("Needs
 a connection"), and the Overview's actions are hidden; when it returns, every screen reloads by
 itself. An inquiry's conversation (the replies) is not saved for offline viewing: its first message
 is shown, with a note that the replies could not be loaded. These essential
 figures, names and notifications stay on your own device only, and **signing out removes them**.
 A screen you have not opened since signing in has nothing saved yet. If a save
-takes too long it stops after about 45 seconds and says it **cannot tell whether the save arrived**:
+takes too long it stops after about 45 seconds and says **"we cannot tell whether it was saved"**:
 look at the list before recording it again, so it is not recorded twice.
 
 ### 11. Looking after the records
