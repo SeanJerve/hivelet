@@ -76,6 +76,7 @@ here:
 
 | | |
 | :--- | :--- |
+| `START_HERE_LLOYD.md` | **On Lloyd's machine, read this first.** The owner's open questions and what only someone at the property can do |
 | `CONTINUE_HERE.md` | Where the project stands. Section 0.0 first |
 | `HANDOFF_TO_DESIGN.md` | **For the design account** (Kiel). What is decoration and what is load-bearing |
 | `HANDOFF_TO_QA.md` | **QA and systems analysis** (Eljohn). The rehearsal, what the suites do and do not prove, the open client decisions |

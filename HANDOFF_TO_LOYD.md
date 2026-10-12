@@ -1,5 +1,9 @@
 # Handoff — Loyd's machine, 2026-09-17
 
+> **Superseded for current work (12 Oct 2026): read [`START_HERE_LLOYD.md`](START_HERE_LLOYD.md) first.**
+> This file is background from 17 September. Its numbers have moved on: the latest migration is
+> 080 (next 081), and twenty suites run, not the counts below.
+
 **Written for the agent working on Loyd's side, and for Loyd.** Sean holds the Adyen keys. He
 stays the reviewer of record: nothing here is finished until he has checked it.
 

@@ -108,3 +108,6 @@ scripts/field-tests/shots/
 
 # Prompt logs for the AI-use disclosure: prompts can quote tenants, and the repo is public
 /ai-use-log/
+
+# The course guides (the professor's PDFs) stay on the machine that has them; the repo is public
+/docs/FINAL MANUSCRIPT/guides/
