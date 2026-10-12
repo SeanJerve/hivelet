@@ -36,7 +36,7 @@ export interface RecentAction {
 
 const ADMIN_ACTIONS = [
   'PAYMENT_RECORD', 'PAYMENT_VERIFY', 'PAYMENT_CORRECT',
-  'EXPENSE_CREATE', 'EXPENSE_UPDATE', 'EXPENSE_VOID',
+  'EXPENSE_CREATE', 'EXPENSE_UPDATE', 'EXPENSE_VOID', 'EXPENSE_CATEGORY_CREATE',
   'TENANT_CREATE', 'TENANT_UPDATE', 'TENANT_DEACTIVATE',
   'TICKET_CREATE', 'TICKET_STATUS_CHANGE', 'TICKET_DELETE', 'TICKET_MESSAGE_SEND',
   'INQUIRY_MESSAGE_SEND', 'INQUIRY_STATUS_CHANGE', 'INQUIRY_DELETE',
@@ -205,6 +205,9 @@ export async function recentActionsFor(profileId: string, role: ActorRole, limit
         return { text: `Edited an expense${peso(nv.total_expenses) ? ` of ${peso(nv.total_expenses)}` : ''}.`, link: '/admin/expenses' };
       case 'EXPENSE_VOID':
         return { text: `Voided an expense${peso(pv.total_expenses) ? ` of ${peso(pv.total_expenses)}` : ''}.`, link: '/admin/expenses' };
+      // Her own kind of expense (owner, 2026-10-12): named, so the list says which.
+      case 'EXPENSE_CATEGORY_CREATE':
+        return nv.name ? { text: `Added a kind of expense: ${nv.name}.`, link: '/admin/expenses' } : null;
       case 'TENANT_CREATE': {
         const name = nv.fullName ?? nv.full_name;
         const unit = unitCode(nv.roomNumber ?? nv.room_number);

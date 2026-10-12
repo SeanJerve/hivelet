@@ -32,7 +32,7 @@ Twenty-one hold the business; three are backups made during data corrections. Ap
 | | `room_assignments` | 37 | Tenancies: unit, tenant, start and end dates, anniversary date, deposit, occupants |
 | Money | `monthly_income_records` | 953 | The owner's income sheet, one row per receipt (Table 7A in Chapter 4) |
 | | `monthly_expense_entries`, `expense_property_allocations` | 1,262 / 1,327 | The expense sheet: one entry, split across areas |
-| | `fixed_expense_categories` | 13 | Her numbered categories (with 6a, 6b, 6c) |
+| | `fixed_expense_categories` | 13 | Her numbered categories (with 6a, 6b, 6c); since 2026-10-12 she can add her own after them (11, 12, ...) |
 | | `bills`, `payments` | 9 / 19 | Bills raised on demand; online and recorded payments with verification status |
 | | `system_settings` | small | Rates the owner can change (₱200 water per occupant) |
 | Requests | `maintenance_tickets`, `ticket_messages`, `ticket_attachments` | small | Repairs, notes, photos |
