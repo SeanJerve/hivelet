@@ -159,7 +159,7 @@ Based on the results of the study, the following conclusions were drawn:
 >   internal structure with no result in Chapter 4 behind it, and it reads as finishing a
 >   requirement.
 > - *SMS notifications*: no finding supports it; no tenant asked for it.
-> - *Keep the browser security policy enforced*: already done and graded A+ (4.4.8); a practice,
+> - *Keep the browser security policy enforced*: already done and graded A+ (4.4.4); a practice,
 >   not a recommendation.
 > - *Keep the in-person password reset*: recommends no change.
 > - *Sign in with Google for repeat enquirers*: a new feature with no finding behind it.
@@ -191,7 +191,7 @@ Based on the summary and conclusions of the study, the following are recommended
    money, which must then be refunded from the Adyen Customer Area; refunds were excluded from this
    study by its delimitation (Section 1.4). Before real money moves through the system, also keep the
    sign-in token in a cookie that no script on the page can read, and add a second sign-in factor for
-   the administrator's account, the two weaknesses Chapter 4 names (Section 4.4.8).
+   the administrator's account, the two weaknesses Chapter 4 names (Section 4.4.4).
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested by a machine on every change and not only once by a
    person. The automated suites of Section 4.3.1 read and check, but they do not write, and the
@@ -205,10 +205,10 @@ Based on the summary and conclusions of the study, the following are recommended
    4.3.5 and 4.3.6). Pre-rendering the public page, serving the two typefaces from the site itself, and
    reserving the space each figure will take would shorten and steady both.
 6. Strengthen the two characteristics rated lowest. **Maintainability** (4.00, the lowest; Chapter
-   4, Section 4.4.9): move the database work now written inside the request handlers, three calls in
+   4, Section 4.4.3): move the database work now written inside the request handlers, three calls in
    four, into service modules, one per kind of record, so that a rule about a payment or a tenancy
    is changed in one place, and have the result reviewed by more than one developer, since the
-   rating rests on one. **Usability** (4.12; Section 4.4.6): the owner rated learning the system
+   rating rests on one. **Usability** (4.12; Section 4.4.3): the owner rated learning the system
    without help 3, so the hand-over in stage 4 of the deployment plan (Table 25) should take her
    through each screen with the user manual (Appendix K) before she uses the system alone, and the
    first-time steps where tenants needed help, signing in and finding their unit and rent, should be
@@ -229,4 +229,4 @@ Based on the summary and conclusions of the study, the following are recommended
    and the two sub-characteristics no instrument here covered, user interface aesthetics and
    reusability (Chapter 4, Table 22A). A new instrument should be built on ISO/IEC 25010:2023, which
    adds Safety, since this study's 2011 instrument can only show where its results fall in the newer
-   model (Table 12C).
+   model (Chapter 4, Appendix M, Table M-21).

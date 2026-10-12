@@ -15,13 +15,8 @@ each characteristic") and cite the first and last.
 
 | Where | Now | Becomes |
 | :--- | :--- | :--- |
-| Ch 4, line 1065 (4.4 Evaluation of the System Based on IS) | Tables 14 to 21 | Tables 4-25, 4-27, 4-29, 4-31, 4-33, 4-35, 4-37, 4-39 |
-| Ch 4, line 1081 (4.4 Evaluation of the System Based on IS) | Tables 14 to 21 | Tables 4-25, 4-27, 4-29, 4-31, 4-33, 4-35, 4-37, 4-39 |
-| Ch 4, line 1163 (4.4.2 Interpretation of Scores) | Tables 14 to 21 | Tables 4-25, 4-27, 4-29, 4-31, 4-33, 4-35, 4-37, 4-39 |
-| Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and) | Tables 14A to 21A | Tables 4-26, 4-28, 4-30, 4-32, 4-34, 4-36, 4-38, 4-40 |
-| Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) | Tables 14A to 21A | Tables 4-26, 4-28, 4-30, 4-32, 4-34, 4-36, 4-38, 4-40 |
-| Ch 4, line 187 (4.2 Development of the Hivelet System) | Figures 4 to 9 | Figures 4-1 to 4-6 |
-| Ch 4, line 187 (4.2 Development of the Hivelet System) | Figures 10 to 14 | Figures 4-7 to 4-11 |
+| Ch 4, line 103 (4.2 Development of the Hivelet System) | Figures 5 to 9 | Figures 4-2 to 4-6 |
+| Ch 4, line 103 (4.2 Development of the Hivelet System) | Figures 10 to 14 | Figures 4-7 to 4-11 |
 
 ## Tables
 
@@ -30,56 +25,35 @@ each characteristic") and cite the first and last.
 | 1 | **3-1** | Software Requirements | Chapters 2 and 3 only |
 | 2 | **3-2** | Hardware Requirements | Chapters 2 and 3 only |
 | 3 | **3-3** | Mobile Testing Hardware Specifications | Chapters 2 and 3 only |
-| 4 | **3-4** | Likert Scale | Ch 4, line 1146 (4.4.2 Interpretation of Scores) |
+| 4 | **3-4** | Likert Scale | Ch 4, line 652 (4.4.2 Interpretation of Scores) |
 | 4A | **3-5** | Interpretation of Mean Scores (FIXES H8) | Chapters 2 and 3 only |
-| 4B | **3-6** | Survey Items and Tests Assigned to the ISO/IEC 25010:2011 Sub-characteristics (FIXES H8) | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1079 (4.4 Evaluation of the System Based on IS) |
-| 5 | **4-1** | Existing Practices and Identified Problems | Ch 4, line 100 (4.1.1 Existing Practices and Identified ); Ch 4, line 113 (4.1.1 Existing Practices and Identified ) |
-| 6 | **4-2** | Identified Gaps, System Requirements and Implementing Modules | Ch 4, line 152 (4.1.2 System Requirements); Ch 5, line 103 (5.2 Conclusions) |
-| 6A | **4-3** | The Three Iterations, Phase by Phase | Ch 4, line 199 (4.2.1 System Architecture and Technology) |
-| 7 | **4-4** | Technology Stack of the Developed System | Ch 4, line 219 (4.2.1 System Architecture and Technology); Ch 4, line 1803 (4.5 Deployment Plan and Strategies) |
-| 7A | **4-5** | Data Dictionary Extract: Monthly Income Records | Ch 4, line 286 (4.2.1 System Architecture and Technology) |
-| 7B | **4-6** | Business Rules for Computed Figures, with a Worked Example | Ch 4, line 386 (4.2.4 Financial Tracking and Payment Rec) |
-| 7C | **4-7** | Role and Privilege Matrix | Ch 4, line 263 (4.2.1 System Architecture and Technology); Ch 4, line 456 (4.2.6 Role-Based Access Control) |
-| 7D | **4-8** | Test Activities and the ISO/IEC 25010:2011 Characteristics They Measured | Ch 4, line 514 (4.3 Pilot Testing of the Developed Syste); Ch 4, line 1079 (4.4 Evaluation of the System Based on IS); Ch 5, line 58 (5.1 Summary) |
-| 8 | **4-9** | Results of Automated Verification (29 September 2026) | Ch 4, line 539 (4.3.1 Automated Verification); Ch 4, line 619 (4.3.2 Use in the Live Environment); Ch 4, line 1037 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1219 (4.4.3 Functional Suitability); Ch 4, line 1306 (4.4.5 Compatibility); Ch 4, line 1307 (4.4.5 Compatibility); Ch 4, line 1471 (4.4.8 Security); Ch 4, line 1577 (4.4.9 Maintainability); Ch 4, line 1625 (4.4.10 Portability) |
-| 9 | **4-10** | Results of the Screen-versus-Database Audit (26 and 29 September 2026) | Ch 4, line 646 (4.3.3 Screen-versus-Database Audit); Ch 4, line 1221 (4.4.3 Functional Suitability); Ch 4, line 1780 (4.4.11 Summary of Evaluation Results and) |
-| 10 | **4-11** | Results of the Functional Walkthrough | Ch 4, line 710 (4.3.4 Functional Walkthrough Testing); Ch 4, line 961 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1038 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1220 (4.4.3 Functional Suitability); Ch 4, line 1307 (4.4.5 Compatibility); Ch 4, line 1355 (4.4.6 Usability); Ch 4, line 1425 (4.4.7 Reliability); Ch 4, line 1468 (4.4.8 Security); Ch 4, line 1701 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1781 (4.4.11 Summary of Evaluation Results and) |
-| 11 | **4-12** | Page Load and Response Times (30 September 2026, seconds) | Ch 4, line 782 (4.3.5 Responsiveness and Operational Per); Ch 4, line 909 (4.3.6 Offline Use, Installation, Weak Co); Ch 4, line 1262 (4.4.4 Performance Efficiency); Ch 4, line 1801 (4.5 Deployment Plan and Strategies); Ch 5, line 125 (5.2 Conclusions) |
-| 11A | **4-13** | Offline and Installation Behavior (29 September 2026) | Ch 4, line 844 (4.3.6 Offline Use, Installation, Weak Co); Ch 4, line 963 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1020 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1424 (4.4.7 Reliability); Ch 4, line 1624 (4.4.10 Portability) |
-| 11B | **4-14** | Simulated Simultaneous Users, Read Operations (29 September 2026) | Ch 4, line 845 (4.3.6 Offline Use, Installation, Weak Co); Ch 4, line 1018 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1263 (4.4.4 Performance Efficiency); Ch 4, line 1266 (4.4.4 Performance Efficiency); Ch 4, line 1267 (4.4.4 Performance Efficiency) |
-| 11F | **4-15** | Simultaneous Saves (19 and 24 September 2026) | Ch 4, line 916 (4.3.6 Offline Use, Installation, Weak Co); Ch 5, line 199 (5.3 Recommendations) |
-| 11C | **4-16** | Tenant Task Results (30 September 2026) | Ch 4, line 970 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1039 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1222 (4.4.3 Functional Suitability); Ch 4, line 1352 (4.4.6 Usability); Ch 4, line 1353 (4.4.6 Usability); Ch 4, line 1354 (4.4.6 Usability); Ch 4, line 1700 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1702 (4.4.11 Summary of Evaluation Results and) |
-| 11D | **4-17** | Simultaneous Use by the Owner and Tenants (30 September 2026, two tenants) | Ch 4, line 848 (4.3.6 Offline Use, Installation, Weak Co); Ch 4, line 970 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1040 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1468 (4.4.8 Security) |
-| 11E | **4-18** | Summary of Test Execution by Level | Ch 4, line 1030 (4.3.7 User Acceptance Testing with the O); Ch 5, line 124 (5.2 Conclusions) |
-| 12B | **4-19** | The Evaluation Process, Following ISO/IEC 25040 | Ch 4, line 1057 (4.4 Evaluation of the System Based on IS) |
-| 12C | **4-20** | The 2011 Characteristics and Their Place in ISO/IEC 25010:2023 | Ch 4, line 1088 (4.4 Evaluation of the System Based on IS); Ch 5, line 231 (5.3 Recommendations) |
-| 12 | **4-21** | Distribution of Respondents | Ch 4, line 1107 (4.4.1 Respondents) |
-| 12A | **4-22** | Instrument Administration and Response Rate | Ch 4, line 1126 (4.4.1 Respondents) |
-| 13 | **4-23** | Interpretation of Mean Scores | Ch 4, line 1079 (4.4 Evaluation of the System Based on IS); Ch 4, line 1146 (4.4.2 Interpretation of Scores); Ch 4, line 1180 (4.4.2 Interpretation of Scores); Ch 5, line 87 (5.1 Summary); Ch 5, line 139 (5.2 Conclusions) |
-| 13A | **4-24** | Worked Computation of a Weighted Mean | Ch 4, line 1163 (4.4.2 Interpretation of Scores) |
-| 14 | **4-25** | Evaluation Results for Functional Suitability | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1081 (4.4 Evaluation of the System Based on IS); Ch 4, line 1163 (4.4.2 Interpretation of Scores); Ch 4, line 1184 (4.4.3 Functional Suitability) |
-| 14A | **4-26** | Measured Evidence for Functional Suitability | Ch 4, line 1184 (4.4.3 Functional Suitability); Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) |
-| 15 | **4-27** | Evaluation Results for Performance Efficiency | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1081 (4.4 Evaluation of the System Based on IS); Ch 4, line 1163 (4.4.2 Interpretation of Scores); Ch 4, line 1236 (4.4.4 Performance Efficiency) |
-| 15A | **4-28** | Measured Evidence for Performance Efficiency | Ch 4, line 1236 (4.4.4 Performance Efficiency); Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) |
-| 16 | **4-29** | Evaluation Results for Compatibility | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1081 (4.4 Evaluation of the System Based on IS); Ch 4, line 1163 (4.4.2 Interpretation of Scores); Ch 4, line 1279 (4.4.5 Compatibility) |
-| 16A | **4-30** | Measured Evidence for Compatibility | Ch 4, line 1279 (4.4.5 Compatibility); Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) |
-| 17 | **4-31** | Evaluation Results for Usability | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1081 (4.4 Evaluation of the System Based on IS); Ch 4, line 1163 (4.4.2 Interpretation of Scores); Ch 4, line 1318 (4.4.6 Usability) |
-| 17A | **4-32** | Measured Evidence for Usability | Ch 4, line 1318 (4.4.6 Usability); Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) |
-| 18 | **4-33** | Evaluation Results for Reliability | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1081 (4.4 Evaluation of the System Based on IS); Ch 4, line 1163 (4.4.2 Interpretation of Scores); Ch 4, line 1394 (4.4.7 Reliability) |
-| 18A | **4-34** | Measured Evidence for Reliability | Ch 4, line 1394 (4.4.7 Reliability); Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) |
-| 19 | **4-35** | Evaluation Results for Security | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1081 (4.4 Evaluation of the System Based on IS); Ch 4, line 1163 (4.4.2 Interpretation of Scores); Ch 4, line 1445 (4.4.8 Security) |
-| 19A | **4-36** | Measured Evidence for Security | Ch 4, line 1445 (4.4.8 Security); Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) |
-| 20 | **4-37** | Evaluation Results for Maintainability | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1081 (4.4 Evaluation of the System Based on IS); Ch 4, line 1163 (4.4.2 Interpretation of Scores); Ch 4, line 1554 (4.4.9 Maintainability) |
-| 20A | **4-38** | Measured Evidence for Maintainability | Ch 4, line 1554 (4.4.9 Maintainability); Ch 4, line 1588 (4.4.9 Maintainability); Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) |
-| 21 | **4-39** | Evaluation Results for Portability | Ch 4, line 1065 (4.4 Evaluation of the System Based on IS); Ch 4, line 1081 (4.4 Evaluation of the System Based on IS); Ch 4, line 1163 (4.4.2 Interpretation of Scores); Ch 4, line 1595 (4.4.10 Portability) |
-| 21A | **4-40** | Measured Evidence for Portability | Ch 4, line 1595 (4.4.10 Portability); Ch 4, line 1660 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and) |
-| 22 | **4-41** | Summary of Evaluation Results | Ch 4, line 1082 (4.4 Evaluation of the System Based on IS); Ch 4, line 1666 (4.4.11 Summary of Evaluation Results and); Ch 5, line 139 (5.2 Conclusions) |
-| 22A | **4-42** | Measured and Rated Evidence by Characteristic | Ch 4, line 1082 (4.4 Evaluation of the System Based on IS); Ch 4, line 1659 (4.4.11 Summary of Evaluation Results and); Ch 5, line 141 (5.2 Conclusions); Ch 5, line 229 (5.3 Recommendations) |
-| 22B | **4-43** | Quality in Use (30 September 2026) | Ch 4, line 1694 (4.4.11 Summary of Evaluation Results and) |
-| 23 | **4-44** | Optimizations Made in Response to Evaluation | Ch 4, line 211 (4.2.1 System Architecture and Technology); Ch 4, line 447 (4.2.6 Role-Based Access Control); Ch 4, line 766 (4.3.4 Functional Walkthrough Testing); Ch 4, line 887 (4.3.6 Offline Use, Installation, Weak Co); Ch 4, line 1026 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1082 (4.4 Evaluation of the System Based on IS); Ch 4, line 1123 (4.4.1 Respondents); Ch 4, line 1230 (4.4.3 Functional Suitability); Ch 4, line 1264 (4.4.4 Performance Efficiency); Ch 4, line 1367 (4.4.6 Usability); Ch 4, line 1523 (4.4.8 Security); Ch 4, line 1707 (4.4.11 Summary of Evaluation Results and); Ch 5, line 91 (5.1 Summary); Ch 5, line 137 (5.2 Conclusions) |
-| 23A | **4-45** | Defects Found, by Activity, Severity and Disposition | Ch 4, line 1044 (4.3.7 User Acceptance Testing with the O); Ch 4, line 1422 (4.4.7 Reliability); Ch 4, line 1425 (4.4.7 Reliability); Ch 4, line 1485 (4.4.8 Security); Ch 4, line 1770 (4.4.11 Summary of Evaluation Results and); Ch 5, line 124 (5.2 Conclusions) |
-| 24 | **4-46** | Software and Hardware Requirements for Deployment | Ch 4, line 1795 (4.5 Deployment Plan and Strategies) |
-| 25 | **4-47** | Deployment Plan and Strategies | Ch 4, line 210 (4.2.1 System Architecture and Technology); Ch 4, line 1625 (4.4.10 Portability); Ch 4, line 1627 (4.4.10 Portability); Ch 4, line 1764 (4.4.11 Summary of Evaluation Results and); Ch 4, line 1795 (4.5 Deployment Plan and Strategies); Ch 5, line 178 (5.3 Recommendations); Ch 5, line 179 (5.3 Recommendations); Ch 5, line 211 (5.3 Recommendations) |
+| 4B | **3-6** | Survey Items and Tests Assigned to the ISO/IEC 25010:2011 Sub-characteristics (FIXES H8) | Ch 4, line 600 (4.4 Evaluation of the System Based on IS); Ch 4, line 609 (4.4 Evaluation of the System Based on IS) |
+| 5 | **4-1** | Existing practices and identified problems | Ch 4, line 39 (4.1.1 Existing Practices and Identified ); Ch 4, line 52 (4.1.1 Existing Practices and Identified ) |
+| 6 | **4-2** | Identified gaps, system requirements and implementing modules | Ch 4, line 72 (4.1.2 System Requirements); Ch 5, line 103 (5.2 Conclusions) |
+| 7 | **4-3** | Technology stack of the developed system | Ch 4, line 117 (4.2.1 System Architecture and Technology); Ch 4, line 830 (4.5 Deployment Plan and Strategies) |
+| 7A | **4-4** | Data dictionary extract: monthly income records | Ch 4, line 174 (4.2.1 System Architecture and Technology) |
+| 7B | **4-5** | Business rules for computed figures, with a worked example | Ch 4, line 260 (4.2.4 Financial Tracking and Payment Rec) |
+| 7C | **4-6** | Role and privilege matrix | Ch 4, line 161 (4.2.1 System Architecture and Technology); Ch 4, line 298 (4.2.6 Role-Based Access Control) |
+| 7D | **4-7** | Test activities and the ISO/IEC 25010:2011 characteristics they measured | Ch 4, line 348 (4.3 Pilot Testing of the Developed Syste); Ch 4, line 609 (4.4 Evaluation of the System Based on IS); Ch 5, line 58 (5.1 Summary) |
+| 8 | **4-8** | Results of automated verification (29 September 2026) | Ch 4, line 367 (4.3.1 Automated Verification); Ch 4, line 580 (4.3.7 User Acceptance Testing with the O) |
+| 9 | **4-9** | Results of the screen-versus-database audit (26 and 29 September 2026) | Ch 4, line 410 (4.3.3 Screen-versus-Database Audit); Ch 4, line 805 (4.4.6 Optimization in Response to the Ev) |
+| 11 | **4-10** | Page load and response times (30 September 2026, seconds) | Ch 4, line 452 (4.3.5 Responsiveness and Operational Per); Ch 4, line 828 (4.5 Deployment Plan and Strategies); Ch 5, line 125 (5.2 Conclusions) |
+| 11A | **4-11** | Offline and installation behavior (29 September 2026) | Ch 4, line 478 (4.3.6 Offline Use, Installation, Weak Co); Ch 4, line 571 (4.3.7 User Acceptance Testing with the O) |
+| 11B | **4-12** | Simulated simultaneous users, read operations (29 September 2026) | Ch 4, line 479 (4.3.6 Offline Use, Installation, Weak Co) |
+| 11F | **4-13** | Simultaneous saves (19 and 24 September 2026) | Ch 4, line 517 (4.3.6 Offline Use, Installation, Weak Co) |
+| 11C | **4-14** | Tenant task results (30 September 2026) | Ch 4, line 543 (4.3.7 User Acceptance Testing with the O); Ch 4, line 582 (4.3.7 User Acceptance Testing with the O) |
+| 11E | **4-15** | Summary of test execution by level | Ch 4, line 574 (4.3.7 User Acceptance Testing with the O); Ch 5, line 124 (5.2 Conclusions) |
+| 12B | **4-16** | The evaluation process, following ISO/IEC 25040 | Ch 4, line 596 (4.4 Evaluation of the System Based on IS) |
+| 12 | **4-17** | Distribution of respondents | Ch 4, line 621 (4.4.1 Respondents) |
+| 12A | **4-18** | Instrument administration and response rate | Ch 4, line 621 (4.4.1 Respondents) |
+| 13 | **4-19** | Interpretation of mean scores | Ch 4, line 609 (4.4 Evaluation of the System Based on IS); Ch 4, line 652 (4.4.2 Interpretation of Scores); Ch 4, line 680 (4.4.2 Interpretation of Scores); Ch 5, line 87 (5.1 Summary); Ch 5, line 139 (5.2 Conclusions) |
+| 13A | **4-20** | Worked computation of a weighted mean | Ch 4, line 656 (4.4.2 Interpretation of Scores) |
+| 22 | **4-21** | Summary of evaluation results | Ch 4, line 612 (4.4 Evaluation of the System Based on IS); Ch 4, line 684 (4.4.3 Results by Characteristic); Ch 4, line 754 (4.4.5 Measured and Rated Evidence Togeth); Ch 5, line 139 (5.2 Conclusions) |
+| 22A | **4-22** | Measured and rated evidence by characteristic | Ch 4, line 612 (4.4 Evaluation of the System Based on IS); Ch 4, line 747 (4.4.5 Measured and Rated Evidence Togeth); Ch 5, line 141 (5.2 Conclusions); Ch 5, line 230 (5.3 Recommendations) |
+| 23 | **4-23** | Optimizations made in response to evaluation, by source | Ch 4, line 612 (4.4 Evaluation of the System Based on IS); Ch 4, line 776 (4.4.6 Optimization in Response to the Ev); Ch 5, line 91 (5.1 Summary); Ch 5, line 137 (5.2 Conclusions) |
+| 23A | **4-24** | Defects found, by activity, severity and disposition | Ch 4, line 444 (4.3.4 Functional Walkthrough Testing); Ch 4, line 572 (4.3.7 User Acceptance Testing with the O); Ch 4, line 588 (4.3.7 User Acceptance Testing with the O); Ch 4, line 796 (4.4.6 Optimization in Response to the Ev); Ch 5, line 124 (5.2 Conclusions) |
+| 24 | **4-25** | Software and hardware requirements for deployment | Ch 4, line 822 (4.5 Deployment Plan and Strategies) |
+| 25 | **4-26** | Deployment plan and strategies | Ch 4, line 822 (4.5 Deployment Plan and Strategies); Ch 5, line 178 (5.3 Recommendations); Ch 5, line 179 (5.3 Recommendations); Ch 5, line 212 (5.3 Recommendations) |
 
 ## Figures
 
@@ -88,14 +62,14 @@ each characteristic") and cite the first and last.
 | 1 | **2-1** | Management Information System (MIS) framework by Laudon and Laudon | Chapters 2 and 3 only |
 | 2 | **2-2** | Conceptual Framework | Chapters 2 and 3 only |
 | 3 | **3-1** | Agile Software Development Life Cycle | Chapters 2 and 3 only |
-| 4 | **4-1** | The Owner's Process Before the System | Ch 4, line 112 (4.1.1 Existing Practices and Identified ); Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 415 (4.2.5 Maintenance Ticketing and Notifica) |
-| 5 | **4-2** | System Architecture | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 235 (4.2.1 System Architecture and Technology) |
-| 6 | **4-3** | Context Diagram | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 247 (4.2.1 System Architecture and Technology) |
-| 7 | **4-4** | Level 1 Data Flow Diagram | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 248 (4.2.1 System Architecture and Technology); Ch 4, line 250 (4.2.1 System Architecture and Technology) |
-| 8 | **4-5** | Use Case Diagram | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 262 (4.2.1 System Architecture and Technology) |
-| 9 | **4-6** | Entity-Relationship Diagram | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 270 (4.2.1 System Architecture and Technology) |
-| 10 | **4-7** | Room and Rate Directory | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 188 (4.2 Development of the Hivelet System); Ch 4, line 189 (4.2 Development of the Hivelet System) |
-| 11 | **4-8** | Public Unit Catalogue (top) and Enquiry Form (bottom) | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 188 (4.2 Development of the Hivelet System) |
-| 12 | **4-9** | The Monthly Income Ledger | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 189 (4.2 Development of the Hivelet System) |
-| 13 | **4-10** | Maintenance Requests Board | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 189 (4.2 Development of the Hivelet System) |
-| 14 | **4-11** | The Tenant Portal on a Mobile Phone | Ch 4, line 187 (4.2 Development of the Hivelet System); Ch 4, line 189 (4.2 Development of the Hivelet System) |
+| 4 | **4-1** | The owner's process before the system | Ch 4, line 51 (4.1.1 Existing Practices and Identified ); Ch 4, line 286 (4.2.5 Maintenance Ticketing and Notifica) |
+| 5 | **4-2** | System architecture | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 131 (4.2.1 System Architecture and Technology) |
+| 6 | **4-3** | Context diagram | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 144 (4.2.1 System Architecture and Technology) |
+| 7 | **4-4** | Level 1 data flow diagram | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 145 (4.2.1 System Architecture and Technology); Ch 4, line 149 (4.2.1 System Architecture and Technology) |
+| 8 | **4-5** | Use case diagram | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 160 (4.2.1 System Architecture and Technology) |
+| 9 | **4-6** | Entity-relationship diagram | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 167 (4.2.1 System Architecture and Technology) |
+| 10 | **4-7** | Room and rate directory | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 104 (4.2 Development of the Hivelet System); Ch 4, line 105 (4.2 Development of the Hivelet System); Ch 4, line 212 (4.2.2 Tenant and Room Management Module) |
+| 11 | **4-8** | Public unit catalogue (top) and inquiry form (bottom) | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 104 (4.2 Development of the Hivelet System); Ch 4, line 225 (4.2.3 Booking and Reservation Management) |
+| 12 | **4-9** | The monthly income ledger | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 105 (4.2 Development of the Hivelet System); Ch 4, line 241 (4.2.4 Financial Tracking and Payment Rec) |
+| 13 | **4-10** | Maintenance requests board | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 105 (4.2 Development of the Hivelet System); Ch 4, line 278 (4.2.5 Maintenance Ticketing and Notifica) |
+| 14 | **4-11** | The tenant portal on a mobile phone | Ch 4, line 103 (4.2 Development of the Hivelet System); Ch 4, line 105 (4.2 Development of the Hivelet System); Ch 4, line 325 (4.2.7 Progressive Web Application Implem) |

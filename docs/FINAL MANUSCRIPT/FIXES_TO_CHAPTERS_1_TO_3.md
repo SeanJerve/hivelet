@@ -305,7 +305,7 @@ business keeps the name Fe Galang Da Silva Boarding House. Wherever H2 says "the
 administrator", say "the administrator, who manages the boarding house for the owner", and name
 Michelle as the administrator if the paper names participants at all.*
 
-**H5. Two sources Chapter 4 now relies on (added 2026-09-30).** The course's Chapter 4 guide allows
+**H5. Two sources Chapter 4 now relies on (added 2026-09-30). NO LONGER NEEDED (12 Oct 2026):** Chapter 4 was cut to the course guide and no longer cites the W3C or OWASP; skip this item. The course's Chapter 4 guide allows
 Chapter 4 to cite only what Chapter 2 or 3 already cites. §4.4.8 describes the inquiry link as a
 *capability URL* and compares its secret with OWASP's minimum. Add both sources before §4.4.8 cites
 them, or drop the two names from §4.4.8. *Add to §3.2.2 (system design), after the paragraph on

@@ -40,7 +40,7 @@ Ordered so that each step makes the next one safer.
 | :--- | :--- | :--- | :--- |
 | 1 | **Service modules**: move the database work out of the route handlers (154 of 204 calls), one module per kind of record; split the 5,120-line `admin.ts` | Lowest-rated characteristic, Maintainability (Ch. 5, rec. 6) | Large; do it behind the existing check suites, one router at a time |
 | 2 | **Automated browser tests** that sign in and run the 26 walkthrough steps against a copy of the data | Ch. 5, rec. 4 | Medium; makes step 1 safe |
-| 3 | **Sign-in token in an httpOnly cookie**, and a **second factor** for the administrator | Ch. 4 §4.4.8; Ch. 5, rec. 3 | Medium; same-origin, so SameSite cookies plus the existing origin check |
+| 3 | **Sign-in token in an httpOnly cookie**, and a **second factor** for the administrator | Ch. 4 §4.4.4; Ch. 5, rec. 3 | Medium; same-origin, so SameSite cookies plus the existing origin check |
 | 4 | **Adyen to live**, with refunds of rejected GCash payments from inside the system | Ch. 5, rec. 3; B-24 | Medium; needs the live merchant account |
 | 5 | **Faster first load on phones**: pre-render the public page, self-host the two fonts, reserve the space each figure takes | Ch. 5, rec. 5 | Small to medium |
 | 6 | **Tenant sees their deposit** | A tenant's survey comment (Table 23) | Small |

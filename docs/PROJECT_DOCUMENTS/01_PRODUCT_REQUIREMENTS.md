@@ -120,4 +120,4 @@ interface only, 3 not as worded (`docs/claude_pipeline/outputs/PHASE1_TRACEABILI
 
 From Chapter 4: 82 of 83 tests executed passed (98.8%) with no critical defect; three tenants
 completed all 34 task attempts, 31 without help; six respondents rated the system 4.53, Very High
-Quality, on ISO/IEC 25010:2011. Section 4.4.11 of the manuscript has the full evaluation.
+Quality, on ISO/IEC 25010:2011. Section 4.4.6 of the manuscript has the full evaluation.

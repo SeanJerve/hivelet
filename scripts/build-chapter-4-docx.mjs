@@ -190,7 +190,9 @@ function createHeading3(text) {
 }
 
 function createTableCaption(text) {
+  // Kept with the table under it, so a caption never ends a page alone.
   return new Paragraph({
+    keepNext: true,
     alignment: AlignmentType.LEFT,
     spacing: { before: 360, after: 120, line: LINE_SPACING_DOUBLE, lineRule: LineRuleType.AUTO },
     children: parseInlineRuns(text, BODY_FONT_SIZE, true),
@@ -340,8 +342,9 @@ function pngSize(buf) {
 
 /**
  * A figure: a markdown line `![alt](figures/file.png)`, relative to the chapter's folder.
- * Fitted within the printable width (6 in, 576 px at 96 per inch) and 6.5 in of height, so a
- * phone figure still leaves its caption room on the page; kept with the caption below it.
+ * Fitted within the printable width (6 in, 576 px at 96 per inch) and 8.5 in of height (below).
+ * The caption is above it and keeps itself with the image, so the image is not kept with whatever
+ * paragraph follows.
  * A missing file stops the build rather than leaving a silent gap in the chapter.
  */
 function createFigureImage(relPath) {
@@ -350,10 +353,11 @@ function createFigureImage(relPath) {
   const { width, height } = pngSize(data);
   // 6 in wide at most, and 8.5 in tall, so a full-page diagram (the ERD) keeps a readable size
   // with its caption on the same page.
-  const scale = Math.min(576 / width, 816 / height);
+  // A phone screenshot is held to 6.5 in, so it does not take a page to show one screen (12 Oct).
+  const maxHeight = /-phone\.png$/.test(relPath) ? 624 : 816;
+  const scale = Math.min(576 / width, maxHeight / height);
   return new Paragraph({
     alignment: AlignmentType.CENTER,
-    keepNext: true,
     spacing: { before: 240, after: 120 },
     children: [
       new ImageRun({
@@ -382,9 +386,11 @@ function convertMarkdownToDocxElements(mdContent) {
         if (/^\*\*Table\s+\d+[A-Z]?\.\*\*/i.test(text)) {
           elements.push(createTableCaption(text));
         } else if (/^\*\([^)]+\)\*$/i.test(text) || /^\*Figure\s+\d+[a-z]?\./i.test(text)) {
-          // Figure placeholder
+          // A figure caption. Captions sit above the exhibit (course guide, Part 8.1, from 12 Oct
+          // 2026), so the caption is kept with the image below it rather than the other way round.
           elements.push(
             new Paragraph({
+              keepNext: true,
               alignment: AlignmentType.CENTER,
               spacing: { before: 240, after: 240, line: LINE_SPACING_DOUBLE, lineRule: LineRuleType.AUTO },
               children: parseInlineRuns(text, BODY_FONT_SIZE),
