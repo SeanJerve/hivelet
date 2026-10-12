@@ -1624,9 +1624,12 @@ html:has(> body[style*='overflow: hidden']) {
    * pointer; press feedback above is what a touch device gets instead, and it
    * is the better signal anyway.
    */
+  /* `.icon-btn` is not in this list (Sean, 12 Oct: the go-to arrow showed a circle when tapped).
+     Its hover is already gated to (hover: hover), so there was nothing to undo, and `inherit`
+     gave its transparent border the parent's border colour, the ink: a tapped arrow stayed
+     "hovered" and drew a ring. */
   @media (hover: none) {
     .pill-btn:hover:not(:disabled),
-    .icon-btn:hover:not(:disabled),
     .chip:hover:not(:disabled),
     .pill-btn-quiet:hover:not(:disabled) {
       background-color: inherit;

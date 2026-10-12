@@ -1135,20 +1135,35 @@ const isDownloadOpen = ref(false);
           (Sean, 6 Oct 2026: on the eyebrow line above the button the two read as
           one stack, "not positioned and oriented right"). From 640px: Download
           then the button, the primary last at the right edge as on the Overview.
-          On a phone the button leads at the left and Download takes the right
-          edge. It still opens the month / year / everything dialog; the year and
+          On a phone Download moves up to the "Admin" line, at its right, where the
+          Overview keeps its year (Sean, 12 Oct), and the button stands alone. It
+          still opens the month / year / everything dialog; the year and
           the format are in its accessible name and tooltip.
         -->
-        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <div class="flex items-center justify-between gap-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+          <!-- The phone's Download. `-my-1` keeps its py-1 hit area from pushing the title down. -->
+          <button
+            type="button"
+            class="press relative -my-1 inline-flex sm:hidden shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+            aria-haspopup="dialog"
+            :aria-label="`Download ${exportYear} for Excel`"
+            :title="`Download ${exportYear} for Excel`"
+            @click="isDownloadOpen = true"
+          >
+            <span>Download</span>
+            <FileSpreadsheet class="size-4" aria-hidden="true" />
+          </button>
+        </div>
         <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <h1 class="text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
             Monthly Income
           </h1>
 
-          <div class="flex flex-row-reverse items-center justify-between gap-5 sm:flex-row sm:justify-end">
+          <div class="flex items-center gap-5 sm:justify-end">
             <button
               type="button"
-              class="press relative inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+              class="press relative hidden sm:inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
               aria-haspopup="dialog"
               :aria-label="`Download ${exportYear} for Excel`"
               :title="`Download ${exportYear} for Excel`"

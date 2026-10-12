@@ -45,7 +45,7 @@ import {
   stopNotificationsHeartbeat
 } from '@/lib/notificationsStore';
 import NotificationPopover from './NotificationPopover.vue';
-import { Menu, LogOut, LogIn, User, Bell, ChevronDown, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
+import { Menu, LogOut, LogIn, User, Bell, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { realEmail } from '@/lib/contactDetails';
 import ThemeChoice from '@/components/ui/ThemeChoice.vue';
@@ -476,11 +476,13 @@ onUnmounted(() => {
             Both boxes are now the 44px of their button, centred in the same
             64px row, and both menus hang 12px below them.
           -->
+          <!-- The initials alone, no chevron beside them (Sean, 12 Oct: "we all know clicking it
+               would do something"). The accessible name still says it opens the account menu. -->
           <div ref="profileMenu" class="ws-focus relative" @focusout="onProfileFocusOut">
             <button
               data-account-trigger
               @click="isProfilePopoverOpen = !isProfilePopoverOpen"
-              class="group press flex cursor-pointer items-center gap-1.5 rounded-full p-1"
+              class="group press flex cursor-pointer items-center rounded-full p-1"
               :class="isLandingPage ? 'hover:bg-white/10' : 'hover:bg-tile/80'"
               :aria-label="`Account menu for ${isTenant ? currentUser.fullName : 'the administrator'}`"
               :aria-expanded="isProfilePopoverOpen"
@@ -492,14 +494,6 @@ onUnmounted(() => {
               >
                 {{ userInitials }}
               </span>
-              <ChevronDown
-                :class="[
-                  'size-3.5 transition-transform duration-200 ease-[var(--ease-out)]',
-                  isLandingPage ? 'text-white/70' : 'text-ink-soft',
-                  isProfilePopoverOpen && 'rotate-180'
-                ]"
-                aria-hidden="true"
-              />
             </button>
 
             <!--

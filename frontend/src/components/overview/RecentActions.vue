@@ -98,17 +98,16 @@ function when(iso: string): string {
   <!-- Its place is held while loading, so the page does not jump when it arrives. -->
   <!-- Left-aligned, reading on from the greeting above it. Text to be seen, not a link
        (Sean, 6 Oct: "just make it seen"). -->
-  <div v-if="variant === 'line' && (latest || loading)" class="min-h-10 min-w-0">
-    <!-- "Recently" with the date and time at the far right; the action and what it was about
-         under it (Sean, 6 Oct: the one-line form was crowded). -->
+  <div v-if="variant === 'line' && (latest || loading)" class="min-h-[3.75rem] min-w-0">
+    <!-- "Recently", the action and what it was about under it (Sean, 6 Oct: the one-line form
+         was crowded), and the date and time under that, at the left (Sean, 12 Oct: not out at
+         the right). The time is 12px, the smallest size the workspace uses. -->
     <template v-if="latest">
-      <p class="flex items-baseline justify-between gap-4 text-sm text-ink-faint">
-        <span>Recently</span>
-        <time :datetime="latest.at" class="shrink-0 text-xs tabular">{{ stamp(latest.at) }}</time>
-      </p>
+      <p class="text-sm text-ink-faint">Recently</p>
       <p class="truncate text-sm">
         <span class="font-medium text-ink-soft">{{ latest.action }}</span><template v-if="latest.about">{{ ' ' }}<span class="text-ink-faint">{{ latest.about }}</span></template>
       </p>
+      <time :datetime="latest.at" class="block text-xs tabular text-ink-faint">{{ stamp(latest.at) }}</time>
     </template>
   </div>
 
