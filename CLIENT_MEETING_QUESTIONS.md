@@ -1,5 +1,11 @@
 # Everything we need from Mrs. Fe Galang Da Silva — one sitting
 
+> **ANSWERED 2026-10-12.** Every question still open below was answered through Lloyd: see
+> [`CLIENT_ANSWERS_2026-10-12.md`](CLIENT_ANSWERS_2026-10-12.md) for each answer and what it changed
+> (migration 081 for the 2f-iii headcounts; the owner can add expense kinds; the rest confirm what
+> the system already does). The only item still waiting is 2b, her August and September records.
+> The sheet below is kept as it was asked.
+
 **Prepared 2026-09-17** for the client meeting. Hivelet, Group 4, IT 124 Capstone 2.
 
 Every item below was found by checking her **actual records** — 937 income rows, 1,262 expense

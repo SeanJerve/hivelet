@@ -33,7 +33,25 @@ thing did not work" is not.
 
 ## Open
 
-### B-104 — the application's database role can TRUNCATE the audit trail; 080 revokes it (WRITTEN, NOT APPLIED) · **OPEN: Sean, 1 minute**
+### 2026-10-12 — Note for Sean, from Lloyd (read this first)
+
+**Lloyd says: "I love you very very much XOXOXOXO."**
+
+Lloyd answered every open question today (all of them, with what each changed:
+`CLIENT_ANSWERS_2026-10-12.md`). Applied after a backup (`backups/2026-10-12T10-23-26`): **079**
+(the 4 Oct test session undone), **080** (no TRUNCATE on the audit trail), **081** (1h, B3B, B3F
+at 2 occupants). `check:ledger` passes in full. **Two things are yours:**
+
+1. **B-103: make the GitHub repository private** (Settings > General > Danger Zone > Change
+   visibility), then check that Vercel still deploys main.
+2. **B-101: sign in once as the owner's account** on the live site to reset its failed-sign-in
+   count (3 of 5). Lloyd decided her password is **not** to be stored in `credentials/creds.txt`,
+   so `check:api` and `check:relations` stay off; delete the old value from your copy of that file.
+
+Also coming: Lloyd uploads the updated August and September records (13 Oct); the owner can now
+add her own expense kinds (being built today).
+
+### B-104 — the application's database role can TRUNCATE the audit trail; 080 revokes it · **DONE 2026-10-12: 080 applied by Claude through the Supabase connector (Lloyd: "yes"); service_role now INSERT, REFERENCES, SELECT, TRIGGER**
 
 - **Found 7 Oct 2026** (read-only, writing `docs/PROJECT_DOCUMENTS/05`): on `audit_logs`, `service_role`
   holds INSERT, REFERENCES, SELECT, TRIGGER and **TRUNCATE**. UPDATE and DELETE were removed so the
@@ -45,7 +63,7 @@ thing did not work" is not.
   WHERE table_schema='public' AND table_name='audit_logs';` lists service_role without TRUNCATE.
   Then the next migration number is **081**.
 
-### B-103 — the survey export with every respondent's full name was pushed to the PUBLIC repo (cd7ea3f, 7 Oct 09:54) · **OPEN: Sean, decide today**
+### B-103 — the survey export with every respondent's full name was pushed to the PUBLIC repo (cd7ea3f, 7 Oct 09:54) · **DECIDED 2026-10-12 (Lloyd: "yes, make it private") - OPEN: Sean, GitHub > Settings > General > Change visibility; then confirm Vercel still deploys**
 
 - **What happened.** Lloyd's commit `cd7ea3f` added
   `docs/TESTING_DAY/results/ISO_IEC_25010_Software_Quality_Assessment.csv`. Its "Full Name (optional)"
@@ -66,7 +84,7 @@ thing did not work" is not.
 - **Going forward:** export the form with the name column removed, or make the question go away
   (SURVEY_FORM_REVIEW.md fix 2 already asked for it to be deleted).
 
-### B-102 — F2F: the September receipt was voided this morning, so `check:ledger` now fails BR-014 (4 tenancies, was 3) · **OPEN: the owner, one question**
+### B-102 — F2F: the September receipt was voided this morning, so `check:ledger` now fails BR-014 (4 tenancies, was 3) · **DONE 2026-10-12: owner (through Lloyd) "just record 4"; tenancy stays 4, check:ledger baseline updated**
 
 - **What happened (read-only, 6 Oct evening).** The admin account voided F2F's September 2026 receipt
   (₱8,000 rent, ₱800 water for 4 occupants, entered 30 Sep) at 10:59 AM on 6 Oct, reason
@@ -79,7 +97,7 @@ thing did not work" is not.
   baseline goes from 3 to 4 (`backend/scripts/check-ledger*`, BR-014). If 1, the tenancy needs a new
   migration (next number **080**) setting it to 1, after `npm run backup`.
 
-### B-101 — `credentials/creds.txt` still holds the admin password from before B-98; three failed sign-ins on the owner's account · **OPEN: Sean, 1 minute**
+### B-101 — `credentials/creds.txt` still holds the admin password from before B-98; three failed sign-ins on the owner's account · **DECIDED 2026-10-12 (Lloyd): do NOT store her password in creds.txt (a breach risk); check:api and check:relations stay off. OPEN: Sean signs in once as the owner to reset the count (3 of 5)**
 
 - **What happened:** 5 Oct 2026, about 14:40 Manila, `npm run check:all` on Sean's machine. Three suites
   (`check:api`, `check:relations`, and one repeat) signed in as **admin@hivelet.ph** with the password in
@@ -98,7 +116,7 @@ thing did not work" is not.
   failed_login_count is 0.
 - **Raised:** 2026-10-05 by Claude (Sean's machine)
 
-### B-100 — a test session on 4 Oct changed the owner's real books; 079 puts them back (WRITTEN, NOT APPLIED) · **OPEN: Sean to confirm**
+### B-100 — a test session on 4 Oct changed the owner's real books; 079 puts them back · **DONE 2026-10-12: confirmed as testing by Lloyd; 079 applied by Claude after a backup; verified (remitted 8,214,100.00 over 952, 3G occupied, BDO back to 63,000, test expense voided)**
 
 - **What happened:** 4 Oct 2026, 22:46 to 23:08 Manila, the administrator account, from an address that had
   never signed in to it before (136.158.102.3; the team's usual is 103.200.32.3), most likely the evaluators
@@ -130,7 +148,7 @@ thing did not work" is not.
   environment authorised, was rejected at 22:50 by that session. It is test data; nothing to undo.
 - **Raised:** 2026-10-05 by Claude (Sean's machine)
 
-### B-99 — the technical evaluators' 14 comments (3 Oct): all addressed on the live site; four things need a person · **OPEN (people only)**
+### B-99 — the technical evaluators' 14 comments (3 Oct): all addressed on the live site · **DONE 2026-10-12: iPhone photo and Android phone spacing confirmed on real phones by Lloyd; survey and evaluator count done earlier**
 
 - **What was done (5 Oct, commits 055c6ff to 47b37fa, pushed to main):** every comment Eljohn relayed.
   Theme toggle moved to the top bar of each public page · email and phone checked when you leave the
