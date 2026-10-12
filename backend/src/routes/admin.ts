@@ -47,6 +47,7 @@ import { generateLoginId, LOGIN_ID_INDEX } from '../utils/loginId.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom, toCentavos, MONEY_DUST } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
+import { addExpenseCategory } from '../services/expenseCategories.js';
 import { buildTenantHistoryWorkbook } from '../services/tenantHistoryExport.js';
 import { money, occupantCount, isoDate, shortText, unitCode, uuid, queryInt } from '../utils/validators.js';
 
@@ -4175,6 +4176,39 @@ router.get(
 
     if (error) throw ApiError.internal(error.message);
     res.status(200).json({ success: true, data: data ?? [] });
+  })
+);
+
+/**
+ * POST /api/admin/expense-categories   { name }
+ *
+ * A kind of expense of her own, beside the thirteen built in (owner,
+ * 2026-10-12: "Keep the 13, but she should also have the ability to add her
+ * own"). Name only; the number and place in the list are given for her, after
+ * the thirteen (services/expenseCategories.ts, which holds the rules). Add only:
+ * there is no rename or delete, so the thirteen cannot be changed through here
+ * and neither can a kind an expense already carries.
+ *
+ * EXPENSE_LEDGER_WRITE, the ledger's own write permission (BR-048: admin-only
+ * authorship of the ledgers).
+ */
+router.post(
+  '/admin/expense-categories',
+  requirePermission(PERMISSIONS.EXPENSE_LEDGER_WRITE),
+  asyncHandler(async (req, res) => {
+    const created = await addExpenseCategory(db, req.body?.name);
+
+    // `audit_logs.entity_id` is a uuid and a category's key is its code, so the
+    // row goes under the zero id (recordAudit's own fallback) with the code in
+    // new_values, as migration 064's corrections did.
+    await auditFromRequest(req, {
+      action: 'EXPENSE_CATEGORY_CREATE',
+      entityType: 'EXPENSE_CATEGORY',
+      entityId: '00000000-0000-0000-0000-000000000000',
+      newValues: { ...created },
+    });
+
+    res.status(201).json({ success: true, data: created });
   })
 );
 

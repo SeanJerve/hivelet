@@ -350,7 +350,9 @@ An expense entry is tagged to exactly one fixed expense category (BR-043), even 
 
 ## BR-043 — Fixed Expense Category List
 
-The expense category list (Supplies, Taxes and Licenses, Janitorial and Messengerial Services, Depreciation, Professional Fees, Salaries: Michelle with PhilHealth/SSS/Allowances sub-lines, Communication/Light/Water, Repairs and Maintenance, Fuel and Oil, Others) is fixed and system-wide.
+The expense category list (Supplies, Taxes and Licenses, Janitorial and Messengerial Services, Depreciation, Professional Fees, Salaries: Michelle with PhilHealth/SSS/Allowances sub-lines, Communication/Light/Water, Repairs and Maintenance, Fuel and Oil, Others) is system-wide. These thirteen come built in and cannot be renamed or removed. The owner can add her own kinds of expense beside them (Monthly Expenses, "Add a new kind…" in the Kind of expense list); each one she adds is numbered after hers (11, 12, ...) and listed after the thirteen, and cannot be renamed or removed either.
+
+> **CHANGED (2026-10-12, OD-08).** This rule said the list "is fixed", and only a developer could add to it. The owner was asked whether to keep the 13 fixed or let her add her own, and answered: "Keep the 13, but she should also have the ability to add her own." `POST /admin/expense-categories` (admin only, audited) adds a kind; there is no rename or delete, so the thirteen stay as they are.
 
 See `10_MONTHLY_EXPENSES_REPORT.md` Section 3.
 

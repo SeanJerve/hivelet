@@ -168,7 +168,9 @@ Where the owner's answer was needed to settle a requirement, it was asked rather
 example, the owner confirmed that a bill is overdue from the day after its due date (she allows
 about a week before following up a late payment, but that week does not change when rent is due),
 that she sets room rates by hand (so the system keeps a history of every rate change instead of
-applying any automatic increase), and that a tenant does not need an email address to be recorded.
+applying any automatic increase), that a tenant does not need an email address to be recorded,
+and (on 12 October 2026) that her thirteen expense categories stay as they are while she may add
+her own beside them.
 On 20 September 2026 she gave the current rate of every unit, and every one agreed with her own
 receipts. **The questions still waiting for her answer** are collected in one list for a single
 meeting and are named in Chapter 5 as recommendations.

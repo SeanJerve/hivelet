@@ -312,7 +312,7 @@ We picked the option that matches her existing spreadsheet. She only needs to sa
 | | What we assumed | Confirm |
 | :--- | :--- | :--- |
 | **Date format on reports** | `D-MMM-YY` — e.g. `3-Aug-24` — which is what her own sheet shows. | ☐ Correct ☐ Use DD/MM/YYYY |
-| **Adding expense categories** | The 13 categories are fixed and only we can change them. | ☐ Fine ☐ She should be able to add her own |
+| **Adding expense categories** | The 13 categories are fixed and only we can change them. | **Answered 2026-10-12:** "Keep the 13, but she should also have the ability to add her own." Built: "Add a new kind…" in Monthly Expenses |
 
 **Two real questions left, not confirmations:**
 

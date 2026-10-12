@@ -20,7 +20,7 @@ submitted Phase 1 deliverable and is not rewritten after the fact.
 | **OD-05** | "Main House" expense area | **Mrs. Fe's own residence** — personal, not a rental cost. | **`008`** — lookup + `is_rental_expense` |
 | **OD-06** | Date format | **`D-MMM-YY`**, matching the source spreadsheet. | None — presentation |
 | **OD-07** | Expense cumulative reset | **Resets each calendar year, and is computed, not stored.** | None — deliberately |
-| **OD-08** | Editable expense categories | **Fixed.** No write endpoint, no `settings:manage` permission needed. | None — confirms as-built |
+| **OD-08** | Editable expense categories | **Fixed.** No write endpoint, no `settings:manage` permission needed. **Superseded 2026-10-12** (owner): the 13 stay, and she can add her own (§5). | Add-only endpoint, no migration |
 
 ---
 
@@ -79,6 +79,12 @@ The thirteen seeded rows stand. No write endpoint, and the `settings:manage` per
 `docs/11_FORM_FIELD_AUDIT.md:340` flags as *to be added* is **not needed for this**. This confirms the
 system as already built (`backend/src/routes/admin.ts:1531-1533` serves them read-only) and keeps
 year-on-year expense reports comparable.
+
+> **SUPERSEDED (2026-10-12).** The owner answered OD-08 herself: "Keep the 13, but she should also
+> have the ability to add her own." The thirteen still stand and still cannot be renamed or removed;
+> `POST /admin/expense-categories` (admin only, under the existing `expense:write` permission, not a
+> new `settings:manage`) adds a kind after them. Reports stay comparable because nothing existing
+> changes: a kind she adds is a new line in the category summary.
 
 ---
 

@@ -46,7 +46,7 @@ before the redesign started.
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | **writes** | `DELETE /admin/expense-entries/:id` | delete an expense |
-| reads | `GET /admin/expense-categories` | the thirteen expense categories |
+| reads | `GET /admin/expense-categories` | the kinds of expense: the thirteen built in and any the owner added |
 | **writes** | `PATCH /admin/expense-entries/:id` | edit an expense and re-allocate — atomic |
 | **writes** | `POST /admin/expense-entries` | add an expense and its area allocations — atomic |
 
@@ -194,6 +194,14 @@ before the redesign started.
 | **writes** | `POST /auth/change-password` | change my own password |
 | **writes** | `PUT /tenant/my-profile` | edit my details |
 
+### `components/modals/NewExpenseKindDialog.vue`
+
+1 call(s), **1 of them write**.
+
+| | Endpoint | What it is for |
+| :--- | :--- | :--- |
+| **writes** | `POST /admin/expense-categories` | add a kind of expense of her own, after the thirteen (owner, 2026-10-12); add only |
+
 ### `components/modals/OnsitePaymentModal.vue`
 
 4 call(s), **1 of them write**.
@@ -257,4 +265,4 @@ before the redesign started.
 
 ---
 
-**22 files make 78 distinct calls, 37 of which write.** Generated 2026-10-06.
+**23 files make 79 distinct calls, 38 of which write.** Generated 2026-10-12.
