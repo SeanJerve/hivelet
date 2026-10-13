@@ -236,14 +236,15 @@ Based on the synthesis of literature, a significant research gap emerges regardi
 integrated apartment management system specifically designed for small-scale and resource-constrained
 residential operations. Existing systems are commonly developed either as enterprise-oriented
 platforms or as isolated functional solutions focusing on individual administrative tasks such as
-payment monitoring, tenant management, or maintenance coordination (Magno et al., 2024; Mangca, 2023b; Pernate et al., 2025; Saputra et al., 2025; Setty, 2022). Puspasari et al. (2025), for example,
+payment monitoring, room booking, tenant management, or maintenance coordination (Magno et al., 2024; Mangca, 2023b; Pernate et al., 2025; Saputra et al., 2025; Setty, 2022). Puspasari et al. (2025), for example,
 developed a web-based boarding house information system that monitors room status and sends billing
 notifications through WhatsApp, but its only user is the boarding house manager, so tenants cannot
 see their own bills or report a concern through it.
 
-While these systems demonstrate improvements in specific operational areas, they frequently assume
-stable infrastructure, dedicated administrative personnel, and structured operational environments
-that do not reflect the realities of small-scale apartment and boarding house operations (Burke, 2026; Mia et al., 2024). As a result, many administrators continue to rely on fragmented workflows
+While these systems demonstrate improvements in specific operational areas, small-scale apartment
+and boarding house operations face conditions they were not built around: administrative work that
+grows with every unit (Burke, 2026), and limited infrastructure, technical capacity, and resources
+(Mia et al., 2024). As a result, many administrators continue to rely on fragmented workflows
 involving manual documentation, spreadsheet-based records, informal communication channels, and
 disconnected transaction monitoring processes.
 
