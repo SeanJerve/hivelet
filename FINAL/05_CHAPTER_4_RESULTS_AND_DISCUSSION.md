@@ -94,14 +94,14 @@ NFR-008 originally named the university's server; on the adviser's advice the te
 system on its own hosting instead (Section 3.2.5), and the requirement was reworded to match.
 
 Where a requirement needed the owner's answer, it was asked rather than assumed. She confirmed that
-a bill is overdue from the day after its due date, that she sets rates by hand (so every rate change
-is recorded and no increase is applied automatically), that a tenant needs no email address to be
-recorded, and on 20 September 2026 the rate of every unit, each of which agreed with her receipts.
-Her answers of 12 October 2026 settled the rest: the figure at the bottom of her income sheet is a
-year-to-date total; her thirteen expense categories stay and she may add her own; tenants do not
-report cash payments, because the administrators record every payment; the personal spending booked
-in 2025 was a renovation of her house; past Penthouse spending stays where it was filed; and three
-months with no receipt for one unit stay blank. Her workbook never recorded the move-in date of each
+a bill is overdue from the day after its due date and that she sets rates by hand, so every rate
+change is recorded and no increase is applied automatically. She also confirmed that a tenant needs
+no email address to be recorded, and on 20 September 2026 she confirmed the rate of every unit, each
+of which agreed with her receipts. Her answers of 12 October 2026 settled the rest. The figure at the
+bottom of her income sheet is a year-to-date total, and her thirteen expense categories stay, with
+her free to add her own. Tenants do not report cash payments, because the administrators record
+every payment. The personal spending booked in 2025 was a renovation of her house, past Penthouse
+spending stays where it was filed, and three months with no receipt for one unit stay blank. Her workbook never recorded the move-in date of each
 current tenancy, so the system shows those dates as not recorded (Section 4.2.2).
 
 ---
@@ -118,9 +118,9 @@ real tenant's name or payment appears in any figure.
 ### 4.2.1 System Architecture and Technology Stack
 
 The system was built in three Agile iterations (Section 3.2). The first (24 July to 28 August 2026)
-built a working system and transferred the owner's records into it; the second (12 to 14 September)
+built a working system and transferred the owner's records into it. The second (12 to 14 September)
 checked the system and its documents against each other, corrected 22 recorded errors and added
-automated checks; the third (15 September to the defense) took the owner's answers, put the system
+automated checks. The third (15 September to the defense) took the owner's answers, put the system
 in her and her tenants' hands, and refined it from their feedback, the testing and the evaluation.
 Appendix M, Table M-19, sets out what each iteration did in each phase of Section 3.2. Each was tested
 and reviewed by the means available to it; the formal evaluation against ISO/IEC 25010 was carried
@@ -332,13 +332,12 @@ testing of these protections is reported in Section 4.4.4.
 Figure 4-11 presents the tenant portal on a phone. The client is a Progressive Web Application with a
 service worker and a manifest, so it installs on a phone or computer without an app store. Installing
 it means adding it to the home screen from the browser (**Add to Home Screen** in Safari, **Install
-app** or **Add to Home screen** in Chrome): nothing is downloaded from a store, it opens in its own
+app** or **Add to Home screen** in Chrome). Nothing is downloaded from a store, it opens in its own
 window like an application, and the application files it keeps on the device come to about 1.2 MB
-(as built on 13 October 2026). Since 1
-and 2 October 2026 it keeps a read-only copy of the figures, names and notifications the signed-in
-person last loaded on that person's device, so the installed application can show them without a
-connection under one notice giving the time they were saved; paying and recording still need the
-connection, and the copy is removed at sign-out. This stays within the delimitation in Section 1.4.
+(as built on 13 October 2026). Since 1 and 2 October 2026 it keeps a read-only copy of the figures,
+names and notifications the signed-in person last loaded on that person's device. The installed
+application can therefore show them without a connection, under one notice giving the time they were
+saved; paying and recording still need the connection, and the copy is removed at sign-out. This stays within the delimitation in Section 1.4.
 Screens adapt to the device, and tables on a computer become cards on a phone. As Biørn-Hansen et al. (2017) describe, one code base served every device: the owner's laptop, an Android phone in Chrome
 and an iPhone in Safari (Section 4.3.7).
 
@@ -422,13 +421,13 @@ the live database for the same records. Table 4-9 shows the result.
 | Tenant payments | A tenant's receipts for 2026 | Two defects fixed |
 | Tenant overview, repairs and details (29 Sep 2026) | Unit, rate, occupants, monthly charge (rent plus ₱200 per occupant), the period the receipts reach, amount due, requests, contact details | Matched |
 
-The audit found six defects no automated check had caught, all fixed on 26 September: a tenant's
-payment history that read only online payments, rental and personal expenses in one column, a
+The audit found six defects no automated check had caught, all fixed on 26 September. They were a
+tenant's payment history that read only online payments, rental and personal expenses in one column, a
 placeholder move-in date shown for every tenant, an opened checkout listed as a recorded payment, a
 voided receipt in a tenant's receipt list, and the Boarding House's remitted amount halved on the
 income screen. The lesson is the reverse side of Section 4.3.1: **passing checks show that what was
 tested is correct, not that everything is.** It qualifies Magno et al. (2024), who found that digitizing transaction tracking improves data
-accuracy: here every record was already digital and in one database, yet six screens disagreed with
+accuracy. Here every record was already digital and in one database, yet six screens disagreed with
 it, so digitizing alone did not make the records agree.
 
 ### 4.3.4 Functional Walkthrough Testing
@@ -467,8 +466,8 @@ on screen (Table 4-10).
 
 Every screen was usable within about three seconds on the phone and a little over two on the laptop,
 the slowest being the tenant portal's first load (3.05 seconds on the phone). Google's PageSpeed
-Insights, emulating a mid-range phone on slow 4G, scored the public page 85 to 88 with its largest
-element at 3.4 to 3.6 seconds, and 100 for accessibility; on the owner's Overview, Lighthouse found
+Insights, emulating a mid-range phone on slow 4G, scored the public page 85 to 88, with its largest
+element at 3.4 to 3.6 seconds, and 100 for accessibility. On the owner's Overview, Lighthouse found
 the page moving as its figures arrived (a layout shift of 0.22) and 0.7 seconds of script work on the
 phone (Chapter 5, recommendation 5).
 
@@ -541,7 +540,7 @@ opening the GCash payment, was done alone in one to two minutes. The repairs the
 owner at once, and she acted on them the same evening. Mia et al. (2024) name limited technical
 capacity as a barrier when small Philippine enterprises adopt digital tools; these results place it
 precisely, in the first two things a new user does. The tests that needed several tenants saving at
-once were not performed, because only two attended together; in the session in which the owner and
+once were not performed, because only two attended together. In the session in which the owner and
 two tenants used the system at the same time, every screen loaded, each tenant saw only their own
 unit, the owner's full year of Monthly Income opened in about three seconds, and no session
 affected another (Appendix M, Table M-22). On two phones the offline behavior
@@ -687,10 +686,9 @@ four groups rated. The prospective tenant gave every item 5 and the tenants 4.47
 3 to telling what each screen is for and to learning the system without help, and the technical
 evaluator gave 3 to all five items. The evaluator answered before the fourteen changes made for that
 evaluator's group, eleven of them about usability, and the owner learned the system with each step
-read to her (Section 4.3.4). Here the rating and the measurement disagree and both are right: nine
-tasks in ten were done without help and 76 accessibility scans of 19 screens found no violation once
-one defect on three screens was corrected, but
-those measure whether a task can be done and whether a screen is built correctly, not how easily a
+read to her (Section 4.3.4). Here the rating and the measurement disagree and both are right. Nine
+tasks in ten were done without help, and 76 accessibility scans of 19 screens found no violation once
+one defect on three screens was corrected. Those, however, measure whether a task can be done and whether a screen is built correctly, not how easily a
 first-time user finds the way. **Maintainability (4.00)** is the lowest composite and rests on one
 respondent, who gave every item 4 after reviewing the running system, without inspecting its source
 code, so here the measurement, read from the code itself, carries more weight than the rating. The
@@ -702,8 +700,8 @@ recommendation 6.
 ### 4.4.4 Security
 
 The owner gave every Security item 5. The technical evaluator gave 5 to role restriction, to a tenant
-being kept out of administrative data and to the audit trail, 4 to authentication and session
-handling, which agrees with two low-risk session weaknesses the code review accepted, and 3 to the
+being kept out of administrative data and to the audit trail. The evaluator gave 4 to authentication
+and session handling, which agrees with two low-risk session weaknesses the code review accepted, and 3 to the
 handling of credentials, for which the measured evidence gives no cause and the form gave no reason.
 Three passive external scans graded the site **A+**: Qualys SSL Labs, Mozilla HTTP Observatory (all 12
 tests passed once the Content Security Policy was enforced) and securityheaders.com, on 29 and 30
@@ -740,10 +738,10 @@ about them.
 For seven of the eight characteristics the two kinds of evidence agree, and they disagree on
 Usability for the reason given in Section 4.4.3: passing measures show what was measured. Quality in
 use, which ISO/IEC 25010:2011 defines as the quality experienced by users in their own context, was
-measured by the acceptance test of Section 4.3.7 in the manner of ISO/IEC 25022: effectiveness, all
-34 attempted tasks completed, 31 of them without help; efficiency, a median of 60 seconds a task with
-0.2 wrong turns; and context coverage, the owner's laptop, an Android phone and an iPhone (Appendix M,
-Table M-20).
+measured by the acceptance test of Section 4.3.7 in the manner of ISO/IEC 25022 (Appendix M, Table
+M-20). For effectiveness, all 34 attempted tasks were completed, 31 of them without help. For
+efficiency, the median was 60 seconds a task with 0.2 wrong turns. For context coverage, the system
+was used on the owner's laptop, an Android phone and an iPhone.
 
 ### 4.4.6 Optimization in Response to the Evaluation
 
@@ -768,9 +766,10 @@ the live system by 5 October.
 | **All** | **51** | | |
 
 Table 4-20 counts the defects found by each activity in Sections 4.3 and 4.4, by their highest
-severity and what became of them: **critical**, a wrong amount in the records or lost data; **high**,
-a wrong amount shown, a core task blocked, or an exploitable weakness; **medium**, a misleading
-display or a weakness with a workaround; **low**, usability, appearance or hardening.
+severity and what became of them. The severities are **critical**, a wrong amount in the records or
+lost data; **high**, a wrong amount shown, a core task blocked, or an exploitable weakness;
+**medium**, a misleading display or a weakness with a workaround; and **low**, usability, appearance
+or hardening.
 
 **Table 4-20.** Defects found, by activity, severity and disposition
 

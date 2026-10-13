@@ -49,7 +49,7 @@ the change is made. Google Chrome was the primary browser for development and te
 reliability and optimization for modern web applications.
 
 Additionally, the user interface was prototyped directly in code rather than in a separate design
-tool: each screen was built as a working prototype in Vue and Tailwind CSS, generated with the help of
+tool. Each screen was built as a working prototype in Vue and Tailwind CSS, generated with the help of
 an AI coding assistant and reviewed by the researchers, so that the landlady and the tenants could try
 it on their own phones with real data. The design rules the screens follow, covering color, type,
 layout and wording, are recorded in the system's design guideline.
@@ -255,12 +255,12 @@ administrator's reply was tested separately by the team. The technical evaluator
 who works in software quality assurance; he reviewed the running system and did not inspect the
 source code.
 
-**Instruments.** Four instruments were used: task cards read aloud to each tester, in English and
-Filipino; an observation sheet recording, for each task, whether it was completed without help, with
-help, or not at all, the time taken, and the number of wrong turns; a defect log; and the ISO/IEC 25010
-survey questionnaire, with a separate section for each of the four respondent groups (the
-administrator, tenants, prospective tenants and technical evaluators), and the tenant and prospective
-tenant sections in English and Filipino.
+**Instruments.** Four instruments were used. Task cards were read aloud to each tester, in English and
+Filipino. An observation sheet recorded, for each task, whether it was completed without help, with
+help, or not at all, the time taken, and the number of wrong turns. A defect log was kept. The fourth
+was the ISO/IEC 25010 survey questionnaire, with a separate section for each of the four respondent
+groups (the administrator, tenants, prospective tenants and technical evaluators); the tenant and
+prospective tenant sections were in English and Filipino.
 
 **Data gathering.** Each tester gave written consent before taking part. Each used their own account on their own device while a
 facilitator read the tasks without indicating where to tap and an observer completed the observation

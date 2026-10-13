@@ -51,13 +51,13 @@ Based on the results of the study, the following conclusions were drawn:
 
 1. **The first objective was achieved.** The existing practices were analyzed in all four areas the
    objective names, and every gap found was traced to a requirement and to the module that meets it
-   (Chapter 4, Table 4-2); the main problem at the property was not the lack of a digital tool but the
+   (Chapter 4, Table 4-2). The main problem at the property was not the lack of a digital tool but the
    lack of connection between its records.
 
 2. **The second objective was achieved.** All six features the objective names were developed and are
-   in use on the owner's real records (Chapter 4, Sections 4.2.2 to 4.2.7), keeping her own report
-   layout, invoice numbers and cash as the main way to pay, so that using it requires no change to how
-   she keeps her accounts.
+   in use on the owner's real records (Chapter 4, Sections 4.2.2 to 4.2.7). They keep her own report
+   layout, invoice numbers and cash as the main way to pay, so using the system requires no change to
+   how she keeps her accounts.
 
 3. **The third objective was achieved.** The system was pilot tested for functionality,
    responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8 per
@@ -65,8 +65,8 @@ Based on the results of the study, the following conclusions were drawn:
    user's hands, and it passed when re-tested on the owner's laptop.
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
-   ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response, and its users rated
-   it Very High Quality overall (4.53), with every characteristic at least High Quality on the scale
+   ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response. Its users rated it
+   Very High Quality overall (4.53), with every characteristic at least High Quality on the scale
    of Chapter 3's Table 3-5 (Chapter 4, Tables 4-17 and 4-19). The ratings agree with the measured evidence on every
    characteristic but Usability, and they describe how six people rated the system over one week,
    three of the four groups with one respondent each.
@@ -86,12 +86,12 @@ Based on the summary and conclusions of the study, the following are recommended
 **For the continued development of the system**
 
 3. Before real money moves through the system, move the Adyen account from test to live and let the
-   system refund a GCash payment the owner rejects, refunds having been excluded from this study by
-   its delimitation (Sections 1.4 and 4.3.2); and keep the sign-in token in a cookie that no script
-   can read and add a second sign-in factor for the administrator, the two weaknesses Chapter 4 names
+   system refund a GCash payment the owner rejects; refunds were excluded from this study by its
+   delimitation (Sections 1.4 and 4.3.2). Keep the sign-in token in a cookie that no script can read,
+   and add a second sign-in factor for the administrator, the two weaknesses Chapter 4 names
    (Section 4.4.4).
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
-   every function that writes data is tested on every change rather than once by a person, and extend
+   every function that writes data is tested on every change rather than once by a person. Extend
    the rule that refuses a second copy of a receipt to receipts with no invoice number and to
    acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6).
 5. Make the pages appear faster on phones, where the public page's largest element was drawn at 3.4
@@ -111,8 +111,8 @@ Based on the summary and conclusions of the study, the following are recommended
    in this study passed every automated check and were found only by comparing each screen with the
    records it claimed to show (Section 4.3.3).
 8. Evaluate over a longer period of real use with every tenant, including two people changing the
-   same record at once, which this study did not test; measure availability over months, the owner's
+   same record at once, which this study did not test. Measure availability over months, the owner's
    time on record-keeping, and the two sub-characteristics no instrument here covered, user interface
-   aesthetics and reusability; build the instrument on ISO/IEC 25010:2023 (Chapter 4, Appendix M,
-   Table M-21); and ask tenants what they find missing, as the survey did when one asked to see the
+   aesthetics and reusability. Build the instrument on ISO/IEC 25010:2023 (Chapter 4, Appendix M,
+   Table M-21), and ask tenants what they find missing, as the survey did when one asked to see the
    deposit, which the system now shows (Sections 4.2.2, 4.3.6 and 4.4.5).
