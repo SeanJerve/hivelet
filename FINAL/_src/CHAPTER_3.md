@@ -267,8 +267,10 @@ tester was stuck, help followed a fixed order: a neutral prompt after about thir
 you looking for?"), then a hint about where to look, and only then a demonstration. A task finished
 after the prompt counted as completed without help, one finished after the hint as completed with
 help, and one that needed a demonstration as not completed. Screen recordings and photographs were
-taken only with the tester's permission. Each tester answered the survey immediately after their
-session, without the researchers viewing their answers. Page load times were measured once per screen
+taken only with the tester's permission. Each respondent answered the survey after using the system,
+without the researchers viewing their answers: the tenants and the prospective tenant straight after
+their tasks, the administrator the same evening, and the technical evaluator the day after the
+evaluators' review. Page load times were measured once per screen
 on the devices named in Section 3.1.2, with the browser's cache cleared for a first load.
 
 **Statistical treatment.** For each survey item the weighted mean was computed as
