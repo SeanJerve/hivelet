@@ -135,19 +135,6 @@ export function getGracePeriodDays(): Promise<number> {
 }
 
 /**
- * The percentage used to compute `monthly_income_records.fifty_percent_share`. BR-035.
- *
- * Note that the column itself is `GENERATED ALWAYS AS (rent_amount / 2.0) STORED` in the
- * database, so this setting does **not** drive the stored figure and changing it will not
- * change any row. It is read only where a projection needs the same arithmetic before a row
- * exists. Describe the result only as a system-computed figure equal to half the row's Rent
- * Amount, retained for ledger parity with the historical spreadsheet.
- */
-export function getRevenueSharePercent(): Promise<number> {
-  return getNumericSetting(SETTING_KEYS.REVENUE_SHARE_PERCENT, 50);
-}
-
-/**
  * Identifies a Linda unit by room number. BR-040.
  *
  * ⚠ **READ THE NAME AS HISTORY, NOT AS BEHAVIOUR. The fixed water charge is RETIRED**, and

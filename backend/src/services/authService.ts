@@ -347,8 +347,6 @@ const TENANT_EDITABLE_FIELDS = [
   'facebook_url',
 ] as const;
 
-export type TenantEditableField = (typeof TENANT_EDITABLE_FIELDS)[number];
-
 /**
  * Updates the caller's own profile. Both self-service routes come here -
  * `PUT /tenant/my-profile` (the My details page) and `PATCH /auth/me` - so the

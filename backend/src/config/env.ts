@@ -197,5 +197,3 @@ export const config = {
     webhookPassword: optional('ADYEN_WEBHOOK_PASSWORD', ''),
   },
 } as const;
-
-export type AppConfig = typeof config;

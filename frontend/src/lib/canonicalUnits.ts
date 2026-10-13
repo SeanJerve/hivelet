@@ -56,22 +56,6 @@ export interface RentableUnit {
   desc?: string;
 }
 
-/**
- * No stock photography.
- *
- * These were eight Unsplash images of unrelated apartments, dealt round-robin to
- * the 33 units and shown on the public listing as photographs of this property.
- * Thirty-two of the thirty-three units have no photograph on file; the interface
- * now says so instead of showing someone else's room.
- *
- * A unit's real photographs live in `rooms.room_photos` and arrive from the API.
- * An empty string here means "nothing on file", and every view that renders a
- * unit photo checks for it.
- */
-export const PHOTOS: readonly string[] = [];
-
-export const HERO_PHOTO = "";
-
 const BH_AMENITIES = ["Private bathroom", "Submetered electricity", "Ceiling fan", "Study desk", "Wi-Fi ready"];
 const APT_AMENITIES = [
   "Private bathroom",

@@ -630,19 +630,6 @@ export function showToast(
   triggerToast(type, title, message, undefined, options);
 }
 
-export function updateRoomRate(unitCode: string, newRate: number, maxOccupants: number, desc?: string, occupants?: number, type?: string, billingRule?: string, amenitiesStr?: string) {
-  const room = rooms.find((r) => r.unitCode.toLowerCase() === unitCode.toLowerCase());
-  if (room) {
-    room.price = newRate;
-    room.maxOccupants = maxOccupants;
-    if (occupants !== undefined) room.occupants = occupants;
-    if (type) room.type = type;
-    if (billingRule) room.billingRule = billingRule;
-    if (amenitiesStr) room.amenities = amenitiesStr.split(',').map((s) => s.trim());
-    if (desc) room.desc = desc;
-  }
-}
-
 /**
  * `resolveTicket` is gone. It set `ticket.status = 'Resolved'` on the in-memory array and made
  * no API call at all, so the pill flipped, the ticket left the open list, and the next

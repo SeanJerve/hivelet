@@ -280,18 +280,6 @@ export async function readSaved(ownerId: string, path: string): Promise<Envelope
   }
 }
 
-/** For the verification scripts and the privacy page's claim: what is stored, and how big. */
-export async function offlineCopySummary(): Promise<{ path: string; chars: number; savedAt: number }[]> {
-  return enqueue(async () => {
-    const db = await openDb();
-    if (!db) return [];
-    const all = (await run<unknown[]>(db, 'readonly', (s) => s.getAll())) ?? [];
-    return all
-      .filter((r): r is SavedRead => !!r && typeof r === 'object' && 'body' in (r as object))
-      .map((r) => ({ path: r.path, chars: r.body.length, savedAt: r.savedAt }));
-  });
-}
-
 function slim(path: string, envelope: Envelope): Envelope {
   const drop = UNREAD_COLUMNS[path];
   const rows = (value: unknown): unknown =>

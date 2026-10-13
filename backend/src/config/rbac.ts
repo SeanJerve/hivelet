@@ -23,13 +23,6 @@ export type Role = 'guest' | 'prospect' | 'tenant' | 'admin';
 /** Roles that can exist in the database (`public.user_role_type`). */
 export type StoredRole = Extract<Role, 'prospect' | 'tenant' | 'admin'>;
 
-export const ROLES = {
-  GUEST: 'guest',
-  PROSPECT: 'prospect',
-  TENANT: 'tenant',
-  ADMIN: 'admin',
-} as const;
-
 /**
  * Permissions are `domain:action`. `:own` suffixes mark permissions that are
  * additionally row-scoped at query time — holding `bill:read:own` never means
@@ -201,12 +194,4 @@ export function roleHasPermission(role: Role, permission: Permission): boolean {
 
 export function permissionsForRole(role: Role): Permission[] {
   return [...(ROLE_PERMISSIONS[role] ?? [])];
-}
-
-/**
- * True when the role may only ever see its own rows for this domain. Used by
- * controllers to decide whether to apply a tenant scope filter.
- */
-export function isSelfScopedRole(role: Role): boolean {
-  return role === 'tenant' || role === 'prospect' || role === 'guest';
 }

@@ -38,9 +38,6 @@ export const money = z
     'cannot have more than two decimal places'
   );
 
-/** A strictly positive amount - a payment of zero is not a payment. */
-export const positiveMoney = money.refine((n) => n > 0, 'must be greater than zero');
-
 /** A headcount. Whole, not negative, and capped at something a room could hold. */
 export const occupantCount = z
   .number({ invalid_type_error: 'must be a number' })
@@ -144,6 +141,3 @@ export const unitCode = (max = 20) =>
     .min(1, 'cannot be empty')
     .max(max, `cannot exceed ${max} characters`)
     .regex(/^[A-Za-z0-9]+$/, 'may contain only letters and digits');
-
-/** Optional free text: absent, or non-empty after trimming. */
-export const optionalText = (max = 255) => shortText(max).optional();

@@ -97,14 +97,6 @@ export function propertyEndOfDay(isoDate: string): Date {
 }
 
 /**
- * The first instant of a given property date. Same reasoning as
- * `propertyEndOfDay`.
- */
-export function propertyStartOfDay(isoDate: string): Date {
-  return new Date(`${isoDate}T00:00:00.000+08:00`);
-}
-
-/**
  * The calendar parts of a plain `YYYY-MM-DD` string.
  *
  * Deliberately does NOT go through `Date`. A date string has no timezone, so
