@@ -33,3 +33,9 @@ text without the heading changing.
 | B-03 | The Adyen webhook serves one address at a time (production since 24 September; see CLAUDE.md) |
 | B-67 | Two unit descriptions still stated a retired water rule |
 | B-82, B-101 | Credentials for `check:api` and `check:relations`: `credentials/creds.txt` must hold the current passwords |
+
+## New (13 October 2026)
+
+| Entry | What it is |
+| :--- | :--- |
+| B-106 | **The test tenant loydtest has been the tenant of PH since 1 October**, PH being the one vacant unit: the live site counts 33 of 33 occupied and shows no vacancy, though the property has 32 occupied; one open test bill of ₱30,400 sits on PH (its receipts are voided and its payments rejected). Useful for the defense demo (FINAL/DEMO_SCRIPT.md); afterwards move loydtest out through Tenants, so PH shows vacant again. A person decides; not changed by Claude |
