@@ -432,7 +432,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         </div>
 
         <p class="mt-14 text-center text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-          32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
+          32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
         </p>
 
       </div>
@@ -616,7 +616,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           </h2>
           <div class="max-w-md">
             <p class="text-xs sm:text-sm text-ink-soft leading-relaxed">
-              Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Albay.
+              Galang's Compound, 32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Albay.
             </p>
 
             <div class="mt-3">
@@ -666,7 +666,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             decoding="async"
           />
           <figcaption class="mt-3 text-xs text-ink-soft">
-            Look for this gate on Sapaguita Street.
+            Look for this gate on Sampaguita Street.
           </figcaption>
         </figure>
       </div>

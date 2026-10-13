@@ -613,7 +613,7 @@ used in Chapter 3 and here. Each characteristic was judged on
 the manner of ISO/IEC 25023, and on **rated quality**, a survey in which each item belongs to one
 sub-characteristic (Chapter 3, Table 3-6). Each respondent group rated only what it can judge: tenants
 did not rate Security or Maintainability, prospective tenants rated neither, and only technical
-evaluators rated Maintainability, which requires reading the source code.
+evaluators rated Maintainability, the group with the background to judge it.
 
 **Table 4-17.** The evaluation process, following ISO/IEC 25040
 
@@ -734,7 +734,9 @@ tasks in ten were done without help and 76 accessibility scans of 19 screens fou
 one defect on three screens was corrected, but
 those measure whether a task can be done and whether a screen is built correctly, not how easily a
 first-time user finds the way. **Maintainability (4.00)** is the lowest composite and rests on one
-respondent, who gave every item 4. The measurement agrees: the system can be checked as a whole on
+respondent, who gave every item 4 after reviewing the running system, without inspecting its source
+code, so here the measurement, read from the code itself, carries more weight than the rating. The
+measurement agrees: the system can be checked as a whole on
 every change, but three database calls in four are written inside the request handlers, so the rules
 for one record are spread across the handlers that touch it. Both are taken up in Chapter 5,
 recommendation 6.

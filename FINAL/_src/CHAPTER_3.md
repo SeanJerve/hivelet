@@ -237,8 +237,7 @@ A structured survey questionnaire was administered to four groups: the administr
 house, its tenants, prospective tenants, and technical evaluators with a background in information
 technology. Each group rated only the characteristics it is in a position to judge: tenants did not
 rate Security or Maintainability, prospective tenants, who see only the public website, rated neither,
-and only technical evaluators rated Maintainability, since it requires reviewing the source code and
-documentation. Responses were measured using the 5-point Likert scale in Table 4, and mean scores were
+and only technical evaluators rated Maintainability, the group with the background to judge it. Responses were measured using the 5-point Likert scale in Table 4, and mean scores were
 interpreted using the ranges in Table 4A.
 
 **Participants.** The landlady, who runs the boarding house day to day on behalf of its owner, took
@@ -251,8 +250,8 @@ not live at the boarding house and was invited by the researchers to use the pub
 looking for a room would, used it on their own phone without an account: they browsed the units and
 rates and sent an inquiry about a unit. The
 administrator's reply was tested separately by the team. The technical evaluator was an IT professional
-who works in software quality assurance, and was given access to the source code and documentation
-before rating.
+who works in software quality assurance; he reviewed the running system and did not inspect the
+source code.
 
 **Instruments.** Four instruments were used: task cards read aloud to each tester, in English and
 Filipino; an observation sheet recording, for each task, whether it was completed without help, with

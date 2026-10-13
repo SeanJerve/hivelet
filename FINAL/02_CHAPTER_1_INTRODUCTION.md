@@ -115,7 +115,7 @@ operations.
 
 This study focuses on the design, development, and evaluation of Hivelet, a Progressive Web
 Application (PWA) created to transition the 33-unit Fe Galang Da Silva Boarding House, at 32
-Sapaguita Street, Barangay 4 Sagpon, Old Albay District, Legazpi City, near Bicol University, from
+Sampaguita Street, Barangay 4 Sagpon, Old Albay District, Legazpi City, near Bicol University, from
 manual, paper-based administration to a centralized digital management system. To
 achieve this, Hivelet integrates comprehensive room and tenant management capabilities, facilitating
 seamless onboarding, the secure digital storage of records, real-time monitoring of room

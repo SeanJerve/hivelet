@@ -599,7 +599,7 @@ export const LANDLADY = {
    */
   phoneShown: showPhone("09274653938"),
   property: "Fe Galang Da Silva Boarding House",
-  address: "32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
+  address: "32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
 };
 
 // Global Modals State

@@ -13,8 +13,8 @@ Section 1.**
 | P3 | **The front matter in Word**: the defense date and room, each member's Curriculum Vitae, the title page | Sean: "ask me again" (E3) |
 | P4 | **The Acknowledgement**: who to thank | A team decision (D8); Claude drafts it once the names are given |
 | P5 | **Where the AI-use statement goes**, and whether the prompt log is attached | The adviser was not sure (C2). The statement is ready outside the repository, in `_AI_USE (not in repo)/` |
-| P6 | **Did the technical evaluator get the source code and the documents before rating?** | Chapter 3 says yes, and Section 4.4 relies on it for Maintainability; A14 answered his role but not this |
-| P7 | **The street name**: the public site says "Sapaguita Street". Is it really "Sampaguita"? | Chapter 1 now gives the address as the site does |
+| P6 | ~~Did the technical evaluator get the source code?~~ **Answered 13 Oct: no, he did not ask for it.** Chapters 3 and 4 now say he reviewed the running system without inspecting the code, so Maintainability rests on the measured evidence more than on his rating | Done |
+| P7 | ~~The street name~~ **Answered 13 Oct: Sampaguita.** Fixed in Chapter 1 and on the public site (four places said "Sapaguita") | Done |
 | P8 | **Move-in dates**: the system cannot edit a tenancy's move-in date today (editing a tenant leaves it unchanged; only a move to another unit sets it, to that day) | Sean expected she could edit it. The recommendation is removed as asked; if she should be able to, that is a small feature (Sean's lane) |
 | P9 | Make the repository private before the defense | Decided (E4) |
 
@@ -49,8 +49,9 @@ database change, so the statement keeps "approved". Note: the commit `a9ddd63` (
 "apply Lovable design system"; commit messages cannot change without rewriting history, which was
 declined. Once the repository is private, no one outside the team sees it.
 
-**Sources (A19, A20).** Ullah et al. corrected to **2018**, *Sustainability* 10(9), 3142: the
-supplied 2021 details match no article. Kotkar et al. now links to the article itself.
+**Sources (A19, A20).** Ullah et al. corrected to **2018**, *Sustainability* 10(9), 3142, DOI
+10.3390/su10093142; Sean confirmed it from the article page on 13 Oct. The 2021 details first supplied
+matched no article. Kotkar et al. now links to the article itself.
 
 **The Word file (A21, A22).** There is none yet; the team retypes from this folder into the final
 format. No school format was given, so the paper follows APA 7.

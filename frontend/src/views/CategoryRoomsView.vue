@@ -706,7 +706,7 @@ async function submitInquiry() {
         </div>
 
         <p class="mt-12 text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-          32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
+          32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
         </p>
 
       </div>
