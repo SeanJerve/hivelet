@@ -18,7 +18,7 @@ Section 1.**
 | P8 | **Move-in dates**: the system cannot edit a tenancy's move-in date today (editing a tenant leaves it unchanged; only a move to another unit sets it, to that day) | Sean expected she could edit it. The recommendation is removed as asked; if she should be able to, that is a small feature (Sean's lane) |
 | P9 | Make the repository private before the defense | Decided (E4) |
 | P10 | **Scans for Appendices A and B**: the signed letter of request to the owner, and the adviser appointment papers | Found 13 Oct: the 18 September manuscript has only their headings |
-| P11 | **The technical evaluator may re-rate after reviewing the code** (Sean, 13 Oct). If he does, export the survey CSV again and send it; Claude reruns `compute-survey.mjs` and updates Tables 4-18 to 4-23, Maintainability in 4.4.3, Chapter 3 Participants ("did not inspect the source code") and Chapter 5 | Waiting on the evaluator |
+| P11 | **The technical evaluator may re-rate after reviewing the code** (Sean, 13 Oct). If he does, export the survey CSV again and send it; Claude reruns `compute-survey.mjs` and updates Tables 4-14 to 4-18, Maintainability in 4.4.3, Chapter 3 Participants ("did not inspect the source code") and Chapter 5 | Waiting on the evaluator |
 | P12 | **More respondents** (Sean, 13 Oct): more technical evaluators and tenants answer the same Google Form; then the same: send the CSV, Claude recomputes every table and updates the counts (now 6) everywhere they appear | Waiting on the team |
 | P13 | **Unit PH and the test tenant** (B-106): move loydtest out after the defense demo | Decision for Sean |
 
@@ -73,7 +73,7 @@ essential. C8 and D1: nothing about Lloyd's mother goes in the paper.
 
 **Choices (D2 to D9).**
 - D2: six respondents stay unless more answer; if they do, `compute-survey.mjs` recomputes everything.
-- D3: Table 4-9 stays as dated. Automated testing of simultaneous saves is right: two people cannot
+- D3: Table 4-8 (automated verification) stays as dated. Automated testing of simultaneous saves is right: two people cannot
   press Save in the same millisecond on purpose, so the exact race can only be tested by a program;
   real people using it at the same time are reported separately (Appendix M, Table M-22).
 - D4: Adyen stays on the test account; the support case (08657379) is already cited in Section 4.3.2.
