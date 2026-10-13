@@ -118,3 +118,8 @@ scripts/field-tests/shots/
 
 # The AI-use statement and its evidence: ready for the adviser, kept outside the repository (13 Oct 2026)
 /_AI_USE (not in repo)/
+
+# AI tool folders (13 Oct 2026): kept on the machine that uses them, not in the repository.
+# The skills under .claude/skills/ still load for Claude Code from disk.
+.claude/skills/
+skills-lock.json
