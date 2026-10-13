@@ -11,14 +11,13 @@ these files replace Chapters 1 to 5, the Abstract and the References entirely.
 | :--- | :--- | :--- |
 | Front matter | (in the Word file; see Section 4 below) | |
 | Abstract | `01_ABSTRACT.md` | The blank Abstract page (p. vii) |
-| AI statement | `09_AI_USE_STATEMENT.md` | New. Its place is the adviser's call (marker at its top) |
 | Chapter 1 | `02_CHAPTER_1_INTRODUCTION.md` | Chapter 1 |
 | Chapter 2 | `03_CHAPTER_2_THEORETICAL_FRAMEWORK.md` | Chapter 2 |
 | Chapter 3 | `04_CHAPTER_3_MATERIALS_AND_METHODS.md` | Chapter 3 |
 | Chapter 4 | `05_CHAPTER_4_RESULTS_AND_DISCUSSION.md` | Chapter 4 (the old one is template text) |
 | Chapter 5 | `06_CHAPTER_5_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md` | Chapter 5 (the old one describes another project's auto shop application) |
 | References | `07_REFERENCES.md` | References |
-| Appendices | `08_APPENDICES.md` lists A to Q and where each one's content is; K, M, N and O are in `appendices/` | Appendices |
+| Appendices | `08_APPENDICES.md` lists A to Q and where each one's content is; C, F, K, M, N, O and Q are in `appendices/` | Appendices |
 | | Curriculum Vitae | Still the blank template (Section 4) |
 
 ## 2. How to paste
@@ -30,8 +29,11 @@ these files replace Chapters 1 to 5, the Abstract and the References entirely.
   (Table 4-1, Figure 4-1, restarting each chapter). Insert each caption with **References > Insert
   Caption** (label Table or Figure, "Include chapter number" ticked) so the lists build themselves.
   Captions go **above** every table and figure, in sentence case, as written here.
-- **Images.** Chapter 4's images link to `docs/FINAL MANUSCRIPT/figures/`. A `[KEEP: ...]` marker
-  means use the image already in the old manuscript, at the page it names.
+- **Images.** Every image links to `docs/FINAL MANUSCRIPT/figures/`. Figure 2-2 is redrawn there
+  (Adyen spelled right, and the maintenance module the objectives name added). A `[KEEP: ...]`
+  marker (Figures 2-1 and 3-1) means use the image already in the old manuscript, at the page it names.
+- **The AI-use statement is not in this folder.** It is ready in `_AI_USE (not in repo)/` in the
+  hivelet folder, outside the repository, until the adviser says where it goes.
 - **Bold brackets** `**[TO DO: ...]**` are the only things still open. Each is listed in Section 3;
   none may reach the printed copy.
 - **Survey results and test figures** in Chapters 4 and 5 are final; do not round or restate them.
@@ -42,29 +44,21 @@ these files replace Chapters 1 to 5, the Abstract and the References entirely.
 
 | Where | What | Who |
 | :--- | :--- | :--- |
-| Chapter 2, Figure 2-2 | The conceptual framework image says "Ayden" twice. Redraw it with "Adyen" before pasting | Design seat |
-| Chapter 3, Section 3.3 | The length of the introductory video, in minutes | Team |
 | Chapter 4, Section 4.3.7 | One sentence once the owner signs the acceptance form (the marker gives it) | Team, after the signature |
 | Appendix O | The scan of the signed form. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`; she ticks and signs only if she agrees. Never sign it for her | Team, with the owner |
-| References | The full entry for Ullah et al. (2021). It is cited five times (Sections 1.1, 2.1.1, 2.1.6 and 4.1.1) and was never in the list | Whoever found the source |
-| AI statement | Where it goes, whether a prompt log is attached, and the tool used in the first iteration (24 July to 28 August) | Adviser; team |
-| Appendix C | The Gantt chart redrawn with the three iterations' real dates | Team |
-| Appendix F | Redraw the child data flow diagrams from the as-built processes, or mark the letter "Not used" | Team |
-| Appendix Q | How the panel reads the source code once the repository is private | Sean |
-| **Decision** | Whether Section 4.4.1 should say that the administrator who rated the system is a team member's relative (see Section 6) | Team, with the adviser |
+| AI statement | Where it goes, and whether the prompt log is attached | Adviser |
+| Acknowledgement | Who to thank; then Claude drafts it | Team decision |
 
-`node scripts/manuscript/build-final.mjs` reprints this list's source markers if they change; search
-the folder for `[TO DO` to see the current set.
+Everything else in `QUESTIONS_TO_FINALIZE.md` is answered and applied. Search the folder for
+`[TO DO` to see the markers still in the text.
 
 ## 4. Front matter, outside these files
 
 From FIXES sections D and E, unchanged because only the team or the adviser can settle them:
 
 - **Result of Final Oral Defense (p. 3):** the place and date are still placeholders.
-- **The two adviser certifications (pp. 5 and 6)** carry an older title ("... with Financial
-  Analytics, Booking, and Issue Tracking ..."). They are signed; ask the adviser whether they are
-  reissued with the cover's title. Do not edit them.
-- **Acknowledgement:** listed in the contents, not written.
+- **The two adviser certifications (pp. 5 and 6)** carry an older title; the team is handling it.
+- **Acknowledgement:** listed in the contents, not written yet (Section 3).
 - **Table of contents:** "CURRICULUM VITAEx" and the template entries ("Objective 1 Title", "Pet
   Adoption System") disappear when the contents are regenerated from the headings.
 - **Curriculum Vitae:** still the blank template with example years 2019 to 2023.
@@ -100,19 +94,10 @@ dictionary and the signed form are in Appendices M, N and O, as the guide requir
 conclusion per objective, one to three sentences each; eight recommendations, each with its basis
 in Chapter 4. No citations, and no number that is not in Chapter 4.
 
-## 6. The one question a panel can ask that the paper does not answer yet
+**Abstract.** The guides set no word limit; its last sentence must restate the general objective and
+agree with Chapter 5, and it does. It is about 310 words.
 
-The administrator who used the system and rated it is the mother of a team member. Purposive
-sampling allows it, and she is the system's only administrator, so no one else could have rated the
-owner's side. A panel that learns of the relationship from someone else will ask why the paper did
-not say so. If the team and the adviser agree, add to Section 4.4.1, after the table of respondents:
-
-> The administrator is related to a member of the research team. Her ratings enter each composite
-> as one group's mean, beside the other groups that rated the same characteristic, and every
-> characteristic she rated also has measured evidence that does not depend on her judgment
-> (Table 4-23).
-
-## 7. What changed in the references
+## 6. What changed in the references
 
 Sorted alphabetically (FIXES C7), with italics restored to the APA 7 places (journal and volume,
 book and report titles), and the six ISO entries the method now cites added (2011a, 2011b, 2016a,
@@ -120,13 +105,20 @@ book and report titles), and the six ISO entries the method now cites added (201
 were removed:** they were listed but cited nowhere, which a panel reads as padding. To keep either,
 cite it in Chapter 2 first; for example, in Section 2.1.6, "Monteverde et al. (2023) likewise
 evaluated a web-based rental house finder against ISO/IEC 25010", using only what the source says.
-The ISO/IEC 25040 entry is the 2011 edition; a newer one exists, with the same five steps, so cite
-2011 only if the adviser accepts it alongside the 2011 quality model.
+**Ullah et al.** is 2018, not 2021: the article with that title and those authors is *Sustainability*
+10(9), 3142 (DOI 10.3390/su10093142). The details first supplied (2021, 13(14), 7732) match no
+article, so a panelist looking it up would not have found it; all five citations now say 2018.
 
-## 8. Changing a file here
+**Why ISO/IEC 25040:2011 and not the 2024 edition.** The 2024 edition was retitled *Quality
+evaluation framework* and restructured, so its steps are not the five the evaluation followed. The
+2011 process was written for the 2011 quality model the instrument is built on, so the study cites the
+two as a matched pair. If asked: "We evaluated against the 2011 model, so we followed the evaluation
+process written for it; Appendix M, Table M-21 shows where each result falls in the 2023 model."
+
+## 7. Changing a file here
 
 Do not edit the numbered files: they are rebuilt. Chapters 1 to 3, the references, the appendix
-list and the AI statement are written in `FINAL/_src/`; the Abstract, Chapters 4 and 5 and
+list and Appendices C, F and Q are written in `FINAL/_src/`; the Abstract, Chapters 4 and 5 and
 Appendices K, M, N and O stay in `docs/FINAL MANUSCRIPT/` (in the drafts' old numbering, so other
 documents that cite "Table 22A" still find it). After editing either, run
 

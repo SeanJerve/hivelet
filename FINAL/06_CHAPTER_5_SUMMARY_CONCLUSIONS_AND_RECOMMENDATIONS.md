@@ -15,8 +15,8 @@ and integration, system and acceptance levels, and evaluated on the eight charac
 25010:2011 by the owner, three tenants, a prospective tenant and a technical evaluator. The results
 are summarized below in the order of the specific objectives.
 
-1. **The existing practices were analyzed.** The owner kept a two-sheet workbook on removable
-   storage and a paper invoice book, collected rent in cash, and received requests by message or in
+1. **The existing practices were analyzed.** The owner kept a two-sheet workbook on a USB flash
+   drive and a paper invoice book, collected rent in cash, and received requests by message or in
    person. Transferring her records, 937 income rows and 1,327 expense allocations, showed that 43%
    of the income rows lacked an anniversary date and deposit and that five invoice numbers had each
    been used for two payments. The analysis produced 44 functional requirements and 49 business
@@ -77,10 +77,8 @@ Based on the summary and conclusions of the study, the following are recommended
 
 **For the owner of the Fe Galang Da Silva Boarding House**
 
-1. Record the move-in date of each current tenancy, the one question about her records still open,
-   since settling a deposit at move-out depends on it, and keep the system's receipts up to date with
-   her receipt book, since the system can become her main record only once the two agree (Chapter 4,
-   Section 4.1.2 and Table 4-27).
+1. Keep the system's receipts up to date with her receipt book, since the system can become her main
+   record only once the two agree (Chapter 4, Table 4-27).
 2. Keep taking a backup before any change to the records, as the team did throughout, and read the
    five flagged invoice numbers as history: they stay as she wrote them, and the system lists them on
    every verification run (Section 4.1.1).

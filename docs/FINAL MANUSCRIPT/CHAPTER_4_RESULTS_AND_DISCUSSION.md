@@ -35,7 +35,7 @@ checked against the live records on every verification run.
 ### 4.1.1 Existing Practices and Identified Problems
 
 Before the system, the owner kept a spreadsheet workbook with two sheets, a Monthly Income Report and
-a Monthly Expenses Report, on removable storage, together with a paper invoice book. Rent was
+a Monthly Expenses Report, on a USB flash drive, together with a paper invoice book. Rent was
 collected in cash on site, and requests arrived by messaging application or in person. Table 5
 compares each practice with the problem it caused.
 
@@ -44,7 +44,7 @@ compares each practice with the problem it caused.
 | Area | Existing practice | Problem identified |
 | :--- | :--- | :--- |
 | Tenant management | Tenant details kept in the income sheet and in the owner's memory | No single record of who lives in which unit, since when, or how many occupants |
-| Financial tracking | Income and expense sheets typed by hand; invoices written in a paper book | Totals depend on manual arithmetic; nothing checks an invoice number against the book; one file on removable storage is the only copy |
+| Financial tracking | Income and expense sheets typed by hand; invoices written in a paper book | Totals depend on manual arithmetic; nothing checks an invoice number against the book; one file on a USB flash drive is the only copy |
 | Communication | Requests sent by messaging application or said in person | Requests are not recorded, so there is no way to follow a request to completion |
 | Booking | Enquiries arrived through Facebook, referrals from other people, contact and text messages, or walk-ins in person | No record of enquiries or which unit an enquiry was about |
 
@@ -60,7 +60,7 @@ The strongest evidence came from the owner's own records. Transferring her workb
 the 937 income rows (43%)** had no anniversary date and no deposit, and **five invoice numbers** were
 each used for two different payments, once for two tenants on the same day. They were kept exactly as she wrote them and are reported on every verification run. The decisive
 finding is that the problems did not sit in one area: **each area kept its own informal record, and nothing
-connected one to another**, the fragmentation described in Chapter 2 (Ullah et al., 2021; Burke,
+connected one to another**, the fragmentation described in Chapter 2 (Ullah et al., 2018; Burke,
 2026; Magno et al., 2024).
 
 ### 4.1.2 System Requirements
@@ -113,8 +113,8 @@ Her answers of 12 October 2026 settled the rest: the figure at the bottom of her
 year-to-date total; her thirteen expense categories stay and she may add her own; tenants do not
 report cash payments, because the administrators record every payment; the personal spending booked
 in 2025 was a renovation of her house; past Penthouse spending stays where it was filed; and three
-months with no receipt for one unit stay blank. One question remains open, the move-in date of each
-current tenancy (Chapter 5, recommendation 1).
+months with no receipt for one unit stay blank. Her workbook never recorded the move-in date of each
+current tenancy, so the system shows those dates as not recorded (Section 4.2.2).
 
 ---
 
@@ -865,7 +865,7 @@ code branch. Table 24 lists what is needed to use the system, and Table 25 the d
 | 1. Environment preparation | Hosting, database and gateway set up; security settings applied | Done |
 | 2. Record transfer | The owner's workbook transferred: 937 income rows and 1,327 expense allocations | Done |
 | 3. Pilot use | The system used alongside the owner's existing records; differences investigated | In progress |
-| 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | Begun: every tenant account prepared with its own starting password on 29 September 2026; the owner and three tenants shown the system and using it on their own accounts on 30 September 2026 (Section 4.3.7); the first change taken from the owner's own practice, acknowledgement receipts for payments with no invoice number, made on 1 October 2026. The hand-over of the user manual is still to come |
+| 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | Done: every tenant account prepared with its own starting password on 29 September 2026; the owner guided through the system, and the owner and three tenants using it on their own accounts, on 30 September 2026 (Section 4.3.7); the first change taken from the owner's own practice, acknowledgement receipts for payments with no invoice number, made on 1 October 2026 |
 | 5. Full transition | The system becomes the owner's main record once both records agree | Not yet: as of 7 October 2026 the system has not become the owner's main record and runs beside her own records |
 
 Three risks are managed deliberately:

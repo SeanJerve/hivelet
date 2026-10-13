@@ -50,7 +50,8 @@ Education, 12*(4), 201–211.
 
 Kotkar, A. R., Kaldate, V. N., Kandekar, R. B., Andhale, S. A., & Wamane, S. J. (2026).
 Revolutionizing student accommodation: A MERN based rental system for seamless property management.
-*International Journal of Engineering Research & Technology, 15*(2), 1–10. https://www.ijert.org/
+*International Journal of Engineering Research & Technology, 15*(2), 1–10.
+https://www.ijert.org/research/revolutionizing-student-accommodation-a-mern-based-rental-system-for-seamless-property-management-IJERTV15IS020113.pdf
 
 Laudon, K., & Laudon, J. (2006). *Management information systems: Managing the digital firm* (9th
 ed.). Prentice Hall. https://www.iicseonline.org/management_information_system_2.pdf
@@ -78,6 +79,6 @@ https://doi.org/10.32877/bt.v8i1.2738
 Setty, Y. (2022). *Management system for an apartment* [Master's capstone project, Governors State
 University]. OPUS Open Portal to University Scholarship. https://opus.govst.edu/capstones
 
-Ullah, **[TO DO: the full entry for Ullah et al. (2021), cited in Sections 1.1, 2.1.1, 2.1.6 and
-4.1.1. Copy the authors, title, journal, volume, pages and DOI from the source the team read; it was
-never in the reference list.]** (2021).
+Ullah, F., Sepasgozar, S. M. E., & Wang, C. (2018). A systematic review of smart real estate technology:
+Drivers of, and barriers to, the use of digital disruptive technologies and online platforms.
+*Sustainability, 10*(9), 3142. https://doi.org/10.3390/su10093142

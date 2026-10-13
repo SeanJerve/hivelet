@@ -10,8 +10,8 @@ operational constraints such as limited infrastructure, technical capacity, and 
 availability (Mia et al., 2024).
 
 In small-scale boarding house operations, administrative tasks are still managed using standalone
-spreadsheet files and manual documentation. In observed cases within the study context, these
-records are stored in removable storage devices, exposing the system to risks in data integrity such
+spreadsheet files and manual documentation. In the boarding house studied, these records were kept
+on a USB flash drive, exposing them to risks in data integrity such
 as accidental deletion, file corruption, duplication, and lack of version control. In addition,
 tenant concerns and maintenance requests are often communicated through informal channels such as
 messaging applications or verbal reporting, resulting in untracked requests, delayed responses, and
@@ -24,7 +24,7 @@ ensuring timely resolution of tenant concerns. Although existing web-based prope
 systems aim to address such inefficiencies through centralized data storage and real-time
 processing (Kotkar et al., 2026), many are commonly designed with assumptions aligned to large-scale
 or commercial property environments. These systems typically assume stable infrastructure,
-structured workflows, and dedicated administrative personnel (Ullah et al., 2021), which do not
+structured workflows, and dedicated administrative personnel (Ullah et al., 2018), which do not
 reflect the operational conditions of small-scale, resource-constrained boarding houses.
 
 In the Philippine context, these challenges are further reinforced by reliance on cash-based
@@ -114,8 +114,9 @@ operations.
 ## 1.4 Scope and Delimitations
 
 This study focuses on the design, development, and evaluation of Hivelet, a Progressive Web
-Application (PWA) created to transition the 33-unit Fe Galang Da Silva Boarding House near Bicol
-University from manual, paper-based administration to a centralized digital management system. To
+Application (PWA) created to transition the 33-unit Fe Galang Da Silva Boarding House, at 32
+Sapaguita Street, Barangay 4 Sagpon, Old Albay District, Legazpi City, near Bicol University, from
+manual, paper-based administration to a centralized digital management system. To
 achieve this, Hivelet integrates comprehensive room and tenant management capabilities, facilitating
 seamless onboarding, the secure digital storage of records, real-time monitoring of room
 availability, and a public-facing booking module that allows prospective renters to submit

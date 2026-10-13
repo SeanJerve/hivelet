@@ -487,9 +487,9 @@ evaluators, P = prospective tenants; delete the P column if no prospect answered
 > Institute of Electrical and Electronics Engineers. (2022). *Software and systems engineering:
 > Software testing: Part 1: General concepts* (ISO/IEC/IEEE Standard No. 29119-1:2022).
 
-*Before pasting, check each title and year on iso.org.* ISO/IEC 25040 has a newer edition than
-2011; cite 2011 only if the adviser accepts it alongside the 2011 model, otherwise cite the current
-edition, whose five steps are the same. If the panel asks why the measures are not the coded ones
+*Before pasting, check each title and year on iso.org.* ISO/IEC 25040 has a 2024 edition, but it
+was retitled *Quality evaluation framework* and restructured, so it does not have the five steps
+followed here; cite 2011, the process written for the 2011 model (decided 13 Oct 2026). If the panel asks why the measures are not the coded ones
 in ISO/IEC 25023 (for example a measure's identifier): the measures follow its form, a ratio of
 counts for a named sub-characteristic, using the counts the tests produced; the study did not
 compute every measure the standard lists, and says which sub-characteristics it did not evaluate

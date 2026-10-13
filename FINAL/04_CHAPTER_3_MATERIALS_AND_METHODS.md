@@ -128,10 +128,12 @@ connectivity, and evolving user needs.
 In this phase, the researchers conducted needfinding through direct collaboration with the landlady
 and management of the Fe Galang Da Silva Boarding House. This aligns with the first objective of the
 study, which focuses on identifying user needs and operational challenges. Data was gathered through
-interviews and observation to examine existing administrative practices, including the use of manual
+interviews with the landlady, the first in February 2026, through observation, and through a review of
+her income and expense workbook, to examine existing administrative practices, including the use of manual
 ledgers, fragmented financial tracking, and unstructured communication for maintenance requests. These
 findings revealed inefficiencies such as inconsistent record-keeping, delayed communication, and lack
-of centralized monitoring. Based on these insights, the researchers defined the system requirements,
+of centralized monitoring. Two later rounds of written questions, answered on 17 September and 12 October 2026, settled what
+the interviews had left open. Based on these insights, the researchers defined the system requirements,
 scope, and core functionalities of Hivelet. Emphasis was placed on the need for a centralized digital
 platform capable of integrating booking, financial tracking, and maintenance management within a
 unified system.
@@ -239,17 +241,18 @@ and only technical evaluators rated Maintainability, since it requires reviewing
 documentation. Responses were measured using the 5-point Likert scale in Table 3-4, and mean scores were
 interpreted using the ranges in Table 3-5.
 
-**Participants.** The administrator, who runs the boarding house day to day on behalf of the
-proprietor whose name it carries, took part as the system's only administrator. Because she is the
-one person who uses the owner's side of the system, Chapter 4 refers to her, in that role, as the
-owner. Tenants were chosen by purposive sampling from the occupied units, to
-include tenants who pay in cash on site, tenants less used to mobile applications, users of both
-Android and iPhone handsets, and residents of more than one cluster. One prospective tenant, a person
-looking for a room who does not live at the boarding house, used the public website on their own phone
-without an account: they browsed the units and rates and sent an inquiry about a unit. The
-administrator's reply was tested separately by the team. Technical evaluators were IT faculty,
-developers or IT professionals who were given access to the source code and documentation before
-rating.
+**Participants.** The landlady, who runs the boarding house day to day on behalf of its owner, took
+part as the system's only administrator. Because she is the one person who uses the owner's side of
+the system, Chapter 4 refers to her, in that role, as the owner. Tenants were chosen by purposive and convenience sampling: from the tenants
+at the boarding house on the evening of the test, the researchers chose ones who pay in cash on site,
+ones less used to mobile applications, users of both Android and iPhone handsets, and residents of
+more than one cluster. One prospective tenant, a person who does
+not live at the boarding house and was invited by the researchers to use the public website as someone
+looking for a room would, used it on their own phone without an account: they browsed the units and
+rates and sent an inquiry about a unit. The
+administrator's reply was tested separately by the team. The technical evaluator was an IT professional
+who works in software quality assurance, and was given access to the source code and documentation
+before rating.
 
 **Instruments.** Four instruments were used: task cards read aloud to each tester, in English and
 Filipino; an observation sheet recording, for each task, whether it was completed without help, with
@@ -258,16 +261,16 @@ survey questionnaire, with a separate section for each of the four respondent gr
 administrator, tenants, prospective tenants and technical evaluators), and the tenant and prospective
 tenant sections in English and Filipino.
 
-**Data gathering.** Each tester gave written consent before taking part. Before using the system,
-every participant watched the same short video introducing Hivelet (**[TO DO: LENGTH]** minutes); no
-other demonstration or instruction was given. Each used their own account on their own device while a
+**Data gathering.** Each tester gave written consent before taking part. Each used their own account on their own device while a
 facilitator read the tasks without indicating where to tap and an observer completed the observation
-sheet. Testers were asked to think aloud, and were not interviewed during or after their tasks. When a
+sheet. Testers were asked to think aloud, saying, for example, whether they expected a change to their
+personal details to save, whether a payment showed as settled once the owner confirmed it, and whether
+a repair request appeared once sent; they were not interviewed during or after their tasks. When a
 tester was stuck, help followed a fixed order: a neutral prompt after about thirty seconds ("What are
 you looking for?"), then a hint about where to look, and only then a demonstration. A task finished
 after the prompt counted as completed without help, one finished after the hint as completed with
-help, and one that needed a demonstration as not completed. Screen recordings and photographs were
-taken only with the tester's permission. Each respondent answered the survey after using the system,
+help, and one that needed a demonstration as not completed. Photographs were taken for
+documentation, only with the tester's permission; no screen was recorded. Each respondent answered the survey after using the system,
 without the researchers viewing their answers: the tenants and the prospective tenant straight after
 their tasks, the administrator the same evening, and the technical evaluator the day after the
 evaluators' review. Page load times were measured once per screen
@@ -360,7 +363,7 @@ The study used the owner's real records and the tenants' real accounts, so it fo
 Privacy Act of 2012 (Republic Act No. 10173). Participation was voluntary and could be withdrawn at any
 time without any effect on a tenant's tenancy. Each tenant used only their own account, which shows
 only their own records, and received an individual starting password in person, which they replaced at
-first sign-in. Giving a name on the survey was optional; names were removed before the responses were
-analysed, and none appears in this paper. Names, contact details and amounts are hidden in every
-figure in this paper, and faces appear only with consent. Recordings and notes were kept by the
+first sign-in. Respondents could give a name so that the researchers could tell the responses apart; the
+names were removed before the responses were analysed, and none appears in this paper. Names, contact details and amounts are hidden in every
+figure in this paper, and faces appear only with consent. Photographs and notes were kept by the
 research team and are deleted after the defense.

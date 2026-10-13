@@ -18,12 +18,12 @@ apartment environments.
 The increasing complexity of apartment and boarding house operations has intensified the need for
 structured and centralized management systems. Existing literature consistently identifies
 fragmentation of administrative workflows as one of the primary operational issues in residential
-property management environments (Ullah et al., 2021; Burke, 2026; Setty, 2022). As the number of
+property management environments (Ullah et al., 2018; Burke, 2026; Setty, 2022). As the number of
 tenants, transactions, and maintenance activities increases, traditional methods such as manual
 documentation, spreadsheet-based tracking, and informal communication become increasingly difficult
 to manage consistently and accurately.
 
-Ullah et al. (2021) explain that conventional property management practices often suffer from
+Ullah et al. (2018) explain that conventional property management practices often suffer from
 disconnected workflows, documentation inconsistencies, and inefficient coordination between
 operational tasks. Similarly, Burke (2026) emphasizes that increasing residential density
 proportionally increases administrative complexity, particularly in areas involving tenant
@@ -181,7 +181,7 @@ The reviewed literature collectively demonstrates that operational inefficiencie
 management environments primarily emerge from fragmented administrative structures rather than the
 complete absence of digital technologies. Property management studies identify persistent issues
 involving disconnected workflows, inconsistent record management, delayed communication, and
-operational redundancy (Burke, 2026; Ullah et al., 2021; Magno et al., 2024). MIS literature explains
+operational redundancy (Burke, 2026; Ullah et al., 2018; Magno et al., 2024). MIS literature explains
 these inefficiencies as consequences of fragmented information processing and lack of centralized
 operational visibility (Ghasemaghaei et al., 2018; Pressman & Maxim, 2020).
 
@@ -251,8 +251,7 @@ into outputs.
 
 *Figure 2. Conceptual Framework.*
 
-**[KEEP: the Figure 2 image from the current manuscript, p. 22, but REDRAW it first: "Ayden" appears
-twice in it and must read "Adyen".]**
+![Conceptual framework](figures/figure-2-2-conceptual-framework.png)
 
 In this study, the Input phase consists of the study objectives, review of related literature, client
 interviews, needfinding observations, and analysis of existing administrative and payment workflows.
@@ -261,8 +260,9 @@ operational gaps, user requirements, and system constraints within the apartment
 environment. The Process phase applies the Agile Software Development Life Cycle, integrating
 iterative stages of planning, design, development, testing, deployment, and review. Within this phase,
 the system modules are implemented, including financial tracking (analytics and reports), booking
-management (reservation logic), tenant management (profiles and records), and an optional online
-payment integration using the Adyen API. These processes transform identified requirements into a
+management (reservation logic), tenant management (profiles and records), maintenance ticketing
+(requests and notifications), and an optional online payment integration using the Adyen API with
+GCash. These processes transform identified requirements into a
 functional and structured system aligned with real-world operational needs. The Output phase includes
 the developed Hivelet system, its functional modules, and generated outputs such as financial reports
 exportable as Excel files, enquiry and tenancy records, and payment records. It also includes the
