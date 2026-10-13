@@ -443,13 +443,14 @@ and deleting an expense were not exercised by the owner.
 
 ### 4.3.5 Responsiveness and Operational Performance
 
-Response times were measured on 30 September 2026 on the live system, on a laptop in Google Chrome
-over the boarding house's Wi-Fi and on a phone, from the tap until the figures the user came for were
+Response times were measured on 30 September 2026 on the live system, on a Dell XPS 15 laptop in
+Google Chrome 154 over the boarding house's Wi-Fi and on an iPhone 15 in Safari over mobile data, from
+the tap until the figures the user came for were
 on screen (Table 11).
 
 **Table 11.** Page load and response times (30 September 2026, seconds)
 
-| Screen | Laptop | Mobile phone |
+| Screen | Laptop (Dell XPS 15, Chrome 154, Wi-Fi) | Phone (iPhone 15, Safari, mobile data) |
 | :--- | --: | --: |
 | Public home page, first load | 1.85 | 2.42 |
 | Public home page, second load | 0.62 | 0.95 |
@@ -825,7 +826,7 @@ code branch. Table 24 lists what is needed to use the system, and Table 25 the d
 
 | Side | Requirement | Used in testing, 30 September 2026 |
 | :--- | :--- | :--- |
-| Owner | A current web browser on a computer, and an internet connection | The administrator laptop, Chrome; the team's laptop, a Dell XPS 15 on Windows 11 with Chrome 154, Edge and Firefox 157 (Table 11, §4.4.3) |
+| Owner | A current web browser on a computer, and an internet connection | The administrator's laptop, an Acer Nitro V 15 with Chrome; the team's laptop, a Dell XPS 15 on Windows 11 with Chrome 154, Edge and Firefox 157 (Table 11, §4.4.3) |
 | Tenants and visitors | A current web browser (Chrome, Edge, Firefox or Safari) on a phone or computer, and an internet connection | Infinix GT20 with Android and Chrome 154; iPhone 15 and iPhone 13 with Safari; the three tenants' own phones, models not recorded |
 | Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen merchant account with GCash (optional online payment) | Vercel; PostgreSQL 17.6 on Supabase; Adyen Web Drop-in 6.44 and API Library 32.0 (Table 7) |
 | Administration | A computer that can run Node.js, used only for backups and verification runs | Node.js 22.16 on the team's Windows 11 computer |

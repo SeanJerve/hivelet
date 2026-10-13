@@ -494,6 +494,15 @@ counts for a named sub-characteristic, using the counts the tests produced; the 
 compute every measure the standard lists, and says which sub-characteristics it did not evaluate
 (Chapter 4, Table 22A).
 
+**H9. The devices actually used (added 2026-10-13).** Chapter 3 §3.1.2 plans a mid-range Android phone
+(Table 3), but the timings in Chapter 4 Table 11 were taken on an iPhone 15. The guide wants Chapter 3 to
+describe what was actually done. *Add after the paragraph that follows Table 3:*
+
+> During testing, the workstation was a Dell XPS 15 laptop with Google Chrome 154; the response times
+> were taken on it over the boarding house's Wi-Fi and on an iPhone 15 in Safari over mobile data, and
+> the offline, installation and browser tests also used an Infinix GT20 with Android and Chrome. The
+> administrator used her own laptop, an Acer Nitro V 15, with Chrome.
+
 ## F. Optional improvements (not errors)
 
 - ~~§2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would
