@@ -7,7 +7,8 @@ these files replace Chapters 1 to 5, the Abstract and the References entirely.
 
 **Two other files here:** `QUESTIONS_TO_FINALIZE.md` (what is still needed, Section 1) and
 `STUDY_GUIDE_REFERENCES.md` (every reference: what it found, where the paper uses it, and what to
-say if the panel asks).
+say if the panel asks), and `STUDY_GUIDE_CODE.md` (every feature: its screen, endpoint, code and
+tables, how to debug it, and the questions a panel asks about the code).
 
 ## 1. The order of the Word document
 
