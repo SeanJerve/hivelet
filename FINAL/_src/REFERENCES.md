@@ -125,7 +125,7 @@ system for boarding house operations. *Bit-Tech (Binary Digital - Technology), 8
 https://doi.org/10.32877/bt.v8i1.2738
 
 Setty, Y. (2022). *Management system for an apartment* [Master's capstone project, Governors State
-University]. OPUS Open Portal to University Scholarship. https://opus.govst.edu/capstones
+University]. OPUS Open Portal to University Scholarship. https://opus.govst.edu/cgi/viewcontent.cgi?article=1542&context=capstones
 
 Thevaraju, D. P., Zakaria, Z., Sukri, K. A. M., & Kasim, S. (2019). Vista Angkasa Apartment Management
 System. *International Journal of Advanced Science Computing and Engineering, 1*(2), 76–84.
