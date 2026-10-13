@@ -66,7 +66,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
   s.addText('A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House', { x: 0.8, y: 2.7, w: 11.5, h: 1.0, fontFace: FONT, fontSize: 24, color: C.white });
   s.addText('IT 124 Capstone Project 2 · Group 4, BS Information Technology · Bicol University College of Science', { x: 0.8, y: 4.2, w: 11.5, h: 0.5, fontFace: FONT, fontSize: 14, color: C.soft });
   s.addText('[Team members]   ·   Adviser: [name]   ·   [Defense date]', { x: 0.8, y: 4.8, w: 11.5, h: 0.5, fontFace: FONT, fontSize: 14, color: C.soft });
-  s.addNotes('Introduce the team and the client: a 33-unit boarding house in Legazpi City, 32 units occupied, run by the landlady for its owner.');
+  s.addNotes('Introduce the team and the client: a 33-unit boarding house in Legazpi City, 32 of them occupied, run by its owner.');
 }
 
 // 2. The problem
