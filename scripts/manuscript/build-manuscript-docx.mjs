@@ -19,9 +19,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   Document, Packer, Paragraph, TextRun, Header, AlignmentType, PageNumber, NumberFormat,
-  TableOfContents, HeadingLevel,
+  TableOfContents, HeadingLevel, StyleLevel,
 } from 'docx';
-import { convert, runs, PAGE, FONT, BODY, HEADING_STYLES } from './docx-from-markdown.mjs';
+import { convert, runs, PAGE, FONT, BODY, HEADING_STYLES, CAPTION_STYLES } from './docx-from-markdown.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const FINAL = path.join(root, 'FINAL');
@@ -65,12 +65,19 @@ const figureAppendix = (letter, title, file, figureNo) => [
   ...convert(`*Figure ${letter}-1. ${title}, as built (the same diagram as Figure ${figureNo}).*\n\n![${title}](${path.join(FIG, file)})`, { baseDir: FIG, onImage }),
 ];
 
+// Not a Heading 1, so the table of contents does not list itself.
+const listTitle = (text) => new Paragraph({ pageBreakBefore: true, alignment: AlignmentType.CENTER, spacing: { after: 240 }, children: [new TextRun({ text, font: FONT, size: 28, bold: true })] });
 const front = [
   ...md('01_ABSTRACT.md'),
-  // Not a Heading 1, so the table of contents does not list itself.
-  new Paragraph({ pageBreakBefore: true, alignment: AlignmentType.CENTER, spacing: { after: 240 }, children: [new TextRun({ text: 'TABLE OF CONTENTS', font: FONT, size: 28, bold: true })] }),
+  listTitle('TABLE OF CONTENTS'),
   new TableOfContents('Table of Contents', { hyperlink: true, headingStyleRange: '1-3' }),
-  new Paragraph({ spacing: { before: 240 }, children: runs('*Right-click the table and choose Update Field if it is empty, after adding the lists of tables and figures from the inserted captions.*') }),
+  // Built by Word from the caption styles (CAPTION_STYLES), every chapter and appendix caption. By
+  // the style's NAME: given the id ("TableCaption") Word found no entries (tested 13 Oct 2026).
+  listTitle('LIST OF TABLES'),
+  new TableOfContents('List of Tables', { hyperlink: true, stylesWithLevels: [new StyleLevel('Table Caption', 1)] }),
+  listTitle('LIST OF FIGURES'),
+  new TableOfContents('List of Figures', { hyperlink: true, stylesWithLevels: [new StyleLevel('Figure Caption', 1)] }),
+  new Paragraph({ spacing: { before: 240 }, children: runs('*If a list is empty, press Ctrl+A and then F9 to update every field. After pasting into the final document, give each pasted caption the Table Caption or Figure Caption style (or keep this file\'s), or the lists will not find them.*') }),
 ];
 
 const appendices = [
@@ -111,7 +118,7 @@ const geometry = { size: { width: PAGE.width, height: PAGE.height }, margin: { t
 
 const doc = new Document({
   features: { updateFields: true },
-  styles: { default: { ...HEADING_STYLES, document: { run: { font: FONT, size: BODY } } } },
+  styles: { default: { ...HEADING_STYLES, document: { run: { font: FONT, size: BODY } } }, paragraphStyles: CAPTION_STYLES },
   sections: [
     { properties: { page: { ...geometry, pageNumbers: { start: 1, formatType: NumberFormat.LOWER_ROMAN } } }, headers: pageNumbers(), children: front },
     { properties: { page: { ...geometry, pageNumbers: { start: 1, formatType: NumberFormat.DECIMAL } } }, headers: pageNumbers(), children: main },

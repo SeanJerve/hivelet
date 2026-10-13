@@ -64,8 +64,17 @@ function heading(level, text, pageBreak) {
   return new Paragraph({ heading: lv, pageBreakBefore: !!pageBreak, children: [new TextRun({ text, font: FONT })] });
 }
 
-const caption = (text) => new Paragraph({
-  keepNext: true, alignment: AlignmentType.CENTER,
+/**
+ * A caption's style names it as a table or a figure caption, so Word can build the List of Tables
+ * and List of Figures from them (TOC fields by style, in build-manuscript-docx.mjs). The look is
+ * set on the paragraph as before; the style is the marker.
+ */
+export const CAPTION_STYLES = [
+  { id: 'TableCaption', name: 'Table Caption', basedOn: 'Normal', next: 'Normal', quickFormat: true },
+  { id: 'FigureCaption', name: 'Figure Caption', basedOn: 'Normal', next: 'Normal', quickFormat: true },
+];
+const caption = (text, style) => new Paragraph({
+  style, keepNext: true, alignment: AlignmentType.CENTER,
   spacing: { before: 240, after: 120, line: DOUBLE, lineRule: LineRuleType.AUTO },
   children: runs(text),
 });
@@ -132,8 +141,8 @@ export function convert(md, { baseDir, firstHeadingPageBreak = true, references 
     if (!para.length) return;
     const text = para.join(' ').trim(); para = [];
     if (!text) return;
-    if (/^\*Figure\s+[A-Z0-9]+(-\d+)?[a-z]?\./.test(text)) { lastCaption = text.replace(/^\*|\*$/g, ''); out.push(caption(text)); }
-    else if (/^\*\*Table\s+[A-Z0-9]+(-\d+)?[A-Z]?\.\*\*/.test(text)) out.push(caption(text));
+    if (/^\*Figure\s+[A-Z0-9]+(-\d+)?[a-z]?\./.test(text)) { lastCaption = text.replace(/^\*|\*$/g, ''); out.push(caption(text, 'FigureCaption')); }
+    else if (/^\*\*Table\s+[A-Z0-9]+(-\d+)?[A-Z]?\.\*\*/.test(text)) out.push(caption(text, 'TableCaption'));
     else if (references) out.push(body(text, { hanging: true, align: AlignmentType.LEFT, after: 240 }));
     else out.push(body(text));
   };
