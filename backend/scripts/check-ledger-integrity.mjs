@@ -32,6 +32,7 @@ import dotenv from 'dotenv';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { billsCoveredBy } from '../../database/billsCoveredBy.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 dotenv.config({ path: join(here, '..', '..', '.env') });
@@ -970,6 +971,32 @@ if (live.length) {
   ).length;
   check('BR-017 Payment Verification', selfVerified,
     `${pays.length} payments, none Verified without a verifier`);
+
+  /**
+   * BR-013: no tenant is shown a bill as owed for a period her receipts already cover (B-107).
+   *
+   * A raised bill is what the tenant's Overview shows first, and it counts as owed while it is not
+   * Paid and its Verified payments fall short of it (TenantOverviewView, `unpaidBill`). Recording a
+   * receipt on Monthly Income settles the bills it covers; a receipt inserted any other way does
+   * not. On 2026-10-13 two tenants (1d, F2B) were shown August as overdue, paid on 12 and 25 August,
+   * because migration 062 had inserted those receipts. Nothing checked it: every other rule tests a
+   * table against itself, and this is one table against another.
+   */
+  {
+    const owedBills = await rows('bills?status=neq.Paid&select=id,room_id,status,total_amount,billing_period_start,billing_period_end');
+    const verifiedOn = new Map();
+    for (const p of pays) {
+      if (p.verification_status === 'Verified' && p.bill_id) verifiedOn.set(p.bill_id, (verifiedOn.get(p.bill_id) ?? 0) + Number(p.amount));
+    }
+    const shownOwed = owedBills.filter((b) => Number(b.total_amount) - (verifiedOn.get(b.id) ?? 0) > 0);
+    const unitOf = new Map(rooms.map((r) => [r.id, r.room_number]));
+    const paidAlready = billsCoveredBy(income, shownOwed);
+    for (const { bill, receipt } of paidAlready) {
+      console.log(`        ${unitOf.get(bill.room_id)}: bill ${bill.billing_period_start}..${bill.billing_period_end} shown owed; receipt ${receipt.invoice_number ?? '(no number)'} paid ${receipt.date_paid} covers it`);
+    }
+    check('BR-013 Bills Against Receipts', paidAlready.length,
+      `${shownOwed.length} bills shown as owed, none for a period a live receipt covers`);
+  }
 
   /**
    * BR-033 — THE RENT CYCLE THE SYSTEM BELIEVES, AGAINST THE ONE SHE KEEPS.
