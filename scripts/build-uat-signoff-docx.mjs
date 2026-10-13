@@ -45,7 +45,7 @@ const doc = new Document({
       bullet('Three tenants used their own phones and accounts: every task they attempted was completed, 31 of 34 attempts without help.'),
       bullet('One prospective tenant browsed the public site and sent an inquiry about a unit.'),
       bullet('The owner and two tenants used the system at the same time: each tenant saw only their own unit, and no session affected another.'),
-      bullet('The one failure: with the connection cut, the Overview showed ₱0 instead of "—". It could not be reproduced on 1 October and is to be tested again on your laptop. On one Android phone, the "cannot tell whether it was saved" message came late; a fix was made on 1 October, to be tested again on that phone.'),
+      bullet('The one failure: with the connection cut, the Overview showed ₱0 instead of "—". Tested again on your laptop on 13 October, it passed. On one Android phone the "cannot tell whether it was saved" message came late; corrected on 1 October, it was on time when tested again on 13 October.'),
 
       heading('The parts of the system you used (tick what you used)'),
       box('Units, rates and tenants (moving a tenant in and out)'),

@@ -25,12 +25,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, '..');
 
-// The FINAL MANUSCRIPT copy is the authority (its README says the `chapter 4 tenative` drafts are
+// The FINAL MANUSCRIPT copy is the authority; the `chapter 4 tenative` drafts were archived on 13 Oct 2026 (they were
 // superseded). This read the tentative draft until 2026-09-29 - a condensed copy half the length
 // that called itself "synchronized" and lacked everything added after 28 September - so the Word
 // file in FINAL MANUSCRIPT was being built from the wrong text.
 const inputMdPath = path.join(root, 'docs', 'FINAL MANUSCRIPT', 'CHAPTER_4_RESULTS_AND_DISCUSSION.md');
-const outputDocxPath1 = path.join(root, 'docs', 'chapter 4 tenative', 'CHAPTER_4_DRAFT.docx');
 const outputDocxPath2 = path.join(root, 'docs', 'FINAL MANUSCRIPT', 'CHAPTER_4_RESULTS_AND_DISCUSSION.docx');
 
 // Document Geometry & Typography Standards
@@ -572,8 +571,6 @@ async function main() {
   const buffer = await Packer.toBuffer(doc);
 
   console.log(`Writing output docx (size: ${buffer.length} bytes) to:`);
-  console.log('1.', outputDocxPath1);
-  fs.writeFileSync(outputDocxPath1, buffer);
 
   console.log('2.', outputDocxPath2);
   fs.writeFileSync(outputDocxPath2, buffer);

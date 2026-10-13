@@ -12,7 +12,7 @@
  * verbal interpretation in Chapter 4 comes from these responses, and computing them by hand is
  * hours of spreadsheet work where one mis-dragged range changes a result the panel reads.
  *
- * The items are read from `docs/chapter 4 tenative/build_survey_form.gs`, the file that built the
+ * The items are read from `docs/FINAL MANUSCRIPT/survey/build_survey_form.gs`, the file that built the
  * form, so the questions scored here are exactly the questions asked. A response column is matched
  * to an item by its header, which Google Forms sets to the question's title. An item asked of two
  * groups with the same words (for example "I can tell what each screen is for without being
@@ -38,7 +38,7 @@ if (!csvPath || !['A', 'B'].includes(method)) {
 }
 
 // ---- the items, from the file that built the form -------------------------
-const gsFile = path.join(root, 'docs', 'chapter 4 tenative', 'build_survey_form.gs');
+const gsFile = path.join(root, 'docs', 'FINAL MANUSCRIPT', 'survey', 'build_survey_form.gs');
 const ctx = {};
 vm.createContext(ctx);
 const def = vm.runInContext(

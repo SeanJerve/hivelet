@@ -111,3 +111,7 @@ scripts/field-tests/shots/
 
 # The course guides (the professor's PDFs) stay on the machine that has them; the repo is public
 /docs/FINAL MANUSCRIPT/guides/
+
+# Documents kept on this machine but out of the repository (13 Oct 2026 clean-up); recover any
+# of them from the tag pre-cleanup-2026-10-13 on another machine
+/_ARCHIVE (not in repo)/

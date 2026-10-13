@@ -210,7 +210,8 @@ status, and each tenancy the number of occupants, the move-in date and emergency
 owner changes a rate, a database trigger records the old rate, the new rate, the date and who made the
 change, so no path can change a rate without leaving that record. The owner's workbook did not record
 move-in dates, so for the transferred tenancies the screen says the date is not recorded rather than
-showing a guessed one.
+showing a guessed one. Since 13 October 2026 a tenant also sees the deposit held for their tenancy on
+their own Overview, as one tenant asked in the survey (Table 23).
 
 *Figure 10. Room and rate directory.*
 
@@ -437,7 +438,8 @@ the full results are in Appendix M, Table M-1. Of the 30 rows, 24 passed the fir
 5 were not performed as written. Every function a tenant uses passed, as did onboarding, the duplicate
 guards, voiding, inquiry replies, repairs, the Excel export and moving a tenant out. The one failure
 was step 23b: with the connection cut, the Overview showed ₱0 where the design requires "—", so that
-a missing figure is never read as a zero balance (Table 23A). A rate change and its reversal were
+a missing figure is never read as a zero balance; re-tested on the owner's laptop on 13 October 2026,
+it passed (Table 23A). A rate change and its reversal were
 skipped, and an expense split across two areas was entered as two expenses, so splitting, editing
 and deleting an expense were not exercised by the owner.
 
@@ -570,7 +572,8 @@ two tenants used the system at the same time, every screen loaded, each tenant s
 unit, the owner's full year of Monthly Income opened in about three seconds, and no session
 affected another (Appendix M, Table M-22). On two phones the offline behavior
 matched Table 11A, except that the Android phone showed the "cannot tell whether it was saved" message
-after 60 to 80 seconds instead of 45, recorded as a defect (Table 23A).
+after 60 to 80 seconds instead of 45; corrected on 1 October, it was on time when re-tested on that
+phone on 13 October 2026 (Table 23A).
 
 Table 11E brings the testing together by the test levels of ISO/IEC/IEEE 29119 (Section 3.2.4).
 
@@ -708,7 +711,7 @@ names is present, and 96 to 100 per cent of the executed checks of correctness g
 **Security** (4.70) is discussed in Section 4.4.4. **Compatibility** (4.67) agrees with the browser
 matrix, on which every combination tried worked. **Reliability** (4.62) agrees most closely with the
 testing: the technical evaluator's 3 for handling a failed request without presenting incorrect data
-names the one defect the testing left open, the ₱0 of step 23b. **Performance Efficiency** (4.42)
+names the one defect the testing found, the ₱0 of step 23b, since resolved. **Performance Efficiency** (4.42)
 matches the measurements: no failed request, but screens of two to three seconds on a phone.
 
 The two lowest were rated High Quality. **Usability (4.12)** is the lowest of the characteristics all
@@ -804,12 +807,12 @@ display or a weakness with a workaround; **low**, usability, appearance or harde
 | Activity | Found | Highest severity | Resolved | Open or accepted |
 | :--- | --: | :--- | --: | :--- |
 | Screen-versus-database audit, 26 and 29 September (Table 9) | 6 | High: a tenant's payments not shown; a voided receipt shown as paid | 6 | None |
-| Functional walkthrough, 30 September (Appendix M, Table M-1) | 1 | Medium: ₱0 instead of "—" with the connection cut | 0 | 1 open: not reproduced on 1 October; to be tested again on the owner's laptop |
-| Testing day on phones, 30 September | 1 | Medium: the "cannot tell whether it was saved" message late on Android | 1 | Mitigated; to be tested again on the same phone |
+| Functional walkthrough, 30 September (Appendix M, Table M-1) | 1 | Medium: ₱0 instead of "—" with the connection cut | 1 | None: passed when re-tested on the owner's laptop, 13 October |
+| Testing day on phones, 30 September | 1 | Medium: the "cannot tell whether it was saved" message late on Android | 1 | None: on time when re-tested on the same phone, 13 October |
 | Check of the evaluation account, 2 October | 1 | High: online payment refused for an amount owed | 1 | None |
 | Security review and outside probe, 2 October | 12 | High, operational: the hosting provider's visitor challenge could block payment notifications | 9 | 3 accepted as low risk: sign-in attempt limits counted per server instance, signing out not revoking a token, a wide connection policy |
 | Technical evaluators, 3 October | 14 | Medium: phone, email and photo validation | 14 | None |
-| **All activities** | **35** | | **31** | **1 open, 3 accepted** |
+| **All activities** | **35** | | **32** | **3 accepted** |
 
 No defect found was critical. The three accepted items are low-risk session weaknesses recorded in
 the security audit with the reason each was accepted.

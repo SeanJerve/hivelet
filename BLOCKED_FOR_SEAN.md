@@ -83,6 +83,8 @@ add her own expense kinds (being built today).
 
 ### B-103 — the survey export with every respondent's full name was pushed to the PUBLIC repo (cd7ea3f, 7 Oct 09:54) · **DECIDED 2026-10-12 (Lloyd: "yes, make it private") - OPEN: Sean, GitHub > Settings > General > Change visibility; then confirm Vercel still deploys**
 
+- **Also in the public history (found 13 Oct 2026):** `INCOME AND EXPENSES PAST RECORDS/Michelles-BH-Report-Income-and-Expenses-fr-Yr-2024-up (1) (1) (1).xlsx`, the owner's real workbook. Removed from the repository on 13 Oct (kept on Sean's machine in `_ARCHIVE (not in repo)/`), but every earlier commit still has it. Whatever is decided for the survey names (private repository, or a history rewrite) should cover this file too.
+
 - **What happened.** Lloyd's commit `cd7ea3f` added
   `docs/TESTING_DAY/results/ISO_IEC_25010_Software_Quality_Assessment.csv`. Its "Full Name (optional)"
   column held the names of all six respondents: three tenants, the administrator, a prospect and a
@@ -445,11 +447,11 @@ checked read-only against the live database by Claude at 22:55 Manila. Nothing w
 - ~~**Defect A-23: no warning for a wrong water figure.**~~ **Not a defect** (Claude, 1 Oct): since
   your 30 Sep change the water amount cannot be typed ("Water is never typed", OnsitePaymentModal),
   so there is no wrong figure to warn about. A-23 reclassified Pass; the case wording predates it.
-- **Defect A-30: offline Overview shows ₱0.** With the laptop disconnected and Overview reloaded,
+- **DONE 13 Oct (Sean): re-tested on the owner's laptop, passed.** **Defect A-30: offline Overview shows ₱0.** With the laptop disconnected and Overview reloaded,
   the money tiles showed **₱0** and "Try again" instead of "—". **Not reproduced on 1 Oct** (Claude):
   the local build with a cached admin session and no API reachable shows "could not be loaded" on
   every tile and no ₱0. Re-test on the owner's laptop; if it recurs, note which tile showed ₱0.
-- **Defect O-12 (Android): the 45-second save deadline fired after 60 to 80 s** on an Infinix GT20
+- **DONE 13 Oct (Sean): re-tested on the GT20, on time.** **Defect O-12 (Android): the 45-second save deadline fired after 60 to 80 s** on an Infinix GT20
   in Chrome (iPhone 15 Safari: within 45 s). **Mitigated 1 Oct** (Claude, `frontend/src/lib/api.ts`):
   Chrome slows timers on a hidden page, so the deadline is now also checked against the clock on
   `visibilitychange`; verified in the browser (before the deadline: still waiting; past it: TIMEOUT

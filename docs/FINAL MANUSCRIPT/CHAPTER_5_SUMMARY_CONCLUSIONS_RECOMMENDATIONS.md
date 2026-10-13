@@ -71,7 +71,7 @@ Based on the results of the study, the following conclusions were drawn:
    responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8 per
    cent), above the course standard of 90 per cent, with no critical defect (Chapter 4, Tables 11E
    and 23A). The one failure, a ₱0 shown without a connection, appeared only on a real device in its
-   user's hands and remains the one open defect.
+   user's hands, and it passed when re-tested on the owner's laptop.
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
    ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response, and its users rated
@@ -133,5 +133,5 @@ Based on the summary and conclusions of the study, the following are recommended
    same record at once, which this study did not test; measure availability over months, the owner's
    time on record-keeping, and the two sub-characteristics no instrument here covered, user interface
    aesthetics and reusability; build the instrument on ISO/IEC 25010:2023 (Chapter 4, Appendix M,
-   Table M-21); and ask tenants what they find missing, since one asked to see the deposit paid
-   (Sections 4.3.6 and 4.4.5).
+   Table M-21); and ask tenants what they find missing, as the survey did when one asked to see the
+   deposit, which the system now shows (Sections 4.2.2, 4.3.6 and 4.4.5).
