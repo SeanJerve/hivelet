@@ -22,7 +22,7 @@ Section 1.**
 | P12 | **More respondents** (Sean, 13 Oct): more technical evaluators and tenants answer the same Google Form; then the same: send the CSV, Claude recomputes every table and updates the counts (now 6) everywhere they appear | Waiting on the team |
 | P13 | **Unit PH and the test tenant** (B-106): move loydtest out after the defense demo | Decision for Sean |
 | P14 | **The owner's September and October receipts.** Her records in the system stop at August (15 receipts that month, none since), so the Overview reads "Not entered yet" for October and four tenants (1a, 1c, 2c, F1) see an amount due for a period her workbook had not marked paid at the end of August. Entering them **on Monthly Income** settles those bills; an import does not (B-107) | Found in the audit, 13 Oct. For the owner |
-| P15 | **Run migration 082** (B-107): two tenants, 1d and F2B, are shown an overdue amount for August, which they paid | Found in the audit, 13 Oct. For Sean, before the defense |
+| P15 | ~~Run migration 082~~ **Done 13 Oct (082 and 083).** (B-107): two tenants, 1d and F2B, are shown an overdue amount for August, which they paid | Found in the audit, 13 Oct. For Sean, before the defense |
 
 ## 2. The answers, and what each changed
 
