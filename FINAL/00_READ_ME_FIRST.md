@@ -101,10 +101,8 @@ agree with Chapter 5, and it does. It is about 310 words.
 
 Sorted alphabetically (FIXES C7), with italics restored to the APA 7 places (journal and volume,
 book and report titles), and the six ISO entries the method now cites added (2011a, 2011b, 2016a,
-2016b, 2023, and ISO/IEC/IEEE 29119-1:2022). **Monteverde et al. (2023) and Thevaraju et al. (2019)
-were removed:** they were listed but cited nowhere, which a panel reads as padding. To keep either,
-cite it in Chapter 2 first; for example, in Section 2.1.6, "Monteverde et al. (2023) likewise
-evaluated a web-based rental house finder against ISO/IEC 25010", using only what the source says.
+2016b, 2023, and ISO/IEC/IEEE 29119-1:2022). **Thevaraju et al. (2019) was removed:** it was listed but cited nowhere, which a panel reads as
+padding. Monteverde et al. (2023), removed for the same reason, is back with a sentence that cites it.
 **Ullah et al. (2018)**, *Sustainability* 10(9), 3142, is a review of how real estate adopts digital
 technologies. The draft cited it for things it does not say (that property management workflows are
 fragmented, that systems assume dedicated staff); it is now cited only for its finding that real
@@ -126,7 +124,22 @@ Landauer (1993) for why a few testers are defensible, since each additional test
 usability problems (it does not say three find most of them); Likert (1932) for
 the scale; the Data Privacy Act of 2012 (Republic Act No. 10173), which Section 3.4 named but the
 list lacked; and WCAG 2.2 (World Wide Web Consortium, 2023), the standard the accessibility scans
-checked against. The list now has 26 entries.
+checked against.
+
+**Newer sources (13 October 2026)**, each verified at Crossref or the publisher and cited only for
+what its abstract says. **Someone on the team should skim each before the defense**, since a panel may
+ask what it found:
+
+| Source | What it is | Where it is cited |
+| :--- | :--- | :--- |
+| Laudon et al. (2026), 18th ed. | The current edition of the MIS textbook, replacing the 9th (2006). Compare Figure 2-1 with its functions-of-an-information-system figure (marker in Chapter 2) | 2.1.2 |
+| Canlas et al. (2026) | FixHub, a Philippine dormitory maintenance system built with Agile and evaluated with ISO/IEC 25010 and TAM by tenants, administrators and IT professionals: the closest study to this one | 2.1.4, 2.1.6, 4.4.3 |
+| Puspasari et al. (2025) | A boarding house system with WhatsApp billing notifications, used by the manager only | 2.2 |
+| Muawwal (2024) | A PWA built with a manifest, a service worker and Express.js, installable and usable offline; replaces Google (2018), an old web page | 2.1.5, 2.1.6 |
+| Anuar and Othman (2024) | Usability heuristics developed for PWAs (Springer) | 2.1.5 |
+| Monteverde et al. (2023) | A rental house finder evaluated with ISO/IEC 25010; restored, now that a sentence cites it | 2.1.6 |
+
+The list now has 30 entries.
 
 **Why ISO/IEC 25040:2011 and not the 2024 edition.** The 2024 edition was retitled *Quality
 evaluation framework* and restructured, so its steps are not the five the evaluation followed. The

@@ -50,7 +50,7 @@ cohesive and traceable system processes.
 
 This theoretical foundation is grounded in Management Information Systems (MIS), which emphasize the
 transformation of fragmented operational data into centralized and actionable information for
-decision-making. According to Laudon and Laudon (2006), MIS functions as an organized system that
+decision-making. According to Laudon et al. (2026), MIS functions as an organized system that
 collects, processes, stores, and distributes information to support operational control,
 coordination, and administrative decision-making. Within apartment management environments, this
 framework explains why manual and semi-digital operations often become inefficient, as information is
@@ -58,13 +58,13 @@ typically distributed across isolated records, disconnected tools, and inconsist
 channels.
 
 This relationship is further illustrated in Figure 2-1, based on the Management Information System
-(MIS) framework by Laudon and Laudon (2006), which demonstrates the flow of data from fragmented
+(MIS) framework adapted from Laudon et al. (2026), which demonstrates the flow of data from fragmented
 operational sources through system processing mechanisms, resulting in consolidated and meaningful
 information outputs that support organizational decision-making.
 
-*Figure 2-1. Management Information System (MIS) framework by Laudon and Laudon.*
+*Figure 2-1. Management Information System (MIS) framework, adapted from Laudon et al. (2026).*
 
-**[KEEP: the Figure 2-1 image from the current manuscript, p. 13.]**
+**[KEEP: the Figure 2-1 image from the current manuscript, p. 13. Before the defense, compare it with the functions-of-an-information-system figure in the 18th edition (2026); if they differ, redraw it from that edition.]**
 
 The importance of centralized information processing is further reinforced by Ghasemaghaei et al.
 (2018), who emphasize that organizational decision-making performance significantly improves when
@@ -135,6 +135,12 @@ response management. By transforming tenant complaints into recorded and traceab
 workflows, digital ticketing systems improve monitoring consistency and reduce communication gaps
 between administrators and tenants.
 
+Closest to this study, Canlas et al. (2026) developed FixHub, a maintenance reporting system for
+dormitories in the Philippines, using the Agile methodology, and evaluated it with ISO/IEC 25010 and
+the Technology Acceptance Model through surveys of tenants, administrators and IT professionals, who
+rated it very highly on every criterion. Its scope is maintenance concerns, emergency alerts and
+complaints.
+
 These findings collectively indicate that communication systems should not be treated merely as
 supplementary features but as integral operational components within apartment management
 environments. Consistent with MIS theory, structured communication mechanisms improve information
@@ -151,13 +157,16 @@ responsiveness, and operational coordination.
 While centralized systems improve operational coordination, effective implementation also depends on
 accessibility across devices and varying infrastructure conditions. Progressive Web Applications
 (PWAs) provide a technological framework capable of addressing these accessibility challenges within
-resource-constrained environments (Biørn-Hansen et al., 2019; Google, 2018).
+resource-constrained environments (Biørn-Hansen et al., 2019; Muawwal, 2024).
 
-Google (2018) describes PWAs as web applications that combine the accessibility of browser-based
-systems with functionalities commonly associated with native mobile applications, including
-responsiveness, offline capability, and cross-device compatibility. Similarly, Biørn-Hansen et al.
+Muawwal (2024) shows that a PWA, built from a web app manifest and a service worker, gives a website
+the features of an installed application without a separate native application for each platform:
+it could be installed on mobile and desktop devices and remained accessible offline or on an unstable
+connection. Similarly, Biørn-Hansen et al.
 (2019) explain that PWAs reduce development complexity by enabling a single application architecture
 to operate consistently across multiple platforms without requiring separate native implementations.
+Because a PWA is used like an installed application but delivered as a website, its usability has
+also been given heuristics of its own (Anuar & Othman, 2024).
 
 These characteristics are particularly relevant within small-scale apartment operations where
 infrastructure limitations, inconsistent connectivity, and device diversity may restrict adoption of
@@ -182,8 +191,7 @@ involving disconnected workflows, inconsistent record management, delayed commun
 operational redundancy (Burke, 2026; Magno et al., 2024). Information systems and software engineering literature explains these inefficiencies as consequences of fragmented information processing and lack of centralized
 operational visibility (Ghasemaghaei et al., 2018; Pressman & Maxim, 2020).
 
-Financial analytics studies further establish that structured and centralized financial data
-significantly improves administrative oversight, forecasting capability, and operational transparency
+Financial analytics studies further establish that structured and centralized financial data improves administrative oversight and operational transparency
 (Encarnacion et al., 2025; Setty, 2022). Similarly, communication and maintenance coordination studies
 emphasize that operational accountability improves when issue resolution processes are formalized
 through structured digital workflows rather than informal communication channels (Jing & Lim, 2021;
@@ -191,7 +199,9 @@ Saputra et al., 2025).
 
 Meanwhile, PWA literature provides the technological framework that enables these integrated
 operational components to remain accessible within environments characterized by limited infrastructure (Mia et al., 2024) and
-varying device conditions (Biørn-Hansen et al., 2019; Google, 2018).
+varying device conditions (Biørn-Hansen et al., 2019; Muawwal, 2024). Recent housing systems have also
+been evaluated with ISO/IEC 25010 (Canlas et al., 2026; Monteverde et al., 2023), the quality model
+this study uses.
 
 Despite their complementarity, these studies are commonly implemented in isolation. Existing systems
 frequently focus on specific operational functions such as financial management, communication, or
@@ -207,7 +217,10 @@ Based on the synthesis of literature, a significant research gap emerges regardi
 integrated apartment management system specifically designed for small-scale and resource-constrained
 residential operations. Existing systems are commonly developed either as enterprise-oriented
 platforms or as isolated functional solutions focusing on individual administrative tasks such as
-payment monitoring, tenant management, or maintenance coordination (Magno et al., 2024; Saputra et al., 2025; Setty, 2022).
+payment monitoring, tenant management, or maintenance coordination (Magno et al., 2024; Saputra et al., 2025; Setty, 2022). Puspasari et al. (2025), for example,
+developed a web-based boarding house information system that monitors room status and sends billing
+notifications through WhatsApp, but its only user is the boarding house manager, so tenants cannot
+see their own bills or report a concern through it.
 
 While these systems demonstrate improvements in specific operational areas, they frequently assume
 stable infrastructure, dedicated administrative personnel, and structured operational environments

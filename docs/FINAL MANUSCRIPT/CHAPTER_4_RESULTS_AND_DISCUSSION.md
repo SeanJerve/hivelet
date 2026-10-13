@@ -726,7 +726,9 @@ in Appendix M (Tables M-2 to M-17, ratings and measured evidence for each charac
 | **Overall** | | **4.53** | **Very High Quality** | |
 
 The six respondents rated the system **Very High Quality overall (4.53)**, and no characteristic, and
-no group mean, fell below High Quality.
+no group mean, fell below High Quality. This is the range Canlas et al. (2026) report for a Philippine
+dormitory system rated by the same kinds of respondents, tenants, administrators and IT professionals;
+here, each rating is also read beside the measured evidence for its characteristic (Section 4.4.5).
 
 **Portability** was rated highest (4.89), as one code base installed on an Android phone and an
 iPhone without an app store. **Functional Suitability** followed (4.86): every feature the objective
