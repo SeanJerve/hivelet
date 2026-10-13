@@ -341,7 +341,11 @@ testing of these protections is reported in Section 4.4.4.
 ### 4.2.7 Progressive Web Application Implementation
 
 Figure 14 presents the tenant portal on a phone. The client is a Progressive Web Application with a
-service worker and a manifest, so it installs on a phone or computer without an app store. Since 1
+service worker and a manifest, so it installs on a phone or computer without an app store. Installing
+it means adding it to the home screen from the browser (**Add to Home Screen** in Safari, **Install
+app** or **Add to Home screen** in Chrome): nothing is downloaded from a store, it opens in its own
+window like an application, and the application files it keeps on the device come to about 1.2 MB
+(as built on 13 October 2026). Since 1
 and 2 October 2026 it keeps a read-only copy of the figures, names and notifications the signed-in
 person last loaded on that person's device, so the installed application can show them without a
 connection under one notice giving the time they were saved; paying and recording still need the

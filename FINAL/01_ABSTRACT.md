@@ -9,7 +9,8 @@ property in Legazpi City. The owner's existing practices were analyzed, and her 
 problems the spreadsheet had hidden. The system was built in three Agile iterations with Vue,
 Express and PostgreSQL, and provides tenant and room management, inquiries about units, financial
 tracking with optional GCash payment through Adyen, maintenance requests with notifications,
-role-based access control, and installation on any phone or computer. It was pilot tested at the
+role-based access control, and installation from the browser on a phone or computer, without an app
+store. It was pilot tested at the
 unit and integration, system, and acceptance levels, and 82 of the 83 tests executed passed (98.8
 per cent), with no critical defect. Three tenants completed every task they attempted, 31 of 34
 attempts without help. The system was then evaluated on the eight characteristics of the ISO/IEC
