@@ -1,4 +1,12 @@
-# FINAL: the manuscript to retype into Word
+# FINAL: the manuscript, ready for Word
+
+**Start with `HIVELET_MANUSCRIPT.docx`** (13 October 2026): the Abstract, a table of contents, Chapters
+1 to 5, the References and Appendices A to Q in one Word file, in the proposal's format (Arial 12,
+double-spaced, justified, margins 1.5 in left and 1 in elsewhere, page numbers top right, roman
+before Chapter 1). Add the front matter from the team's own Word file, insert each caption with
+**References > Insert Caption** so the lists of tables and figures build, and resolve every
+highlighted **[TO DO]**. Rebuild it after any change with `node scripts/manuscript/build-final.mjs`
+then `node scripts/manuscript/build-manuscript-docx.mjs`.
 
 Every chapter here has every fix applied, sentence by sentence, from the list of fixes to Chapters 1 to 3 (archived 13 October),
 the panel-style read of 13 October 2026, and the two IT 124 course guides. Retype or paste each file

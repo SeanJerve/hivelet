@@ -1,4 +1,4 @@
-# Appendix K. Hivelet User Manual
+# APPENDIX K: USER'S MANUAL
 
 **For the owner and the tenants of the Fe Galang Da Silva Boarding House.** Written 2026-09-29
 against the system as deployed that night; every button and screen name below is the one the

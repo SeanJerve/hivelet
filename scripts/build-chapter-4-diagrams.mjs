@@ -130,7 +130,7 @@ function asIs() {
     ['Tenant or prospect', 44, 196],
     ['Owner', 196, 486],
     ['Records kept', 486, 636],
-    ['Problem identified (Table 5)', 636, H - 2],
+    ['Problem identified (Table 4-1)', 636, H - 2],
   ];
   let s = rect(1, 1, W - 2, H - 3, { sw: 1.6 });
   for (const [label, y0, y1] of lanes) {
@@ -139,7 +139,7 @@ function asIs() {
   }
   s += line([[L, 1], [L, H - 2]], { head: 'none', sw: 1.2 });
   for (let i = 1; i < 4; i++) s += line([[L + colW * i, 1], [L + colW * i, H - 2]], { head: 'none', sw: 1, stroke: '#999', dash: '4 4' });
-  ['Rent collection', 'Expenses', 'Repair requests', 'Enquiries'].forEach((h, i) => { s += T(cx(i), 23, h, { size: 15, weight: 'bold' }); });
+  ['Rent collection', 'Expenses', 'Repair requests', 'Inquiries'].forEach((h, i) => { s += T(cx(i), 23, h, { size: 15, weight: 'bold' }); });
 
   const BW = 166;
   // Rent collection
@@ -154,7 +154,7 @@ function asIs() {
   s += box(cx(1), 262, BW, 62, 'Owner pays a supplier', { rx: 31 });
   s += box(cx(1), 400, BW, 124, 'Owner types the expense into the Monthly Expenses Report and splits it across property areas by hand');
   s += line([[cx(1), 293], [cx(1), 338]]);
-  s += doc(cx(1), 552, 172, 88, 'Workbook on removable storage, the only copy');
+  s += doc(cx(1), 552, 172, 88, 'Workbook on a USB flash drive, the only copy');
   s += line([[cx(0), 444], [cx(0), 474], [cx(1) - 50, 474], [cx(1) - 50, 508]]);
   s += line([[cx(1), 462], [cx(1), 508]]);
   // Repair requests
@@ -163,7 +163,7 @@ function asIs() {
   s += line([[cx(2), 157], [cx(2), 269]]);
   s += box(cx(2), 560, 140, 50, 'No record', { dash: '6 5', italic: true });
   s += line([[cx(2), 331], [cx(2), 535]], { dash: '6 5' });
-  // Enquiries
+  // Inquiries
   s += box(cx(3), 118, BW, 62, 'Prospect asks about a unit', { rx: 31 });
   s += box(cx(3), 300, BW, 62, 'Owner answers the prospect');
   s += line([[cx(3), 149], [cx(3), 269]]);
@@ -172,9 +172,9 @@ function asIs() {
 
   const problems = [
     'Nothing checks an invoice number against the book; totals depend on hand arithmetic',
-    'Totals depend on hand arithmetic; one file on removable storage is the only copy',
+    'Totals depend on hand arithmetic; one file on a USB flash drive is the only copy',
     'Requests are not recorded, so none can be followed to completion',
-    'No record of an enquiry or of the unit it was about',
+    'No record of an inquiry or of the unit it was about',
   ];
   problems.forEach((p, i) => { s += T(cx(i), 698, p, { w: colW - 22, size: 14, italic: true }); });
   return { W, H, body: s };
