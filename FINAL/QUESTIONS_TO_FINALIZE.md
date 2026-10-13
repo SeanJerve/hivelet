@@ -17,6 +17,7 @@ Section 1.**
 | P7 | ~~The street name~~ **Answered 13 Oct: Sampaguita.** Fixed in Chapter 1 and on the public site (four places said "Sapaguita") | Done |
 | P8 | **Move-in dates**: the system cannot edit a tenancy's move-in date today (editing a tenant leaves it unchanged; only a move to another unit sets it, to that day) | Sean expected she could edit it. The recommendation is removed as asked; if she should be able to, that is a small feature (Sean's lane) |
 | P9 | Make the repository private before the defense | Decided (E4) |
+| P10 | **Scans for Appendices A and B**: the signed letter of request to the owner, and the adviser appointment papers | Found 13 Oct: the 18 September manuscript has only their headings |
 
 ## 2. The answers, and what each changed
 

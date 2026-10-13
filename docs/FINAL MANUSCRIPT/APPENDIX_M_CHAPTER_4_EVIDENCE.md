@@ -402,3 +402,46 @@ characteristic, and every change made in response to the evaluation.
 | A double tap on Send saves one message (C-06) | Not performed |
 | The owner opens a full year of Monthly Income while tenants are active (C-07) | Pass: loaded in about 3 seconds |
 | The owner on the laptop and tenants on phones at once (C-08) | Pass: no session affected another |
+
+**Table M-23.** Test activities and the ISO/IEC 25010:2011 characteristics they measured (Chapter 4's Table 7D before 13 October 2026; summarized in Chapter 4, Section 4.3)
+
+| Test activity (Section) | Test level | Characteristics measured (sub-characteristics) |
+| :--- | :--- | :--- |
+| Automated verification (4.3.1) | Unit and integration | Functional Suitability (correctness); Security (confidentiality, integrity, authenticity); Compatibility (interoperability); Maintainability (testability) |
+| Use in the live environment (4.3.2) | System, in operation | Functional Suitability (correctness); Compatibility (interoperability); Reliability (recoverability) |
+| Screen-versus-database audit (4.3.3) | System | Functional Suitability (correctness); Reliability (maturity) |
+| Functional walkthrough (4.3.4) | System | Functional Suitability (completeness, correctness); Usability (user error protection); Security (confidentiality); Reliability (fault tolerance) |
+| Responsiveness (4.3.5) | System | Performance Efficiency (time behavior, resource utilization) |
+| Offline, installation, weak connections and simultaneous users (4.3.6) | System | Reliability (fault tolerance); Performance Efficiency (capacity); Portability (installability, adaptability); Usability (accessibility) |
+| User acceptance testing (4.3.7) | Acceptance | Quality in use (effectiveness, efficiency, context coverage); Usability (learnability, operability); Security (confidentiality) |
+
+**Table M-24.** Offline and installation behavior (29 September 2026) (Chapter 4's Table 11A before 13 October 2026; summarized in Chapter 4, Section 4.3.6)
+
+| Test | Result |
+| :--- | :--- |
+| Installation requirements (manifest, service worker, icons) | Met; the service worker keeps 67 application files on the device after the first visit |
+| Opening ten addresses with no connection | The application opened on all ten in about 1.5 seconds instead of the browser's "no internet" page |
+| Tenant and administrator pages with no connection, signed out | The application opened and asked for sign-in; no personal or financial data was shown |
+| Notice when the connection drops | Shown at once: "No connection. You can read what is already loaded, but nothing can be saved or paid until it is back." |
+| Notice when the connection returns | "Back online" |
+| Public unit list with no connection | Shown from the device's memory |
+| Public unit list when the server stops answering | Shown from the device's memory after 3.1 seconds |
+| Public page on a slow connection (400 kbps, 400 ms), first visit | Units on screen after 4.6 seconds |
+| The same page, returning visitor | Units on screen after 0.3 seconds, because the installed application already holds its files |
+
+**Table M-25.** Simulated simultaneous users, read operations (29 September 2026) (Chapter 4's Table 11B before 13 October 2026; summarized in Chapter 4, Section 4.3.6)
+
+| Test | Simulated users at once | Duration | Requests | Errors | Slowest 5% took longer than |
+| :--- | --: | --: | --: | --: | --: |
+| Public pages and public data, live site | 12 | 60 s | 1,085 | 0 | 0.52 s |
+| The owner's ten main data requests, live database | 6 | 45 s | 285 | 0 | 0.80 s |
+
+**Table M-26.** Simultaneous saves (19 and 24 September 2026) (Chapter 4's Table 11F before 13 October 2026; summarized in Chapter 4, Section 4.3.6)
+
+| Test | Before the change | After the change |
+| :--- | :--- | :--- |
+| The same receipt sent twice at once, live system | Both saved: 2 rows | 1 saved, 1 refused: 1 row |
+| The same receipt sent five times at once, live system | All five saved: 5 rows | 1 saved, 4 refused: 1 row |
+| One receipt covering three months, live system | | Saved as 3 rows, June to August 2026, as before |
+| Two GCash checkouts opened on one bill at once, payment code with a stand-in database | Both opened, so both payments could be recorded | 1 opened, 1 refused |
+| A checkout 16 minutes after one was abandoned | | Opened: an abandoned checkout holds the bill for 15 minutes, not for good |

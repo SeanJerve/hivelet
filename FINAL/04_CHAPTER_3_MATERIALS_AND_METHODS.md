@@ -107,7 +107,7 @@ tracking, booking coordination, and maintenance handling.
 
 *Figure 3-1. Agile Software Development Life Cycle.*
 
-**[KEEP: the Figure 3-1 image from the current manuscript, p. 31.]**
+![Agile Software Development Life Cycle](<../docs/FINAL MANUSCRIPT/figures/figure-3-1-agile-cycle.png>)
 
 Unlike traditional SDLC models, Agile supports early identification of system issues through
 iterative cycles of development and testing. This enabled the researchers to refine system components
@@ -144,7 +144,7 @@ During the Design phase, the identified requirements were translated into system
 interface prototypes. The researchers developed the interface as working prototypes in code, covering
 three user roles: public users, tenants, and administrators. Each prototype was reviewed with the
 landlady on the device she uses, and the findings were applied in the next iteration (Chapter 4,
-Table 4-24). The system was designed with consideration for a resource-constrained environment,
+Table 4-19). The system was designed with consideration for a resource-constrained environment,
 characterized by limited infrastructure, unstable internet connectivity, and minimal administrative
 resources. To address these constraints, Hivelet was structured as a lightweight Progressive Web
 Application (PWA) with optimized performance, simple navigation, and minimal system requirements.

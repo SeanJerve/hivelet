@@ -50,7 +50,7 @@ for (const c of [1, 2, 3, 4, 5]) counts[c] = number(chapters[c], c);
 // Tables moved out of Chapter 4 to Appendix M on 12 October keep being cited by their old number
 // inside the appendix ("Table 10, steps 9 and 18"); each caption there names its old number.
 const appMRaw = read(path.join(docs, 'APPENDIX_M_CHAPTER_4_EVIDENCE.md'));
-for (const m of appMRaw.matchAll(/^\*\*Table (M-\d+)\.\*\*.*?\(Chapter 4's Table (\d+[A-Z]?) before 12 October 2026/gm)) {
+for (const m of appMRaw.matchAll(/^\*\*Table (M-\d+)\.\*\*.*?\(Chapter 4's Table (\d+[A-Z]?) before 1[23] October 2026/gm)) {
   // Table 23 stayed in Chapter 4 as a summary of M-18; a citation of it means the chapter's table.
   if (!map.Table.has(m[2])) map.Table.set(m[2], m[1]);
 }
@@ -131,7 +131,7 @@ appO = once(appO, '> **TEAM NOTE (delete before pasting).** The course guide',
 // Appendix M captions carry the drafts' old numbers ("Chapter 4's Table 10 before 12 October 2026");
 // in the final paper there is no old number to point at.
 let appM = appMRaw
-  .replace(/\(Chapter 4's Table \d+[A-Z]? before 12 October 2026; summarized in /g, '(summarized in ');
+  .replace(/\(Chapter 4's Table \d+[A-Z]? before 1[23] October 2026; summarized in /g, '(summarized in ');
 
 // ---- assemble -------------------------------------------------------------------------------
 const made = [];

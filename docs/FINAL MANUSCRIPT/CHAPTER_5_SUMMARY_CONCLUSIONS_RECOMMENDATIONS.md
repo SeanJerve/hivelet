@@ -76,7 +76,7 @@ Based on the results of the study, the following conclusions were drawn:
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
    ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response, and its users rated
    it Very High Quality overall (4.53), with every characteristic at least High Quality on the scale
-   of Table 13 (Chapter 4, Tables 22 and 23). The ratings agree with the measured evidence on every
+   of Chapter 3's Table 4A (Chapter 4, Tables 22 and 23). The ratings agree with the measured evidence on every
    characteristic but Usability, and they describe how six people rated the system over one week,
    three of the four groups with one respondent each.
 

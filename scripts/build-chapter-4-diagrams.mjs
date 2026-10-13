@@ -751,6 +751,41 @@ function childDfd(key) {
   };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Figure 3-1. The Agile cycle (Section 3.2), redrawn 13 October 2026 from the manuscript's figure:
+// the same six phases and activities, named as Sections 3.2.1 to 3.2.6 name them, grammar fixed.
+// ---------------------------------------------------------------------------------------------
+function agile() {
+  const W = 1100, H = 880;
+  let s = '';
+  const phases = [
+    [300, 715, '1  Requirements', ['Conducting interviews and identifying the system requirements', 'Considering resources, cost, and time']],
+    [800, 715, '2  Design', ['Identifying each problem and the solution that best fits it', "Analyzing the end users' and the client's needs", 'Describing specifications, features, and processes']],
+    [950, 440, '3  Development', ['Organizing processes with flowcharts', 'Developing and structuring the system']],
+    [800, 165, '4  Testing', ['Determining whether the system meets end-user requirements', 'Identifying bugs, errors, and other issues']],
+    [300, 165, '5  Deployment', ['Installing and rolling out the system', 'Deploying each increment to the target environment']],
+    [150, 440, '6  Review and Maintenance', ['Gathering stakeholder and user feedback', 'Improving performance through incremental updates', 'Planning and checking the next iteration']],
+  ];
+  const bw = 280, bh = 170;
+  for (const [cx, cy, title, bullets] of phases) {
+    s += rect(cx - bw / 2, cy - bh / 2, bw, bh, { rx: 14, sw: 1.8 });
+    s += T(cx, cy - bh / 2 + 22, title, { size: 16, weight: 'bold' });
+    let y = cy - bh / 2 + 44;
+    for (const b of bullets) {
+      const lines = wrap(b, bw - 40, 13.5);
+      s += T(cx - bw / 2 + 16, 0, '•', { top: y, size: 13.5, anchor: 'start' });
+      s += T(cx - bw / 2 + 30, 0, b, { top: y, size: 13.5, anchor: 'start', w: bw - 44 });
+      y += lines.length * 16.5 + 5;
+    }
+  }
+  s += `<circle cx="550" cy="440" r="80" fill="#fff" stroke="${INK}" stroke-width="2"/>` + T(550, 440, 'AGILE', { size: 24, weight: 'bold' });
+  // Clockwise on the page is the order of the phases: 1 to 6, then back to 1.
+  const arrows = [[[440, 715], [660, 715]], [[900, 630], [925, 525]], [[925, 355], [900, 250]],
+    [[660, 165], [440, 165]], [[200, 250], [175, 355]], [[175, 525], [200, 630]]];
+  for (const pts of arrows) s += line(pts, { sw: 2.2 });
+  return { W, H, body: s };
+}
+
 const DIAGRAMS = {
   'as-is': { file: 'figure-4-current-process.png', make: asIs },
   architecture: { file: 'figure-5-system-architecture.png', make: architecture },
@@ -760,6 +795,7 @@ const DIAGRAMS = {
   erd: { file: 'figure-9-entity-relationship.png', make: erd },
   // Outside Chapter 4: Chapter 2's framework and Appendices C and F (FINAL/08_APPENDICES.md).
   framework: { file: 'figure-2-2-conceptual-framework.png', make: framework },
+  agile: { file: 'figure-3-1-agile-cycle.png', make: agile },
   gantt: { file: 'appendix-c-gantt-chart.png', make: gantt },
   'dfd-1': { file: 'appendix-f-dfd-1-inquiries.png', make: childDfd('1') },
   'dfd-3': { file: 'appendix-f-dfd-3-tenancies.png', make: childDfd('3') },

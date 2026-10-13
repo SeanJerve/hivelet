@@ -367,20 +367,9 @@ and an iPhone in Safari (Section 4.3.7).
 The three qualities Objective 3 names are characteristics of ISO/IEC 25010:2011: functionality is
 **Functional Suitability**, responsiveness the time behavior of **Performance Efficiency**, and
 operational performance its capacity and **Reliability**. A test written for one quality often
-measures others, so Table 7D lists each test activity with every characteristic it measured. The
+measures others, so each test was assigned in advance to the sub-characteristics it measures
+(Chapter 3, Table 4B); Appendix M, Table 7D lists them by test activity. The
 measures are brought together by characteristic in Section 4.4.
-
-**Table 7D.** Test activities and the ISO/IEC 25010:2011 characteristics they measured
-
-| Test activity (Section) | Test level | Characteristics measured (sub-characteristics) |
-| :--- | :--- | :--- |
-| Automated verification (4.3.1) | Unit and integration | Functional Suitability (correctness); Security (confidentiality, integrity, authenticity); Compatibility (interoperability); Maintainability (testability) |
-| Use in the live environment (4.3.2) | System, in operation | Functional Suitability (correctness); Compatibility (interoperability); Reliability (recoverability) |
-| Screen-versus-database audit (4.3.3) | System | Functional Suitability (correctness); Reliability (maturity) |
-| Functional walkthrough (4.3.4) | System | Functional Suitability (completeness, correctness); Usability (user error protection); Security (confidentiality); Reliability (fault tolerance) |
-| Responsiveness (4.3.5) | System | Performance Efficiency (time behavior, resource utilization) |
-| Offline, installation, weak connections and simultaneous users (4.3.6) | System | Reliability (fault tolerance); Performance Efficiency (capacity); Portability (installability, adaptability); Usability (accessibility) |
-| User acceptance testing (4.3.7) | Acceptance | Quality in use (effectiveness, efficiency, context coverage); Usability (learnability, operability); Security (confidentiality) |
 
 ### 4.3.1 Automated Verification
 
@@ -499,31 +488,13 @@ phone (Chapter 5, recommendation 5).
 
 On 29 September 2026 the live system was measured with no connection, on a weak one, once installed,
 and with many requests at once, using an automated browser in phone emulation with every save blocked
-so that nothing was written to the owner's records. Table 11A gives the results without a connection
-and once installed. Table 11B gives those of a load test in which a script played several users at
-once, each pausing between requests as a person reading does; these were simulated users, not people
-(the owner and tenants together are reported in Section 4.3.7).
-
-**Table 11A.** Offline and installation behavior (29 September 2026)
-
-| Test | Result |
-| :--- | :--- |
-| Installation requirements (manifest, service worker, icons) | Met; the service worker keeps 67 application files on the device after the first visit |
-| Opening ten addresses with no connection | The application opened on all ten in about 1.5 seconds instead of the browser's "no internet" page |
-| Tenant and administrator pages with no connection, signed out | The application opened and asked for sign-in; no personal or financial data was shown |
-| Notice when the connection drops | Shown at once: "No connection. You can read what is already loaded, but nothing can be saved or paid until it is back." |
-| Notice when the connection returns | "Back online" |
-| Public unit list with no connection | Shown from the device's memory |
-| Public unit list when the server stops answering | Shown from the device's memory after 3.1 seconds |
-| Public page on a slow connection (400 kbps, 400 ms), first visit | Units on screen after 4.6 seconds |
-| The same page, returning visitor | Units on screen after 0.3 seconds, because the installed application already holds its files |
-
-**Table 11B.** Simulated simultaneous users, read operations (29 September 2026)
-
-| Test | Simulated users at once | Duration | Requests | Errors | Slowest 5% took longer than |
-| :--- | --: | --: | --: | --: | --: |
-| Public pages and public data, live site | 12 | 60 s | 1,085 | 0 | 0.52 s |
-| The owner's ten main data requests, live database | 6 | 45 s | 285 | 0 | 0.80 s |
+so that nothing was written to the owner's records. Without a connection, the installed application opened on all ten addresses tried, in about 1.5
+seconds, showed no personal or financial data until sign-in, and said at once what could not be done
+offline; on a slow connection a returning visitor saw the units after 0.3 seconds instead of 4.6. In
+a load test a script played 12 simultaneous users on the public pages and 6 on the owner's records,
+each pausing between requests as a person reading does: none of the 1,085 and 285 requests failed.
+These were simulated users, not people (the owner and tenants together are reported in Section
+4.3.7). Every result is in Appendix M, Tables 11A and 11B.
 
 The application opens without a connection and says plainly what it cannot do, and under loads
 several times the property's own no request failed and nineteen in twenty were answered in under a
@@ -537,18 +508,10 @@ owner's eight screens.
 **Simultaneous saves.** Reading at the same time tests capacity; saving at the same time tests
 correctness, because two requests that arrive together can each pass a check before either has been
 saved. This was tested by sending the same request several times in the same instant, which
-reproduces a double click, a retry after a timeout, or two people pressing Save together, with closer
-timing than people can produce by hand (Table 11F).
-
-**Table 11F.** Simultaneous saves (19 and 24 September 2026)
-
-| Test | Before the change | After the change |
-| :--- | :--- | :--- |
-| The same receipt sent twice at once, live system | Both saved: 2 rows | 1 saved, 1 refused: 1 row |
-| The same receipt sent five times at once, live system | All five saved: 5 rows | 1 saved, 4 refused: 1 row |
-| One receipt covering three months, live system | | Saved as 3 rows, June to August 2026, as before |
-| Two GCash checkouts opened on one bill at once, payment code with a stand-in database | Both opened, so both payments could be recorded | 1 opened, 1 refused |
-| A checkout 16 minutes after one was abandoned | | Opened: an abandoned checkout holds the bill for 15 minutes, not for good |
+reproduces a double click, a retry after a timeout, or two people pressing Save together, with closer timing than people can produce by hand. Before the change, the same receipt sent twice
+or five times at once was saved every time, and two GCash checkouts could open on one bill; after it,
+one was saved and every other refused, and a checkout abandoned for more than 15 minutes no longer
+held the bill (Appendix M, Table 11F).
 
 Neither fault showed an error, and neither could be fixed in the program alone, since a check
 followed by a save can always be outrun. Each fix is a rule in the database, which refuses the second
@@ -596,7 +559,7 @@ once were not performed, because only two attended together; in the session in w
 two tenants used the system at the same time, every screen loaded, each tenant saw only their own
 unit, the owner's full year of Monthly Income opened in about three seconds, and no session
 affected another (Appendix M, Table M-22). On two phones the offline behavior
-matched Table 11A, except that the Android phone showed the "cannot tell whether it was saved" message
+matched Appendix M, Table 11A, except that the Android phone showed the "cannot tell whether it was saved" message
 after 60 to 80 seconds instead of 45; corrected on 1 October, it was on time when re-tested on that
 phone on 13 October 2026 (Table 23A).
 
@@ -637,7 +600,7 @@ evaluators rated Maintainability, the group with the background to judge it.
 | Step | What it required | How it was carried out |
 | :--- | :--- | :--- |
 | 1. Establish the evaluation requirements | The purpose, the product, the quality model and who judges it | Objective 4; the live system at its public address; ISO/IEC 25010:2011, eight characteristics; the owner, tenants and technical evaluators (Section 3.3) |
-| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Table 7D); survey items assigned to sub-characteristics (Chapter 3, Table 4B); criteria: Table 13 for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
+| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Table 7D); survey items assigned to sub-characteristics (Chapter 3, Table 4B); criteria: Chapter 3's Table 4A for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
 | 3. Design the evaluation | The activities, their order and schedule | Measurements on 29 September 2026; the walkthrough and acceptance test on 30 September; the technical evaluators' review on 3 October; the survey after each group's use of the system |
 | 4. Execute the evaluation | Take the measures and apply the criteria | Section 4.3 (measured) and the survey (rated; Appendix M, Tables M-2 to M-17) |
 | 5. Conclude the evaluation | Review the results, report them, and act on them | Tables 22 and 22A, and the changes made in response (Table 23) |
@@ -680,21 +643,11 @@ the system, not a sample from which a wider population can be inferred.
 
 ### 4.4.2 Interpretation of Scores
 
-Each item was rated on the five-point scale in Table 4, and means are read using Table 13. The
+Each item was rated on the five-point scale in Table 4, and means are read using Chapter 3's Table 4A. The
 composite of each characteristic is the mean of its group means, so that one owner is not outweighed
 by three tenants on functions only she uses, and the overall mean is the mean of the eight
 composites. Averaging every response together instead gives 4.55 rather than 4.53, with the same
 interpretation and ranking. Table 13A works one weighted mean in full, WM = Σ(f × w) / N.
-
-**Table 13.** Interpretation of mean scores
-
-| Mean score | Verbal interpretation |
-| :--- | :--- |
-| 4.21 – 5.00 | Very High Quality |
-| 3.41 – 4.20 | High Quality |
-| 2.61 – 3.40 | Moderate Quality |
-| 1.81 – 2.60 | Low Quality |
-| 1.00 – 1.80 | Very Low Quality |
 
 **Table 13A.** Worked computation of a weighted mean
 
@@ -708,7 +661,7 @@ interpretation and ranking. Table 13A works one weighted mean in full, WM = Σ(f
 | **Total** | | **N = 3** | **Σ(f × w) = 15** |
 
 Indicator: "I can see my own unit details, my bill, and what I still owe." (Functional Suitability,
-rated by tenants). WM = 15 / 3 = **5.00**, which Table 13 reads as **Very High Quality**.
+rated by tenants). WM = 15 / 3 = **5.00**, which Table 4A reads as **Very High Quality**.
 
 ### 4.4.3 Results by Characteristic
 

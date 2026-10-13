@@ -39,7 +39,7 @@ characteristic, and every change made in response to the evaluation.
 | 25 | Ledger baseline verification | Rehearsal records removed; ledger restored to exact 937 baseline rows | Done by the team after the session rather than on screen: the test tenant's bill, payments, voided receipt and repair were removed; the two test expenses of step 22 were voided on 1 October. | Not done |
 | 26 | Unit rate restoration | PH rate restored to confirmed ₱30,000 rate card baseline | Not needed, because step 7 was not performed; the rate reads ₱30,000. | Not done |
 
-**Table M-2.** Evaluation results for Functional Suitability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-22)
+**Table M-2.** Evaluation results for Functional Suitability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
@@ -66,18 +66,18 @@ characteristic, and every change made in response to the evaluation.
 | **Prospective tenant mean** | | **5.00** | | Very High Quality |
 | **Composite mean** | | **4.86** | | **Very High Quality** |
 
-**Table M-3.** Measured evidence for Functional Suitability (summarized in Chapter 4, Section 4.4.5, Table 4-23)
+**Table M-3.** Measured evidence for Functional Suitability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Functional completeness | Features named in Objective 2 that were implemented, X = A / B | 6 / 6 = 1.00 | Sections 4.2.2 to 4.2.7 |
 | Functional completeness | Functional requirements implemented in full or in part, X = A / B | 41 / 44 = 0.93 (25 as worded); the other 3 reach the owner in another form | Section 4.1.2 |
-| Functional correctness | Report reconciliation checks that agreed with the database, X = A / B | 490 / 490 = 1.00 | Table 4-9 |
+| Functional correctness | Report reconciliation checks that agreed with the database, X = A / B | 490 / 490 = 1.00 | Table 4-8 |
 | Functional correctness | Executed walkthrough steps that gave the expected result, X = A / B | 24 / 25 = 0.96 | Table M-1 |
-| Functional correctness | Screens whose figures matched the database, after correction | 9 / 9, after 6 defects were corrected | Table 4-10 |
-| Functional appropriateness | Tenant tasks completed, X = A / B | 34 / 34 = 1.00 | Table 4-15 |
+| Functional correctness | Screens whose figures matched the database, after correction | 9 / 9, after 6 defects were corrected | Table 4-9 |
+| Functional appropriateness | Tenant tasks completed, X = A / B | 34 / 34 = 1.00 | Table 4-11 |
 
-**Table M-4.** Evaluation results for Performance Efficiency, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-22)
+**Table M-4.** Evaluation results for Performance Efficiency, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
@@ -97,18 +97,18 @@ characteristic, and every change made in response to the evaluation.
 | **Prospective tenant mean** | | **4.00** | | High Quality |
 | **Composite mean** | | **4.42** | | **Very High Quality** |
 
-**Table M-5.** Measured evidence for Performance Efficiency (summarized in Chapter 4, Section 4.4.5, Table 4-23)
+**Table M-5.** Measured evidence for Performance Efficiency (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
-| Time behavior | Longest time until a screen was usable, real devices | 3.05 s on a phone (tenant portal, first load); 2.30 s on a laptop (a year exported to Excel) | Table 4-11 |
-| Time behavior | Time within which 95 percent of requests were answered under load | 0.52 s (public pages); 0.80 s (the owner's data) | Table 4-13 |
-| Resource utilization | Code a visitor's browser downloads for the payments page | About 20 kB; the 194 kB payment library only when a payment starts | Table 4-24 |
+| Time behavior | Longest time until a screen was usable, real devices | 3.05 s on a phone (tenant portal, first load); 2.30 s on a laptop (a year exported to Excel) | Table 4-10 |
+| Time behavior | Time within which 95 percent of requests were answered under load | 0.52 s (public pages); 0.80 s (the owner's data) | Table M-25 |
+| Resource utilization | Code a visitor's browser downloads for the payments page | About 20 kB; the 194 kB payment library only when a payment starts | Table 4-19 |
 | Resource utilization | Script work on an emulated mid-range phone, the owner's Overview | 0.7 s | Section 4.3.5 |
-| Capacity | Failed requests with 12 simulated simultaneous users, X = A / B | 0 / 1,085 = 0.00 | Table 4-13 |
-| Capacity | Failed requests with 6 simulated simultaneous readers of the owner's records, X = A / B | 0 / 285 = 0.00 | Table 4-13 |
+| Capacity | Failed requests with 12 simulated simultaneous users, X = A / B | 0 / 1,085 = 0.00 | Table M-25 |
+| Capacity | Failed requests with 6 simulated simultaneous readers of the owner's records, X = A / B | 0 / 285 = 0.00 | Table M-25 |
 
-**Table M-6.** Evaluation results for Compatibility, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-22)
+**Table M-6.** Evaluation results for Compatibility, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
@@ -127,16 +127,16 @@ characteristic, and every change made in response to the evaluation.
 | **Prospective tenant mean** | | **4.00** | | High Quality |
 | **Composite mean** | | **4.67** | | **Very High Quality** |
 
-**Table M-7.** Measured evidence for Compatibility (summarized in Chapter 4, Section 4.4.5, Table 4-23)
+**Table M-7.** Measured evidence for Compatibility (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Co-existence | Not measured by a test; rated in the survey only | | |
 | Interoperability | Device and browser combinations on which sign-in, the pages and installation worked, X = A / B | 5 / 5 = 1.00 (Android Chrome 154, iPhone Safari, Windows Chrome 154, Edge and Firefox 157); Samsung Internet not tried | Compatibility matrix, 30 September 2026 |
-| Interoperability | Payment gateway message checks passed, X = A / B | 73 / 73 = 1.00 | Table 4-9 |
-| Interoperability | Exported workbooks opened in a spreadsheet program in the owner's layout | Opened (walkthrough step 23); 490 / 490 month-by-month checks against the database | Tables 4-9 and M-1 |
+| Interoperability | Payment gateway message checks passed, X = A / B | 73 / 73 = 1.00 | Table 4-8 |
+| Interoperability | Exported workbooks opened in a spreadsheet program in the owner's layout | Opened (walkthrough step 23); 490 / 490 month-by-month checks against the database | Tables 4-8 and M-1 |
 
-**Table M-8.** Evaluation results for Usability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-22)
+**Table M-8.** Evaluation results for Usability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
@@ -164,18 +164,18 @@ characteristic, and every change made in response to the evaluation.
 | **Prospective tenant mean** | | **5.00** | | Very High Quality |
 | **Composite mean** | | **4.12** | | **High Quality** |
 
-**Table M-9.** Measured evidence for Usability (summarized in Chapter 4, Section 4.4.5, Table 4-23)
+**Table M-9.** Measured evidence for Usability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
-| Appropriateness recognizability | Tenant tasks completed without help, X = A / B | 31 / 34 = 0.91 | Table 4-15 |
-| Learnability | Tasks that needed help after the first sign-in and finding the unit | 0; all 3 tasks that needed help were among those first two | Table 4-15 |
-| Operability | Mean wrong turns per task; median time per task | 0.2; 60 s | Table 4-15 |
+| Appropriateness recognizability | Tenant tasks completed without help, X = A / B | 31 / 34 = 0.91 | Table 4-11 |
+| Learnability | Tasks that needed help after the first sign-in and finding the unit | 0; all 3 tasks that needed help were among those first two | Table 4-11 |
+| Operability | Mean wrong turns per task; median time per task | 0.2; 60 s | Table 4-11 |
 | User error protection | Wrong inputs the system refused when tried, X = A / B | 3 / 3 (a duplicate phone number, a duplicate invoice number, a typed water amount); the double-void guard could not be reached from the screen | Table M-1, steps 9, 18, 19 and 19b |
 | User interface aesthetics | Not measured and not rated | | |
 | Accessibility | Automated scans with a WCAG 2.2 level A or AA violation, X = A / B | 0 / 76 after the correction of 5 October 2026; Lighthouse accessibility score 100 | Sections 4.3.5 and 4.4.6 |
 
-**Table M-10.** Evaluation results for Reliability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-22)
+**Table M-10.** Evaluation results for Reliability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
@@ -197,19 +197,19 @@ characteristic, and every change made in response to the evaluation.
 | **Prospective tenant mean** | | **5.00** | | Very High Quality |
 | **Composite mean** | | **4.62** | | **Very High Quality** |
 
-**Table M-11.** Measured evidence for Reliability (summarized in Chapter 4, Section 4.4.5, Table 4-23)
+**Table M-11.** Measured evidence for Reliability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
-| Maturity | Critical defects among those found in testing, X = A / B | 0 / 35; 31 resolved, 1 open, 3 accepted | Table 4-25 |
+| Maturity | Critical defects among those found in testing, X = A / B | 0 / 35; 31 resolved, 1 open, 3 accepted | Table 4-20 |
 | Availability | Not measured as a share of time over a period; rated in the survey only | | |
-| Fault tolerance | Addresses that opened with no connection, X = A / B | 10 / 10 = 1.00 | Table 4-12 |
-| Fault tolerance | A figure that could not be loaded shown as unavailable, not as ₱0 | Failed once on the testing day (step 23b); passed when re-tested on the owner's laptop, 13 October 2026 | Tables M-1 and 4-25 |
+| Fault tolerance | Addresses that opened with no connection, X = A / B | 10 / 10 = 1.00 | Table M-24 |
+| Fault tolerance | A figure that could not be loaded shown as unavailable, not as ₱0 | Failed once on the testing day (step 23b); passed when re-tested on the owner's laptop, 13 October 2026 | Tables M-1 and 4-20 |
 | Fault tolerance | A stalled save reports within the 45 seconds designed | iPhone within 45 s; Android after 60 to 80 s, corrected and on time when re-tested, 13 October 2026 | Section 4.3.7 |
 | Recoverability | Ledger after a receipt was recorded and voided | Returned to its 937 rows and its previous total | Section 4.3.2 |
 | Recoverability | Typed text kept when a send failed | Kept on both phones; sent once the connection returned on one | Section 4.3.7 |
 
-**Table M-12.** Evaluation results for Security, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-22)
+**Table M-12.** Evaluation results for Security, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
@@ -226,21 +226,21 @@ characteristic, and every change made in response to the evaluation.
 | **Technical evaluator mean** | | **4.40** | | Very High Quality |
 | **Composite mean** | | **4.70** | | **Very High Quality** |
 
-**Table M-13.** Measured evidence for Security (summarized in Chapter 4, Section 4.4.5, Table 4-23)
+**Table M-13.** Measured evidence for Security (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Confidentiality | Another tenant's record requested by its number | Answered "not found" (walkthrough step 17); each tenant saw only their own unit (C-02) | Tables M-1 and M-22 |
 | Confidentiality | Protections a user meets that held when tried by hand, X = A / B | 12 / 12 = 1.00 | Later in this section |
 | Confidentiality | Tables with row-level security and no rule opening them to a browser | Every table; no warning from the database's security advisor | Sections 4.2.6 and 4.4.4 |
-| Integrity | Payment gateway messages accepted only with a valid signature: checks passed, X = A / B | 73 / 73 = 1.00 | Table 4-9 |
+| Integrity | Payment gateway messages accepted only with a valid signature: checks passed, X = A / B | 73 / 73 = 1.00 | Table 4-8 |
 | Integrity | Requests that change data checked against a schema before use | Every one, in all 71 request handlers read | Later in this section |
 | Non-repudiation, accountability | Administrator actions written to an audit trail the application cannot edit or delete | Every administrator action | Section 4.2.6 |
 | Authenticity | Account after five wrong passwords | Locked for 15 minutes | Later in this section |
 | Authenticity | Grades from three passive external scans | SSL Labs A+; Mozilla HTTP Observatory A+ (115, 12 of 12 tests); securityheaders.com A+ | Later in this section |
 | All | High-severity problems found by the code review | 0 | Later in this section |
 
-**Table M-14.** Evaluation results for Maintainability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-22)
+**Table M-14.** Evaluation results for Maintainability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
@@ -252,7 +252,7 @@ characteristic, and every change made in response to the evaluation.
 | **Technical evaluator mean** | | **4.00** | | High Quality |
 | **Composite mean** | | **4.00** | | **High Quality** |
 
-**Table M-15.** Measured evidence for Maintainability (summarized in Chapter 4, Section 4.4.5, Table 4-23)
+**Table M-15.** Measured evidence for Maintainability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
@@ -261,9 +261,9 @@ characteristic, and every change made in response to the evaluation.
 | Reusability | Not measured and not rated | | |
 | Analysability | Changes to the database kept as numbered, reviewable migrations | Every change; more than 70 by 5 October 2026 | Section 4.2.1 |
 | Modifiability | The water rate changed without a change to the code | Changed in the settings | Section 4.2.4 |
-| Testability | Automated suites that run against the live system without writing to it, passing, X = A / B | 20 / 20 = 1.00 | Table 4-9 |
+| Testability | Automated suites that run against the live system without writing to it, passing, X = A / B | 20 / 20 = 1.00 | Table 4-8 |
 
-**Table M-16.** Evaluation results for Portability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-22)
+**Table M-16.** Evaluation results for Portability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
@@ -284,16 +284,16 @@ characteristic, and every change made in response to the evaluation.
 | **Prospective tenant mean** | | **5.00** | | Very High Quality |
 | **Composite mean** | | **4.89** | | **Very High Quality** |
 
-**Table M-17.** Measured evidence for Portability (summarized in Chapter 4, Section 4.4.5, Table 4-23)
+**Table M-17.** Measured evidence for Portability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Adaptability | Screens wider than the window at 360, 390, 768 and 1,366 pixels | 0 (seven public pages and the owner's eight screens) | Section 4.3.6 |
 | Adaptability | Kinds of device on which the same code ran | 3: a laptop in Chrome, an Android phone in Chrome, an iPhone in Safari | Section 4.2.7 |
-| Installability | Installation requirements of a Progressive Web Application | Met; installed from the browser on an Android phone and an iPhone, with no app store | Table 4-12 and Section 4.3.7 |
-| Replaceability | The owner's workbook reproduced by the system | Monthly Income and Monthly Expenses, exported in her layout and checked against the database month by month (490 / 490); she has not yet made it her main record | Section 4.2.4, Tables 4-9 and 4-27 |
+| Installability | Installation requirements of a Progressive Web Application | Met; installed from the browser on an Android phone and an iPhone, with no app store | Table M-24 and Section 4.3.7 |
+| Replaceability | The owner's workbook reproduced by the system | Monthly Income and Monthly Expenses, exported in her layout and checked against the database month by month (490 / 490); she has not yet made it her main record | Section 4.2.4, Tables 4-8 and 4-22 |
 
-**Table M-18.** Every optimization made in response to evaluation, with its finding (summarized in Chapter 4, Section 4.4.6, Table 4-24)
+**Table M-18.** Every optimization made in response to evaluation, with its finding (summarized in Chapter 4, Section 4.4.6, Table 4-19)
 
 | Source | Finding | Change made | Characteristic |
 | :--- | :--- | :--- | :--- |
@@ -345,7 +345,7 @@ characteristic, and every change made in response to the evaluation.
 | Technical evaluators, 3 Oct 2026 | The footer was tall, with too much empty space | Spacing reduced and its columns placed side by side on a phone | Usability |
 | Technical evaluators, 3 Oct 2026 | The privacy policy's list of contents crowded the page on a phone | On a phone the list opens from a side panel; on wider screens it stays beside the text | Usability |
 | Survey, 30 September to 4 October 2026 | The technical evaluator rated all five Usability items 3, on 4 October | Answered before the fourteen changes above, eleven of them to usability, went live on 5 October; no further change | Usability |
-| Survey, 30 September 2026 | The owner rated 3 her telling what each screen is for, and learning the system, without help | No change to the screens; the user manual (Appendix K) describes every screen in her words, and training at hand-over is stage 4 of Table 4-27 (Chapter 5, recommendation 6) | Usability |
+| Survey, 30 September 2026 | The owner rated 3 her telling what each screen is for, and learning the system, without help | No change to the screens; the user manual (Appendix K) describes every screen in her words, and training at hand-over is stage 4 of Table 4-22 (Chapter 5, recommendation 6) | Usability |
 | Survey, 4 October 2026 | The technical evaluator rated 3 a failed request being handled without presenting incorrect data | The same defect as walkthrough step 23b (₱0 instead of "—"): not reproduced on 1 October; to be tested again on the owner's laptop | Reliability |
 | Survey, 30 September 2026 | A tenant asked for the deposit paid and the electric bill to be shown | Since 13 October 2026 the tenant's Overview shows the deposit held for their tenancy; the electric bill stays outside the system, since each tenant pays the electric company directly (Section 4.2.4) | Functional Suitability |
 
@@ -357,16 +357,16 @@ characteristic, and every change made in response to the evaluation.
 | Design | Screens for the visitor, the tenant and the owner over one permission matrix; the ledgers laid out as her workbook is | The business rule register rebuilt, 49 rules each with its evidence; the automatic rent increase removed from scope | The owner's review on a phone (23 September) and the design rules the screens now follow; the tenant and owner overviews reworked |
 | Development | Public site, tenant and owner portals, ledgers, repairs, inquiries, notifications and audit trail; 937 income rows and 1,327 expense allocations transferred | Fifteen defects in behavior corrected, among them a partial payment that left no debt and cash recorded with nothing written to the books; the Excel downloads | Adyen with GCash working end to end on the test account (26 September); updates every five seconds; offline reading; the breached-password check (7 October) |
 | Testing | Checked by demonstration only; no automated check existed | Seven automated check suites, over 100 assertions, each defect covered by one | The screen-versus-database audit (26 and 29 September, six defects); 20 suites (29 September); the testing day with the owner and three tenants (30 September); the technical evaluators' review (3 October) |
-| Deployment | Run from the team's machines against the live database | Unchanged | Hosted on Vercel from 24 September; tenant accounts prepared on 29 September; in use beside the owner's own records (Table 4-27) |
-| Review | The Module 01 submission, whose documents became Iteration 2's input | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 4-24); the ISO/IEC 25010 survey (Section 4.4) |
+| Deployment | Run from the team's machines against the live database | Unchanged | Hosted on Vercel from 24 September; tenant accounts prepared on 29 September; in use beside the owner's own records (Table 4-22) |
+| Review | The Module 01 submission, whose documents became Iteration 2's input | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 4-19); the ISO/IEC 25010 survey (Section 4.4) |
 
 **Table M-20.** Quality in use (30 September 2026) (summarized in Chapter 4, Section 4.4.5)
 
 | Characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
-| Effectiveness | Tasks completed, X = A / B | 34 / 34 = 1.00; without help 31 / 34 = 0.91 | Table 4-15 |
+| Effectiveness | Tasks completed, X = A / B | 34 / 34 = 1.00; without help 31 / 34 = 0.91 | Table 4-11 |
 | Effectiveness | The owner's walkthrough steps executed that passed, X = A / B | 24 / 25 = 0.96 | Table M-1 |
-| Efficiency | Median time per task; mean wrong turns per task | 60 s; 0.2 | Table 4-15 |
+| Efficiency | Median time per task; mean wrong turns per task | 60 s; 0.2 | Table 4-11 |
 | Satisfaction | Not measured with a satisfaction scale. The open answers: two of three tenants found nothing confusing during their tasks, and one said the system still felt lacking; on the survey form the owner wrote "Beautiful system!" and a tenant named the ease of seeing their rent and asked for the deposit paid and the electric bill to be shown | | Sections 4.3.7 and 4.4 |
 | Freedom from risk | Records of the owner changed or lost by testing | None: the 937 income rows were untouched, and the records each test created were removed or voided afterwards by reviewed changes | Sections 4.3.2 and 4.3.4 |
 | Context coverage | Contexts in which the tasks were done | The owner's laptop in Chrome; an Android phone in Chrome; an iPhone in Safari; with no connection and on a stalled one; the owner and two tenants at the same time (reading; saving at the same moment was not tested) | Sections 4.3.6 and 4.3.7 |
@@ -396,3 +396,46 @@ characteristic, and every change made in response to the evaluation.
 | A double tap on Send saves one message (C-06) | Not performed |
 | The owner opens a full year of Monthly Income while tenants are active (C-07) | Pass: loaded in about 3 seconds |
 | The owner on the laptop and tenants on phones at once (C-08) | Pass: no session affected another |
+
+**Table M-23.** Test activities and the ISO/IEC 25010:2011 characteristics they measured (summarized in Chapter 4, Section 4.3)
+
+| Test activity (Section) | Test level | Characteristics measured (sub-characteristics) |
+| :--- | :--- | :--- |
+| Automated verification (4.3.1) | Unit and integration | Functional Suitability (correctness); Security (confidentiality, integrity, authenticity); Compatibility (interoperability); Maintainability (testability) |
+| Use in the live environment (4.3.2) | System, in operation | Functional Suitability (correctness); Compatibility (interoperability); Reliability (recoverability) |
+| Screen-versus-database audit (4.3.3) | System | Functional Suitability (correctness); Reliability (maturity) |
+| Functional walkthrough (4.3.4) | System | Functional Suitability (completeness, correctness); Usability (user error protection); Security (confidentiality); Reliability (fault tolerance) |
+| Responsiveness (4.3.5) | System | Performance Efficiency (time behavior, resource utilization) |
+| Offline, installation, weak connections and simultaneous users (4.3.6) | System | Reliability (fault tolerance); Performance Efficiency (capacity); Portability (installability, adaptability); Usability (accessibility) |
+| User acceptance testing (4.3.7) | Acceptance | Quality in use (effectiveness, efficiency, context coverage); Usability (learnability, operability); Security (confidentiality) |
+
+**Table M-24.** Offline and installation behavior (29 September 2026) (summarized in Chapter 4, Section 4.3.6)
+
+| Test | Result |
+| :--- | :--- |
+| Installation requirements (manifest, service worker, icons) | Met; the service worker keeps 67 application files on the device after the first visit |
+| Opening ten addresses with no connection | The application opened on all ten in about 1.5 seconds instead of the browser's "no internet" page |
+| Tenant and administrator pages with no connection, signed out | The application opened and asked for sign-in; no personal or financial data was shown |
+| Notice when the connection drops | Shown at once: "No connection. You can read what is already loaded, but nothing can be saved or paid until it is back." |
+| Notice when the connection returns | "Back online" |
+| Public unit list with no connection | Shown from the device's memory |
+| Public unit list when the server stops answering | Shown from the device's memory after 3.1 seconds |
+| Public page on a slow connection (400 kbps, 400 ms), first visit | Units on screen after 4.6 seconds |
+| The same page, returning visitor | Units on screen after 0.3 seconds, because the installed application already holds its files |
+
+**Table M-25.** Simulated simultaneous users, read operations (29 September 2026) (summarized in Chapter 4, Section 4.3.6)
+
+| Test | Simulated users at once | Duration | Requests | Errors | Slowest 5% took longer than |
+| :--- | --: | --: | --: | --: | --: |
+| Public pages and public data, live site | 12 | 60 s | 1,085 | 0 | 0.52 s |
+| The owner's ten main data requests, live database | 6 | 45 s | 285 | 0 | 0.80 s |
+
+**Table M-26.** Simultaneous saves (19 and 24 September 2026) (summarized in Chapter 4, Section 4.3.6)
+
+| Test | Before the change | After the change |
+| :--- | :--- | :--- |
+| The same receipt sent twice at once, live system | Both saved: 2 rows | 1 saved, 1 refused: 1 row |
+| The same receipt sent five times at once, live system | All five saved: 5 rows | 1 saved, 4 refused: 1 row |
+| One receipt covering three months, live system | | Saved as 3 rows, June to August 2026, as before |
+| Two GCash checkouts opened on one bill at once, payment code with a stand-in database | Both opened, so both payments could be recorded | 1 opened, 1 refused |
+| A checkout 16 minutes after one was abandoned | | Opened: an abandoned checkout holds the bill for 15 minutes, not for good |

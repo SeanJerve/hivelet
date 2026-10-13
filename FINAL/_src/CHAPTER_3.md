@@ -107,7 +107,7 @@ tracking, booking coordination, and maintenance handling.
 
 *Figure 3. Agile Software Development Life Cycle.*
 
-**[KEEP: the Figure 3 image from the current manuscript, p. 31.]**
+![Agile Software Development Life Cycle](figures/figure-3-1-agile-cycle.png)
 
 Unlike traditional SDLC models, Agile supports early identification of system issues through
 iterative cycles of development and testing. This enabled the researchers to refine system components

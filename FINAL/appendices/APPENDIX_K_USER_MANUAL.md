@@ -2,7 +2,7 @@
 
 **For the owner and the tenants of the Fe Galang Da Silva Boarding House.** Written 2026-09-29
 against the system as deployed that night; every button and screen name below is the one the
-system shows. Chapter 4, §4.5 (Table 4-27, stage 4) names this manual as the hand-over document.
+system shows. Chapter 4, §4.5 (Table 4-22, stage 4) names this manual as the hand-over document.
 
 Hivelet is at **https://hivelet.vercel.app**. It works in any current browser on a phone or a
 computer, and it can be installed on a phone's home screen (Part 1, step 6).
