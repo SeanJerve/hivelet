@@ -148,8 +148,14 @@ app('APPENDIX_M_CHAPTER_4_EVIDENCE.md', appM, 'App M');
 app('APPENDIX_N_DATA_DICTIONARY.md', read(path.join(docs, 'APPENDIX_N_DATA_DICTIONARY.md')), 'App N');
 app('APPENDIX_O_UAT_SIGN_OFF.md', appO, 'App O');
 
+// Appendices written for FINAL itself (C, F, Q), with images from docs/FINAL MANUSCRIPT/figures/.
+for (const file of fs.readdirSync(path.join(src, 'appendices')).filter((f) => f.endsWith('.md')).sort()) {
+  app(file, read(path.join(src, 'appendices', file)), `App ${file.match(/APPENDIX_([A-Z])/)[1]}`);
+}
+
 made.push(write('08_APPENDICES.md', renumber(read(path.join(src, 'APPENDICES.md')), 'Appendices')));
-made.push(write('09_AI_USE_STATEMENT.md', renumber(read(path.join(src, 'AI_USE_STATEMENT.md')), 'AI statement')));
+// The AI-use statement is kept outside the repository until the adviser says where it goes
+// (Sean, 13 October 2026): _AI_USE (not in repo)/AI_USE_STATEMENT.md.
 
 // ---- references -----------------------------------------------------------------------------
 // Every citation in the body needs an entry and every entry needs a citation (FIXES C7: two entries

@@ -3394,8 +3394,7 @@ the ₱20 charged once, or once per month?**
 >
 > **Which makes the choice sharper than it looks.** Substituting stand-ins is mechanical and
 > worth doing, but only **making the repository private** takes effect on what is already
-> published. A history rewrite would reach further and is the one option `AGENTS.md` warns
-> against — the Lovable sync rewrites with it — and it still does not reach forks, clones or
+> published. A history rewrite would reach further, and it still does not reach forks, clones or
 > GitHub's caches. **I have not attempted one and would not without being asked.**
 
 > **Update, same day, from the QA side: 19 → 11.** The mechanical half is done, and it fell out

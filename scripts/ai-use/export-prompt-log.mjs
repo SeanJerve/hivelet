@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Turns this machine's Claude Code session logs for Hivelet into a dated prompt log, for the
-// AI-use disclosure (CHED CMO No. 21, s. 2026; docs/FINAL MANUSCRIPT/AI_USE_DISCLOSURE.md).
+// AI-use disclosure (CHED CMO No. 21, s. 2026; _AI_USE (not in repo)/AI_USE_DISCLOSURE.md, outside the repository).
 //
 //   node scripts/ai-use/export-prompt-log.mjs [--out=ai-use-log] [--projects=<dir>]
 //

@@ -115,3 +115,6 @@ scripts/field-tests/shots/
 # Documents kept on this machine but out of the repository (13 Oct 2026 clean-up); recover any
 # of them from the tag pre-cleanup-2026-10-13 on another machine
 /_ARCHIVE (not in repo)/
+
+# The AI-use statement and its evidence: ready for the adviser, kept outside the repository (13 Oct 2026)
+/_AI_USE (not in repo)/

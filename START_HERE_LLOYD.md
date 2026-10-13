@@ -50,7 +50,7 @@ machine against the live database at 18:40**:
 | 7 | **Export this laptop's prompt log:** `node scripts/ai-use/export-prompt-log.mjs`, read it, keep it (it goes to `ai-use-log/`, never committed) | Lloyd | The AI-use disclosure (`docs/FINAL MANUSCRIPT/AI_USE_DISCLOSURE.md` §3) |
 | 8 | **Put the two course guides on this machine** (*Capstone Project 2 Student Guide, Chapter 4* and *Writing and Defending Chapter 5*, in Lloyd's Downloads) in `docs/FINAL MANUSCRIPT/guides/`, which is gitignored | Lloyd | Claude here cuts Chapter 4 to them (Section 3) |
 | 9 | **Which phone each timing in Chapter 4 Table 11 came from** (Infinix GT20 on Wi-Fi, iPhone 15 on mobile data) | Eljohn | The table's headings name the devices |
-| 10 | **The AI tool used in July and August** (Iteration 1) | Whoever built it | `AI_USE_DISCLOSURE.md` §2 |
+| 10 | ~~**The AI tool used in July and August**~~ **DONE 13 Oct (Sean):** none, apart from one change on 20 August | | |
 | 11 | **The Ullah et al. (2021) source** cited in §1.1 | Whoever wrote §1.1 | Its APA entry in the References (FIXES G7) |
 | 12 | **The adviser:** Chapter 4 by objective or the guide's headings (GUIDE D1); where the AI statement goes; whether the certifications on pp. 5 and 6 need the current title | Anyone | Each changes what gets pasted |
 
@@ -72,4 +72,4 @@ Chapter 4 is 118 pages in Word. The plan, agreed with Sean on 12 October:
 
 Making the repository private (B-103, answer 18); signing in once as the owner so her failed sign-in
 count resets (B-101; her password is not stored, answer 19, so `check:api` and `check:relations` stay
-off); the Adyen keys and webhook; the Claude account's data-use setting (`AI_USE_DISCLOSURE.md` §7).
+off); the Adyen keys and webhook; the Claude account's data-use setting (`AI_USE_DISCLOSURE.md` §7, kept outside the repository in `_AI_USE (not in repo)/` on Sean's machine).
