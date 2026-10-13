@@ -11,7 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle,
+  Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, TableLayoutType,
   LineRuleType, HeadingLevel, ImageRun,
 } from 'docx';
 
@@ -93,18 +93,27 @@ function table(lines) {
   widths[n - 1] += PRINTABLE_WIDTH_DXA - widths.reduce((a, b) => a + b, 0);
   const none = { style: BorderStyle.NONE, size: 0, color: 'auto' };
   const rule = (size, color) => ({ style: BorderStyle.SINGLE, size, color });
-  const cell = (t, i, header, last) => new TableCell({
+  // A table of up to 15 rows stays on one page with its caption; a longer one keeps at least its
+  // header and first row with it. The caption already keeps with the table (keepNext). Seen 13 Oct
+  // 2026: Tables 3-1, 4-5, 4-8, 4-9, 4-11, 4-12, 4-18 and 4-22 began with one row at a page foot.
+  const keepAll = data.length <= 15;
+  const cell = (t, i, header, last, keep) => new TableCell({
     width: { size: widths[i], type: WidthType.DXA },
     shading: header ? { fill: 'F2F2F2' } : undefined,
     borders: { left: none, right: none, top: header ? rule(12, '000000') : rule(4, 'D9D9D9'), bottom: header || last ? rule(12, '000000') : rule(4, 'D9D9D9') },
     margins: { top: 80, bottom: 80, left: 120, right: 120 },
-    children: [new Paragraph({ spacing: { line: SINGLE, lineRule: LineRuleType.AUTO }, children: runs(t || '', TABLE_SIZE, header) })],
+    children: [new Paragraph({ keepNext: keep, spacing: { line: SINGLE, lineRule: LineRuleType.AUTO }, children: runs(t || '', TABLE_SIZE, header) })],
   });
   return new Table({
     width: { size: PRINTABLE_WIDTH_DXA, type: WidthType.DXA },
+    // Fixed, so a word too long for its column (gen_random_uuid(), a long foreign key) wraps inside
+    // it. Left to fit its contents, Word widened such columns past the margin: Appendix N's tables
+    // ran off the page, their last column cut mid-word (seen 13 Oct 2026).
+    layout: TableLayoutType.FIXED,
+    columnWidths: widths,
     rows: [
-      new TableRow({ tableHeader: true, cantSplit: true, children: head.map((t, i) => cell(t, i, true, false)) }),
-      ...data.map((r, ri) => new TableRow({ cantSplit: true, children: head.map((_, i) => cell(r[i], i, false, ri === data.length - 1)) })),
+      new TableRow({ tableHeader: true, cantSplit: true, children: head.map((t, i) => cell(t, i, true, false, true)) }),
+      ...data.map((r, ri) => new TableRow({ cantSplit: true, children: head.map((_, i) => cell(r[i], i, false, ri === data.length - 1, keepAll ? ri < data.length - 1 : ri === 0)) })),
     ],
   });
 }
