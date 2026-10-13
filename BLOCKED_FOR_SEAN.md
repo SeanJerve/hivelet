@@ -83,6 +83,8 @@ add her own expense kinds (being built today).
 
 ### B-103 — the survey export with every respondent's full name was pushed to the PUBLIC repo (cd7ea3f, 7 Oct 09:54) · **DECIDED 2026-10-12 (Lloyd: "yes, make it private") - OPEN: Sean, GitHub > Settings > General > Change visibility; then confirm Vercel still deploys**
 
+- **DECIDED 13 Oct 2026 (Sean): no history rewrite. Make the repository private before the defense.** Now that Sean makes every push, Vercel's free plan still deploys (it only blocks commits by other authors on a private repo); after switching, push one small commit and check that it deploys. A rewrite script and a full backup of the remote are kept in `_ARCHIVE (not in repo)/` on Sean's machine in case the adviser ever asks for the history itself cleaned.
+
 - **Also in the public history (found 13 Oct 2026):** `INCOME AND EXPENSES PAST RECORDS/Michelles-BH-Report-Income-and-Expenses-fr-Yr-2024-up (1) (1) (1).xlsx`, the owner's real workbook. Removed from the repository on 13 Oct (kept on Sean's machine in `_ARCHIVE (not in repo)/`), but every earlier commit still has it. Whatever is decided for the survey names (private repository, or a history rewrite) should cover this file too.
 
 - **What happened.** Lloyd's commit `cd7ea3f` added
