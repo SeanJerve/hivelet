@@ -13,6 +13,10 @@ evaluation of an online payment monitoring system for student boarding houses ne
 campus in the Philippines. *Proceedings of International Exchange and Innovation Conference on
 Engineering & Sciences (IEICES), 11*, 1225–1231. https://hdl.handle.net/2324/7395667
 
+Etikan, I., Musa, S. A., & Alkassim, R. S. (2016). Comparison of convenience sampling and purposive
+sampling. *American Journal of Theoretical and Applied Statistics, 5*(1), 1–4.
+https://doi.org/10.11648/j.ajtas.20160501.11
+
 Ghasemaghaei, M., Ebrahimi, S., & Hassanein, K. (2018). Data analytics competency for improving firm
 decision making performance. *Journal of Strategic Information Systems, 27*(1), 101–113.
 https://doi.org/10.1016/j.jsis.2017.10.001
@@ -53,8 +57,10 @@ Revolutionizing student accommodation: A MERN based rental system for seamless p
 *International Journal of Engineering Research & Technology, 15*(2), 1–10.
 https://www.ijert.org/research/revolutionizing-student-accommodation-a-mern-based-rental-system-for-seamless-property-management-IJERTV15IS020113.pdf
 
-Laudon, K., & Laudon, J. (2006). *Management information systems: Managing the digital firm* (9th
-ed.). Prentice Hall. https://www.iicseonline.org/management_information_system_2.pdf
+Laudon, K., & Laudon, J. (2006). *Management information systems: Managing the digital firm* (9th ed.). Prentice Hall.
+
+Likert, R. (1932). A technique for the measurement of attitudes. *Archives of Psychology, 22*(140),
+1–55.
 
 Magno, J. M., Pelayo, R. S., & Soberano, K. T. (2024). Apartment rental management system for
 real-time transaction and task organization. *International Journal of Multidisciplinary Research and
@@ -64,6 +70,10 @@ Mia, I. B., Jimenez, S., Habaradas, R., Ranieses, J. J., Javier, C., & Enriquez,
 technology adoption among Philippine micro-, small-, and medium-sized enterprises: Barriers, enablers
 & challenges during COVID-19. *Journal of Business, Ethics and Society, 4*(1), 1–17.
 
+Nielsen, J., & Landauer, T. K. (1993). A mathematical model of the finding of usability problems. In
+*Proceedings of the INTERACT '93 and CHI '93 Conference on Human Factors in Computing Systems*
+(pp. 206–213). ACM Press. https://doi.org/10.1145/169059.169166
+
 Pavia, J. F., Bonilla, K. M. J., Cordovilla, W. J. B., Pama, J. R. N., Baula, C. L., & Bermejo, E. O.
 (2022). Bicol College property management system for Bachelor of Science in Hospitality Management
 students: Mock hotel operation. *JPAIR Multidisciplinary Research, 50*(1), 52–66.
@@ -71,6 +81,9 @@ https://doi.org/10.7719/jpair.v50i1.820
 
 Pressman, R. S., & Maxim, B. R. (2020). *Software engineering: A practitioner's approach* (9th ed.).
 McGraw-Hill Education.
+
+Republic Act No. 10173. (2012). *Data Privacy Act of 2012*. National Privacy Commission.
+https://www.privacy.gov.ph/data-privacy-act/
 
 Saputra, R. G., Susanto, R., & Pradana, A. I. (2025). Implementation of web-based room management
 system for boarding house operations. *Bit-Tech (Binary Digital - Technology), 8*(1), 831–840.
@@ -82,3 +95,6 @@ University]. OPUS Open Portal to University Scholarship. https://opus.govst.edu/
 Ullah, F., Sepasgozar, S. M. E., & Wang, C. (2018). A systematic review of smart real estate technology:
 Drivers of, and barriers to, the use of digital disruptive technologies and online platforms.
 *Sustainability, 10*(9), 3142. https://doi.org/10.3390/su10093142
+
+World Wide Web Consortium. (2023). *Web Content Accessibility Guidelines (WCAG) 2.2* (W3C
+Recommendation). https://www.w3.org/TR/WCAG22/

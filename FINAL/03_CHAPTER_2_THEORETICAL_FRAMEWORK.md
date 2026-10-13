@@ -18,15 +18,14 @@ apartment environments.
 The increasing complexity of apartment and boarding house operations has intensified the need for
 structured and centralized management systems. Existing literature consistently identifies
 fragmentation of administrative workflows as one of the primary operational issues in residential
-property management environments (Ullah et al., 2018; Burke, 2026; Setty, 2022). As the number of
+property management environments (Burke, 2026; Setty, 2022). As the number of
 tenants, transactions, and maintenance activities increases, traditional methods such as manual
 documentation, spreadsheet-based tracking, and informal communication become increasingly difficult
 to manage consistently and accurately.
 
-Ullah et al. (2018) explain that conventional property management practices often suffer from
-disconnected workflows, documentation inconsistencies, and inefficient coordination between
-operational tasks. Similarly, Burke (2026) emphasizes that increasing residential density
-proportionally increases administrative complexity, particularly in areas involving tenant
+Ullah et al. (2018), reviewing 213 studies of smart real estate technology, find that the real
+estate sector still needs to improve its adoption of digital technologies and online platforms to
+move from traditional to smart practice. Similarly, Burke (2026) emphasizes that increasing residential density increases administrative complexity, particularly in areas involving tenant
 monitoring, maintenance coordination, and financial recording. These findings collectively suggest
 that operational inefficiencies are not isolated technical issues but structural problems caused by
 fragmented information handling and disconnected administrative processes.
@@ -96,8 +95,7 @@ managerial decision-making. Existing studies consistently emphasize that financi
 often emerge when payment records are maintained through fragmented or manual processes (Encarnacion
 et al., 2025; Magno et al., 2024; Setty, 2022).
 
-Encarnacion et al. (2025) demonstrate that structured digital payment monitoring systems significantly
-improve administrative oversight within student boarding house operations by providing organized
+Encarnacion et al. (2025) demonstrate that structured digital payment monitoring systems improve administrative oversight within student boarding house operations by providing organized
 financial ledgers, payment summaries, and transaction visibility. Their findings suggest that
 centralized financial records reduce monitoring inconsistencies and improve forecasting accuracy.
 Similarly, Magno et al. (2024) observed that digital transaction tracking improves billing management
@@ -132,7 +130,7 @@ often communicated through verbal reporting or messaging applications, resulting
 requests and inconsistent follow-up procedures.
 
 To address these issues, Saputra et al. (2025) demonstrate that web-based room management systems
-with structured issue coordination mechanisms significantly improve operational accountability and
+with structured issue coordination mechanisms improve operational accountability and
 response management. By transforming tenant complaints into recorded and traceable maintenance
 workflows, digital ticketing systems improve monitoring consistency and reduce communication gaps
 between administrators and tenants.
@@ -153,7 +151,7 @@ responsiveness, and operational coordination.
 While centralized systems improve operational coordination, effective implementation also depends on
 accessibility across devices and varying infrastructure conditions. Progressive Web Applications
 (PWAs) provide a technological framework capable of addressing these accessibility challenges within
-resource-constrained environments (Google, 2018; Biørn-Hansen et al., 2019).
+resource-constrained environments (Biørn-Hansen et al., 2019; Google, 2018).
 
 Google (2018) describes PWAs as web applications that combine the accessibility of browser-based
 systems with functionalities commonly associated with native mobile applications, including
@@ -181,8 +179,7 @@ The reviewed literature collectively demonstrates that operational inefficiencie
 management environments primarily emerge from fragmented administrative structures rather than the
 complete absence of digital technologies. Property management studies identify persistent issues
 involving disconnected workflows, inconsistent record management, delayed communication, and
-operational redundancy (Burke, 2026; Ullah et al., 2018; Magno et al., 2024). MIS literature explains
-these inefficiencies as consequences of fragmented information processing and lack of centralized
+operational redundancy (Burke, 2026; Magno et al., 2024). Information systems and software engineering literature explains these inefficiencies as consequences of fragmented information processing and lack of centralized
 operational visibility (Ghasemaghaei et al., 2018; Pressman & Maxim, 2020).
 
 Financial analytics studies further establish that structured and centralized financial data
@@ -193,9 +190,8 @@ through structured digital workflows rather than informal communication channels
 Saputra et al., 2025).
 
 Meanwhile, PWA literature provides the technological framework that enables these integrated
-operational components to remain accessible within environments characterized by limited
-infrastructure and varying device conditions (Google, 2018; Biørn-Hansen et al., 2019; Mia et al.,
-2024).
+operational components to remain accessible within environments characterized by limited infrastructure (Mia et al., 2024) and
+varying device conditions (Biørn-Hansen et al., 2019; Google, 2018).
 
 Despite their complementarity, these studies are commonly implemented in isolation. Existing systems
 frequently focus on specific operational functions such as financial management, communication, or
@@ -211,13 +207,11 @@ Based on the synthesis of literature, a significant research gap emerges regardi
 integrated apartment management system specifically designed for small-scale and resource-constrained
 residential operations. Existing systems are commonly developed either as enterprise-oriented
 platforms or as isolated functional solutions focusing on individual administrative tasks such as
-payment monitoring, tenant management, or maintenance coordination (Magno et al., 2024; Setty, 2022;
-Saputra et al., 2025).
+payment monitoring, tenant management, or maintenance coordination (Magno et al., 2024; Saputra et al., 2025; Setty, 2022).
 
 While these systems demonstrate improvements in specific operational areas, they frequently assume
 stable infrastructure, dedicated administrative personnel, and structured operational environments
-that do not reflect the realities of small-scale apartment and boarding house operations (Mia et al.,
-2024; Burke, 2026). As a result, many administrators continue to rely on fragmented workflows
+that do not reflect the realities of small-scale apartment and boarding house operations (Burke, 2026; Mia et al., 2024). As a result, many administrators continue to rely on fragmented workflows
 involving manual documentation, spreadsheet-based records, informal communication channels, and
 disconnected transaction monitoring processes.
 
@@ -335,7 +329,8 @@ bill through GCash using the Adyen payment gateway, without serving as the prima
 processing mechanism of the system. A payment made this way enters a pending state and is settled
 only after the administrator verifies it.
 
-**ISO/IEC 25010:2011** – An international software quality standard (ISO/IEC, 2011a) that defines
+**ISO/IEC 25010:2011** – An international software quality standard (International Organization for Standardization &
+International Electrotechnical Commission [ISO/IEC], 2011a) that defines
 eight characteristics of product quality: functional suitability, performance efficiency,
 compatibility, usability, reliability, security, maintainability and portability, divided into
 thirty-one sub-characteristics. It also defines a model of quality in use, with five

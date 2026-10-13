@@ -105,9 +105,28 @@ book and report titles), and the six ISO entries the method now cites added (201
 were removed:** they were listed but cited nowhere, which a panel reads as padding. To keep either,
 cite it in Chapter 2 first; for example, in Section 2.1.6, "Monteverde et al. (2023) likewise
 evaluated a web-based rental house finder against ISO/IEC 25010", using only what the source says.
-**Ullah et al.** is 2018, not 2021: the article with that title and those authors is *Sustainability*
-10(9), 3142 (DOI 10.3390/su10093142). The details first supplied (2021, 13(14), 7732) match no
-article, so a panelist looking it up would not have found it; all five citations now say 2018.
+**Ullah et al. (2018)**, *Sustainability* 10(9), 3142, is a review of how real estate adopts digital
+technologies. The draft cited it for things it does not say (that property management workflows are
+fragmented, that systems assume dedicated staff); it is now cited only for its finding that real
+estate still needs to improve its adoption of digital technologies and online platforms (Sections
+1.1 and 2.1.1). The 2021 details first supplied matched no article.
+
+**Checked against each source's title and abstract (13 October 2026), and corrected where a sentence
+claimed more than the source:** Mia et al. (2024) is about small Philippine enterprises in general,
+so it now supports the point about small enterprises, not about residential systems or cash;
+Magno et al. (2024) is no longer said to hold a view it does not state (Section 4.3.3); "significantly"
+is removed where a study did not test significance; Pressman and Maxim (2020) is software
+engineering, not MIS, literature. Every parenthesis with several sources lists them alphabetically,
+as APA 7 asks, and the ISO group authors are spelled out at their first citation. The Laudon and
+Laudon entry no longer links to an unofficial copy of the book.
+
+**Five references added**, each one supporting a choice the method made, verified against the
+publisher or Crossref: Etikan et al. (2016) for purposive and convenience sampling; Nielsen and
+Landauer (1993) for why a few testers are defensible, since each additional tester finds fewer new
+usability problems (it does not say three find most of them); Likert (1932) for
+the scale; the Data Privacy Act of 2012 (Republic Act No. 10173), which Section 3.4 named but the
+list lacked; and WCAG 2.2 (World Wide Web Consortium, 2023), the standard the accessibility scans
+checked against. The list now has 26 entries.
 
 **Why ISO/IEC 25040:2011 and not the 2024 edition.** The 2024 edition was retitled *Quality
 evaluation framework* and restructured, so its steps are not the five the evaluation followed. The
@@ -128,4 +147,5 @@ node scripts/manuscript/build-final.mjs
 
 It strips the team notes, renumbers every table and figure, and fails if any text cites a table,
 figure or section that does not exist, if a citation has no reference entry or an entry has no
-citation, or if a team note survives.
+citation, if several sources in one parenthesis are not in alphabetical order, or if a team note
+survives.

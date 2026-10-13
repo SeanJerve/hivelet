@@ -166,7 +166,7 @@ made.push(write('07_REFERENCES.md', refsText));
 const entryKey = (e) => {
   const year = (e.match(/\((\d{4}[a-z]?|n\.d\.)\)/) || [])[1];
   const who = e.startsWith('International Organization for Standardization, International Electrotechnical Commission, & Institute')
-    ? 'ISO/IEC/IEEE' : e.startsWith('International Organization for Standardization & International Electrotechnical') ? 'ISO/IEC' : e.split(/[,.]/)[0];
+    ? 'ISO/IEC/IEEE' : e.startsWith('International Organization for Standardization & International Electrotechnical') ? 'ISO/IEC' : e.split(/[,.\s]/)[0];
   return `${who} ${year}`;
 };
 const entries = refsText.split(/\n\n+/).map((p) => p.replace(/\n/g, ' ').trim()).filter((p) => p && !p.startsWith('#'));
@@ -177,12 +177,19 @@ const body = ['01_ABSTRACT.md', '02_CHAPTER_1_INTRODUCTION.md', '03_CHAPTER_2_TH
 for (const name of body) {
   const text = read(path.join(out, name)).replace(/\n/g, ' ');
   const cite = (who, year) => { const k = `${who} ${year}`; (cited.get(k) || cited.set(k, new Set()).get(k)).add(name.slice(0, 2)); };
-  // (Burke, 2026; Ullah et al., 2021) and (ISO/IEC, 2011a)
+  // (Burke, 2026; Ullah et al., 2018) and (ISO/IEC, 2011a)
   for (const m of text.matchAll(/\(([^()]*?(?:\d{4}[a-z]?|n\.d\.))\)/g)) {
-    for (const part of m[1].split(';')) {
-      const p = part.trim().match(/^((?:ISO\/IEC(?:\/IEEE)?)|[A-Z][\p{L}-]+)(?:[^,]*), (\d{4}[a-z]?|n\.d\.)$/u);
-      if (p) cite(p[1], p[2]);
+    // A group author spelled out at its first citation carries its abbreviation in brackets
+    // ("International Organization for Standardization & ... [ISO/IEC], 2011a").
+    const parts = m[1].split(';').map((x) => x.trim().replace(/^International Organization[\s\S]*?\[(ISO\/IEC(?:\/IEEE)?)\]/, '$1'));
+    const whos = [];
+    for (const part of parts) {
+      const p = part.match(/^((?:ISO\/IEC(?:\/IEEE)?)|[A-Z][\p{L}-]+)(?:[^,]*), (\d{4}[a-z]?|n\.d\.)$/u);
+      if (p) { cite(p[1], p[2]); whos.push(p[1]); }
     }
+    // APA 7: several works in one parenthesis are listed in the order of the reference list.
+    const sorted = [...whos].sort((a, b) => a.localeCompare(b, 'en'));
+    if (whos.join() !== sorted.join()) problems.push(`${name}: citations not in alphabetical order: (${m[1].slice(0, 90)})`);
   }
   // Burke (2026), Magno et al. (2024), Laudon and Laudon (2006)
   for (const m of text.matchAll(/\b([A-Z][\p{L}-]+)(?: et al\.| (?:and|&) [A-Z][\p{L}-]+)? \((\d{4}[a-z]?)\)/gu)) cite(m[1], m[2]);

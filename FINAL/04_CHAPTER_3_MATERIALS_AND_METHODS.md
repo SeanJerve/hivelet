@@ -169,7 +169,8 @@ testing results.
 
 Aligned with the third objective, testing was carried out in four layers, each answering a different
 question. The test levels, unit and integration, system, and acceptance, are those defined in
-ISO/IEC/IEEE 29119-1 (ISO/IEC/IEEE, 2022), and each test was planned as a measure of the ISO/IEC 25010
+ISO/IEC/IEEE 29119-1 (International Organization for Standardization, International Electrotechnical Commission, &
+Institute of Electrical and Electronics Engineers [ISO/IEC/IEEE], 2022), and each test was planned as a measure of the ISO/IEC 25010
 sub-characteristics listed in Table 3-6.
 
 **Automated verification.** Twenty check suites were written alongside the system. They verify every
@@ -182,10 +183,11 @@ after every significant change.
 of the live database for the same records, to confirm that a screen shows a person what the database
 holds for them.
 
-**Offline, installation and simultaneous-use tests.** With an automated browser, the installed
+**Offline, installation, accessibility and simultaneous-use tests.** With an automated browser, the installed
 application was opened without a connection and on throttled slow connections, and the live system was
-read by several simulated simultaneous users, with every save blocked in the browser so that no record
-was written.
+read by several simulated simultaneous users, with every save blocked in the browser so that no record was written. The same browser scanned the
+screens against the Web Content Accessibility Guidelines, levels A and AA (World Wide Web Consortium,
+2023).
 
 **Functional walkthrough and user acceptance testing.** A 26-step walkthrough exercised every function
 that writes data once, on the one vacant unit. The owner and three tenants then used the live system
@@ -237,15 +239,15 @@ A structured survey questionnaire was administered to four groups: the administr
 house, its tenants, prospective tenants, and technical evaluators with a background in information
 technology. Each group rated only the characteristics it is in a position to judge: tenants did not
 rate Security or Maintainability, prospective tenants, who see only the public website, rated neither,
-and only technical evaluators rated Maintainability, the group with the background to judge it. Responses were measured using the 5-point Likert scale in Table 3-4, and mean scores were
+and only technical evaluators rated Maintainability, the group with the background to judge it. Responses were measured using the 5-point Likert scale (Likert, 1932) in Table 3-4, and mean scores were
 interpreted using the ranges in Table 3-5.
 
 **Participants.** The landlady, who runs the boarding house day to day on behalf of its owner, took
 part as the system's only administrator. Because she is the one person who uses the owner's side of
-the system, Chapter 4 refers to her, in that role, as the owner. Tenants were chosen by purposive and convenience sampling: from the tenants
+the system, Chapter 4 refers to her, in that role, as the owner. Tenants were chosen by purposive and convenience sampling (Etikan et al., 2016): from the tenants
 at the boarding house on the evening of the test, the researchers chose ones who pay in cash on site,
-ones less used to mobile applications, users of both Android and iPhone handsets, and residents of
-more than one cluster. One prospective tenant, a person who does
+ones less used to mobile applications, users of both Android and iPhone handsets, and residents of more than one cluster. Three tenants were observed because the number of new
+usability problems found falls quickly with each additional tester (Nielsen & Landauer, 1993). One prospective tenant, a person who does
 not live at the boarding house and was invited by the researchers to use the public website as someone
 looking for a room would, used it on their own phone without an account: they browsed the units and
 rates and sent an inquiry about a unit. The
@@ -337,7 +339,7 @@ evaluators, P = prospective tenants).
 | | Operability | 14 | 5, 6 | 13 | 5 | User acceptance test |
 | | User error protection | 15, 16 | 7 | 14, 15 | 6 | Walkthrough |
 | | User interface aesthetics | | | | | (not evaluated) |
-| | Accessibility | | | | | Accessibility scans (axe-core, WCAG 2.2 A and AA) |
+| | Accessibility | | | | | Accessibility scans (axe-core; WCAG 2.0 to 2.2, A and AA) |
 | Reliability | Maturity | | 12 | | 9 | Defect log |
 | | Availability | 18 | 11 | | | (rated only) |
 | | Fault tolerance | 20 | 13 | 17, 19 | | Offline and weak-connection tests; walkthrough |
@@ -358,8 +360,7 @@ evaluators, P = prospective tenants).
 
 ## 3.4 Ethical Considerations
 
-The study used the owner's real records and the tenants' real accounts, so it followed the Data
-Privacy Act of 2012 (Republic Act No. 10173). Participation was voluntary and could be withdrawn at any
+The study used the owner's real records and the tenants' real accounts, so it followed the Data Privacy Act of 2012 (Republic Act No. 10173, 2012). Participation was voluntary and could be withdrawn at any
 time without any effect on a tenant's tenancy. Each tenant used only their own account, which shows
 only their own records, and received an individual starting password in person, which they replaced at
 first sign-in. Respondents could give a name so that the researchers could tell the responses apart; the

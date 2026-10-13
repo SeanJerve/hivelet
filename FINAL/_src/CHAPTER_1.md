@@ -4,10 +4,10 @@
 
 Administrative processes in apartment management typically involve tenant record keeping, financial
 tracking, and maintenance coordination, which become increasingly complex as the number of units
-increases (Burke, 2026). While web-based property management systems have been developed to support
-these functions, their adoption in small-scale residential settings remains limited due to
-operational constraints such as limited infrastructure, technical capacity, and resource
-availability (Mia et al., 2024).
+increases (Burke, 2026). While web-based property management systems have been developed to support these functions,
+small enterprises adopt such tools slowly: in the Philippines, adoption by micro, small, and
+medium-sized enterprises is held back by limited infrastructure, technical capacity, and resources
+(Mia et al., 2024), and a small boarding house is such an enterprise.
 
 In small-scale boarding house operations, administrative tasks are still managed using standalone
 spreadsheet files and manual documentation. In the boarding house studied, these records were kept
@@ -20,16 +20,17 @@ inconsistent follow-up.
 These conditions reflect fragmented administrative workflows, where records, communication, and
 transactions are managed across separate, non-integrated tools. Consequently, property owners may
 experience difficulties in maintaining accurate records, monitoring financial transactions, and
-ensuring timely resolution of tenant concerns. Although existing web-based property management
-systems aim to address such inefficiencies through centralized data storage and real-time
-processing (Kotkar et al., 2026), many are commonly designed with assumptions aligned to large-scale
-or commercial property environments. These systems typically assume stable infrastructure,
-structured workflows, and dedicated administrative personnel (Ullah et al., 2018), which do not
-reflect the operational conditions of small-scale, resource-constrained boarding houses.
+ensuring timely resolution of tenant concerns. Existing web-based property management systems aim to address such inefficiencies through centralized
+data storage and real-time processing (Kotkar et al., 2026), and a review of 213 studies found that
+real estate as a whole still needs to improve its adoption of digital technologies and online
+platforms to move from traditional to smart practice (Ullah et al., 2018). Many of these systems,
+however, are designed with assumptions aligned to large-scale or commercial property environments,
+such as stable infrastructure, structured workflows, and dedicated administrative personnel, which do
+not reflect the operational conditions of small-scale, resource-constrained boarding houses.
 
-In the Philippine context, these challenges are further reinforced by reliance on cash-based
-transactions, limited access to integrated digital tools, and continued dependence on manual
-record-keeping practices (Mia et al., 2024). As a result, many small-scale apartment operations
+In the Philippine context, these challenges are further reinforced by limited access to integrated
+digital tools and continued dependence on manual record-keeping among small enterprises (Mia et al.,
+2024), and at the boarding house studied, rent is still collected in cash. As a result, many small-scale apartment operations
 continue to function under fragmented and informal administrative processes despite the
 availability of existing digital solutions.
 

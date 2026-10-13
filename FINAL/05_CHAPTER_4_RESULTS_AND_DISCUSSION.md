@@ -48,8 +48,7 @@ The strongest evidence came from the owner's own records. Transferring her workb
 the 937 income rows (43%)** had no anniversary date and no deposit, and **five invoice numbers** were
 each used for two different payments, once for two tenants on the same day. They were kept exactly as she wrote them and are reported on every verification run. The decisive
 finding is that the problems did not sit in one area: **each area kept its own informal record, and nothing
-connected one to another**, the fragmentation described in Chapter 2 (Ullah et al., 2018; Burke,
-2026; Magno et al., 2024).
+connected one to another**, the fragmentation described in Chapter 2 (Burke, 2026; Magno et al., 2024).
 
 ### 4.1.2 System Requirements
 
@@ -435,9 +434,9 @@ payment history that read only online payments, rental and personal expenses in 
 placeholder move-in date shown for every tenant, an opened checkout listed as a recorded payment, a
 voided receipt in a tenant's receipt list, and the Boarding House's remitted amount halved on the
 income screen. The lesson is the reverse side of Section 4.3.1: **passing checks show that what was
-tested is correct, not that everything is.** It supports Magno et al. (2024), for whom digitizing
-records does not by itself remove fragmentation: every record here was already in one database, yet
-six screens disagreed with it.
+tested is correct, not that everything is.** It qualifies Magno et al. (2024), who found that digitizing transaction tracking improves data
+accuracy: here every record was already digital and in one database, yet six screens disagreed with
+it, so digitizing alone did not make the records agree.
 
 ### 4.3.4 Functional Walkthrough Testing
 
