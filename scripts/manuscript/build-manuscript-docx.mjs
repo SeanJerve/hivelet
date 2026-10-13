@@ -84,9 +84,9 @@ const appendices = [
   ...figureAppendix('G', 'Use case diagram', 'figure-8-use-case-diagram.png', '4-5'),
   ...figureAppendix('H', 'Entity-relationship diagram', 'figure-9-entity-relationship.png', '4-6'),
   ...md('appendices/APPENDIX_I_INITIAL_DESIGN.md'),
-  h1('APPENDIX J: EVALUATION INSTRUMENT'), todo('the ISO/IEC 25010 questionnaire as administered, all four sections'),
+  ...md('appendices/APPENDIX_J_EVALUATION_INSTRUMENT.md'),
   ...md('appendices/APPENDIX_K_USER_MANUAL.md'),
-  h1('APPENDIX L: TEST CASES'), todo('the 26-step walkthrough and the tenant task cards, print-ready'),
+  ...md('appendices/APPENDIX_L_TEST_CASES.md'),
   ...md('appendices/APPENDIX_M_CHAPTER_4_EVIDENCE.md'),
   ...md('appendices/APPENDIX_N_DATA_DICTIONARY.md'),
   ...md('appendices/APPENDIX_O_UAT_SIGN_OFF.md'),
@@ -118,6 +118,8 @@ const doc = new Document({
   ],
 });
 
-const out = path.join(OUT, 'CLAUDE MANUSCRIPT.docx');
+// --out <file> writes elsewhere, for when the team has the manuscript open in Word.
+const outArg = process.argv.indexOf('--out');
+const out = outArg > 0 ? path.resolve(process.argv[outArg + 1]) : path.join(OUT, 'CLAUDE MANUSCRIPT.docx');
 fs.writeFileSync(out, await Packer.toBuffer(doc));
 console.log(`${front.length + main.length} elements -> ${path.relative(root, out)} (${(fs.statSync(out).size / 1e6).toFixed(1)} MB), ${fs.readdirSync(IMAGES).length} images`);
