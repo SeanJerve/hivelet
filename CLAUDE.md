@@ -3,9 +3,10 @@
 Apartment management for the **Fe Galang Da Silva Boarding House**. Bicol University, IT 124
 Capstone Project 2. Vue 3 + TypeScript, Express + TypeScript, Supabase PostgreSQL.
 
-**The database is LIVE.** It holds the owner's real financial records — **937 income rows, 1,327
-expense allocations, 33 units, 32 of them occupied.** There is no staging copy. She runs her
-business on this.
+**The database is LIVE.** It holds the owner's real financial records — **952 live income rows and
+1,370 expense allocations on 13 Oct 2026** (the paper's 937 and 1,327 are what was transferred from
+her workbook; August came in on 30 Sep), **33 units, 32 of them occupied.** There is no staging
+copy. She runs her business on this.
 
 ---
 

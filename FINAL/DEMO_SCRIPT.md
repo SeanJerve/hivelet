@@ -25,7 +25,14 @@ Its passwords are with Sean; never type them where the projector shows them.
    payment goes through end to end. Reject it afterwards.
 5. Put the fallback on the laptop, offline: the defense film (`video/`) and the paper's figures
    (`FINAL/CLAUDE MANUSCRIPT/images/`).
-6. **Ask the owner** whether the panel may see her own screens. If she says no, show her side only
+6. **Close the two test repair requests on PH** ("Test - please ignore" and "hello try lang", the
+   second marked High). Left open, the owner's Overview shows the panel an urgent repair that is a
+   test.
+7. **After the last push before the defense, open the installed app on the phone once and close
+   it.** The installed copy updates on the visit after a change; until then it shows the previous
+   version (seen 13 October: a laptop's saved copy still had the street misspelled after the fix
+   went live).
+8. **Ask the owner** whether the panel may see her own screens. If she says no, show her side only
    through the figures (Figures 4-7 to 4-10 use sample records).
 
 ---
