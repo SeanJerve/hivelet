@@ -16,8 +16,7 @@ apartment environments.
 ### 2.1.1 Fragmentation and Operational Inefficiencies in Property Management
 
 The increasing complexity of apartment and boarding house operations has intensified the need for
-structured and centralized management systems. Existing literature consistently identifies
-fragmentation of administrative workflows as one of the primary operational issues in residential
+structured and centralized management systems. The reviewed studies identify fragmentation of administrative workflows as one of the primary operational issues in residential
 property management environments (Burke, 2026; Setty, 2022). As the number of
 tenants, transactions, and maintenance activities increases, traditional methods such as manual
 documentation, spreadsheet-based tracking, and informal communication become increasingly difficult
@@ -94,7 +93,7 @@ visibility, reducing redundancy, and supporting informed decision-making process
 
 Financial management serves as one of the most critical operational components within apartment
 administration, as payment monitoring, expense tracking, and cash flow visibility directly influence
-managerial decision-making. Existing studies consistently emphasize that financial inefficiencies
+managerial decision-making. The reviewed studies emphasize that financial inefficiencies
 often emerge when payment records are maintained through fragmented or manual processes (Encarnacion
 et al., 2025; Magno et al., 2024; Setty, 2022).
 
@@ -117,7 +116,7 @@ management contexts, financial analytics therefore functions not merely as a rep
 as a decision-support component that enables administrators to monitor operational performance,
 identify irregularities, and maintain financial accountability.
 
-Collectively, the literature suggests that financial monitoring becomes significantly more effective
+Collectively, the literature suggests that financial monitoring becomes more effective
 when integrated into a centralized operational framework rather than implemented as a standalone
 feature. This reinforces the necessity of integrating financial analytics within broader apartment
 management systems to support consistent administrative control and operational transparency.
