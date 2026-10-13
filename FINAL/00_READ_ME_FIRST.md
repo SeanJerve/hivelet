@@ -35,7 +35,7 @@ say if the panel asks).
   Captions go **above** every table and figure, in sentence case, as written here.
 - **Images.** Every image links to `docs/FINAL MANUSCRIPT/figures/`. Figure 2-2 is redrawn there
   (Adyen spelled right, and the maintenance module the objectives name added). A `[KEEP: ...]`
-  marker (Figures 2-1 and 3-1) means use the image already in the old manuscript, at the page it names.
+  marker (Figure 2-1 only; Figure 3-1 is redrawn too) means use the image already in the old manuscript, at the page it names.
 - **The AI-use statement is not in this folder.** It is ready in `_AI_USE (not in repo)/` in the
   hivelet folder, outside the repository, until the adviser says where it goes.
 - **Bold brackets** `**[TO DO: ...]**` are the only things still open. Each is listed in Section 3;
