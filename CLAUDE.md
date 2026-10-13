@@ -3,6 +3,11 @@
 Apartment management for the **Fe Galang Da Silva Boarding House**. Bicol University, IT 124
 Capstone Project 2. Vue 3 + TypeScript, Express + TypeScript, Supabase PostgreSQL.
 
+> **History rewritten on 13 October 2026** to take the owner's workbook, old credential files and the
+> survey respondents' names out of every commit (B-103). **Any clone made before that must not push.**
+> Make a fresh clone (`git clone https://github.com/SeanJerve/hivelet.git`), copy `.env` and `credentials/`
+> across, and carry on there. An old clone pushing would put the removed files back.
+
 **The database is LIVE.** It holds the owner's real financial records — **937 income rows, 1,327
 expense allocations, 33 units, 32 of them occupied.** There is no staging copy. She runs her
 business on this.

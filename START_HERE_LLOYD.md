@@ -1,5 +1,10 @@
 # Start here: Lloyd's machine (updated 12 October 2026, evening)
 
+> **History rewritten on 13 October 2026** to take the owner's workbook, old credential files and the
+> survey respondents' names out of every commit (B-103). **Any clone made before that must not push.**
+> Make a fresh clone (`git clone https://github.com/SeanJerve/hivelet.git`), copy `.env` and `credentials/`
+> across, and carry on there. An old clone pushing would put the removed files back.
+
 **For Lloyd, and for the Claude session on Lloyd's laptop. Read this before anything else after a
 `git pull`.** The owner is Lloyd's mother, so the questions only she can answer, and the things only
 someone at the property can do, are collected here in one place. Everything else (`CONTINUE_HERE.md`,
