@@ -101,11 +101,13 @@ const MONTH_LONG = [
 const firstName = computed(() => greetingName(currentUser.value?.fullName));
 const partOfDay = usePartOfDay();
 
-const todayLabel = new Date().toLocaleDateString('en-PH', {
+// Without the year: the year after it is the year menu (Sean, 13 Oct 2026). From the property's
+// clock, like CURRENT_YEAR, so the day and the year beside it can never disagree. Noon, so no
+// timezone moves the day.
+const todayLabel = new Date(`${propertyToday()}T12:00:00`).toLocaleDateString('en-PH', {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
-  year: 'numeric',
 });
 
 /* ========================================================================== *
@@ -742,24 +744,25 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
     <!-- Beside the greeting only from 2xl (Sean, 2026-10-01). At 1366 the four
          actions shared ~650px with "Good afternoon, Michelle" and Record
          payment fell onto a line of its own; under the title they are one row. -->
-    <!-- A grid, so the year can sit at the right of the date line below 2xl and,
-         from 2xl, at the right above the actions, its edge over Record payment's
-         (Sean, 13 Oct 2026: beside the date on a wide screen it sat mid-row). -->
+    <!-- A grid, so from 2xl the actions sit at the right of the greeting. -->
     <header class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4">
-          <p class="col-start-1 row-start-1 min-w-0 text-sm text-ink-faint">{{ todayLabel }}</p>
+        <div class="col-span-2 row-start-1 flex min-w-0 items-center text-sm text-ink-faint">
+          <span class="whitespace-nowrap">{{ todayLabel }},&nbsp;</span>
           <!--
             The year: a word, not a button (Sean, 2026-10-01: "not a button -
             a clickable word, like 'Ledger' and 'To verify' on Monthly
             Income"), so it takes those tab words' style - bold, brand, text
-            size - with a chevron for the menu it opens. Below 2xl it sits at the
-            right of the date line, out of the action row a phone no longer
-            shows; from 2xl at the right above the actions. `-my-1` keeps the py-1
-            hit area from pushing the greeting down; the `before:` box widens
-            the target for a finger without moving anything. The menu is
-            `w-max`: its anchor is now only as wide as the word, and an
-            absolute box sizes to its anchor, so "2026, this year" wrapped.
+            size - with a chevron for the menu it opens. It is the date's own
+            year (Sean, 13 Oct 2026: "make the 2026 part clickable"), so it
+            always reads today's year: in an archive it saying 2025 would make
+            the line a false date; the heading and the menu's tick say which
+            year is shown. `-my-1` keeps the py-1 hit area from pushing the
+            greeting down; the `before:` box widens the target for a finger
+            without moving anything. The menu is `w-max`: its anchor is only as
+            wide as the word, and an absolute box sizes to its anchor, so
+            "2026, this year" wrapped.
           -->
-          <div ref="yearMenuRoot" class="relative -my-1 shrink-0 col-start-2 row-start-1 justify-self-end" @keydown.escape="closeYearMenu(true)">
+          <div ref="yearMenuRoot" class="relative -my-1 shrink-0" @keydown.escape="closeYearMenu(true)">
             <button
               ref="yearButton"
               type="button"
@@ -769,8 +772,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               aria-controls="overview-year-menu"
               @click="isYearMenuOpen = !isYearMenuOpen"
             >
-              <span class="tabular">{{ shownYear }}</span>
-              <span class="sr-only">, change year</span>
+              <span class="tabular">{{ CURRENT_YEAR }}</span>
+              <span class="sr-only">, change the year shown</span>
               <ChevronDown
                 :class="[
                   'size-4 transition-transform duration-200 ease-[var(--ease-out)]',
@@ -823,6 +826,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               </div>
             </Transition>
           </div>
+        </div>
       <div class="col-span-2 row-start-2 min-w-0 2xl:col-span-1">
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           <template v-if="!isHistoricalMode">
@@ -843,7 +847,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         was "too much"; there the same three actions open from the floating
         button, QuickActionsFab, below). Record payment, the primary, is last
         at the right edge, as on Monthly Income. All three green, as they are
-        in the floating button on a phone (Sean, 6 Oct 2026). The year is in the grid row
+        in the floating button on a phone (Sean, 6 Oct 2026). The year is in the date line
         above. "Back to 2026" in an archive year stays on every size: the
         floating button is for the live year's actions only.
       -->
