@@ -95,6 +95,11 @@ const SKIP_DIR = new Set([
 const SKIP_PATH = new Set([
   path.join('.claude', 'skills'),
   path.join('.claude', 'worktrees'),
+  // Gitignored folders outside the repository proper (13 Oct 2026): the archive is a record of
+  // files retired from the repository, kept on one machine, read by no one as current; the AI-use
+  // folder waits for the adviser. Neither is ever pulled, so neither can mislead a contributor.
+  '_ARCHIVE (not in repo)',
+  '_AI_USE (not in repo)',
 ]);
 const EXT = new Set(['.md', '.ts', '.vue', '.sql', '.mjs', '.js', '.cjs', '.json', '.html']);
 

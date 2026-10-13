@@ -26,14 +26,12 @@ If a requirement is unclear, do not silently invent a major business rule. Recor
 3. Read `docs/03_REQUIREMENTS.md`
 4. Read `docs/04_ARCHITECTURE.md`
 5. Read `docs/05_DATABASE_DESIGN.md`
-6. Read `docs/06_DEVELOPMENT_ROADMAP.md`
-7. Read `docs/07_AI_DEVELOPMENT_INSTRUCTIONS.md`
-8. Read `docs/09_MONTHLY_INCOME_REPORT.md`
-9. Read `docs/10_MONTHLY_EXPENSES_REPORT.md`
+6. Read `docs/09_MONTHLY_INCOME_REPORT.md`
+7. Read `docs/10_MONTHLY_EXPENSES_REPORT.md`
 
-The capstone paper should be placed in:
+The capstone paper is in:
 
-`docs/FINAL MANUSCRIPT/Hivelet_Manuscript_as_of_2026-09-18.pdf` (an old version, kept for comparison; the chapters are now written as Markdown in the same folder)
+`FINAL/` (the finished chapters, to retype into Word; start with `FINAL/00_READ_ME_FIRST.md`)
 
 The capstone paper provides academic context. The documentation files translate the paper and validated business decisions into implementable system requirements.
 

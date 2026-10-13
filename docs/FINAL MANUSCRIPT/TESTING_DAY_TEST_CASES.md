@@ -33,9 +33,8 @@ Portability. Quality in use (ISO/IEC 25010's second model) is measured in part T
 ## Part A. Owner / administrator
 
 Signed in as the owner on the admin laptop, `https://hivelet.vercel.app`. Steps A-05 to A-32 are
-the 26-step walkthrough in `TESTING_REHEARSAL.md` (its step number in brackets), in the same order, using the vacant unit `PH`
-and names beginning **REHEARSAL**. The rehearsal file has the detail and the undo for each; this
-table is the sheet to fill.
+the 26-step walkthrough (its step number in brackets), in the same order, using the vacant unit `PH`
+and names beginning **REHEARSAL**; this table is the sheet to fill.
 
 | ID | ISO | Req | Do | Should see | Result | Evidence |
 | :-- | :-- | :-- | :--- | :--- | :-- | :--- |

@@ -1,6 +1,6 @@
 # FINAL: the manuscript to retype into Word
 
-Every chapter here has every fix applied, sentence by sentence, from `FIXES_TO_CHAPTERS_1_TO_3.md`,
+Every chapter here has every fix applied, sentence by sentence, from the list of fixes to Chapters 1 to 3 (archived 13 October),
 the panel-style read of 13 October 2026, and the two IT 124 course guides. Retype or paste each file
 into the Word manuscript in the order below. Do not compare against the old Word file line by line:
 these files replace Chapters 1 to 5, the Abstract and the References entirely.
