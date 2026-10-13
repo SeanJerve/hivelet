@@ -785,7 +785,7 @@ about them.
 | Performance Efficiency | 3 | 3 | 3 | No request failed under load; every screen usable within 3.05 s on a phone | 4.42 |
 | Compatibility | 2 | 1 | 2 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct | 4.67 |
 | Usability | 6 | 5 | 4 | 91 per cent of tasks without help; 0 accessibility violations in 76 scans | 4.12 |
-| Reliability | 4 | 3 | 4 | No critical defect; one fail-safe result open and one late message, both offline on a real device | 4.62 |
+| Reliability | 4 | 3 | 4 | No critical defect; the two offline defects found on real devices, a ₱0 shown for a figure that could not load and a late message, both passed on re-test, 13 October | 4.62 |
 | Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | 4.70 |
 | Maintainability | 5 | 4 | 4 | 20 of 20 suites pass without writing to the records; every change a numbered migration; but 154 of 204 database calls inside the request handlers | 4.00 |
 | Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | 4.89 |
