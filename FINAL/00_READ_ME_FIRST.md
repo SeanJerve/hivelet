@@ -102,7 +102,7 @@ agree with Chapter 5, and it does. It is about 310 words.
 Sorted alphabetically (FIXES C7), with italics restored to the APA 7 places (journal and volume,
 book and report titles), and the six ISO entries the method now cites added (2011a, 2011b, 2016a,
 2016b, 2023, and ISO/IEC/IEEE 29119-1:2022). **Thevaraju et al. (2019) was removed:** it was listed but cited nowhere, which a panel reads as
-padding. Monteverde et al. (2023), removed for the same reason, is back with a sentence that cites it.
+padding. Monteverde et al. (2023) was also removed (Sean, 13 Oct).
 **Ullah et al. (2018)**, *Sustainability* 10(9), 3142, is a review of how real estate adopts digital
 technologies. The draft cited it for things it does not say (that property management workflows are
 fragmented, that systems assume dedicated staff); it is now cited only for its finding that real
@@ -137,11 +137,11 @@ ask what it found:
 | Puspasari et al. (2025) | A boarding house system with WhatsApp billing notifications, used by the manager only | 2.2 |
 | Muawwal (2024) | A PWA built with a manifest, a service worker and Express.js, installable and usable offline; replaces Google (2018), an old web page | 2.1.5, 2.1.6 |
 | Anuar and Othman (2024) | Usability heuristics developed for PWAs (Springer) | 2.1.5 |
-| Monteverde et al. (2023) | A rental house finder evaluated with ISO/IEC 25010; restored, now that a sentence cites it | 2.1.6 |
+
 
 
 **From the team's own RRL (sent 13 October 2026).** Ten of the seventeen links were already cited
-(Saputra, Burke, Kotkar, Mia, Puspasari, Monteverde, Setty, and the duplicates). Seven more are now
+(Saputra, Burke, Kotkar, Mia, Puspasari, Monteverde, Setty, and the duplicates). Six more are now
 cited, each checked at Crossref or on its own first page:
 
 | Source | What it is | Where it is cited |
@@ -151,13 +151,12 @@ cited, each checked at Crossref or on its own first page:
 | Mangca (2023b) | The same system's design, Laravel with SMS notifications | 2.1.4, 2.2 |
 | Caparos et al. (2025) | Cloud property management system, Region XII; automated billing, access control, tenant communication | 2.1.3 |
 | Altinay et al. (2024) | 150 dormitory residents interviewed; information management, communication and service quality need improving | 2.1.4 |
-| Voumick et al. (2021) | Bangladesh house renting web application; search and messaging | 2.1.4 |
 | Thevaraju et al. (2019) | 1,000-unit apartment recorded by hand; web system built with Agile | 2.1.1 |
 
 **Not cited:** the Scribd file ("Android App for Rental Management", Angeles City) gives no authors or
 year, so APA cannot cite it; add it only if the team has its authors and year.
 
-The list now has 37 entries.
+Monteverde and Voumick were then dropped as the two least needed (Sean, 13 Oct). The list now has 35 entries.
 
 **Why ISO/IEC 25040:2011 and not the 2024 edition.** The 2024 edition was retitled *Quality
 evaluation framework* and restructured, so its steps are not the five the evaluation followed. The

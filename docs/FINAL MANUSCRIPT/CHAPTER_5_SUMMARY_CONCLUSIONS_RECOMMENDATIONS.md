@@ -42,7 +42,7 @@ are summarized below in the order of the specific objectives.
    day. The owner performed the walkthrough herself: 24 of its 30 rows passed the first time, one
    failed and five were not performed as written. Three tenants completed every task they attempted,
    31 of 34 attempts without help. Of the 83 tests executed across the three levels, 82 passed (98.8
-   per cent), and no critical defect was found. Every screen measured was usable within about three
+   percent), and no critical defect was found. Every screen measured was usable within about three
    seconds on a phone, and no request failed under twelve simulated simultaneous visitors or six
    simulated readers of the owner's records.
 
@@ -69,7 +69,7 @@ Based on the results of the study, the following conclusions were drawn:
 
 3. **The third objective was achieved.** The system was pilot tested for functionality,
    responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8 per
-   cent), above the course standard of 90 per cent, with no critical defect (Chapter 4, Tables 11E
+   cent), above the course standard of 90 percent, with no critical defect (Chapter 4, Tables 11E
    and 23A). The one failure, a ₱0 shown without a connection, appeared only on a real device in its
    user's hands, and it passed when re-tested on the owner's laptop.
 

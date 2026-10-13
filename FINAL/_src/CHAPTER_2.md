@@ -150,8 +150,7 @@ boarding houses were found through newspapers, posters, friends and social media
 with Agile and evaluated with ISO/IEC 25010, which owners rated Excellent and tenants Very Good. In
 Surigao City, Mangca (2023b) developed a web-based boarding house booking system with SMS
 notifications, and its boarders and owners credited the notifications with reducing miscommunication
-(Mangca, 2023a). Outside the Philippines, Voumick et al. (2021) built a web application through which
-tenants and house owners search listings and message each other. Each centres on how a tenant finds
+(Mangca, 2023a). Each centers on how a tenant finds
 and books a room.
 
 Closest to this study, Canlas et al. (2026) developed FixHub, a maintenance reporting system for
@@ -219,7 +218,7 @@ Saputra et al., 2025).
 Meanwhile, PWA literature provides the technological framework that enables these integrated
 operational components to remain accessible within environments characterized by limited infrastructure (Mia et al., 2024) and
 varying device conditions (Biørn-Hansen et al., 2019; Muawwal, 2024). Recent housing systems have also
-been evaluated with ISO/IEC 25010 (Canlas et al., 2026; Monteverde et al., 2023; Pernate et al., 2025), the quality model
+been evaluated with ISO/IEC 25010 (Canlas et al., 2026; Pernate et al., 2025), the quality model
 this study uses.
 
 Despite their complementarity, these studies are commonly implemented in isolation. Existing systems
@@ -292,7 +291,7 @@ management (reservation logic), tenant management (profiles and records), mainte
 GCash. These processes transform identified requirements into a
 functional and structured system aligned with real-world operational needs. The Output phase includes
 the developed Hivelet system, its functional modules, and generated outputs such as financial reports
-exportable as Excel files, enquiry and tenancy records, and payment records. It also includes the
+exportable as Excel files, inquiry and tenancy records, and payment records. It also includes the
 completed research manuscript, system evaluation results based on ISO/IEC 25010 standards, and the
 user manual. These outputs reflect the system's effectiveness in improving administrative efficiency,
 data organization, and communication within the apartment management process. Feedback is

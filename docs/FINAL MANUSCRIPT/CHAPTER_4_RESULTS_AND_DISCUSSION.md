@@ -37,7 +37,7 @@ checked against the live records on every verification run.
 Before the system, the owner kept a spreadsheet workbook with two sheets, a Monthly Income Report and
 a Monthly Expenses Report, on a USB flash drive, together with a paper invoice book. Rent was
 collected in cash on site, and requests arrived by messaging application or in person. Table 5
-compares each practice with the problem it caused. Enquiries arrived much as Pernate et al. (2025)
+compares each practice with the problem it caused. Inquiries arrived much as Pernate et al. (2025)
 found for boarding houses in Ormoc City, through social media and word of mouth, and left no record.
 
 **Table 5.** Existing practices and identified problems
@@ -47,7 +47,7 @@ found for boarding houses in Ormoc City, through social media and word of mouth,
 | Tenant management | Tenant details kept in the income sheet and in the owner's memory | No single record of who lives in which unit, since when, or how many occupants |
 | Financial tracking | Income and expense sheets typed by hand; invoices written in a paper book | Totals depend on manual arithmetic; nothing checks an invoice number against the book; one file on a USB flash drive is the only copy |
 | Communication | Requests sent by messaging application or said in person | Requests are not recorded, so there is no way to follow a request to completion |
-| Booking | Enquiries arrived through Facebook, referrals from other people, contact and text messages, or walk-ins in person | No record of enquiries or which unit an enquiry was about |
+| Booking | Inquiries arrived through Facebook, referrals from other people, contact and text messages, or walk-ins in person | No record of inquiries or which unit an inquiry was about |
 
 Figure 4 follows each area through the hands that touched it. Every path ends in a record kept apart
 from the others, or in no record at all, which is where each problem in Table 5 begins.
@@ -76,7 +76,7 @@ form. Table 6 traces each gap to the requirement and the module that meets it.
 | Identified gap | System requirement | Module (Section) |
 | :--- | :--- | :--- |
 | No single tenant and unit record | Keep one record per unit and per tenant, with occupancy and move-in dates | Tenant and Room Management (4.2.2) |
-| Enquiries not recorded | Let the public view units and send an enquiry about a specific unit | Booking and Reservation (4.2.3) |
+| Inquiries not recorded | Let the public view units and send an inquiry about a specific unit | Booking and Reservation (4.2.3) |
 | Manual arithmetic and unchecked receipts | Compute charges, record payments against the owner's own invoice numbers, reproduce the owner's reports | Financial Tracking (4.2.4) |
 | Cash only, no digital option | Offer an optional online payment that the owner verifies before it counts | Financial Tracking (4.2.4) |
 | Requests not followed to completion | Record each request and its status until the owner closes it | Maintenance Ticketing and Notification (4.2.5) |
@@ -188,7 +188,7 @@ function the server grants to that role and refuses to every other (Table 7C).
 
 Figure 9, in Crow's Foot notation, is the entity-relationship diagram drawn from the database's own
 catalogue on 5 October 2026: 21 tables, each with a primary key, and 37 foreign keys. Rooms and
-profiles are its two centres: every bill, payment, receipt, tenancy, repair request and inquiry
+profiles are its two centers: every bill, payment, receipt, tenancy, repair request and inquiry
 belongs to one unit, and every tenancy, bill and payment to one person. The two ledgers are kept as
 the owner kept them. Several rules live in the database itself, so no screen or script can bypass
 them: one unit cannot have two active tenancies, one invoice number cannot be used twice for the same
@@ -253,7 +253,7 @@ is checked on every verification run against all 33 units.
 
 ![Public unit catalogue](figures/figure-11a-public-unit-catalogue.png)
 
-![Enquiry form](figures/figure-11b-inquiry-form.png)
+![Inquiry form](figures/figure-11b-inquiry-form.png)
 
 ### 4.2.4 Financial Tracking and Payment Recording Module
 
@@ -586,7 +586,7 @@ gives each task's result.
 | Staying out of the owner's pages; signing out (T-15, T-16) | 2 | 3 | 0 | 0 | 60 | 0.0 | 100% |
 | **All tasks** | 3 | 31 | 3 | 0 | 60 | 0.2 | 91% |
 
-Every task the tenants attempted was completed, 31 of 34 attempts without help (91 per cent). Help
+Every task the tenants attempted was completed, 31 of 34 attempts without help (91 percent). Help
 was needed only at the start: two of the three tenants were helped through their first sign-in and
 one to find their unit and rent; everything else, from finding payments to reporting a repair and
 opening the GCash payment, was done alone in one to two minutes. The repairs they sent reached the
@@ -613,7 +613,7 @@ Table 11E brings the testing together by the test levels of ISO/IEC/IEEE 29119 (
 | Acceptance | Simultaneous use by the owner and tenants (Appendix M, Table M-22) | 4 | 4 | 0 | 3 | 100% |
 | **All levels** | | **83** | **82** | **1** | **8** | **98.8%** |
 
-Every level passed at least 96 per cent of the tests executed, against the course standard of 90 per
+Every level passed at least 96 percent of the tests executed, against the course standard of 90 per
 cent. The one failure, at the system level, was not critical, and no critical defect was found in any
 activity. Table 23A, in Section 4.4.6, lists the defects by activity, severity and disposition.
 
@@ -638,7 +638,7 @@ evaluators rated Maintainability, the group with the background to judge it.
 | Step | What it required | How it was carried out |
 | :--- | :--- | :--- |
 | 1. Establish the evaluation requirements | The purpose, the product, the quality model and who judges it | Objective 4; the live system at its public address; ISO/IEC 25010:2011, eight characteristics; the owner, tenants and technical evaluators (Section 3.3) |
-| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Table 7D); survey items assigned to sub-characteristics (Chapter 3, Table 4B); criteria: Table 13 for every mean, and for tests the course standard of at least 90 per cent passed with no critical defect open |
+| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Table 7D); survey items assigned to sub-characteristics (Chapter 3, Table 4B); criteria: Table 13 for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
 | 3. Design the evaluation | The activities, their order and schedule | Measurements on 29 September 2026; the walkthrough and acceptance test on 30 September; the technical evaluators' review on 3 October; the survey after each group's use of the system |
 | 4. Execute the evaluation | Take the measures and apply the criteria | Section 4.3 (measured) and the survey (rated; Appendix M, Tables M-2 to M-17) |
 | 5. Conclude the evaluation | Review the results, report them, and act on them | Tables 22 and 22A, and the changes made in response (Table 23) |
@@ -737,7 +737,7 @@ here, each rating is also read beside the measured evidence for its characterist
 
 **Portability** was rated highest (4.89), as one code base installed on an Android phone and an
 iPhone without an app store. **Functional Suitability** followed (4.86): every feature the objective
-names is present, and 96 to 100 per cent of the executed checks of correctness gave the right result.
+names is present, and 96 to 100 percent of the executed checks of correctness gave the right result.
 **Security** (4.70) is discussed in Section 4.4.4. **Compatibility** (4.67) agrees with the browser
 matrix, on which every combination tried worked. **Reliability** (4.62) agrees most closely with the
 testing: the technical evaluator's 3 for handling a failed request without presenting incorrect data
@@ -789,10 +789,10 @@ about them.
 
 | Characteristic | Sub-characteristics | Measured | Rated | Measured result (Appendix M) | Composite mean (Table 22) |
 | :--- | ---: | ---: | ---: | :--- | ---: |
-| Functional Suitability | 3 | 3 | 3 | All six features present; 96 to 100 per cent of correctness checks passed | 4.86 |
+| Functional Suitability | 3 | 3 | 3 | All six features present; 96 to 100 percent of correctness checks passed | 4.86 |
 | Performance Efficiency | 3 | 3 | 3 | No request failed under load; every screen usable within 3.05 s on a phone | 4.42 |
 | Compatibility | 2 | 1 | 2 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct | 4.67 |
-| Usability | 6 | 5 | 4 | 91 per cent of tasks without help; 0 accessibility violations in 76 scans | 4.12 |
+| Usability | 6 | 5 | 4 | 91 percent of tasks without help; 0 accessibility violations in 76 scans | 4.12 |
 | Reliability | 4 | 3 | 4 | No critical defect; the two offline defects found on real devices, a ₱0 shown for a figure that could not load and a late message, both passed on re-test, 13 October | 4.62 |
 | Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | 4.70 |
 | Maintainability | 5 | 4 | 4 | 20 of 20 suites pass without writing to the records; every change a numbered migration; but 154 of 204 database calls inside the request handlers | 4.00 |

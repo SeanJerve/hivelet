@@ -51,7 +51,7 @@ reliability and optimization for modern web applications.
 Additionally, the user interface was prototyped directly in code rather than in a separate design
 tool: each screen was built as a working prototype in Vue and Tailwind CSS, generated with the help of
 an AI coding assistant and reviewed by the researchers, so that the landlady and the tenants could try
-it on their own phones with real data. The design rules the screens follow, covering colour, type,
+it on their own phones with real data. The design rules the screens follow, covering color, type,
 layout and wording, are recorded in the system's design guideline.
 
 ### 3.1.2 Hardware
@@ -364,6 +364,6 @@ The study used the owner's real records and the tenants' real accounts, so it fo
 time without any effect on a tenant's tenancy. Each tenant used only their own account, which shows
 only their own records, and received an individual starting password in person, which they replaced at
 first sign-in. Respondents could give a name so that the researchers could tell the responses apart; the
-names were removed before the responses were analysed, and none appears in this paper. Names, contact details and amounts are hidden in every
+names were removed before the responses were analyzed, and none appears in this paper. Names, contact details and amounts are hidden in every
 figure in this paper, and faces appear only with consent. Photographs and notes were kept by the
 research team and are deleted after the defense.

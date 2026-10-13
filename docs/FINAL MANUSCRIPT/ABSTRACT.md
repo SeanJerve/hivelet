@@ -17,7 +17,7 @@ tracking with optional GCash payment through Adyen, maintenance requests with no
 role-based access control, and installation from the browser on a phone or computer, without an app
 store. It was pilot tested at the
 unit and integration, system, and acceptance levels, and 82 of the 83 tests executed passed (98.8
-per cent), with no critical defect. Three tenants completed every task they attempted, 31 of 34
+percent), with no critical defect. Three tenants completed every task they attempted, 31 of 34
 attempts without help. The system was then evaluated on the eight characteristics of the ISO/IEC
 25010:2011 quality model, following the ISO/IEC 25040 evaluation process, on two kinds of evidence:
 measures from the tests, and a survey of the owner, three tenants, a prospective tenant and a

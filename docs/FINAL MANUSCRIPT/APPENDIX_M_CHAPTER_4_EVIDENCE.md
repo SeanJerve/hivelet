@@ -16,7 +16,7 @@ characteristic, and every change made in response to the evaluation.
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | Public unit catalogue browsing | 33 units listed without resident names or sensitive details | As expected. | Pass |
 | 2 | Public unit detail inspection | Correct rate, floor, and cluster; resident names omitted (LB and LF verified) | As expected. | Pass |
-| 3 | Public booking enquiry submission | Confirmation message displayed; rate limiter guards abuse | As expected. | Pass |
+| 3 | Public booking inquiry submission | Confirmation message displayed; rate limiter guards abuse | As expected. | Pass |
 | 4 | Authentication negative test | Wrong current password rejected with inline message; session stays active | As expected. | Pass |
 | 5 | Administrator password rotation | Password updated successfully; active session maintained | As expected. | Pass |
 | 6 | Re-authentication with new credential | Successful sign-in using updated administrator password | As expected. | Pass |
@@ -35,7 +35,7 @@ characteristic, and every change made in response to the evaluation.
 | 18 | On-site cash collection recording | Collection recorded against invoice REHEARSAL-001; bill marked settled | The collection of ₱30,200 was recorded and the bill settled. Water is worked out from the number of occupants and cannot be typed, so a wrong water amount could not be entered. | Pass |
 | 19 | Duplicate invoice prevention | Re-submitting an identical invoice number is blocked with an explicit alert | As expected. | Pass |
 | 19b | Receipt voiding and double-void guard | First void reverses ledger entry; second void attempt is rejected | The first void worked. The second window refreshed itself and no longer showed the receipt, so a second void could not be attempted; the refusal message was therefore not seen. | Pass |
-| 20 | Enquiry processing and resolution | Administrator reply sent; enquiry status marked Closed | As expected. | Pass |
+| 20 | Inquiry processing and resolution | Administrator reply sent; inquiry status marked Closed | As expected. | Pass |
 | 21 | Maintenance resolution and notification | Ticket advanced to Resolved; tenant receives resolution notification | Moved to In Progress, then Resolved; the tenant was notified that the repair was done. | Pass |
 | 22 | Expense recording and allocation | ₱100 expense logged with property allocation; edits/deletion verified | Not performed as written: two separate expenses (₱60 and ₱40) were recorded instead of one ₱100 expense split 60/40, and neither was edited or deleted. | Not done |
 | 22b | Expense allocation split derivation | Expense split across areas; total derived automatically via trigger | Not performed as written: two separate expenses (₱60 and ₱40) were recorded instead of one ₱100 expense split 60/40, and neither was edited or deleted. | Not done |
@@ -108,7 +108,7 @@ characteristic, and every change made in response to the evaluation.
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Time behavior | Longest time until a screen was usable, real devices | 3.05 s on a phone (tenant portal, first load); 2.30 s on a laptop (a year exported to Excel) | Table 11 |
-| Time behavior | Time within which 95 per cent of requests were answered under load | 0.52 s (public pages); 0.80 s (the owner's data) | Table 11B |
+| Time behavior | Time within which 95 percent of requests were answered under load | 0.52 s (public pages); 0.80 s (the owner's data) | Table 11B |
 | Resource utilization | Code a visitor's browser downloads for the payments page | About 20 kB; the 194 kB payment library only when a payment starts | Table 23 |
 | Resource utilization | Script work on an emulated mid-range phone, the owner's Overview | 0.7 s | Section 4.3.5 |
 | Capacity | Failed requests with 12 simulated simultaneous users, X = A / B | 0 / 1,085 = 0.00 | Table 11B |

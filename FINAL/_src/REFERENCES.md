@@ -92,10 +92,6 @@ Mia, I. B., Jimenez, S., Habaradas, R., Ranieses, J. J., Javier, C., & Enriquez,
 technology adoption among Philippine micro-, small-, and medium-sized enterprises: Barriers, enablers
 & challenges during COVID-19. *Journal of Business, Ethics and Society, 4*(1), 1–17.
 
-Monteverde, A. L., Maderazo, J. J. S., Cruz, K. C. M., & Magnaye, N. A. (2023). A web-based rental
-house smart finder using rapid application development basis for evaluation of ISO/IEC 25010.
-*International Journal of Metaverse, 1*(1), 1–4. https://journals.e-palli.com/home/index.php/ijm
-
 Muawwal, A. (2024). The implementation of PWA (progressive web app) technology in enhancing website
 performance & mobile accessibility. *Buletin Pos dan Telekomunikasi, 22*(1).
 https://doi.org/10.17933/bpostel.v22i1.395
@@ -137,10 +133,6 @@ https://doi.org/10.62527/ijasce.1.2.4
 Ullah, F., Sepasgozar, S. M. E., & Wang, C. (2018). A systematic review of smart real estate technology:
 Drivers of, and barriers to, the use of digital disruptive technologies and online platforms.
 *Sustainability, 10*(9), 3142. https://doi.org/10.3390/su10093142
-
-Voumick, D., Deb, P., Sutradhar, S., & Khan, M. M. (2021). Development of online based smart house
-renting web application. *Journal of Software Engineering and Applications, 14*(7), 312–328.
-https://doi.org/10.4236/jsea.2021.147019
 
 World Wide Web Consortium. (2023). *Web Content Accessibility Guidelines (WCAG) 2.2* (W3C
 Recommendation). https://www.w3.org/TR/WCAG22/

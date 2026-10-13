@@ -229,7 +229,7 @@ that. The workbook is in your own layout (month blocks, cluster subtotals, Linda
 named for what it holds: "Monthly Income March 2026" for one month, "Monthly Income 2025" for a
 year (this year's too), and for **All** the years it covers, such as "Monthly Income 2024-2026". In the workbook each cluster's subtotal is on a light-blue row
 and each **GRAND SUBTOTAL** is red with white letters; an acknowledgement receipt shows as **ACK**.
-The Monthly Expenses workbook uses the same colours for each month's **TOTAL** and the **YEAR
+The Monthly Expenses workbook uses the same colors for each month's **TOTAL** and the **YEAR
 TOTAL**.
 
 ### 4. Recording an expense (Monthly Expenses)
