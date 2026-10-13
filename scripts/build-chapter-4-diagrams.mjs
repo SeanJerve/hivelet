@@ -1,5 +1,6 @@
 /**
- * Chapter 4's diagrams (Figures 4 to 9), drawn as SVG from what the system is, then rendered to
+ * Chapter 4's diagrams (Figures 4 to 9), Chapter 2's conceptual framework (Figure 2-2) and the
+ * Gantt chart and child data flow diagrams of Appendices C and F, drawn as SVG from what the system is, then rendered to
  * PNG by headless Chrome for the .docx.
  *
  *   node scripts/build-chapter-4-diagrams.mjs            all of them
@@ -563,6 +564,193 @@ function erd() {
   return { W, H, body: s };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Figure 2-2. Conceptual framework (Section 2.3), redrawn 13 October 2026 from the manuscript's
+// own figure: the same three columns and feedback loop, with "Adyen" spelled as the gateway is,
+// and the maintenance ticketing module that Objective 2 names and the old figure left out.
+// ---------------------------------------------------------------------------------------------
+function framework() {
+  const W = 1040, H = 700;
+  let s = '';
+  const col = (x, y, w, h, title, items) => {
+    let b = rect(x, y, w, h, { rx: 26, sw: 2 }) + rect(x + 16, y + 14, w - 32, 58, { rx: 16, sw: 1.8 }) +
+      T(x + w / 2, y + 43, title, { size: 22, weight: 'bold' });
+    let cy = y + 100;
+    for (const [head, sub] of items) {
+      const hl = head ? wrap(head, w - 40, 16).length : 0;
+      const sl = sub ? wrap(sub, w - 40, 15).length : 0;
+      if (head) b += T(x + w / 2, 0, head, { top: cy, w: w - 40, size: 16, weight: 'bold' });
+      if (sub) b += T(x + w / 2, 0, sub, { top: cy + hl * 20, w: w - 40, size: 15 });
+      cy += hl * 20 + sl * 19 + 16;
+    }
+    return b;
+  };
+  const arrow = (x1, x2, y) =>
+    `<path d="M${x1},${y - 26} H${x2 - 40} V${y - 46} L${x2},${y} L${x2 - 40},${y + 46} V${y + 26} H${x1} Z" fill="${INK}"/>`;
+
+  s += col(24, 30, 280, 530, 'INPUT', [
+    ['Objectives of the Study', '(e.g., streamlined financials, improved communication)'],
+    ['Review of Related Literature', '(Contextual, integration and technology gaps)'],
+    ['Client Interviews and Operational Workflow Observations', '(Property management and tenant feedback)'],
+    ['Payment', '(Integration, payment workflow)'],
+  ]);
+  s += col(382, 60, 276, 470, 'PROCESS', [
+    ['AGILE', ''],
+    ['Financial Tracking', '(Analytics, Reports)'],
+    ['Booking', '(Reservations, Logic)'],
+    ['Tenant Management', '(Profiles, Records)'],
+    ['Maintenance Ticketing', '(Requests, Notifications)'],
+    ['Adyen Payment API', '(Integration with GCash, transaction processing)'],
+  ]);
+  s += col(736, 30, 280, 530, 'OUTPUT', [
+    ['Hivelet System', ''],
+    ['System Modules', 'Financial Tracking Module (Analytics, Reports); Booking Module (Reservations, Logic); Tenant Management Module (Profiles, Records); Maintenance Ticketing Module (Requests, Notifications); Payment Module (Adyen Payment API with GCash)'],
+    ['Finished Research Manuscript', ''],
+    ['System Evaluation Results', '(ISO/IEC 25010:2011)'],
+    ['User Manual', ''],
+  ]);
+  s += arrow(306, 380, 295) + arrow(660, 734, 295);
+  // Feedback: from the output column down, along the bottom box, and back up into the input column.
+  s += rect(230, 600, 580, 70, { rx: 18, sw: 2 }) + T(520, 635, 'FEEDBACK', { size: 22, weight: 'bold' });
+  s += line([[880, 560], [880, 635], [812, 635]], { sw: 3 });
+  s += line([[230, 635], [164, 635], [164, 562]], { sw: 3 });
+  return { W, H, body: s };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Appendix C. Gantt chart of the three iterations as they ran (docs/12_ITERATION_HISTORY.md and
+// Appendix M, Table M-19): every phase of Section 3.2 in each iteration, the Module 01 gap, and
+// the dated events Chapter 4 reports.
+// ---------------------------------------------------------------------------------------------
+function gantt() {
+  const W = 1040, H = 600;
+  const x0 = 250, x1 = 1010; // 20 July to 20 October 2026
+  const day = (m, d) => (Date.UTC(2026, m - 1, d) - Date.UTC(2026, 6, 20)) / 864e5;
+  const span = day(10, 20);
+  const X = (m, d) => x0 + ((x1 - x0) * day(m, d)) / span;
+  let s = T(W / 2, 26, 'Hivelet development schedule, July to October 2026', { size: 18, weight: 'bold' });
+  // Month grid.
+  for (const [m, name] of [[8, 'August'], [9, 'September'], [10, 'October']]) {
+    s += line([[X(m, 1), 56], [X(m, 1), H - 40]], { head: 'none', sw: 1, stroke: '#bbb' });
+    s += T(X(m, 1) + 6, 66, name, { size: 14, anchor: 'start', fill: MUTED });
+  }
+  s += T(x0 + 6, 66, 'July', { size: 14, anchor: 'start', fill: MUTED });
+  // Iteration bands across the top.
+  const it = [[[7, 24], [8, 28], 'Iteration 1: Construction'], [[9, 12], [9, 14], 'Iteration 2'], [[9, 15], [10, 20], 'Iteration 3: Consolidation and testing']];
+  for (const [a, b, name] of it) {
+    s += rect(X(...a), 80, X(...b) - X(...a), 34, { sw: 1.4, fill: '#eee' });
+    // A bar too narrow for its name (Iteration 2, three days) is named underneath instead.
+    if (X(...b) - X(...a) > 120) s += T((X(...a) + X(...b)) / 2, 97, name, { size: 14, weight: 'bold' });
+  }
+  s += rect(X(8, 29), 80, X(9, 11) - X(8, 29), 34, { sw: 1.2, dash: '5 4' });
+  s += T((X(8, 29) + X(9, 11)) / 2, 97, 'Module 01', { size: 12.5, fill: MUTED });
+  s += T(X(9, 13), 130, 'Iteration 2: Verification, 12 to 14 Sep', { size: 12.5, weight: 'bold' });
+  // One row per phase; a bar in every iteration the phase ran in.
+  const rows = [
+    ['Requirements', [1, 2, 3]], ['Design', [1, 2, 3]], ['Development', [1, 2, 3]],
+    ['Testing', [1, 2, 3]], ['Deployment', [1, 3]], ['Review and maintenance', [1, 2, 3]],
+  ];
+  const top = 150, rh = 48;
+  rows.forEach(([name, its], i) => {
+    const y = top + i * rh;
+    s += T(x0 - 12, y + 16, name, { size: 15, anchor: 'end' });
+    s += line([[x0, y + rh - 8], [x1, y + rh - 8]], { head: 'none', sw: 0.6, stroke: '#ddd' });
+    for (const k of its) {
+      const [a, b] = it[k - 1];
+      s += rect(X(...a), y + 4, Math.max(6, X(...b) - X(...a)), 24, { fill: '#9a9a9a', sw: 1.2 });
+    }
+  });
+  // Dated events (Chapter 4): a diamond on the date, its label below the rows.
+  const ev = [[[9, 24], 'Hosted on Vercel'], [[9, 30], 'Testing day'], [[10, 3], 'Evaluators\' review'], [[10, 13], 'Re-test']];
+  const ey = top + rows.length * rh + 10;
+  ev.forEach(([d, name], i) => {
+    const x = X(...d);
+    s += `<path d="M${x},${ey} l9,9 l-9,9 l-9,-9 Z" fill="${INK}"/>`;
+    s += line([[x, ey + 18], [x, ey + 34 + i * 22]], { head: 'none', sw: 1, stroke: MUTED });
+    s += T(x - 6, ey + 40 + i * 22, `${name} (${d[1]} ${d[0] === 9 ? 'Sep' : 'Oct'})`, { size: 13, anchor: 'end' });
+  });
+  s += T(x1, H - 18, 'Iteration 3 continues to the defense.', { size: 12.5, anchor: 'end', fill: MUTED });
+  return { W, H, body: s };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Appendix F. Child data flow diagrams: the four processes of Figure 4-4 that do more than one
+// thing, each opened into its steps. The steps and flows are the endpoints the screens call
+// (docs/SCREEN_CONTRACT.md, generated from the code); stores and entities keep Figure 4-4's
+// names. Entities and stores are repeated on each row rather than crossed; a repeated store
+// carries a second bar, as in Figure 4-4. The audit trail is left out, as there.
+// Processes 2.0, 6.0, 7.0 and 8.0 are a single operation each and are not opened.
+// ---------------------------------------------------------------------------------------------
+const CHILD = {
+  '1': ['1.0 Handle inquiries', [
+    ['1.1', 'Show units and rates', [['Visitor or prospect', 'Units, rates', 'out']], [['D1', 'Units and rates', 'in']]],
+    ['1.2', 'Record an inquiry', [['Visitor or prospect', 'Inquiry about a unit', 'in']], [['D5', 'Inquiries', 'out']]],
+    ['1.3', 'Exchange messages', [['Visitor or prospect', 'Link or code; messages', 'both'], ['Owner (administrator)', 'Replies', 'both']], [['D5', 'Inquiries', 'both']]],
+    ['1.4', 'Advance, close or delete', [['Owner (administrator)', 'Status, deletion', 'in']], [['D5', 'Inquiries', 'out']]],
+  ]],
+  '3': ['3.0 Manage tenants and tenancies', [
+    ['3.1', 'Onboard a tenant', [['Owner (administrator)', 'Tenant details, unit', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
+    ['3.2', 'Edit a tenant record', [['Owner (administrator)', 'Corrections', 'in']], [['D2', 'Tenants, tenancies', 'both']]],
+    ['3.3', 'Reset a tenant\'s password', [['Owner (administrator)', 'Reset', 'in'], ['Tenant', 'One-time password', 'out']], [['D2', 'Tenants, tenancies', 'out']]],
+    ['3.4', 'End a tenancy', [['Owner (administrator)', 'Move-out', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
+  ]],
+  '4': ['4.0 Bill and record payments', [
+    ['4.1', 'Raise a bill on demand', [['Tenant', 'Bills shown', 'out']], [['D1', 'Units and rates', 'in'], ['D3', 'Bills and receipts', 'out']]],
+    ['4.2', 'Record an on-site payment', [['Owner (administrator)', 'Cash received, invoice no.', 'in']], [['D3', 'Bills and receipts', 'out']]],
+    ['4.3', 'Take an online payment', [['Tenant', 'Pay with GCash', 'in'], ['Adyen (GCash)', 'Session; signed result', 'both']], [['D3', 'Bills and receipts', 'out']]],
+    ['4.4', 'Verify or decline a payment', [['Owner (administrator)', 'Verify, decline', 'in'], ['Tenant', 'Outcome', 'out']], [['D3', 'Bills and receipts', 'both']]],
+    ['4.5', 'Correct or void a receipt', [['Owner (administrator)', 'Correction, void', 'in']], [['D3', 'Bills and receipts', 'both']]],
+  ]],
+  '5': ['5.0 Manage repair requests', [
+    ['5.1', 'File a request', [['Tenant', 'Request, photos', 'in']], [['D6', 'Repair requests', 'out']]],
+    ['5.2', 'Withdraw a request', [['Tenant', 'Withdrawal, reason', 'in']], [['D6', 'Repair requests', 'out']]],
+    ['5.3', 'Raise a ticket', [['Owner (administrator)', 'Ticket for a unit', 'in']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
+    ['5.4', 'Update a ticket\'s status', [['Owner (administrator)', 'New status', 'in'], ['Tenant', 'Status, notification', 'out']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
+  ]],
+};
+function childDfd(key) {
+  return () => {
+    const [title, rows] = CHILD[key];
+    const W = 940, R = 50, cx = 470, gap = 46;
+    const head = { in: 'end', out: 'start', both: 'both' };
+    const at = (dy) => Math.sqrt(Math.max(0, R * R - dy * dy));
+    const seen = new Set();
+    let s = T(W / 2, 26, `Diagram ${title}`, { size: 18, weight: 'bold' });
+    let y = 64;
+    for (const [n, name, left, right] of rows) {
+      const k = Math.max(left.length, right.length);
+      const h = Math.max(2 * R + 24, k * gap + 20);
+      const cy = y + h / 2;
+      const ys = (m, i) => cy + (i - (m - 1) / 2) * gap;
+      left.forEach(([ent, lab, dir], i) => {
+        const ey = ys(left.length, i);
+        s += rect(16, ey - 20, 170, 40, { sw: 1.8 }) + T(101, ey, ent, { size: 13.5, weight: 'bold', w: 160 });
+        s += line([[186, ey], [cx - at(ey - cy), ey]], { head: head[dir] });
+        s += T((186 + cx - R) / 2 + 6, ey - 9, lab, { size: 12, fill: MUTED, halo: true });
+      });
+      right.forEach(([id, sname, dir], i) => {
+        const sy = ys(right.length, i);
+        const dup = seen.has(id); seen.add(id);
+        const x = 690, w = 230;
+        s += `<path d="M${x + w},${sy - 16} H${x} V${sy + 16} H${x + w}" fill="#fff" stroke="${INK}" stroke-width="1.6"/>` +
+          line([[x + 34, sy - 16], [x + 34, sy + 16]], { head: 'none', sw: 1.3 }) +
+          (dup ? line([[x + 7, sy - 16], [x + 7, sy + 16]], { head: 'none', sw: 1.3 }) : '') +
+          T(x + 20 + (dup ? 3 : 0), sy, id, { size: 13.5, weight: 'bold' }) + T(x + 42, sy, sname, { size: 13.5, anchor: 'start' });
+        // A flow toward the process is "in": the store is read.
+        s += line([[x, sy], [cx + at(sy - cy), sy]], { head: head[dir] });
+      });
+      s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#fff" stroke="${INK}" stroke-width="1.7"/>` +
+        T(cx, cy - 28, n, { size: 14, weight: 'bold' }) +
+        line([[cx - 38, cy - 16], [cx + 38, cy - 16]], { head: 'none', sw: 1 }) +
+        T(cx, cy + 12, name, { w: 82, size: 12.5 });
+      y += h + 14;
+    }
+    s += T(16, y + 10, 'Arrows show the direction data moves. A store drawn again has a second bar. The audit trail is left out, as in Figure 4-4.',
+      { size: 12, fill: MUTED, anchor: 'start', w: W - 20 });
+    return { W, H: y + 40, body: s };
+  };
+}
+
 const DIAGRAMS = {
   'as-is': { file: 'figure-4-current-process.png', make: asIs },
   architecture: { file: 'figure-5-system-architecture.png', make: architecture },
@@ -570,6 +758,13 @@ const DIAGRAMS = {
   dfd: { file: 'figure-7-data-flow-level-1.png', make: dfd },
   'use-cases': { file: 'figure-8-use-case-diagram.png', make: useCases },
   erd: { file: 'figure-9-entity-relationship.png', make: erd },
+  // Outside Chapter 4: Chapter 2's framework and Appendices C and F (FINAL/08_APPENDICES.md).
+  framework: { file: 'figure-2-2-conceptual-framework.png', make: framework },
+  gantt: { file: 'appendix-c-gantt-chart.png', make: gantt },
+  'dfd-1': { file: 'appendix-f-dfd-1-inquiries.png', make: childDfd('1') },
+  'dfd-3': { file: 'appendix-f-dfd-3-tenancies.png', make: childDfd('3') },
+  'dfd-4': { file: 'appendix-f-dfd-4-billing-and-payments.png', make: childDfd('4') },
+  'dfd-5': { file: 'appendix-f-dfd-5-repair-requests.png', make: childDfd('5') },
 };
 
 // ---------------------------------------------------------------------------------------------
