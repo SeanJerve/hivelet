@@ -25,8 +25,11 @@ to manage consistently and accurately.
 
 Ullah et al. (2018), reviewing 213 studies of smart real estate technology, find that the real
 estate sector still needs to improve its adoption of digital technologies and online platforms to
-move from traditional to smart practice. Similarly, Burke (2026) emphasizes that increasing residential density increases administrative complexity, particularly in areas involving tenant
-monitoring, maintenance coordination, and financial recording. These findings collectively suggest
+move from traditional to smart practice. Similarly, Burke (2026) emphasizes that increasing residential density increases administrative complexity, particularly in areas involving tenant monitoring, maintenance coordination, and financial recording.
+Thevaraju et al. (2019) describe the same condition at an apartment of eight blocks and more than
+1,000 units whose maintenance transactions were recorded by hand, and built a web system, developed
+with the Agile methodology, through which management handles apartment and tenant data, maintenance
+requests, notices and complaints. These findings collectively suggest
 that operational inefficiencies are not isolated technical issues but structural problems caused by
 fragmented information handling and disconnected administrative processes.
 
@@ -101,7 +104,11 @@ centralized financial records reduce monitoring inconsistencies and improve fore
 Similarly, Magno et al. (2024) observed that digital transaction tracking improves billing management
 and minimizes missed payment monitoring compared to paper-based systems. Setty (2022) further explains
 that centralized financial management systems improve transparency and reduce administrative errors
-by consolidating transaction records into a unified database environment.
+by consolidating transaction records into a unified database environment. In the Philippines,
+Caparos et al. (2025) developed a cloud-based property management system with automated billing,
+secure access controls and real-time tenant communication for a real estate business in Region XII,
+which its staff rated positively on usability, security, operational efficiency and tenant
+experience, security highest.
 
 These findings strongly align with MIS principles regarding centralized information processing and
 structured data accessibility. Ghasemaghaei et al. (2018) argue that analytical decision-making
@@ -126,14 +133,26 @@ Jing and Lim (2021) explain that management service quality significantly affect
 satisfaction and operational effectiveness within apartment environments. Their study highlights that
 responsiveness, communication consistency, and issue resolution efficiency are critical components of
 effective property administration. However, in traditional management settings, tenant concerns are
-often communicated through verbal reporting or messaging applications, resulting in undocumented
-requests and inconsistent follow-up procedures.
+often communicated through verbal reporting or messaging applications, resulting in undocumented requests and inconsistent follow-up procedures. Interviewing 150 dormitory
+residents, Altinay et al. (2024) found that dormitory management needed improvement in information
+management, communication and service quality, and proposed digital communication platforms, regular
+maintenance schedules and more transparent financial management.
 
 To address these issues, Saputra et al. (2025) demonstrate that web-based room management systems
 with structured issue coordination mechanisms improve operational accountability and
 response management. By transforming tenant complaints into recorded and traceable maintenance
 workflows, digital ticketing systems improve monitoring consistency and reduce communication gaps
 between administrators and tenants.
+
+Communication with prospective tenants has followed the same pattern. In Ormoc City, where rooms in
+boarding houses were found through newspapers, posters, friends and social media, Pernate et al.
+(2025) built a mobile application with real-time listings, booking and digital transactions, developed
+with Agile and evaluated with ISO/IEC 25010, which owners rated Excellent and tenants Very Good. In
+Surigao City, Mangca (2023b) developed a web-based boarding house booking system with SMS
+notifications, and its boarders and owners credited the notifications with reducing miscommunication
+(Mangca, 2023a). Outside the Philippines, Voumick et al. (2021) built a web application through which
+tenants and house owners search listings and message each other. Each centres on how a tenant finds
+and books a room.
 
 Closest to this study, Canlas et al. (2026) developed FixHub, a maintenance reporting system for
 dormitories in the Philippines, using the Agile methodology, and evaluated it with ISO/IEC 25010 and
@@ -200,7 +219,7 @@ Saputra et al., 2025).
 Meanwhile, PWA literature provides the technological framework that enables these integrated
 operational components to remain accessible within environments characterized by limited infrastructure (Mia et al., 2024) and
 varying device conditions (Biørn-Hansen et al., 2019; Muawwal, 2024). Recent housing systems have also
-been evaluated with ISO/IEC 25010 (Canlas et al., 2026; Monteverde et al., 2023), the quality model
+been evaluated with ISO/IEC 25010 (Canlas et al., 2026; Monteverde et al., 2023; Pernate et al., 2025), the quality model
 this study uses.
 
 Despite their complementarity, these studies are commonly implemented in isolation. Existing systems
@@ -217,7 +236,7 @@ Based on the synthesis of literature, a significant research gap emerges regardi
 integrated apartment management system specifically designed for small-scale and resource-constrained
 residential operations. Existing systems are commonly developed either as enterprise-oriented
 platforms or as isolated functional solutions focusing on individual administrative tasks such as
-payment monitoring, tenant management, or maintenance coordination (Magno et al., 2024; Saputra et al., 2025; Setty, 2022). Puspasari et al. (2025), for example,
+payment monitoring, tenant management, or maintenance coordination (Magno et al., 2024; Mangca, 2023b; Pernate et al., 2025; Saputra et al., 2025; Setty, 2022). Puspasari et al. (2025), for example,
 developed a web-based boarding house information system that monitors room status and sends billing
 notifications through WhatsApp, but its only user is the boarding house manager, so tenants cannot
 see their own bills or report a concern through it.

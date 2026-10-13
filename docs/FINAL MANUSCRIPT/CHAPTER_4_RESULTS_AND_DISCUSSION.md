@@ -37,7 +37,8 @@ checked against the live records on every verification run.
 Before the system, the owner kept a spreadsheet workbook with two sheets, a Monthly Income Report and
 a Monthly Expenses Report, on a USB flash drive, together with a paper invoice book. Rent was
 collected in cash on site, and requests arrived by messaging application or in person. Table 5
-compares each practice with the problem it caused.
+compares each practice with the problem it caused. Enquiries arrived much as Pernate et al. (2025)
+found for boarding houses in Ormoc City, through social media and word of mouth, and left no record.
 
 **Table 5.** Existing practices and identified problems
 

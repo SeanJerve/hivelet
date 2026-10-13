@@ -139,7 +139,25 @@ ask what it found:
 | Anuar and Othman (2024) | Usability heuristics developed for PWAs (Springer) | 2.1.5 |
 | Monteverde et al. (2023) | A rental house finder evaluated with ISO/IEC 25010; restored, now that a sentence cites it | 2.1.6 |
 
-The list now has 30 entries.
+
+**From the team's own RRL (sent 13 October 2026).** Ten of the seventeen links were already cited
+(Saputra, Burke, Kotkar, Mia, Puspasari, Monteverde, Setty, and the duplicates). Seven more are now
+cited, each checked at Crossref or on its own first page:
+
+| Source | What it is | Where it is cited |
+| :--- | :--- | :--- |
+| Pernate et al. (2025), BH Niyo App | Ormoc City boarding house rentals app; Agile; ISO/IEC 25010; owners Excellent, tenants Very Good | 2.1.4, 2.1.6, 2.2, 4.1.1 |
+| Mangca (2023a) | Assessment of a Surigao City boarding house booking system; notifications reduced miscommunication | 2.1.4 |
+| Mangca (2023b) | The same system's design, Laravel with SMS notifications | 2.1.4, 2.2 |
+| Caparos et al. (2025) | Cloud property management system, Region XII; automated billing, access control, tenant communication | 2.1.3 |
+| Altinay et al. (2024) | 150 dormitory residents interviewed; information management, communication and service quality need improving | 2.1.4 |
+| Voumick et al. (2021) | Bangladesh house renting web application; search and messaging | 2.1.4 |
+| Thevaraju et al. (2019) | 1,000-unit apartment recorded by hand; web system built with Agile | 2.1.1 |
+
+**Not cited:** the Scribd file ("Android App for Rental Management", Angeles City) gives no authors or
+year, so APA cannot cite it; add it only if the team has its authors and year.
+
+The list now has 37 entries.
 
 **Why ISO/IEC 25040:2011 and not the 2024 edition.** The 2024 edition was retitled *Quality
 evaluation framework* and restructured, so its steps are not the five the evaluation followed. The
