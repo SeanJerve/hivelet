@@ -742,23 +742,24 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
     <!-- Beside the greeting only from 2xl (Sean, 2026-10-01). At 1366 the four
          actions shared ~650px with "Good afternoon, Michelle" and Record
          payment fell onto a line of its own; under the title they are one row. -->
-    <header class="flex flex-col 2xl:flex-row 2xl:items-end justify-between gap-4">
-      <div class="min-w-0">
-        <div class="flex items-center justify-between gap-4">
-          <p class="min-w-0 text-sm text-ink-faint">{{ todayLabel }}</p>
+    <!-- A grid, so the year can sit at the right of the date line below 2xl and,
+         from 2xl, at the right above the actions, its edge over Record payment's
+         (Sean, 13 Oct 2026: beside the date on a wide screen it sat mid-row). -->
+    <header class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4">
+          <p class="col-start-1 row-start-1 min-w-0 text-sm text-ink-faint">{{ todayLabel }}</p>
           <!--
             The year: a word, not a button (Sean, 2026-10-01: "not a button -
             a clickable word, like 'Ledger' and 'To verify' on Monthly
             Income"), so it takes those tab words' style - bold, brand, text
-            size - with a chevron for the menu it opens. It sits on the date
-            line, at the right, on every screen size, which also takes it out
-            of the action row a phone no longer shows. `-my-1` keeps the py-1
+            size - with a chevron for the menu it opens. Below 2xl it sits at the
+            right of the date line, out of the action row a phone no longer
+            shows; from 2xl at the right above the actions. `-my-1` keeps the py-1
             hit area from pushing the greeting down; the `before:` box widens
             the target for a finger without moving anything. The menu is
             `w-max`: its anchor is now only as wide as the word, and an
             absolute box sizes to its anchor, so "2026, this year" wrapped.
           -->
-          <div ref="yearMenuRoot" class="relative -my-1 shrink-0" @keydown.escape="closeYearMenu(true)">
+          <div ref="yearMenuRoot" class="relative -my-1 shrink-0 col-start-2 row-start-1 justify-self-end" @keydown.escape="closeYearMenu(true)">
             <button
               ref="yearButton"
               type="button"
@@ -822,7 +823,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               </div>
             </Transition>
           </div>
-        </div>
+      <div class="col-span-2 row-start-2 min-w-0 2xl:col-span-1">
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           <template v-if="!isHistoricalMode">
             Good {{ partOfDay }}<template v-if="firstName">, {{ firstName }}</template>
@@ -842,11 +843,16 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         was "too much"; there the same three actions open from the floating
         button, QuickActionsFab, below). Record payment, the primary, is last
         at the right edge, as on Monthly Income. All three green, as they are
-        in the floating button on a phone (Sean, 6 Oct 2026). The year moved to the date
-        line above. "Back to 2026" in an archive year stays on every size: the
+        in the floating button on a phone (Sean, 6 Oct 2026). The year is in the grid row
+        above. "Back to 2026" in an archive year stays on every size: the
         floating button is for the live year's actions only.
       -->
-      <div :class="['ws-page-actions', !isHistoricalMode && 'max-md:hidden']">
+      <div
+        :class="[
+          'ws-page-actions col-span-2 row-start-3 mt-4 2xl:col-span-1 2xl:col-start-2 2xl:row-start-2 2xl:mt-0 2xl:self-end 2xl:justify-self-end',
+          !isHistoricalMode && 'max-md:hidden',
+        ]"
+      >
         <!-- None while offline or showing the saved copy: each one is a write (lib/offlineCache.ts;
              Sean, 2026-10-02). -->
         <template v-if="!isHistoricalMode">
