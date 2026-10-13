@@ -351,8 +351,7 @@ and 2 October 2026 it keeps a read-only copy of the figures, names and notificat
 person last loaded on that person's device, so the installed application can show them without a
 connection under one notice giving the time they were saved; paying and recording still need the
 connection, and the copy is removed at sign-out. This stays within the delimitation in Section 1.4.
-Screens adapt to the device, and tables on a computer become cards on a phone. As Biørn-Hansen et al.
-(2019) describe, one code base served every device: the owner's laptop, an Android phone in Chrome
+Screens adapt to the device, and tables on a computer become cards on a phone. As Biørn-Hansen et al. (2017) describe, one code base served every device: the owner's laptop, an Android phone in Chrome
 and an iPhone in Safari (Section 4.3.7).
 
 *Figure 14. The tenant portal on a mobile phone.*

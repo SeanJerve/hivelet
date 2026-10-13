@@ -8,9 +8,10 @@ Anuar, N. N., & Othman, M. K. (2024). Development and validation of progressive 
 usability heuristics (PWAUH). *Universal Access in the Information Society, 23*(1), 245–273.
 https://doi.org/10.1007/s10209-022-00925-4
 
-Biørn-Hansen, A., Majchrzak, T. A., & Grønli, T. M. (2019). Progressive web apps: The possible
+Biørn-Hansen, A., Majchrzak, T. A., & Grønli, T. M. (2017). Progressive web apps: The possible
 web-native unifier for mobile development. In *Proceedings of the 13th International Conference on
-Web Information Systems and Technologies (WEBIST)*. https://doi.org/10.5220/0007478003440351
+Web Information Systems and Technologies (WEBIST 2017)* (pp. 344–351). SciTePress.
+https://doi.org/10.5220/0006353703440351
 
 Burke, D. (2026). Property management challenges in residential multifamily apartment complexes.
 *American Journal of Industrial and Business Management, 16*(1), 1–19.
@@ -63,12 +64,11 @@ Software testing: Part 1: General concepts* (ISO/IEC/IEEE Standard No. 29119-1:2
 
 Jing, F., & Lim, C.-K. (2021). An effect of management service quality on residential satisfaction
 and recommended intention of high-rise apartments. *Turkish Journal of Computer and Mathematics
-Education, 12*(4), 201–211.
+Education, 12*(4), 201–211. https://doi.org/10.17762/turcomat.v12i4.492
 
 Kotkar, A. R., Kaldate, V. N., Kandekar, R. B., Andhale, S. A., & Wamane, S. J. (2026).
 Revolutionizing student accommodation: A MERN based rental system for seamless property management.
-*International Journal of Engineering Research & Technology, 15*(2), 1–10.
-https://www.ijert.org/research/revolutionizing-student-accommodation-a-mern-based-rental-system-for-seamless-property-management-IJERTV15IS020113.pdf
+*International Journal of Engineering Research & Technology, 15*(2). https://doi.org/10.5281/zenodo.18641825
 
 Laudon, K. C., Laudon, J. P., & Traver, C. G. (2026). *Management information systems: Managing the
 digital firm* (18th ed.). Pearson.
@@ -78,7 +78,7 @@ Likert, R. (1932). A technique for the measurement of attitudes. *Archives of Ps
 
 Magno, J. M., Pelayo, R. S., & Soberano, K. T. (2024). Apartment rental management system for
 real-time transaction and task organization. *International Journal of Multidisciplinary Research and
-Analysis, 7*(7), 3287–3294.
+Analysis, 7*(7), 3287–3294. https://doi.org/10.47191/ijmra/v7-i07-29
 
 Mangca, D. C. (2023a). Assessment of a web-based boarding house booking system with notification
 capability. *International Research Journal of Advanced Engineering and Science, 8*(2), 59–62.
@@ -91,6 +91,7 @@ with SMS notification. *International Journal of Innovative Science and Research
 Mia, I. B., Jimenez, S., Habaradas, R., Ranieses, J. J., Javier, C., & Enriquez, J. (2024). Digital
 technology adoption among Philippine micro-, small-, and medium-sized enterprises: Barriers, enablers
 & challenges during COVID-19. *Journal of Business, Ethics and Society, 4*(1), 1–17.
+https://doi.org/10.61781/4-1i2024/1bmlm
 
 Muawwal, A. (2024). The implementation of PWA (progressive web app) technology in enhancing website
 performance & mobile accessibility. *Buletin Pos dan Telekomunikasi, 22*(1).
@@ -120,7 +121,7 @@ Republic Act No. 10173. (2012). *Data Privacy Act of 2012*. National Privacy Com
 https://www.privacy.gov.ph/data-privacy-act/
 
 Saputra, R. G., Susanto, R., & Pradana, A. I. (2025). Implementation of web-based room management
-system for boarding house operations. *Bit-Tech (Binary Digital - Technology), 8*(1), 831–840.
+system for boarding house operations. *Bit-Tech (Binary Digital - Technology), 8*(1), 830–839.
 https://doi.org/10.32877/bt.v8i1.2738
 
 Setty, Y. (2022). *Management system for an apartment* [Master's capstone project, Governors State

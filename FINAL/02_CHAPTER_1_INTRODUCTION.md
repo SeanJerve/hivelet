@@ -20,7 +20,7 @@ inconsistent follow-up.
 These conditions reflect fragmented administrative workflows, where records, communication, and
 transactions are managed across separate, non-integrated tools. Consequently, property owners may
 experience difficulties in maintaining accurate records, monitoring financial transactions, and
-ensuring timely resolution of tenant concerns. Existing web-based property management systems aim to address such inefficiencies through centralized
+ensuring timely resolution of tenant concerns. Existing property management and rental platforms aim to address such inefficiencies through centralized
 data storage and real-time processing (Kotkar et al., 2026), and a review of 213 studies found that
 real estate as a whole still needs to improve its adoption of digital technologies and online
 platforms to move from traditional to smart practice (Ullah et al., 2018). Many of these systems,
@@ -48,6 +48,11 @@ record-keeping, and service management within a controlled academic environment 
 workflows and institutional support. While the study confirms the effectiveness of system-based
 management, these conditions differ significantly from small-scale boarding house operations, where
 administrative processes are informal, decentralized, and constrained by limited resources.
+
+Boarding house studies in the Philippines show the same pattern. In Ormoc City, Pernate et al. (2025)
+built a mobile application for finding and booking boarding house rooms, and in Surigao City, Mangca
+(2023b) built a web-based booking system with SMS notifications; both center on how a tenant finds and
+books a room rather than on the administration that follows.
 
 Taken together, these local studies demonstrate that while digital solutions can improve specific
 aspects of property management, they are often implemented either as function-specific systems or

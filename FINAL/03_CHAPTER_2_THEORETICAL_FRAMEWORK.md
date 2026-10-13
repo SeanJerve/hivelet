@@ -16,37 +16,32 @@ apartment environments.
 ### 2.1.1 Fragmentation and Operational Inefficiencies in Property Management
 
 The increasing complexity of apartment and boarding house operations has intensified the need for
-structured and centralized management systems. The reviewed studies identify fragmentation of administrative workflows as one of the primary operational issues in residential
-property management environments (Burke, 2026; Setty, 2022). As the number of
-tenants, transactions, and maintenance activities increases, traditional methods such as manual
-documentation, spreadsheet-based tracking, and informal communication become increasingly difficult
-to manage consistently and accurately.
+structured and centralized management systems. The reviewed studies identify fragmentation of
+administrative workflows as one of the primary operational issues in residential property management
+(Burke, 2026; Setty, 2022): as tenants, transactions, and maintenance activities increase, manual
+documentation, spreadsheet-based tracking, and informal communication become difficult to manage
+consistently and accurately.
 
-Ullah et al. (2018), reviewing 213 studies of smart real estate technology, find that the real
-estate sector still needs to improve its adoption of digital technologies and online platforms to
-move from traditional to smart practice. Similarly, Burke (2026) emphasizes that increasing residential density increases administrative complexity, particularly in areas involving tenant monitoring, maintenance coordination, and financial recording.
+Burke (2026), examining apartment complexes of 50 to 500 units, finds operational, tenant,
+regulatory, labor, and technology challenges that differ from those of commercial properties.
 Thevaraju et al. (2019) describe the same condition at an apartment of eight blocks and more than
 1,000 units whose maintenance transactions were recorded by hand, and built a web system, developed
 with the Agile methodology, through which management handles apartment and tenant data, maintenance
-requests, notices and complaints. These findings collectively suggest
-that operational inefficiencies are not isolated technical issues but structural problems caused by
-fragmented information handling and disconnected administrative processes.
+requests, notices, and complaints. Across the sector, Ullah et al. (2018), reviewing 213 studies of
+smart real estate technology, find that real estate still needs to improve its adoption of digital
+technologies and online platforms to move from traditional to smart practice.
 
-This condition is further reflected in localized implementations. Magno et al. (2024) observed that
+This condition is also reflected in local implementations. Magno et al. (2024) observed that
 apartment administrators commonly experience difficulties in tracking payments, organizing tenant
-records, and managing paper-based transactions. Their findings demonstrate that digitization improves
-data consistency and transaction monitoring; however, the study also reveals that partial digital
-implementation alone does not fully eliminate fragmentation when operational functions remain
-separated. Likewise, Pavia et al. (2022) demonstrate that system-based management improves
-organizational coordination and service operations, yet their implementation operates within a
-controlled institutional environment with predefined workflows and technical support, conditions
-that differ significantly from resource-constrained apartment operations.
+records, and managing paper-based transactions, and that digitization improves data consistency and
+transaction monitoring. Pavia et al. (2022) show that a property management system improved
+coordination and service operations in a mock hotel for hospitality students, an institutional
+setting with predefined workflows and technical support that differs significantly from
+resource-constrained apartment operations.
 
-Collectively, these studies establish that the primary challenge in apartment management is not
-merely the absence of digital systems, but the absence of integrated operational structures capable
-of consolidating administrative functions into a unified environment. This reinforces the need for
-centralized information management approaches capable of organizing fragmented workflows into
-cohesive and traceable system processes.
+Together, these studies show that the main challenge in apartment management is not the absence of
+digital tools but the absence of a structure that consolidates administrative functions into one
+environment, where fragmented workflows become cohesive and traceable processes.
 
 ### 2.1.2 Management Information Systems as the Foundation of Centralization
 
@@ -54,150 +49,110 @@ This theoretical foundation is grounded in Management Information Systems (MIS),
 transformation of fragmented operational data into centralized and actionable information for
 decision-making. According to Laudon et al. (2026), MIS functions as an organized system that
 collects, processes, stores, and distributes information to support operational control,
-coordination, and administrative decision-making. Within apartment management environments, this
-framework explains why manual and semi-digital operations often become inefficient, as information is
-typically distributed across isolated records, disconnected tools, and inconsistent communication
-channels.
-
-This relationship is further illustrated in Figure 2-1, based on the Management Information System
-(MIS) framework adapted from Laudon et al. (2026), which demonstrates the flow of data from fragmented
-operational sources through system processing mechanisms, resulting in consolidated and meaningful
-information outputs that support organizational decision-making.
+coordination, and administrative decision-making. Within apartment management, this framework
+explains why manual and semi-digital operations become inefficient: information is distributed across
+isolated records, disconnected tools, and inconsistent communication channels. Figure 2-1, adapted from
+Laudon et al. (2026), illustrates the flow from operational inputs through processing to outputs that
+support decision-making.
 
 *Figure 2-1. Management Information System (MIS) framework, adapted from Laudon et al. (2026).*
 
 **[KEEP: the Figure 2-1 image from the current manuscript, p. 13. Before the defense, compare it with the functions-of-an-information-system figure in the 18th edition (2026); if they differ, redraw it from that edition.]**
 
-The importance of centralized information processing is further reinforced by Ghasemaghaei et al.
-(2018), who emphasize that organizational decision-making performance significantly improves when
-operational data is structured, integrated, and analytically accessible. Their findings indicate that
-data analytics competency enables more accurate forecasting, operational monitoring, and financial
-oversight, particularly in environments requiring continuous administrative coordination. Similarly,
-Pressman and Maxim (2020) explain that integrated software systems improve consistency,
-maintainability, and operational reliability by reducing redundancy and streamlining data flow across
-system components.
+Ghasemaghaei et al. (2018) find that a firm's data analytics competency, which includes the quality
+of its data, improves its decision-making performance. Pressman and Maxim (2020) explain that
+integrated software systems improve consistency, maintainability, and operational reliability by
+reducing redundancy and streamlining data flow across system components.
 
-Within apartment management operations, these principles directly support the need for centralized
-architectures capable of integrating tenant information, maintenance records, communication logs,
-and financial transactions within a single operational environment. The literature therefore
-positions MIS not simply as a technological concept, but as the structural mechanism through which
-fragmented administrative activities become coordinated, traceable, and manageable.
-
-This theoretical perspective also aligns with findings from property management studies which
-indicate that operational inefficiencies often emerge when information systems lack interoperability
-and centralized accessibility (Burke, 2026; Magno et al., 2024). Consequently, the integration of
-operational data within a unified system environment becomes essential for improving administrative
-visibility, reducing redundancy, and supporting informed decision-making processes.
+Within apartment management, these principles support a centralized architecture that integrates
+tenant information, maintenance records, communication, and financial transactions in one
+environment. Property management studies point the same way, locating operational inefficiency where
+information systems lack interoperability and centralized accessibility (Burke, 2026; Magno et al.,
+2024).
 
 ### 2.1.3 Financial Analytics and Administrative Decision Support
 
-Financial management serves as one of the most critical operational components within apartment
-administration, as payment monitoring, expense tracking, and cash flow visibility directly influence
-managerial decision-making. The reviewed studies emphasize that financial inefficiencies
-often emerge when payment records are maintained through fragmented or manual processes (Encarnacion
-et al., 2025; Magno et al., 2024; Setty, 2022).
+Financial management is one of the most critical components of apartment administration, since
+payment monitoring, expense tracking, and cash flow visibility shape managerial decisions. The
+reviewed studies emphasize that financial inefficiencies emerge when payment records are kept through
+fragmented or manual processes (Encarnacion et al., 2025; Magno et al., 2024; Setty, 2022).
 
-Encarnacion et al. (2025) demonstrate that structured digital payment monitoring systems improve administrative oversight within student boarding house operations by providing organized
-financial ledgers, payment summaries, and transaction visibility. Their findings suggest that
-centralized financial records reduce monitoring inconsistencies and improve forecasting accuracy.
-Similarly, Magno et al. (2024) observed that digital transaction tracking improves billing management
-and minimizes missed payment monitoring compared to paper-based systems. Setty (2022) further explains
-that centralized financial management systems improve transparency and reduce administrative errors
-by consolidating transaction records into a unified database environment. In the Philippines,
+Encarnacion et al. (2025) demonstrate that a structured payment monitoring system improves
+administrative oversight in student boarding houses by providing organized financial ledgers, payment
+summaries, and transaction visibility. Magno et al. (2024) observed that digital transaction tracking
+improves billing management and payment monitoring compared with paper-based systems, and Setty
+(2022) explains that centralized financial management systems improve transparency and reduce
+administrative errors by consolidating transaction records into one database. In the Philippines,
 Caparos et al. (2025) developed a cloud-based property management system with automated billing,
-secure access controls and real-time tenant communication for a real estate business in Region XII,
-which its staff rated positively on usability, security, operational efficiency and tenant
+secure access controls, and real-time tenant communication for a real estate business in Region XII,
+which its staff rated positively on usability, security, operational efficiency, and tenant
 experience, security highest.
 
-These findings strongly align with MIS principles regarding centralized information processing and
-structured data accessibility. Ghasemaghaei et al. (2018) argue that analytical decision-making
-depends heavily on the quality, consistency, and accessibility of operational data. In apartment
-management contexts, financial analytics therefore functions not merely as a reporting mechanism, but
-as a decision-support component that enables administrators to monitor operational performance,
-identify irregularities, and maintain financial accountability.
-
-Collectively, the literature suggests that financial monitoring becomes more effective
-when integrated into a centralized operational framework rather than implemented as a standalone
-feature. This reinforces the necessity of integrating financial analytics within broader apartment
-management systems to support consistent administrative control and operational transparency.
+Read with Ghasemaghaei et al. (2018), these studies treat financial records not merely as reports
+but as decision support, most useful when they are integrated into a centralized operational
+framework rather than kept as a standalone feature.
 
 ### 2.1.4 Digital Communication and Structured Issue Resolution
 
-Beyond financial management, operational efficiency in apartment environments is also heavily
-influenced by communication quality and maintenance coordination processes. Existing literature
-identifies informal communication practices as major contributors to delayed responses, inconsistent
-issue tracking, and reduced tenant satisfaction (Jing & Lim, 2021; Saputra et al., 2025).
+Operational efficiency in apartment environments also depends on communication and maintenance
+coordination. The reviewed studies identify informal communication as a contributor to delayed
+responses, inconsistent issue tracking, and reduced tenant satisfaction (Jing & Lim, 2021; Saputra et
+al., 2025).
 
-Jing and Lim (2021) explain that management service quality significantly affects residential
-satisfaction and operational effectiveness within apartment environments. Their study highlights that
-responsiveness, communication consistency, and issue resolution efficiency are critical components of
-effective property administration. However, in traditional management settings, tenant concerns are
-often communicated through verbal reporting or messaging applications, resulting in undocumented requests and inconsistent follow-up procedures. Interviewing 150 dormitory
-residents, Altinay et al. (2024) found that dormitory management needed improvement in information
-management, communication and service quality, and proposed digital communication platforms, regular
-maintenance schedules and more transparent financial management.
+Jing and Lim (2021) found, among residents of high-rise apartments in China, that management service
+quality affects residential satisfaction and the willingness to recommend, and that the quality of
+the management process matters most. Interviewing 150 dormitory residents, Altinay et al. (2024)
+found that dormitory management needed improvement in information management, communication, and
+service quality, and proposed digital communication platforms, regular maintenance schedules, and
+more transparent financial management. Yet in traditional management settings, tenant concerns are
+reported verbally or through messaging applications, so requests go unrecorded and follow-up is
+inconsistent.
 
-To address these issues, Saputra et al. (2025) demonstrate that web-based room management systems
-with structured issue coordination mechanisms improve operational accountability and
-response management. By transforming tenant complaints into recorded and traceable maintenance
-workflows, digital ticketing systems improve monitoring consistency and reduce communication gaps
-between administrators and tenants.
+Saputra et al. (2025) built a web-based room management system for a boarding house that handles
+room data, tenant registration, payment invoices, and complaints; in acceptance testing with its
+administrator and ten tenants, 90 percent were satisfied, and the system reduced administrative
+workload and data entry errors. Recording a complaint as a request is what makes it traceable from
+report to resolution.
 
 Communication with prospective tenants has followed the same pattern. In Ormoc City, where rooms in
-boarding houses were found through newspapers, posters, friends and social media, Pernate et al.
-(2025) built a mobile application with real-time listings, booking and digital transactions, developed
-with Agile and evaluated with ISO/IEC 25010, which owners rated Excellent and tenants Very Good. In
-Surigao City, Mangca (2023b) developed a web-based boarding house booking system with SMS
+boarding houses were found through newspapers, posters, friends, and social media, Pernate et al.
+(2025) built a mobile application with real-time listings, booking, and digital transactions,
+developed with Agile and evaluated with ISO/IEC 25010, which owners rated Excellent and tenants Very
+Good. In Surigao City, Mangca (2023b) developed a web-based boarding house booking system with SMS
 notifications, and its boarders and owners credited the notifications with reducing miscommunication
-(Mangca, 2023a). Each centers on how a tenant finds
-and books a room.
+(Mangca, 2023a). Each centers on how a tenant finds and books a room.
 
 Closest to this study, Canlas et al. (2026) developed FixHub, a maintenance reporting system for
 dormitories in the Philippines, using the Agile methodology, and evaluated it with ISO/IEC 25010 and
-the Technology Acceptance Model through surveys of tenants, administrators and IT professionals, who
-rated it very highly on every criterion. Its scope is maintenance concerns, emergency alerts and
+the Technology Acceptance Model through surveys of tenants, administrators, and IT professionals, who
+rated it very highly on every criterion. Its scope is maintenance concerns, emergency alerts, and
 complaints.
 
-These findings collectively indicate that communication systems should not be treated merely as
-supplementary features but as integral operational components within apartment management
-environments. Consistent with MIS theory, structured communication mechanisms improve information
-traceability, coordination efficiency, and administrative visibility by ensuring that operational
-concerns are documented within centralized system workflows rather than dispersed across informal
-channels.
-
-The literature therefore supports the integration of maintenance ticketing and structured
-communication modules within unified apartment management systems to improve accountability,
-responsiveness, and operational coordination.
+The literature therefore treats structured communication and maintenance ticketing as integral parts
+of an apartment management system rather than supplementary features: a concern recorded in one
+system can be traced, coordinated, and followed to completion.
 
 ### 2.1.5 Progressive Web Applications as an Accessibility and Integration Framework
 
 While centralized systems improve operational coordination, effective implementation also depends on
 accessibility across devices and varying infrastructure conditions. Progressive Web Applications
-(PWAs) provide a technological framework capable of addressing these accessibility challenges within
-resource-constrained environments (Biørn-Hansen et al., 2019; Muawwal, 2024).
+(PWAs) provide a technological framework for addressing these challenges in resource-constrained
+environments (Biørn-Hansen et al., 2017; Muawwal, 2024).
 
 Muawwal (2024) shows that a PWA, built from a web app manifest and a service worker, gives a website
 the features of an installed application without a separate native application for each platform:
 it could be installed on mobile and desktop devices and remained accessible offline or on an unstable
-connection. Similarly, Biørn-Hansen et al.
-(2019) explain that PWAs reduce development complexity by enabling a single application architecture
-to operate consistently across multiple platforms without requiring separate native implementations.
-Because a PWA is used like an installed application but delivered as a website, its usability has
-also been given heuristics of its own (Anuar & Othman, 2024).
+connection. Biørn-Hansen et al. (2017) likewise explain that PWAs reduce development complexity by
+letting a single application operate across multiple platforms without separate native
+implementations. Because a PWA is used like an installed application but delivered as a website, its
+usability has also been given heuristics of its own (Anuar & Othman, 2024).
 
-These characteristics are particularly relevant within small-scale apartment operations where
-infrastructure limitations, inconsistent connectivity, and device diversity may restrict adoption of
-conventional enterprise systems. Mia et al. (2024) further emphasize that small and medium-sized
-enterprises in the Philippines commonly experience barriers related to infrastructure limitations,
-technical capacity, and resource availability during digital technology adoption. This suggests that
-accessibility and implementation simplicity are critical considerations in system deployment within
-localized operational environments.
-
-From a systems perspective, PWA architecture functions as the technological delivery layer that
-enables centralized MIS functions to remain accessible and operational across varying conditions.
-Rather than serving solely as a development approach, PWAs support the broader objective of
-operational integration by ensuring that administrative tools, communication workflows, and financial
-monitoring systems remain consistently accessible across devices and environments.
+These characteristics matter in small-scale apartment operations, where limited infrastructure,
+inconsistent connectivity, and varied devices can keep conventional enterprise systems out of reach.
+Mia et al. (2024) find that small and medium-sized enterprises in the Philippines meet barriers of
+infrastructure, technical capacity, and resources when they adopt digital technology, which makes
+accessibility and simplicity of deployment critical considerations. A PWA is therefore the delivery
+layer that keeps the centralized functions of an MIS accessible across devices and conditions.
 
 ### 2.1.6 Synthesis of Literature
 
@@ -205,8 +160,9 @@ The reviewed literature collectively demonstrates that operational inefficiencie
 management environments primarily emerge from fragmented administrative structures rather than the
 complete absence of digital technologies. Property management studies identify persistent issues
 involving disconnected workflows, inconsistent record management, delayed communication, and
-operational redundancy (Burke, 2026; Magno et al., 2024). Information systems and software engineering literature explains these inefficiencies as consequences of fragmented information processing and lack of centralized
-operational visibility (Ghasemaghaei et al., 2018; Pressman & Maxim, 2020).
+operational redundancy (Burke, 2026; Magno et al., 2024). Information systems and software
+engineering literature explains these inefficiencies as consequences of fragmented information
+processing and lack of centralized operational visibility (Ghasemaghaei et al., 2018; Pressman & Maxim, 2020).
 
 Financial analytics studies further establish that structured and centralized financial data improves administrative oversight and operational transparency
 (Encarnacion et al., 2025; Setty, 2022). Similarly, communication and maintenance coordination studies
@@ -216,7 +172,7 @@ Saputra et al., 2025).
 
 Meanwhile, PWA literature provides the technological framework that enables these integrated
 operational components to remain accessible within environments characterized by limited infrastructure (Mia et al., 2024) and
-varying device conditions (Biørn-Hansen et al., 2019; Muawwal, 2024). Recent housing systems have also
+varying device conditions (Biørn-Hansen et al., 2017; Muawwal, 2024). Recent housing systems have also
 been evaluated with ISO/IEC 25010 (Canlas et al., 2026; Pernate et al., 2025), the quality model
 this study uses.
 
@@ -368,3 +324,32 @@ thirty-one sub-characteristics. It also defines a model of quality in use, with 
 characteristics: effectiveness, efficiency, satisfaction, freedom from risk and context coverage. The
 2023 revision renamed usability as interaction capability and portability as flexibility, added
 safety as a ninth characteristic, and moved quality in use into a separate standard (ISO/IEC, 2023).
+
+**Adyen** – The payment gateway through which a tenant may pay a bill online with GCash. In this study
+it runs on Adyen's test account, and each payment it reports is recorded as pending until the owner
+verifies it.
+
+**GCash** – A Philippine mobile wallet, offered in Hivelet as the optional online way to pay a bill.
+
+**Landlady** – The person who runs the Fe Galang Da Silva Boarding House day to day on behalf of its
+owner, and the system's only administrator.
+
+**Owner** – In Chapter 4, the landlady in her role as the system's administrator (Section 3.3).
+
+**Tenant** – A person renting a unit, who uses the system through their own account to view their
+bills, receipts and repair requests and to pay online.
+
+**Prospective Tenant** – A person looking for a room who uses only the public website, without an
+account, to view the units and their rates and to send an inquiry.
+
+**Technical Evaluator** – An information technology professional from outside the research team who
+rated the system against ISO/IEC 25010:2011.
+
+**User Acceptance Testing (UAT)** – Testing in which the intended users perform their own tasks on the
+live system, to decide whether it meets their needs (Section 4.3.7).
+
+**Weighted Mean** – The average rating of a survey item: the sum of each rating multiplied by the
+number of respondents who chose it, divided by the number of respondents (Section 3.3).
+
+**50% Share** – A system-computed figure equal to half that row's Rent Amount, kept for ledger parity
+with the owner's historical spreadsheet.
