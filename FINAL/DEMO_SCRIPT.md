@@ -25,9 +25,9 @@ Its passwords are with Sean; never type them where the projector shows them.
    payment goes through end to end. Reject it afterwards.
 5. Put the fallback on the laptop, offline: the defense film (`video/`) and the paper's figures
    (`FINAL/CLAUDE MANUSCRIPT/images/`).
-6. **Close the two test repair requests on PH** ("Test - please ignore" and "hello try lang", the
-   second marked High). Left open, the owner's Overview shows the panel an urgent repair that is a
-   test.
+6. ~~Close the two test repair requests on PH~~ **Done 13 October**: all three test requests on PH
+   and a 4 October test inquiry were deleted through the app (audit trail, 18:50). Check Repairs is
+   still empty of tests the day before; the 30 September inquiry is real evidence and stays.
 7. **After the last push before the defense, open the installed app on the phone once and close
    it.** The installed copy updates on the visit after a change; until then it shows the previous
    version (seen 13 October: a laptop's saved copy still had the street misspelled after the fix
