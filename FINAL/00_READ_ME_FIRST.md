@@ -1,5 +1,7 @@
 # FINAL: the manuscript, ready for Word
 
+**What is waiting on you is all in [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_YOUR_ATTENTION.md).** Start there.
+
 **Start with the folder `CLAUDE MANUSCRIPT/`** (13 October 2026). `CLAUDE MANUSCRIPT.docx` holds the
 Abstract, a table of contents, Chapters 1 to 5, the References and Appendices A to Q in the
 proposal's format (Arial 12, double-spaced, justified, margins 1.5 in left and 1 in elsewhere).
