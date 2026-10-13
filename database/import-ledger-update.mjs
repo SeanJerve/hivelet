@@ -26,6 +26,7 @@
 import { createClient } from '@supabase/supabase-js';
 import xlsx from 'xlsx';
 import fs from 'fs';
+import { billsCoveredBy } from './billsCoveredBy.mjs';
 
 // The workbook's date cells are exact UTC midnight. Converting them in a zone ahead of UTC (this
 // laptop is in Manila) lands a day early - the defect migration 032 corrected for income. Forced
@@ -357,7 +358,22 @@ if (sqlOut) {
   console.log(`\nSQL written: ${sqlOut}`);
 }
 
+// ---- open bills these receipts pay (B-107) -----------------------------------------------------
+// An insert does not settle a bill the way a receipt recorded on Monthly Income does, so a bill
+// raised before the receipt arrives would stay Due and the tenant would see a paid month as owed.
+const openBills = (await all('bills', 'id, room_id, billing_period_start, billing_period_end, total_amount, status')).filter((b) => b.status !== 'Paid');
+const covered = billsCoveredBy(I.missing, openBills);
+if (covered.length) {
+  console.log(`\nOPEN BILLS these receipts pay: ${covered.length}. Inserting the receipts will NOT settle them.`);
+  for (const { bill, receipt } of covered) console.log(`  ${receipt._unit} bill ${bill.id} ${bill.billing_period_start}..${bill.billing_period_end} P${bill.total_amount} (${bill.status}) <- ${receipt.invoice_number} paid ${receipt.date_paid}`);
+  console.log('  Record those receipts on Monthly Income instead, which settles the bill, or settle each bill afterwards the way migration 082 does.');
+}
+
 // ---- apply -------------------------------------------------------------------------------------
+if (apply && covered.length && !args.includes('--leave-bills-open')) {
+  console.error(`\nRefusing --apply: ${covered.length} open bill(s) above would stay Due. Pass --leave-bills-open to insert anyway, then settle them.`);
+  process.exit(1);
+}
 if (apply) {
   const admin = profiles.find((p) => p.role === 'admin');
   const incPayload = I.missing.map(incRow);
