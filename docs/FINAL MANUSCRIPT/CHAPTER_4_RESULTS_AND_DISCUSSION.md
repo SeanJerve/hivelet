@@ -111,7 +111,7 @@ change is recorded and no increase is applied automatically. She also confirmed 
 no email address to be recorded, and on 20 September 2026 she confirmed the rate of every unit, each
 of which agreed with her receipts. Her answers of 12 October 2026 settled the rest. The figure at the
 bottom of her income sheet is a year-to-date total, and her thirteen expense categories stay, with
-her free to add her own. Tenants do not report cash payments, because the administrators record
+her free to add her own. Tenants do not report cash payments, because the administrator records
 every payment. The personal spending booked in 2025 was a renovation of her house, past Penthouse
 spending stays where it was filed, and three months with no receipt for one unit stay blank. Her workbook never recorded the move-in date of each
 current tenancy, so the system shows those dates as not recorded (Section 4.2.2).
@@ -391,7 +391,7 @@ principal results.
 | Interface integrity | That every screen component exists, every input has a label, and every source file is used | Passed |
 | Document consistency | That the requirements matrix and business rule register agree with themselves | Passed (44 requirements, 49 rules) |
 
-The checks found what nobody had written a check for: the five receipt anomalies of Section 4.1.1
+The checks also found problems in the records themselves: the five receipt anomalies of Section 4.1.1
 came from the owner's records and are reported on every run rather than corrected, because only her
 invoice book can say what each should read. More important, the most serious defects found in
 development gave no error on screen. A cash payment could be confirmed while nothing was written to
@@ -574,8 +574,8 @@ Table 11E brings the testing together by the test levels of ISO/IEC/IEEE 29119 (
 | Acceptance | Simultaneous use by the owner and tenants (Appendix M, Table M-22) | 4 | 4 | 0 | 3 | 100% |
 | **All levels** | | **83** | **82** | **1** | **8** | **98.8%** |
 
-Every level passed at least 96 percent of the tests executed, against the course standard of 90 per
-cent. The one failure, at the system level, was not critical, and no critical defect was found in any
+Every level passed at least 96 percent of the tests executed, against the course standard of 90
+percent. The one failure, at the system level, was not critical, and no critical defect was found in any
 activity. Table 23A, in Section 4.4.6, lists the defects by activity, severity and disposition.
 
 ---
@@ -692,7 +692,7 @@ names is present, and 96 to 100 percent of the executed checks of correctness ga
 **Security** (4.70) is discussed in Section 4.4.4. **Compatibility** (4.67) agrees with the browser
 matrix, on which every combination tried worked. **Reliability** (4.62) agrees most closely with the
 testing: the technical evaluator's 3 for handling a failed request without presenting incorrect data
-names the one defect the testing found, the ₱0 of step 23b, since resolved. **Performance Efficiency** (4.42)
+names the one test that failed, the ₱0 of step 23b, since resolved. **Performance Efficiency** (4.42)
 matches the measurements: no failed request, but screens of two to three seconds on a phone.
 
 The two lowest were rated High Quality. **Usability (4.12)** is the lowest of the characteristics all
@@ -705,8 +705,8 @@ tasks in ten were done without help, and 76 accessibility scans of 19 screens fo
 one defect on three screens was corrected. Those, however, measure whether a task can be done and whether a screen is built correctly, not how easily a
 first-time user finds the way. **Maintainability (4.00)** is the lowest composite and rests on one
 respondent, who gave every item 4 after reviewing the running system, without inspecting its source
-code, so here the measurement, read from the code itself, carries more weight than the rating. The
-measurement agrees: the system can be checked as a whole on
+code, so here the measurement, read from the code itself, carries more weight than the rating. It
+points the same way as the rating: the system can be checked as a whole on
 every change, but three database calls in four are written inside the request handlers, so the rules
 for one record are spread across the handlers that touch it. Both are taken up in Chapter 5,
 recommendation 6.
@@ -817,7 +817,7 @@ code branch. Table 24 lists what is needed to use the system, and Table 25 the d
 
 | Side | Requirement | Used in testing, 30 September 2026 |
 | :--- | :--- | :--- |
-| Owner | A current web browser on a computer, and an internet connection | The administrator's laptop, an Acer Nitro V 15 with Chrome; the team's laptop, a Dell XPS 15 on Windows 11 with Chrome 154, Edge and Firefox 157 (Table 11, §4.4.3) |
+| Owner | A current web browser on a computer, and an internet connection | The administrator's laptop, an Acer Nitro V 15 with Chrome; the team's laptop, a Dell XPS 15 on Windows 11 with Chrome 154, Edge and Firefox 157 (Table 11, Section 4.4.3) |
 | Tenants and visitors | A current web browser (Chrome, Edge, Firefox or Safari) on a phone or computer, and an internet connection | Infinix GT20 with Android and Chrome 154; iPhone 15 and iPhone 13 with Safari; the three tenants' own phones, models not recorded |
 | Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen merchant account with GCash (optional online payment) | Vercel; PostgreSQL 17.6 on Supabase; Adyen Web Drop-in 6.44 and API Library 32.0 (Table 7) |
 | Administration | A computer that can run Node.js, used only for backups and verification runs | Node.js 22.16 on the team's Windows 11 computer |
@@ -830,7 +830,7 @@ code branch. Table 24 lists what is needed to use the system, and Table 25 the d
 | 2. Record transfer | The owner's workbook transferred: 937 income rows and 1,327 expense allocations | Done |
 | 3. Pilot use | The system used alongside the owner's existing records; differences investigated | In progress |
 | 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | Done: every tenant account prepared with its own starting password on 29 September 2026; the owner guided through the system, and the owner and three tenants using it on their own accounts, on 30 September 2026 (Section 4.3.7); the first change taken from the owner's own practice, acknowledgement receipts for payments with no invoice number, made on 1 October 2026 |
-| 5. Full transition | The system becomes the owner's main record once both records agree | Not yet: as of 7 October 2026 the system has not become the owner's main record and runs beside her own records |
+| 5. Full transition | The system becomes the owner's main record once both records agree | Not yet: as of 13 October 2026 the system has not become the owner's main record and runs beside her own records |
 
 Three risks are managed deliberately:
 

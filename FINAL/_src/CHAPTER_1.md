@@ -65,7 +65,7 @@ apartment management environments. This reveals a critical gap: the absence of a
 platform that consolidates tenant management, financial tracking, communication, and booking within
 a single, context-appropriate system.
 
-This study proposes Hivelet, a web-based apartment management system designed to address these
+This study presents Hivelet, a web-based apartment management system designed to address these
 limitations by centralizing administrative processes and providing a structured mechanism for
 managing tenant records, financial transactions, and maintenance concerns within a unified
 platform, specifically tailored for resource-constrained residential settings.
@@ -99,7 +99,7 @@ Application (PWA), is significant in addressing the operational challenges of fr
 administrative workflows in small-scale, resource-constrained boarding house environments.
 
 For property administrators and owners, the study provides a centralized system that reduces
-dependence on manual record-keeping practices such as spreadsheets and removable storage devices,
+dependence on manual record-keeping practices such as spreadsheets kept on a USB flash drive,
 which are prone to data inconsistency, loss, and duplication. By integrating tenant records,
 financial transactions, and maintenance concerns into a unified platform, the system supports more
 reliable information management and improves administrative coordination in environments affected
@@ -110,7 +110,7 @@ submitting and tracking maintenance concerns and viewing relevant account inform
 reliance on informal communication channels such as messaging applications and verbal reporting,
 which often result in delayed responses and untracked requests.
 
-For future researchers, the study contributes to a localized implementation of a Progressive Web
+For future researchers, the study contributes a localized implementation of a Progressive Web
 Application-based property management system designed specifically for small-scale residential
 contexts. The system architecture, integration approach, and evaluation using the ISO/IEC 25010
 model may serve as a reference for further research, particularly in developing systems that address
@@ -122,7 +122,7 @@ operations.
 This study focuses on the design, development, and evaluation of Hivelet, a Progressive Web
 Application (PWA) created to transition the 33-unit Fe Galang Da Silva Boarding House, at 32
 Sampaguita Street, Barangay 4 Sagpon, Old Albay District, Legazpi City, near Bicol University, from
-manual, paper-based administration to a centralized digital management system. To
+spreadsheet- and paper-based administration to a centralized digital management system. To
 achieve this, Hivelet integrates comprehensive room and tenant management capabilities, facilitating
 seamless onboarding, the secure digital storage of records, real-time monitoring of room
 availability, and a public-facing booking module that allows prospective renters to submit

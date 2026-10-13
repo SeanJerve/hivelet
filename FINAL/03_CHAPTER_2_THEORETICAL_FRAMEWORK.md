@@ -220,7 +220,7 @@ management contexts.
 
 ## 2.3 Concept of the Study
 
-This study is grounded on the concept of improving apartment management by integrating its core
+This study is grounded in the concept of improving apartment management by integrating its core
 processes into a centralized digital platform. Apartment operations involve interconnected activities
 such as tenant management, payment tracking, booking coordination, and maintenance handling. In
 traditional setups, these processes are often managed manually and separately, resulting in delays,

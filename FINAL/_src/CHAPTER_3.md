@@ -127,7 +127,7 @@ connectivity, and evolving user needs.
 
 In this phase, the researchers conducted needfinding through direct collaboration with the landlady
 and management of the Fe Galang Da Silva Boarding House. This aligns with the first objective of the
-study, which focuses on identifying user needs and operational challenges. Data was gathered through
+study, which focuses on identifying user needs and operational challenges. Data were gathered through
 interviews with the landlady, the first in February 2026, through observation, and through a review of
 her income and expense workbook, to examine existing administrative practices, including the use of manual
 ledgers, fragmented financial tracking, and unstructured communication for maintenance requests. These
@@ -366,4 +366,4 @@ only their own records, and received an individual starting password in person, 
 first sign-in. Respondents could give a name so that the researchers could tell the responses apart; the
 names were removed before the responses were analyzed, and none appears in this paper. Names, contact details and amounts are hidden in every
 figure in this paper, and faces appear only with consent. Photographs and notes were kept by the
-research team and are deleted after the defense.
+research team and will be deleted after the defense.

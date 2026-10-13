@@ -68,8 +68,8 @@ Based on the results of the study, the following conclusions were drawn:
    how she keeps her accounts.
 
 3. **The third objective was achieved.** The system was pilot tested for functionality,
-   responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8 per
-   cent), above the course standard of 90 percent, with no critical defect (Chapter 4, Tables 11E
+   responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8
+   percent), above the course standard of 90 percent, with no critical defect (Chapter 4, Tables 11E
    and 23A). The one failure, a ₱0 shown without a connection, appeared only on a real device in its
    user's hands, and it passed when re-tested on the owner's laptop.
 
@@ -94,7 +94,8 @@ Based on the summary and conclusions of the study, the following are recommended
 
 **For the owner of the Fe Galang Da Silva Boarding House**
 
-1. Keep the system's receipts up to date with her receipt book, since the system can become her main
+1. Keep the system's receipts up to date with her receipt book, entering each on Monthly Income,
+   which also settles any bill it covers (Appendix M, Table M-27); the system can become her main
    record only once the two agree (Chapter 4, Table 25).
 2. Keep taking a backup before any change to the records, as the team did throughout, and read the
    five flagged invoice numbers as history: they stay as she wrote them, and the system lists them on
