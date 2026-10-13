@@ -801,6 +801,11 @@ display or a weakness with a workaround; **low**, usability, appearance or harde
 No defect found was critical. The three accepted items are low-risk session weaknesses recorded in
 the security audit with the reason each was accepted.
 
+One further defect, of high severity, was found after these activities, in an audit of the live
+records on 13 October 2026, and corrected the same day: two tenants were shown as owing a month they
+had already paid. It is outside the counts above, which are the testing activities' own; Appendix M,
+Table M-27, describes it, its cause and its correction.
+
 ---
 
 ## 4.5 Deployment Plan and Strategies

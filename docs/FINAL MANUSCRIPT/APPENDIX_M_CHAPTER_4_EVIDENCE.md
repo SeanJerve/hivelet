@@ -445,3 +445,9 @@ characteristic, and every change made in response to the evaluation.
 | One receipt covering three months, live system | | Saved as 3 rows, June to August 2026, as before |
 | Two GCash checkouts opened on one bill at once, payment code with a stand-in database | Both opened, so both payments could be recorded | 1 opened, 1 refused |
 | A checkout 16 minutes after one was abandoned | | Opened: an abandoned checkout holds the bill for 15 minutes, not for good |
+
+**Table M-27.** Corrections after the testing activities (13 October 2026; referred to in Chapter 4, Section 4.4.6)
+
+| Found | What a person saw | Cause | Correction | Checked by |
+| :--- | :--- | :--- | :--- | :--- |
+| Audit of the live records against what each tenant's screen shows, 13 October 2026 | Two tenants were shown their August rent as overdue (₱7,450 and ₱10,400), although the owner's receipts record both as paid on 12 and 25 August. Severity high: a wrong amount shown. The owner's ledger itself was correct | Each bill was raised on 26 September, when the tenant opened the payment screen. The owner's August receipts were added on 30 September by a transfer from her workbook, which writes the receipts directly; only a receipt recorded on the Monthly Income screen settles the bills it covers | The same day, after a backup: each bill was settled by a verified payment carrying its receipt's number and date, as the Monthly Income screen would have done, with an entry in the audit trail. The ledger was unchanged (952 receipts). The transfer script now lists any open bill its receipts would pay and will not run until that is acknowledged | A new automated rule compares every bill shown as owed with the receipts; it failed, naming the two units, when the correction was undone in a test, and passes on the live records |
