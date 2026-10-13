@@ -83,6 +83,28 @@ form. Table 6 traces each gap to the requirement and the module that meets it.
 | Anyone with the file sees everything | Give the owner and each tenant access to only what their role needs | Role-Based Access Control (4.2.6) |
 | One file on one device | Make the system reachable from any phone or computer | Progressive Web Application (4.2.7) |
 
+The analysis also set ten non-functional requirements, one for each ISO/IEC 25010 characteristic
+and two for auditability and exportability. Table 6B lists them with the section that reports how
+each was met.
+
+**Table 6B.** Non-functional requirements and where each is measured
+
+| Code | Requirement | Measured in |
+| :--- | :--- | :--- |
+| NFR-001 | The system shall provide the required business functions accurately | Sections 4.3.1 to 4.3.4; Section 4.4.3 |
+| NFR-002 | The system shall be understandable to a non-technical administrator | Section 4.3.7; Section 4.4.3 (Usability) |
+| NFR-003 | The system shall protect personal and financial information | Section 4.2.6; Section 4.4.4 |
+| NFR-004 | Common operations should respond efficiently under the expected workload | Tables 11 and 11B |
+| NFR-005 | The system shall function on modern desktop and mobile browsers | Table 24; Section 4.4.3 (Compatibility) |
+| NFR-006 | The system shall preserve data consistency and avoid silent data loss | Sections 4.3.1, 4.3.3 and 4.3.6 (Table 11F) |
+| NFR-007 | The codebase shall use a modular, documented, maintainable architecture | Section 4.4.3 (Maintainability): partly met |
+| NFR-008 | The system shall be deployable to a hosting environment the team can maintain | Section 4.2.1; Table 24 |
+| NFR-009 | Important financial and administrative changes shall be traceable | Section 4.2.6 (audit trail) |
+| NFR-010 | Relevant business data shall be usable outside the application | Section 4.2.4 (Excel downloads) |
+
+NFR-008 originally named the university's server; on the adviser's advice the team deployed the
+system on its own hosting instead (Section 3.2.5), and the requirement was reworded to match.
+
 Where a requirement needed the owner's answer, it was asked rather than assumed. She confirmed that
 a bill is overdue from the day after its due date, that she sets rates by hand (so every rate change
 is recorded and no increase is applied automatically), that a tenant needs no email address to be
@@ -598,7 +620,9 @@ activity. Table 23A, in Section 4.4.6, lists the defects by activity, severity a
 *Answers Objective 4.*
 
 The evaluation followed the five steps of ISO/IEC 25040 (Table 12B), on the quality model of ISO/IEC
-25010:2011, the edition on which the instrument was built. Each characteristic was judged on
+25010:2011. That edition was used because the approved proposal (Section 3.3) named its eight
+characteristics as the evaluation criteria, and the instrument was built on them; the same edition is
+used in Chapter 3 and here. Each characteristic was judged on
 **measured quality**, the results of Section 4.3 expressed as measures of its sub-characteristics in
 the manner of ISO/IEC 25023, and on **rated quality**, a survey in which each item belongs to one
 sub-characteristic (Chapter 3, Table 4B). Each respondent group rated only what it can judge: tenants

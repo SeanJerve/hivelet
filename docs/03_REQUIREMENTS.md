@@ -158,7 +158,7 @@ The system shall preserve data consistency and avoid silent data loss.
 The codebase shall use modular, documented, maintainable architecture.
 
 ### NFR-008 Portability
-The system shall be deployable to the university-provided server environment.
+The system shall be deployable to a hosting environment the team can maintain. (Reworded 13 Oct 2026: it named the university-provided server; on the adviser's advice the system was deployed on the team's own hosting, Vercel, instead. Chapter 4, Table 6B.)
 
 ### NFR-009 Auditability
 Important financial and administrative changes shall be traceable.

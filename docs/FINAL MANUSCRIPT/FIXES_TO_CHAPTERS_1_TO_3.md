@@ -209,9 +209,9 @@ the work will be done by the time the paper is read; if the manuscript is submit
 > record was written.
 >
 > **Functional walkthrough and user acceptance testing.** A 26-step walkthrough exercised every
-> function that writes data once, on the one vacant unit. The owner and three to five tenants then
-> used the live system for their own tasks on their own devices, observed by the researchers, and
-> used it all at the same time. Results are reported in Chapter 4, Section 4.3.
+> function that writes data once, on the one vacant unit. The owner and three tenants then used the
+> live system for their own tasks on their own devices, observed by the researchers, and the owner
+> and two of the tenants used it at the same time. Results are reported in Chapter 4, Section 4.3.
 
 **H2. §3.3 Evaluation Procedure (p.35). Add after the paragraph in B7.**
 
@@ -240,9 +240,10 @@ the work will be done by the time the paper is read; if the manuscript is submit
 > WM = Σ(f × w) / N
 >
 > where *f* is the number of respondents choosing a rating, *w* the rating (1 to 5) and *N* the
-> number of respondents, and interpreted using Table 13. The composite mean of each characteristic
-> is the mean of its item means, computed per respondent group and then [DECISION PENDING: as the
-> mean of the group means, or across all respondents; the same choice as Chapter 4, §4.4.2]. For
+> number of respondents, and interpreted using Table 4A. The composite mean of each characteristic
+> is the mean of its item means, computed per respondent group and then as the mean of the group
+> means, so that one owner is not outweighed by several tenants on functions only she uses; the
+> overall mean is the mean of the eight composites (the same as Chapter 4, §4.4.2). For
 > the acceptance test, the task completion rate is the number of tasks completed without help
 > divided by the number attempted, reported with the median time per task and the mean number of
 > wrong turns, following the effectiveness and efficiency measures of the ISO/IEC 25010 quality in
@@ -502,6 +503,31 @@ describe what was actually done. *Add after the paragraph that follows Table 3:*
 > were taken on it over the boarding house's Wi-Fi and on an iPhone 15 in Safari over mobile data, and
 > the offline, installation and browser tests also used an Infinix GT20 with Android and Chrome. The
 > administrator used her own laptop, an Acer Nitro V 15, with Chrome.
+
+**H10. §3.3, p.36: the "statistical analysis" sentence promises a measure nobody took (added
+2026-10-13).** It reads "Statistical analysis is conducted to determine the extent to which Hivelet
+improves operational consistency, data reliability, and system security". No before-and-after
+comparison was made, so a panelist can ask where the improvement was measured. *Replace it with:*
+
+> The responses are summarized with descriptive statistics, the weighted mean of each item and the
+> composite mean of each characteristic (Statistical treatment, above), and read alongside the results
+> of the tests in Section 3.2.4. No inferential test is made, so the results are reported as
+> descriptions of how the respondents rated the system.
+
+**H11. One name for the property (added 2026-10-13).** The title, the abstract and Chapters 4 and 5
+say **Fe Galang Da Silva Boarding House**; Chapters 1 to 3 also say "Fe Galang Da Silva Apartment"
+in §1.2 (objective 1), §1.4, §2.4 (definition of Hivelet), §3.2 and §3.3. The course guide (Q2-6)
+names inconsistent naming as the most visible sign of a chapter assembled by several people.
+*Replace every "Fe Galang Da Silva Apartment" with "Fe Galang Da Silva Boarding House"* (Word: Find
+and Replace).
+
+**H12. Chapter 3 in the tense of what was done (added 2026-10-13; was an optional note in F).** The
+Chapter 5 guide: "By the time you write Chapter 5, Chapter 3 must describe what you actually did."
+Chapter 3 still plans ("will be utilized", "will utilize", "is deployed", "will be conducted"). After
+B1 to B7, G8 and H1 to H10 are pasted, put the rest of Chapter 3 in the past tense: "The researchers
+utilized the Agile Software Development Life Cycle", "the system was assessed using ISO/IEC 25010",
+"the evaluation was conducted during actual use". Chapter 1 §1.4 likewise: "Hivelet was evaluated
+against the ISO/IEC 25010 software quality standard".
 
 ## F. Optional improvements (not errors)
 

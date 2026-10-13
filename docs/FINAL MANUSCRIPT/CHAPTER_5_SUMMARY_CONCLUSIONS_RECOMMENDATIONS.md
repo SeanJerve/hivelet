@@ -64,8 +64,8 @@ Based on the results of the study, the following conclusions were drawn:
 
 2. **The second objective was achieved.** All six features the objective names were developed and are
    in use on the owner's real records (Chapter 4, Sections 4.2.2 to 4.2.7), keeping her own report
-   layout, invoice numbers and cash as the main way to pay, so that adopting the system required no
-   change to how she keeps her accounts.
+   layout, invoice numbers and cash as the main way to pay, so that using it requires no change to how
+   she keeps her accounts.
 
 3. **The third objective was achieved.** The system was pilot tested for functionality,
    responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8 per
