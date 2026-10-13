@@ -3,7 +3,12 @@
 // retyping it (Sean, 13 October 2026).
 //
 //   node scripts/manuscript/build-final.mjs           first, to rebuild FINAL/
-//   node scripts/manuscript/build-manuscript-docx.mjs -> FINAL/HIVELET_MANUSCRIPT.docx
+//   node scripts/manuscript/build-manuscript-docx.mjs -> FINAL/CLAUDE MANUSCRIPT/
+//
+// The folder holds CLAUDE MANUSCRIPT.docx and images/, every picture in it named by its figure
+// number and caption ("Figure 4-1 - The owner's process before the system.png"). The team pastes
+// section by section into its own Word file, which keeps the school's logo, headers and page
+// numbers; a highlighted label above each image in the .docx names its file (Sean, 13 Oct 2026).
 //
 // It holds the Abstract, a table of contents Word fills in when the file is opened, Chapters 1 to 5,
 // the References and Appendices A to Q. The front matter that is signed or set by the school (title
@@ -22,13 +27,42 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const FINAL = path.join(root, 'FINAL');
 const FIG = path.join(root, 'docs', 'FINAL MANUSCRIPT', 'figures');
 const read = (f) => fs.readFileSync(path.join(FINAL, f), 'utf8');
-const md = (f, o = {}) => convert(read(f), { baseDir: path.dirname(path.join(FINAL, f)), ...o });
+const OUT = path.join(FINAL, 'CLAUDE MANUSCRIPT');
+const IMAGES = path.join(OUT, 'images');
+fs.rmSync(IMAGES, { recursive: true, force: true });
+fs.mkdirSync(IMAGES, { recursive: true });
+const used = new Map();
+// How many images sit under each figure caption in FINAL/, counted before converting.
+const shared = new Map();
+for (const f of [...fs.readdirSync(FINAL).filter((x) => /^0\d_.*\.md$/.test(x)), ...fs.readdirSync(path.join(FINAL, 'appendices')).map((x) => `appendices/${x}`)]) {
+  let cap = null;
+  for (const line of read(f).split(/\r?\n/)) {
+    const c = line.trim().match(/^\*(Figure\s+[A-Z0-9]+(?:-\d+)?[a-z]?\..*?)\*$/);
+    if (c) { cap = c[1]; continue; }
+    if (/^!\[/.test(line.trim()) && cap) shared.set(cap, (shared.get(cap) || 0) + 1);
+    if (/^#/.test(line.trim())) cap = null;
+  }
+}
+// "Figure 4-1. The owner's process before the system." -> "Figure 4-1 - The owner's process before the system.png"
+function onImage(file, caption) {
+  let base = caption
+    ? caption.replace(/\.\s*$/, '').replace(/^(Figure [A-Z0-9]+(?:-\d+)?[a-z]?)\.\s*/, '$1 - ')
+    : path.basename(file, '.png');
+  base = base.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
+  const n = (used.get(base) || 0) + 1;
+  used.set(base, n);
+  // A caption over several images (Figure 4-8: the catalogue and the inquiry form) numbers them all.
+  const name = `${(shared.get(caption) || 1) > 1 ? `${base} (${n})` : base}.png`;
+  fs.copyFileSync(file, path.join(IMAGES, name));
+  return `[IMAGE FILE: images/${name}]`;
+}
+const md = (f, o = {}) => convert(read(f), { baseDir: path.dirname(path.join(FINAL, f)), onImage, ...o });
 
 const h1 = (text) => new Paragraph({ heading: HeadingLevel.HEADING_1, pageBreakBefore: true, children: [new TextRun({ text, font: FONT })] });
 const todo = (text) => new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 480 }, children: runs(`**[TO DO: ${text}]**`) });
 const figureAppendix = (letter, title, file, figureNo) => [
   h1(`APPENDIX ${letter}: ${title.toUpperCase()}`),
-  ...convert(`*Figure ${letter}-1. ${title}, as built (the same diagram as Figure ${figureNo}).*\n\n![${title}](${path.join(FIG, file)})`, { baseDir: FIG }),
+  ...convert(`*Figure ${letter}-1. ${title}, as built (the same diagram as Figure ${figureNo}).*\n\n![${title}](${path.join(FIG, file)})`, { baseDir: FIG, onImage }),
 ];
 
 const front = [
@@ -84,6 +118,6 @@ const doc = new Document({
   ],
 });
 
-const out = path.join(FINAL, 'HIVELET_MANUSCRIPT.docx');
+const out = path.join(OUT, 'CLAUDE MANUSCRIPT.docx');
 fs.writeFileSync(out, await Packer.toBuffer(doc));
-console.log(`${front.length + main.length} elements -> ${path.relative(root, out)} (${(fs.statSync(out).size / 1e6).toFixed(1)} MB)`);
+console.log(`${front.length + main.length} elements -> ${path.relative(root, out)} (${(fs.statSync(out).size / 1e6).toFixed(1)} MB), ${fs.readdirSync(IMAGES).length} images`);

@@ -1,12 +1,15 @@
 # FINAL: the manuscript, ready for Word
 
-**Start with `HIVELET_MANUSCRIPT.docx`** (13 October 2026): the Abstract, a table of contents, Chapters
-1 to 5, the References and Appendices A to Q in one Word file, in the proposal's format (Arial 12,
-double-spaced, justified, margins 1.5 in left and 1 in elsewhere, page numbers top right, roman
-before Chapter 1). Add the front matter from the team's own Word file, insert each caption with
-**References > Insert Caption** so the lists of tables and figures build, and resolve every
-highlighted **[TO DO]**. Rebuild it after any change with `node scripts/manuscript/build-final.mjs`
-then `node scripts/manuscript/build-manuscript-docx.mjs`.
+**Start with the folder `CLAUDE MANUSCRIPT/`** (13 October 2026). `CLAUDE MANUSCRIPT.docx` holds the
+Abstract, a table of contents, Chapters 1 to 5, the References and Appendices A to Q in the
+proposal's format (Arial 12, double-spaced, justified, margins 1.5 in left and 1 in elsewhere).
+**Copy and paste it section by section into the team's own Word file**, which keeps the school's
+logo, headers and page numbers. `images/` holds every picture, each named by its figure number
+and caption (`Figure 4-1 - The owner's process before the system.png`); in the .docx, a
+blue-highlighted **[IMAGE FILE: ...]** label above each picture names its file, and every
+yellow-highlighted **[TO DO]** must be resolved before printing. Insert each caption with
+**References > Insert Caption** so the lists of tables and figures build. Rebuild after any change
+with `node scripts/manuscript/build-final.mjs` then `node scripts/manuscript/build-manuscript-docx.mjs`.
 
 Every chapter here has every fix applied, sentence by sentence, from the list of fixes to Chapters 1 to 3 (archived 13 October),
 the panel-style read of 13 October 2026, and the two IT 124 course guides. Retype or paste each file
@@ -44,7 +47,7 @@ tables, how to debug it, and the questions a panel asks about the code).
   Captions go **above** every table and figure, in sentence case, as written here.
 - **Images.** Every image links to `docs/FINAL MANUSCRIPT/figures/`. Figure 2-2 is redrawn there
   (Adyen spelled right, and the maintenance module the objectives name added). A `[KEEP: ...]`
-  marker (Figure 2-1 only; Figure 3-1 is redrawn too) means use the image already in the old manuscript, at the page it names.
+  marker (none left: Figure 2-1 is now the image from the proposal, and Figure 3-1 is redrawn) means use the image already in the old manuscript, at the page it names.
 - **The AI-use statement is not in this folder.** It is ready in `_AI_USE (not in repo)/` in the
   hivelet folder, outside the repository, until the adviser says where it goes.
 - **Bold brackets** `**[TO DO: ...]**` are the only things still open. Each is listed in Section 3;

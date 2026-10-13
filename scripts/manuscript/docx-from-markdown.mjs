@@ -112,8 +112,11 @@ function image(file) {
  * Converts one Markdown file's text. `baseDir` resolves image links. Options: `firstHeadingPageBreak`
  * (start the file on a new page), `references` (hanging indent, left-aligned, as APA asks).
  */
-export function convert(md, { baseDir, firstHeadingPageBreak = true, references = false } = {}) {
+export function convert(md, { baseDir, firstHeadingPageBreak = true, references = false, onImage = null } = {}) {
   const out = []; let para = []; let tbl = []; let firstHeading = true;
+  // The figure caption above an image names it; `onImage(file, caption)` may return a label to
+  // print above the image (the copy-paste manuscript names each image's file that way).
+  let lastCaption = null;
   // A list item whose text wraps onto indented lines ("1. To analyze ...\n   determine ...") is one item.
   let item = null;
   const flushItem = () => {
@@ -129,7 +132,8 @@ export function convert(md, { baseDir, firstHeadingPageBreak = true, references 
     if (!para.length) return;
     const text = para.join(' ').trim(); para = [];
     if (!text) return;
-    if (/^\*\*Table\s+[A-Z0-9]+(-\d+)?[A-Z]?\.\*\*/.test(text) || /^\*Figure\s+[A-Z0-9]+(-\d+)?[a-z]?\./.test(text)) out.push(caption(text));
+    if (/^\*Figure\s+[A-Z0-9]+(-\d+)?[a-z]?\./.test(text)) { lastCaption = text.replace(/^\*|\*$/g, ''); out.push(caption(text)); }
+    else if (/^\*\*Table\s+[A-Z0-9]+(-\d+)?[A-Z]?\.\*\*/.test(text)) out.push(caption(text));
     else if (references) out.push(body(text, { hanging: true, align: AlignmentType.LEFT, after: 240 }));
     else out.push(body(text));
   };
@@ -146,7 +150,14 @@ export function convert(md, { baseDir, firstHeadingPageBreak = true, references 
     flushTable();
     if (line === '---') { flushPara(); continue; }
     const img = line.match(/^!\[[^\]]*\]\(<?([^)>]+)>?\)$/);
-    if (img) { flushPara(); out.push(image(path.resolve(baseDir, img[1]))); continue; }
+    if (img) {
+      flushPara();
+      const file = path.resolve(baseDir, img[1]);
+      const label = onImage ? onImage(file, lastCaption) : null;
+      if (label) out.push(new Paragraph({ keepNext: true, alignment: AlignmentType.CENTER, children: [new TextRun({ text: label, font: FONT, size: 18, highlight: 'cyan' })] }));
+      out.push(image(file));
+      continue;
+    }
     const h = line.match(/^(#{1,4})\s+(.*)$/);
     if (h) {
       flushPara();

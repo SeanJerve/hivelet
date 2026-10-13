@@ -57,7 +57,7 @@ support decision-making.
 
 *Figure 1. Management Information System (MIS) framework, adapted from Laudon et al. (2026).*
 
-**[KEEP: the Figure 1 image from the current manuscript, p. 13. Before the defense, compare it with the functions-of-an-information-system figure in the 18th edition (2026); if they differ, redraw it from that edition.]**
+![Management Information System framework](figures/figure-2-1-mis-framework.png)
 
 Ghasemaghaei et al. (2018) find that a firm's data analytics competency, which includes the quality
 of its data, improves its decision-making performance. Pressman and Maxim (2020) explain that
