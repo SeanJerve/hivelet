@@ -67,11 +67,28 @@ function vercel(args, input) {
 }
 
 console.log(`Demo Supabase project: https://supabase.com/dashboard/project/${DEMO_SUPABASE_REF}/settings/api-keys`);
-const key = await readHidden('Paste the demo project\'s secret key (sb_secret_...), then Enter: ');
-if (!key.startsWith('sb_secret_')) {
-  console.error('That does not look like a secret key (it should start with sb_secret_). Nothing was changed.');
+console.log('Use the copy button beside the key: the text on screen is masked (sb_secret_abc•••) and will not work.');
+// Bracketed-paste markers and stray control characters arrive in raw mode on some terminals.
+const key = (await readHidden('Paste the demo project\'s secret key (sb_secret_...), then Enter: '))
+  .replace(/\u001b\[20[01]~/g, '')
+  .replace(/[^\x21-\x7e]/g, '');
+if (!/^sb_secret_[A-Za-z0-9_-]{20,}$/.test(key)) {
+  console.error(`That does not look like a whole secret key (got ${key.length} characters, ` +
+    `${key.startsWith('sb_secret_') ? 'right prefix' : 'not starting with sb_secret_'}). Nothing was changed.`);
   process.exit(1);
 }
+
+// Prove the key opens THIS project before saving it. An invalid key, or the live
+// project's key, is refused here instead of surfacing later as "Invalid API key".
+const probe = await fetch(`https://${DEMO_SUPABASE_REF}.supabase.co/rest/v1/rooms?select=id&limit=1`, {
+  headers: { apikey: key, Authorization: `Bearer ${key}` }
+});
+if (!probe.ok) {
+  console.error(`The demo project refused that key (HTTP ${probe.status}). Copy it again with the copy button ` +
+    'from the hivelet-demo project, not the live one. Nothing was changed.');
+  process.exit(1);
+}
+console.log('Key accepted by the demo database.');
 
 for (const [name, value] of [
   ['SUPABASE_SECRET_KEY', key],
