@@ -202,7 +202,7 @@ const Pulses: React.FC<{t: number}> = ({t}) => {
   const mats = useMemo(() => PULSES.map(([, , , c]) => new THREE.SpriteMaterial({map: glowTex, color: new THREE.Color(c).multiplyScalar(2.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false})), []);
   // the stranger's question comes in from the dark at the desk's far edge to the laptop first
   const ask = PULSES[PULSES.length - 1];
-  const inbound = new THREE.QuadraticBezierCurve3(new THREE.Vector3(-0.2, 0.05, -4.5), new THREE.Vector3(-0.9, 1.6, -2.5), PORT(VACANT));
+  const inbound = new THREE.QuadraticBezierCurve3(new THREE.Vector3(-7.5, 1.4, 2.5), new THREE.Vector3(-3.5, 2.2, -1.2), PORT(VACANT));
   return (
     <>
       {PULSES.map(([u, a, b, , rev], k) => {
@@ -226,10 +226,11 @@ const K: number[][] = [
   [AT.connect + 1.6, 0.4, 2.55, 5.3, -1.1, 0.45, 0.2, 0.012], [AT.gcash + 0.2, 0.2, 2.2, 4.9, -1.15, 0.5, 0.2, 0.012],
   [AT.gcash + 1.0, -0.4, 1.25, 3.4, -1.45, 0.55, 0.25, 0.018], [AT.repair - 0.3, -0.5, 1.2, 3.3, -1.5, 0.55, 0.25, 0.018],
   [AT.repair + 0.3, -1.6, 0.95, 2.9, -2.45, 0.6, 0.75, 0.026], [AT.ask - 0.4, -1.7, 1.0, 2.85, -2.45, 0.62, 0.75, 0.026],
-  [AT.ask + 0.2, -0.6, 1.9, -2.6, -1.4, 0.6, 0.2, 0.016], [AT.ask + 2.0, -2.0, 1.2, 3.2, -2.6, 0.62, 0.8, 0.024], [AT.records - 0.2, -1.9, 1.15, 3.1, -2.6, 0.6, 0.8, 0.024],
+  [AT.ask + 0.2, 0.9, 2.1, 4.7, -2.9, 0.75, 0.6, 0.012], [AT.ask + 1.3, 0.7, 2.0, 4.5, -2.8, 0.7, 0.6, 0.012],
+  [AT.ask + 2.2, -2.0, 1.2, 3.2, -2.6, 0.62, 0.8, 0.024], [AT.records - 0.2, -1.9, 1.15, 3.1, -2.6, 0.6, 0.8, 0.024],
   [AT.records + 0.6, 1.0, 1.85, 5.4, -0.9, 0.6, 0.0, 0.012], [AT.proof - 0.2, 0.8, 1.7, 5.2, -0.9, 0.62, 0.0, 0.012],
   [AT.proof + 0.4, -0.2, 1.25, 4.5, -1.0, 0.7, -0.2, 0.014], [AT.close - 0.4, -0.1, 1.3, 4.4, -1.0, 0.72, -0.2, 0.014],
-  [AT.close + 1.4, -1.0, 2.2, 4.4, -1.1, 0.5, 0.0, 0.012], [I_END, -1.25, 4.3, 2.6, -1.2, 0.0, 0.2, 0.012],
+  [AT.close + 1.4, 0.3, 1.5, 4.6, -0.9, 0.78, -0.3, 0.012], [I_END, 0.6, 1.9, 5.6, -0.9, 0.72, -0.3, 0.01],
 ];
 const camAt = (t: number) => {
   let i = 0;
