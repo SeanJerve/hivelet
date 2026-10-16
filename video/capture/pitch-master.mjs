@@ -1,12 +1,12 @@
-// Masters the pitch's sound: takes out/pitch-raw.mp4 (Remotion's render: voice, score and
-// effects mixed), brings the mix to -15 LUFS with a look-ahead peak limiter (ceiling
-// -1.5 dBFS), and writes out/pitch.mp4 with the picture copied untouched.
+// Masters a pitch's sound: takes out/<name>-raw.mp4 (Remotion's render, everything mixed),
+// brings the mix to -15 LUFS with a look-ahead peak limiter (ceiling -1.5 dBFS), and writes
+// out/<name>.mp4 with the picture copied untouched. <name> is pitch (the default) or paper.
 //
 // Remotion sums its audio tracks with no limiter, so the score is written with headroom
 // for the voice and the effects on top (capture/pitch-score.mjs); this is where that
 // headroom is given back. The loudness is measured the BS.1770 way (K-weighted, gated).
 //
-//   node capture/pitch-master.mjs          (after: remotion render ... Pitch out/pitch-raw.mp4)
+//   node capture/pitch-master.mjs [name]   (after: remotion render ... out/<name>-raw.mp4)
 
 import {execFileSync} from 'node:child_process';
 import {readFileSync, writeFileSync, rmSync} from 'node:fs';
@@ -14,8 +14,9 @@ import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const RAW = join(root, 'out', 'pitch-raw.mp4'), OUT = join(root, 'out', 'pitch.mp4');
-const PCM = join(root, 'out', 'pitch-master.wav');
+const NAME = process.argv[2] || 'pitch';
+const RAW = join(root, 'out', `${NAME}-raw.mp4`), OUT = join(root, 'out', `${NAME}.mp4`);
+const PCM = join(root, 'out', `${NAME}-master.wav`);
 const SR = 48000, TARGET = -15, CEILING = Math.pow(10, -1.5 / 20);
 const ffmpeg = (args) => execFileSync('npx', ['remotion', 'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', ...args], {cwd: root, stdio: ['ignore', 'inherit', 'inherit']});
 

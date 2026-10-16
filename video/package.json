@@ -10,6 +10,7 @@
     "render": "remotion render src/index.ts Hivelet out/hivelet.mp4",
     "score:pitch": "node capture/pitch-score.mjs",
     "render:pitch": "node capture/pitch-score.mjs && remotion render src/index.ts Pitch out/pitch-raw.mp4 && node capture/pitch-master.mjs",
+    "render:paper": "node capture/paper-score.mjs && remotion render src/index.ts PaperPitch out/paper-raw.mp4 && node capture/pitch-master.mjs paper",
     "storyboard": "node capture/storyboard.mjs"
   },
   "dependencies": {

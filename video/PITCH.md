@@ -1,5 +1,8 @@
 # The one-minute pitch
 
+A second pitch, made entirely of paper (a pop-up book, a collage, a cutting mat, stamps), is
+`PAPER.md`.
+
 `out/pitch.mp4`: 60 seconds, 1920×1080, 60 fps, with a voice. It is the composition `Pitch`
 in `src/Root.tsx`, beside the defense film (`Hivelet`, `SCENES.md`). The film shows the app
 screen by screen; the pitch is an argument in three acts, and its pictures are motion
