@@ -1,6 +1,12 @@
-# The screen pitches (versions A to I)
+# The screen pitches (versions A to L)
 
-Nine short pitches made after the reference Sean sent on 16 October 2026: a TikTok
+**Use J, K or L (and E).** On 16 October Sean clarified that the reference shows its video on a
+laptop only because that is how it was filmed: the pitch itself should be an ordinary
+landscape video, full frame, not a video shown on a laptop or a phone. Versions A to D and F to
+I put the video on a device and are superseded; they stay in the history. J, K and L are the
+full-frame versions, and E was full frame already.
+
+Twelve short pitches made after the reference Sean sent on 16 October 2026: a TikTok
 (@motionlovee) in which a laptop sits on a glossy black desk in a dark room and its screen is
 the only light. The screen is a quiet editorial page: a mono caption typed with the voice and
 a block cursor, heavy grotesk words, a serif italic for the hard moment ("No."), thin line
@@ -24,6 +30,9 @@ H and I carry the same realism into two more ideas.
 | F | `Objects` | 1080×1920, 57.5 s | WebGL. Real objects on the screen's page, lit and shadowed: a brass key, the rack of 33 hooks (32 keys taken, 1 vacant), the USB drive, coins, the invoice book, the chat; then the Hivelet mark in enamel, a ledger sheet that adds itself up, a phone that takes GCash, a spanner pushing a repair card to done, a paper dart, a stack of 937 sheets, a padlock that shuts on A+, a gauge that stops at 4.53 | af_heart + af_nicole |
 | G | `Desk` | 1920×1080, 56 s | WebGL. The objects are on her desk beside the laptop, lit by its screen, shot close with a depth-of-field lens; when she opens Hivelet each one lifts off the desk and goes into the screen, which becomes the part of Hivelet that replaced it. Only the keys are left: "Same desk. Less on it." | af_bella + bf_emma |
 | H | `Receipt` | 1080×1920, 53.5 s | WebGL. A thermal printer prints the story as a receipt, each row as the voice reaches it (the place, BEFORE, NOW: HIVELET, the proof, TOTAL 1 SYSTEM); the paper curls out of the slot toward her laptop, glowing at the far end. The receipt is torn off and the lens racks focus to the laptop: "Keep the receipt." The reference's typed caption becomes the print | am_michael + am_puck |
+| **J** | `Full` | 1920×1080, 57.5 s | **Full frame.** F's real objects directly on full editorial pages: no laptop, no room. The objects are WebGL on a transparent layer casting shadows onto the page; the page colour, the large type, the labels, the leader lines and the typed caption are HTML | af_heart + af_nicole |
+| **K** | `ReceiptWide` | 1920×1080, 54.5 s | **Full frame.** H's receipt printer and its story, shot close, landscape, with nothing else in the picture: behind it a soft haze of light takes the story's colour. Ends on a full-frame card | am_michael + am_puck |
+| **L** | `ModelWide` | 1920×1080, 50.5 s | **Full frame.** I's model of her building with no laptop: the threads of light converge on the enamel Hivelet mark standing on the desk, small labels name what runs along them, and the proof cuts to full-colour pages. Ends on a full-frame card | af_heart + af_sarah |
 | I | `Model` | 1920×1080, 49.5 s | WebGL. A white card model of her building (after the photograph: two wings, cantilevered slabs, blue railings, the green awning) beside the laptop. 32 of its 33 windows light; grey threads break off while the old way is told; then Hivelet joins every room to the laptop with light, and rent, a repair and a stranger's question run along the threads | af_heart + af_sarah |
 
 ## The facts each one states
@@ -99,8 +108,11 @@ node capture/pitch-master.mjs objects
 | G | `capture/desk-score.mjs` | `Desk out/desk-raw.mp4 --gl=angle --timeout=120000` | `desk` |
 | H | `capture/receipt-score.mjs` | `Receipt out/receipt-raw.mp4 --gl=angle --timeout=120000` | `receipt` |
 | I | `capture/model-score.mjs` | `Model out/model-raw.mp4 --gl=angle --timeout=120000` | `model` |
+| J | `capture/objects-score.mjs` (F's) | `Full out/full-raw.mp4 --gl=angle --timeout=120000` | `full` |
+| K | `capture/receipt-score.mjs` (H's) | `ReceiptWide out/receiptwide-raw.mp4 --gl=angle --timeout=120000` | `receiptwide` |
+| L | `capture/model-score.mjs` (I's) | `ModelWide out/modelwide-raw.mp4 --gl=angle --timeout=120000` | `modelwide` |
 
 F to I render in software WebGL at about 1.8 s a frame on four cores, so each takes about
-an hour and a half. Stills for checking: `node capture/pitch-frames.mjs 12.5 --comp=Desk
+an hour and a half. J, with no room to light or reflect, takes about 40 minutes. Stills for checking: `node capture/pitch-frames.mjs 12.5 --comp=Desk
 --gl=angle --timeout=180`. The scores are gitignored (`public/*/score.wav`) and rebuilt by
 their scripts; the MP4s stay out of the repository.
