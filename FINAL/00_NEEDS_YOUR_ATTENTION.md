@@ -70,7 +70,9 @@ or the two lists will not find them.
 
 ---
 
-## Ready when you ask
+## For the team to study (written 16 October 2026)
 
-- The defense **Q&A guide** (likely panel questions, with answers that point to the paper).
-- The **reviewers** for the team's all-nighters.
+- `STUDY_GUIDE_TEAM_REVIEWER.md`: the whole capstone in one sitting, the numbers to know, a tour of
+  every screen, tips for the defense and the demo, and a 25-question self-quiz.
+- `STUDY_GUIDE_DEFENSE_QA.md`: the panel's likely questions, each with a short answer and the section
+  or table that proves it, including the hard ones.

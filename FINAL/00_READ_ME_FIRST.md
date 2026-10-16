@@ -18,8 +18,11 @@ the panel-style read of 13 October 2026, and the two IT 124 course guides. Retyp
 into the Word manuscript in the order below. Do not compare against the old Word file line by line:
 these files replace Chapters 1 to 5, the Abstract and the References entirely.
 
-**Two other files here:** `QUESTIONS_TO_FINALIZE.md` (what is still needed, Section 1) and
-`STUDY_GUIDE_REFERENCES.md` (every reference: what it found, where the paper uses it, and what to
+**Other files here:** `QUESTIONS_TO_FINALIZE.md` (what is still needed, Section 1), and four study
+guides for the defense. **Start with `STUDY_GUIDE_TEAM_REVIEWER.md`**: the whole capstone in one
+sitting, the numbers to know, a tour of every screen, tips for the defense and a self-quiz. Then
+`STUDY_GUIDE_DEFENSE_QA.md` (the panel's likely questions, each answered with the section that proves
+it), `STUDY_GUIDE_REFERENCES.md` (every reference: what it found, where the paper uses it, and what to
 say if the panel asks), and `STUDY_GUIDE_CODE.md` (every feature: its screen, endpoint, code and
 tables, how to debug it, and the questions a panel asks about the code).
 

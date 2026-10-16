@@ -79,6 +79,8 @@ here:
 | :--- | :--- |
 | `FINAL/` | **The manuscript to retype into Word**: every chapter with every fix applied, numbered by chapter. Read `00_READ_ME_FIRST.md`. Never edit the numbered files; edit `FINAL/_src/` or `docs/FINAL MANUSCRIPT/` and run `node scripts/manuscript/build-final.mjs` |
 | `FINAL/QUESTIONS_TO_FINALIZE.md` | **What the paper still needs**, Section 1. When Sean asks what is left, start here |
+| `FINAL/STUDY_GUIDE_TEAM_REVIEWER.md` | **For the whole team**: the capstone in one sitting, the numbers, a tour of every screen, defense tips, a self-quiz |
+| `FINAL/STUDY_GUIDE_DEFENSE_QA.md` | The panel's likely questions, each answered with the section that proves it |
 | `FINAL/STUDY_GUIDE_REFERENCES.md` | Every reference: what it found and where the paper uses it, for the defense |
 | `BLOCKED_FOR_SEAN.md` | The queue. **Add to it rather than stopping**, and read it before starting |
 | `docs/13_AUDIT_JUDGEMENT_LOG.md` | The reasoning, the defect classes, the deliberate calls |
