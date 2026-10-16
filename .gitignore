@@ -125,3 +125,4 @@ scripts/field-tests/shots/
 # The skills under .claude/skills/ still load for Claude Code from disk.
 .claude/skills/
 skills-lock.json
+video/public/screen/score.wav
