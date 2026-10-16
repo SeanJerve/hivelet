@@ -166,6 +166,10 @@ export const Laptop: React.FC<{screen: THREE.Texture; open?: number; dim?: numbe
   );
 };
 
+// How much the laptop's own surfaces reflect an environment, when a scene has one (version G
+// lights its desk objects with one; the laptop should stay lit by its screen).
+export const laptopEnv = (k: number) => { for (const m of [alu, aluDark, keyMat, wellMat, padMat, bezelMat]) m.envMapIntensity = k; };
+
 // Where the screen sits in world space (centre and normal), for its light.
 export const screenFrame = (open = 1) => {
   const a = lidAngle(open);

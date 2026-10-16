@@ -1,0 +1,24 @@
+{
+  "voice": {"af_bella": 0.7, "bf_emma": 0.3},
+  "speed": 0.97,
+  "note": "Version G: her desk, in WebGL. The things the business ran on sit beside the laptop, lit by its screen; once Hivelet opens, each one goes into the screen. Facts from FINAL/: 33 units (Section 1.4); the old way (Section 4.1.1, Table 4-1: income and expense sheets on a USB flash drive, invoices in a paper book, rent in cash, requests by messaging application, not recorded); both ledgers keep her workbook's layout, her own invoice numbers, never made up, never twice for the same unit and month, GCash entering Pending Verification until she verifies it (4.2.4); repairs to completion (4.2.5); inquiries with no account (4.2.3); 937 rows (Chapter 4); A+ (4.4.4); 4.53 (Table 4-17).",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "desk", "text": "This is where a boarding house was run."},
+    {"id": "rooms", "text": "Thirty-three rooms, and one person keeping track."},
+    {"id": "usb", "text": "Her income and expenses lived on one USB drive."},
+    {"id": "book", "text": "Invoices, written by hand in a paper book."},
+    {"id": "cash", "text": "Rent came in cash."},
+    {"id": "chat", "text": "Repairs came by chat, and scrolled away."},
+    {"id": "open", "text": "Then she opened Hivelet."},
+    {"id": "ledger", "text": "Her income and expense sheets, in her own layout, adding themselves up."},
+    {"id": "invoice", "text": "Her own invoice numbers, checked for repeats."},
+    {"id": "gcash", "text": "Tenants pay with GCash, and she verifies it."},
+    {"id": "repairs", "text": "Repairs are tracked, from request to done."},
+    {"id": "ask", "text": "Visitors ask about a vacant room. No account needed."},
+    {"id": "records", "text": "Nine hundred thirty-seven of her records, moved in."},
+    {"id": "secure", "text": "Security, A-plus."},
+    {"id": "quality", "text": "Quality, four point five three out of five."},
+    {"id": "close", "text": "Hivelet. Same desk. Less on it."}
+  ]
+}
