@@ -1,0 +1,20 @@
+{
+  "voice": "af_heart",
+  "speed": 0.96,
+  "note": "Version E: full-frame editorial motion design (the reference's screen language, without the room), built on the word one. Facts from FINAL/: 33 units (Section 1.4); the old way (Section 4.1.1, Table 4-1); the ledger in her layout and GCash (4.2.4); repairs (4.2.5); inquiries with no account (4.2.3); 937 rows (Chapter 4); A+ (4.4.4); 4.53 (Table 4-17).",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "doors", "text": "Thirty-three doors. One landlady."},
+    {"id": "four", "text": "A spreadsheet. A USB drive. A paper book. A chat."},
+    {"id": "none", "text": "Four places, and none of them talk to each other."},
+    {"id": "is", "text": "Hivelet makes it one."},
+    {"id": "ledger", "text": "One ledger, in her own layout."},
+    {"id": "phone", "text": "One phone for every tenant, with GCash."},
+    {"id": "board", "text": "One board for every repair."},
+    {"id": "page", "text": "One page for every visitor. No account needed."},
+    {"id": "records", "text": "Nine hundred thirty-seven records, moved in."},
+    {"id": "secure", "text": "Security, A-plus."},
+    {"id": "quality", "text": "Quality, four point five three out of five."},
+    {"id": "close", "text": "Hivelet. One connected system, for the Fe Galang Da Silva Boarding House."}
+  ]
+}
