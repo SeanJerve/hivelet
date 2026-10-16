@@ -22,46 +22,46 @@ export const F_END = 57.5;
 export const F_TOTAL = Math.round(F_END * FPS);
 const OFF = 56.1; // the screen goes dark
 
-type Id = keyof typeof AT;
-const LINE = Object.fromEntries(SCRIPT.lines.map((l) => [l.id, l.text])) as Record<Id, string>;
+export type Id = keyof typeof AT;
+export const LINE = Object.fromEntries(SCRIPT.lines.map((l) => [l.id, l.text])) as Record<Id, string>;
 
 // ---- The scenes on the screen, back to back ------------------------------------------------------
-const SCENES = [
+export const SCENES = [
   ['key', 0], ['rack', 3.45], ['usb', 9.75], ['cash', 12.25], ['book', 13.85], ['chat', 15.95], ['talk', 18.05], ['no', 20.7],
   ['built', 22.4], ['ledger', 24.8], ['pay', 28.8], ['repair', 32.3], ['ask', 35.4], ['records', 40.3], ['secure', 44.4], ['quality', 47.0], ['close', 50.8],
 ] as const;
-type Scene = typeof SCENES[number][0];
-const sceneAt = (t: number): Scene => { let s: Scene = 'key'; for (const [id, at] of SCENES) if (t >= at) s = id; return s; };
+export type Scene = typeof SCENES[number][0];
+export const sceneAt = (t: number): Scene => { let s: Scene = 'key'; for (const [id, at] of SCENES) if (t >= at) s = id; return s; };
 
-const BG: Record<Scene, string> = {
+export const BG: Record<Scene, string> = {
   key: PAPER, rack: PAPER, usb: CHAR, cash: PAPER, book: PAPER, chat: PAPER, talk: PAPER, no: '#101010', built: PAPER,
   ledger: PAPER, pay: CHAR, repair: PAPER, ask: CHAR, records: BLUE, secure: CORAL, quality: PAPER, close: PAPER,
 };
-const DARK = new Set<Scene>(['usb', 'no', 'pay', 'ask']);
-const GREEN_DEEP = '#17603f';
+export const DARK = new Set<Scene>(['usb', 'no', 'pay', 'ask']);
+export const GREEN_DEEP = '#17603f';
 
 // Captions: the line being spoken stays typed on the page until the next one starts.
-const ACCENT: Partial<Record<Id, string[]>> = {
+export const ACCENT: Partial<Record<Id, string[]>> = {
   key: ['key'], rack: ['thirty-three'], out: ['Thirty-two'], usb: ['this'], cash: ['cash'], book: ['paper'], chat: ['chat'],
   talk: ['talk'], built: ['Hivelet'], ledger: ['adds', 'itself', 'up'], pay: ['GCash'], repair: ['done'], ask: ['No', 'account'],
   records: ['Nine', 'hundred', 'thirty-seven'], secure: ['A-plus'], quality: ['four', 'point', 'five', 'three'], close: ['Hivelet'],
 };
-const IDS = Object.keys(AT) as Id[];
-const lineAt = (t: number): Id | null => { let s: Id | null = null; for (const id of IDS) if (t >= AT[id] - 0.05) s = id; return s; };
+export const IDS = Object.keys(AT) as Id[];
+export const lineAt = (t: number): Id | null => { let s: Id | null = null; for (const id of IDS) if (t >= AT[id] - 0.05) s = id; return s; };
 
 // ---- Motion helpers --------------------------------------------------------------------------------
-const sp = (t: number, at: number, cfg: {damping?: number; stiffness?: number; mass?: number} = {}) =>
+export const sp = (t: number, at: number, cfg: {damping?: number; stiffness?: number; mass?: number} = {}) =>
   spring({frame: (t - at) * FPS, fps: FPS, config: {damping: 14, stiffness: 140, mass: 1, ...cfg}});
 // A drop onto the page from height h, landing with a small bounce.
-const drop = (t: number, at: number, h = 8) => (t < at ? h : h * (1 - sp(t, at, {damping: 9, stiffness: 120})));
-const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
-const seg = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
+export const drop = (t: number, at: number, h = 8) => (t < at ? h : h * (1 - sp(t, at, {damping: 9, stiffness: 120})));
+export const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+export const seg = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
 const rnd = (i: number) => { const x = Math.sin(i * 91.7 + 13.1) * 43758.5453; return x - Math.floor(x); };
 
 // =====================================================================================================
 // The page's objects, scene by scene
 // =====================================================================================================
-const KeyScene: React.FC<{t: number}> = ({t}) => (
+export const KeyScene: React.FC<{t: number}> = ({t}) => (
   <Key position={[0.4, 0.55, 0.25 + drop(t, 0.85, 9)]} rotation={[0, 0, lerp(-1.4, -0.32, sp(t, 0.85, {damping: 20})) + (t - 0.85) * 0.03]} scale={1.55} />
 );
 
@@ -89,7 +89,7 @@ const Board: React.FC = () => {
     </group>
   );
 };
-const RackScene: React.FC<{t: number}> = ({t}) => (
+export const RackScene: React.FC<{t: number}> = ({t}) => (
   <group>
     <Board />
     {RACK.map((_, i) => {
@@ -110,12 +110,12 @@ const RackScene: React.FC<{t: number}> = ({t}) => (
   </group>
 );
 
-const UsbScene: React.FC<{t: number}> = ({t}) => (
+export const UsbScene: React.FC<{t: number}> = ({t}) => (
   <Usb position={[0.2, 0.5, 0.3 + drop(t, 9.85, 9)]} rotation={[0, 0, lerp(0.6, -0.22, sp(t, 9.85, {damping: 20}))]} scale={1.7} />
 );
 
 const COINS = [[-3.2, 1.6, 1.15, 0], [-0.6, 2.3, 1.0, 1], [1.9, 1.2, 1.2, 0], [4.3, 2.0, 0.95, 1], [-4.6, -1.0, 1.0, 1], [-1.6, -0.6, 1.25, 0], [1.0, -1.4, 1.0, 1], [3.6, -0.6, 1.1, 0], [5.6, 0.3, 0.9, 1]] as const;
-const CashScene: React.FC<{t: number}> = ({t}) => (
+export const CashScene: React.FC<{t: number}> = ({t}) => (
   <group>
     {COINS.map(([x, y, r, gold], i) => {
       const at = 12.3 + i * 0.07;
@@ -125,7 +125,7 @@ const CashScene: React.FC<{t: number}> = ({t}) => (
   </group>
 );
 
-const BookScene: React.FC<{t: number}> = ({t}) => (
+export const BookScene: React.FC<{t: number}> = ({t}) => (
   <InvoiceBook position={[0.9, 0.55, drop(t, 13.9, 6)]} rotation={[0, 0, -0.07]} scale={1.22} open={inOut(seg(t, 14.25, 14.95))} />
 );
 
@@ -184,11 +184,11 @@ const PhoneOn: React.FC<{t: number; draw: (t: number) => (c: CanvasRenderingCont
   const b = buzz !== undefined && t > buzz && t < buzz + 0.45 ? Math.sin((t - buzz) * 120) * 0.03 : 0;
   return <Phone {...rest} screen={tex} rotation={[0, 0, ((rest.rotation as number[] | undefined)?.[2] ?? 0) + b]} />;
 };
-const ChatScene: React.FC<{t: number}> = ({t}) => (
+export const ChatScene: React.FC<{t: number}> = ({t}) => (
   <PhoneOn t={t} draw={chatScreen} buzz={16.55} position={[0.4, 0.45, 0.16 + drop(t, 15.98, 7)]} rotation={[0, 0, 0.1]} scale={1.22} />
 );
 
-const TalkScene: React.FC<{t: number}> = ({t}) => (
+export const TalkScene: React.FC<{t: number}> = ({t}) => (
   <group>
     <Usb position={[-4.3, 2.4, 0.3 + drop(t, 18.08, 6)]} rotation={[0, 0, -0.18]} scale={0.95} />
     {[[3.6, 2.6, 0], [4.9, 2.0, 1], [4.4, 3.3, 1]].map(([x, y, g], i) => <Coin key={i} mat={g ? M.brass : M.steel} position={[x, y, 0.1 + drop(t, 18.14 + i * 0.04, 6)]} rotation={[0, 0, i]} />)}
@@ -197,7 +197,7 @@ const TalkScene: React.FC<{t: number}> = ({t}) => (
   </group>
 );
 
-const BuiltScene: React.FC<{t: number}> = ({t}) => (
+export const BuiltScene: React.FC<{t: number}> = ({t}) => (
   <Mark3D position={[-3.2, 0.55, 0.1 + drop(t, 22.55, 10)]} rotation={[0, 0, lerp(-0.5, 0, sp(t, 22.55, {damping: 16}))]} scale={1.05} />
 );
 
@@ -238,12 +238,12 @@ const ledgerSheet = (t: number) => (c: CanvasRenderingContext2D) => {
   c.textAlign = 'left';
   void sum;
 };
-const LedgerScene: React.FC<{t: number}> = ({t}) => {
+export const LedgerScene: React.FC<{t: number}> = ({t}) => {
   const tex = useCanvas(1200, 1560, ledgerSheet(t), Math.round(t * FPS));
   return <Sheet w={6.3} h={8.19} tex={tex} position={[0.3, 0.35, 0.05 + drop(t, 24.85, 5)]} rotation={[0, 0, lerp(0.25, 0.035, sp(t, 24.85, {damping: 22}))]} />;
 };
 
-const PayScene: React.FC<{t: number}> = ({t}) => {
+export const PayScene: React.FC<{t: number}> = ({t}) => {
   const ck = sp(t, 30.35, {damping: 12, stiffness: 150});
   const sink = ease(seg(t, 30.85, 31.1));
   return (
@@ -261,7 +261,7 @@ const repairCard = (done: boolean) => (c: CanvasRenderingContext2D) => {
   c.fillStyle = done ? '#1f9a62' : '#efe9dc'; roundRect(c, 44, 290, done ? 170 : 240, 64, 32); c.fill();
   c.fillStyle = done ? '#fff' : '#6b5a2e'; c.font = `600 28px ${GROT}`; c.fillText(done ? 'Done ✓' : 'Requested', 70, 332);
 };
-const RepairScene: React.FC<{t: number}> = ({t}) => {
+export const RepairScene: React.FC<{t: number}> = ({t}) => {
   const done = t >= 34.55;
   const tex = useCanvas(720, 420, repairCard(done), done);
   const x = lerp(lerp(-5.2, 0, inOut(seg(t, 33.0, 33.55))), 5.2, inOut(seg(t, 33.9, 34.5)));
@@ -278,7 +278,7 @@ const RepairScene: React.FC<{t: number}> = ({t}) => {
   );
 };
 
-const AskScene: React.FC<{t: number}> = ({t}) => {
+export const AskScene: React.FC<{t: number}> = ({t}) => {
   const k = inOut(seg(t, 35.55, 37.0));
   const curve = new THREE.CubicBezierCurve3(new THREE.Vector3(-12, 7, 5), new THREE.Vector3(-6, 6, 4), new THREE.Vector3(-2, -1, 2), new THREE.Vector3(0.6, 0.6, 0.45));
   const p = curve.getPoint(k), d = curve.getTangent(Math.min(0.999, k));
@@ -288,12 +288,12 @@ const AskScene: React.FC<{t: number}> = ({t}) => {
   );
 };
 
-const RecordsScene: React.FC<{t: number}> = ({t}) => {
+export const RecordsScene: React.FC<{t: number}> = ({t}) => {
   const n = Math.round(937 * ease(seg(t, 40.45, 42.1)));
   return <Stack n={Math.max(1, n)} max={937} drop={t < 42.1 ? 0.3 : 0.3 * (1 - ease(seg(t, 42.1, 42.4)))} position={[3.1, -0.4, 0]} rotation={[0, 0, -0.12]} />;
 };
 
-const SecureScene: React.FC<{t: number}> = ({t}) => {
+export const SecureScene: React.FC<{t: number}> = ({t}) => {
   const face = useCanvas(512, 420, (c) => {
     c.fillStyle = 'rgba(70,45,10,0.92)'; c.font = `800 250px ${GROT}`; c.textAlign = 'center'; c.fillText('A+', 256, 270);
     c.beginPath(); c.arc(256, 345, 26, 0, Math.PI * 2); c.fill(); c.fillRect(246, 345, 20, 52);
@@ -302,7 +302,7 @@ const SecureScene: React.FC<{t: number}> = ({t}) => {
   return <Padlock shut={shut} face={face} position={[0.3, -0.1, drop(t, 44.45, 7)]} rotation={[0, 0, lerp(0.3, -0.06, sp(t, 44.45, {damping: 20}))]} scale={1.55} />;
 };
 
-const QualityScene: React.FC<{t: number}> = ({t}) => {
+export const QualityScene: React.FC<{t: number}> = ({t}) => {
   const dial = useCanvas(1024, 1024, (c) => {
     c.fillStyle = '#f7f6f1'; c.beginPath(); c.arc(512, 512, 506, 0, Math.PI * 2); c.fill();
     const ang = (v: number) => THREE.MathUtils.degToRad(-(210 - (v / 5) * 240));
@@ -320,7 +320,7 @@ const QualityScene: React.FC<{t: number}> = ({t}) => {
   return <Gauge value={v} dial={dial} position={[-3.3, 0.45, drop(t, 47.05, 6)]} scale={1.1} />;
 };
 
-const CloseScene: React.FC<{t: number}> = ({t}) => (
+export const CloseScene: React.FC<{t: number}> = ({t}) => (
   <group>
     <Mark3D position={[-4.6, 1.25, 0.1 + drop(t, 50.85, 10)]} rotation={[0, 0, lerp(-0.5, 0, sp(t, 50.85, {damping: 16}))]} scale={0.8} />
     {t > 51.75 ? <Key position={[-4.5, -2.0, 0.25 + drop(t, 51.8, 9)]} rotation={[0, 0, lerp(-1.4, -0.3, sp(t, 51.8, {damping: 20}))]} scale={0.7} /> : null}

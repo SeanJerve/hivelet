@@ -8,7 +8,7 @@
 import {bundle} from '@remotion/bundler';
 import {renderStill, selectComposition} from '@remotion/renderer';
 import {chromium} from 'playwright';
-import {mkdirSync, readFileSync} from 'node:fs';
+import {mkdirSync, readFileSync, rmSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';
 
@@ -48,4 +48,6 @@ await page.waitForTimeout(200);
 const sheet = id === 'Pitch' ? 'pitch-frames.png' : `${id.toLowerCase()}-frames.png`;
 await page.screenshot({path: join(root, 'out', sheet), fullPage: true});
 await browser.close();
+// Remotion leaves each bundle in the temp folder; a day of stills filled the disk with them.
+rmSync(serveUrl, {recursive: true, force: true});
 console.log(shots.length, `stills -> out/${sheet}`);

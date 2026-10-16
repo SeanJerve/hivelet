@@ -15,6 +15,7 @@ import {Objects, FW, FH, F_TOTAL} from './objects/Objects';
 import {DeskFilm, GW, GH, G_TOTAL} from './desk/DeskFilm';
 import {ReceiptFilm, HW, HH, H_TOTAL} from './receipt/ReceiptFilm';
 import {ModelFilm, IW, IH, I_TOTAL} from './model/ModelFilm';
+import {Full, JW, JH, J_TOTAL} from './full/Full';
 
 export const Root: React.FC = () => (
   <>
@@ -30,5 +31,6 @@ export const Root: React.FC = () => (
     <Composition id="Desk" component={DeskFilm} durationInFrames={G_TOTAL} fps={60} width={GW} height={GH} />
     <Composition id="Receipt" component={ReceiptFilm} durationInFrames={H_TOTAL} fps={60} width={HW} height={HH} />
     <Composition id="Model" component={ModelFilm} durationInFrames={I_TOTAL} fps={60} width={IW} height={IH} />
+    <Composition id="Full" component={Full} durationInFrames={J_TOTAL} fps={60} width={JW} height={JH} />
   </>
 );

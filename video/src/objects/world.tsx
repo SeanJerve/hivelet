@@ -226,7 +226,7 @@ export const Halo: React.FC<{color: THREE.Color; level: number; open?: number}> 
 // ---- The screen: its own scene, rendered to a texture ------------------------------------------
 // A photographer's studio to reflect in metal: dark, with two softboxes and a strip light, so
 // brass and chrome show highlights and dark edges rather than a flat room.
-const studio = () => {
+export const studio = () => {
   const s = new THREE.Scene();
   s.background = new THREE.Color('#0d0d0e');
   const box = (w: number, h: number, pos: [number, number, number], i: number, color = '#ffffff') => {
