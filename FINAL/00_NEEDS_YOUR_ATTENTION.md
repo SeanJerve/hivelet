@@ -76,3 +76,5 @@ or the two lists will not find them.
   every screen, tips for the defense and the demo, and a 25-question self-quiz.
 - `STUDY_GUIDE_DEFENSE_QA.md`: the panel's likely questions, each with a short answer and the section
   or table that proves it, including the hard ones.
+- `DEFENSE_PRESENTATION_SCRIPT.md`: what to say on each of the 20 slides, in four speaking blocks
+  with timings and hand-overs. Write the four speakers' names in its table.
