@@ -13,6 +13,7 @@ import {TenantPitch, TW, TH, T_TOTAL} from './tenant/TenantPitch';
 import {One, ONE_TOTAL} from './one/One';
 import {Objects, FW, FH, F_TOTAL} from './objects/Objects';
 import {DeskFilm, GW, GH, G_TOTAL} from './desk/DeskFilm';
+import {ReceiptFilm, HW, HH, H_TOTAL} from './receipt/ReceiptFilm';
 
 export const Root: React.FC = () => (
   <>
@@ -26,5 +27,6 @@ export const Root: React.FC = () => (
     <Composition id="One" component={One} durationInFrames={ONE_TOTAL} fps={60} width={W} height={H} />
     <Composition id="Objects" component={Objects} durationInFrames={F_TOTAL} fps={60} width={FW} height={FH} />
     <Composition id="Desk" component={DeskFilm} durationInFrames={G_TOTAL} fps={60} width={GW} height={GH} />
+    <Composition id="Receipt" component={ReceiptFilm} durationInFrames={H_TOTAL} fps={60} width={HW} height={HH} />
   </>
 );

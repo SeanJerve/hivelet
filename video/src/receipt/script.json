@@ -1,0 +1,18 @@
+{
+  "voice": {"am_michael": 0.5, "am_puck": 0.5},
+  "speed": 0.98,
+  "note": "Version H: the story printed as a receipt on a thermal printer, the paper running across a dark desk toward her laptop. Facts from FINAL/: the name, Legazpi, 33 units (Section 1.4), 32 occupied (CLAUDE.md standing facts); the old way (Section 4.1.1, Table 4-1); the ledgers in her layout, her own invoice numbers checked, GCash Pending Verification until she verifies it (4.2.4); repairs to completion (4.2.5); inquiries with no account (4.2.3); 937 rows (Chapter 4); A+ (4.4.4); 4.53 (Table 4-17).",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "intro", "text": "Here is the receipt for running a boarding house."},
+    {"id": "place", "text": "The Fe Galang Da Silva Boarding House, in Legazpi City. Thirty-three units, thirty-two lived in."},
+    {"id": "before", "text": "Before. Her income and expenses, on one USB drive. The only copy."},
+    {"id": "pieces", "text": "Invoices, in a paper book. Rent, in cash. Repairs, in a chat. Inquiries, nowhere."},
+    {"id": "now", "text": "Now. Hivelet."},
+    {"id": "ledger", "text": "Her ledger, in her own layout. Her invoice numbers, checked for repeats."},
+    {"id": "online", "text": "GCash, verified by her. Repairs, from request to done. Inquiries, with no account."},
+    {"id": "proof", "text": "Nine hundred thirty-seven records, moved in. Security, A-plus. Quality, four point five three, out of five."},
+    {"id": "total", "text": "Total: one system."},
+    {"id": "close", "text": "Hivelet. Keep the receipt."}
+  ]
+}
