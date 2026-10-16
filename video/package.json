@@ -8,6 +8,8 @@
     "score": "node capture/score.mjs",
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts Hivelet out/hivelet.mp4",
+    "score:pitch": "node capture/pitch-score.mjs",
+    "render:pitch": "node capture/pitch-score.mjs && remotion render src/index.ts Pitch out/pitch-raw.mp4 && node capture/pitch-master.mjs",
     "storyboard": "node capture/storyboard.mjs"
   },
   "dependencies": {

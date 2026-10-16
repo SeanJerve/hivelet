@@ -3,6 +3,7 @@
 About 136 seconds, 1920x1080, rendered at 60 fps (timed in 30 fps frames, which every frame number
 below uses). A synthesized score and soft object sounds; no voice.
 Headlines are short on purpose (two to four words a line, few sentences under them).
+The one-minute pitch, with a voice, is a separate composition in the same project: `PITCH.md`.
 
 Fifth cut, 2026-09-29, after Sean's notes on the fourth: a sixth problem (inquiries arriving by
 social media, text and in person), a slower sheet-to-drive beat, the problems bending into
