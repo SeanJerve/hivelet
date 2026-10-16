@@ -92,7 +92,8 @@ const Ledger: React.FC = () => {
       ) : null}
       <Ink pts={[[X + 905, Y + 575], [X + 1335, Y + 735]]} at={T + sec(0.75)} dur={0.12} color={PAL.red} width={12} seed="dx1" out={T + sec(1.25)} />
       <Ink pts={[[X + 1335, Y + 575], [X + 905, Y + 735]]} at={T + sec(0.85)} dur={0.12} color={PAL.red} width={12} seed="dx2" out={T + sec(1.25)} />
-      <Hand text="already recorded" at={T + sec(0.9)} x={X + 700} y={Y + 800} size={62} color={PAINT} font={FONT.marker} rot={-3} seed="dh" cps={24} />
+      {/* on the mat to the right of the print, above the duplicate's path (white on the print would not read) */}
+      <Hand text={'already\nrecorded'} at={T + sec(0.9)} x={X + 1240} y={Y + 300} size={66} color={PAINT} font={FONT.marker} rot={-6} seed="dh" cps={24} />
     </>
   );
 };
