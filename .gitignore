@@ -75,6 +75,8 @@ video/public/shots/
 video/public/voice/
 video/public/sfx/
 video/public/score.wav
+video/public/pitch/score.wav
+video/public/paper/score.wav
 video/public/fe-galang-building.webp
 video/public/icon-512.png
 video/public/floorplans/
@@ -123,3 +125,12 @@ scripts/field-tests/shots/
 # The skills under .claude/skills/ still load for Claude Code from disk.
 .claude/skills/
 skills-lock.json
+video/public/screen/score.wav
+video/public/vertical/score.wav
+video/public/duo/score.wav
+video/public/tenant/score.wav
+video/public/one/score.wav
+video/public/objects/score.wav
+video/public/desk/score.wav
+video/public/receipt/score.wav
+video/public/model/score.wav

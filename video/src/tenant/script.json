@@ -1,0 +1,18 @@
+{
+  "voice": "bf_emma",
+  "speed": 1.0,
+  "note": "Version D: the tenant's side, on a phone in the dark, ending on the landlady's laptop. Facts from FINAL/ and the film's own screens: the public page with a vacant unit and its floor plan, asking with no account and the reply on the inquiry page (Section 4.2.3), the tenant's amount due and GCash (4.2.4), the repair request and the notice when it is done (4.2.5).",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "find", "text": "Looking for a room near Bicol University?"},
+    {"id": "vacant", "text": "The Fe Galang Da Silva Boarding House shows you a vacant unit, floor plan and all."},
+    {"id": "ask", "text": "Ask about it. No account needed."},
+    {"id": "answer", "text": "And she answers you, right there."},
+    {"id": "movein", "text": "Move in, and your rent lives on your phone."},
+    {"id": "gcash", "text": "Pay with GCash, whenever you want."},
+    {"id": "repair", "text": "Something breaks? Report it."},
+    {"id": "done", "text": "And watch it get done."},
+    {"id": "behind", "text": "Behind every screen is one connected system, for one landlady."},
+    {"id": "name", "text": "Hivelet."}
+  ]
+}

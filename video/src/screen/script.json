@@ -1,0 +1,24 @@
+{
+  "voice": "af_heart",
+  "speed": 1.0,
+  "note": "The screen pitch's voiceover (after the reference Sean sent: a laptop in a dark room, the voice typed on screen as it is spoken). Facts from FINAL/: the address and 33 units (Section 1.4); the old way (Section 4.1.1, Table 4-1: the income and expense sheets on a USB flash drive, a paper invoice book, requests by messaging app, inquiries with no record); the ledger and GCash (4.2.4); installing (4.2.7); 937 rows (Chapter 4); A+ (4.4.4); 4.53 (Table 4-17). Phoneme fixes: Hivelet, Fe Galang, Legazpi.",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "hook", "text": "What if a whole boarding house fit on one screen?"},
+    {"id": "meet", "text": "This is the Fe Galang Da Silva Boarding House, in Legazpi City."},
+    {"id": "units", "text": "Thirty-three units. One landlady."},
+    {"id": "before", "text": "Her income and expenses lived in a spreadsheet, on one USB drive."},
+    {"id": "pieces", "text": "Invoices, in a paper book. Repairs, lost in a chat. Inquiries, with no record at all."},
+    {"id": "nothing", "text": "Nothing connected."},
+    {"id": "built", "text": "So we built Hivelet."},
+    {"id": "ledger", "text": "Her ledger, in her own layout, adding itself up."},
+    {"id": "phone", "text": "Tenants see their rent, and pay with GCash."},
+    {"id": "repairs", "text": "Repairs are tracked, from request to done."},
+    {"id": "visitors", "text": "Visitors ask about a vacant room. No account needed."},
+    {"id": "install", "text": "And it installs like an app."},
+    {"id": "records", "text": "Nine hundred thirty-seven of her real records, carried over."},
+    {"id": "secure", "text": "Security, graded A-plus."},
+    {"id": "quality", "text": "Quality, rated four point five three, out of five."},
+    {"id": "close", "text": "Hivelet. Her whole boarding house, on one screen."}
+  ]
+}

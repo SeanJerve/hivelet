@@ -1,0 +1,19 @@
+{
+  "voice": {"af_heart": 0.55, "af_sarah": 0.45},
+  "speed": 0.95,
+  "note": "Version I: a white card model of her building on the dark desk beside the laptop, its windows the units, joined to the laptop by threads of light once Hivelet arrives. Facts from FINAL/: 33 units (Section 1.4), 32 occupied (CLAUDE.md standing facts); the old way (Section 4.1.1, Table 4-1: a spreadsheet on a USB flash drive, rent in cash, invoices in a paper book, requests by messaging application, not recorded); GCash entering Pending Verification until she verifies it (4.2.4); repairs to completion (4.2.5); inquiries about a unit with no account (4.2.3); 937 rows (Chapter 4); A+ (4.4.4); 4.53 (Table 4-17).",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "intro", "text": "This is a boarding house in Legazpi, built small."},
+    {"id": "rooms", "text": "Thirty-three rooms. Thirty-two of them lived in."},
+    {"id": "sheet", "text": "For years, each room was a line in a spreadsheet, on one USB drive."},
+    {"id": "pieces", "text": "Rent in cash. Invoices in a paper book. Repairs, lost in a chat."},
+    {"id": "connect", "text": "Hivelet connects every room to one place."},
+    {"id": "gcash", "text": "Rent comes in through GCash, and she verifies it."},
+    {"id": "repair", "text": "A room reports a leak. It is tracked until it's done."},
+    {"id": "ask", "text": "A stranger asks about the empty room, with no account."},
+    {"id": "records", "text": "Nine hundred thirty-seven of her records live here now."},
+    {"id": "proof", "text": "Security, A-plus. Quality, four point five three out of five."},
+    {"id": "close", "text": "Hivelet. Every room, connected."}
+  ]
+}

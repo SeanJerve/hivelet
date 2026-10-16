@@ -1,0 +1,23 @@
+{
+  "voice": "af_bella",
+  "speed": 1.02,
+  "note": "Version B of the screen pitch: vertical, after the same reference, built on what Hivelet replaces. Facts from FINAL/: the old way (Section 4.1.1, Table 4-1: the sheets on a USB flash drive, a paper invoice book, requests by messaging app); the address and 33 units (Section 1.4); the ledger and GCash (4.2.4); 937 rows (Chapter 4); A+ (4.4.4); 4.53 (Table 4-17).",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "hook", "text": "What if I told you a whole boarding house could live on one screen?"},
+    {"id": "sheet", "text": "Not a spreadsheet."},
+    {"id": "usb", "text": "Not one USB drive."},
+    {"id": "book", "text": "Not a paper invoice book."},
+    {"id": "chat", "text": "And no. Not a chat."},
+    {"id": "its", "text": "It's Hivelet."},
+    {"id": "forher", "text": "Made for the Fe Galang Da Silva Boarding House. Thirty-three units, one landlady."},
+    {"id": "ledger", "text": "Her ledger, in her own layout."},
+    {"id": "gcash", "text": "Rent, paid with GCash."},
+    {"id": "repairs", "text": "Repairs, tracked to done."},
+    {"id": "visitors", "text": "Visitors ask. No account needed."},
+    {"id": "records", "text": "Nine hundred thirty-seven real records."},
+    {"id": "aplus", "text": "Security: A-plus."},
+    {"id": "quality", "text": "Quality: four point five three, out of five."},
+    {"id": "close", "text": "Hivelet. One boarding house. One screen."}
+  ]
+}

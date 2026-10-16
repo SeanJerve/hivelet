@@ -1,0 +1,28 @@
+{
+  "voice": "af_heart",
+  "speed": 1.04,
+  "note": "The paper pitch's voiceover, one phrase per clip. Facts from FINAL/: the address and 33 units (Section 1.4), the old way (Section 4.1.1, Table 4-1: a spreadsheet on a USB flash drive, a paper invoice book, requests by messaging app, inquiries with no record), the duplicate guards (Section 4.3.4, the owner's own walkthrough), GCash and the ledger (Section 4.2.4), installing (Section 4.2.7), 937 rows carried over (Chapter 4), A+ (Section 4.4.4), 4.53 Very High Quality (Table 4-17). Phoneme fixes: Hivelet as HIVE-let, Fe Galang as Feh ga-LANG, Legazpi as le-GAS-pee.",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "meet", "text": "This is the Fe Galang Da Silva Boarding House, in Legazpi City."},
+    {"id": "units", "text": "Thirty-three units. One landlady."},
+    {"id": "pieces", "text": "And it all lived in pieces."},
+    {"id": "sheet", "text": "A spreadsheet, on one USB drive."},
+    {"id": "book", "text": "A paper invoice book."},
+    {"id": "chat", "text": "Repairs, asked for in a chat."},
+    {"id": "notes", "text": "And inquiries that left no record."},
+    {"id": "nothing", "text": "Nothing connected."},
+    {"id": "folded", "text": "So we folded it all into one."},
+    {"id": "hivelet", "text": "Hivelet."},
+    {"id": "ledger", "text": "Her ledger, in her own layout, adding itself up."},
+    {"id": "twice", "text": "A payment can't be recorded twice."},
+    {"id": "phone", "text": "Tenants see their rent on their phones, and pay with GCash."},
+    {"id": "repairs", "text": "Repairs get tracked, from request to done."},
+    {"id": "visitors", "text": "Visitors ask about a vacant room. No account needed."},
+    {"id": "install", "text": "And it installs like an app."},
+    {"id": "records", "text": "We moved in nine hundred thirty-seven of her real records."},
+    {"id": "secure", "text": "Security, graded A-plus."},
+    {"id": "quality", "text": "Quality, rated four point five three, out of five."},
+    {"id": "close", "text": "Hivelet. Her whole boarding house, in one place."}
+  ]
+}

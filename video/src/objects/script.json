@@ -1,0 +1,26 @@
+{
+  "voice": {"af_heart": 0.6, "af_nicole": 0.4},
+  "speed": 0.95,
+  "note": "Version F: real objects on the screen (WebGL), after the reference's brass magnifier and cardboard box. Facts from FINAL/: 33 units, 32 occupied (CLAUDE.md, Section 1.4); Legazpi (1.4); the old way (Section 4.1.1, Table 4-1: a workbook on a USB flash drive that is the only copy, rent collected in cash, invoices in a paper book, requests by messaging application); the ledger in her layout and GCash (4.2.4); repairs to completion (4.2.5); inquiries with no account (4.2.3); 937 rows (Chapter 4); A+ (4.4.4); 4.53 (Table 4-17).",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "key", "text": "Every room starts with a key."},
+    {"id": "rack", "text": "This boarding house, in Legazpi, has thirty-three."},
+    {"id": "out", "text": "Thirty-two are out, with tenants."},
+    {"id": "usb", "text": "For years, her books lived on this."},
+    {"id": "cash", "text": "Rent came in cash."},
+    {"id": "book", "text": "Invoices, in a paper book."},
+    {"id": "chat", "text": "Repairs, in a chat."},
+    {"id": "talk", "text": "Did any of it talk to the rest?"},
+    {"id": "no", "text": "No."},
+    {"id": "built", "text": "So we built Hivelet."},
+    {"id": "ledger", "text": "One ledger, in her own layout, that adds itself up."},
+    {"id": "pay", "text": "Tenants pay from their phones, with GCash."},
+    {"id": "repair", "text": "Repairs are tracked, from request to done."},
+    {"id": "ask", "text": "Strangers can ask about a vacant room. No account needed."},
+    {"id": "records", "text": "Nine hundred thirty-seven of her records came with it."},
+    {"id": "secure", "text": "Security, graded A-plus."},
+    {"id": "quality", "text": "Quality, four point five three, out of five."},
+    {"id": "close", "text": "Hivelet. Every key, accounted for."}
+  ]
+}

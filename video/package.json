@@ -8,19 +8,26 @@
     "score": "node capture/score.mjs",
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts Hivelet out/hivelet.mp4",
+    "score:pitch": "node capture/pitch-score.mjs",
+    "render:pitch": "node capture/pitch-score.mjs && remotion render src/index.ts Pitch out/pitch-raw.mp4 && node capture/pitch-master.mjs",
+    "render:paper": "node capture/paper-score.mjs && remotion render src/index.ts PaperPitch out/paper-raw.mp4 && node capture/pitch-master.mjs paper",
     "storyboard": "node capture/storyboard.mjs"
   },
   "dependencies": {
+    "@react-three/fiber": "9.8.1",
     "@remotion/bundler": "^4.0.529",
     "@remotion/cli": "^4.0.529",
     "@remotion/google-fonts": "^4.0.529",
     "@remotion/renderer": "^4.0.529",
+    "@remotion/three": "4.0.529",
     "@types/react": "^19.3.0",
+    "@types/three": "0.186.0",
     "lucide-react": "^1.48.0",
     "playwright": "^1.63.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "remotion": "^4.0.529",
+    "three": "0.186.1",
     "typescript": "^7.0.2"
   }
 }
