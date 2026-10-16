@@ -50,13 +50,13 @@ const Hub: React.FC<{t: number}> = ({t}) => {
   if (t < HUB_AT) return null;
   const k = ease(seg(t, HUB_AT, HUB_AT + 0.5));
   const h = (1 - k) * 2.2;
-  glow.color.set('#2fe08a').multiplyScalar(0.5 * ease(seg(t, HUB_AT + 0.6, HUB_AT + 1.4)));
+  glow.color.set('#2fe08a').multiplyScalar(0.22 * ease(seg(t, HUB_AT + 0.6, HUB_AT + 1.4)));
   return (
     <group position={[HUB.x, HUB.y + h, HUB.z]} rotation={[0, -0.35, 0]}>
       {/* a small brushed stand, and the mark on it, upright, facing the model */}
       <mesh material={M.brushed} position={[0, 0.03, 0]} castShadow receiveShadow><cylinderGeometry args={[0.32, 0.36, 0.06, 48]} /></mesh>
       <Mark3D position={[0, 0.62, 0]} scale={0.27} />
-      <sprite material={glow} position={[0, 0.62, 0.15]} scale={[1.6, 1.6, 1]} />
+      <sprite material={glow} position={[0, 0.62, -0.05]} scale={[0.95, 0.95, 1]} />
     </group>
   );
 };
@@ -111,7 +111,7 @@ const Pulses: React.FC<{t: number}> = ({t}) => {
 const K: number[][] = [
   [0, -1.35, 0.62, 3.05, -2.55, 0.5, 1.0, 0.03], [AT.rooms - 0.2, -1.2, 0.72, 3.2, -2.5, 0.48, 0.95, 0.03],
   [AT.rooms + 2.6, -0.8, 1.15, 4.0, -2.3, 0.48, 0.85, 0.022],
-  [AT.sheet + 0.2, -0.9, 0.55, 3.35, -1.55, 0.06, 2.05, 0.034], [AT.pieces - 0.2, -1.05, 0.55, 3.3, -1.6, 0.06, 2.05, 0.034],
+  [AT.sheet + 0.2, -1.05, 0.5, 2.95, -1.55, 0.04, 2.05, 0.02], [AT.pieces - 0.2, -1.15, 0.5, 2.9, -1.6, 0.04, 2.05, 0.02],
   [AT.pieces + 0.6, -0.9, 1.35, 3.45, -2.1, 0.62, 0.5, 0.024], [AT.connect - 0.3, -0.7, 1.4, 3.7, -1.9, 0.62, 0.5, 0.022],
   [AT.connect + 1.6, 0.6, 1.9, 5.0, -1.0, 0.5, 0.5, 0.014], [AT.gcash + 0.2, 0.5, 1.8, 4.8, -1.0, 0.5, 0.5, 0.014],
   [AT.gcash + 1.0, 1.5, 1.05, 3.1, -0.2, 0.6, 0.6, 0.018], [AT.repair - 0.3, 1.4, 1.0, 3.0, -0.3, 0.6, 0.6, 0.018],
@@ -164,6 +164,8 @@ const World: React.FC<{t: number}> = ({t}) => {
       <primitive object={lamp.target} />
       <primitive object={fill} />
       <hemisphereLight args={['#9fb0c8', '#000000', 0.06]} />
+      {/* a faint fill from where the camera is, so the things in front are never only silhouettes */}
+      <directionalLight position={pos.clone().add(new THREE.Vector3(0, 0.6, 0))} intensity={0.3} color="#dfe6ee" />
     </>
   );
 };
