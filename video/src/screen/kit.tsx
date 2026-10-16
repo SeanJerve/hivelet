@@ -48,8 +48,8 @@ export const mix = (a: string, b: string, t: number) => {
 // ---- The caption: the voice, typed in mono as it is said ------------------------------------
 // Characters appear across the spoken length of the phrase (so the typing keeps pace with the
 // voice); words in `accent` are set in the accent colour. The cursor blinks when idle.
-export const Caption: React.FC<{text: string; at: number; dur: number; dark?: boolean; accent?: string[]; out?: number; x?: number; y?: number; size?: number; width?: number}> =
-  ({text, at, dur, dark, accent = [], out, x = 72, y = 892, size = 28, width = 1100}) => {
+export const Caption: React.FC<{text: string; at: number; dur: number; dark?: boolean; accent?: string[]; out?: number; x?: number; y?: number; size?: number; width?: number; color?: string}> =
+  ({text, at, dur, dark, accent = [], out, x = 72, y = 892, size = 28, width = 1100, color = C.green}) => {
     const f = useCurrentFrame();
     if (f < at - 6) return null;
     const n = Math.round(clamp01((f - at) / sec(dur)) * text.length);
@@ -60,8 +60,8 @@ export const Caption: React.FC<{text: string; at: number; dur: number; dark?: bo
     const words = text.slice(0, n).split(/(\s+)/);
     return (
       <div style={{position: 'absolute', left: x, top: y, width, fontFamily: FONT.mono, fontWeight: 500, fontSize: size, lineHeight: 1.45, color: dark ? '#e9e8e3' : C.ink, letterSpacing: '-0.01em'}}>
-        {words.map((w, i) => <span key={i} style={{color: accent.some((a) => w.replace(/[.,?]/g, '') === a) ? C.green : undefined, fontWeight: accent.some((a) => w.replace(/[.,?]/g, '') === a) ? 700 : undefined}}>{w}</span>)}
-        <span style={{display: 'inline-block', width: size * 0.58, height: size * 1.05, marginLeft: 2, verticalAlign: '-0.18em', background: C.green, opacity: on ? 1 : 0}} />
+        {words.map((w, i) => <span key={i} style={{color: accent.some((a) => w.replace(/[.,?]/g, '') === a) ? color : undefined, fontWeight: accent.some((a) => w.replace(/[.,?]/g, '') === a) ? 700 : undefined}}>{w}</span>)}
+        <span style={{display: 'inline-block', width: size * 0.58, height: size * 1.05, marginLeft: 2, verticalAlign: '-0.18em', background: color, opacity: on ? 1 : 0}} />
       </div>
     );
   };

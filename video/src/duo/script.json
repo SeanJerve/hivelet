@@ -1,0 +1,20 @@
+{
+  "voice": "am_michael",
+  "speed": 0.98,
+  "note": "Version C: the laptop and a phone on a stand beside it, told as a story. Facts from FINAL/: the Monthly Income Report and the sheets typed by hand (Section 4.1.1, Table 4-1), the paper invoice book, requests by messaging app, inquiries with no record; the ledger in her layout and GCash (4.2.4); repairs and the tenant's view of them (4.2.5); inquiries answered in the system (4.2.3); 937 rows (Chapter 4); A+ (4.4.4); 4.53 (Table 4-17); 33 units (1.4).",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ", "lˈɛɡæzpi": "lɛɡˈɑspi"},
+  "lines": [
+    {"id": "month", "text": "Every month, she opened the same spreadsheet."},
+    {"id": "peso", "text": "Thirty-three units. Every peso, typed by hand."},
+    {"id": "book", "text": "Invoices lived in a paper book. Repairs, somewhere in a chat."},
+    {"id": "asking", "text": "And the people asking about a room? Gone, without a record."},
+    {"id": "gave", "text": "So we gave her one system."},
+    {"id": "name", "text": "Hivelet."},
+    {"id": "ledger", "text": "On her laptop, her ledger, in her own layout."},
+    {"id": "phones", "text": "On their phones, tenants see their rent, and pay with GCash."},
+    {"id": "repair", "text": "A repair lands on her board, and the tenant watches it move to done."},
+    {"id": "visitor", "text": "A visitor asks about a vacant room, with no account, and she answers from the same place."},
+    {"id": "proof", "text": "Nine hundred thirty-seven of her real records moved in. Graded A-plus for security. Rated four point five three, out of five."},
+    {"id": "close", "text": "Hivelet. One connected system, for the Fe Galang Da Silva Boarding House."}
+  ]
+}

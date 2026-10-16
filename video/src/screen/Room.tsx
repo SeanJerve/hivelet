@@ -19,7 +19,7 @@ const camTransform = (c: Camera, mirror = false) =>
   `translate3d(${c.x}px, ${c.y}px, ${c.z}px) rotateZ(${c.roll}deg) rotateX(${-c.tilt}deg) rotateY(${c.yaw}deg)${mirror ? ' scale3d(1, -1, 1)' : ''}`;
 
 // Where a point of the laptop's own space lands on screen (for the 2D light effects).
-export const project = (c: Camera, p: [number, number, number]): [number, number, number] => {
+export const project = (c: Camera, p: [number, number, number], w = W, h = H): [number, number, number] => {
   let [x, y, z] = p;
   const ry = (c.yaw * Math.PI) / 180, rx = (-c.tilt * Math.PI) / 180, rz = (c.roll * Math.PI) / 180;
   [x, z] = [x * Math.cos(ry) + z * Math.sin(ry), -x * Math.sin(ry) + z * Math.cos(ry)];
@@ -27,7 +27,7 @@ export const project = (c: Camera, p: [number, number, number]): [number, number
   [x, y] = [x * Math.cos(rz) - y * Math.sin(rz), x * Math.sin(rz) + y * Math.cos(rz)];
   x += c.x; y += c.y; z += c.z;
   const k = P / (P - z);
-  return [W / 2 + x * k, H / 2 + y * k, k];
+  return [w / 2 + x * k, h / 2 + y * k, k];
 };
 
 const rgba = (c: [number, number, number], a: number) => `rgba(${c[0]},${c[1]},${c[2]},${a.toFixed(3)})`;
@@ -70,7 +70,7 @@ const Keyboard: React.FC<{glow: Glow}> = ({glow}) => {
 };
 
 // One laptop, in its own space: x across, y down (the desk is y = 0), z toward the viewer.
-const Laptop: React.FC<{screen: React.ReactNode; glow: Glow; mirror?: boolean}> = ({screen, glow, mirror}) => (
+const Laptop: React.FC<{screen: React.ReactNode; glow: Glow; mirror?: boolean; lid?: number}> = ({screen, glow, mirror, lid = TILT}) => (
   <div style={{position: 'absolute', left: 0, top: 0, transformStyle: 'preserve-3d'}}>
     {/* base: top, front, left side */}
     <div style={{position: 'absolute', left: -BW / 2, top: 0, width: BW, height: BD, transformOrigin: '0 0', transform: `translate3d(0, ${-BT}px, ${-BD / 2}px) rotateX(90deg)`,
@@ -84,7 +84,7 @@ const Laptop: React.FC<{screen: React.ReactNode; glow: Glow; mirror?: boolean}> 
       background: 'linear-gradient(180deg, #3a3b40 0%, #1d1e21 100%)'}} />
     <div style={{position: 'absolute', left: -BW / 2, top: -BT, width: BD, height: BT, transformOrigin: '0 0', transform: `translateZ(${-BD / 2}px) rotateY(-90deg)`, background: '#202124'}} />
     {/* the lid, tipped back about the hinge */}
-    <div style={{position: 'absolute', left: -BW / 2, top: -BT - LH, width: BW, height: LH, transformOrigin: '50% 100%', transform: `translateZ(${-BD / 2 + 8}px) rotateX(${TILT}deg)`, transformStyle: 'preserve-3d'}}>
+    <div style={{position: 'absolute', left: -BW / 2, top: -BT - LH, width: BW, height: LH, transformOrigin: '50% 100%', transform: `translateZ(${-BD / 2 + 8}px) rotateX(${lid}deg)`, transformStyle: 'preserve-3d'}}>
       <div style={{position: 'absolute', inset: 0, borderRadius: 24, background: '#0b0b0c', boxShadow: 'inset 0 0 0 2px #1c1d20'}}>
         <div style={{position: 'absolute', left: SCR.x, top: SCR.y, width: SCR.w, height: SCR.h, overflow: 'hidden', borderRadius: 6, background: '#000'}}>
           <div style={{position: 'absolute', left: 0, top: 0, width: 1600, height: 1000, transform: `scale(${SCR.w / 1600})`, transformOrigin: '0 0'}}>{screen}</div>
@@ -100,11 +100,15 @@ const Laptop: React.FC<{screen: React.ReactNode; glow: Glow; mirror?: boolean}> 
   </div>
 );
 
-export const Room: React.FC<{cam: Camera; glow: Glow; screen: React.ReactNode; mirrorScreen: React.ReactNode}> = ({cam, glow, screen, mirrorScreen}) => {
+// `lid` opens and closes the laptop (degrees: -90 shut, TILT open); `extra` adds more objects to
+// the same space (drawn again in the reflection), and `extraGlow` their light.
+export const Room: React.FC<{cam: Camera; glow: Glow; screen: React.ReactNode; mirrorScreen: React.ReactNode; w?: number; h?: number; lid?: number;
+  extra?: (mirror: boolean) => React.ReactNode; extraGlow?: {at: [number, number, number]; glow: Glow}}> = ({cam, glow, screen, mirrorScreen, w: Wd = W, h: Hd = H, lid = TILT, extra, extraGlow}) => {
   const f = useCurrentFrame();
-  const [fx, fy] = project(cam, [0, 0, BD / 2]);                      // front edge on the desk
-  const [sx, sy] = project(cam, [0, -BT - LH * 0.52, -BD / 2 - 110]);  // the middle of the screen
-  const [px, py] = project(cam, [0, 0, BD / 2 + 520]);               // where the light pools
+  const W = Wd, H = Hd;
+  const [fx, fy] = project(cam, [0, 0, BD / 2], W, H);                      // front edge on the desk
+  const [sx, sy] = project(cam, [0, -BT - LH * 0.52, -BD / 2 - 110], W, H);  // the middle of the screen
+  const [px, py] = project(cam, [0, 0, BD / 2 + 520], W, H);               // where the light pools
   const L = glow.level;
   return (
     <AbsoluteFill style={{background: 'radial-gradient(ellipse 90% 70% at 50% 30%, #121214 0%, #08080a 70%)', overflow: 'hidden'}}>
@@ -116,7 +120,8 @@ export const Room: React.FC<{cam: Camera; glow: Glow; screen: React.ReactNode; m
         maskImage: `linear-gradient(180deg, transparent ${(fy / H) * 100 - 1}%, #000 ${(fy / H) * 100 + 1}%, rgba(0,0,0,0.25) ${(fy / H) * 100 + 30}%, transparent ${(fy / H) * 100 + 55}%)`}}>
         <div style={{position: 'absolute', inset: 0, perspective: P}}>
           <div style={{position: 'absolute', left: W / 2, top: H / 2, transformStyle: 'preserve-3d', transform: camTransform(cam, true)}}>
-            <Laptop screen={mirrorScreen} glow={glow} mirror />
+            <Laptop screen={mirrorScreen} glow={glow} mirror lid={lid} />
+            {extra ? extra(true) : null}
           </div>
         </div>
       </AbsoluteFill>
@@ -125,11 +130,21 @@ export const Room: React.FC<{cam: Camera; glow: Glow; screen: React.ReactNode; m
       {/* the laptop */}
       <div style={{position: 'absolute', inset: 0, perspective: P}}>
         <div style={{position: 'absolute', left: W / 2, top: H / 2, transformStyle: 'preserve-3d', transform: camTransform(cam)}}>
-          <Laptop screen={screen} glow={glow} />
+          <Laptop screen={screen} glow={glow} lid={lid} />
+          {extra ? extra(false) : null}
         </div>
       </div>
       {/* the screen's light in the air around it */}
       <AbsoluteFill style={{background: `radial-gradient(ellipse 38% 42% at ${(sx / W) * 100}% ${(sy / H) * 100}%, ${rgba(glow.color, 0.07 * L)} 0%, rgba(0,0,0,0) 70%)`, mixBlendMode: 'screen', pointerEvents: 'none'}} />
+      {extraGlow && extraGlow.glow.level > 0.01 ? (() => {
+        const [ex, ey] = project(cam, extraGlow.at, W, H);
+        const [qx, qy] = project(cam, [extraGlow.at[0], 0, extraGlow.at[2] + 300], W, H);
+        const g = extraGlow.glow;
+        return <>
+          <AbsoluteFill style={{background: `radial-gradient(ellipse 22% 30% at ${(ex / W) * 100}% ${(ey / H) * 100}%, ${rgba(g.color, 0.10 * g.level)} 0%, rgba(0,0,0,0) 70%)`, mixBlendMode: 'screen', pointerEvents: 'none'}} />
+          <AbsoluteFill style={{background: `radial-gradient(ellipse 18% 8% at ${(qx / W) * 100}% ${(qy / H) * 100}%, ${rgba(g.color, 0.10 * g.level)} 0%, rgba(0,0,0,0) 70%)`, mixBlendMode: 'screen', pointerEvents: 'none'}} />
+        </>;
+      })() : null}
       {/* lens: the corners fall away; film grain */}
       <AbsoluteFill style={{background: 'radial-gradient(ellipse 85% 80% at 50% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)'}} />
       <AbsoluteFill style={{backgroundImage: `url(${staticFile('paper/tex/grain.png')})`, backgroundSize: '320px', backgroundPosition: `${(f * 137) % 320}px ${(f * 251) % 320}px`, mixBlendMode: 'multiply', opacity: 0.4}} />
