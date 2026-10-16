@@ -35,9 +35,9 @@ const sceneAt = (t: number): Scene => { let s: Scene = 'key'; for (const [id, at
 
 const BG: Record<Scene, string> = {
   key: PAPER, rack: PAPER, usb: CHAR, cash: PAPER, book: PAPER, chat: PAPER, talk: PAPER, no: '#101010', built: PAPER,
-  ledger: PAPER, pay: PAPER, repair: PAPER, ask: PAPER, records: BLUE, secure: CORAL, quality: PAPER, close: PAPER,
+  ledger: PAPER, pay: CHAR, repair: PAPER, ask: CHAR, records: BLUE, secure: CORAL, quality: PAPER, close: PAPER,
 };
-const DARK = new Set<Scene>(['usb', 'no']);
+const DARK = new Set<Scene>(['usb', 'no', 'pay', 'ask']);
 const GREEN_DEEP = '#17603f';
 
 // Captions: the line being spoken stays typed on the page until the next one starts.
@@ -132,22 +132,22 @@ const BookScene: React.FC<{t: number}> = ({t}) => (
 // The phone's screens: a chat, then Hivelet's tenant view.
 const chatScreen = (t: number) => (c: CanvasRenderingContext2D) => {
   const W = 540, H = 1146;
-  c.fillStyle = '#f2f2f0'; roundRect(c, 0, 0, W, H, 54); c.fill();
-  c.fillStyle = '#ffffff'; c.fillRect(0, 0, W, 150);
-  c.fillStyle = '#111'; c.font = `600 30px ${GROT}`; c.fillText('Messages', 40, 112);
+  c.fillStyle = '#0e0e10'; roundRect(c, 0, 0, W, H, 54); c.fill();
+  c.fillStyle = '#f2f2f2'; c.font = `600 34px ${GROT}`; c.fillText('Messages', 40, 118);
+  c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(0, 150, W, 2);
   const bubbles: [number, string, boolean][] = [[16.0, 'good evening po', true], [16.55, 'the sink is leaking', true], [16.75, 'again', true], [17.4, 'ok, I\'ll check', false]];
   let y = 230;
   bubbles.forEach(([at, s, them]) => {
     if (t < at) return;
     const p = ease(seg(t, at, at + 0.25));
-    c.font = `500 30px ${GROT}`;
-    const w = c.measureText(s).width + 52;
-    const x = them ? 34 : W - 34 - w;
+    c.font = `500 36px ${GROT}`;
+    const w = c.measureText(s).width + 56;
+    const x = them ? 30 : W - 30 - w;
     c.globalAlpha = p;
-    c.fillStyle = them ? '#ffffff' : '#2f6fe4'; roundRect(c, x, y + (1 - p) * 20, w, 66, 30); c.fill();
-    c.fillStyle = them ? '#111' : '#fff'; c.fillText(s, x + 26, y + 44 + (1 - p) * 20);
+    c.fillStyle = them ? '#2a2a2d' : '#2f6fe4'; roundRect(c, x, y + (1 - p) * 20, w, 76, 34); c.fill();
+    c.fillStyle = '#fff'; c.fillText(s, x + 28, y + 51 + (1 - p) * 20);
     c.globalAlpha = 1;
-    y += 84;
+    y += 96;
   });
 };
 const payScreen = (t: number) => (c: CanvasRenderingContext2D) => {
@@ -157,10 +157,12 @@ const payScreen = (t: number) => (c: CanvasRenderingContext2D) => {
   c.fillStyle = '#17603f'; c.font = `700 34px ${BRAND}`; c.fillText('Hivelet', 44, 112);
   c.fillStyle = 'rgba(0,0,0,0.5)'; c.font = `500 24px ${GROT}`; c.fillText('Good evening', 44, 196);
   // the rent card
+  // after paying, the payment waits for the owner to verify it (4.2.4): it changes nothing on
+  // the bill until she does, so the phone says so rather than "paid"
   c.fillStyle = paid ? '#ffffff' : '#17603f'; roundRect(c, 32, 236, W - 64, 420, 36); c.fill();
-  c.fillStyle = paid ? '#17603f' : 'rgba(255,255,255,0.7)'; c.font = `500 26px ${GROT}`; c.fillText(paid ? 'Payment received' : 'Rent due', 68, 300);
+  c.fillStyle = paid ? '#17603f' : 'rgba(255,255,255,0.7)'; c.font = `500 26px ${GROT}`; c.fillText(paid ? 'Sent with GCash' : 'Rent due', 68, 300);
   c.fillStyle = paid ? '#111' : '#fff'; c.font = `700 72px ${GROT}`; c.fillText('₱4,500.00', 66, 390);
-  c.fillStyle = paid ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)'; c.font = `500 24px ${GROT}`; c.fillText(paid ? 'via GCash · just now' : 'October rent', 68, 436);
+  c.fillStyle = paid ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)'; c.font = `500 24px ${GROT}`; c.fillText(paid ? 'October rent · just now' : 'October rent', 68, 436);
   if (!paid) {
     const press = seg(t, 30.95, 31.15);
     c.fillStyle = '#ffffff'; roundRect(c, 68, 500, W - 136, 100, 50); c.fill();
@@ -168,8 +170,10 @@ const payScreen = (t: number) => (c: CanvasRenderingContext2D) => {
     if (press > 0) { c.fillStyle = `rgba(23,96,63,${0.35 * (1 - press)})`; c.beginPath(); c.arc(W / 2, 550, 40 + press * 220, 0, Math.PI * 2); c.fill(); }
   } else {
     const p = ease(seg(t, 31.25, 31.6));
-    c.fillStyle = '#1f9a62'; c.beginPath(); c.arc(W - 120, 300, 38 * p, 0, Math.PI * 2); c.fill();
-    c.strokeStyle = '#fff'; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(W - 138, 300); c.lineTo(W - 124, 314); c.lineTo(W - 100, 288); if (p > 0.5) c.stroke();
+    c.globalAlpha = p;
+    c.fillStyle = '#fbefd6'; roundRect(c, 68, 500, 400, 64, 32); c.fill();
+    c.fillStyle = '#8a5a00'; c.font = `600 26px ${GROT}`; c.fillText('Pending verification', 96, 542);
+    c.globalAlpha = 1;
   }
   c.fillStyle = '#ffffff'; roundRect(c, 32, 690, W - 64, 150, 30); c.fill();
   c.fillStyle = '#111'; c.font = `600 26px ${GROT}`; c.fillText('Repairs', 66, 752);
@@ -244,7 +248,7 @@ const PayScene: React.FC<{t: number}> = ({t}) => {
   const sink = ease(seg(t, 30.85, 31.1));
   return (
     <group>
-      <PhoneOn t={t} draw={payScreen} position={[0.4, 0.45, 0.16 + drop(t, 28.85, 7)]} rotation={[0, 0, -0.06]} scale={1.22} />
+      <PhoneOn t={t} draw={payScreen} position={[0.4, 0.5, 0.16 + drop(t, 28.85, 7)]} rotation={[0, 0, -0.06]} scale={1.12} />
       {t > 30.35 && sink < 1 ? <Coin mat={M.steel} position={[0.55, -0.6, 0.6 + 8 * (1 - ck)]} rotation={[0.3 * (1 - ck), 0, 1]} r={0.85 * (1 - sink)} /> : null}
     </group>
   );
@@ -280,7 +284,7 @@ const AskScene: React.FC<{t: number}> = ({t}) => {
   const p = curve.getPoint(k), d = curve.getTangent(Math.min(0.999, k));
   const settle = ease(seg(t, 37.0, 37.5));
   return (
-    <PaperPlane position={[p.x + settle * 0.3, p.y - settle * 0.1, p.z]} rotation={[Math.sin(k * Math.PI) * 0.5, -0.15 * (1 - settle), Math.atan2(d.y, d.x) * (1 - settle) + settle * 0.35]} scale={1.15} />
+    <PaperPlane position={[p.x + settle * 0.3, p.y - settle * 0.1, p.z]} rotation={[Math.sin(k * Math.PI) * 0.5, -0.15 * (1 - settle), Math.atan2(d.y, d.x) * (1 - settle) + settle * 0.35]} scale={1.5} />
   );
 };
 
@@ -295,7 +299,7 @@ const SecureScene: React.FC<{t: number}> = ({t}) => {
     c.beginPath(); c.arc(256, 345, 26, 0, Math.PI * 2); c.fill(); c.fillRect(246, 345, 20, 52);
   });
   const shut = t < 46.15 ? 0 : sp(t, 46.15, {damping: 11, stiffness: 400});
-  return <Padlock shut={shut} face={face} position={[0.3, -0.1, drop(t, 44.45, 7)]} rotation={[0, 0, lerp(0.3, -0.06, sp(t, 44.45, {damping: 20}))]} scale={1.35} />;
+  return <Padlock shut={shut} face={face} position={[0.3, -0.1, drop(t, 44.45, 7)]} rotation={[0, 0, lerp(0.3, -0.06, sp(t, 44.45, {damping: 20}))]} scale={1.55} />;
 };
 
 const QualityScene: React.FC<{t: number}> = ({t}) => {
@@ -319,7 +323,7 @@ const QualityScene: React.FC<{t: number}> = ({t}) => {
 const CloseScene: React.FC<{t: number}> = ({t}) => (
   <group>
     <Mark3D position={[-4.6, 1.25, 0.1 + drop(t, 50.85, 10)]} rotation={[0, 0, lerp(-0.5, 0, sp(t, 50.85, {damping: 16}))]} scale={0.8} />
-    {t > 51.75 ? <Key position={[4.9, -1.5, 0.25 + drop(t, 51.8, 9)]} rotation={[0, 0, lerp(-1.4, -0.45, sp(t, 51.8, {damping: 20}))]} scale={0.8} /> : null}
+    {t > 51.75 ? <Key position={[-4.5, -2.0, 0.25 + drop(t, 51.8, 9)]} rotation={[0, 0, lerp(-1.4, -0.3, sp(t, 51.8, {damping: 20}))]} scale={0.7} /> : null}
   </group>
 );
 
@@ -362,7 +366,7 @@ const back = (c: CanvasRenderingContext2D, t: number, s: Scene) => {
   if (s === 'repair') {
     ['Requested', 'In progress', 'Done'].forEach((h, i) => {
       const x = 160 + i * 513;
-      text(c, h.toUpperCase(), x, 190, `600 24px ${MONO}`, i === 2 && t > 34.55 ? GREEN : 'rgba(20,20,20,0.5)', {ls: 2});
+      text(c, h.toUpperCase(), x, 190, `600 30px ${MONO}`, i === 2 && t > 34.55 ? GREEN : 'rgba(20,20,20,0.5)', {ls: 2});
       if (i > 0) { c.fillStyle = 'rgba(20,20,20,0.12)'; c.fillRect(x - 60, 150, 2, 640); }
     });
   }
@@ -384,7 +388,8 @@ const back = (c: CanvasRenderingContext2D, t: number, s: Scene) => {
   }
 };
 
-const front = (c: CanvasRenderingContext2D, t: number, s: Scene) => {
+type ToPx = (x: number, y: number, z: number) => [number, number];
+const front = (c: CanvasRenderingContext2D, t: number, s: Scene, toPx: ToPx) => {
   const dark = DARK.has(s) || (s === 'built' && t > 23.4) || s === 'records' || s === 'secure';
   const L: Record<Scene, [string, string]> = {
     key: ['01', 'a key'], rack: ['02', 'thirty-three rooms'], usb: ['03', 'her books'], cash: ['04', 'rent'], book: ['05', 'invoices'], chat: ['06', 'repairs'],
@@ -393,9 +398,10 @@ const front = (c: CanvasRenderingContext2D, t: number, s: Scene) => {
   };
   if (L[s][0]) label(c, L[s][0], L[s][1], dark);
   // labels pointing at things
-  if (s === 'rack') leader(c, 800, 465, 1010, 560, '1 vacant', seg(t, 8.95, 9.6));
-  if (s === 'usb') leader(c, 990, 420, 1180, 300, 'the only copy.', seg(t, 11.35, 12.1), true);
-  if (s === 'ask') leader(c, 860, 455, 1060, 620, 'no account needed.', seg(t, 38.65, 39.6));
+  const lead = (p: [number, number], dx: number, dy: number, note: string, k: number, dark = false) => leader(c, p[0], p[1], p[0] + dx, p[1] + dy, note, k, dark);
+  if (s === 'rack') lead(toPx(0.2, -0.2, 0.8), 230, 120, '1 vacant', seg(t, 8.95, 9.6));
+  if (s === 'usb') lead(toPx(1.1, 1.25, 0.7), 200, -150, 'the only copy.', seg(t, 11.35, 12.1), true);
+  if (s === 'ask') lead(toPx(0.9, 0.5, 0.5), 220, 170, 'no account needed.', seg(t, 38.65, 39.6), true);
   if (s === 'close' && t > 52.9) {
     // the pill: the address, typed
     const url = 'hivelet.vercel.app', n = Math.round(clamp01((t - 53.2) / 0.9) * url.length), a = ease(seg(t, 52.9, 53.2));
@@ -421,7 +427,8 @@ const glowOf = (s: Scene, t: number): [THREE.Color, number] => {
   if (s === 'built' && t > 23.3) return [new THREE.Color(GREEN_DEEP).lerp(new THREE.Color('#ffffff'), 0.25), 0.85];
   if (s === 'records') return [new THREE.Color(BLUE).lerp(new THREE.Color('#ffffff'), 0.15), 0.8];
   if (s === 'secure') return [new THREE.Color(CORAL).lerp(new THREE.Color('#ffffff'), 0.1), 0.9];
-  if (s === 'usb') return [new THREE.Color('#d9d9d9'), 0.3];
+  if (s === 'usb' || s === 'ask') return [new THREE.Color('#d9d9d9'), 0.3];
+  if (s === 'pay') return [new THREE.Color('#e4ece6'), 0.45];
   if (s === 'no') return [new THREE.Color('#ffffff'), 0.14];
   return [new THREE.Color('#f1efe8'), 1];
 };
@@ -431,9 +438,9 @@ const glowOf = (s: Scene, t: number): [THREE.Color, number] => {
 // =====================================================================================================
 // Camera keys: [t, x, y, z, lookX, lookY]
 const K: [number, number, number, number, number, number][] = [
-  [0, -0.4, 1.05, 11.2, 0.05, 0.72], [3.4, -0.6, 0.86, 9.3, 0.05, 0.62], [9.7, -0.3, 0.8, 9.0, 0.05, 0.6], [18.0, 0.3, 0.78, 9.0, 0.0, 0.62],
-  [20.6, 0.05, 0.62, 8.3, 0.0, 0.78], [22.6, 0.0, 0.64, 8.3, 0.0, 0.78], [24.4, -0.8, 1.15, 10.6, 0.1, 0.58], [28.8, -0.4, 0.86, 9.3, 0.05, 0.6],
-  [35.4, 0.4, 0.8, 9.1, 0.0, 0.6], [40.3, -0.9, 0.95, 10.2, 0.1, 0.56], [47.0, 0.9, 0.95, 10.2, -0.1, 0.56], [50.8, 0.0, 0.85, 9.7, 0.0, 0.62], [57.5, 0.0, 0.8, 9.0, 0.0, 0.64],
+  [0, -0.3, 1.0, 8.6, 0.03, 0.8], [3.4, -0.45, 0.85, 7.3, 0.03, 0.74], [9.7, -0.25, 0.8, 7.1, 0.03, 0.74], [18.0, 0.25, 0.78, 7.1, 0.0, 0.74],
+  [20.6, 0.05, 0.62, 6.6, 0.0, 0.86], [22.6, 0.0, 0.64, 6.6, 0.0, 0.86], [24.4, -0.7, 1.1, 8.4, 0.08, 0.68], [28.8, -0.35, 0.86, 7.2, 0.04, 0.74],
+  [35.4, 0.35, 0.8, 7.1, 0.0, 0.74], [40.3, -0.8, 0.95, 8.0, 0.08, 0.68], [47.0, 0.8, 0.95, 8.0, -0.08, 0.68], [50.8, 0.0, 0.85, 7.6, 0.0, 0.74], [57.5, 0.0, 0.8, 7.0, 0.0, 0.76],
 ];
 const camAt = (t: number) => {
   let i = 0;
@@ -450,8 +457,9 @@ const pageCam = (cam: THREE.PerspectiveCamera, s: Scene, t: number) => {
   cam.up.set(0, 1, 0);
   if (s === 'records') { cam.position.set(1.5, -13.5, 20.5); cam.lookAt(1.2, 0.6, 1.4); return; }
   if (s === 'secure') { cam.position.set(0, -5, 25.5); cam.lookAt(0, 0.3, 0); return; }
-  if (s === 'book') { const k = ease(seg(t, 13.85, 15.95)); cam.position.set(0, 0, lerp(25, 23.5, k)); cam.lookAt(0, 0, 0); return; }
-  cam.position.set(0, 0, 26); cam.lookAt(0, 0, 0);
+  if (s === 'book') { const k = ease(seg(t, 13.85, 15.95)); cam.position.set(0, 0, lerp(22, 20, k)); cam.lookAt(0, 0, 0); return; }
+  const z: Partial<Record<Scene, number>> = {ledger: 19.2, pay: 18.5, chat: 18, usb: 20, repair: 19.5, ask: 20, key: 21, cash: 21};
+  cam.position.set(0, 0, z[s] ?? 22); cam.lookAt(0, 0, 0);
 };
 
 const World: React.FC<{t: number}> = ({t}) => {
@@ -461,13 +469,15 @@ const World: React.FC<{t: number}> = ({t}) => {
   const {pos, look} = camAt(t);
   camera.position.copy(pos); camera.lookAt(look);
   pageCam(stage.cam, s, t);
+  stage.cam.updateMatrixWorld();
+  const toPx: ToPx = (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(stage.cam); return [(v.x + 1) / 2 * SW, (1 - v.y) / 2 * SH]; };
   // the screen wakes at the start and goes dark at the end
   const power = t < 0.2 ? 0 : t < 0.55 ? ease(seg(t, 0.2, 0.55)) * (0.85 + 0.15 * Math.sin(t * 80)) : 1 - ease(seg(t, OFF, OFF + 0.45));
   const [glow, level] = glowOf(s, t);
   const lv = level * power;
   return (
     <>
-      <Renderer stage={stage} drawBack={(c) => back(c, t, s)} drawFront={(c) => front(c, t, s)}>
+      <Renderer stage={stage} drawBack={(c) => back(c, t, s)} drawFront={(c) => front(c, t, s, toPx)}>
         <PageLight intensity={s === 'no' ? 0.4 : 2.2} />
         <Catcher opacity={BG[s] === PAPER ? 0.3 : 0.38} />
         {s === 'key' ? <KeyScene t={t} /> : null}
@@ -487,7 +497,7 @@ const World: React.FC<{t: number}> = ({t}) => {
         {s === 'quality' ? <QualityScene t={t} /> : null}
         {s === 'close' ? <CloseScene t={t} /> : null}
       </Renderer>
-      <Laptop screen={stage.rt.texture} dim={power} />
+      <Laptop screen={stage.rt.texture} dim={power * 0.9} />
       <ScreenLight color={glow} level={lv} />
       <Halo color={glow} level={lv} />
       <Desk glow={glow} level={lv} />
@@ -508,7 +518,7 @@ export const Objects: React.FC = () => {
         <World t={t} />
       </ThreeCanvas>
       {/* film grain and a soft vignette, as a phone camera in a dark room sees it */}
-      <AbsoluteFill style={{backgroundImage: `url(${staticFile('paper/tex/grain.png')})`, backgroundSize: '360px', backgroundPosition: `${(f * 137) % 360}px ${(f * 251) % 360}px`, mixBlendMode: 'screen', opacity: 0.07}} />
+      <AbsoluteFill style={{backgroundImage: `url(${staticFile('paper/tex/grain.png')})`, backgroundSize: '360px', backgroundPosition: `${(f * 137) % 360}px ${(f * 251) % 360}px`, mixBlendMode: 'screen', opacity: 0.05}} />
       <AbsoluteFill style={{background: 'radial-gradient(ellipse 85% 60% at 50% 45%, transparent 55%, rgba(0,0,0,0.55) 100%)'}} />
       {IDS.map((id) => (
         <Sequence key={id} from={Math.round(AT[id] * FPS)} durationInFrames={Math.ceil((LEN[id] + 0.2) * FPS)} layout="none">

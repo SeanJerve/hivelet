@@ -26,7 +26,7 @@ export const inOut = (x: number) => { const t = clamp01(x); return t < 0.5 ? 4 *
 export const caption = (c: CanvasRenderingContext2D, t: number, text: string, at: number, dur: number,
   o: {dark?: boolean; accent?: string[]; color?: string; x?: number; y?: number; size?: number} = {}) => {
   if (t < at - 0.1) return;
-  const {dark = false, accent = [], color = GREEN, x = 92, y = 912, size = 34} = o;
+  const {dark = false, accent = [], color = GREEN, x = 92, y = 912, size = 38} = o;
   const n = Math.round(clamp01((t - at) / dur) * text.length);
   c.save();
   c.textBaseline = 'alphabetic';

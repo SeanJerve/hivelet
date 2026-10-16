@@ -52,7 +52,7 @@ const FloorShader = {
       vec2 uv = vUv.xy / vUv.w;
       // blur grows with distance from the laptop's footprint, as a lacquered desk blurs
       float away = max(0.0, length(vec2(vWorld.x * 0.55, vWorld.z - 0.2)) - 0.9);
-      float lod = clamp(0.4 + away * 0.9, 0.0, 6.0);
+      float lod = clamp(0.9 + away * 0.9, 0.0, 6.0);
       vec3 r = textureLod(tDiffuse, uv, lod).rgb;
       r += textureLod(tDiffuse, uv + vec2(0.0015, 0.0), lod + 0.5).rgb;
       r += textureLod(tDiffuse, uv - vec2(0.0015, 0.0), lod + 0.5).rgb;
@@ -69,7 +69,7 @@ const FloorShader = {
     }`,
 };
 
-export const Desk: React.FC<{glow: THREE.Color; level: number; refl?: number}> = ({glow, level, refl = 0.42}) => {
+export const Desk: React.FC<{glow: THREE.Color; level: number; refl?: number}> = ({glow, level, refl = 0.26}) => {
   const {size} = useThree();
   const mirror = useMemo(() => {
     const m = new Reflector(new THREE.PlaneGeometry(60, 60), {
@@ -94,7 +94,7 @@ const alu = new THREE.MeshStandardMaterial({color: '#1d1e21', metalness: 0.55, r
 const aluDark = new THREE.MeshStandardMaterial({color: '#141517', metalness: 0.6, roughness: 0.5});
 const keyMat = new THREE.MeshStandardMaterial({color: '#0c0c0d', metalness: 0.1, roughness: 0.55});
 const wellMat = new THREE.MeshStandardMaterial({color: '#060607', metalness: 0.2, roughness: 0.8});
-const padMat = new THREE.MeshPhysicalMaterial({color: '#141518', metalness: 0.2, roughness: 0.5, clearcoat: 0.3, clearcoatRoughness: 0.5});
+const padMat = new THREE.MeshStandardMaterial({color: '#151619', metalness: 0.3, roughness: 0.7});
 const bezelMat = new THREE.MeshPhysicalMaterial({color: '#050505', metalness: 0.0, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.08});
 
 const KEYS = (() => {
@@ -194,11 +194,12 @@ const haloTex = (() => {
   const g = c.getContext('2d')!;
   const img = g.createImageData(512, 340);
   for (let y = 0; y < 340; y++) for (let x = 0; x < 512; x++) {
-    // distance outside a rounded rectangle the size of the panel (inner 80%)
-    const dx = Math.max(0, Math.abs(x - 256) - 205) / 51, dy = Math.max(0, Math.abs(y - 170) - 136) / 34;
-    const d = Math.hypot(dx, dy);
-    const inside = Math.abs(x - 256) <= 205 && Math.abs(y - 170) <= 136;
-    const v = inside ? 0.35 : Math.exp(-d * d * 3.2) * 0.9;
+    // distance outside the panel (the plane is 1.18 times the panel): nothing over the panel
+    // itself, a falloff from its edge outward
+    const hw = 256 / 1.18, hh = 170 / 1.18;
+    const dx = Math.max(0, Math.abs(x - 256) - hw) / 40, dy = Math.max(0, Math.abs(y - 170) - hh) / 26;
+    const inside = Math.abs(x - 256) <= hw && Math.abs(y - 170) <= hh;
+    const v = inside ? 0 : Math.exp(-(dx * dx + dy * dy) * 3.2) * 0.9;
     const i = (y * 512 + x) * 4;
     img.data[i] = img.data[i + 1] = img.data[i + 2] = 255; img.data[i + 3] = Math.round(v * 255);
   }
@@ -208,12 +209,12 @@ const haloTex = (() => {
 })();
 export const Halo: React.FC<{color: THREE.Color; level: number; open?: number}> = ({color, level, open = 1}) => {
   const mat = useMemo(() => new THREE.MeshBasicMaterial({map: haloTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false}), []);
-  mat.color.copy(color).multiplyScalar(0.16 * level);
+  mat.color.copy(color).multiplyScalar(0.07 * level);
   const {centre, normal, up} = screenFrame(open);
   const q = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3().crossVectors(up, normal), up, normal));
   return (
     <mesh material={mat} position={centre.clone().add(normal.clone().multiplyScalar(0.03))} quaternion={q}>
-      <planeGeometry args={[L.scrW * 1.25, L.scrH * 1.25]} />
+      <planeGeometry args={[L.scrW * 1.18, L.scrH * 1.18]} />
     </mesh>
   );
 };
