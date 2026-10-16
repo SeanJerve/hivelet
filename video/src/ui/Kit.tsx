@@ -4,7 +4,7 @@
 // status pills are 12px semibold. Scenes scale the whole stage up.
 import React from 'react';
 import {ArrowUpRight, Bell, Menu} from 'lucide-react';
-import {C, jakarta} from '../theme';
+import {C, jakarta, sora} from '../theme';
 
 export type Tone = 'plain' | 'soft' | 'brand' | 'night';
 const TILE: Record<Tone, React.CSSProperties> = {
@@ -97,20 +97,21 @@ export const Field: React.FC<{label: string; children: React.ReactNode; style?: 
   </div>
 );
 
-// The top bar every signed-in page shares.
+// The top bar every signed-in page shares (components/layout/AppHeader.vue): the
+// wordmark alone, in the display face, and a dot on the bell when anything is
+// unread, red on the owner's side and green on a tenant's phone.
 export const AppHeader: React.FC<{initials: string; unread: number; phone?: boolean; ring?: number}> = ({initials, unread, phone, ring = 0}) => (
   <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: phone ? 64 : 62, borderBottom: `1px solid ${C.line}`, fontFamily: jakarta}}>
     <div style={{display: 'flex', alignItems: 'center', gap: 18}}>
       {phone ? <Menu size={22} color={C.inkSoft} /> : null}
-      <span style={{display: 'flex', alignItems: 'center', gap: 8}}><Mark size={phone ? 26 : 28} />
-      <span style={{fontSize: phone ? 21 : 22, fontWeight: 700, letterSpacing: '-0.03em', color: C.ink}}>Hivelet</span></span>
+      <span style={{fontFamily: sora, fontSize: 20, fontWeight: 600, letterSpacing: '-0.025em', color: C.ink}}>Hivelet</span>
     </div>
     <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
       <div style={{position: 'relative', transform: `rotate(${Math.sin(ring * Math.PI * 6) * 14 * (1 - ring)}deg)`}}>
-        <IconBtn><Bell size={18} strokeWidth={1.8} /></IconBtn>
+        <div style={{width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.ink}}><Bell size={20} strokeWidth={1.8} /></div>
         {unread > 0 ? (
-          <span style={{position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 9, background: phone ? C.brand : C.overdue, color: '#fff',
-            fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${C.canvas}`}}>{unread}</span>
+          <span style={{position: 'absolute', top: 6, right: 7, width: 10, height: 10, borderRadius: 5, background: phone ? C.brand : C.overdue,
+            transform: `scale(${1 + Math.sin(Math.min(1, ring * 3) * Math.PI) * 0.6})`}} />
         ) : null}
       </div>
       <div style={{width: 36, height: 36, borderRadius: 18, background: C.brand, color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>{initials}</div>

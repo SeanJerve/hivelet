@@ -2,13 +2,13 @@
 // Income recording a payment down to the second-payment warning. Headlines
 // stay in the text column; the app stays in the visual zone to its right.
 import React from 'react';
-import {AbsoluteFill, useCurrentFrame} from 'remotion';
-import {Download, Plus} from 'lucide-react';
+import {AbsoluteFill} from 'remotion';
+import {FileSpreadsheet, Plus} from 'lucide-react';
 import {C, jakarta} from '../theme';
-import {camera, cameraAt, Cam, count, easeInOut, flyIn, lerp, peso, pop, t01} from '../anim';
+import {camera, cameraAt, Cam, count, easeInOut, flyIn, lerp, peso, pop, t01, useFrame} from '../anim';
 import {ActionCam, Bg, Focus, GRID, Head, Stage} from '../fx';
 import {Btn, Cursor, Ripple, Tile} from '../ui/Kit';
-import {AttentionTile, ChartTile, ClustersTile, CollectedTile, ConfirmDialog, LedgerHead, LedgerRow, LedgerRowData, OccupancyTile, OverviewHead, RecordModal, UnitCard} from '../ui/Admin';
+import {AttentionTile, ChartTile, ClustersTile, CollectedTile, ConfirmDialog, LedgerCardHead, LedgerHead, LedgerRow, LedgerRowData, OccupancyTile, OverviewHead, RECORD, ReceivedTile, RecordModal, SplitTile, UnitCard} from '../ui/Admin';
 import {Cues} from '../Sfx';
 import {typedOf} from '../typing.mjs';
 
@@ -35,25 +35,28 @@ const toScreen = (f: number, keys: Cam[], x: number, y: number) => {
 
 // ---- Overview -------------------------------------------------------------------
 export const Overview: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useFrame();
+  // The tiles sit OY lower than they did before the quick actions came in under
+  // the greeting, so every camera key that looks at a tile moves down with them.
+  const OY = 64;
   const cam = camera(f, [
-    {at: 0, x: 527, y: 438, s: 0.78, rx: 30, rz: -12},
-    {at: 30, x: 527, y: 438, s: 0.8, rx: 18, rz: -6, dur: 70},
-    {at: 96, x: 215, y: 270, s: 1.45, rx: 4, rz: -1, dur: 60},
-    {at: 150, x: 616, y: 270, s: 1.45, rx: 3, rz: 0, dur: 56},
-    {at: 200, x: 420, y: 650, s: 1.18, rx: 0, rz: 0, dur: 44},
+    {at: 0, x: 527, y: 438 + OY, s: 0.78, rx: 30, rz: -12},
+    {at: 30, x: 527, y: 438 + OY, s: 0.8, rx: 18, rz: -6, dur: 70},
+    {at: 96, x: 215, y: 270 + OY, s: 1.45, rx: 4, rz: -1, dur: 60},
+    {at: 150, x: 616, y: 270 + OY, s: 1.45, rx: 3, rz: 0, dur: 56},
+    {at: 200, x: 420, y: 650 + OY, s: 1.18, rx: 0, rz: 0, dur: 44},
   ], 2, CX);
   return (
     <AbsoluteFill>
       <Bg mood="light" hex glowX={70} />
       <Zone>
-        <Stage cam={cam} w={1054} h={876}>
+        <Stage cam={cam} w={1054} h={876 + OY}>
           <Piece f={f} at={2} x={0} y={0} shadow={false}><OverviewHead f={f} at={6} /></Piece>
-          <Piece f={f} at={8} x={0} y={100}><AttentionTile f={f} at={140} /></Piece>
-          <Piece f={f} at={16} x={446} y={100}><CollectedTile f={f} at={160} /></Piece>
-          <Piece f={f} at={24} x={802} y={100}><OccupancyTile f={f} at={60} /></Piece>
-          <Piece f={f} at={32} x={0} y={456}><ChartTile f={f} at={226} /></Piece>
-          <Piece f={f} at={40} x={713} y={456}><ClustersTile f={f} at={70} /></Piece>
+          <Piece f={f} at={8} x={0} y={100 + OY}><AttentionTile f={f} at={140} /></Piece>
+          <Piece f={f} at={16} x={446} y={100 + OY}><CollectedTile f={f} at={160} /></Piece>
+          <Piece f={f} at={24} x={802} y={100 + OY}><OccupancyTile f={f} at={60} /></Piece>
+          <Piece f={f} at={32} x={0} y={456 + OY}><ChartTile f={f} at={226} /></Piece>
+          <Piece f={f} at={40} x={713} y={456 + OY}><ClustersTile f={f} at={70} /></Piece>
         </Stage>
       </Zone>
       <Head size={100} text={'What needs her,\nfirst.'} accent={['first.']} at={16} out={138} />
@@ -77,7 +80,7 @@ const UNITS: [string, string, string | null, number][] = [
   ['LF', 'One-bedroom', 'Josefina Nieva', 6000], ['LB', 'One-bedroom', 'Ramil Balingbing', 5500],
 ];
 export const Rooms: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const cols = 11;
   const cam = camera(f, [
     {at: 0, x: 1413, y: 321, s: 0.52, rx: 50, rz: -24},
@@ -115,15 +118,15 @@ export const Rooms: React.FC = () => {
 
 // ---- Monthly Income -------------------------------------------------------------
 const ROWS: LedgerRowData[] = [
-  {unit: '1a', paid: 'Sep 4, 2026', period: 'Sep 5 – Oct 4', who: 'Andrea Villanueva', or: '5089', rent: 4500, water: 200, heads: 1, garbage: 50},
-  {unit: '1b', paid: 'Sep 10, 2026', period: 'Sep 12 – Oct 11', who: 'Paolo Dimayuga', or: '5090', rent: 4500, water: 400, heads: 2, garbage: 50},
-  {unit: '1c', paid: 'Sep 2, 2026', period: 'Sep 3 – Oct 2', who: 'Kristine Salcedo', or: '5091', rent: 4800, water: 400, heads: 2, garbage: 50},
-  {unit: '1e', paid: 'Sep 7, 2026', period: 'Sep 8 – Oct 7', who: 'Bea Magbanua', or: '5092', rent: 4500, water: 400, heads: 2, garbage: 50},
-  {unit: '2a', paid: 'Sep 9, 2026', period: 'Sep 10 – Oct 9', who: 'Nicole Ong', or: '5075', rent: 6000, water: 600, heads: 3, garbage: 50},
-  {unit: '2b', paid: 'Sep 5, 2026', period: 'Sep 7 – Oct 6', who: 'Renzo Abrenica', or: '5076', rent: 4800, water: 200, heads: 1, garbage: 50},
+  {unit: '1a', paid: 'Sep 4, 2026', period: 'Sep 5 – Oct 4', who: 'Andrea Villanueva', or: '5089', rent: 4500, water: 200, heads: 1},
+  {unit: '1b', paid: 'Sep 10, 2026', period: 'Sep 12 – Oct 11', who: 'Paolo Dimayuga', or: '5090', rent: 4500, water: 400, heads: 2},
+  {unit: '1c', paid: 'Sep 2, 2026', period: 'Sep 3 – Oct 2', who: 'Kristine Salcedo', or: '5091', rent: 4800, water: 400, heads: 2},
+  {unit: '1e', paid: 'Sep 7, 2026', period: 'Sep 8 – Oct 7', who: 'Bea Magbanua', or: '5092', rent: 4500, water: 400, heads: 2},
+  {unit: '2a', paid: 'Sep 9, 2026', period: 'Sep 10 – Oct 9', who: 'Nicole Ong', or: '5075', rent: 6000, water: 600, heads: 3},
+  {unit: '2b', paid: 'Sep 5, 2026', period: 'Sep 7 – Oct 6', who: 'Renzo Abrenica', or: '5076', rent: 4800, water: 200, heads: 1},
 ];
 export const Income: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const keys: Cam[] = [
     {at: 0, x: 550, y: 430, s: 0.7, rx: 14, rz: -4},
     {at: 30, x: 550, y: 520, s: 0.76, rx: 0, rz: 0, dur: 70},
@@ -131,7 +134,7 @@ export const Income: React.FC = () => {
   const cam = camera(f, keys, 2, CX);
   const MZ = 1.1, MX = CX - (768 * MZ) / 2, MY = 175;
   const m = (x: number, y: number) => ({x: MX + x * MZ, y: MY + y * MZ});
-  const btn = toScreen(Math.max(f, 100), keys, 1005, 62);
+  const btn = toScreen(Math.max(f, 100), keys, 1013, 45);
   const modalP = pop(f, 128, {damping: 20, stiffness: 110});
   const unitOpen = t01(f, 170, 182) * (1 - t01(f, 208, 216));
   const chosen = f >= 210;
@@ -140,8 +143,9 @@ export const Income: React.FC = () => {
   const dim = t01(f, 128, 146) * 0.2;
 
   const path: [number, number, number][] = [
-    [100, 1780, 1000], [106, btn.x, btn.y], [150, m(384, 167).x, m(384, 167).y], [188, m(220, 337).x, m(220, 337).y],
-    [220, m(564, 357).x, m(564, 357).y], [268, m(651, 612).x, m(651, 612).y],
+    [100, 1780, 1000], [106, btn.x, btn.y], [150, m(RECORD.unit.x, RECORD.unit.y).x, m(RECORD.unit.x, RECORD.unit.y).y],
+    [188, m(RECORD.option.x, RECORD.option.y).x, m(RECORD.option.x, RECORD.option.y).y],
+    [220, m(RECORD.invoice.x, RECORD.invoice.y).x, m(RECORD.invoice.x, RECORD.invoice.y).y], [268, m(RECORD.save.x, RECORD.save.y).x, m(RECORD.save.x, RECORD.save.y).y],
   ];
   let cx = path[0][1], cy = path[0][2];
   for (let i = 1; i < path.length; i++) {
@@ -153,13 +157,13 @@ export const Income: React.FC = () => {
   // dialog opens, into the Unit field and its list, close on the receipt number
   // while it is typed, to the dialog's Record payment, then to the warning.
   const zoom: Focus[] = [
-    {at: 96, x: 1686, y: 192, s: 1.45, tx: 1420, ty: 400, dur: 26},
+    {at: 96, x: 1692, y: 179, s: 1.45, tx: 1420, ty: 400, dur: 26},
     {at: 126, s: 1, dur: 22},
     {at: 150, x: 1340, y: 380, s: 1.35, tx: 1340, ty: 470},
     {at: 184, x: 1250, y: 480, s: 1.35, tx: 1300, ty: 500, dur: 22},
     {at: 220, x: 1538, y: 568, s: 1.7, tx: 1420, ty: 540, dur: 22},
-    {at: 264, x: 1600, y: 800, s: 1.4, tx: 1420, ty: 640, dur: 22},
-    {at: 292, x: 1340, y: 400, s: 1.3, tx: 1340, ty: 480},
+    {at: 264, x: m(RECORD.save.x, RECORD.save.y).x - 20, y: m(RECORD.save.x, RECORD.save.y).y - 60, s: 1.4, tx: 1420, ty: 700, dur: 22},
+    {at: 292, x: 1340, y: 330, s: 1.18, tx: 1340, ty: 400},
     {at: 336, x: 1340, y: 540, s: 1.08, dur: 24},
   ];
   const press = Math.max(...clicks.map((c) => t01(f, c - 3, c) * (1 - t01(f, c, c + 7))));
@@ -169,44 +173,33 @@ export const Income: React.FC = () => {
       <Bg mood="light" hex glowX={70} />
       <Zone><ActionCam keys={zoom}>
       <Zone>
-        <Stage cam={cam} w={1100} h={900}>
+        <Stage cam={cam} w={1100} h={1000}>
           <Piece f={f} at={2} x={0} y={0} shadow={false}>
             <div style={{width: 1100, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: jakarta, color: C.ink}}>
               <div>
                 <div style={{fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: C.inkSoft}}>ADMIN</div>
-                <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4}}>Monthly Income</div>
-                <div style={{fontSize: 15, color: C.inkSoft, marginTop: 4}}>Every payment received, unit by unit.</div>
+                <div style={{fontSize: 40, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4}}>Monthly Income</div>
               </div>
-              <div style={{display: 'flex', gap: 10}}>
-                <Btn kind="plain" icon={<Download size={16} />}>Download 2026 for Excel</Btn>
+              <div style={{display: 'flex', gap: 22, alignItems: 'center'}}>
+                <span style={{display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 15, fontWeight: 700, color: C.brand}}>Download <FileSpreadsheet size={17} /></span>
                 <Btn kind="brand" icon={<Plus size={16} />} press={f < 132 ? press : 0}>Record payment</Btn>
               </div>
             </div>
           </Piece>
-          <Piece f={f} at={8} x={0} y={120}>
-            <Tile tone="night" title="Collected altogether" w={330} h={236}>
-              <div style={{fontSize: 44, fontWeight: 600, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums'}}>{peso(count(f, 16, 70, 1715600))}</div>
-              <div style={{fontSize: 15, color: C.onNightSoft, lineHeight: '22px'}}>Rent, water and garbage, from {count(f, 16, 70, 282)} payments</div>
-            </Tile>
-          </Piece>
-          {[['Rent', 1594400, 'The full rent from every payment', C.ink], ['Water', 108000, '₱200 a head, each month', C.ink],
-            ['50% Share', 461700, "Half of each BH payment's rent, worked out automatically", C.verify]].map(([t, v, s, col], i) => (
-            <Piece key={t as string} f={f} at={14 + i * 6} x={346 + i * 256} y={120}>
-              <Tile title={t as string} w={240} h={236}>
-                <div style={{fontSize: 30, fontWeight: 600, letterSpacing: '-0.03em', color: col as string, fontVariantNumeric: 'tabular-nums'}}>{peso(count(f, 20 + i * 6, 64, v as number))}</div>
-                <div style={{fontSize: 14, color: C.inkSoft, lineHeight: '21px'}}>{s as string}</div>
-              </Tile>
-            </Piece>
-          ))}
-          <Piece f={f} at={24} x={0} y={380}>
-            <div style={{width: 1100, borderRadius: 24, background: C.tile, overflow: 'hidden', paddingBottom: 8}}>
-              <LedgerHead />
-              {ROWS.map((r, i) => {
-                const at = 36 + i * 11;
-                const p = pop(f, at, {damping: 20, stiffness: 100});
-                return <LedgerRow key={r.or} r={r} flash={(1 - t01(f, at + 6, at + 40)) * (f >= at ? 0.9 : 0)}
-                  style={{opacity: Math.min(1, p * 1.6), transform: `translateX(${(1 - p) * 60}px)`}} />;
-              })}
+          <Piece f={f} at={8} x={0} y={110}><ReceivedTile f={f} at={16} w={352} h={300} /></Piece>
+          <Piece f={f} at={14} x={368} y={110}><SplitTile f={f} at={22} w={732} h={300} /></Piece>
+          <Piece f={f} at={24} x={0} y={430}>
+            <div style={{width: 1100, borderRadius: 24, background: C.tile, overflow: 'hidden'}}>
+              <LedgerCardHead f={f} at={30} />
+              <div style={{margin: 20, border: `1px solid ${C.line}`, borderRadius: 20, overflow: 'hidden'}}>
+                <LedgerHead />
+                {ROWS.map((r, i) => {
+                  const at = 36 + i * 11;
+                  const p = pop(f, at, {damping: 20, stiffness: 100});
+                  return <LedgerRow key={r.or} r={r} flash={(1 - t01(f, at + 6, at + 40)) * (f >= at ? 0.9 : 0)}
+                    style={{opacity: Math.min(1, p * 1.6), transform: `translateX(${(1 - p) * 60}px)`}} />;
+                })}
+              </div>
             </div>
           </Piece>
         </Stage>
@@ -214,15 +207,15 @@ export const Income: React.FC = () => {
       <AbsoluteFill style={{background: C.night, opacity: dim, WebkitMaskImage: DIM_MASK, maskImage: DIM_MASK}} />
       {f >= 128 ? (
         <div style={{position: 'absolute', left: MX / MZ, top: MY / MZ, zoom: MZ, transformOrigin: '100% 0', transform: `scale(${lerp(0.4, 1, modalP)})`, opacity: Math.min(1, modalP * 1.6)}}>
-          <RecordModal f={f} unit={chosen ? '2B, Renzo Abrenica (BH)' : '1A, Andrea Villanueva (BH)'} unitOpen={unitOpen}
-            rent={chosen ? '4800' : '4500'} water="200" or={orText} orFocus={f >= 234 && f < 288} total={chosen ? '₱5,000.00' : '₱4,700.00'}
+          <RecordModal f={f} unit={chosen ? '2B, Renzo Abrenica (Boarding House)' : '1A, Andrea Villanueva (Boarding House)'} unitOpen={unitOpen}
+            rent={chosen ? '4800' : '4500'} water="₱200.00" or={orText} orFocus={f >= 234 && f < 288} total={chosen ? '₱5,000.00' : '₱4,700.00'}
             press={f >= 282 && f < 296 ? press : 0} />
         </div>
       ) : null}
       {f >= 294 ? (
         <>
           <AbsoluteFill style={{background: C.night, opacity: t01(f, 294, 306) * 0.16, WebkitMaskImage: DIM_MASK, maskImage: DIM_MASK}} />
-          <div style={{position: 'absolute', left: (CX - (448 * 1.3) / 2) / 1.3, top: 150 / 1.3, zoom: 1.3, transform: `scale(${lerp(0.7, 1, confirmP)})`, opacity: Math.min(1, confirmP * 1.6)}}>
+          <div style={{position: 'absolute', left: (CX - (470 * 1.2) / 2) / 1.2, top: 60 / 1.2, zoom: 1.2, transform: `scale(${lerp(0.7, 1, confirmP)})`, opacity: Math.min(1, confirmP * 1.6)}}>
             <ConfirmDialog f={f} at={294} />
           </div>
         </>
@@ -235,7 +228,7 @@ export const Income: React.FC = () => {
       ) : null}
       </ActionCam></Zone>
       <Head size={100} text={'Her ledger.\nHer layout.'} accent={['ledger.']} at={14} out={116} />
-      <Head size={100} text={'Her receipt\nnumbers, kept.'} accent={['kept.']} at={138} out={284} />
+      <Head size={100} text={'Her invoice\nnumbers, kept.'} accent={['kept.']} at={138} out={284} />
       <Head size={100} text={'Paid twice?\nIt asks first.'} accent={['twice?']} at={298} />
       <Cues scene="income" />
     </AbsoluteFill>

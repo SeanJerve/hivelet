@@ -1,7 +1,7 @@
 // The tenant's phone screens, from views/TenantOverviewView.vue and
 // views/TenantTicketsView.vue, at the phone's own 390px width.
 import React from 'react';
-import {ChevronDown, CreditCard, Loader2, Send, Wrench, X} from 'lucide-react';
+import {ChevronDown, CreditCard, ImagePlus, Loader2, Send, Wrench, X} from 'lucide-react';
 import {C, jakarta} from '../theme';
 import {AppHeader, Btn, Field, Input, Pill, Tile} from './Kit';
 
@@ -39,11 +39,12 @@ export const AmountDue: React.FC<{amount: string; settled?: number; press?: numb
       {settled < 0.5 ? (
         <div style={{opacity: 1 - settled * 2}}>
           <div style={{fontSize: 36, fontWeight: 600, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums'}}>{amount}</div>
-          <div style={{fontSize: 14, color: C.onBrandSoft, marginTop: 10}}>Due October 5, 2026</div>
-          <div style={{fontSize: 14, lineHeight: '22px', color: C.onBrandSoft, marginTop: 12}}>
-            Your recorded payments cover rent up to October 4, 2026. Paying now covers October 5, 2026 to November 4, 2026 (₱4,700.00).
-          </div>
-          <div style={{marginTop: 18}}><Btn kind="light" icon={<CreditCard size={16} />} press={press}>Pay with GCash</Btn></div>
+          {/* TenantOverviewView.vue: the due date, the period it pays for, and how far her
+              receipts reach. The button sits at the foot of the tile, where it was. */}
+          <div style={{fontSize: 14, lineHeight: '20px', color: C.onBrandSoft, marginTop: 12}}>Due October 5, 2026</div>
+          <div style={{fontSize: 14, lineHeight: '20px', color: C.onBrandSoft, marginTop: 4}}>Rent for Oct 5 to Nov 4, 2026</div>
+          <div style={{fontSize: 14, lineHeight: '20px', color: C.onBrandSoft, marginTop: 12}}>Payments entered up to October 4, 2026.</div>
+          <div style={{marginTop: 54}}><Btn kind="light" icon={<CreditCard size={16} />} press={press}>Pay with GCash</Btn></div>
         </div>
       ) : (
         <div style={{opacity: (settled - 0.5) * 2, transform: `translateY(${(1 - settled) * 24}px)`}}>
@@ -62,8 +63,15 @@ export const TenantHome: React.FC<{amount: string; settled?: number; press?: num
     <div style={{fontSize: 14, color: C.inkSoft, marginTop: 4}}>Unit 1A, 1st Floor</div>
     <AmountDue amount={amount} settled={settled} press={press} pill={pill} style={{marginTop: 20}} />
     <Tile tone="night" title="Repairs" style={{marginTop: 16, gap: 12}}>
-      <div style={{fontSize: 14, lineHeight: '22px', color: C.onNightSoft}}>Tell the landlady what needs fixing in your unit, then follow the request until it is done.</div>
       <div><Btn kind="light" icon={<Wrench size={16} />}>Request a repair</Btn></div>
+    </Tile>
+    <Tile title="Payments" goto style={{marginTop: 16, gap: 10}}>
+      <div style={{fontSize: 12, color: C.inkSoft}}>Recorded by the landlady</div>
+      <div>
+        <div style={{fontSize: 15}}>Rent for Sep 5 to Oct 4, 2026</div>
+        <div style={{fontSize: 13, color: C.inkSoft, marginTop: 2}}>Paid Sep 4, 2026, Cash</div>
+        <div style={{display: 'flex', gap: 12, alignItems: 'center', marginTop: 8}}><Pill tone="paid">Verified</Pill><b style={{fontSize: 15}}>₱4,700.00</b></div>
+      </div>
     </Tile>
   </div>
 );
@@ -73,17 +81,22 @@ export const RepairForm: React.FC<{title: string; details: string; focus: 'title
     <AppHeader phone initials="AV" unread={unread} />
     <div style={{fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: C.inkSoft, marginTop: 20}}>MY ACCOUNT</div>
     <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4}}>Repairs</div>
-    <div style={{fontSize: 15, lineHeight: '23px', color: C.inkSoft, marginTop: 6}}>Tell the landlady what is wrong in unit 1a, and follow what happens next.</div>
     <div style={{marginTop: 18, borderRadius: 24, background: C.tile}}>
       <div style={{padding: '20px 20px 16px', borderBottom: `1px solid ${C.line}`}}>
         <div style={{fontSize: 16, fontWeight: 600}}>Report it</div>
-        <div style={{fontSize: 14, color: C.inkSoft, marginTop: 4}}>This goes straight to the landlady.</div>
       </div>
       <div style={{padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: 14}}>
         <Field label="What needs fixing"><Input value={title} placeholder="e.g. Bathroom sink pipe leak" focus={focus === 'title'} caret={focus === 'title'} /></Field>
         <Field label="Category"><Input value="Plumbing" right={<ChevronDown size={16} color={C.inkSoft} />} /></Field>
         <Field label="How urgent"><Input value="When you can" right={<ChevronDown size={16} color={C.inkSoft} />} /></Field>
         <Field label="Details"><Input area value={details} placeholder="Where it is in the unit, when it started, and how bad it is." focus={focus === 'details'} caret={focus === 'details'} /></Field>
+        <Field label="Photo (optional)">
+          <div style={{borderRadius: 16, border: `1.5px dashed ${C.line}`, background: C.canvas, padding: '14px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
+            <ImagePlus size={20} color={C.brand} />
+            <span style={{fontSize: 13, fontWeight: 600, color: C.ink}}>Add a photo</span>
+            <span style={{fontSize: 12, color: C.inkSoft}}>Optional. JPG or PNG.</span>
+          </div>
+        </Field>
         <Btn kind="brand" full icon={<Send size={14} />} press={press}>Send request</Btn>
       </div>
     </div>
@@ -256,7 +269,6 @@ export const PaymentsPage: React.FC<{grow: (i: number) => number; figures?: numb
       <div>
         <div style={{fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: C.inkFaint}}>MY ACCOUNT</div>
         <div style={{fontSize: 30, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.25, marginTop: 4}}>Payments and billing</div>
-        <div style={{fontSize: 14, lineHeight: '20px', color: C.inkSoft, marginTop: 4}}>Pay a bill with GCash, and see what has been recorded against your unit.</div>
         <div style={{display: 'inline-flex', minHeight: 44, alignItems: 'center', fontSize: 14, color: C.inkSoft, textDecoration: 'underline', textUnderlineOffset: 4, textDecorationColor: C.line}}>How paying online works</div>
       </div>
       <Tile tone="brand" title="Due" style={{padding: 20}}>
@@ -267,7 +279,7 @@ export const PaymentsPage: React.FC<{grow: (i: number) => number; figures?: numb
           </div>
         </div>
         <div><Btn kind="light" icon={<CreditCard size={16} />}>Pay with GCash</Btn></div>
-        <div style={{fontSize: 12, lineHeight: '20px', color: C.onBrandSoft}}>₱4,700.00 per period. Paid in person? It shows here once the landlady records the receipt.</div>
+        <div style={{fontSize: 12, lineHeight: '20px', color: C.onBrandSoft}}>Paid in person? It shows here once the landlady records it.</div>
       </Tile>
       <Tile title="Your rent" style={{padding: 20}}>
         <div style={{display: 'flex', flexDirection: 'column', fontSize: 14}}>
@@ -278,7 +290,7 @@ export const PaymentsPage: React.FC<{grow: (i: number) => number; figures?: numb
             </div>
           ))}
         </div>
-        <div style={{fontSize: 14, lineHeight: '24px', color: C.inkSoft}}>Rent is due on the 5th of each month. It counts as overdue from the day after, with no grace period.</div>
+        <div style={{fontSize: 14, lineHeight: '24px', color: C.inkSoft}}>Rent is due on the 5th of each month.</div>
       </Tile>
       <RentMonthsTile grow={grow} figures={figures} />
     </div>

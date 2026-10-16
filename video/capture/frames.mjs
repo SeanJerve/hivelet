@@ -35,14 +35,18 @@ const frames = specs.flatMap((s) => {
 const outDir = join(root, 'out', 'frames');
 mkdirSync(outDir, {recursive: true});
 const serveUrl = await bundle({entryPoint: join(root, 'src', 'index.ts'), publicDir: join(root, 'public')});
-const composition = await selectComposition({serveUrl, id: 'Hivelet'});
+// A machine that cannot download Remotion's browser names its own (REMOTION_BROWSER_EXECUTABLE).
+const browserExecutable = process.env.REMOTION_BROWSER_EXECUTABLE || null;
+const composition = await selectComposition({serveUrl, id: 'Hivelet', browserExecutable});
+// Frames here are the scenes' own 30 fps frames; the film is rendered at a higher rate.
+const K = composition.fps / 30;
 const shots = [];
 for (const f of frames) {
   const file = join(outDir, `${scene}-${String(f).padStart(4, '0')}.png`);
-  await renderStill({composition, serveUrl, output: file, frame: start[scene] + f, scale});
+  await renderStill({composition, serveUrl, output: file, frame: Math.round((start[scene] + f) * K), scale, browserExecutable});
   shots.push({f, file});
 }
-const browser = await chromium.launch();
+const browser = await chromium.launch({executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined});
 const page = await browser.newPage({viewport: {width: 1920, height: 900}});
 const cells = shots.map((s) => `<figure><img src="data:image/png;base64,${readFileSync(s.file).toString('base64')}"><figcaption>${scene} ${s.f}</figcaption></figure>`).join('');
 await page.setContent(`<style>body{margin:0;padding:10px;background:#111;display:grid;grid-template-columns:repeat(${cols},1fr);gap:10px;font:14px sans-serif;color:#5fc28e}figure{margin:0}img{width:100%;display:block}figcaption{margin-top:4px}</style>${cells}`);

@@ -16,7 +16,11 @@ const outDir = join(root, 'out', 'frames');
 mkdirSync(outDir, {recursive: true});
 
 const serveUrl = await bundle({entryPoint: join(root, 'src', 'index.ts'), publicDir: join(root, 'public')});
-const composition = await selectComposition({serveUrl, id: 'Hivelet'});
+// A machine that cannot download Remotion's browser names its own (REMOTION_BROWSER_EXECUTABLE).
+const browserExecutable = process.env.REMOTION_BROWSER_EXECUTABLE || null;
+const composition = await selectComposition({serveUrl, id: 'Hivelet', browserExecutable});
+// Frames here are the scenes' own 30 fps frames; the film is rendered at a higher rate.
+const K = composition.fps / 30;
 
 // Scene lengths, read from the same table the video uses (src/timeline.json).
 const scenes = JSON.parse(readFileSync(join(root, 'src', 'timeline.json'), 'utf8')).scenes.map((s) => ({id: s.id, dur: s.frames}));
@@ -32,12 +36,12 @@ const frames = asked.length
 
 const file = ({id, frame}) => join(outDir, `${String(frame).padStart(4, '0')}-${id}.png`);
 for (const fr of frames) {
-  await renderStill({composition, serveUrl, output: file(fr), frame: fr.frame, scale: 0.5});
+  await renderStill({composition, serveUrl, output: file(fr), frame: Math.round(fr.frame * K), scale: 0.5, browserExecutable});
   console.log('frame', fr.frame, fr.id);
 }
 
 if (!asked.length) {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined});
   const page = await browser.newPage({viewport: {width: 1800, height: 1000}});
   for (let sheet = 0; sheet * 12 < frames.length; sheet++) {
     const cells = frames.slice(sheet * 12, sheet * 12 + 12).map((fr) => {

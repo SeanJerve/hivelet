@@ -7,6 +7,7 @@ import {Income, Overview, Rooms} from './scenes/Owner';
 import {Guests, Tenant} from './scenes/People';
 import {End, Proof} from './scenes/End';
 import tl from './timeline.json';
+import {STEP} from './anim';
 
 const LandladyCard = () => <Chapter text="For the landlady." accent={['landlady.']} />;
 const TenantsCard = () => <Chapter text="For the tenants." accent={['tenants.']} />;
@@ -17,7 +18,8 @@ const COMPONENTS: Record<string, React.FC> = {
   'ch-tenants': TenantsCard, 'tenant': Tenant, 'ch-guests': GuestsCard, 'guests': Guests, 'proof': Proof, 'end': End,
 };
 
-// Scenes overlap by OVERLAP frames: each fades in over the tail of the last.
+// Scenes overlap by OVERLAP frames: each fades in over the tail of the last. Both, and TOTAL, are
+// in the scenes' own 30 fps frames; the Sequences are placed in rendered frames (x STEP).
 const OVERLAP = 16;
 export const TOTAL = tl.scenes.reduce((s, x) => s + x.frames, 0);
 
@@ -35,7 +37,7 @@ export const Video: React.FC = () => {
         at += s.frames;
         const Scene = COMPONENTS[s.id];
         return (
-          <Sequence key={s.id} from={from} durationInFrames={s.frames + OVERLAP} name={s.id}>
+          <Sequence key={s.id} from={from * STEP} durationInFrames={(s.frames + OVERLAP) * STEP} name={s.id}>
             {from === 0 ? <Scene /> : <FadeIn><Scene /></FadeIn>}
           </Sequence>
         );

@@ -29,12 +29,16 @@ const list = Object.entries(cues).flatMap(([scene, arr]) => (only && scene !== o
 const outDir = join(root, 'out', 'cues');
 mkdirSync(outDir, {recursive: true});
 const serveUrl = await bundle({entryPoint: join(root, 'src', 'index.ts'), publicDir: join(root, 'public')});
-const composition = await selectComposition({serveUrl, id: 'Hivelet'});
+// A machine that cannot download Remotion's browser names its own (REMOTION_BROWSER_EXECUTABLE).
+const browserExecutable = process.env.REMOTION_BROWSER_EXECUTABLE || null;
+const composition = await selectComposition({serveUrl, id: 'Hivelet', browserExecutable});
+// Frames here are the scenes' own 30 fps frames; the film is rendered at a higher rate.
+const K = composition.fps / 30;
 for (const c of list) {
   c.file = join(outDir, `${String(c.frame).padStart(4, '0')}.png`);
-  await renderStill({composition, serveUrl, output: c.file, frame: c.frame, scale: 0.4});
+  await renderStill({composition, serveUrl, output: c.file, frame: Math.round(c.frame * K), scale: 0.4, browserExecutable});
 }
-const browser = await chromium.launch();
+const browser = await chromium.launch({executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined});
 const page = await browser.newPage({viewport: {width: 1800, height: 900}});
 for (let s = 0; s * 16 < list.length; s++) {
   const cells = list.slice(s * 16, s * 16 + 16).map((c) => `<figure><img src="data:image/png;base64,${readFileSync(c.file).toString('base64')}"><figcaption><b>${c.scene} ${c.at}</b> · ${c.name}<br>${c.what}</figcaption></figure>`).join('');

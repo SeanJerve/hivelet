@@ -4,7 +4,7 @@
 // the app's own. The people and amounts are the same invented sample data the
 // capture harness uses.
 import React from 'react';
-import {Calendar, Check, ChevronDown, CreditCard, FileText, Inbox, Mail, Pencil, Phone, Plus, Search, Send, TriangleAlert, UserPlus, Wrench, X, XCircle} from 'lucide-react';
+import {Calendar, Check, ChevronDown, CreditCard, DoorOpen, FileText, Inbox, ReceiptText, Trash2, Mail, Pencil, Phone, Plus, Search, Send, TriangleAlert, UserPlus, Wrench, X, XCircle} from 'lucide-react';
 import {C, jakarta} from '../theme';
 import {count, lerp, peso, pop, t01} from '../anim';
 import {Btn, Field, IconBtn, Input, Pill, Tile} from './Kit';
@@ -13,18 +13,23 @@ const soft = (dark: boolean) => (dark ? C.onNightSoft : C.inkSoft);
 
 // ---- Overview ---------------------------------------------------------------
 
+// The date carries the year menu ("2026 ⌄"); the three green quick actions sit
+// under the greeting, Record payment last as the primary (AdminOverviewView.vue).
+export const OVERVIEW_HEAD_H = 150;
 export const OverviewHead: React.FC<{f: number; at?: number; press?: number}> = ({f, at = 0, press = 0}) => (
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: jakarta, width: 1054}}>
-    <div>
-      <div style={{fontSize: 14, color: C.inkSoft, opacity: t01(f, at, at + 10)}}>Tuesday, September 29, 2026</div>
-      <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4, color: C.ink, opacity: t01(f, at + 4, at + 18), transform: `translateY(${(1 - t01(f, at + 4, at + 22)) * 10}px)`}}>
-        Good afternoon, Michelle
-      </div>
+  <div style={{fontFamily: jakarta, width: 1054, height: OVERVIEW_HEAD_H}}>
+    <div style={{fontSize: 14, color: C.inkSoft, opacity: t01(f, at, at + 10), display: 'flex', alignItems: 'center', gap: 4}}>
+      Tuesday, September 29, <b style={{color: C.brand, fontWeight: 700}}>2026</b><ChevronDown size={14} color={C.brand} />
     </div>
-    <div style={{display: 'flex', gap: 10}}>
-      <Btn kind="plain" icon={<Calendar size={16} />}>2026 <ChevronDown size={14} /></Btn>
-      <Btn kind="brand" icon={<Plus size={16} />} press={press}>Record payment</Btn>
-      <Btn kind="plain" icon={<FileText size={16} />}>Record expense</Btn>
+    <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4, color: C.ink, opacity: t01(f, at + 4, at + 18), transform: `translateY(${(1 - t01(f, at + 4, at + 22)) * 10}px)`}}>
+      Good afternoon, Michelle
+    </div>
+    <div style={{display: 'flex', gap: 10, marginTop: 18}}>
+      {[['Move someone in/out', <DoorOpen key="d" size={16} />], ['Record expense', <ReceiptText key="r" size={16} />], ['Record payment', <Plus key="p" size={16} />]].map(([label, icon], i) => (
+        <span key={label as string} style={{opacity: t01(f, at + 10 + i * 3, at + 22 + i * 3), transform: `translateY(${(1 - t01(f, at + 10 + i * 3, at + 26 + i * 3)) * 12}px)`, display: 'inline-block'}}>
+          <Btn kind="brand" icon={icon as React.ReactNode} press={i === 2 ? press : 0}>{label as string}</Btn>
+        </span>
+      ))}
     </div>
   </div>
 );
@@ -59,12 +64,12 @@ export const AttentionTile: React.FC<{f: number; at?: number; name?: string; uni
 };
 
 export const CollectedTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) => (
-  <Tile title="Collected in September" goto w={340} h={340}>
-    <div style={{fontSize: 48, fontWeight: 600, letterSpacing: '-0.03em', marginTop: 8, fontVariantNumeric: 'tabular-nums'}}>{peso(count(f, at + 4, 36, 160400))}</div>
-    <div style={{fontSize: 15, color: C.inkSoft, marginTop: -6}}>{count(f, at + 4, 36, 26)} collections entered this month</div>
+  <Tile title="Rent and water for September 2026" goto w={340} h={340}>
+    <div style={{fontSize: 48, fontWeight: 600, letterSpacing: '-0.03em', marginTop: 0, fontVariantNumeric: 'tabular-nums', lineHeight: 1}}>{peso(count(f, at + 4, 36, 160400))}</div>
+    <div style={{fontSize: 15, color: C.inkSoft, marginTop: -4}}>{count(f, at + 4, 36, 26)} payments</div>
     <div style={{flex: 1}} />
     <div style={{borderTop: `1px solid ${C.line}`, paddingTop: 16, display: 'flex', justifyContent: 'space-between', fontSize: 15}}>
-      <span style={{color: C.inkSoft}}>2026 so far</span>
+      <span style={{color: C.inkSoft}}>Total for 2026</span>
       <span style={{fontWeight: 600, fontVariantNumeric: 'tabular-nums'}}>{peso(count(f, at + 10, 40, 1715600))}</span>
     </div>
   </Tile>
@@ -103,7 +108,7 @@ export const ChartTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const values = [0.972, 0.972, 0.972, 0.972, 0.972, 0.972, 0.972, 0.972, 0.802];
   return (
-    <Tile title="Collections in 2026" goto w={697} h={420}>
+    <Tile title="Rent and water by month, 2026" goto w={697} h={420}>
       <div style={{display: 'flex', gap: 10, height: 230, alignItems: 'flex-end', paddingTop: 6}}>
         <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 224, fontSize: 12, color: C.inkFaint, marginRight: 6, alignSelf: 'flex-start'}}>
           <span>₱200k</span><span>₱100k</span><span>₱0</span>
@@ -141,7 +146,7 @@ export const ChartTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) => {
 
 export const ClustersTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) => {
   const rows = [
-    {name: 'BH', of: [22, 22], rent: 104700},
+    {name: 'Boarding House', of: [22, 22], rent: 104700},
     {name: 'Back Apartment', of: [4, 5], rent: 28000},
     {name: 'Penthouse', of: [1, 1], rent: 12000},
     {name: 'Front Apartment', of: [3, 3], rent: 24500},
@@ -154,7 +159,7 @@ export const ClustersTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) =>
         return (
           <div key={r.name} style={{display: 'flex', flexDirection: 'column', gap: 8}}>
             <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 14}}>
-              <span style={{fontWeight: 600}}>{r.name}</span><span style={{color: C.inkSoft}}>{r.of[0]} of {r.of[1]} occupied</span>
+              <span style={{fontWeight: 500}}>{r.name}</span><span style={{color: C.inkSoft}}>{r.of[0]} of {r.of[1]} occupied</span>
             </div>
             <div style={{display: 'flex', gap: segs > 10 ? 3 : 4}}>
               {Array.from({length: segs}, (_, k) => {
@@ -163,7 +168,7 @@ export const ClustersTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) =>
                   background: on ? C.brand : k < r.of[0] ? C.line : `repeating-linear-gradient(135deg, ${C.hatch} 0 1.5px, transparent 1.5px 5px)`}} />;
               })}
             </div>
-            <div style={{fontSize: 12, color: C.inkSoft}}>Monthly rent of occupied units {peso(count(f, at + 8 + i * 5, 26, r.rent))}</div>
+            <div style={{fontSize: 12, color: C.inkSoft}}>Total rent {peso(count(f, at + 8 + i * 5, 26, r.rent))}</div>
           </div>
         );
       })}
@@ -173,77 +178,163 @@ export const ClustersTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) =>
 
 // ---- Rooms and rates ---------------------------------------------------------------
 
+// No pill on an occupied unit: every card said "Occupied", which said nothing, so
+// the app shows one only for Vacant or Reserved, and "None" under Tenant there.
 export const UnitCard: React.FC<{code: string; type: string; tenant?: string; rent: number; vacant?: boolean; style?: React.CSSProperties}> = ({code, type, tenant, rent, vacant, style}) => (
   <div style={{width: 241, height: 198, boxSizing: 'border-box', borderRadius: 20, border: `1px solid ${C.line}`, background: C.tile, padding: '18px 20px', fontFamily: jakarta, color: C.ink, ...style}}>
     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
       <div>
-        <div style={{fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: '28px'}}>{code}</div>
+        <div style={{fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: '28px'}}>{code}</div>
         <div style={{fontSize: 14, color: C.inkSoft, marginTop: 2}}>{type}</div>
       </div>
-      <Pill tone={vacant ? 'unentered' : 'paid'}>{vacant ? 'Vacant' : 'Occupied'}</Pill>
+      {vacant ? <Pill tone="unentered">Vacant</Pill> : null}
     </div>
     <div style={{borderTop: `1px solid ${C.line}`, margin: '14px 0 12px'}} />
     <div style={{fontSize: 12, color: C.inkFaint}}>Tenant</div>
-    <div style={{fontSize: 14, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{tenant ?? '—'}</div>
+    <div style={{fontSize: 14, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{vacant ? 'None' : tenant ?? 'None'}</div>
     <div style={{fontSize: 12, color: C.inkFaint, marginTop: 10}}>Monthly rent</div>
-    <div style={{fontSize: 14, fontWeight: 600, marginTop: 2}}>{peso(rent)}</div>
+    <div style={{fontSize: 17, fontWeight: 700, marginTop: 2, color: C.brand}}>{peso(rent)}</div>
   </div>
 );
 
 // ---- Monthly Income ---------------------------------------------------------------
+// views/IncomeCollectionsView.vue: the month's figures on the night tile, the year
+// split by cluster, then the ledger, one card per cluster, in her workbook's
+// columns (Rent, Water, Remitted = rent + water). Sample figures.
 
-export type LedgerRowData = {unit: string; paid: string; period: string; who: string; or: string; rent: number; water: number; heads: number; garbage: number};
-export const LEDGER_COLS = [70, 150, 220, 118, 118, 118, 96, 128];
+export const ReceivedTile: React.FC<{f: number; at?: number; w: number; h: number}> = ({f, at = 0, w, h}) => (
+  <Tile tone="night" title="Received, September 2026" w={w} h={h} style={{gap: 10}}>
+    <div style={{fontSize: 40, fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1, fontVariantNumeric: 'tabular-nums'}}>{peso(count(f, at, 60, 160400))}</div>
+    <div style={{fontSize: 14, color: C.onNightSoft}}>From {count(f, at, 60, 26)} payments</div>
+    <div style={{flex: 1}} />
+    {[['Rent', 150200], ['Water', 10200], ['50% Share', 41400]].map(([k, v], i) => (
+      <div key={k as string} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(255,255,255,0.1)', padding: '9px 0 0', fontSize: 14}}>
+        <span style={{color: C.onNightSoft}}>{k as string}</span>
+        <span style={{fontSize: 17, fontWeight: 600, fontVariantNumeric: 'tabular-nums'}}>{peso(count(f, at + 6 + i * 4, 56, v as number))}</span>
+      </div>
+    ))}
+  </Tile>
+);
+
+// Where the year's rent and water came from: a true part-to-whole by cluster.
+const SPLIT: [string, number, string][] = [
+  ['Boarding House', 997000, C.brand], ['Back Apartment', 268900, C.brandBright], ['Front Apartment', 229400, C.ink],
+  ['Penthouse', 116100, C.brandSoft], ['Linda Units', 104200, 'hatch'],
+];
+const SPLIT_TOTAL = SPLIT.reduce((a, [, v]) => a + v, 0);
+const HATCHED = `repeating-linear-gradient(135deg, ${C.hatch} 0 1.5px, transparent 1.5px 6px)`;
+export const SplitTile: React.FC<{f: number; at?: number; w: number; h: number}> = ({f, at = 0, w, h}) => {
+  const grow = t01(f, at + 6, at + 46);
+  return (
+    <Tile title="Where it came from, 2026" w={w} h={h} style={{gap: 12}}>
+      <div style={{display: 'flex', alignItems: 'baseline', gap: 10}}>
+        <span style={{fontSize: 30, fontWeight: 700, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums'}}>{peso(count(f, at, 60, SPLIT_TOTAL))}</span>
+        <span style={{fontSize: 14, color: C.inkSoft}}>received from {count(f, at, 60, 282)} payments</span>
+      </div>
+      <div style={{display: 'flex', gap: 4, height: 12}}>
+        {SPLIT.map(([n, v, col]) => (
+          <span key={n} style={{flex: (v / SPLIT_TOTAL) * grow + 0.0001, borderRadius: 6, background: col === 'hatch' ? HATCHED : col, opacity: grow > 0 ? 1 : 0}} />
+        ))}
+      </div>
+      <div style={{display: 'flex', flexDirection: 'column', gap: 4}}>
+        {SPLIT.map(([n, v, col], i) => (
+          <div key={n} style={{display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, opacity: t01(f, at + 10 + i * 3, at + 22 + i * 3)}}>
+            <span style={{width: 12, height: 12, borderRadius: 6, background: col === 'hatch' ? HATCHED : col, border: col === 'hatch' || col === C.brandSoft ? `1px solid ${C.line}` : 'none', boxSizing: 'border-box'}} />
+            <span style={{flex: 1}}>{n}</span>
+            <span style={{fontSize: 12, color: C.inkSoft, width: 34, textAlign: 'right'}}>{Math.round((v / SPLIT_TOTAL) * 100)}%</span>
+            <span style={{fontWeight: 700, width: 92, textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{peso(v)}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{fontSize: 12, color: C.inkSoft}}>Water is ₱200 per person each month.</div>
+    </Tile>
+  );
+};
+
+export type LedgerRowData = {unit: string; paid: string; period: string; who: string; or: string; rent: number; water: number; heads: number};
+export const LEDGER_COLS = [70, 170, 330, 160, 150, 160];
+// The cluster card's own head: its name, its rooms, and what it remitted this year.
+export const LedgerCardHead: React.FC<{f: number; at?: number}> = ({f, at = 0}) => (
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 28px', borderBottom: `1px solid ${C.line}`, fontFamily: jakarta, color: C.ink}}>
+    <div>
+      <div style={{display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 700}}><ChevronDown size={16} />Boarding House</div>
+      <div style={{fontSize: 13, color: C.inkSoft, marginTop: 4, paddingLeft: 24}}>22 Rooms</div>
+    </div>
+    <div style={{textAlign: 'right'}}>
+      <div style={{fontSize: 12, color: C.inkSoft}}>Remitted</div>
+      <div style={{fontSize: 30, fontWeight: 700, letterSpacing: '-0.03em', color: C.brand, fontVariantNumeric: 'tabular-nums'}}>{peso(count(f, at, 60, 997000))}</div>
+    </div>
+  </div>
+);
 export const LedgerHead: React.FC = () => (
-  <div style={{display: 'flex', padding: '0 28px', height: 48, alignItems: 'center', fontSize: 12, color: C.inkFaint, fontFamily: jakarta, borderBottom: `1px solid ${C.line}`}}>
-    {['Unit', 'Paid', 'Who', 'Rent', '50% Share', 'Water', 'Garbage', 'Remitted'].map((h, i) => (
-      <div key={h} style={{width: LEDGER_COLS[i], textAlign: i >= 3 ? 'right' : 'left', paddingRight: i >= 3 ? 12 : 0}}>{h}</div>
+  <div style={{display: 'flex', padding: '0 28px', height: 52, alignItems: 'center', fontSize: 12, color: C.inkSoft, fontFamily: jakarta, borderBottom: `1px solid ${C.line}`}}>
+    {['Unit', 'Paid', 'Who', 'Rent', 'Water', 'Remitted'].map((h, i) => (
+      <div key={h} style={{width: LEDGER_COLS[i], textAlign: i >= 3 ? 'right' : 'left', paddingRight: i >= 3 ? 12 : 0, lineHeight: '16px'}}>
+        {h}{i === 5 ? <div>rent + water</div> : null}
+      </div>
     ))}
   </div>
 );
 export const LedgerRow: React.FC<{r: LedgerRowData; flash?: number; style?: React.CSSProperties}> = ({r, flash = 0, style}) => {
-  const cells = [peso(r.rent, 2), peso(r.rent / 2, 2), peso(r.water, 2), peso(r.garbage, 2), peso(r.rent + r.water + r.garbage, 2)];
+  const cells = [peso(r.rent, 2), peso(r.water, 2), peso(r.rent + r.water, 2)];
   return (
-    <div style={{display: 'flex', padding: '0 28px', height: 62, alignItems: 'center', fontSize: 14, fontFamily: jakarta, color: C.ink,
+    <div style={{display: 'flex', padding: '0 28px', height: 60, alignItems: 'center', fontSize: 14, fontFamily: jakarta, color: C.ink,
       borderBottom: `1px solid ${C.line}`, background: `rgba(226,240,231,${flash})`, ...style}}>
-      <div style={{width: LEDGER_COLS[0], fontWeight: 600, textTransform: 'uppercase'}}>{r.unit}</div>
+      <div style={{width: LEDGER_COLS[0], fontWeight: 700, textTransform: 'uppercase'}}>{r.unit}</div>
       <div style={{width: LEDGER_COLS[1]}}>{r.paid}<div style={{fontSize: 12, color: C.inkFaint}}>{r.period}</div></div>
       <div style={{width: LEDGER_COLS[2]}}>{r.who}<div style={{fontSize: 12, color: C.inkFaint}}>{r.or}</div></div>
       {cells.map((c, i) => (
         <div key={i} style={{width: LEDGER_COLS[3 + i], textAlign: 'right', paddingRight: 12, fontVariantNumeric: 'tabular-nums',
-          color: i === 1 ? C.verify : i === 4 ? C.brand : C.ink, fontWeight: i === 4 ? 600 : 400}}>
+          color: i === 2 ? C.brand : C.ink, fontWeight: 700}}>
           {c}
-          {i === 2 ? <div style={{fontSize: 12, color: C.inkFaint}}>{r.heads} head{r.heads > 1 ? 's' : ''}</div> : null}
+          {i === 1 ? <div style={{fontSize: 12, color: C.inkFaint, fontWeight: 400}}>{r.heads} head{r.heads > 1 ? 's' : ''}</div> : null}
         </div>
       ))}
     </div>
   );
 };
 
-// The on-site payment dialog, components/modals/OnsitePaymentModal.vue.
-export const RecordModal: React.FC<{f: number; unit: string; unitOpen?: number; or: string; orFocus?: boolean; rent: string; water: string; total: string; press?: number}> = ({
-  unit, unitOpen = 0, or, orFocus, rent, water, total, press = 0,
+// The on-site payment dialog, components/modals/OnsitePaymentModal.vue, as it is
+// now: occupants set the water (₱200 a person, never typed), the invoice field
+// takes a number or ACK, and the months covered come before the date received.
+// Where things are, for the scene's pointer: the Unit field's middle (384, 169),
+// the 2B option (220, 339), the invoice field (564, 357), Record payment (651, 713).
+export const RECORD = {unit: {x: 384, y: 169}, option: {x: 220, y: 339}, invoice: {x: 564, y: 357}, save: {x: 651, y: 713}};
+export const RecordModal: React.FC<{f: number; unit: string; unitOpen?: number; or: string; orFocus?: boolean; rent: string; water: string; total: string; press?: number; heads?: number; covers?: [string, string]}> = ({
+  unit, unitOpen = 0, or, orFocus, rent, water, total, press = 0, heads = 1, covers = ['09/07/2026', '10/06/2026'],
 }) => (
   <div style={{width: 768, borderRadius: 28, background: C.tile, fontFamily: jakarta, color: C.ink, boxShadow: '0 40px 120px rgba(15,27,21,0.35)'}}>
-    <div style={{padding: '28px 32px 22px', borderBottom: `1px solid ${C.line}`, display: 'flex', justifyContent: 'space-between'}}>
+    <div style={{height: 102, boxSizing: 'border-box', padding: '28px 32px 0', borderBottom: `1px solid ${C.line}`, display: 'flex', justifyContent: 'space-between'}}>
       <div>
         <div style={{fontSize: 21, fontWeight: 600, letterSpacing: '-0.01em'}}>Record payment</div>
-        <div style={{fontSize: 15, color: C.inkSoft, marginTop: 6}}>Money handed over in person, or an online payment you are entering yourself.</div>
+        <div style={{fontSize: 15, color: C.inkSoft, marginTop: 6}}>In person, or an online payment you are entering yourself.</div>
       </div>
       <IconBtn><X size={18} /></IconBtn>
     </div>
     <div style={{padding: '22px 32px', display: 'flex', flexDirection: 'column', gap: 16, position: 'relative'}}>
       <Field label="Unit"><Input value={unit} focus={unitOpen > 0} right={<ChevronDown size={16} color={C.inkSoft} />} /></Field>
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16}}>
+      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, height: 90}}>
+        <Field label="Occupants"><Input value={String(heads)} /></Field>
+        <Field label="Water"><Input value={water} disabled /><span style={{fontSize: 13, color: C.inkSoft}}>{heads} × ₱200 a month</span></Field>
+      </div>
+      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, height: 88}}>
         <Field label="Rent"><Input value={rent} /></Field>
-        <Field label="Water"><Input value={water} /><span style={{fontSize: 13, color: C.inkSoft}}>₱200 × 1 person</span></Field>
-        <Field label="Garbage fee"><Input value="0" /></Field>
-        <Field label="Receipt (OR) number"><Input value={or} placeholder="OR#4627" mono focus={orFocus} caret={orFocus} /></Field>
+        <Field label="Invoice or acknowledgement receipt (if any)">
+          <Input value={or} mono focus={orFocus} caret={orFocus}
+            right={<span style={{fontFamily: jakarta, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', color: C.inkSoft, background: C.canvas, borderRadius: 999, padding: '7px 12px', marginRight: -10}}>ACK</span>} />
+          <span style={{fontSize: 13, color: C.inkSoft, opacity: or.length >= 4 ? 1 : 0}}>Saved as INV#{or}</span>
+        </Field>
+      </div>
+      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16}}>
         <Field label="How they paid"><Input value="Cash" right={<ChevronDown size={16} color={C.inkSoft} />} /></Field>
-        <Field label="Their reference number" style={{opacity: 0.55}}><Input placeholder="GCash reference" disabled /></Field>
+      </div>
+      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16}}>
+        <Field label="Months covered"><Input value="1" /></Field>
+        <Field label="Covering from"><Input value={covers[0]} right={<Calendar size={16} color={C.inkSoft} />} /></Field>
+        <Field label="Covering to"><Input value={covers[1]} disabled /></Field>
       </div>
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'end'}}>
-        <Field label="Date received"><Input value="29/09/2026" right={<Calendar size={16} color={C.inkSoft} />} /></Field>
+        <Field label="Date received"><Input value="09/29/2026" right={<Calendar size={16} color={C.inkSoft} />} /></Field>
         <div style={{borderRadius: 18, background: C.canvas, padding: '12px 18px'}}>
           <div style={{fontSize: 12, color: C.inkFaint}}>Total handed over</div>
           <div style={{fontSize: 26, fontWeight: 600, color: C.brand, fontVariantNumeric: 'tabular-nums'}}>{total}</div>
@@ -252,7 +343,7 @@ export const RecordModal: React.FC<{f: number; unit: string; unitOpen?: number; 
       {unitOpen > 0 ? (
         <div style={{position: 'absolute', left: 32, right: 32, top: 90, borderRadius: 20, background: C.tile, boxShadow: '0 20px 50px rgba(15,27,21,0.2)', border: `1px solid ${C.line}`,
           padding: 6, opacity: Math.min(1, unitOpen * 2), transform: `translateY(${(1 - unitOpen) * -10}px) scale(${lerp(0.96, 1, unitOpen)})`, transformOrigin: 'top center'}}>
-          {['1A, Andrea Villanueva (BH)', '1B, Paolo Dimayuga (BH)', '2A, Nicole Ong (BH)', '2B, Renzo Abrenica (BH)', '2C, Trisha Delos Santos (BH)'].map((o) => (
+          {['1A, Andrea Villanueva (Boarding House)', '1B, Paolo Dimayuga + 1 roommate (Boarding House)', '2A, Nicole Ong + 2 roommates (Boarding House)', '2B, Renzo Abrenica (Boarding House)', '2C, Trisha Delos Santos (Boarding House)'].map((o) => (
             <div key={o} style={{padding: '10px 14px', borderRadius: 14, fontSize: 14, background: o.startsWith('2B') && unitOpen > 0.9 ? C.brandSoft : 'transparent',
               color: o.startsWith('2B') && unitOpen > 0.9 ? C.brand : C.ink, fontWeight: o.startsWith('2B') && unitOpen > 0.9 ? 600 : 400}}>{o}</div>
           ))}
@@ -266,12 +357,18 @@ export const RecordModal: React.FC<{f: number; unit: string; unitOpen?: number; 
   </div>
 );
 
-// Its confirmation, with the second-payment warning.
+// Its confirmation, with the second-payment warning: the earlier payment it found,
+// then every figure, and "Record it anyway" instead of "Record it".
 export const ConfirmDialog: React.FC<{f: number; at: number}> = ({f, at}) => {
   const warn = pop(f, at + 8, {damping: 11, stiffness: 190});
   const shake = Math.sin(t01(f, at + 10, at + 26) * Math.PI * 5) * 6 * (1 - t01(f, at + 10, at + 26));
+  const row = (k: string, v: React.ReactNode, strong = false) => (
+    <div key={k} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, fontSize: 14, padding: '5px 0', color: C.inkSoft}}>
+      <span style={{color: strong ? C.ink : C.inkSoft, fontWeight: strong ? 600 : 400}}>{k}</span><span style={{color: C.ink, textAlign: 'right'}}>{v}</span>
+    </div>
+  );
   return (
-    <div style={{width: 448, borderRadius: 28, background: C.tile, fontFamily: jakarta, color: C.ink, boxShadow: '0 40px 120px rgba(15,27,21,0.4)'}}>
+    <div style={{width: 470, borderRadius: 28, background: C.tile, fontFamily: jakarta, color: C.ink, boxShadow: '0 40px 120px rgba(15,27,21,0.4)'}}>
       <div style={{padding: '26px 28px 20px', borderBottom: `1px solid ${C.line}`, display: 'flex', justifyContent: 'space-between'}}>
         <div>
           <div style={{fontSize: 19, fontWeight: 600}}>Record this payment?</div>
@@ -279,19 +376,22 @@ export const ConfirmDialog: React.FC<{f: number; at: number}> = ({f, at}) => {
         </div>
         <IconBtn><X size={18} /></IconBtn>
       </div>
-      <div style={{padding: '22px 28px 8px'}}>
-        <div style={{borderRadius: 18, background: C.verifySoft, color: C.ink, padding: '14px 18px', fontSize: 13.5, lineHeight: '21px',
+      <div style={{padding: '20px 28px 8px'}}>
+        <div style={{borderRadius: 18, background: C.verifySoft, color: C.ink, padding: '14px 18px', fontSize: 13.5, lineHeight: '21px', marginBottom: 10,
           transform: `translateX(${shake}px) scale(${lerp(0.9, 1, warn)})`, opacity: Math.min(1, warn * 2)}}>
-          <div style={{display: 'flex', gap: 8, alignItems: 'center', fontWeight: 600, color: C.ink}}><TriangleAlert size={16} color={C.verify} />2B already has a payment recorded for this period</div>
-          <div style={{marginTop: 6}}>Sep 7 {'–'} Oct 6: ₱4,800.00 rent, OR#5076, paid Sep 5, 2026</div>
-          <div style={{marginTop: 6}}>Fine if this settles a remaining balance. If it's the same receipt entered twice, check the OR number first.</div>
+          <div style={{display: 'flex', gap: 8, alignItems: 'flex-start', fontWeight: 600, color: C.ink}}><TriangleAlert size={16} color={C.verify} style={{marginTop: 2, flexShrink: 0}} />2B already has a payment recorded for this period</div>
+          <div style={{marginTop: 6}}>Sep 7 {'–'} Oct 6: ₱4,800.00 rent, invoice INV#5076, paid Sep 5, 2026</div>
+          <div style={{marginTop: 6}}>Fine if this settles a remaining balance. If it's the same payment entered twice, check the invoice number first.</div>
         </div>
-        {[['Unit', '2B'], ['Rent', '₱4,800.00'], ['Water', '₱200.00'], ['Garbage fee', '₱0.00']].map(([k, v]) => (
-          <div key={k} style={{display: 'flex', justifyContent: 'space-between', fontSize: 14, padding: '7px 0', color: C.inkSoft}}><span>{k}</span><span style={{color: C.ink}}>{v}</span></div>
-        ))}
-        <div style={{display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${C.line}`, padding: '12px 0', fontWeight: 600}}><span>Total handed over</span><span style={{fontSize: 20}}>₱5,000.00</span></div>
+        {row('Unit', <b style={{fontWeight: 600}}>2B</b>)}
+        {row('Rent', <b style={{fontWeight: 600}}>₱4,800.00</b>)}
+        {row('Water', <><b style={{fontWeight: 600}}>₱200.00</b><span style={{display: 'block', fontSize: 12, color: C.inkFaint}}>1 person × ₱200</span></>)}
+        {row('Invoice', <span style={{fontFamily: 'ui-monospace, Consolas, monospace'}}>INV#5120</span>)}
+        <div style={{borderTop: `1px solid ${C.line}`, marginTop: 4, paddingTop: 4}}>{row('Total handed over', <b style={{fontSize: 18, fontWeight: 600}}>₱5,000.00</b>, true)}</div>
+        <div style={{borderTop: `1px solid ${C.line}`, marginTop: 4, paddingTop: 4}}>{row('Covers', '1 month, Sep 7, 2026 to Oct 6, 2026')}</div>
+        {row('Method', 'Cash')}
       </div>
-      <div style={{padding: '14px 28px 22px', borderTop: `1px solid ${C.line}`, display: 'flex', justifyContent: 'flex-end', gap: 10}}>
+      <div style={{padding: '14px 28px 22px', borderTop: `1px solid ${C.line}`, display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8}}>
         <Btn kind="plain">Go back</Btn>
         <Btn kind="brand">Record it anyway</Btn>
       </div>
@@ -301,16 +401,20 @@ export const ConfirmDialog: React.FC<{f: number; at: number}> = ({f, at}) => {
 
 // ---- Repairs ---------------------------------------------------------------
 
-export const RepairCard: React.FC<{title: string; meta: string; reported: string; tech: string; prio: string; prioTone?: 'verify' | 'neutral'; style?: React.CSSProperties}> = ({title, meta, reported, tech, prio, prioTone = 'neutral', style}) => (
+// A card on the repairs board (MaintenanceDispatchView.vue): the unit, the
+// priority, the title, then its category, when it was reported and who is on it.
+export const RepairCard: React.FC<{title: string; unit: string; category: string; reported: string; tech: string; prio: string; prioTone?: 'verify' | 'neutral'; style?: React.CSSProperties}> = ({title, unit, category, reported, tech, prio, prioTone = 'neutral', style}) => (
   <div style={{width: 293, boxSizing: 'border-box', borderRadius: 20, border: `1px solid ${C.line}`, background: C.tile, padding: '18px 20px', fontFamily: jakarta, color: C.ink, ...style}}>
-    <div style={{display: 'flex', justifyContent: 'space-between', gap: 8}}>
-      <div style={{fontSize: 15, fontWeight: 600, lineHeight: '20px'}}>{title}</div>
+    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8}}>
+      <div style={{fontSize: 14, fontWeight: 700, letterSpacing: '0.02em'}}>UNIT {unit}</div>
       <Pill tone={prioTone}>{prio}</Pill>
     </div>
-    <div style={{fontSize: 13, color: C.inkFaint, marginTop: 4}}>{meta}</div>
-    <div style={{fontSize: 13, color: C.inkSoft, marginTop: 12}}><span style={{color: C.inkFaint}}>Reported </span>{reported}</div>
-    <div style={{fontSize: 13, color: C.inkSoft, marginTop: 4}}><span style={{color: C.inkFaint}}>Technician </span>{tech}</div>
-    <div style={{marginTop: 14}}><Btn kind="plain" icon={<Pencil size={14} />}>Manage</Btn></div>
+    <div style={{fontSize: 17, fontWeight: 700, lineHeight: '22px', marginTop: 10}}>{title}</div>
+    <div style={{fontSize: 13, color: C.inkSoft, marginTop: 8, lineHeight: '20px'}}>{category}<br />Reported {reported}<br />{tech}</div>
+    <div style={{borderTop: `1px solid ${C.line}`, marginTop: 12, paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+      <Btn kind="plain" icon={<Pencil size={14} />}>Manage</Btn>
+      <Trash2 size={17} color={C.overdue} style={{marginRight: 8}} />
+    </div>
   </div>
 );
 
@@ -362,12 +466,13 @@ export const NotePanel: React.FC<{unread: number; children: React.ReactNode; w?:
 
 // ---- Inquiries ------------------------------------------------------------------
 // views/InquiriesView.vue at the xl layout: the inquiries on the left (a third),
-// the one being read on the right, with what was said and "Your answer" under it.
-// A new inquiry drops in at the top (`arrive`), is picked (`picked`), her answer
-// is typed, and "Save reply" puts it in the thread (`saved`), which also moves the
-// inquiry from Pending ("Waiting for an answer") to Contacted ("Answered"), as
+// with search, Status and Order above them; the one being read on the right, with
+// what was said and the reply box under it, its send button inside, as in a chat
+// app. A new inquiry drops in at the top (`arrive`), is picked (`picked`), her
+// answer is typed, and sending it puts it in the thread (`saved`), which also moves
+// the inquiry from Pending ("Waiting for an answer") to Contacted ("Answered"), as
 // routes/admin.ts does when she replies.
-export const INBOX = {w: 946, list: 330, gap: 16, detail: 600, head: 114, h: 666, detailHead: 216, thread: 206};
+export const INBOX = {w: 946, list: 330, gap: 16, detail: 600, head: 114, h: 666, listHead: 186, detailHead: 216, thread: 354, composer: 96};
 type Lead = {name: string; date: string; unit: string; status: 'Pending' | 'Contacted' | 'Closed'; msg: string};
 const STATUS_WORD = {Pending: 'Waiting for an answer', Contacted: 'Answered', Closed: 'Nothing came of it'} as const;
 const STATUS_TONE = {Pending: 'verify', Contacted: 'neutral', Closed: 'neutral'} as const;
@@ -399,13 +504,16 @@ export const InquiryInbox: React.FC<{lead: Lead; others: Lead[]; arrive: number;
     <div style={{width: INBOX.w, fontFamily: jakarta, color: C.ink}}>
       <div style={{height: INBOX.head - 24}}>
         <div style={{fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: C.inkFaint}}>ADMIN</div>
-        <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.25, marginTop: 4}}>Inquiries</div>
-        <div style={{fontSize: 14, lineHeight: '24px', color: C.inkSoft, marginTop: 4}}>Each inquiry, what they asked, and what you answered.</div>
+        <div style={{fontSize: 40, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.25, marginTop: 4}}>Inquiries</div>
       </div>
       <div style={{display: 'flex', gap: INBOX.gap, marginTop: 24, height: INBOX.h}}>
         <div style={{width: INBOX.list, borderRadius: 24, background: C.tile, overflow: 'hidden'}}>
-          <div style={{padding: 16, borderBottom: `1px solid ${C.line}`}}>
+          <div style={{height: INBOX.listHead, boxSizing: 'border-box', padding: 16, borderBottom: `1px solid ${C.line}`}}>
             <Input placeholder="Search" style={{paddingLeft: 44, position: 'relative'}} right={<Search size={16} color={C.inkFaint} style={{position: 'absolute', left: 16, top: 14}} />} />
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12}}>
+              <Field label="Status"><Input value="All inquiries" right={<ChevronDown size={14} color={C.inkSoft} />} /></Field>
+              <Field label="Order"><Input value="Newest first" right={<ChevronDown size={14} color={C.inkSoft} />} /></Field>
+            </div>
             <div style={{fontSize: 14, color: C.inkSoft, marginTop: 12}}>{count} {count === 1 ? 'inquiry' : 'inquiries'}</div>
           </div>
           <div style={{height: arrive * 138, overflow: 'hidden'}}><LeadRow lead={now} active={picked > 0.5} /></div>
@@ -422,15 +530,20 @@ export const InquiryInbox: React.FC<{lead: Lead; others: Lead[]; arrive: number;
           {picked > 0 ? (
             <div style={{opacity: picked, transform: `translateY(${(1 - picked) * 10}px)`}}>
               <div style={{height: INBOX.detailHead, boxSizing: 'border-box', padding: 24, borderBottom: `1px solid ${C.line}`}}>
-                <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                  <span style={{fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em'}}>{lead.name}</span><Pill tone={STATUS_TONE[now.status]}>{STATUS_WORD[now.status]}</Pill>
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                  <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                    <span style={{fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em'}}>{lead.name}</span>
+                    <span style={{fontSize: 12, letterSpacing: '0.08em', color: C.inkFaint}}>{refCode}</span>
+                    <Pill tone={STATUS_TONE[now.status]}>{STATUS_WORD[now.status]}</Pill>
+                  </div>
+                  <Trash2 size={18} color={C.overdue} />
                 </div>
                 <div style={{display: 'flex', alignItems: 'center', columnGap: 16, marginTop: 8, fontSize: 14, color: C.inkSoft, minHeight: 44}}>
-                  <span style={{display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, color: C.ink, fontVariantNumeric: 'tabular-nums'}}><Phone size={14} />0918-555-0142</span>
+                  <span style={{display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, color: C.ink, fontVariantNumeric: 'tabular-nums'}}><Phone size={14} />0918 555 0142</span>
                   <span style={{display: 'inline-flex', alignItems: 'center', gap: 6}}><Mail size={14} />kaye.ordonez@email.com</span>
                 </div>
                 <div style={{fontSize: 14, color: C.inkSoft, marginTop: 8}}>
-                  Asking about unit <b style={{fontWeight: 600, color: C.ink}}>B3B</b>, which rents for <b style={{fontWeight: 600, color: C.ink}}>₱8,500</b> a month.
+                  Filed under unit <b style={{fontWeight: 600, color: C.ink}}>B3B</b>, which rents for <b style={{fontWeight: 600, color: C.ink}}>₱8,500</b> a month.
                 </div>
                 <div style={{display: 'flex', gap: 8, marginTop: 16}}>
                   <Btn kind="plain" icon={<XCircle size={14} />}>Close inquiry</Btn>
@@ -441,13 +554,13 @@ export const InquiryInbox: React.FC<{lead: Lead; others: Lead[]; arrive: number;
                 <Bubble who={lead.name} when="Sep 29, 4:12 PM" text={lead.msg} />
                 {saved > 0 ? <Bubble mine who="You" when="Sep 29, 4:20 PM" text={replyText} p={saved} /> : null}
               </div>
-              <div style={{borderTop: `1px solid ${C.line}`, padding: 24}}>
-                <Field label="Your answer"><Input area value={reply} placeholder="Opo, vacant pa po ang unit. Pwede po kayong mag-viewing bukas." focus={replyFocus} caret={replyFocus} /></Field>
-                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 12}}>
-                  <div style={{maxWidth: 400, fontSize: 13, lineHeight: '22px', color: C.inkSoft}}>
-                    {lead.name} reads this on their inquiry page and can write back here (reference {refCode}). No text or email is sent, so call if it is urgent.
-                  </div>
-                  <Btn kind="brand" press={press} icon={<Send size={16} />} style={{flexShrink: 0}}>Save reply</Btn>
+              <div style={{height: INBOX.composer, boxSizing: 'border-box', borderTop: `1px solid ${C.line}`, padding: 20}}>
+                <div style={{position: 'relative', height: 56, boxSizing: 'border-box', borderRadius: 28, border: `1px solid ${C.line}`, background: C.tile, padding: '17px 64px 0 20px',
+                  fontSize: 14, color: reply ? C.ink : C.inkFaint, boxShadow: replyFocus ? `0 0 0 2px ${C.tile}, 0 0 0 5px ${C.ink}` : 'none'}}>
+                  {reply || 'Write a reply'}
+                  {replyFocus ? <span style={{display: 'inline-block', width: 1.5, height: 17, background: C.ink, marginLeft: 1, verticalAlign: 'text-bottom'}} /> : null}
+                  <div style={{position: 'absolute', right: 6, bottom: 6, width: 44, height: 44, borderRadius: 22, background: press > 0 ? C.brandStrong : C.brand,
+                    opacity: reply ? 1 : 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${1 - 0.06 * press})`}}><Send size={16} color="#fff" /></div>
                 </div>
               </div>
             </div>

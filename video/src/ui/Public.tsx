@@ -81,14 +81,11 @@ export const AskDialog: React.FC<{name: string; phone: string; email: string; qu
           opacity: 1 - out, transform: `translateY(${-14 * out}px)`}}>
           <X size={18} color={C.inkSoft} style={{position: 'absolute', right: 26, top: 26}} />
           <div style={{fontFamily: sora, fontSize: 32, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.15}}>Ask about unit B3B</div>
-          <div style={{fontSize: 12, color: C.inkSoft, lineHeight: 1.625, marginTop: 16, maxWidth: 448}}>
-            {LANDLADY}, who runs the boarding house, reads these herself and replies by phone or email. Nothing is sent to you automatically. See the <span style={link}>privacy policy</span> for what happens to this information.
-          </div>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 28, rowGap: 22, marginTop: 34}}>
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 28, rowGap: 28, marginTop: 40}}>
             <Field label="Your name" style={{gridColumn: 'span 2'}}><Input value={name} /></Field>
-            <Field label="Phone number"><Input value={phone} placeholder="0917-000-0000" /></Field>
             <Field label="Email address"><Input value={email} placeholder="you@email.com" /></Field>
-            <Field label="Your question" style={{gridColumn: 'span 2'}}><Input area value={question} focus={focus === 'question'} caret={focus === 'question'} /></Field>
+            <Field label="Phone number"><Input value={phone} placeholder="0917 123 4567" /></Field>
+            <Field label="Your question" style={{gridColumn: 'span 2'}}><Input area value={question} focus={focus === 'question'} caret={focus === 'question'} style={{minHeight: 120}} /></Field>
           </div>
           <div style={{display: 'flex', alignItems: 'center', gap: 24, marginTop: 'auto'}}>
             <Btn kind="brand" press={press} icon={<Send size={15} />}>Send inquiry</Btn>
@@ -101,16 +98,16 @@ export const AskDialog: React.FC<{name: string; phone: string; email: string; qu
           opacity: inn, transform: `translateY(${16 * (1 - inn)}px)`}}>
           <div style={{fontFamily: sora, fontSize: 32, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.15}}>Your message about unit B3B is saved</div>
           <div style={{fontSize: 14, color: C.inkSoft, lineHeight: 1.625, marginTop: 16, maxWidth: 448}}>
-            {LANDLADY}, who runs the boarding house, reads every inquiry herself. She replies here, and may also call <span style={{color: C.ink}}>0918-555-0142</span>. No automatic confirmation email or text is sent.
+            We will reply on your inquiry page, and may also call <span style={{color: C.ink}}>0918 555 0142</span>.
           </div>
           <div style={{marginTop: 24, maxWidth: 576, borderLeft: `2px solid ${C.brand}`, paddingLeft: 16}}>
-            <div style={{fontSize: 14, lineHeight: 1.625, color: C.ink}}>{LANDLADY} answers on your inquiry's own page. Open it any time to read her reply and write back.</div>
+            <div style={{fontSize: 14, lineHeight: 1.625, color: C.ink}}>Open your inquiry page any time to read the reply and write back.</div>
             <div style={{display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 16}}>
               <Btn kind="brand" icon={<MessageSquare size={16} />}>Open your conversation</Btn>
               <Btn kind="plain" icon={<Copy size={16} />}>Copy the link</Btn>
             </div>
             <div style={{fontSize: 12, lineHeight: 1.625, color: C.inkSoft, marginTop: 16}}>
-              Your reference is <b style={{fontWeight: 500, color: C.ink, letterSpacing: '0.08em', fontSize: 14}}>{REF_CODE}</b>. Write it down: with the phone number you gave, it opens the same page at <span style={link}>hivelet.vercel.app/inquiry</span> if you lose the link.
+              Your reference code is <b style={{fontWeight: 500, color: C.ink, letterSpacing: '0.08em', fontSize: 14}}>{REF_CODE}</b>. Write it down. If you lose the link, go to <b style={{fontWeight: 600}}>hivelet.vercel.app/inquiry</b> and enter this code with your phone number.
             </div>
           </div>
           <div style={{marginTop: 'auto'}}><Btn kind="brand" style={{padding: '0 20px'}}>Done</Btn></div>
@@ -139,15 +136,15 @@ export const InquiryThread: React.FC<{question: string; replyText: string; reply
       <div style={{display: 'inline-flex', minHeight: 44, alignItems: 'center', gap: 6, fontSize: 12, color: C.inkSoft}}><ArrowLeft size={14} /><span style={link}>Your inquiries</span></div>
       <div style={{fontFamily: sora, fontSize: 30, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1.2, marginTop: 8}}>Your inquiry</div>
       <div style={{fontSize: 12, color: C.inkSoft, marginTop: 8}}>Sent Sep 29, 2026, 4:12 PM · Reference <span style={{fontWeight: 500, color: C.ink, letterSpacing: '0.08em'}}>{REF_CODE}</span></div>
-      <div style={{fontSize: 14, marginTop: 16, height: 20}}>{waiting ? `Waiting for ${LANDLADY} to reply. Check back here.` : `${LANDLADY} has replied.`}</div>
+      <div style={{fontSize: 14, marginTop: 16, height: 20}}>{waiting ? 'Waiting for a reply. Check back here.' : 'You have a reply.'}</div>
       <div style={{marginTop: 24, height: 238, display: 'flex', flexDirection: 'column', gap: 12}}>
         <Said mine who="You" when="Sep 29, 2026, 4:12 PM" body={question} />
-        {reply > 0 ? <Said who={LANDLADY} when="Sep 29, 2026, 4:20 PM" body={replyText} p={reply} /> : null}
+        {reply > 0 ? <Said who="Boarding house" when="Sep 29, 2026, 4:20 PM" body={replyText} p={reply} /> : null}
         {sent > 0 ? <Said mine who="You" when="Sep 29, 2026, 4:31 PM" body={backText} p={sent} /> : null}
       </div>
       <div style={{marginTop: 16}}><Btn kind="plain" icon={<RotateCw size={16} />}>Check for a reply</Btn></div>
       <div style={{marginTop: 32}}>
-        <Field label={`Write back to ${LANDLADY}`}><Input area value={back} placeholder="For example: a time you can come to view the unit." focus={backFocus} caret={backFocus} /></Field>
+        <Field label="Write back"><Input area value={back} placeholder="For example: a time you can come to view the unit." focus={backFocus} caret={backFocus} /></Field>
         <div style={{marginTop: 12}}><Btn kind="brand" press={press} icon={<Send size={16} />}>Send</Btn></div>
       </div>
     </div>

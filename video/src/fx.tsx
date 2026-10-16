@@ -2,9 +2,9 @@
 // headlines with one coloured word, chapter cards, and a sharp 3D stage.
 // Only the app's colours and fonts (plus the lighter accent steps in theme.ts).
 import React from 'react';
-import {AbsoluteFill, useCurrentFrame} from 'remotion';
+import {AbsoluteFill} from 'remotion';
 import {C, H, W, jakarta, sora} from './theme';
-import {easeIn, easeInOut, lerp, pop, t01} from './anim';
+import {easeIn, easeInOut, lerp, pop, t01, useFrame} from './anim';
 
 // The grid every scene keeps to. Text lives in the left column; the visual
 // lives in its own zone to the right. Nothing crosses from one to the other.
@@ -15,7 +15,7 @@ export const Kin: React.FC<{
   text: string; at: number; out?: number; size: number; color?: string; accentColor?: string; font?: string; weight?: number;
   align?: 'left' | 'center' | 'right'; lh?: number; ls?: string; stagger?: number; style?: React.CSSProperties; accent?: string[];
 }> = ({text, at, out, size, color = C.ink, accentColor = C.brandBright, font = sora, weight = 700, align = 'left', lh = 1.06, ls = '-0.045em', stagger = 3, style, accent = []}) => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   // Accent words are matched without their punctuation, on both sides.
   const bare = (w: string) => w.replace(/[.,!?]/g, '');
   const accented = accent.map(bare);
@@ -49,7 +49,7 @@ export const Head: React.FC<{
   text: string; accent?: string[]; sub?: string; at: number; out?: number; dark?: boolean; size?: number;
   left?: number; top?: number; width?: number; accentColor?: string; align?: 'left' | 'center'; subSize?: number;
 }> = ({text, accent, sub, at, out, dark, size = 80, left = GRID.textX, top = 360, width = GRID.textW, accentColor, align = 'left', subSize = 28}) => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const sp = t01(f, at + 16, at + 36);
   const se = out === undefined ? 0 : t01(f, out, out + 12);
   return (
@@ -65,7 +65,7 @@ export const Head: React.FC<{
 
 // A chapter card: one line, centred, that eases in and gives way to the scene.
 export const Chapter: React.FC<{text: string; accent: string[]}> = ({text, accent}) => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const line = t01(f, 4, 30);
   return (
     <AbsoluteFill>
@@ -80,7 +80,7 @@ export const Chapter: React.FC<{text: string; accent: string[]}> = ({text, accen
 
 // A honeycomb drawn as an SVG pattern: the hive in the name, used quietly.
 export const Honeycomb: React.FC<{opacity?: number; color?: string; r?: number; drift?: number}> = ({opacity = 0.08, color = '#ffffff', r = 42, drift = 0.15}) => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const w = Math.sqrt(3) * r, h = 3 * r;
   const hex = (cx: number, cy: number) => Array.from({length: 6}, (_, k) => {
     const a = (Math.PI / 180) * (60 * k - 90);
@@ -137,7 +137,7 @@ export const FloorShadow: React.FC<{x: number; y: number; w: number; lift?: numb
 
 // Every scene fades in over the one before it.
 export const FadeIn: React.FC<{children: React.ReactNode; dur?: number}> = ({children, dur = 18}) => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   return <AbsoluteFill style={{opacity: t01(f, 0, dur)}}>{children}</AbsoluteFill>;
 };
 
@@ -163,7 +163,7 @@ export function focusAt(f: number, keys: Focus[]) {
   return {s, ox, oy, at: (p: {x: number; y: number}) => ({x: ox + s * p.x, y: oy + s * p.y})};
 }
 export const ActionCam: React.FC<{keys: Focus[]; children: React.ReactNode}> = ({keys, children}) => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const v = focusAt(f, keys);
   return <AbsoluteFill style={{transformOrigin: '0 0', transform: `translate(${v.ox}px, ${v.oy}px) scale(${v.s})`}}>{children}</AbsoluteFill>;
 };
