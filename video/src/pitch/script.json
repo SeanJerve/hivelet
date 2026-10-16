@@ -1,0 +1,26 @@
+{
+  "voice": "af_heart",
+  "speed": 1.0,
+  "note": "The voiceover, one phrase per clip, so every phrase's start is known to the frame. Facts from FINAL/ (Sections 1.1, 4.1.1, 4.2, 4.4.4, Table 4-17). Phoneme fixes put Hivelet as HIVE-let and Fe Galang as Feh ga-LANG.",
+  "fixes": {"hˈɪvɛlɪt": "hˈaɪvlət", "fˈiː ɡˈælæŋ": "fˈɛ ɡɐlˈɑŋ"},
+  "lines": [
+    {"id": "units", "text": "Thirty-three units."},
+    {"id": "landlady", "text": "One landlady."},
+    {"id": "drive", "text": "And every peso, typed into a spreadsheet on a single USB drive."},
+    {"id": "invoices", "text": "Invoices in a paper book."},
+    {"id": "repairs", "text": "Repairs, lost in a chat."},
+    {"id": "inquiries", "text": "Inquiries that leave no trace."},
+    {"id": "nothing", "text": "Nothing connected."},
+    {"id": "built", "text": "So we built Hivelet."},
+    {"id": "ledger", "text": "Her ledger, in her own layout. Every payment counted, every invoice kept."},
+    {"id": "tenants", "text": "Tenants see their rent on their phones, and pay with GCash when they want to."},
+    {"id": "tracked", "text": "Repairs are tracked, from request to done."},
+    {"id": "visitors", "text": "Visitors ask about a vacant room. No account needed."},
+    {"id": "installs", "text": "And it installs like an app that still opens offline."},
+    {"id": "records", "text": "Built on nine hundred thirty-seven of her real records."},
+    {"id": "secure", "text": "Graded A-plus for security."},
+    {"id": "rated", "text": "And rated Very High Quality: four point five three, out of five."},
+    {"id": "name", "text": "Hivelet."},
+    {"id": "close", "text": "One connected system, for the Fe Galang Da Silva Boarding House."}
+  ]
+}
