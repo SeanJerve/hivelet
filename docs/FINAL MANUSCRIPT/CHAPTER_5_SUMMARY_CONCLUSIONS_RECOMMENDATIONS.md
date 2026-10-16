@@ -89,6 +89,14 @@ Based on the results of the study, the following conclusions were drawn:
 > enforced (already done); keeping the in-person password reset (recommends no change); sign-in with
 > Google (no finding behind it); offline recording of payments and more than one property (outside
 > the scope in Section 1.4).
+>
+> **TEAM NOTE (16 Oct 2026).** Added to 4 and 5, still eight items: an outside technical reviewer
+> (John Dave Hermoso, through Panelista) used the demo copy on 15 to 16 October and advised archiving
+> instead of deleting, a dated history of finished repairs, and caching on the dashboards. His
+> review came after the evaluation, so it is not in Chapter 4's data and the text does not cite it
+> as a finding. Already true, for the defense: voiding a receipt or expense keeps it with who, when
+> and why; every delete asks for confirmation; a unit with any history cannot be deleted. The lag
+> he saw was partly the demo's own: its server ran in Washington, its database in Singapore.
 
 Based on the summary and conclusions of the study, the following are recommended:
 
@@ -111,11 +119,14 @@ Based on the summary and conclusions of the study, the following are recommended
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested on every change rather than once by a person. Extend
    the rule that refuses a second copy of a receipt to receipts with no invoice number and to
-   acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6).
+   acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6). Keep a deleted repair request or
+   inquiry as an archived record, as a voided receipt or expense already is, and let the owner list
+   finished repairs by the dates they were resolved and closed.
 5. Make the pages appear faster on phones, where the public page's largest element was drawn at 3.4
    to 3.6 seconds and the owner's Overview moved as its figures arrived (a layout shift of 0.22), by
    pre-rendering the public page, serving the typefaces from the site itself and reserving the space
-   each figure takes (Section 4.3.5).
+   each figure takes (Section 4.3.5). Keep the figures already loaded on the Overview, Monthly
+   Income and the tenant's dashboard, so that returning to a page does not wait for them again.
 6. Strengthen the two characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.00)
    by moving the database work now written inside the request handlers, three calls in four, into
    service modules, one per kind of record, with the result reviewed by more than one developer. Raise
