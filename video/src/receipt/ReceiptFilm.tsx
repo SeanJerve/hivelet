@@ -28,7 +28,7 @@ const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
 // ---- The receipt -------------------------------------------------------------------------------
 // [time it prints, left, right, style]. Times are the words in the voice they belong to.
 type Row = [number, string, string, ('big' | 'bold' | 'rule' | 'double' | 'center' | 'tick')?];
-const R: Row[] = [
+export const R: Row[] = [
   [AT.intro + 0.1, 'RECEIPT', '', 'big'],
   [AT.intro + 1.1, 'for running a boarding house', '', 'center'],
   [AT.intro + 1.6, '', '', 'rule'],
@@ -62,7 +62,7 @@ const R: Row[] = [
   [AT.close + 0.3, 'hivelet.vercel.app', '', 'center'],
   [AT.close + 0.6, 'Thank you!', '', 'center'],
 ];
-const TEAR = AT.close + 1.15;
+export const TEAR = AT.close + 1.15;
 // Paper geometry: 0.86 wide; each row 0.092 long; a margin before the first row.
 const PW = 0.86, ROW = 0.092, LEAD = 0.16, CPX = 1024, ROWPX = Math.round(ROW / PW * CPX), CH = Math.ceil((LEAD + (R.length + 3) * ROW) / PW * CPX);
 const rowH = (r: Row) => (r[3] === 'big' ? 1.5 : 1);
@@ -132,7 +132,7 @@ const profile = (L: number, tear: number) => {
   return pts;
 };
 
-const Paper: React.FC<{t: number}> = ({t}) => {
+export const Paper: React.FC<{t: number}> = ({t}) => {
   const n = linesOut(t);
   const tex = useCanvas(CPX, CH, drawReceipt(n), n);
   const tear = t < TEAR ? 0 : ease(seg(t, TEAR, TEAR + 0.7));
@@ -177,7 +177,7 @@ const Paper: React.FC<{t: number}> = ({t}) => {
 };
 
 // A receipt printer: charcoal body, a lid seam, the slot at the top front, a green light.
-const Printer: React.FC<{t: number}> = ({t}) => {
+export const Printer: React.FC<{t: number}> = ({t}) => {
   const busy = R.some((r) => t >= r[0] && t < r[0] + 0.18);
   const body = useMemo(() => new THREE.MeshPhysicalMaterial({color: '#2a2b2e', roughness: 0.55, metalness: 0.05, clearcoat: 0.3, clearcoatRoughness: 0.5}), []);
   const led = useMemo(() => new THREE.MeshBasicMaterial({color: '#39d98a'}), []);

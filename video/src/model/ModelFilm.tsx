@@ -36,9 +36,9 @@ const PRESS = AT.gcash + 1.9;
 
 // ---- The building ---------------------------------------------------------------------------------
 const FLOOR = 0.24, FLOORS = 4, WINS = 4, LEN_W = 1.25, DEPTH = 0.5;
-const MODEL = {pos: new THREE.Vector3(-2.6, 0, 1.0), rotY: 0.55};
+export const MODEL = {pos: new THREE.Vector3(-2.6, 0, 1.0), rotY: 0.55};
 const WING_B_TURN = 2.05; // the second wing meets the first at an angle, as in the photograph
-const VACANT = 6; // second floor, front wing: in view
+export const VACANT = 6; // second floor, front wing: in view
 const card = new THREE.MeshStandardMaterial({color: '#f1efe9', roughness: 0.88, metalness: 0});
 const cardEdge = new THREE.MeshStandardMaterial({color: '#e2dfd6', roughness: 0.9, metalness: 0});
 const rail = new THREE.MeshStandardMaterial({color: '#4f86c6', roughness: 0.5, metalness: 0.2});
@@ -62,7 +62,7 @@ export const unitAnchor = (i: number) => {
   return {p, n};
 };
 
-const glowTex = (() => {
+export const glowTex = (() => {
   if (typeof document === 'undefined') return null;
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const g = c.getContext('2d')!, r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -112,12 +112,12 @@ const Wing: React.FC<{wing: number; t: number; lights: (i: number) => [number, T
   );
 };
 
-const WARM = new THREE.Color('#ffc983'), AMBER = new THREE.Color('#ff9b3d'), ASK = new THREE.Color('#7fb2ff');
+export const WARM = new THREE.Color('#ffc983'), AMBER = new THREE.Color('#ff9b3d'), ASK = new THREE.Color('#7fb2ff');
 const ORDER = Array.from({length: 33}, (_, i) => i).filter((i) => i !== VACANT).sort((a, b) => Math.sin(a * 12.9) - Math.sin(b * 12.9));
 const LIGHT_AT = Object.fromEntries(ORDER.map((i, k) => [i, AT.rooms + 1.4 + k * 0.045]));
-const LEAK = 9; // the room that reports a leak (third floor, front wing)
+export const LEAK = 9; // the room that reports a leak (third floor, front wing)
 
-const Building: React.FC<{t: number}> = ({t}) => {
+export const Building: React.FC<{t: number}> = ({t}) => {
   const lights = (i: number): [number, THREE.Color] => {
     if (i === VACANT) {
       const ask = ease(seg(t, AT.ask + 2.3, AT.ask + 2.9)) * (1 - ease(seg(t, AT.records + 0.5, AT.records + 1.2)));
@@ -147,7 +147,7 @@ const curveFor = (i: number) => {
 };
 const CURVES = Array.from({length: 33}, (_, i) => curveFor(i));
 
-const ThreadShader = {
+export const ThreadShader = {
   uniforms: {uColor: {value: new THREE.Color('#38e08c')}, uReach: {value: 0}, uFlow: {value: 0}, uBroken: {value: 0}, uLevel: {value: 1}},
   vertexShader: /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */`
