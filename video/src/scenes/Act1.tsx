@@ -15,10 +15,10 @@
 // prospects asked before the system (social media, text, walk-in) is from Sean;
 // the manuscript does not state it yet (see SCENES.md).
 import React from 'react';
-import {AbsoluteFill, useCurrentFrame} from 'remotion';
+import {AbsoluteFill} from 'remotion';
 import {CircleHelp, FileSpreadsheet, Footprints, Inbox, MessageCircle, ReceiptText, Table2} from 'lucide-react';
 import {C, jakarta, sora} from '../theme';
-import {camera, easeInOut, easeOut, gentle, lerp, pop, t01} from '../anim';
+import {camera, easeInOut, easeOut, gentle, lerp, pop, t01, useFrame} from '../anim';
 import {Bg, Head, Kin, Stage} from '../fx';
 import {Mark} from '../ui/Kit';
 import {Cues} from '../Sfx';
@@ -463,7 +463,7 @@ const LINKS = ORDER.map((a, i) => {
 // ---- The act ----------------------------------------------------------------------
 
 export const Act1: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const focus = (p: {x: number; y: number}, off = 330) => ({x: p.x - off / 1.15, y: p.y, s: 1.15});
   const keys = [
     {at: 0, x: 1600, y: 880, s: 1.75, rx: 26, rz: -10},

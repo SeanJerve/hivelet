@@ -1,9 +1,9 @@
 // For the tenants and for guests. The tenant's phone stays on the left; what
 // reaches the landlady appears on the right, under the headline, never across it.
 import React from 'react';
-import {AbsoluteFill, useCurrentFrame} from 'remotion';
+import {AbsoluteFill} from 'remotion';
 import {C, jakarta} from '../theme';
-import {easeIn, easeInOut, easeOut, lerp, peso, pop, t01} from '../anim';
+import {easeIn, easeInOut, easeOut, lerp, peso, pop, t01, useFrame} from '../anim';
 import {ActionCam, Bg, FloorShadow, Focus, Head} from '../fx';
 import {AppHeader, Cursor, Field, Input, Ripple} from '../ui/Kit';
 import {AttentionTile, BoardColumn, INBOX, InquiryInbox, RepairCard} from '../ui/Admin';
@@ -30,7 +30,7 @@ export const T = {months: 100, scroll: 124, grow: 126, monthsOut: 196, back: 200
   focusDetails: 510, closeOut: 558, send: 576, board: 578, fly: 582, s1: 618, s2: 638, note: 660};
 
 export const Tenant: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const PZ = 1.08, PX = 150, PY = 71;
   const screen = (x: number, y: number) => ({x: PX + (12 + x) * PZ, y: PY + (12 + STATUS + y) * PZ});
   const enter = pop(f, 0, {damping: 20, stiffness: 70});
@@ -42,7 +42,7 @@ export const Tenant: React.FC = () => {
   const toForm = t01(f, T.toForm, T.toForm + 22, easeInOut);
   // Her months: the page scrolls down to them, and each month rises in turn,
   // October 2025 to September 2026, on the phone and in the close-up together.
-  const scroll = 716 * t01(f, T.scroll, T.scroll + 28, easeInOut);
+  const scroll = 692 * t01(f, T.scroll, T.scroll + 28, easeInOut);
   const grow = (i: number) => t01(f, T.grow + i * 3, T.grow + i * 3 + 14, easeOut);
   const figures = t01(f, T.grow, T.grow + 46, easeOut);
   const monthsIn = pop(f, T.months + 10);
@@ -90,7 +90,7 @@ export const Tenant: React.FC = () => {
   const BZ = 0.95, BX = 740, BY = 360;
   const colX = (i: number) => BX + i * (341 + 12) * BZ + 24 * BZ;
   const cardY = BY + 84 * BZ;
-  const from = screen(195, 706);
+  const from = screen(195, 762);
   const fly = t01(f, T.fly, T.fly + 26, easeInOut);
   const s1 = t01(f, T.s1, T.s1 + 16, easeInOut), s2 = t01(f, T.s2, T.s2 + 16, easeInOut);
   const cardX = lerp(lerp(lerp(from.x - 139, colX(0), fly), colX(1), s1), colX(2), s2);
@@ -208,7 +208,7 @@ export const Tenant: React.FC = () => {
         {f >= T.fly ? (
           <div style={{position: 'absolute', left: cardX / BZ, top: (cardTop - slideLift * 10) / BZ, zoom: BZ, transform: `rotate(${Math.sin(fly * Math.PI) * -6 + slideLift * 1.5}deg) scale(${lerp(0.75, 1, fly)})`, transformOrigin: '0 0',
             boxShadow: `0 ${24 * Math.sin(fly * Math.PI) + 8 + slideLift * 14}px ${50 + slideLift * 20}px rgba(15,27,21,0.16)`, borderRadius: 20}}>
-            <RepairCard title={REPAIR_TITLE} meta="Unit 1A, Plumbing" reported="Sep 29, 2026" tech={f < T.s1 ? 'Unassigned' : 'Plumber'} prio="Medium" />
+            <RepairCard title={REPAIR_TITLE} unit="1A" category="Plumbing" reported="Sep 29, 2026" tech={f < T.s1 ? 'Unassigned' : 'Plumber'} prio="Medium" />
           </div>
         ) : null}
       </ActionCam>
@@ -237,15 +237,16 @@ const VX = 1340 - THREAD.w / 2, VY = (1080 - THREAD.h) / 2;
 const thread = (x: number, y: number) => ({x: VX + x, y: VY + y});
 // Points on those pieces, from their layouts: Kaye's row in the list, her answer
 // box and Save reply; the visitor's second message slot, their box and Send.
-const ROW = inbox(165, INBOX.head + 108 + 69);
+const ROW = inbox(165, INBOX.head + INBOX.listHead + 69);
 const DETAIL = inbox(INBOX.list + INBOX.gap + INBOX.detail / 2, INBOX.head + INBOX.h / 2);
-const SAVE = inbox(INBOX.list + INBOX.gap + 511, INBOX.head + INBOX.detailHead + INBOX.thread + 24 + 22 + 96 + 12 + 33);
+// The send button inside her reply box: 6px in from its right and bottom edges.
+const SAVE = inbox(INBOX.list + INBOX.gap + INBOX.detail - 20 - 6 - 22, INBOX.head + INBOX.detailHead + INBOX.thread + 20 + 56 - 6 - 22);
 const HER_REPLY = inbox(INBOX.list + INBOX.gap + 360, INBOX.head + INBOX.detailHead + 24 + 88 + 20);
 const SLOT2 = thread(THREAD.pad, 204 + 67 + 12);
 const SEND2 = thread(THREAD.pad + 46, 204 + 238 + 16 + 44 + 32 + 22 + 96 + 12 + 22);
 
 export const Guests: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   // The showcase card, at zoom SZ in the visual zone.
   const SZ = 0.92, SX = 900, SY = 264;
   const cardIn = pop(f, 6, {damping: 20, stiffness: 80});
@@ -342,7 +343,7 @@ export const Guests: React.FC = () => {
       {f >= G.dialog && f < G.dialogOut + 16 ? (
         <div style={{position: 'absolute', left: DX / DZ, top: DY / DZ, zoom: DZ, transformOrigin: '50% 50%', transform: `scale(${lerp(0.96, 1, dialogIn) - dialogOut * 0.05})`,
           opacity: Math.min(1, dialogIn * 1.6) * (1 - dialogOut)}}>
-          <AskDialog name={filled(G.fill, 'Kaye Ordoñez')} phone={filled(G.fill + 4, '0918-555-0142')} email={filled(G.fill + 8, 'kaye.ordonez@email.com')}
+          <AskDialog name={filled(G.fill, 'Kaye Ordoñez')} email={filled(G.fill + 4, 'kaye.ordonez@email.com')} phone={filled(G.fill + 8, '0918 555 0142')}
             question={question} focus={f >= G.focus && f < G.send ? 'question' : null} press={f >= G.send - 3 && f < G.send + 7 ? 1 : 0} saved={saved} />
         </div>
       ) : null}
@@ -351,7 +352,7 @@ export const Guests: React.FC = () => {
 
       {/* The question, lifting off the dialog and dropping into her list. */}
       {f >= G.dialogOut && f < G.dialogOut + 30 ? (
-        <div style={{position: 'absolute', left: lerp(DX + DIALOG.padX * DZ, IX + 16 * IZ, bubble), top: lerp(DY + 40 * DZ, IY + (INBOX.head + 112) * IZ, bubble) - Math.sin(bubble * Math.PI) * 120,
+        <div style={{position: 'absolute', left: lerp(DX + DIALOG.padX * DZ, IX + 16 * IZ, bubble), top: lerp(DY + 40 * DZ, IY + (INBOX.head + INBOX.listHead + 4) * IZ, bubble) - Math.sin(bubble * Math.PI) * 120,
           transform: `scale(${lerp(1, 0.8, bubble)})`, transformOrigin: '0 0', background: C.brand, color: '#fff', borderRadius: '24px 24px 24px 6px', padding: '16px 22px', fontFamily: jakarta,
           fontSize: 19, lineHeight: 1.45, boxShadow: '0 20px 50px rgba(15,27,21,0.26)', opacity: 1 - t01(f, G.dialogOut + 22, G.dialogOut + 30), whiteSpace: 'nowrap'}}>
           {TYPING.question.text}

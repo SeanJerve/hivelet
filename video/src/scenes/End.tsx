@@ -1,31 +1,34 @@
 // The proof, and who made it.
 import React from 'react';
-import {AbsoluteFill, Img, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Img, staticFile} from 'remotion';
 import {C, jakarta, sora} from '../theme';
-import {count, lerp, pop, t01} from '../anim';
+import {count, lerp, pop, t01, useFrame} from '../anim';
 import {Bg, Kin} from '../fx';
 import {Mark} from '../ui/Kit';
 import {Cues} from '../Sfx';
 
 export const Proof: React.FC = () => {
-  const f = useCurrentFrame();
-  const stats: [number, string, string, number][] = [
-    [937, 'income records', 'from her workbook', 30], [1327, 'expense records', 'carried over', 48], [20, 'check suites', 'all passing', 66],
+  const f = useFrame();
+  // The study's own results (Chapter 4: Tables 4-12 and 4-17), each counting up as it lands.
+  const stats: {at: number; big: (f: number) => React.ReactNode; label: string; sub: string}[] = [
+    {at: 30, big: (f) => count(f, 30, 60, 937).toLocaleString('en-US'), label: 'income records', sub: 'carried over from her workbook'},
+    {at: 48, big: (f) => <>{count(f, 48, 60, 82)}<span style={{fontSize: 92, opacity: 0.62, letterSpacing: '-0.04em'}}>/83</span></>, label: 'tests passed', sub: '98.8%, none of them critical'},
+    {at: 66, big: (f) => (count(f, 66, 60, 453) / 100).toFixed(2), label: 'rated out of 5', sub: 'Very High Quality, ISO/IEC 25010'},
   ];
   return (
     <AbsoluteFill>
       <Bg mood="green" hex />
       <div style={{position: 'absolute', left: 0, right: 0, top: 170}}>
-        <Kin text="Built on her real records." at={4} size={76} color="#fff" align="center" accent={['real']} accentColor={C.amber} />
+        <Kin text="Real records. Real results." at={4} size={76} color="#fff" align="center" accent={['results.']} accentColor={C.amber} />
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, top: 390, display: 'flex', justifyContent: 'center'}}>
-        {stats.map(([n, label, sub, at], i) => {
+        {stats.map(({at, big, label, sub}, i) => {
           const p = pop(f, at, {damping: 20, stiffness: 90});
           return (
             <div key={label} style={{width: 540, textAlign: 'center', borderLeft: i ? `1px solid rgba(255,255,255,${0.22 * t01(f, at, at + 16)})` : 'none',
               opacity: Math.min(1, p * 1.6), transform: `translateY(${(1 - p) * 40}px)`}}>
               <div style={{fontFamily: sora, fontWeight: 800, fontSize: 170, letterSpacing: '-0.06em', color: '#fff', lineHeight: 0.95, fontVariantNumeric: 'tabular-nums'}}>
-                {count(f, at, 60, n).toLocaleString('en-US')}
+                {big(f)}
               </div>
               <div style={{fontFamily: jakarta, fontWeight: 600, fontSize: 34, color: '#fff', marginTop: 28}}>{label}</div>
               <div style={{fontFamily: jakarta, fontSize: 26, color: 'rgba(255,255,255,0.68)', marginTop: 6}}>{sub}</div>
@@ -39,7 +42,7 @@ export const Proof: React.FC = () => {
 };
 
 export const End: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useFrame();
   const draw = t01(f, 6, 46);
   const shift = t01(f, 40, 70);
   const team = t01(f, 96, 120);
@@ -65,7 +68,7 @@ export const End: React.FC = () => {
         <div style={{position: 'absolute', bottom: 96, left: 0, right: 0, textAlign: 'center', opacity: team, transform: `translateY(${(1 - team) * 20}px)`}}>
           <div style={{fontFamily: jakarta, fontSize: 24, color: C.onNightSoft}}>Group 4 · Bicol University · IT 124 Capstone Project 2</div>
           <div style={{display: 'flex', justifyContent: 'center', gap: 56, marginTop: 18, fontFamily: sora, fontWeight: 600, fontSize: 32, color: '#fff', letterSpacing: '-0.02em'}}>
-            {['Loyd', 'Sean', 'Eljohn', 'Vince', 'Kiel'].map((n, i) => <span key={n} style={{opacity: t01(f, 100 + i * 4, 114 + i * 4)}}>{n}</span>)}
+            {['Lloyd', 'Sean', 'Eljohn', 'Vince', 'Kiel'].map((n, i) => <span key={n} style={{opacity: t01(f, 100 + i * 4, 114 + i * 4)}}>{n}</span>)}
           </div>
         </div>
       </AbsoluteFill>

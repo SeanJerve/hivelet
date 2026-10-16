@@ -42,7 +42,8 @@ export const SHOTS = [
   { name: 'admin-inquiries', route: '/admin/inquiries' },
 
   // The tenant, on a phone
-  { name: 'tenant-overview', role: 'tenant', route: '/tenant', device: 'phone' },
+  { name: 'tenant-overview', role: 'tenant', route: '/tenant', device: 'phone', fullPage: true },
+  { name: 'tenant-payments', role: 'tenant', route: '/tenant/payments', device: 'phone', fullPage: true },
   {
     name: 'tenant-tickets', role: 'tenant', route: '/tenant/tickets', device: 'phone',
     steps: [

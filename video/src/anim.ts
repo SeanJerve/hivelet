@@ -1,8 +1,14 @@
 // Motion helpers. Everything is a pure function of the frame, so any frame can
 // be rendered on its own and the film is the same every time.
-import {Easing, interpolate, spring} from 'remotion';
+import {Easing, interpolate, spring, useCurrentFrame} from 'remotion';
 
+// Every scene is timed in frames of 1/30 s (FPS), and the film is rendered at OUT_FPS. Scenes read
+// the time with useFrame(), which is fractional between those frames, so every move is drawn twice
+// as often and looks smoother, while timeline.json, the cues and the score keep their numbers.
 export const FPS = 30;
+export const OUT_FPS = 60;
+export const STEP = OUT_FPS / FPS;
+export const useFrame = () => useCurrentFrame() / STEP;
 
 const clampOpts = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 export const easeOut = Easing.bezier(0.23, 1, 0.32, 1);
@@ -18,7 +24,7 @@ export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 // A soft physical spring: arrives with the smallest overshoot and settles. The
 // film is deliberately unhurried, so the defaults are slow and well damped.
 export const pop = (f: number, at: number, cfg: {damping?: number; stiffness?: number; mass?: number} = {}) =>
-  spring({frame: f - at, fps: FPS, config: {damping: 20, stiffness: 95, mass: 1, ...cfg}});
+  spring({frame: (f - at) * STEP, fps: OUT_FPS, config: {damping: 20, stiffness: 95, mass: 1, ...cfg}});
 
 export const count = (f: number, at: number, dur: number, to: number) => Math.round(interpolate(f, [at, at + dur], [0, to], {...clampOpts, easing: expoOut}));
 export const typed = (text: string, f: number, at: number, perChar = 2) => text.slice(0, Math.max(0, Math.floor((f - at) / perChar)));
