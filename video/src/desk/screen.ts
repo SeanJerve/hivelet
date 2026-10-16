@@ -216,12 +216,12 @@ const proof = (c: CanvasRenderingContext2D, t: number, kind: 'records' | 'secure
   }
 };
 
-const close = (c: CanvasRenderingContext2D, t: number, at: number) => {
+const close = (c: CanvasRenderingContext2D, t: number, at: number, line = 'Same desk. Less on it.') => {
   c.fillStyle = PAPER; c.fillRect(0, 0, SW, SH);
   const a = ease(seg(t, at, at + 0.5));
   c.globalAlpha = a; mark(c, 420, 250, 170); c.globalAlpha = 1;
   text(c, 'Hivelet', 620, 382, `800 160px ${BRAND}`, INK, {ls: -6, alpha: a});
-  if (t > at + 1.0) text(c, 'Same desk. Less on it.', SW / 2, 520, `italic 400 64px ${SERIF}`, INK, {align: 'center', alpha: ease(seg(t, at + 1.0, at + 1.4))});
+  if (t > at + 1.0) text(c, line, SW / 2, 520, `italic 400 64px ${SERIF}`, INK, {align: 'center', alpha: ease(seg(t, at + 1.0, at + 1.4))});
   if (t > at + 2.4) {
     const url = 'hivelet.vercel.app', n = Math.round(clamp01((t - at - 2.7) / 0.9) * url.length);
     c.save(); c.globalAlpha = ease(seg(t, at + 2.4, at + 2.7));
@@ -239,7 +239,7 @@ const close = (c: CanvasRenderingContext2D, t: number, at: number) => {
 };
 
 // What the screen shows at time t. `S` holds the scene starts; `IN` when each object arrives.
-export const drawScreen = (c: CanvasRenderingContext2D, t: number, S: Record<string, number>, IN: Record<string, number>, press: number) => {
+export const drawScreen = (c: CanvasRenderingContext2D, t: number, S: Record<string, number>, IN: Record<string, number>, press: number, line?: string) => {
   if (t < S.open) sheet(c, t);
   else if (t < S.ledger) splash(c, t, S.open);
   else if (t < S.invoice) ledger(c, t, S.ledger);
@@ -250,7 +250,7 @@ export const drawScreen = (c: CanvasRenderingContext2D, t: number, S: Record<str
   else if (t < S.secure) proof(c, t, 'records', S.records);
   else if (t < S.quality) proof(c, t, 'secure', S.secure);
   else if (t < S.close) proof(c, t, 'quality', S.quality);
-  else close(c, t, S.close);
+  else close(c, t, S.close, line);
   Object.values(IN).forEach((at) => flash(c, t, at));
 };
 
