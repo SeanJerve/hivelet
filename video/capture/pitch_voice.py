@@ -4,6 +4,7 @@ Kokoro-82M (Apache-2.0) through kokoro-onnx, offline. Each phrase is phonemized,
 the fixes in script.json are applied (names espeak gets wrong), and the phonemes
 are voiced. Writes public/<name>/vo/<id>.wav and src/<name>/vo.json (each clip's
 length in seconds), which the timeline reads. <name> is pitch (the default) or paper.
+"voice" is a Kokoro voice name, or a blend of them with weights ({"af_heart": 0.6, "af_nicole": 0.4}).
 
   python capture/pitch_voice.py MODEL.onnx VOICES.npz [name]
 
@@ -22,6 +23,9 @@ root = Path(__file__).resolve().parent.parent
 name = sys.argv[3] if len(sys.argv) > 3 else 'pitch'
 script = json.loads((root / 'src' / name / 'script.json').read_text())
 k = Kokoro(sys.argv[1], sys.argv[2])
+voice = script['voice']
+if isinstance(voice, dict):
+    voice = sum(k.get_voice_style(v) * w for v, w in voice.items()) / sum(voice.values())
 out = root / 'public' / name / 'vo'
 out.mkdir(parents=True, exist_ok=True)
 lengths = {}
@@ -29,7 +33,7 @@ for line in script['lines']:
     ph = k.tokenizer.phonemize(line['text'], 'en-us')
     for wrong, right in script['fixes'].items():
         ph = ph.replace(wrong, right)
-    audio, sr = k.create(ph, voice=script['voice'], speed=script['speed'], is_phonemes=True)
+    audio, sr = k.create(ph, voice=voice, speed=script['speed'], is_phonemes=True)
     audio = np.asarray(audio, dtype=np.float32)
     # Every phrase at the same loudness: the speech itself (30 ms frames that are not
     # silence) at RMS -16 dBFS, so pauses inside a long line do not make it louder.

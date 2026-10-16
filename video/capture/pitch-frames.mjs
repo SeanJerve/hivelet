@@ -3,6 +3,7 @@
 //   node capture/pitch-frames.mjs 0.9 2.2 3.0 4.6       times in seconds
 //   node capture/pitch-frames.mjs 18-21/0.5 --cols=4     every 0.5 s from 18 to 21
 //   node capture/pitch-frames.mjs 2 9 21 --comp=PaperPitch  the paper pitch instead (out/paperpitch-frames.png)
+//   node capture/pitch-frames.mjs 4 --comp=Objects --gl=angle  a WebGL composition (version F)
 
 import {bundle} from '@remotion/bundler';
 import {renderStill, selectComposition} from '@remotion/renderer';
@@ -23,15 +24,20 @@ const times = args.filter((a) => !a.startsWith('--')).flatMap((s) => {
   return out;
 });
 const browserExecutable = process.env.REMOTION_BROWSER_EXECUTABLE || null;
+const gl = (args.find((a) => a.startsWith('--gl=')) ?? '').split('=')[1];
+const chromiumOptions = gl ? {gl} : {};
+const timeoutInMilliseconds = opt('timeout', 30) * 1000;
 const serveUrl = await bundle({entryPoint: join(root, 'src', 'index.ts'), publicDir: join(root, 'public')});
 const id = (args.find((a) => a.startsWith('--comp=')) ?? '--comp=Pitch').split('=')[1];
-const composition = await selectComposition({serveUrl, id, browserExecutable});
+const composition = await selectComposition({serveUrl, id, browserExecutable, chromiumOptions});
 const outDir = join(root, 'out', id.toLowerCase());
 mkdirSync(outDir, {recursive: true});
 const shots = [];
 for (const t of times) {
   const file = join(outDir, `t${t.toFixed(2)}.png`);
-  await renderStill({composition, serveUrl, output: file, frame: Math.min(composition.durationInFrames - 1, Math.round(t * composition.fps)), scale, browserExecutable});
+  const t0 = Date.now();
+  await renderStill({composition, serveUrl, output: file, frame: Math.min(composition.durationInFrames - 1, Math.round(t * composition.fps)), scale, browserExecutable, chromiumOptions, timeoutInMilliseconds});
+  if (gl) console.log(`${t} s: ${Date.now() - t0} ms`);
   shots.push({t, file});
 }
 const browser = await chromium.launch({executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined});
