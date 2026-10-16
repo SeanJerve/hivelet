@@ -9,10 +9,11 @@ import {Cues} from '../Sfx';
 
 export const Proof: React.FC = () => {
   const f = useFrame();
-  // The study's own results (Chapter 4: Tables 4-12 and 4-17), each counting up as it lands.
+  // The study's own results (Chapter 4: Section 4.4.4 and Table 4-17), each counting up as it lands.
   const stats: {at: number; big: (f: number) => React.ReactNode; label: string; sub: string}[] = [
     {at: 30, big: (f) => count(f, 30, 60, 937).toLocaleString('en-US'), label: 'income records', sub: 'carried over from her workbook'},
-    {at: 48, big: (f) => <>{count(f, 48, 60, 82)}<span style={{fontSize: 92, opacity: 0.62, letterSpacing: '-0.04em'}}>/83</span></>, label: 'tests passed', sub: '98.8%, none of them critical'},
+    // The grade rolls up the way the other two figures count: C, B, A, then A+ (Section 4.4.4).
+    {at: 48, big: (f) => ['C', 'B', 'A', 'A+'][Math.min(3, Math.max(0, Math.floor((f - 48) / 9)))], label: 'security grade', sub: 'from three outside scans'},
     {at: 66, big: (f) => (count(f, 66, 60, 453) / 100).toFixed(2), label: 'rated out of 5', sub: 'Very High Quality, ISO/IEC 25010'},
   ];
   return (
