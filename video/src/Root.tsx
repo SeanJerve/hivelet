@@ -9,6 +9,7 @@ import {PaperPitch, PAPER_FRAMES} from './paper/PaperPitch';
 import {ScreenPitch, SCREEN_FRAMES} from './screen/ScreenPitch';
 import {Vertical, VW, VH, V_TOTAL} from './vertical/Vertical';
 import {Duo, DUO_TOTAL} from './duo/Duo';
+import {TenantPitch, TW, TH, T_TOTAL} from './tenant/TenantPitch';
 
 export const Root: React.FC = () => (
   <>
@@ -18,5 +19,6 @@ export const Root: React.FC = () => (
     <Composition id="ScreenPitch" component={ScreenPitch} durationInFrames={SCREEN_FRAMES} fps={60} width={W} height={H} />
     <Composition id="Vertical" component={Vertical} durationInFrames={V_TOTAL} fps={60} width={VW} height={VH} />
     <Composition id="Duo" component={Duo} durationInFrames={DUO_TOTAL} fps={60} width={W} height={H} />
+    <Composition id="TenantPitch" component={TenantPitch} durationInFrames={T_TOTAL} fps={60} width={TW} height={TH} />
   </>
 );
