@@ -1,11 +1,11 @@
-"""The pitch's voiceover, one WAV per phrase, from src/pitch/script.json.
+"""A pitch's voiceover, one WAV per phrase, from src/<name>/script.json.
 
 Kokoro-82M (Apache-2.0) through kokoro-onnx, offline. Each phrase is phonemized,
 the fixes in script.json are applied (names espeak gets wrong), and the phonemes
-are voiced. Writes public/pitch/vo/<id>.wav and src/pitch/vo.json (each clip's
-length in seconds), which the timeline reads.
+are voiced. Writes public/<name>/vo/<id>.wav and src/<name>/vo.json (each clip's
+length in seconds), which the timeline reads. <name> is pitch (the default) or paper.
 
-  python capture/pitch_voice.py MODEL.onnx VOICES.npz
+  python capture/pitch_voice.py MODEL.onnx VOICES.npz [name]
 
 The model is model_quantized.onnx of onnx-community/Kokoro-82M-v1.0-ONNX
 (sha256 fbae9257...a1478; also on npm as kokoro-q8-shards). VOICES.npz holds each
@@ -19,9 +19,10 @@ import soundfile as sf
 from kokoro_onnx import Kokoro
 
 root = Path(__file__).resolve().parent.parent
-script = json.loads((root / 'src' / 'pitch' / 'script.json').read_text())
+name = sys.argv[3] if len(sys.argv) > 3 else 'pitch'
+script = json.loads((root / 'src' / name / 'script.json').read_text())
 k = Kokoro(sys.argv[1], sys.argv[2])
-out = root / 'public' / 'pitch' / 'vo'
+out = root / 'public' / name / 'vo'
 out.mkdir(parents=True, exist_ok=True)
 lengths = {}
 for line in script['lines']:
@@ -49,5 +50,5 @@ for line in script['lines']:
     sf.write(out / f"{line['id']}.wav", audio, sr, subtype='PCM_16')
     lengths[line['id']] = round(len(audio) / sr, 3)
     print(f"{line['id']:10s} {lengths[line['id']]:5.2f}s  {ph}")
-(root / 'src' / 'pitch' / 'vo.json').write_text(json.dumps(lengths, indent=1) + '\n')
+(root / 'src' / name / 'vo.json').write_text(json.dumps(lengths, indent=1) + '\n')
 print('total speech', round(sum(lengths.values()), 2), 's')
