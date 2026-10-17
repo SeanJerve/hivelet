@@ -392,13 +392,19 @@ async function handleQuickLogin(account: DemoAccount) {
               >
                 Forgot your password?
               </button>
+              <!--
+                "Call" is the link, not the number (Sean, 17 Oct 2026): a phone opens its own
+                call prompt with the number in it, so the page does not print the number, and
+                the sentence says the other way, in person. Bold, green and underlined so it
+                reads as something to tap.
+              -->
               <p v-show="showForgot" id="login-forgot" class="ws-reveal max-w-xl text-sm leading-6 text-ink-soft">
-                Call
-                <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
                 <a
                   :href="`tel:${LANDLADY.phone}`"
-                  class="whitespace-nowrap font-semibold text-ink"
-                >{{ LANDLADY.phoneShown }}</a> for a new one.
+                  class="font-semibold text-brand underline underline-offset-2 hover:text-brand-strong"
+                  aria-label="Call the landlady"
+                >Call</a>
+                or approach the landlady in person for a new one.
               </p>
             </div>
           </div>
