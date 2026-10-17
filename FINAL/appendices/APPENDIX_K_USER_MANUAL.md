@@ -154,7 +154,7 @@ called **Boarding House** on every screen and in every downloaded workbook.
 
 ### 1. Signing in and your password
 
-Sign in with your email or phone number and your password. To change it: your initials at the top
+Sign in with your phone number and your password. To change it: your initials at the top
 right > **Change password**. Only you should know it; the system's record of who did what is only
 as good as that.
 

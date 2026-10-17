@@ -99,14 +99,14 @@ function describeLoginFailure(err: unknown): string | null {
   if (!(err instanceof ApiRequestError)) return null;
   switch (err.code) {
     case 'INVALID_CREDENTIALS':
-      return 'That email or phone number and password do not match an account. Check both and try again.';
+      return 'That login ID or phone number and password do not match an account. Check both and try again.';
     case 'ACCOUNT_LOCKED':
     case 'RATE_LIMITED':
       return err.message;
     case 'ACCOUNT_INACTIVE':
       return `This account is no longer active. If you still live here, call us on ${LANDLADY.phoneShown.replace(/ /g, '\u00a0')}.`; // no-break: the number never splits over two lines (audit 2026-10-09)
     case 'VALIDATION_FAILED':
-      return 'Enter the email address or phone number on your account, and your password.';
+      return 'Enter the login ID or phone number on your account, and your password.';
     case 'NETWORK_ERROR':
     case 'TIMEOUT':
       return 'You were not signed in because we could not connect. Check your connection and try again.';
@@ -297,15 +297,18 @@ async function handleQuickLogin(account: DemoAccount) {
                 for="login-email"
                 class="block text-xs text-ink-faint"
               >
-                Login ID, phone number or email
+                Login ID or phone number
               </label>
               <!--
-                Any of the three is accepted. A new tenant has only the login ID
+                Login ID or phone number only (Sean, 17 Oct 2026: email sign-in was given up;
+                every tenant has a login ID and the owner a phone number). The server still
+                accepts an email it has on file, so nobody who signed in that way is locked
+                out; the page no longer offers it. A new tenant has only the login ID
                 the landlady gave them (073, e.g. HV-48213), so this is
                 type="text". type="email" would make the browser reject a
                 phone number before it was ever sent. For the same reason there
                 is no inputmode="tel": an iPhone's telephone keypad has no
-                letters and no @, so an email could not be typed at all.
+                letters, so a login ID could not be typed at all.
               -->
               <input
                 id="login-email"
