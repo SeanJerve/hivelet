@@ -1,6 +1,7 @@
 # Needs your attention
 
-Everything that is waiting on a person, as of 13 October 2026, in the order to do it. Nothing here
+Everything that is waiting on a person, in the order to do it. Rechecked against the live records on
+17 October 2026: every item below is still open. Nothing here
 can be done by Claude. When one is done, tell Claude and it updates the paper, the tables and the
 Word file to match. The detail behind each is in `QUESTIONS_TO_FINALIZE.md` (P numbers) and
 `BLOCKED_FOR_SEAN.md` (B numbers).
