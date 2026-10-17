@@ -351,13 +351,13 @@ onUnmounted(() => {
         <template v-if="isLandingPage">
           <!-- A text shadow, not a scrim: the small white links sit on bright sky and leaves at desktop widths (visual audit, 30 Sep). -->
           <div v-if="!isAuthenticated" class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light text-white [text-shadow:0_1px_3px_rgb(0_0_0/0.6)]">
+            <!-- A gap, not a comma: the comma between the two links read as a typo (Sean, 17 Oct 2026). -->
             <RouterLink
               to="/inquire"
-              class="press inline-flex min-h-11 items-center font-semibold transition-colors text-white"
+              class="press inline-flex min-h-11 items-center mr-4 font-semibold transition-colors text-white"
             >
               Inquire now
             </RouterLink>
-            <span aria-hidden="true" class="pr-2 text-white">,</span>
             <RouterLink
               to="/login"
               class="press inline-flex min-h-11 min-w-11 items-center justify-center font-semibold transition-colors text-white"
