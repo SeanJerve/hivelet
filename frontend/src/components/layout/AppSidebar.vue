@@ -484,7 +484,15 @@ onBeforeUnmount(() => {
                   </router-link>
                 </nav>
 
-              </div>            </div>
+              </div>
+
+              <!-- Recently, under the sections as on the desktop sidebar (Sean, 17 Oct 2026),
+                   instead of a line under the phone's greeting. A tap on one of its links
+                   changes the route, which closes this drawer (the route watch above). -->
+              <div class="border-t border-line pt-5">
+                <RecentActions variant="rail" />
+              </div>
+            </div>
           </div>
     </Transition>
   </div>

@@ -38,7 +38,6 @@ import { propertyToday } from '@/lib/propertyDate';
 import { pickedYear } from '@/lib/yearScope';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
-import RecentActions from '@/components/overview/RecentActions.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
@@ -834,8 +833,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           </template>
           <template v-else>{{ selectedArchiveYear }} archive</template>
         </h1>
-        <!-- What she did last, one quiet line (Sean, 6 Oct). From 1024px it is in the sidebar. -->
-        <RecentActions v-if="!isHistoricalMode" variant="line" class="mt-2 lg:hidden" />
+        <!-- What she did last is in the sidebar on every width, the phone's menu included (Sean, 17 Oct 2026). -->
         <!-- No line under the greeting (Sean, 2026-10-02): "Collections are entered
              through September" was a sentence about the data, not for her. The
              income tiles already mark a month with nothing entered. -->

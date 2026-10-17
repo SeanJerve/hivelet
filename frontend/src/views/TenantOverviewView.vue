@@ -19,7 +19,6 @@ import { useToast } from '@/lib/useToast';
 import { playSound } from '@/lib/sounds';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
-import RecentActions from '@/components/overview/RecentActions.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
@@ -611,8 +610,7 @@ const statusTone = computed(() => {
       <p v-if="tenantData.room || loading" class="mt-1 min-h-5 text-sm text-ink-soft">
         {{ tenantData.room }}<template v-if="tenantData.floor">, {{ floorLabelFor(tenantData.floor) }}</template>
       </p>
-      <!-- What they did last, one quiet line (Sean, 6 Oct). From 1024px it is in the sidebar. -->
-      <RecentActions variant="line" class="mt-2 lg:hidden" />
+      <!-- What they did last is in the sidebar on every width, the phone's menu included (Sean, 17 Oct 2026). -->
     </header>
 
     <div
