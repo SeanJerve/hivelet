@@ -60,17 +60,17 @@ characteristic, and every change made in response to the evaluation.
 | I can submit a maintenance request and follow what happens to it. | Tenants | 5.00 | 0.00 | Very High Quality |
 | I can see a record of the payments I have made. | Tenants | 5.00 | 0.00 | Very High Quality |
 | **Tenant mean** | | **5.00** | | Very High Quality |
-| The system provides the functions required for tenant, unit, and occupancy management. | Technical | 5.00 |  | Very High Quality |
-| Rent and water charges are computed correctly and consistently. | Technical | 5.00 |  | Very High Quality |
-| Payment recording and verification behave correctly for both in-person and online payments. | Technical | 5.00 |  | Very High Quality |
-| The maintenance ticketing workflow supports submission, tracking, and closure. | Technical | 3.00 |  | Moderate Quality |
-| Generated reports agree with the records held in the database. | Technical | 5.00 |  | Very High Quality |
-| **Technical evaluator mean** | | **4.60** | | Very High Quality |
+| The system provides the functions required for tenant, unit, and occupancy management. | Technical | 4.75 | 0.50 | Very High Quality |
+| Rent and water charges are computed correctly and consistently. | Technical | 4.25 | 0.96 | Very High Quality |
+| Payment recording and verification behave correctly for both in-person and online payments. | Technical | 4.25 | 0.96 | Very High Quality |
+| The maintenance ticketing workflow supports submission, tracking, and closure. | Technical | 3.75 | 0.96 | High Quality |
+| Generated reports agree with the records held in the database. | Technical | 4.25 | 0.96 | Very High Quality |
+| **Technical evaluator mean** | | **4.25** | | Very High Quality |
 | I could find which kinds of units the boarding house has and how much they cost. | Prospects | 5.00 |  | Very High Quality |
 | I could see enough about a unit (its floor, how many people can stay, its floor plan) to decide whether to ask about it. | Prospects | 5.00 |  | Very High Quality |
 | I could send an inquiry about a unit without difficulty. | Prospects | 5.00 |  | Very High Quality |
 | **Prospective tenant mean** | | **5.00** | | Very High Quality |
-| **Composite mean** | | **4.86** | | **Very High Quality** |
+| **Composite mean** | | **4.77** | | **Very High Quality** |
 
 **Table M-3.** Measured evidence for Functional Suitability (Chapter 4's Table 14A before 12 October 2026; summarized in Chapter 4, Section 4.4.5, Table 22A)
 
@@ -94,14 +94,14 @@ characteristic, and every change made in response to the evaluation.
 | The system opens quickly. | Tenants | 5.00 | 0.00 | Very High Quality |
 | The system responds without delay when I move between screens. | Tenants | 5.00 | 0.00 | Very High Quality |
 | **Tenant mean** | | **5.00** | | Very High Quality |
-| Response times are acceptable for the expected number of users and records. | Technical | 4.00 |  | High Quality |
-| Report generation completes within a reasonable time. | Technical | 4.00 |  | High Quality |
-| The system uses client and server resources efficiently. | Technical | 4.00 |  | High Quality |
-| **Technical evaluator mean** | | **4.00** | | High Quality |
+| Response times are acceptable for the expected number of users and records. | Technical | 4.00 | 0.82 | High Quality |
+| Report generation completes within a reasonable time. | Technical | 4.25 | 0.50 | Very High Quality |
+| The system uses client and server resources efficiently. | Technical | 4.00 | 0.82 | High Quality |
+| **Technical evaluator mean** | | **4.08** | | High Quality |
 | The website opens quickly. | Prospects | 4.00 |  | High Quality |
 | The pages respond without delay when I move around the website. | Prospects | 4.00 |  | High Quality |
 | **Prospective tenant mean** | | **4.00** | | High Quality |
-| **Composite mean** | | **4.42** | | **Very High Quality** |
+| **Composite mean** | | **4.44** | | **Very High Quality** |
 
 **Table M-5.** Measured evidence for Performance Efficiency (Chapter 4's Table 15A before 12 October 2026; summarized in Chapter 4, Section 4.4.5, Table 22A)
 
@@ -125,13 +125,13 @@ characteristic, and every change made in response to the evaluation.
 | The system works correctly in the browser I normally use. | Tenants | 4.67 | 0.58 | Very High Quality |
 | I can use the system at the same time as my other apps. | Tenants | 4.67 | 0.58 | Very High Quality |
 | **Tenant mean** | | **4.67** | | Very High Quality |
-| The system operates correctly across current mainstream browsers. | Technical | 5.00 |  | Very High Quality |
-| Exported files conform to formats that other applications can read. | Technical | 5.00 |  | Very High Quality |
-| The system coexists with other applications without interference. | Technical | 5.00 |  | Very High Quality |
-| **Technical evaluator mean** | | **5.00** | | Very High Quality |
+| The system operates correctly across current mainstream browsers. | Technical | 4.25 | 0.96 | Very High Quality |
+| Exported files conform to formats that other applications can read. | Technical | 4.50 | 0.58 | Very High Quality |
+| The system coexists with other applications without interference. | Technical | 4.50 | 1.00 | Very High Quality |
+| **Technical evaluator mean** | | **4.42** | | Very High Quality |
 | The website works correctly in the browser I normally use. | Prospects | 4.00 |  | High Quality |
 | **Prospective tenant mean** | | **4.00** | | High Quality |
-| **Composite mean** | | **4.67** | | **Very High Quality** |
+| **Composite mean** | | **4.52** | | **Very High Quality** |
 
 **Table M-7.** Measured evidence for Compatibility (Chapter 4's Table 16A before 12 October 2026; summarized in Chapter 4, Section 4.4.5, Table 22A)
 
@@ -158,17 +158,17 @@ characteristic, and every change made in response to the evaluation.
 | When something goes wrong, the message tells me what to do about it. | Tenants | 4.67 | 0.58 | Very High Quality |
 | I was able to use the system without anyone explaining it to me. | Tenants | 4.33 | 0.58 | Very High Quality |
 | **Tenant mean** | | **4.47** | | Very High Quality |
-| The interface is understandable without prior training. | Technical | 3.00 |  | Moderate Quality |
-| Terminology is consistent across the system and appropriate to the users. | Technical | 3.00 |  | Moderate Quality |
-| Destructive actions require confirmation and state their consequence. | Technical | 3.00 |  | Moderate Quality |
-| Error messages are actionable rather than technical. | Technical | 3.00 |  | Moderate Quality |
-| The interface is operable for users with limited technical background. | Technical | 3.00 |  | Moderate Quality |
-| **Technical evaluator mean** | | **3.00** | | Moderate Quality |
+| The interface is understandable without prior training. | Technical | 4.00 | 0.82 | High Quality |
+| Terminology is consistent across the system and appropriate to the users. | Technical | 4.00 | 1.15 | High Quality |
+| Destructive actions require confirmation and state their consequence. | Technical | 4.00 | 0.82 | High Quality |
+| Error messages are actionable rather than technical. | Technical | 3.75 | 0.96 | High Quality |
+| The interface is operable for users with limited technical background. | Technical | 4.25 | 0.96 | Very High Quality |
+| **Technical evaluator mean** | | **4.00** | | High Quality |
 | I could tell what each part of the website is for without being taught. | Prospects | 5.00 |  | Very High Quality |
 | The words used on the website are easy to understand. | Prospects | 5.00 |  | Very High Quality |
 | When I made a mistake in the inquiry form, the message told me what to fix. | Prospects | 5.00 |  | Very High Quality |
 | **Prospective tenant mean** | | **5.00** | | Very High Quality |
-| **Composite mean** | | **4.12** | | **High Quality** |
+| **Composite mean** | | **4.37** | | **Very High Quality** |
 
 **Table M-9.** Measured evidence for Usability (Chapter 4's Table 17A before 12 October 2026; summarized in Chapter 4, Section 4.4.5, Table 22A)
 
@@ -194,14 +194,14 @@ characteristic, and every change made in response to the evaluation.
 | The information shown to me is correct and up to date. | Tenants | 4.33 | 0.58 | Very High Quality |
 | When something cannot be loaded, the system says so instead of showing a wrong amount. | Tenants | 4.00 | 1.00 | High Quality |
 | **Tenant mean** | | **4.22** | | Very High Quality |
-| The system handles failure of a request without presenting incorrect data. | Technical | 3.00 |  | Moderate Quality |
-| Recorded data is retained reliably. | Technical | 5.00 |  | Very High Quality |
-| The system distinguishes clearly between "no data" and "data could not be loaded". | Technical | 5.00 |  | Very High Quality |
-| The system recovers from interruption without data loss. | Technical | 4.00 |  | High Quality |
-| **Technical evaluator mean** | | **4.25** | | Very High Quality |
+| The system handles failure of a request without presenting incorrect data. | Technical | 3.50 | 1.00 | High Quality |
+| Recorded data is retained reliably. | Technical | 4.50 | 0.58 | Very High Quality |
+| The system distinguishes clearly between "no data" and "data could not be loaded". | Technical | 4.00 | 1.15 | High Quality |
+| The system recovers from interruption without data loss. | Technical | 4.00 | 0.82 | High Quality |
+| **Technical evaluator mean** | | **4.00** | | High Quality |
 | The information shown (units, rates, availability) looks correct and up to date. | Prospects | 5.00 |  | Very High Quality |
 | **Prospective tenant mean** | | **5.00** | | Very High Quality |
-| **Composite mean** | | **4.62** | | **Very High Quality** |
+| **Composite mean** | | **4.56** | | **Very High Quality** |
 
 **Table M-11.** Measured evidence for Reliability (Chapter 4's Table 18A before 12 October 2026; summarized in Chapter 4, Section 4.4.5, Table 22A)
 
@@ -224,13 +224,13 @@ characteristic, and every change made in response to the evaluation.
 | I can see a record of the actions taken in the system and who took them. | Owner | 5.00 |  | Very High Quality |
 | I can change my password myself when I need to. | Owner | 5.00 |  | Very High Quality |
 | **Owner mean** | | **5.00** | | Very High Quality |
-| Access to functions and records is correctly restricted by role. | Technical | 5.00 |  | Very High Quality |
-| A tenant account cannot reach administrative data. | Technical | 5.00 |  | Very High Quality |
-| Administrative actions are recorded in an auditable trail. | Technical | 5.00 |  | Very High Quality |
-| Credentials are handled and stored appropriately. | Technical | 3.00 |  | Moderate Quality |
-| Authentication and session handling follow accepted practice. | Technical | 4.00 |  | High Quality |
-| **Technical evaluator mean** | | **4.40** | | Very High Quality |
-| **Composite mean** | | **4.70** | | **Very High Quality** |
+| Access to functions and records is correctly restricted by role. | Technical | 4.50 | 1.00 | Very High Quality |
+| A tenant account cannot reach administrative data. | Technical | 4.25 | 0.96 | Very High Quality |
+| Administrative actions are recorded in an auditable trail. | Technical | 4.50 | 0.58 | Very High Quality |
+| Credentials are handled and stored appropriately. | Technical | 3.75 | 0.96 | High Quality |
+| Authentication and session handling follow accepted practice. | Technical | 4.00 | 0.82 | High Quality |
+| **Technical evaluator mean** | | **4.20** | | High Quality |
+| **Composite mean** | | **4.60** | | **Very High Quality** |
 
 **Table M-13.** Measured evidence for Security (Chapter 4's Table 19A before 12 October 2026; summarized in Chapter 4, Section 4.4.5, Table 22A)
 
@@ -250,13 +250,13 @@ characteristic, and every change made in response to the evaluation.
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
-| The codebase is organized so that a change can be located and made confidently. | Technical | 4.00 |  | High Quality |
-| The system is documented sufficiently for another developer to maintain it. | Technical | 4.00 |  | High Quality |
-| Changes to configurable values do not require code changes. | Technical | 4.00 |  | High Quality |
-| Automated checks exist that would catch a regression. | Technical | 4.00 |  | High Quality |
-| A change in one part of the system is unlikely to disturb unrelated parts. | Technical | 4.00 |  | High Quality |
-| **Technical evaluator mean** | | **4.00** | | High Quality |
-| **Composite mean** | | **4.00** | | **High Quality** |
+| The codebase is organized so that a change can be located and made confidently. | Technical | 4.25 | 0.96 | Very High Quality |
+| The system is documented sufficiently for another developer to maintain it. | Technical | 4.00 | 0.82 | High Quality |
+| Changes to configurable values do not require code changes. | Technical | 4.25 | 0.96 | Very High Quality |
+| Automated checks exist that would catch a regression. | Technical | 4.00 | 0.82 | High Quality |
+| A change in one part of the system is unlikely to disturb unrelated parts. | Technical | 4.25 | 0.96 | Very High Quality |
+| **Technical evaluator mean** | | **4.15** | | High Quality |
+| **Composite mean** | | **4.15** | | **High Quality** |
 
 **Table M-15.** Measured evidence for Maintainability (Chapter 4's Table 20A before 12 October 2026; summarized in Chapter 4, Section 4.4.5, Table 22A)
 
@@ -281,14 +281,14 @@ characteristic, and every change made in response to the evaluation.
 | I can open the system on more than one device. | Tenants | 4.67 | 0.58 | Very High Quality |
 | I did not need to install anything extra to use it. | Tenants | 5.00 | 0.00 | Very High Quality |
 | **Tenant mean** | | **4.89** | | Very High Quality |
-| The system can be deployed to another environment without modification. | Technical | 4.00 |  | High Quality |
-| The client installs on a mobile device without an application store. | Technical | 5.00 |  | Very High Quality |
-| The system does not depend on software the target environment is unlikely to have. | Technical | 5.00 |  | Very High Quality |
-| **Technical evaluator mean** | | **4.67** | | Very High Quality |
+| The system can be deployed to another environment without modification. | Technical | 4.00 | 0.82 | High Quality |
+| The client installs on a mobile device without an application store. | Technical | 4.50 | 0.58 | Very High Quality |
+| The system does not depend on software the target environment is unlikely to have. | Technical | 4.75 | 0.50 | Very High Quality |
+| **Technical evaluator mean** | | **4.42** | | Very High Quality |
 | The website works on my own phone. | Prospects | 5.00 |  | Very High Quality |
 | I did not need to install anything to use it. | Prospects | 5.00 |  | Very High Quality |
 | **Prospective tenant mean** | | **5.00** | | Very High Quality |
-| **Composite mean** | | **4.89** | | **Very High Quality** |
+| **Composite mean** | | **4.83** | | **Very High Quality** |
 
 **Table M-17.** Measured evidence for Portability (Chapter 4's Table 21A before 12 October 2026; summarized in Chapter 4, Section 4.4.5, Table 22A)
 
