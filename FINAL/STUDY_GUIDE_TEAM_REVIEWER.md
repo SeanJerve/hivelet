@@ -48,7 +48,7 @@ defense with it.
 | **2. The aim** | One general and four specific objectives | 4 | 1.2 |
 | **3. The gap** | Related systems solve one function, or suit big properties | 5, 6 | 2.1.6, 2.2, 2.3 |
 | **4. The build** | Agile in three iterations; the stack; six features; security | 7 to 12 | 3.2, 4.2 |
-| **5. The proof** | 82 of 83 tests; real users; 4.53; measured and rated agree on seven of eight; conclusions; recommendations | 13 to 19 | 4.3, 4.4, 5 |
+| **5. The proof** | 82 of 83 tests; real users; 4.53; measured and rated agree on all eight; conclusions; recommendations | 13 to 19 | 4.3, 4.4, 5 |
 
 The slide deck is `HIVELET DEFENSE SLIDES.pptx` (20 slides). **Slide 1 still has square brackets** for
 the team members, the adviser and the defense date: fill them in.
@@ -121,9 +121,9 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 
 | Figure | Value |
 | :--- | :--- |
-| Respondents | **6**: the owner, 3 tenants, 1 technical evaluator, 1 prospective tenant |
-| Overall | **4.53, Very High Quality** (4.55 if every response is averaged together) |
-| Highest / lowest | Portability **4.89** / Maintainability **4.00** |
+| Respondents | **9**: the owner, 3 tenants, 1 prospective tenant, 4 technical evaluators (3 of them on the demo copy, 15 to 18 Oct) |
+| Overall | **4.53, Very High Quality** (4.39 if every response is averaged together) |
+| Highest / lowest | Portability **4.83** / Maintainability **4.15** |
 | Sub-characteristics | **31**: 27 measured, 25 rated, 2 neither (UI aesthetics, reusability) |
 | Changes made in response | **51**; the evaluators' **14** comments of 3 Oct, all addressed by 5 Oct |
 | Scale | 4.21 to 5.00 Very High; 3.41 to 4.20 High; 2.61 to 3.40 Moderate; 1.81 to 2.60 Low; 1.00 to 1.80 Very Low |
@@ -132,14 +132,14 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 
 | Characteristic | Mean | Measured evidence |
 | :--- | --: | :--- |
-| Functional Suitability | 4.86 | All six features present; 96 to 100% of correctness checks passed |
-| Performance Efficiency | 4.42 | No request failed under load; every screen usable within 3.05 s on a phone |
-| Compatibility | 4.67 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct |
-| Usability | 4.12 | 91% of tasks without help; 0 accessibility violations in 76 scans |
-| Reliability | 4.62 | No critical defect; both offline defects passed on re-test, 13 Oct |
-| Security | 4.70 | Every protection tried held; A+ from three outside scanners |
-| Maintainability | 4.00 | 20 of 20 suites pass without writing; every change a migration; but 154 of 204 database calls inside handlers |
-| Portability | 4.89 | No screen wider than its window at four widths; installed on two phones without a store |
+| Functional Suitability | 4.77 | All six features present; 96 to 100% of correctness checks passed |
+| Performance Efficiency | 4.44 | No request failed under load; every screen usable within 3.05 s on a phone |
+| Compatibility | 4.52 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct |
+| Usability | 4.37 | 91% of tasks without help; 0 accessibility violations in 76 scans |
+| Reliability | 4.56 | No critical defect; both offline defects passed on re-test, 13 Oct |
+| Security | 4.60 | Every protection tried held; A+ from three outside scanners |
+| Maintainability | 4.15 | 20 of 20 suites pass without writing; every change a migration; but 154 of 204 database calls inside handlers |
+| Portability | 4.83 | No screen wider than its window at four widths; installed on two phones without a store |
 
 ---
 
@@ -251,7 +251,7 @@ anyway**.
 - Lead with the story (Section 1 above), not the technology. Panels remember "43% of her rows had no
   anniversary date" longer than "Vue 3".
 - Keep slide 13 (82 of 83) and slide 16 (4.53) on screen long enough for the panel to read them.
-- Say the limits before the panel does: six respondents, three tenants, Adyen on its test account, the
+- Say the limits before the panel does: nine respondents, three tenants, Adyen on its test account, the
   system still running beside her records. Each is in the paper; naming them shows you know the work.
 
 **Words to use, and words never to use**
@@ -310,9 +310,9 @@ Cover the answers and test yourself, or quiz each other. The answer to every que
 <details><summary>8. What was the one failed test?</summary>Walkthrough step 23b: ₱0 shown instead of "—" with no connection; fixed and passed on 13 Oct.</details>
 <details><summary>9. What did the screen-versus-database audit find?</summary>Six defects every automated suite had missed, all fixed on 26 Sep.</details>
 <details><summary>10. How did the tenants do?</summary>All 34 attempts completed, 31 without help (91%), median 60 seconds; help only at first sign-in and finding their unit and rent.</details>
-<details><summary>11. Overall rating, highest and lowest?</summary>4.53 Very High Quality; Portability 4.89 highest; Maintainability 4.00 lowest (Usability 4.12 second lowest).</details>
-<details><summary>12. Who were the respondents?</summary>Six: the owner, three tenants, one technical evaluator, one prospective tenant.</details>
-<details><summary>13. Why the mean of group means?</summary>So one owner is not outweighed by three tenants on functions only she uses. Averaging everyone gives 4.55, same interpretation.</details>
+<details><summary>11. Overall rating, highest and lowest?</summary>4.53 Very High Quality; Portability 4.83 highest; Maintainability 4.15 lowest (Usability 4.37 second lowest).</details>
+<details><summary>12. Who were the respondents?</summary>Nine: the owner, three tenants, one prospective tenant, four technical evaluators.</details>
+<details><summary>13. Why the mean of group means?</summary>So one owner is not outweighed by three tenants on functions only she uses. Averaging everyone gives 4.39, same interpretation.</details>
 <details><summary>14. Why is Maintainability low?</summary>One respondent who did not inspect the code; and the code shows 154 of 204 database calls written inside request handlers. Recommendation 6.</details>
 <details><summary>15. What are the two security weaknesses left?</summary>The sign-in token in browser storage; no second sign-in factor. Recommendation 3.</details>
 <details><summary>16. How is water computed?</summary>₱200 per occupant per month.</details>

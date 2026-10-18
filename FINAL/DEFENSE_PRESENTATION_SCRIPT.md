@@ -130,19 +130,19 @@ exactly what Chapter 5 recommends showing new tenants first." [4.3.7, Table 4-11
 
 **Slide 16. The evaluation** (50 s)
 **Land: 4.53, Very High Quality; every characteristic at least High Quality.**
-"Six respondents: the owner, three tenants, a prospective tenant and a technical evaluator. Portability
-highest at 4.89, Functional Suitability 4.86; the lowest two, Usability 4.12 and Maintainability
-4.00, are still High Quality. We used the mean of the group means, so one owner is not outweighed by
+"Nine respondents: the owner, three tenants, a prospective tenant and four technical evaluators.
+Portability highest at 4.83, Functional Suitability 4.77; the lowest two, Usability 4.37 and
+Maintainability 4.15, are Very High and High Quality. We used the mean of the group means, so one owner is not outweighed by
 three tenants." [Table 4-17, 4.4.2]
-*Likely question: "Six is very few." We claim it only for these six, and every characteristic was
+*Likely question: "Nine is very few." We claim it only for these nine, and every characteristic was
 also measured. [4.4.1, 4.4.5]*
 
 **Slide 17. Measured and rated agree** (50 s)
-**Land: seven of eight agree; we explain the one that does not.**
-"27 of the 31 sub-characteristics were measured and 25 rated. Usability: every task was done, but the
-owner rated learning without help lower, and both are right. Maintainability rests on the code: the
+**Land: all eight agree.**
+"27 of the 31 sub-characteristics were measured and 25 rated. Usability: nine tasks in ten were done without
+help, and the owner's lower rating for learning alone shows where a first-timer needs help. Maintainability rests on the code: the
 checks pass on every change, but three database calls in four sit inside the request handlers. We
-made 51 changes in response, including all 14 of the technical evaluator's comments by 5 October."
+made 51 changes in response, including all 14 of the technical evaluators' comments by 5 October."
 [4.4.3, 4.4.5, 4.4.6]
 *Hand-over to D: "So, the four objectives."*
 

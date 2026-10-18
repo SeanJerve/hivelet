@@ -390,45 +390,49 @@ was corrected the same day and is reported separately in Appendix M, Table M-27.
 
 | Characteristic | Mean | Rank |
 | :--- | --: | --: |
-| Portability | 4.89 | 1 |
-| Functional Suitability | 4.86 | 2 |
-| Security | 4.70 | 3 |
-| Compatibility | 4.67 | 4 |
-| Reliability | 4.62 | 5 |
-| Performance Efficiency | 4.42 | 6 |
-| Usability | 4.12 | 7 |
-| Maintainability | 4.00 | 8 |
+| Portability | 4.83 | 1 |
+| Functional Suitability | 4.77 | 2 |
+| Security | 4.60 | 3 |
+| Reliability | 4.56 | 4 |
+| Compatibility | 4.52 | 5 |
+| Performance Efficiency | 4.44 | 6 |
+| Usability | 4.37 | 7 |
+| Maintainability | 4.15 | 8 |
 
 **Who rated it?**
-Six people: the owner, three tenants, one technical evaluator (an IT professional in software quality
-assurance) and one prospective tenant. No member of the team. *Tables 4-14 and 4-15.*
+Nine people: the owner, three tenants, one prospective tenant and four technical evaluators. The
+first evaluator, an IT professional in software quality assurance, reviewed the live system on 3
+October; the other three, reached through Panelista, reviewed the demonstration copy with sample
+data on 15 to 18 October, so no outsider saw the owner's records. No member of the team. *Tables 4-14 and 4-15.*
 
-**Six respondents is very few. How can you claim Very High Quality?**
-We claim it only for these six people, and the paper says so: the results describe how they rated the
+**Nine respondents is very few. How can you claim Very High Quality?**
+We claim it only for these nine people, and the paper says so: the results describe how they rated the
 system, not a population. What strengthens it is that every characteristic was also **measured**, and
-the measurements agree with the ratings on seven of the eight. *Sections 4.4.1 and 4.4.5; Chapter 5,
+the measurements agree with the ratings on all eight. *Sections 4.4.1 and 4.4.5; Chapter 5,
 conclusion 4.*
 
 **How did you compute the means?**
 Weighted mean per item, WM = Σ(f × w) / N; each characteristic's composite is the mean of its group
 means, so one owner is not outweighed by three tenants on functions only she uses; the overall is the
-mean of the eight composites. Averaging every response together gives 4.55 instead, with the same
-interpretation and ranking. *Section 3.3; Section 4.4.2, Table 4-16.*
+mean of the eight composites. Averaging every response together gives 4.39 instead: the same
+interpretation and the same highest and lowest, with the middle reordered because four technical
+evaluators then outweigh one owner. *Section 3.3; Section 4.4.2, Table 4-16.*
 
 **Why did each group rate different characteristics?**
 Each rated only what it can judge: tenants did not rate Security or Maintainability, prospective
-tenants rated neither, and only the technical evaluator rated Maintainability. *Section 3.3.*
+tenants rated neither, and only the technical evaluators rated Maintainability. *Section 3.3.*
 
 **Why is Usability the second lowest?**
-The owner gave 3 to telling what each screen is for and learning without help, and the technical
-evaluator gave 3 to all five items, before the fourteen changes made for that evaluator's group. The
-measurement says tasks can be done (91% without help, no accessibility violation); the rating says a
-first-timer does not find the way easily. Both are right, and recommendation 6 acts on it. *Section
+It is still Very High Quality (4.37). The owner gave 3 to telling what each screen is for and learning
+without help. The first technical evaluator gave 3 to all five items, before the fourteen changes made
+for that group; the three who came after the changes gave 4.80, 4.60 and 3.60. The measurement agrees
+(91% of tasks without help, no accessibility violation), and the owner's two 3s show where a
+first-timer needs help, which recommendation 6 acts on. *Section
 4.4.3.*
 
-**Why is Maintainability lowest, and only one respondent?**
-Only the technical evaluator can judge it, and he reviewed the running system without inspecting the
-code, so the measurement carries more weight. It points the same way: the system can be checked as a
+**Why is Maintainability lowest, and only four respondents?**
+Only the technical evaluators can judge it (4.00, 5.00, 4.60 and 3.00), and none inspected the code,
+so the measurement carries more weight. It points the same way: the system can be checked as a
 whole on every change, but 154 of 204 database calls are written inside the request handlers instead
 of service modules. *Sections 4.4.3 and 4.4.5; recommendation 6.*
 
