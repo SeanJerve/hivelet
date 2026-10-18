@@ -15,10 +15,10 @@ unit and integration, system, and acceptance levels, and 82 of the 83 tests exec
 percent), with no critical defect. Three tenants completed every task they attempted, 31 of 34
 attempts without help. The system was then evaluated on the eight characteristics of the ISO/IEC
 25010:2011 quality model, following the ISO/IEC 25040 evaluation process, on two kinds of evidence:
-measures from the tests, and a survey of the owner, three tenants, a prospective tenant and a
-technical evaluator. The respondents rated it 4.53 overall, Very High Quality, with every
-characteristic at least High Quality; Portability rated highest and Maintainability and Usability
-lowest, and the measurements agreed with the ratings on every characteristic but Usability. The
+measures from the tests, and a survey of the owner, three tenants, a prospective tenant and four
+technical evaluators. The respondents rated it 4.53 overall, Very High Quality, with every
+characteristic at least High Quality; Portability rated highest and Maintainability lowest, and the
+measurements agreed with the ratings on every characteristic. The
 results show that an integrated system can be fitted to a small, cash-based property without
 changing how its owner keeps her accounts. The study met its general objective: Hivelet was
 designed, developed and evaluated as a web-based apartment management system that integrates the

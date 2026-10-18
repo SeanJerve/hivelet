@@ -251,9 +251,13 @@ usability problems found falls quickly with each additional tester (Nielsen & La
 not live at the boarding house and was invited by the researchers to use the public website as someone
 looking for a room would, used it on their own phone without an account: they browsed the units and
 rates and sent an inquiry about a unit. The
-administrator's reply was tested separately by the team. The technical evaluator was an IT professional
-who works in software quality assurance; he reviewed the running system and did not inspect the
-source code.
+administrator's reply was tested separately by the team. Four technical evaluators took part. The
+first, an IT professional who works in software quality assurance, reviewed the running system on 3
+October 2026. The other three, reached through Panelista, a platform that matches capstone projects
+with volunteer evaluators, with at least three years' experience asked of each, reviewed a
+demonstration copy of the system on 15 to 18 October: the same software on a separate database
+holding sample data, so that no outside reviewer saw the owner's records. None inspected the source
+code.
 
 **Instruments.** Four instruments were used. Task cards were read aloud to each tester, in English and
 Filipino. An observation sheet recorded, for each task, whether it was completed without help, with
@@ -273,8 +277,8 @@ after the prompt counted as completed without help, one finished after the hint 
 help, and one that needed a demonstration as not completed. Photographs were taken for
 documentation, only with the tester's permission; no screen was recorded. Each respondent answered the survey after using the system,
 without the researchers viewing their answers: the tenants and the prospective tenant straight after
-their tasks, the administrator the same evening, and the technical evaluator the day after the
-evaluators' review. Page load times were measured once per screen
+their tasks, the administrator the same evening, the first technical evaluator the day after the
+evaluators' review, and the other three after their reviews of the demonstration copy. Page load times were measured once per screen
 on the devices named in Section 3.1.2, with the browser's cache cleared for a first load.
 
 **Statistical treatment.** For each survey item the weighted mean was computed as
