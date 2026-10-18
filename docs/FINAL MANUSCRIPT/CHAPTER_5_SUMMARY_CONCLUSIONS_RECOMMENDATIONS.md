@@ -97,6 +97,14 @@ Based on the results of the study, the following conclusions were drawn:
 > as a finding. Already true, for the defense: voiding a receipt or expense keeps it with who, when
 > and why; every delete asks for confirmation; a unit with any history cannot be deleted. The lag
 > he saw was partly the demo's own: its server ran in Washington, its database in Singapore.
+>
+> **TEAM NOTE (18 Oct 2026).** Added to 4 and 6, still eight items: a second outside reviewer, also
+> after the evaluation, advised voiding instead of deleting payments, a tenancy's contract term and
+> occupancy validation, and an ERD and architecture for judging maintainability. Checked in the
+> code: the Monthly Income delete is already a void (`void_income_record`; kept with who, when and
+> why), but its button says "Delete payment" and its warning says the receipt "cannot be brought
+> back", which is why it read as a delete. A headcount over capacity is accepted and audited by
+> design. The ERD and architecture are Figures 4-6 and 4-2; he was not sent them.
 
 Based on the summary and conclusions of the study, the following are recommended:
 
@@ -121,7 +129,10 @@ Based on the summary and conclusions of the study, the following are recommended
    the rule that refuses a second copy of a receipt to receipts with no invoice number and to
    acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6). Keep a deleted repair request or
    inquiry as an archived record, as a voided receipt or expense already is, and let the owner list
-   finished repairs by the dates they were resolved and closed.
+   finished repairs by the dates they were resolved and closed. Call that action Void rather than
+   Delete on Monthly Income, where the button and its warning still read as an erasure, and let the
+   owner see the voided receipts. Record the agreed term of each tenancy, and warn the owner when a
+   headcount exceeds the unit's capacity, which is now noted only in the audit log.
 5. Make the pages appear faster on phones, where the public page's largest element was drawn at 3.4
    to 3.6 seconds and the owner's Overview moved as its figures arrived (a layout shift of 0.22), by
    pre-rendering the public page, serving the typefaces from the site itself and reserving the space
@@ -129,7 +140,9 @@ Based on the summary and conclusions of the study, the following are recommended
    Income and the tenant's dashboard, so that returning to a page does not wait for them again.
 6. Strengthen the two characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.00)
    by moving the database work now written inside the request handlers, three calls in four, into
-   service modules, one per kind of record, with the result reviewed by more than one developer. Raise
+   service modules, one per kind of record, with the result reviewed by more than one developer, and
+   give whoever evaluates it the architecture, the entity-relationship diagram and the data dictionary
+   (Figures 4-2 and 4-6, Appendix N) together with the system. Raise
    **Usability** (4.12) by taking the owner through each screen with the user manual (Appendix K)
    before she uses the system alone, and by showing each new tenant first how to sign in and find
    their unit and rent, where the tenants needed help.
