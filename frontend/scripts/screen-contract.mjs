@@ -56,6 +56,8 @@ const PURPOSE = new Map([
   ['GET /auth/me', 'who am I'],
   ['PATCH /auth/me', 'edit my own profile'],
   ['POST /auth/change-password', 'change my own password'],
+  ['POST /auth/change-sign-in', 'the landlady changes her sign-in number, her password, or both, after giving her current number and password (B-111)'],
+  ['GET /public/contact', 'the landlady’s number to call, read from her own account: every page that shows or dials it, once at startup (reads only)'],
   ['GET /admin/rooms', 'the unit directory'],
   ['POST /admin/rooms', 'add a unit'],
   ['PATCH /admin/rooms/:id', "edit a unit — the rate change writes room_price_history by trigger"],

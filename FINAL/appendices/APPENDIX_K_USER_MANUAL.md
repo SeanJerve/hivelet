@@ -152,10 +152,14 @@ of the page instead while the figures load.
 saves nothing. On a phone the message is **"Download started"**. The cluster of 22 main rooms is
 called **Boarding House** on every screen and in every downloaded workbook.
 
-### 1. Signing in and your password
+### 1. Signing in, your number and your password
 
-Sign in with your phone number and your password. To change it: your initials at the top
-right > **Change password**. Only you should know it; the system's record of who did what is only
+Sign in with your phone number and your password; your number is shown under your name when you
+tap your initials at the top right. To change either: your initials > **Change number / password**.
+Type your **current number and current password** first, then a new number, a new password, or
+both. If either current one is wrong the window says so without saying which, and nothing changes.
+A new number is the one you sign in with from then on, and the one every page of the website gives
+for calling you. Only you should know your password; the system's record of who did what is only
 as good as that.
 
 ### 2. Overview

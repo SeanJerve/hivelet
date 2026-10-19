@@ -68,16 +68,18 @@ the handler reads or writes those tables.
 | Feature | Screen | Endpoint | Backend | Tables |
 | :--- | :--- | :--- | :--- | :--- |
 | Landing page, units and rates | `PublicGuestView.vue`, `CategoryRoomsView.vue` | `GET /public/rooms`, `GET /public/rates` | `public.ts:57`, `:92` | `rooms`, `room_photos`, `system_settings` |
-| Send an inquiry | `InquireView.vue` (and the form on a unit) | `POST /public/inquiries` | `public.ts:138`, rate-limited per address (`middleware/rateLimit.ts`) | `inquiries` |
-| Read and answer the reply | `InquiryThreadView.vue` | `POST /public/inquiries/thread`, `.../thread/messages` | `public.ts:261`, `:300`; `services/inquiryThread.ts` | `inquiries`, `inquiry_messages` |
+| The landlady's number to call | every public page (`LANDLADY.phone` in `lib/systemState.ts`) | `GET /public/contact` | `public.ts:136`, her account's own phone number and nothing else | `profiles` |
+| Send an inquiry | `InquireView.vue` (and the form on a unit) | `POST /public/inquiries` | `public.ts:178`, rate-limited per address (`middleware/rateLimit.ts`) | `inquiries` |
+| Read and answer the reply | `InquiryThreadView.vue` | `POST /public/inquiries/thread`, `.../thread/messages` | `public.ts:301`, `:340`; `services/inquiryThread.ts` | `inquiries`, `inquiry_messages` |
 
 ### Signing in
 
 | Feature | Screen | Endpoint | Backend |
 | :--- | :--- | :--- | :--- |
-| Sign in with email, phone or login ID | `LoginView.vue` | `POST /auth/login` | `auth.ts:75` → `services/authService.ts` (finds the account through the database function `resolve_login_identifier`) |
-| Change password | `ChangePasswordModal.vue` | `POST /auth/change-password` | `auth.ts:330`, checks the new password against known breaches (`utils/breachedPassword.ts`) |
-| Who am I | (every page) | `GET /auth/me` | `auth.ts:224` |
+| Sign in with email, phone or login ID | `LoginView.vue` | `POST /auth/login` | `auth.ts:76` → `services/authService.ts` (finds the account through the database function `resolve_login_identifier`) |
+| Change password (a tenant) | `ChangePasswordModal.vue` | `POST /auth/change-password` | `auth.ts:336`, checks the new password against known breaches (`utils/breachedPassword.ts`) |
+| Change number / password (the landlady) | `ChangeSignInModal.vue` | `POST /auth/change-sign-in` | `auth.ts:447` → `changeOwnSignIn`: current number AND current password first, one refusal for either |
+| Who am I | (every page) | `GET /auth/me` | `auth.ts:225` |
 
 ### The tenant's side
 
@@ -156,7 +158,7 @@ code can set it differently.
 2. Adyen's payment window (`AdyenPaymentModal.vue`, library `@adyen/adyen-web`) takes the GCash
    payment. Hivelet never sees the GCash account.
 3. On return, `POST /tenant/payments/adyen/verify-session` (`tenant.ts:1281`) confirms the session.
-4. Adyen also calls `POST /public/payments/adyen/webhook` (`public.ts:1132`). Its HMAC signature is
+4. Adyen also calls `POST /public/payments/adyen/webhook` (`public.ts:1172`). Its HMAC signature is
    checked (`adyenWebhook.ts`), then `adyenWebhookHandler.ts` writes the payment as **Pending
    Verification**. The same gateway reference cannot be recorded twice (`uq_payments_gateway_reference`).
 5. The owner verifies it (`PATCH /admin/payments/:paymentId/verify`, `admin.ts:2004`).
@@ -227,7 +229,7 @@ at the root (copy `.env.example`; never commit it); `npm run dev:backend` (port 
 
 ## 9. What the panel may ask, and what to show
 
-- **"Show us where the login is."** `backend/src/routes/auth.ts:75`, then `services/authService.ts`.
+- **"Show us where the login is."** `backend/src/routes/auth.ts:76`, then `services/authService.ts`.
 - **"How are passwords stored?"** Hashed with bcrypt, cost 12, a salt per password (`admin.ts:807`).
 - **"How do you stop a tenant seeing another tenant's bill?"** Every protected route names a permission
   (`config/rbac.ts`), tenant queries are scoped to the caller (`scopeService.ts`), and the database
