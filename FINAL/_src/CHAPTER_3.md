@@ -251,9 +251,9 @@ usability problems found falls quickly with each additional tester (Nielsen & La
 not live at the boarding house and was invited by the researchers to use the public website as someone
 looking for a room would, used it on their own phone without an account: they browsed the units and
 rates and sent an inquiry about a unit. The
-administrator's reply was tested separately by the team. Four technical evaluators took part. The
+administrator's reply was tested separately by the team. Five technical evaluators took part. The
 first, an IT professional who works in software quality assurance, reviewed the running system on 3
-October 2026. The other three, reached through Panelista, a platform that matches capstone projects
+October 2026. The other four, reached through Panelista, a platform that matches capstone projects
 with volunteer evaluators, with at least three years' experience asked of each, reviewed a
 demonstration copy of the system on 15 to 18 October: the same software on a separate database
 holding sample data, so that no outside reviewer saw the owner's records. None inspected the source
@@ -278,7 +278,7 @@ help, and one that needed a demonstration as not completed. Photographs were tak
 documentation, only with the tester's permission; no screen was recorded. Each respondent answered the survey after using the system,
 without the researchers viewing their answers: the tenants and the prospective tenant straight after
 their tasks, the administrator the same evening, the first technical evaluator the day after the
-evaluators' review, and the other three after their reviews of the demonstration copy. Page load times were measured once per screen
+evaluators' review, and the other four after their reviews of the demonstration copy. Page load times were measured once per screen
 on the devices named in Section 3.1.2, with the browser's cache cleared for a first load.
 
 **Statistical treatment.** For each survey item the weighted mean was computed as

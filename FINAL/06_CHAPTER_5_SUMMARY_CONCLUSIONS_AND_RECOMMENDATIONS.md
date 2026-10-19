@@ -12,7 +12,7 @@ developed and evaluated Hivelet, a web-based apartment management system deliver
 Web Application, for the Fe Galang Da Silva Boarding House, a 33-unit property in Legazpi City. The
 system was built in three Agile iterations with Vue, Express and PostgreSQL, pilot tested at the unit
 and integration, system and acceptance levels, and evaluated on the eight characteristics of ISO/IEC
-25010:2011 by the owner, three tenants, a prospective tenant and four technical evaluators. The results
+25010:2011 by the owner, three tenants, a prospective tenant and five technical evaluators. The results
 are summarized below in the order of the specific objectives.
 
 1. **The existing practices were analyzed.** The owner kept a two-sheet workbook on a USB flash
@@ -39,10 +39,10 @@ are summarized below in the order of the specific objectives.
    simulated readers of the owner's records.
 
 4. **The system was evaluated** by the five steps of ISO/IEC 25040: twenty-seven of the model's
-   thirty-one sub-characteristics had a measured result and twenty-five were rated. The nine
-   respondents rated the system 4.53 overall: Functional Suitability 4.77, Performance Efficiency
-   4.44, Compatibility 4.52, Usability 4.37, Reliability 4.56, Security 4.60, Maintainability 4.15 and
-   Portability 4.83. In response to feedback and testing, 51 changes were made, among them each of
+   thirty-one sub-characteristics had a measured result and twenty-five were rated. The ten
+   respondents rated the system 4.59 overall: Functional Suitability 4.79, Performance Efficiency
+   4.48, Compatibility 4.55, Usability 4.42, Reliability 4.61, Security 4.68, Maintainability 4.32 and
+   Portability 4.86. In response to feedback and testing, 51 changes were made, among them each of
    the technical evaluators' fourteen comments of 3 October 2026.
 
 ## 5.2 Conclusions
@@ -66,9 +66,9 @@ Based on the results of the study, the following conclusions were drawn:
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
    ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response. Its users rated it
-   Very High Quality overall (4.53), with every characteristic at least High Quality on the scale
+   Very High Quality overall (4.59), with every characteristic Very High Quality on the scale
    of Chapter 3's Table 3-5 (Chapter 4, Tables 4-17 and 4-19). The ratings agree with the measured evidence on every
-   characteristic, and they describe how nine people rated the system over three weeks, two of the
+   characteristic, and they describe how ten people rated the system over three weeks, two of the
    four groups with one respondent each.
 
 ## 5.3 Recommendations
@@ -105,12 +105,12 @@ Based on the summary and conclusions of the study, the following are recommended
    pre-rendering the public page, serving the typefaces from the site itself and reserving the space
    each figure takes (Section 4.3.5). Keep the figures already loaded on the Overview, Monthly
    Income and the tenant's dashboard, so that returning to a page does not wait for them again.
-6. Strengthen the two characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.15)
+6. Strengthen the two characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.32)
    by moving the database work now written inside the request handlers, three calls in four, into
    service modules, one per kind of record, with the result reviewed by more than one developer, and
    give whoever evaluates it the architecture, the entity-relationship diagram and the data dictionary
    (Figures 4-2 and 4-6, Appendix N) together with the system. Raise
-   **Usability** (4.37) by taking the owner through each screen with the user manual (Appendix K)
+   **Usability** (4.42) by taking the owner through each screen with the user manual (Appendix K)
    before she uses the system alone, and by showing each new tenant first how to sign in and find
    their unit and rent, where the tenants needed help.
 
