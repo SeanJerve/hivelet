@@ -1517,7 +1517,8 @@ html:has(> body[style*='overflow: hidden']) {
   .ws-table thead th {
     position: sticky;
     top: 0;
-    background-color: var(--tile);
+    z-index: 2;
+    background-color: var(--ws-table-surface, var(--tile));
     text-align: left;
     font-size: 0.75rem;
     font-weight: 500;
@@ -1525,6 +1526,10 @@ html:has(> body[style*='overflow: hidden']) {
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--line);
     white-space: nowrap;
+  }
+  /* The corner: stuck to the top and to the left, so above both. */
+  .ws-table thead th:first-child:not([colspan]) {
+    z-index: 3;
   }
   .font-editorial .ws-table thead th {
     font-family: var(--font-editorial);
@@ -1551,6 +1556,72 @@ html:has(> body[style*='overflow: hidden']) {
   .ws-table tbody tr + tr td,
   .ws-table tbody tr + tr th {
     border-top: 1px solid var(--line);
+  }
+
+  /*
+   * The first column stays put when a table scrolls sideways (Sean,
+   * 2026-10-19: on a phone the Tenants table in the archive lost its names
+   * the moment it was swiped, so "Months paid" and "Payments" were read
+   * against nobody). Every `.ws-table` gets it from here, not per screen.
+   *
+   * The preconditions, since a sticky cell fails silently when one breaks:
+   *   - the scroll container must be `.ws-table-wrap` itself, with no element
+   *     between it and the table carrying `overflow` (a clipped ancestor
+   *     becomes the sticky cell's scroller and the column scrolls away).
+   *   - the sticky cell needs an opaque fill, or the columns sliding under it
+   *     show through. It paints `--ws-table-surface` (the tile every table
+   *     sits on today); a table on another surface sets that variable.
+   *   - a first cell with `colspan` is a day heading or a subtotal label
+   *     wider than the column (Expenses' date rows, Income's "Cluster, all
+   *     N"). Pinned, it would slide over the figures in its own row, so it
+   *     scrolls with them. No table here uses `rowspan`; one that does would
+   *     make the NEXT row's `:first-child` the second column, so it would need
+   *     excluding the same way.
+   *
+   * `:where()` keeps the fill at the specificity of a bare `.ws-table tbody`
+   * rule, so the hover, pressed and selected-row fills below still win and
+   * the pinned cell never reads as a different row. A row that carries its
+   * own fill (Income's just-recorded receipt, `bg-brand-soft` on the `<tr>`)
+   * hands it to the pinned cell through `inherit`.
+   *
+   * z-order: body cell 1, header cell 2 (it sticks to the top, so body cells
+   * pass under it), header first cell 3 (the corner, stuck both ways).
+   */
+  .ws-table :where(tr > :first-child:not([colspan])) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+  .ws-table tbody :where(tr > :first-child:not([colspan])) {
+    background-color: var(--ws-table-surface, var(--tile));
+  }
+  .ws-table tbody :where(tr[class*='bg-'] > :first-child:not([colspan])) {
+    background-color: inherit;
+  }
+  /*
+   * The edge, only while something is actually under it. A scroll-driven
+   * animation on the wrap's sideways scroll: inactive (so no line) when the
+   * table fits, and full strength after the first 16px of scroll. Where the
+   * browser has no scroll timelines the column still sticks, without a line.
+   */
+  @supports (animation-timeline: scroll()) {
+    .ws-table :where(tr > :first-child:not([colspan])) {
+      animation: ws-sticky-edge linear both;
+      animation-timeline: scroll(nearest inline);
+      animation-range: 0 1rem;
+    }
+  }
+  @keyframes ws-sticky-edge {
+    from {
+      box-shadow:
+        inset -1px 0 0 transparent,
+        6px 0 8px -6px transparent;
+    }
+    to {
+      box-shadow:
+        inset -1px 0 0 var(--line),
+        6px 0 8px -6px color-mix(in srgb, var(--ink) 22%, transparent);
+    }
   }
   .ws-table tbody tr:hover td,
   .ws-table tbody tr:hover th {
