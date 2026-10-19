@@ -431,9 +431,10 @@ if (fallbackMatch) {
       'the stand-in number is her account\'s',
       String(contact.phone).replace(/\D/g, '') !== fallback,
       'LANDLADY_PHONE_FALLBACK equals the number /public/contact gives',
-      'LANDLADY_PHONE_FALLBACK no longer matches the number on her account (she changed it). ' +
-        'A visitor with no connection would be told to call the old one. Change the line in ' +
-        'src/lib/systemState.ts to her new number.'
+      'LANDLADY_PHONE_FALLBACK is not the number on her account, which every page now shows. ' +
+        'Either she changed it, or the number on her account is not the one the site gave ' +
+        'before. Ask which number visitors should call: if it is the account\'s, change the line ' +
+        'in src/lib/systemState.ts to it; if not, her account\'s number needs correcting first.'
     );
   }
 }
