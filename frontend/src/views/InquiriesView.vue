@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { todayLong } from '@/lib/propertyDate';
 import { showPhone } from '@/lib/phoneFormat';
 import { rememberFilters } from '@/lib/savedFilters';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
@@ -17,6 +18,8 @@ import Skeleton from '@/components/ui/Skeleton.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { ToolbarFilter } from '@/components/ui/listToolbar';
+
+const TODAY_LONG = todayLong();
 
 const router = useRouter();
 
@@ -396,7 +399,8 @@ async function handleSendReply() {
     <!-- Page header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <!-- Today, in place of "Admin" (Sean, 19 Oct 2026): this page shows the present, so it has no year menu. -->
+        <p class="text-sm text-ink-faint">{{ TODAY_LONG }}</p>
         <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Inquiries

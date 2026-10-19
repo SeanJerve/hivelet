@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { todayLong } from '@/lib/propertyDate';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted } from 'vue';
@@ -36,6 +37,8 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { ToolbarFilter, FilterDraft } from '@/components/ui/listToolbar';
+
+const TODAY_LONG = todayLong();
 
 const q = ref('');
 const statusFilter = ref('All');
@@ -557,7 +560,8 @@ function handleDeleteTicketPrompt() {
   <div class="ws-focus flex flex-col gap-5 text-ink">
     <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div class="min-w-0">
-        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <!-- Today, in place of "Admin" (Sean, 19 Oct 2026): this page shows the present, so it has no year menu. -->
+        <p class="text-sm text-ink-faint">{{ TODAY_LONG }}</p>
         <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Repairs</h1>
       </div>

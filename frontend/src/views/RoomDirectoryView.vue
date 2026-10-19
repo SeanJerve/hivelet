@@ -5,6 +5,7 @@
   @architectureRef docs/04_ARCHITECTURE.md
 -->
 <script setup lang="ts">
+import { todayLong } from '@/lib/propertyDate';
 import { domId } from '@/lib/domId';
 import { rememberFilters } from '@/lib/savedFilters';
 import { ref, computed, onMounted } from 'vue';
@@ -28,6 +29,8 @@ import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
+
+const TODAY_LONG = todayLong();
 
 type ViewMode = 'matrix' | 'table';
 
@@ -278,7 +281,8 @@ function applyRoomFilters(v: FilterDraft) {
 
     <!-- Page header -->
     <div>
-      <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+      <!-- Today, in place of "Admin" (Sean, 19 Oct 2026): this page shows the present, so it has no year menu. -->
+      <p class="text-sm text-ink-faint">{{ TODAY_LONG }}</p>
       <!-- No subtitle that restates the page name (Sean, 2026-10-01, fewer words). -->
       <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
         Rooms and rates

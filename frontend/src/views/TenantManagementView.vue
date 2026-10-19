@@ -9,7 +9,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, roomsLoaded, tenantsFetchFailed, showToast, asListedUnitCode, waterChargeFor, incomeRecords, fetchIncomeRecords, type TenantRecord } from '@/lib/systemState';
 import TenantHistory from '@/components/tenants/TenantHistory.vue';
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
-import { propertyToday } from '@/lib/propertyDate';
+import { propertyToday, todayLong } from '@/lib/propertyDate';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
 import { writesUnavailable } from '@/lib/offlineCache';
@@ -24,6 +24,8 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
+
+const TODAY_LONG = todayLong();
 
 const route = useRoute();
 const router = useRouter();
@@ -944,7 +946,8 @@ async function handleOnboard() {
     <!-- Page header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <!-- Today, in place of "Admin" (Sean, 19 Oct 2026): this page shows the present, so it has no year menu. -->
+        <p class="text-sm text-ink-faint">{{ TODAY_LONG }}</p>
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Tenants
         </h1>

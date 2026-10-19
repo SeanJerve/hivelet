@@ -29,6 +29,20 @@ export function propertyToday(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: PROPERTY_TIMEZONE });
 }
 
+/**
+ * Today at the property in words, "Monday, October 19, 2026": the top line of a page that shows the
+ * present (Tenants, Rooms and rates, Repairs, Inquiries), where the year pages have their year menu
+ * (19 Oct 2026). Noon, so no timezone moves the day.
+ */
+export function todayLong(): string {
+  return new Date(`${propertyToday()}T12:00:00`).toLocaleDateString('en-PH', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 /** A `Date` rendered as `YYYY-MM-DD` at the property, never in UTC. */
 export function propertyDate(d: Date): string {
   return d.toLocaleDateString('en-CA', { timeZone: PROPERTY_TIMEZONE });
