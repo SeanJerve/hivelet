@@ -21,6 +21,7 @@ numbers) and `BLOCKED_FOR_SEAN.md` (B numbers).
 
 | # | What | Who |
 | :-- | :--- | :--- |
+| 0 | **Which number should visitors call?** (B-111) The number on the owner's account is not the number the website has been showing. Built and tested, not yet live: every page will show her account's number, and she signs in with it. Ask her which is right; Claude then makes the two match and puts it live | Sean, with the owner |
 | 1 | **The admin signs in with her phone number, not admin@hivelet.ph**, and gets a **Change number / password** option that asks for the current password and the current number first (B-111) | Claude builds it. The number and the new password go in `credentials/` or are given in person, never in a document or chat |
 | 2 | **The evaluation slides** still show the six-respondent scores (B-109, B-110) | Update in the deck |
 | 3 | **Make the GitHub repository private** before the defense (P9) | Sean |
