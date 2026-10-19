@@ -47,7 +47,7 @@ import SegmentBar from '@/components/overview/SegmentBar.vue';
 import YearMenu from '@/components/ui/YearMenu.vue';
 import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
-import type { ArcUnit, CapsuleMonth, QuickAction } from '@/components/overview/types';
+import type { ArcUnit, CapsuleMonth, QuickAction, Segment } from '@/components/overview/types';
 import {
   Plus,
   ReceiptText,
@@ -508,12 +508,18 @@ const historicalAnnualGrossTotal = computed(() =>
   historicalIncomeRecords.value.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0)
 );
 
+/**
+ * The 50% Share as Monthly Income shows it: Boarding House rows only, the one cluster whose
+ * section in her workbook has the column (20 Oct 2026). This summed every row's half, all
+ * clusters, so the Overview's 2025 figure (₱1,466,100) and the ledger's disagreed.
+ */
 const historicalAnnualHalfOfRentShare = computed(() =>
-  historicalIncomeRecords.value.reduce(
-    (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'Boarding House' ? r.rent / 2 : r.rent) || 0),
-    0
-  )
+  historicalIncomeRecords.value
+    .filter((r) => r.cluster === 'Boarding House')
+    .reduce((sum, r) => sum + Number(r.fiftyPercentShare || r.rent / 2 || 0), 0)
 );
+const historicalRent = computed(() => historicalIncomeRecords.value.reduce((s, r) => s + Number(r.rent || 0), 0));
+const historicalWater = computed(() => historicalIncomeRecords.value.reduce((s, r) => s + Number(r.water || 0), 0));
 
 // Operating expenses of the rental business. Excludes Main House (Mrs. Fe's own residence) and
 // Other / Personal, which are recorded in the same ledger but are not a cost of the business
@@ -564,33 +570,18 @@ const historicalCapsules = computed<CapsuleMonth[]>(() =>
   }))
 );
 
-const historicalRecordedMonths = computed(() => historical12MonthsData.value.filter((d) => d.hasIncome));
-const historicalRecordedAverage = computed(() =>
-  historicalRecordedMonths.value.length
-    ? Math.round(historicalAnnualGrossTotal.value / historicalRecordedMonths.value.length)
-    : 0
-);
-const historicalHighestMonth = computed(() =>
-  historicalRecordedMonths.value.reduce<MonthIncomeData | null>(
-    (best, d) => (best === null || d.grossIncome > best.grossIncome ? d : best),
-    null
-  )
-);
-
-const historicalClusterPerformance = computed(() =>
-  CLUSTERS.map((clusterName) => {
-    const clusterRecords = historicalIncomeRecords.value.filter((r) => r.cluster === clusterName);
-    const totalRevenue = clusterRecords.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0);
-    return {
-      name: clusterName,
-      revenue: totalRevenue,
-      uniqueRooms: new Set(clusterRecords.map((r) => r.unit)).size,
-      share:
-        historicalAnnualGrossTotal.value > 0 ? (totalRevenue / historicalAnnualGrossTotal.value) * 100 : 0,
-      recordCount: clusterRecords.length,
-    };
-  })
-);
+/** Where the year's rent and water came from, by cluster, as Monthly Income's "Where it came from". */
+const historicalClusterSplit = computed<Segment[]>(() => {
+  const totals = new Map<string, number>();
+  for (const r of historicalIncomeRecords.value) {
+    totals.set(r.cluster, (totals.get(r.cluster) ?? 0) + Number(r.totalRemitted || r.rent || 0));
+  }
+  const tones = ['brand', 'bright', 'night', 'soft', 'hatch', 'faint'] as const;
+  return [...totals.entries()]
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({ label, value, tone: tones[i % tones.length] }));
+});
 
 /*
  * The rest of an archive year is two counts and a chart (Sean, 19 Oct 2026). The year used to
@@ -1134,125 +1125,106 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     <!-- ================================================================== *
      * Archive year
      * ================================================================== -->
-    <!-- Every money tile names its year in its title (Sean, 2026-10-02: the
-         landlady was surprised by all-time sums elsewhere; here nothing was
-         all-time, but a figure should say which year it is without the reader
-         looking back up at the heading). The live year's tiles do the same. -->
+    <!--
+      A past year in the ledgers' own cards (Sean, 20 Oct 2026): a figure, then its parts on ruled
+      lines, no sentences. Each money card's arrow opens that year's ledger.
+    -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <OverviewTile tone="brand" :title="`Rent and water entered, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-3">
+      <OverviewTile tone="night" :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
-        <div v-else>
-          <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
-          <p class="mt-2 text-sm text-on-brand-soft">
-            {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'entry' : 'entries' }}
-          </p>
-        </div>
-      </OverviewTile>
-
-      <OverviewTile :title="`50% Share, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-3">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-        <div v-else>
-          <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualHalfOfRentShare) }}</p>
-          <p class="mt-2 text-sm text-ink-soft">
-            Half of each row's Rent Amount, computed by the system and kept for ledger parity with the owner's
-            historical spreadsheet.
-          </p>
-        </div>
-      </OverviewTile>
-
-      <OverviewTile :title="`Expenses, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-3">
-        <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
-        <div v-else>
-          <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualExpenseTotal) }}</p>
-          <p class="mt-2 text-sm text-ink-soft">
-            {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }},
-            not counting {{ peso(historicalAnnualPersonalTotal) }} personal (Main House, Other)
-          </p>
-        </div>
-      </OverviewTile>
-
-      <OverviewTile :title="`Net income, ${selectedArchiveYear}`" class="xl:col-span-3">
-        <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" @retry="refreshAllData" />
-        <div v-else>
-          <p
-            :class="[
-              'text-4xl leading-none font-semibold tabular tracking-tight',
-              historicalAnnualNOI < 0 && 'text-overdue',
-            ]"
-          >
-            {{ peso(historicalAnnualNOI) }}
-          </p>
-          <p class="mt-2 text-sm text-ink-soft">Rent and water entered, minus operating expenses</p>
-        </div>
-      </OverviewTile>
-
-      <OverviewTile :title="`Rent and water by month, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-8">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
+        <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>
-          <MonthCapsules :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
-          <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
-            <div>
-              <dt class="text-xs text-ink-faint">Total entered</dt>
-              <dd class="text-lg font-semibold tabular">{{ peso(historicalAnnualGrossTotal) }}</dd>
-              <dd class="text-xs text-ink-soft">All units</dd>
+          <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
+          <p class="text-sm text-on-night-soft">From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}</p>
+          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1">
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-on-night-soft">Rent</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(historicalRent) }}</dd>
             </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Monthly average</dt>
-              <dd class="text-lg font-semibold tabular">{{ peso(historicalRecordedAverage) }}</dd>
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-on-night-soft">Water</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(historicalWater) }}</dd>
             </div>
-            <div v-if="historicalHighestMonth">
-              <dt class="text-xs text-ink-faint">Highest month</dt>
-              <dd class="text-lg font-semibold tabular">{{ peso(historicalHighestMonth.grossIncome) }}</dd>
-              <dd class="text-xs text-ink-soft">{{ MONTH_LONG[historicalHighestMonth.monthNum - 1] }}</dd>
+            <!-- BR-035: the label only. -->
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-on-night-soft">50% Share</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualHalfOfRentShare) }}</dd>
             </div>
           </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Rent and water by cluster, ${selectedArchiveYear}`" class="xl:col-span-4">
+      <OverviewTile :title="`Where it came from, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-8">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-        <ul v-else class="flex flex-col gap-4">
-          <li
-            v-for="(c, i) in historicalClusterPerformance"
-            :key="c.name"
-            class="list-reveal-item"
-            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-          >
-            <div class="flex items-baseline justify-between gap-3 text-sm">
-              <span class="font-medium">{{ c.name }}</span>
-              <span class="tabular font-semibold">{{ peso(c.revenue) }}</span>
-            </div>
-            <div class="mt-2 h-2 rounded-full bg-canvas" aria-hidden="true">
-              <div
-                class="bar-fill h-full origin-left rounded-full bg-brand"
-                :style="{ width: `${c.share}%`, animationDelay: `${Math.min(i, 9) * 30}ms` }"
-              />
-            </div>
-            <p class="mt-1.5 text-xs text-ink-faint tabular">
-              <template v-if="c.recordCount === 0">No entries this year.</template>
-              <template v-else>
-                {{ c.share.toFixed(1) }}% of the year. {{ c.recordCount }}
-                {{ c.recordCount === 1 ? 'entry' : 'entries' }} across {{ c.uniqueRooms }}
-                {{ c.uniqueRooms === 1 ? 'unit' : 'units' }}.
-              </template>
-            </p>
-          </li>
-        </ul>
-      </OverviewTile>
-
-      <OverviewTile :title="`Operating expenses by month, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="md:col-span-2 xl:col-span-8">
-        <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
+        <p v-else-if="historicalClusterSplit.length === 0" class="text-sm text-ink-soft">Not entered</p>
         <template v-else>
-          <MonthCapsules :months="historicalExpenseCapsules" :label="`Operating expenses by month in ${selectedArchiveYear}`" />
-          <p class="border-t border-line pt-4 text-sm text-ink-soft">
-            {{ peso(historicalAnnualExpenseTotal) }} across {{ historicalExpenseRecords.length }}
-            {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}; personal spending
-            ({{ peso(historicalAnnualPersonalTotal) }}) is not counted.
-          </p>
+          <SegmentBar :segments="historicalClusterSplit" :label="`How ${peso(historicalAnnualGrossTotal)} divides across the clusters`" />
+          <ul class="flex flex-col gap-2.5">
+            <li v-for="c in historicalClusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-3 text-sm">
+              <span class="flex min-w-0 items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  :class="[
+                    'size-3 shrink-0 rounded-full',
+                    c.tone === 'brand' && 'bg-brand',
+                    c.tone === 'bright' && 'bg-brand-bright',
+                    c.tone === 'night' && 'bg-series-night',
+                    c.tone === 'soft' && 'bg-series-soft',
+                    c.tone === 'hatch' && 'hatch border border-line',
+                    c.tone === 'faint' && 'bg-ink-faint',
+                  ]"
+                />
+                <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
+              </span>
+              <span class="flex shrink-0 items-baseline gap-3">
+                <span class="text-xs text-ink-faint tabular">{{ historicalAnnualGrossTotal > 0 ? Math.round((c.value / historicalAnnualGrossTotal) * 100) : 0 }}%</span>
+                <span class="tabular font-semibold">{{ peso(c.value) }}</span>
+              </span>
+            </li>
+          </ul>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Tenants and units, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
+      <OverviewTile :title="`Spent, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-4">
+        <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
+        <p v-else-if="historicalExpenseRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
+        <template v-else>
+          <!-- Everything recorded, so the two lines under it add up to it, as Rent and Water do above. -->
+          <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualExpenseTotal + historicalAnnualPersonalTotal) }}</p>
+          <p class="text-sm text-ink-soft">From {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}</p>
+          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-ink-soft">Operating</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualExpenseTotal) }}</dd>
+            </div>
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-ink-soft">Personal, not deducted</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualPersonalTotal) }}</dd>
+            </div>
+          </dl>
+        </template>
+      </OverviewTile>
+
+      <OverviewTile :title="`Net income, ${selectedArchiveYear}`" class="xl:col-span-4">
+        <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" @retry="refreshAllData" />
+        <template v-else>
+          <p :class="['tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight', historicalAnnualNOI < 0 && 'text-overdue']">
+            {{ peso(historicalAnnualNOI) }}
+          </p>
+          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-ink-soft">Received</dt>
+              <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualGrossTotal) }}</dd>
+            </div>
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="text-sm text-ink-soft">Operating expenses</dt>
+              <dd class="tabular text-lg font-semibold">&minus;{{ peso(historicalAnnualExpenseTotal) }}</dd>
+            </div>
+          </dl>
+        </template>
+      </OverviewTile>
+
+      <OverviewTile :title="`Tenants and units, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <dl v-else class="grid grid-cols-2 gap-4">
           <div>
@@ -1265,10 +1237,18 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               {{ historicalUnitCount }}<span class="text-lg text-ink-faint">/{{ rooms.length || 33 }}</span>
             </dd>
           </div>
-          <p class="col-span-2 text-sm text-ink-soft">Every receipt, by tenant or unit, is in Monthly Income.</p>
         </dl>
+      </OverviewTile>
+
+      <OverviewTile :title="`Rent and water by month, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-6">
+        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
+        <MonthCapsules v-else :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
+      </OverviewTile>
+
+      <OverviewTile :title="`Operating expenses by month, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="md:col-span-2 xl:col-span-6">
+        <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
+        <MonthCapsules v-else :months="historicalExpenseCapsules" :label="`Operating expenses by month in ${selectedArchiveYear}`" />
       </OverviewTile>
     </div>
   </div>
 </template>
-
