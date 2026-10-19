@@ -11,13 +11,14 @@
  */
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { isMobileSidebarOpen } from '@/lib/systemState';
-import { 
-  currentUser, 
-  isAuthenticated, 
-  isAdmin, 
-  isTenant, 
-  logout 
+import { isMobileSidebarOpen, LANDLADY } from '@/lib/systemState';
+import {
+  currentUser,
+  isAuthenticated,
+  isAdmin,
+  isTenant,
+  ownPhone,
+  logout
 } from '@/lib/authStore';
 /**
  * The notification centre.
@@ -47,7 +48,9 @@ import {
 import NotificationPopover from './NotificationPopover.vue';
 import { Menu, LogOut, LogIn, User, Bell, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
+import ChangeSignInModal from '@/components/modals/ChangeSignInModal.vue';
 import { realEmail } from '@/lib/contactDetails';
+import { showPhone } from '@/lib/phoneFormat';
 import ThemeChoice from '@/components/ui/ThemeChoice.vue';
 import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
@@ -195,11 +198,22 @@ onMounted(() => {
  * every tenant was onboarded on the same shared literal.
  */
 const isChangePasswordOpen = ref(false);
+/** The administrator's Change number / password (B-111). Tenants keep Change password. */
+const isChangeSignInOpen = ref(false);
 
 function openChangePassword() {
   isProfilePopoverOpen.value = false;
-  isChangePasswordOpen.value = true;
+  if (isAdmin.value) isChangeSignInOpen.value = true;
+  else isChangePasswordOpen.value = true;
 }
+
+/**
+ * What the account menu shows under her name. She signs in with her phone number (B-111), so
+ * that is shown, never her email: her own number from `/auth/me`, or, straight after signing
+ * in and before that read, the number every page gives for her, which is the same one
+ * (`GET /public/contact` reads it from her account).
+ */
+const adminSignInNumber = computed(() => showPhone(ownPhone.value ?? LANDLADY.phone));
 
 async function handleSignOut() {
   isProfilePopoverOpen.value = false;
@@ -523,8 +537,12 @@ onUnmounted(() => {
                     <p class="truncate text-sm font-semibold text-ink">
                       {{ currentUser.fullName || 'Administrator' }}
                     </p>
+                    <!-- The administrator signs in with her number, so that is shown, not her email (B-111). -->
+                    <p v-if="isAdmin" class="truncate text-xs text-ink-soft tabular">
+                      {{ adminSignInNumber }}
+                    </p>
                     <!-- A placeholder email (migration 067) is not shown: it is not an address. -->
-                    <p v-if="realEmail(currentUser.email)" class="truncate text-xs text-ink-soft">
+                    <p v-else-if="realEmail(currentUser.email)" class="truncate text-xs text-ink-soft">
                       {{ realEmail(currentUser.email) }}
                     </p>
                     <p class="mt-1 text-xs font-semibold text-brand">
@@ -583,7 +601,7 @@ onUnmounted(() => {
                     class="press flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-ink hover:bg-canvas"
                   >
                     <Lock class="size-4 text-ink-soft" aria-hidden="true" />
-                    <span>Change password</span>
+                    <span>{{ isAdmin ? 'Change number / password' : 'Change password' }}</span>
                   </button>
 
                   <button
@@ -688,4 +706,5 @@ onUnmounted(() => {
   </header>
 
   <ChangePasswordModal :open="isChangePasswordOpen" @close="isChangePasswordOpen = false" />
+  <ChangeSignInModal :open="isChangeSignInOpen" @close="isChangeSignInOpen = false" />
 </template>

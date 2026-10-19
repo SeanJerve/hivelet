@@ -89,6 +89,21 @@ export const PASSWORD_CHANGED_FLAG = 'hivelet_password_changed';
  */
 export const MOVED_OUT_FLAG = 'hivelet_moved_out';
 
+/**
+ * The signed-in person's own phone number, as `/auth/me` last gave it; `null` until that read
+ * (straight after signing in it has not happened yet). The administrator signs in with it
+ * (B-111), so her account menu shows it in place of her email.
+ */
+export const ownPhone = computed<string | null>(() => {
+  const p = state.profile?.phone_number;
+  return typeof p === 'string' && p.trim() ? p.trim() : null;
+});
+
+/** After Change number / password succeeds, so the menu shows the new number at once. */
+export function setOwnPhone(phone: string): void {
+  state.profile = { ...(state.profile ?? {}), phone_number: phone };
+}
+
 export function clearMustChangePassword(): void {
   if (state.user) state.user.mustChangePassword = false;
 }
