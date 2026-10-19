@@ -12,6 +12,7 @@ import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
+import YearMenu from '@/components/ui/YearMenu.vue';
 import { Plus, Loader2, FileSpreadsheet, Pencil, Trash2 } from 'lucide-vue-next';
 import { orderOptions, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
@@ -240,11 +241,25 @@ const yearOptions = computed(() =>
   }))
 );
 
+// Newest first, this year named, All years last (the menu where "Admin" was; 19 Oct 2026).
+const yearMenuOptions = computed(() => [
+  ...yearsList.value.filter((y) => y !== 'All').map((y) => ({ value: y, label: y === THIS_YEAR ? `${y}, this year` : y })),
+  { value: 'All', label: 'All years' },
+]);
+/**
+ * A past year is read-only here, as on the Overview (Sean, 19 Oct 2026): no Record button. A
+ * late expense is still entered from this year, where the form takes any date,
+ * and a past record can still be corrected from its own row. All years keeps the button.
+ */
+const isPastYear = computed(() => filterYear.value !== 'All' && filterYear.value < THIS_YEAR);
+
 // The year picked on another money page, as on the income screen (`followPickedYear` there).
 function followPickedYear() {
   const year = pickedYear.value;
   if (year && yearsList.value.includes(year)) filterYear.value = year;
 }
+// Arriving from an archive year's arrow on the Overview, ?year=2025 (19 Oct 2026).
+if (typeof route.query.year === 'string') pickedYear.value = route.query.year;
 followPickedYear();
 watch(isLoading, (loading) => {
   if (!loading) followPickedYear();
@@ -258,13 +273,11 @@ const expenseFilters = computed<ToolbarFilter[]>(() => [
   { key: 'kind', label: 'Kind of expense', value: selectedCategory.value, defaultValue: 'All', options: expenseCategoryOptions.value },
   { key: 'month', label: 'Month', value: filterMonth.value, defaultValue: 'All', options: monthsList },
   // Default this year (above): Reset and Clear come back to it.
-  { key: 'year', label: 'Year', value: filterYear.value, defaultValue: THIS_YEAR, options: yearOptions.value },
   { key: 'order', label: 'Order', value: expenseOrder.value, defaultValue: 'newest', options: orderOptions(['newest', 'oldest']) },
 ]);
 function applyExpenseFilters(v: FilterDraft) {
   selectedCategory.value = String(v.kind);
   filterMonth.value = String(v.month);
-  filterYear.value = String(v.year);
   expenseOrder.value = v.order as RowOrder;
 }
 
@@ -937,13 +950,15 @@ async function handleEditExpense() {
           (Sean, 6 Oct 2026: on the eyebrow line above the button the two read as
           one stack, "not positioned and oriented right"). From 640px: Download
           then the button, the primary last at the right edge as on the Overview.
-          On a phone Download moves up to the "Admin" line, at its right, where the
+          On a phone Download moves up to the year line, at its right, where the
           Overview keeps its year (Sean, 12 Oct), and the button stands alone. It
           still opens the month / year / everything dialog; the year and
           the format are in its accessible name and tooltip.
         -->
         <div class="flex items-center justify-between gap-4">
-          <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+          <!-- The year this page shows, in place of "Admin" (Sean, 19 Oct 2026), the same menu as the
+               Overview; it moved here from Filters, so there is one control for the year. -->
+          <YearMenu v-model="filterYear" :options="yearMenuOptions" />
           <!-- The phone's Download. `-my-1` keeps its py-1 hit area from pushing the title down. -->
           <button
             type="button"
@@ -974,7 +989,7 @@ async function handleEditExpense() {
               <span>Download</span>
               <FileSpreadsheet class="size-4" aria-hidden="true" />
             </button>
-            <div class="ws-page-actions w-auto">
+            <div v-if="!isPastYear" class="ws-page-actions w-auto">
               <!-- Not offline or from the saved copy: recording needs the server (Sean, 2026-10-02). -->
               <button
                 type="button"
