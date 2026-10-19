@@ -46,7 +46,7 @@ import { useToast } from '@/lib/useToast';
 const { showToast } = useToast();
 
 const ticketFilterOptions = [
-  { value: 'All', label: 'All requests' },
+  { value: 'All', label: 'All' },
   { value: 'Open', label: 'Open' },
   { value: 'Resolved', label: 'Done' },
 ];

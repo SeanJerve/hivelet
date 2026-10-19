@@ -107,7 +107,7 @@ function toggleCluster(key: string, index: number) {
 }
 
 const monthsList = [
-  { val: 'All', label: 'All months' }, // sentence case, as Tenants' 'All months' and every other 'All ...' option (audit 2026-10-09)
+  { val: 'All', label: 'All' }, // 'All', not 'All months': the filter's own label says Month (Sean, 20 Oct 2026)
   { val: 'Jan', label: 'January' },
   { val: 'Feb', label: 'February' },
   { val: 'Mar', label: 'March' },
@@ -486,7 +486,7 @@ const rows = computed(() =>
 function clusterChipsFor(year: string, month: string) {
   const inScope = incomeRecords.filter((r) => matchesExceptCluster(r, year, month));
   return [
-    { key: 'All', label: 'All clusters', count: inScope.length },
+    { key: 'All', label: 'All', count: inScope.length },
     ...CLUSTERS.map((c) => ({
       key: c as string,
       label: c as string,

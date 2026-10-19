@@ -199,7 +199,7 @@ const inquiryFilters = computed<ToolbarFilter[]>(() => [
     value: statusFilter.value,
     defaultValue: 'All',
     options: [
-      { value: 'All', label: 'All inquiries', count: inquiries.length },
+      { value: 'All', label: 'All', count: inquiries.length },
       ...Object.keys(STATUS_WORD).map((s) => ({
         value: s,
         label: STATUS_WORD[s],

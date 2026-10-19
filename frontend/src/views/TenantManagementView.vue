@@ -387,7 +387,7 @@ const historyYearOptions = computed(() => {
   ];
 });
 const historyMonthOptions = [
-  { value: 'all', label: 'All months' },
+  { value: 'all', label: 'All' },
   ...MONTH_NAMES.map((m, i) => ({ value: String(i + 1), label: m })),
 ];
 

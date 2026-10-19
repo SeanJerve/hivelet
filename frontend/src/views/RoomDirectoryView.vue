@@ -40,7 +40,7 @@ const selectedStatus = ref<string>('All');
 const viewMode = ref<ViewMode>('matrix');
 
 const clusterOptions = computed(() => [
-  { value: 'All', label: 'All clusters' },
+  { value: 'All', label: 'All' },
   ...CLUSTERS.map((c) => ({ value: c, label: c })),
 ]);
 
@@ -224,7 +224,7 @@ function editUnit(u: RoomItem) {
  * the same control rather than two that can disagree.
  */
 const statusChips = computed(() => [
-  { key: 'All', label: 'All units', count: rooms.length },
+  { key: 'All', label: 'All', count: rooms.length },
   // Matches `getStatusLabel` below exactly. This read 'Paid up' and 'Owing' -
   // the same payment framing that comment documents removing from the result
   // badges - so the filter menu offered words the results themselves no
@@ -292,7 +292,7 @@ function applyRoomFilters(v: FilterDraft) {
     <!--
       The list toolbar every screen shares (components/ui/ListToolbar.vue,
       Sean, 2026-10-01): search with the filter button beside it. The status
-      ("All units") and cluster filters are in the filter dialog, and so is the
+      ("All") and cluster filters are in the filter dialog, and so is the
       switch between the two ways of reading the same 33 units, as "Show as"
       at its top (Sean, 2026-10-02: the switch inside Filters, so it's cleaner).
     -->

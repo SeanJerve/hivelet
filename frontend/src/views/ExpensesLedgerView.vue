@@ -202,7 +202,7 @@ const exportYears = computed(() => yearsList.value.filter((y) => y !== 'All').ma
 const isDownloadOpen = ref(false);
 
 const monthsList = [
-  { val: 'All', label: 'All months' }, // sentence case, as Tenants' 'All months' and every other 'All ...' option (audit 2026-10-09)
+  { val: 'All', label: 'All' }, // 'All', not 'All months': the filter's own label says Month (Sean, 20 Oct 2026)
   { val: 'Jan', label: 'January' },
   { val: 'Feb', label: 'February' },
   { val: 'Mar', label: 'March' },
@@ -230,7 +230,7 @@ const yearsList = computed(() => {
 });
 
 const expenseCategoryOptions = computed(() => [
-  { value: 'All', label: 'All kinds' },
+  { value: 'All', label: 'All' },
   ...categoryOptions.value.map((c) => ({ value: c, label: c })),
 ]);
 
