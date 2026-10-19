@@ -57,8 +57,14 @@ const props = withDefaults(
      */
     closeDisabled?: boolean;
     tone?: 'plain' | 'danger';
+    /**
+     * A decision that needs a full stop ("Record this payment?", ConfirmDialog): the one kind
+     * still drawn as a pop-up in the middle of the screen (Sean, 20 Oct 2026). Everything else is
+     * a sheet from the bottom edge at every width; see "The sheet" below.
+     */
+    decision?: boolean;
   }>(),
-  { size: 'md', dismissible: true, mandatory: false, closeDisabled: false, tone: 'plain' }
+  { size: 'md', dismissible: true, mandatory: false, closeDisabled: false, tone: 'plain', decision: false }
 );
 
 const emit = defineEmits<{ close: [] }>();
@@ -83,7 +89,149 @@ const messageTone = {
 } as const;
 const panel = ref<HTMLElement | null>(null);
 const overlay = ref<HTMLElement | null>(null);
+const body = ref<HTMLElement | null>(null);
 let previouslyFocused: HTMLElement | null = null;
+
+/* -------------------------------------------------------------------------- *
+ * The sheet (Sean, 20 Oct 2026)
+ *
+ * Every dialog that is not a decision rises from the bottom edge, at every width, and rests at
+ * one of two heights with nothing in between: half the screen when its content fits there, the
+ * full screen (less a strip of the page behind) when it does not. It grows to full on its own
+ * when its content outgrows half, or when a field is focused and the keyboard needs the room; it
+ * never shrinks by itself, so nothing jumps while someone is reading it. The handle at the top
+ * drags it between the two, follows the finger 1:1, carries the flick's speed into where it
+ * lands, and a drag down from half closes it when the dialog may be closed. The handle is also a
+ * button, so the keyboard and a screen reader can switch the height too.
+ * -------------------------------------------------------------------------- */
+const viewportH = ref(typeof window === 'undefined' ? 800 : window.innerHeight);
+const snap = ref<'half' | 'full'>('half');
+let userSnapped = false;
+const dragHeight = ref<number | null>(null);
+const halfPx = computed(() => Math.round(viewportH.value * 0.5));
+const fullPx = computed(() => viewportH.value - 24);
+const sheetHeight = computed(() => dragHeight.value ?? (snap.value === 'full' ? fullPx.value : halfPx.value));
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/**
+ * At rest the two heights are CSS, in dynamic viewport units, not pixels measured when the
+ * dialog opened: a phone's visible height changes as its address bar slides, and a page measured
+ * at the wrong moment (a hidden preview reported 0) would otherwise leave the sheet at that size.
+ * Pixels only while a finger holds it.
+ */
+const panelStyle = computed(() =>
+  props.decision
+    ? undefined
+    : {
+        height: dragHeight.value !== null ? `${dragHeight.value}px` : snap.value === 'full' ? 'calc(100dvh - 1.5rem)' : '50dvh',
+        // The iOS drawer curve; none while the finger holds it, and none under reduced motion.
+        transition: dragHeight.value !== null || prefersReducedMotion() ? 'none' : 'height 320ms cubic-bezier(0.32, 0.72, 0, 1)',
+      }
+);
+
+/** The height the dialog would need to show everything without scrolling. */
+function naturalHeight(): number {
+  const p = panel.value;
+  const b = body.value;
+  if (!p || !b) return 0;
+  const kids = [...b.children] as HTMLElement[];
+  if (!kids.length) return p.offsetHeight - b.clientHeight;
+  const top = Math.min(...kids.map((k) => k.getBoundingClientRect().top));
+  const bottom = Math.max(...kids.map((k) => k.getBoundingClientRect().bottom));
+  const cs = getComputedStyle(b);
+  const content = bottom - top + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  return p.offsetHeight - b.clientHeight + content;
+}
+
+// A short timer, not requestAnimationFrame: a page that is not being painted (a background tab) never
+// runs a frame callback, and the sheet would stay at half over content that needs the full height.
+let fitFrame: ReturnType<typeof setTimeout> | undefined;
+function fit(initial = false) {
+  if (props.decision || userSnapped) return;
+  clearTimeout(fitFrame);
+  fitFrame = setTimeout(() => {
+    viewportH.value = window.innerHeight;
+    if (!viewportH.value) return; // nothing to measure against (a hidden page)
+    const needsFull = naturalHeight() > halfPx.value;
+    if (needsFull) snap.value = 'full';
+    else if (initial) snap.value = 'half';
+  }, 16);
+}
+
+function toggleSnap() {
+  if (suppressHandleClick) {
+    suppressHandleClick = false;
+    return;
+  }
+  userSnapped = true;
+  snap.value = snap.value === 'full' ? 'half' : 'full';
+}
+
+// A field needs the room once someone starts typing, and on a phone the keyboard takes half.
+function onFocusIn(e: FocusEvent) {
+  if (props.decision || snap.value === 'full') return;
+  if ((e.target as HTMLElement | null)?.matches?.('input:not([type="checkbox"]):not([type="radio"]), textarea, select')) {
+    snap.value = 'full';
+  }
+}
+
+const canDragClose = computed(() => props.dismissible && !props.mandatory && !props.closeDisabled);
+// Apple's projection of where a flick comes to rest (WWDC 2018, "Designing Fluid Interfaces").
+const project = (velocityPxPerSec: number, rate = 0.998) => ((velocityPxPerSec / 1000) * rate) / (1 - rate);
+// Resistance past the top, so the sheet slows before it stops rather than hitting a wall.
+const rubber = (over: number, dim: number) => (over * dim * 0.55) / (dim + 0.55 * Math.abs(over));
+let drag: { startY: number; startH: number; moved: boolean; samples: { y: number; t: number }[] } | null = null;
+let suppressHandleClick = false;
+
+function onDragStart(e: PointerEvent) {
+  if (props.decision || e.button !== 0) return;
+  // Only the handle and the title row grab; the X and anything else interactive keep their taps.
+  const target = e.target as HTMLElement;
+  if (target.closest('a, input, select, textarea, button:not(.ws-sheet-handle)')) return;
+  viewportH.value = window.innerHeight;
+  const startH = panel.value?.getBoundingClientRect().height ?? sheetHeight.value;
+  drag = { startY: e.clientY, startH, moved: false, samples: [{ y: e.clientY, t: e.timeStamp }] };
+  (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+}
+function onDragMove(e: PointerEvent) {
+  if (!drag) return;
+  const dy = e.clientY - drag.startY;
+  if (!drag.moved && Math.abs(dy) < 6) return; // a tap stays a tap
+  drag.moved = true;
+  let h = drag.startH - dy;
+  if (h > fullPx.value) h = fullPx.value + rubber(h - fullPx.value, viewportH.value);
+  dragHeight.value = Math.max(0, h);
+  drag.samples.push({ y: e.clientY, t: e.timeStamp });
+  if (drag.samples.length > 5) drag.samples.shift();
+}
+function onDragEnd() {
+  if (!drag) return;
+  const d = drag;
+  drag = null;
+  if (!d.moved) return;
+  suppressHandleClick = true;
+  window.setTimeout(() => (suppressHandleClick = false), 0);
+  const first = d.samples[0];
+  const last = d.samples[d.samples.length - 1];
+  const dt = Math.max(1, last.t - first.t);
+  const downwardPxPerSec = ((last.y - first.y) / dt) * 1000;
+  const h = dragHeight.value ?? d.startH;
+  const projected = h - project(downwardPxPerSec);
+  const stops = canDragClose.value ? [0, halfPx.value, fullPx.value] : [halfPx.value, fullPx.value];
+  const target = stops.reduce((best, s) => (Math.abs(s - projected) < Math.abs(best - projected) ? s : best), stops[0]);
+  userSnapped = true;
+  if (target === 0) {
+    emit('close');
+    return;
+  }
+  snap.value = target === fullPx.value ? 'full' : 'half';
+  dragHeight.value = null;
+}
+
+function onResize() {
+  viewportH.value = window.innerHeight;
+}
+let contentWatch: MutationObserver | null = null;
+let sizeWatch: ResizeObserver | null = null;
 
 const widths = {
   sm: 'max-w-md',
@@ -229,6 +377,17 @@ onMounted(async () => {
    * overlay about 40px, pushing the title and the X off the top.
    */
   panel.value?.focus({ preventScroll: true });
+  if (!props.decision) {
+    window.addEventListener('resize', onResize);
+    fit(true);
+    // Content that arrives or grows later (a step, a loaded list, an error) may need the full height.
+    if (body.value) {
+      contentWatch = new MutationObserver(() => fit());
+      contentWatch.observe(body.value, { childList: true, subtree: true });
+      sizeWatch = new ResizeObserver(() => fit());
+      [...body.value.children].forEach((c) => sizeWatch!.observe(c));
+    }
+  }
 });
 
 /**
@@ -251,11 +410,12 @@ onMounted(async () => {
  */
 const ENTER = { duration: 240, easing: 'cubic-bezier(0.33, 1, 0.68, 1)' };
 /**
- * Below 640px the dialog is a sheet on the bottom edge (Loyd, 2026-10-03), so
- * it rises into place rather than growing from its centre: a sheet that scales
- * pulls its own bottom edge off the screen for the length of the animation.
+ * A sheet rises into place rather than growing from its centre: a sheet that
+ * scales pulls its own bottom edge off the screen for the length of the
+ * animation. Every dialog but a decision is a sheet at every width now
+ * (Sean, 20 Oct 2026; it was below 640px only, Loyd, 2026-10-03).
  */
-const isSheet = () => !window.matchMedia('(min-width: 640px)').matches;
+const isSheet = () => !props.decision;
 const offscreen = () => (isSheet() ? 'translateY(32px)' : 'translateY(12px) scale(0.96)');
 function enterMotion(): void {
   const el = overlay.value;
@@ -337,6 +497,10 @@ function leaveGhost(): void {
 
 onBeforeUnmount(() => {
   leaveGhost();
+  contentWatch?.disconnect();
+  sizeWatch?.disconnect();
+  clearTimeout(fitFrame);
+  window.removeEventListener('resize', onResize);
   parkedFor?.disconnect();
   unregisterDialog(dialogId);
   document.removeEventListener('keydown', onDocumentKeydown);
@@ -361,12 +525,20 @@ onBeforeUnmount(() => {
     `index.css`, `.ws-modal-body`, keeps a form's own button row on the bottom
     edge too, for the forms whose buttons have to sit inside the <form>.
   -->
+  <!--
+    A decision is a card in the middle of the screen; every other dialog is a sheet on the bottom
+    edge at every width, at half or full height (see "The sheet" in the script, 20 Oct 2026).
+  -->
   <div
     ref="overlay"
-    class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-end sm:items-center justify-center overflow-y-auto overscroll-contain bg-scrim sm:p-6"
+    :class="[
+      'ws-modal-overlay ws-focus fixed inset-0 z-50 flex justify-center overflow-y-auto overscroll-contain bg-scrim',
+      decision ? 'items-center p-4 sm:p-6' : 'items-end',
+    ]"
     @click.self="dismissible && !mandatory && emit('close')"
     @keydown="onKeydown"
     @focusout="onFocusOut"
+    @focusin="onFocusIn"
   >
     <div
       ref="panel"
@@ -377,11 +549,32 @@ onBeforeUnmount(() => {
       tabindex="-1"
       :class="[
         'ws-modal-panel flex w-full flex-col overflow-hidden bg-tile text-ink shadow-lift outline-none',
-        'mt-6 max-h-[calc(100dvh-1.5rem)] rounded-t-[1.75rem] sm:my-auto sm:max-h-[calc(100dvh-3rem)] sm:rounded-tile',
+        decision ? 'my-auto max-h-[calc(100dvh-2rem)] rounded-tile sm:max-h-[calc(100dvh-3rem)]' : 'rounded-t-[1.75rem]',
         widths[props.size],
       ]"
+      :style="panelStyle"
     >
-      <header class="flex flex-none items-center justify-between gap-4 border-b border-line py-3 pl-5 pr-3 sm:py-4 sm:pl-6 sm:pr-4">
+      <!--
+        The sheet's grip: the handle and the title row drag it between half and full, and down to
+        close (touch-action none so the drag is not read as a scroll). The handle is a button too.
+      -->
+      <div
+        :class="['flex-none', !decision && 'touch-none select-none']"
+        @pointerdown="onDragStart"
+        @pointermove="onDragMove"
+        @pointerup="onDragEnd"
+        @pointercancel="onDragEnd"
+      >
+      <button
+        v-if="!decision"
+        type="button"
+        class="ws-sheet-handle flex w-full cursor-grab justify-center pt-2.5 pb-1 active:cursor-grabbing"
+        :aria-label="snap === 'full' ? 'Make this sheet half the screen' : 'Make this sheet full screen'"
+        @click="toggleSnap"
+      >
+        <span class="block h-1.5 w-10 rounded-full bg-line" aria-hidden="true" />
+      </button>
+      <header :class="['flex flex-none items-center justify-between gap-4 border-b border-line pl-5 pr-3 sm:pl-6 sm:pr-4', decision ? 'py-3 sm:py-4' : 'pt-1 pb-3 sm:pb-4']">
         <div class="min-w-0 py-1">
           <h2 :id="titleId" :class="['text-lg font-semibold leading-snug tracking-tight', tone === 'danger' && 'text-overdue']">
             {{ title }}
@@ -406,6 +599,7 @@ onBeforeUnmount(() => {
           <X class="size-4" aria-hidden="true" />
         </button>
       </header>
+      </div>
 
       <!--
         The dialog's own message line (audit 2026-10-09): a refused save, a
@@ -446,7 +640,7 @@ onBeforeUnmount(() => {
         It scrolls on the vertical axis only, and a PillSelect's menu opening
         near the bottom lengthens the scroll rather than being cut off.
       -->
-      <div class="ws-modal-body flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden overscroll-contain p-5 sm:gap-5 sm:p-6">
+      <div ref="body" class="ws-modal-body flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden overscroll-contain p-5 sm:gap-5 sm:p-6">
         <slot />
       </div>
 

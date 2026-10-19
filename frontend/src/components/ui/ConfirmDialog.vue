@@ -62,6 +62,7 @@ const confirmDisabled = computed(() => props.busy || !phraseSatisfied.value);
   <WsModal
     :title="title"
     size="sm"
+    decision
     :dismissible="!busy"
     :close-disabled="busy"
     :tone="destructive ? 'danger' : 'plain'"

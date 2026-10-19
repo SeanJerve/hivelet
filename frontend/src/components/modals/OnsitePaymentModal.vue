@@ -1065,6 +1065,7 @@ function triggerRecord() {
     <WsModal
       v-if="isConfirmOpen"
       title="Record this payment?"
+      decision
       subtitle="Check the figures against what you were handed. This writes to the ledger."
       size="sm"
       @close="isConfirmOpen = false"
