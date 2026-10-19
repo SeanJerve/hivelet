@@ -19,7 +19,7 @@ If you only have time for five, learn these. They carry the paper.
 2. **Magno et al. (2024)**: the closest Philippine apartment system. Cited in eight sections.
 3. **Pernate et al. (2025)**: the closest Philippine boarding house app, also rated with ISO/IEC 25010.
 4. **Canlas et al. (2026)**: the closest study overall (Philippine dormitory, Agile, ISO/IEC 25010,
-   tenants plus administrators plus IT professionals). Chapter 4 compares our 4.53 with it.
+   tenants plus administrators plus IT professionals). Chapter 4 compares our 4.59 with it.
 5. **ISO/IEC 25010:2011**: the quality model the whole evaluation stands on.
 
 ---
@@ -71,7 +71,7 @@ If you only have time for five, learn these. They carry the paper.
 - **What it found:** built with Agile; evaluated with ISO/IEC 25010 and the Technology Acceptance
   Model through surveys of tenants, administrators and IT professionals, who rated it very highly
   on every criterion. Scope: maintenance concerns, emergency alerts, complaints.
-- **How we use it:** the closest study to ours in method and respondents; Chapter 4 says our 4.53 is
+- **How we use it:** the closest study to ours in method and respondents; Chapter 4 says our 4.59 is
   in the same range.
 - **Cited in:** 2.1.4, 2.1.6, 4.4.3.
 - **If asked:** "It is the nearest comparison: same kinds of respondents, same quality model. Its

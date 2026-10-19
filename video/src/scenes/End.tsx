@@ -13,7 +13,7 @@ export const Proof: React.FC = () => {
   const stats: {at: number; big: (f: number) => React.ReactNode; label: string; sub: string}[] = [
     {at: 30, big: (f) => count(f, 30, 60, 937).toLocaleString('en-US'), label: 'income records', sub: 'carried over from her workbook'},
     {at: 48, big: (f) => <>{count(f, 48, 60, 82)}<span style={{fontSize: 92, opacity: 0.62, letterSpacing: '-0.04em'}}>/83</span></>, label: 'tests passed', sub: '98.8%, none of them critical'},
-    {at: 66, big: (f) => (count(f, 66, 60, 453) / 100).toFixed(2), label: 'rated out of 5', sub: 'Very High Quality, ISO/IEC 25010'},
+    {at: 66, big: (f) => (count(f, 66, 60, 459) / 100).toFixed(2), label: 'rated out of 5', sub: 'Very High Quality, ISO/IEC 25010'},
   ];
   return (
     <AbsoluteFill>

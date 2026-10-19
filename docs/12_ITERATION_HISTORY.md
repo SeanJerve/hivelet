@@ -345,7 +345,7 @@ Chapter 4's Table 6A carries the same rows for all three iterations.
 | Development | Adyen with GCash end to end on the test account (26 Sep); updates every five seconds; offline reading; recent actions; the breached-password check (7 Oct); migrations to 080 | `git log`; `database/migrations/` |
 | Testing | Screen-versus-database audit (26 and 29 Sep, six defects, all fixed); 20 suites (29 Sep); the testing day with the owner and three tenants (30 Sep); the technical evaluators (3 Oct) | Chapter 4 Tables 8 to 11E; `docs/TESTING_DAY/results/` |
 | Deployment | Vercel from 24 Sep (`029a00b`); tenant accounts prepared 29 Sep; in use beside her own records, not yet her main record | Chapter 4 Table 25 |
-| Review | The evaluators' 14 comments acted on by 5 Oct; the ISO/IEC 25010 survey, six respondents, overall 4.53 | Chapter 4 Table 23 and Section 4.4 |
+| Review | The evaluators' 14 comments acted on by 5 Oct; the ISO/IEC 25010 survey, ten respondents by 18 Oct (six by 4 Oct), overall 4.59 | Chapter 4 Table 23 and Section 4.4 |
 
 **Why the ISO evaluation appears only here.** Chapter 3 §3.3 places it during actual use in
 the deployment environment, and Iteration 3 is the first in which anyone but the team used the

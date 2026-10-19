@@ -22,7 +22,7 @@ no Occupied badge, Monthly Income's new tiles and ledger by cluster with no garb
 column, the payment form with occupants, invoice or ACK and months covered, the tenant's due card and
 photo box, the repair card, the chat-style reply box, the visitor's dialog and "Boarding house" on
 their page, the wordmark-only header and the bell's dot); **the proof shows the study's results**
-(937 records, 82 of 83 tests, 4.53 Very High Quality); and **Lloyd** is spelled right in the credits.
+(937 records, 82 of 83 tests, 4.59 Very High Quality; 4.53 until the survey reached ten respondents on 19 Oct); and **Lloyd** is spelled right in the credits.
 The two typefaces now ship with the film (`public/fonts/`, SIL Open Font License), so it renders the
 same with no connection.
 
@@ -49,7 +49,7 @@ in the zone to its right, masked before it can reach the text.
 | Tenant | 2258-2960 | Amount due; the phone goes to Payments: "Your rent, month by month", October 2025 to September 2026, one month with nothing recorded, "Paid up to October 4, 2026", 11 of 12 paid ("Every month, in the open."); back to pay with GCash; her attention tile; "Settled"; a repair typed and sent, moving across her board column by column; "Your repair is done" | `views/TenantOverviewView.vue`, `views/TenantPaymentsView.vue`, `components/overview/PaymentMonths.vue`, `MonthCapsules.vue`, `lib/tenantPaymentMonths.ts`, `views/TenantTicketsView.vue`, `views/MaintenanceDispatchView.vue`, notification from `backend/src/routes/admin.ts` | A GCash payment counts once she verifies it. The app would also draw October 2026 as a dashed Due month from a week before; the film stops at September, the month it is set in |
 | For guests | 2960-3020 | Chapter card | | |
 | Guests | 3020-3730 | Vacant unit B3B with its floor plan drawn in and the unit marked; the plan lifted for a closer look; "Ask about unit B3B"; the question typed and sent; the dialog becomes "Your message about unit B3B is saved" with "Open your conversation", "Copy the link" and reference K7QM-3XRD ("Ask here." / "No account needed."); it lands in her Inquiries, she answers and presses Save reply, and it reads Answered ("She answers in Hivelet."); the visitor's page, "Your inquiry", shows Michelle's answer and they write back ("Hear back here.") | `views/CategoryRoomsView.vue` (showcase, `lib/floorPlans.ts`, the inquiry dialog), `components/public/InquiryConversationLink.vue`, `views/InquiriesView.vue`, `views/InquiryThreadView.vue`; the plan is `frontend/public/floorplans/back3rdfloor.png` | B3B is on the back apartment's 3rd floor; the landlady is `LANDLADY.name` (Michelle) in `lib/systemState.ts`; a reply moves an inquiry from Pending to Contacted (`routes/admin.ts`); the reference code is a sample |
-| Proof | 3730-3895 | 937 income records, 82 of 83 tests passed (98.8%, none critical), 4.53 rated out of 5 (Very High Quality, ISO/IEC 25010) | | Chapter 4, Tables 4-12 and 4-17 |
+| Proof | 3730-3895 | 937 income records, 82 of 83 tests passed (98.8%, none critical), 4.59 rated out of 5 (Very High Quality, ISO/IEC 25010) | | Chapter 4, Tables 4-12 and 4-17 |
 | End | 3895-4075 | Icon, name, "One connected system for the Fe Galang Da Silva Boarding House.", address, team: Lloyd, Sean, Eljohn, Vince, Kiel | | Group 4, Bicol University, IT 124 Capstone Project 2 |
 
 ## Sound

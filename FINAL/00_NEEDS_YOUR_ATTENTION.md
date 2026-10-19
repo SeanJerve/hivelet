@@ -66,7 +66,7 @@ or the two lists will not find them.
 | P4 | **The Acknowledgement**: who to thank | Drafts it once you give the names |
 | P5 | **Where the AI-use statement goes**, and whether the prompt log is attached: ask the adviser | Places it; the statement is ready, outside the repository, in `_AI_USE (not in repo)/` |
 | P2 | **The prompt-log export on Lloyd's laptop**: `node scripts/ai-use/export-prompt-log.mjs` | Adds it to the AI-use statement |
-| P11 | **Done 18 Oct for the paper**: the survey is now nine respondents (three more technical evaluators, on the demo copy), recomputed through Chapters 3 to 5, Appendix M and the study guides. **Still by hand: the slides** (B-109) | The per-characteristic scores and "6 respondents" on the evaluation slides |
+| P11 | **Done 19 Oct for the paper**: the survey is now ten respondents, overall 4.59 (four more technical evaluators, on the demo copy), recomputed through Chapters 3 to 5, Appendix M and the study guides. **Still by hand: the slides** (B-109) | The per-characteristic scores and "6 respondents" on the evaluation slides |
 | P12 | **If more people answer the survey** (evaluators, tenants): send the new CSV | Same: every table and every count of respondents (now 6) |
 
 ---

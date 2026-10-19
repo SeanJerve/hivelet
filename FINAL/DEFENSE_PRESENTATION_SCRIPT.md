@@ -129,12 +129,12 @@ Help was needed only at the start: the first sign-in and finding their unit and 
 exactly what Chapter 5 recommends showing new tenants first." [4.3.7, Table 4-11]
 
 **Slide 16. The evaluation** (50 s)
-**Land: 4.53, Very High Quality; every characteristic at least High Quality.**
-"Nine respondents: the owner, three tenants, a prospective tenant and four technical evaluators.
-Portability highest at 4.83, Functional Suitability 4.77; the lowest two, Usability 4.37 and
-Maintainability 4.15, are Very High and High Quality. We used the mean of the group means, so one owner is not outweighed by
+**Land: 4.59, Very High Quality; every characteristic Very High Quality.**
+"Ten respondents: the owner, three tenants, a prospective tenant and five technical evaluators.
+Portability highest at 4.86, Functional Suitability 4.79; even the lowest two, Usability 4.42 and
+Maintainability 4.32, are Very High Quality. We used the mean of the group means, so one owner is not outweighed by
 three tenants." [Table 4-17, 4.4.2]
-*Likely question: "Nine is very few." We claim it only for these nine, and every characteristic was
+*Likely question: "Ten is very few." We claim it only for these ten, and every characteristic was
 also measured. [4.4.1, 4.4.5]*
 
 **Slide 17. Measured and rated agree** (50 s)
@@ -152,7 +152,7 @@ made 51 changes in response, including all 14 of the technical evaluators' comme
 
 **Slide 18. Conclusions** (45 s)
 One line per objective, in order: every gap traced to a module; all six features in use on her real
-records, in her own layout; 82 of 83 tests passed with no critical defect; Very High Quality, 4.53,
+records, in her own layout; 82 of 83 tests passed with no critical defect; Very High Quality, 4.59,
 with 51 optimizations. "All four objectives were achieved." [5.2]
 
 **Slide 19. Recommendations** (40 s)

@@ -74,7 +74,7 @@ the panel). C6: the guides set no word limit for the Abstract. C7: Chapter 4 kee
 essential. C8 and D1: nothing about Lloyd's mother goes in the paper.
 
 **Choices (D2 to D9).**
-- D2: **done 18 Oct**: three more technical evaluators answered (15 to 18 Oct, on the demo copy), so the survey is now nine respondents, recomputed with `compute-survey.mjs` through Chapters 3 to 5, Appendix M and the study guides (B-109). The slides still need it by hand.
+- D2: **done 19 Oct**: four more technical evaluators answered (15 to 18 Oct, on the demo copy), so the survey is now ten respondents, overall 4.59, recomputed with `compute-survey.mjs` through Chapters 3 to 5, Appendix M and the study guides (B-109). The slides still need it by hand.
 - D3: Table 4-8 (automated verification) stays as dated. Automated testing of simultaneous saves is right: two people cannot
   press Save in the same millisecond on purpose, so the exact race can only be tested by a program;
   real people using it at the same time are reported separately (Appendix M, Table M-22).
