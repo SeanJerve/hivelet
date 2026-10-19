@@ -70,7 +70,7 @@ export function placeholderEmailFor(profileId: string): string {
  * Whether a tenant must give a real email and confirm their phone before using
  * the portal. Always while they are on a starting password (the first sign-in
  * asks for all three together), and whenever the email is a placeholder.
- * An administrator is never asked: her address is her own sign-in.
+ * An administrator is never asked: she signs in with her phone number (B-111).
  */
 export function mustCompleteContact(
   user: {
