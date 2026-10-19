@@ -16,7 +16,7 @@ import { api } from './api';
 import { isAdmin, isAuthenticated } from './authStore';
 import { useToast, type ToastOptions } from './useToast';
 import { formatDateOnly } from './propertyDate';
-import { realEmail } from './contactDetails';
+import { isPhMobile, phoneDigits, realEmail } from './contactDetails';
 import { showPhone } from './phoneFormat';
 
 const { showToast: triggerToast } = useToast();
@@ -590,17 +590,58 @@ export const TECHNICIANS = [
  * by name. A page a visitor may land on first introduces Michelle as the one
  * "who runs the boarding house"; tenant pages use the name alone.
  */
+/**
+ * THE NUMBER TO CALL IS HER ACCOUNT'S (B-111, Sean 19 Oct 2026). She signs in with her phone
+ * number and can change it (Change number / password), so every page reads it from
+ * `GET /public/contact`, which answers with that number and nothing else, instead of a copy typed
+ * in here. `fetchLandladyContact()` loads it at startup and after she changes it.
+ *
+ * `LANDLADY_PHONE_FALLBACK` is shown only until that answer arrives, or when the server cannot
+ * be reached at all (the service worker keeps the last answer for an installed app, so that is a
+ * first visit with no signal). A stand-in is only safe while it agrees with what it stands in
+ * for, so `check:liveness` rule 7 compares it with the live answer and fails when they differ:
+ * after she changes her number, change this line to match. It is the one place her contact
+ * number is written in the frontend.
+ */
+export const LANDLADY_PHONE_FALLBACK = "09274653938";
+const landladyPhone = ref<string>(LANDLADY_PHONE_FALLBACK);
+
 export const LANDLADY = {
+  /** The GCash number. A separate thing from the number to call, and not her sign-in. */
   gcash: "09274653938",
-  phone: "09274653938",
+  /** Digits, for the tel: links that dial it. Reactive: a page reading it follows a change. */
+  get phone(): string {
+    return phoneDigits(landladyPhone.value);
+  },
   /**
    * The number as people read it, spaced like every other number on the site (technical
-   * evaluators, 3 Oct 2026). `phone` stays digits for the tel: links that dial it.
+   * evaluators, 3 Oct 2026).
    */
-  phoneShown: showPhone("09274653938"),
+  get phoneShown(): string {
+    return showPhone(landladyPhone.value);
+  },
   property: "Fe Galang Da Silva Boarding House",
   address: "32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
 };
+
+/**
+ * Reads her number from `GET /public/contact`. On any failure, or a `null` answer (no number on
+ * file), the number already showing stays: the stand-in on a first load, or the last one read.
+ * Returns nothing, so no page can mistake a stand-in handed back here for a fresh answer.
+ */
+export async function fetchLandladyContact(): Promise<void> {
+  try {
+    const r = await api.get<{ phone: string | null }>('/public/contact', false);
+    if (r && typeof r.phone === 'string' && isPhMobile(r.phone)) landladyPhone.value = r.phone;
+  } catch {
+    // Unreachable: the number on screen stays (see LANDLADY_PHONE_FALLBACK).
+  }
+}
+
+/** After she changes her number: every page shows the new one at once, without a reload. */
+export function setLandladyPhone(phone: string): void {
+  if (isPhMobile(phone)) landladyPhone.value = phoneDigits(phone);
+}
 
 // Global Modals State
 export const isRoomDetailModalOpen = ref(false);

@@ -2,7 +2,8 @@
  * check:liveness — shared state must not be presented as live when it is not.
  *
  * Run with `npm run check:liveness` from `frontend/` (or the repo root). Reads
- * source, and makes one unauthenticated GET to `/public/rates`. Writes nothing.
+ * source, and makes unauthenticated GETs to `/public/rates`, `/public/rooms` and
+ * `/public/contact`. Writes nothing.
  *
  * WHY THIS EXISTS
  * ---------------
@@ -41,6 +42,9 @@
  *      sentences name a figure in prose — the resident's own statement says
  *      "(N × ₱200/head)" right beside the computed total — and none of them sit
  *      behind any fallback logic. They are simply true today.
+ *   5-6. (below) The public starting rent, and a screen printing a unit rate knows if it is live.
+ *   7. The landlady's number (B-111) has one stand-in, no page types it in itself, and the
+ *      stand-in equals the number on her account that `/public/contact` gives.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -363,6 +367,76 @@ check(
     '\n        `rooms` falls back to the seed, and 30 of the 33 seeded prices are ' +
     'stale — the worst by ₱1,900. Guard it the way CategoryRoomsView does.'
 );
+
+// ---------------------------------------------------------------- rule 7 ----
+/**
+ * The landlady's number on every page is her account's (B-111, 19 Oct 2026), read from
+ * `GET /public/contact`. `LANDLADY_PHONE_FALLBACK` in systemState.ts stands in for it until the
+ * answer arrives and when the server cannot be reached - and a stand-in nobody compares is how
+ * 30 of 33 seeded prices went stale. So, as rule 3 does for the rates: the stand-in must equal
+ * the live answer. When she changes her number, this fails until the line is changed to match.
+ *
+ * And nothing may type the number in a second time: every `tel:` and every shown number goes
+ * through `LANDLADY.phone` / `LANDLADY.phoneShown`, so the stand-in is the one copy.
+ */
+const fallbackMatch = /export const LANDLADY_PHONE_FALLBACK\s*=\s*["'](\d+)["']/.exec(src);
+check(
+  'the landlady\'s number has one stand-in, read from her account',
+  !fallbackMatch || !/get phone\(\)[\s\S]{0,120}landladyPhone\.value/.test(src),
+  'LANDLADY.phone is a getter over the number /public/contact loads, with one stand-in',
+  'systemState.ts no longer has LANDLADY_PHONE_FALLBACK and a LANDLADY.phone getter reading ' +
+    'the loaded number - the pages would print a typed-in copy that does not follow her account.'
+);
+
+if (fallbackMatch) {
+  const fallback = fallbackMatch[1];
+  const copies = [];
+  for (const f of srcFiles) {
+    const body = fs.readFileSync(f, 'utf8');
+    const rel = path.relative(root, f).replace(/\\/g, '/');
+    body.split(/\r?\n/).forEach((line, i) => {
+      if (/^\s*(\*|\/\/|<!--)/.test(line)) return;
+      if (/LANDLADY_PHONE_FALLBACK\s*=|gcash:/.test(line)) return;   // the stand-in itself, and GCash
+      if (line.replace(/\D/g, '').includes(fallback) && /\d{4}\D?\d{3}\D?\d{4}/.test(line)) {
+        copies.push(`${rel}:${i + 1}`);
+      }
+    });
+  }
+  check(
+    'no page types the landlady\'s number in itself',
+    copies.length > 0,
+    'every tel: link and shown number goes through LANDLADY',
+    `her number is typed in directly at ${copies.join(', ')} - it will not follow her account. ` +
+      'Use LANDLADY.phone / LANDLADY.phoneShown.'
+  );
+
+  let contact;
+  try {
+    const r = await fetch(`${API}/public/contact`);
+    if (r.ok) contact = (await r.json())?.data;
+  } catch {
+    /* handled below */
+  }
+  if (!contact || !('phone' in contact)) {
+    notes.push(
+      'rule 7 skipped: /public/contact was unreachable, so the stand-in number could not be ' +
+        'compared with her account. Start the backend and re-run.'
+    );
+    console.log('  SKIP  the stand-in number is her account\'s — backend unreachable');
+  } else if (contact.phone === null) {
+    notes.push('rule 7: her account has no number on file, so every page shows the stand-in.');
+  } else {
+    // Neither number is printed: only whether they agree.
+    check(
+      'the stand-in number is her account\'s',
+      String(contact.phone).replace(/\D/g, '') !== fallback,
+      'LANDLADY_PHONE_FALLBACK equals the number /public/contact gives',
+      'LANDLADY_PHONE_FALLBACK no longer matches the number on her account (she changed it). ' +
+        'A visitor with no connection would be told to call the old one. Change the line in ' +
+        'src/lib/systemState.ts to her new number.'
+    );
+  }
+}
 
 console.log('');
 for (const n of notes) console.log(`  note: ${n}`);
