@@ -9,7 +9,7 @@
     BR-035 (50% Share Is Derived), BR-043/BR-044 (Categorized Operating Expenses)
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '@/lib/api';
@@ -44,17 +44,13 @@ import MonthCapsules from '@/components/overview/MonthCapsules.vue';
 import OccupancyArc from '@/components/overview/OccupancyArc.vue';
 import PhoneMore from '@/components/overview/PhoneMore.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
-import PillSelect from '@/components/ui/PillSelect.vue';
+import YearMenu from '@/components/ui/YearMenu.vue';
 import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
 import type { ArcUnit, CapsuleMonth, QuickAction } from '@/components/overview/types';
 import {
   Plus,
   ReceiptText,
-  ChevronDown,
-  Check,
-  ArrowLeft,
-  Search,
   DoorOpen,
   ArrowUpRight,
 } from 'lucide-vue-next';
@@ -172,46 +168,14 @@ function exitHistoricalMode() {
   router.replace({ query: nextQuery });
 }
 
-// The year menu opened on hover only, so it could not be reached by keyboard or
-// touch. It is a real disclosure now.
-const isYearMenuOpen = ref(false);
-const yearMenuRoot = ref<HTMLElement | null>(null);
-const yearButton = ref<HTMLButtonElement | null>(null);
-
 const yearOptions = computed(() => [String(CURRENT_YEAR), ...availableHistoricalYears.value]);
 const shownYear = computed(() => (isHistoricalMode.value ? selectedArchiveYear.value : String(CURRENT_YEAR)));
-
-/**
- * Which edge of the year button the menu hangs from (Sean, 2026-10-01: on a
- * phone "the menu is under the year but aligned too far right").
- *
- * It always hung from the button's left edge. On a 375px phone the button
- * wraps to the right of the second row, so the 160px menu ran from x=227 to
- * 387, off the screen by 12px; at 320px the same button sits at the left and
- * the left edge is right. So it is measured on open: the left edge when the
- * menu fits that way, otherwise the right edge, under the button either way.
- * `flush: 'post'` measures the menu as rendered, before it is painted.
- */
-const yearMenuAlignEnd = ref(false);
-watch(
-  isYearMenuOpen,
-  (open) => {
-    if (!open) return;
-    const button = yearButton.value?.getBoundingClientRect();
-    const menu = document.getElementById('overview-year-menu');
-    if (!button || !menu) return;
-    yearMenuAlignEnd.value = button.left + menu.offsetWidth > document.documentElement.clientWidth - 8;
-  },
-  { flush: 'post' }
+const yearMenuOptions = computed(() =>
+  yearOptions.value.map((y) => ({ value: y, label: y === String(CURRENT_YEAR) ? `${y}, this year` : y }))
 );
 
-function closeYearMenu(returnFocus = false) {
-  isYearMenuOpen.value = false;
-  if (returnFocus) yearButton.value?.focus();
-}
-
+// The menu itself is YearMenu now (components/ui), shared with both ledgers (19 Oct 2026).
 function chooseYear(year: string) {
-  closeYearMenu(true);
   if (year === String(CURRENT_YEAR)) exitHistoricalMode();
   else enterHistoricalMode(year);
 }
@@ -234,12 +198,6 @@ const quickActions: QuickAction[] = [
   { to: '/admin/tenants?openMoveIn=1', label: 'Move someone in/out', icon: DoorOpen },
 ];
 const headerActions = [...quickActions].reverse();
-
-function onDocumentPointerDown(e: PointerEvent) {
-  if (isYearMenuOpen.value && yearMenuRoot.value && !yearMenuRoot.value.contains(e.target as Node)) {
-    closeYearMenu();
-  }
-}
 
 /* ========================================================================== *
  * Loading
@@ -295,12 +253,8 @@ watch(isInitialLoading, (loading) => {
 onMounted(() => {
   syncFromRoute();
   refreshAllData();
-  document.addEventListener('pointerdown', onDocumentPointerDown);
 });
 
-onBeforeUnmount(() => {
-  document.removeEventListener('pointerdown', onDocumentPointerDown);
-});
 
 const anyLoadFailed = computed(
   () =>
@@ -638,92 +592,30 @@ const historicalClusterPerformance = computed(() =>
   })
 );
 
-const historicalTenantRosterOpen = ref(true);
-const historicalUnitTableOpen = ref(true);
-const historicalLedgerOpen = ref(true);
-const historicalLedgerTab = ref<'income' | 'expenses'>('income');
-const historicalSearchQuery = ref('');
-const historicalClusterFilter = ref('All');
-
-const historicalClusterOptions = computed(() => [
-  { value: 'All', label: 'All clusters' },
-  ...CLUSTERS.map((c) => ({ value: c, label: c })),
-]);
-
-interface HistoricalTenantSummary {
-  name: string;
-  unit: string;
-  cluster: string;
-  monthsCount: number;
-  activeMonths: string[];
-  totalRemitted: number;
-  invoiceSample: string;
-}
-
-const historicalTenantRoster = computed<HistoricalTenantSummary[]>(() => {
-  const map = new Map<string, HistoricalTenantSummary>();
-
-  for (const r of historicalIncomeRecords.value) {
-    const key = `${r.contact.trim()}__${r.unit}`;
-    const monthName = MONTH_NAMES[(r.month || 1) - 1];
-    const existing = map.get(key);
-    if (!existing) {
-      map.set(key, {
-        name: r.contact.trim(),
-        unit: r.unit,
-        cluster: r.cluster,
-        monthsCount: 1,
-        activeMonths: [monthName],
-        totalRemitted: Number(r.totalRemitted || r.rent || 0),
-        invoiceSample: r.invoice || '',
-      });
-    } else {
-      existing.monthsCount++;
-      if (!existing.activeMonths.includes(monthName)) existing.activeMonths.push(monthName);
-      existing.totalRemitted += Number(r.totalRemitted || r.rent || 0);
-    }
-  }
-
-  let list = Array.from(map.values()).sort((a, b) => b.totalRemitted - a.totalRemitted);
-  // Months were listed in the order records arrived ("Jul, Oct, Aug"). Calendar order reads.
-  for (const t of list) {
-    t.activeMonths.sort((a, b) => MONTH_NAMES.indexOf(a as any) - MONTH_NAMES.indexOf(b as any));
-  }
-  if (historicalClusterFilter.value !== 'All') {
-    list = list.filter((t) => t.cluster === historicalClusterFilter.value);
-  }
-  const q = historicalSearchQuery.value.toLowerCase().trim();
-  if (q) list = list.filter((t) => t.name.toLowerCase().includes(q) || t.unit.toLowerCase().includes(q));
-  return list;
-});
-
-interface HistoricalRoomUtilization {
-  unitCode: string;
-  cluster: string;
-  floorLabel: string;
-  activeMonths: number;
-  totalRevenue: number;
-  averageMonthlyRevenue: number;
-}
-
-const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
-  rooms
-    .map((room) => {
-      const unitRecords = historicalIncomeRecords.value.filter(
-        (r) => r.unit.toUpperCase() === room.unitCode.toUpperCase()
-      );
-      const totalRevenue = unitRecords.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0);
-      return {
-        unitCode: room.unitCode,
-        cluster: room.cluster,
-        floorLabel: room.floorLabel,
-        activeMonths: unitRecords.length,
-        totalRevenue,
-        averageMonthlyRevenue: unitRecords.length > 0 ? Math.round(totalRevenue / unitRecords.length) : 0,
-      };
-    })
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+/*
+ * The rest of an archive year is two counts and a chart (Sean, 19 Oct 2026). The year used to
+ * end in four tables, tenants, units, month by month, and every ledger entry behind an Income /
+ * Expenses switch, which sometimes failed on Expenses. The ledgers already show all of it, for any
+ * year, so the archive points to them instead: each tile's arrow opens the page for that year.
+ */
+const historicalExpenseCapsules = computed<CapsuleMonth[]>(() =>
+  historical12MonthsData.value.map((d) => ({
+    short: d.month,
+    long: `${MONTH_LONG[d.monthNum - 1]} ${selectedArchiveYear.value}`,
+    value: d.hasExpenses ? d.expenses : null,
+    kind: d.hasExpenses ? 'recorded' : 'unentered',
+  }))
 );
+
+/** Who paid that year, counted by the name on the receipt and the unit, as the roster was. */
+const historicalTenantCount = computed(
+  () => new Set(historicalIncomeRecords.value.map((r) => `${r.contact.trim()}__${r.unit}`)).size
+);
+const historicalUnitCount = computed(
+  () => new Set(historicalIncomeRecords.value.map((r) => r.unit.toUpperCase())).size
+);
+const archiveIncomeLink = computed(() => `/admin/income?year=${selectedArchiveYear.value}`);
+const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchiveYear.value}`);
 
 </script>
 
@@ -745,86 +637,14 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
          payment fell onto a line of its own; under the title they are one row. -->
     <!-- A grid, so from 2xl the actions sit at the right of the greeting. -->
     <header class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4">
+        <!--
+          Today's date and its year, the year being the menu (Sean, 13 Oct 2026). In a past year the
+          date goes and only the year shows (Sean, 19 Oct 2026): "Monday, October 19" beside 2025
+          was a false date, and the menu is the way back, so there is no "Back to" button.
+        -->
         <div class="col-span-2 row-start-1 flex min-w-0 items-center text-sm text-ink-faint">
-          <span class="whitespace-nowrap">{{ todayLabel }},&nbsp;</span>
-          <!--
-            The year: a word, not a button (Sean, 2026-10-01: "not a button -
-            a clickable word, like 'Ledger' and 'To verify' on Monthly
-            Income"), so it takes those tab words' style - bold, brand, text
-            size - with a chevron for the menu it opens. It is the date's own
-            year (Sean, 13 Oct 2026: "make the 2026 part clickable"), so it
-            always reads today's year: in an archive it saying 2025 would make
-            the line a false date; the heading and the menu's tick say which
-            year is shown. `-my-1` keeps the py-1 hit area from pushing the
-            greeting down; the `before:` box widens the target for a finger
-            without moving anything. The menu is `w-max`: its anchor is only as
-            wide as the word, and an absolute box sizes to its anchor, so
-            "2026, this year" wrapped.
-          -->
-          <div ref="yearMenuRoot" class="relative -my-1 shrink-0" @keydown.escape="closeYearMenu(true)">
-            <button
-              ref="yearButton"
-              type="button"
-              class="press relative inline-flex items-center gap-1 py-1 text-sm font-bold text-brand cursor-pointer whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
-              aria-haspopup="true"
-              :aria-expanded="isYearMenuOpen"
-              aria-controls="overview-year-menu"
-              @click="isYearMenuOpen = !isYearMenuOpen"
-            >
-              <span class="tabular">{{ CURRENT_YEAR }}</span>
-              <span class="sr-only">, change the year shown</span>
-              <ChevronDown
-                :class="[
-                  'size-4 transition-transform duration-200 ease-[var(--ease-out)]',
-                  isYearMenuOpen && 'rotate-180',
-                ]"
-                aria-hidden="true"
-              />
-            </button>
-            <!--
-              This was `v-show`, which is instant: the menu was there or it was
-              not, on the same frame as the click. PillSelect's popover already
-              solved this exact shape (a menu anchored to its own trigger), so
-              the year menu now opens the same way instead of reading as a
-              different control that happens to sit beside it. `motion-safe:` on
-              the scale and translate utilities is what stands in for a
-              hand-written `prefers-reduced-motion` block here, since Tailwind
-              already generates that correctly; opacity still fades either way.
-
-              220ms/160ms, not 150ms/100ms - PillSelect's own dropdown was
-              bumped to those numbers after the client found its old pair an
-              instant cut rather than a deliberate motion. This menu copied
-              PillSelect's timing when it was written and was left behind at
-              the old numbers when PillSelect moved; same shape, same trigger,
-              so it gets the same fix.
-
-              Now `ws-pop` (index.css), the one transition PillSelect and both
-              header menus share, so it cannot drift from them again (Sean,
-              2026-10-01). Reduced motion keeps its fade there too.
-            -->
-            <Transition name="ws-pop">
-              <div
-                v-if="isYearMenuOpen"
-                id="overview-year-menu"
-                :class="[
-                  'absolute top-full z-30 mt-2 w-max min-w-40 rounded-2xl bg-tile p-1.5 shadow-lift border border-line',
-                  yearMenuAlignEnd ? 'right-0 origin-top-right' : 'left-0 origin-top-left',
-                ]"
-              >
-                <button
-                  v-for="y in yearOptions"
-                  :key="y"
-                  type="button"
-                  :aria-current="y === shownYear ? 'true' : undefined"
-                  class="press flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular hover:bg-canvas cursor-pointer"
-                  @click="chooseYear(y)"
-                >
-                  <span>{{ y === String(CURRENT_YEAR) ? `${y}, this year` : y }}</span>
-                  <Check v-if="y === shownYear" class="size-4 text-brand" aria-hidden="true" />
-                </button>
-              </div>
-            </Transition>
-          </div>
+          <span v-if="!isHistoricalMode" class="whitespace-nowrap">{{ todayLabel }},&nbsp;</span>
+          <YearMenu :model-value="shownYear" :options="yearMenuOptions" @update:model-value="chooseYear" />
         </div>
       <div class="col-span-2 row-start-2 min-w-0 2xl:col-span-1">
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
@@ -846,8 +666,8 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         button, QuickActionsFab, below). Record payment, the primary, is last
         at the right edge, as on Monthly Income. All three green, as they are
         in the floating button on a phone (Sean, 6 Oct 2026). The year is in the date line
-        above. "Back to 2026" in an archive year stays on every size: the
-        floating button is for the live year's actions only.
+        above. A past year has no actions (Sean, 19 Oct 2026): the year menu is the
+        way back, and a past year is read-only on every page.
       -->
       <div
         :class="[
@@ -867,12 +687,6 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             <component :is="a.icon" class="size-4" aria-hidden="true" />
             {{ a.label }}
           </router-link>
-        </template>
-        <template v-else>
-          <button type="button" class="pill-btn-brand" @click="exitHistoricalMode">
-            <ArrowLeft class="size-4" aria-hidden="true" />
-            Back to {{ CURRENT_YEAR }}
-          </button>
         </template>
       </div>
     </header>
@@ -912,7 +726,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       Switching between the live year and an archive year replaces this whole
       grid with a differently-shaped one - the tiles, the tables and the
       cluster lists are not the same DOM before and after. That is a
-      deliberate click (the year menu, or "Back to <year>"), not a routine
+      deliberate click on the year menu, not a routine
       re-render, so the branch gets a fade-in rather than a jump cut. `ws-reveal`
       already handles the `prefers-reduced-motion` fallback.
     -->
@@ -1325,7 +1139,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
          all-time, but a figure should say which year it is without the reader
          looking back up at the heading). The live year's tiles do the same. -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <OverviewTile tone="brand" :title="`Rent and water entered, ${selectedArchiveYear}`" class="xl:col-span-3">
+      <OverviewTile tone="brand" :title="`Rent and water entered, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-3">
         <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
@@ -1335,7 +1149,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
       </OverviewTile>
 
-      <OverviewTile :title="`50% Share, ${selectedArchiveYear}`" class="xl:col-span-3">
+      <OverviewTile :title="`50% Share, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-3">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualHalfOfRentShare) }}</p>
@@ -1346,7 +1160,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
       </OverviewTile>
 
-      <OverviewTile :title="`Expenses, ${selectedArchiveYear}`" to="/admin/expenses" to-label="Open the expense ledger" class="xl:col-span-3">
+      <OverviewTile :title="`Expenses, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-3">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualExpenseTotal) }}</p>
@@ -1372,7 +1186,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </div>
       </OverviewTile>
 
-      <OverviewTile :title="`Rent and water by month, ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-8">
+      <OverviewTile :title="`Rent and water by month, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-8">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <template v-else>
           <MonthCapsules :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
@@ -1426,330 +1240,35 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </ul>
       </OverviewTile>
 
-      <OverviewTile :title="`Month by month, ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-12">
-        <UnavailableNote
-          v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
-          message="Income or expenses could not be loaded, so net figures cannot be worked out."
-          @retry="refreshAllData"
-        />
-        <!-- @container (audit 2026-10-09), as the live year's Net income table: below 34rem of
-             its own width the five columns scrolled sideways (246 of 495px at 320) with Net
-             out of sight. There Expenses and Personal go under Rent and water, a note
-             under the table says Personal is not deducted, and the month is its three
-             letters. -->
-        <div v-else class="ws-table-wrap @container">
-          <!-- Cells 4px a side in that shape: at 320 the three columns needed 270px of 246. -->
-          <table class="ws-table @max-[34rem]:[&_:is(th,td)]:px-1!">
-            <caption class="sr-only">Collections, expenses and net operating income by month, {{ selectedArchiveYear }}</caption>
-            <thead>
-              <tr>
-                <th scope="col">Month</th>
-                <th scope="col" class="num">Rent and water</th>
-                <th scope="col" class="num hidden @[34rem]:table-cell">Expenses</th>
-                <th scope="col" class="num">Net</th>
-                <th scope="col" class="num hidden @[34rem]:table-cell">Personal, not deducted</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(d, i) in historical12MonthsData"
-                :key="d.month"
-                class="list-reveal-item"
-                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-              >
-                <th scope="row">
-                  <span class="@[34rem]:hidden">{{ d.month }}</span>
-                  <span class="hidden @[34rem]:inline">{{ MONTH_LONG[d.monthNum - 1] }}</span>
-                </th>
-                <td class="num">
-                  <StatusPill v-if="!d.hasIncome" tone="unentered">Not entered</StatusPill>
-                  <template v-else>{{ peso(d.grossIncome) }}</template>
-                  <span class="block whitespace-nowrap text-xs font-normal text-ink-faint @[34rem]:hidden">
-                    {{ d.hasExpenses ? `spent ${peso(d.expenses)}` : 'spending not entered' }}
-                  </span>
-                  <span class="block whitespace-nowrap text-xs font-normal text-ink-faint @[34rem]:hidden">personal {{ peso(d.personalExpenses) }}</span>
-                </td>
-                <td class="num text-ink-soft hidden @[34rem]:table-cell">
-                  <StatusPill v-if="!d.hasExpenses" tone="unentered">Not entered</StatusPill>
-                  <template v-else>{{ peso(d.expenses) }}</template>
-                </td>
-                <td :class="['num font-semibold', d.noi < 0 && 'text-overdue']">
-                  {{ d.hasIncome && d.hasExpenses ? peso(d.noi) : '' }}
-                </td>
-                <td class="num text-ink-faint hidden @[34rem]:table-cell">{{ peso(d.personalExpenses) }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="px-1 pt-2 text-xs leading-5 text-ink-faint @[34rem]:hidden">Personal spending is listed under each month and not deducted from Net.</p>
-        </div>
+      <OverviewTile :title="`Operating expenses by month, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="md:col-span-2 xl:col-span-8">
+        <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
+        <template v-else>
+          <MonthCapsules :months="historicalExpenseCapsules" :label="`Operating expenses by month in ${selectedArchiveYear}`" />
+          <p class="border-t border-line pt-4 text-sm text-ink-soft">
+            {{ peso(historicalAnnualExpenseTotal) }} across {{ historicalExpenseRecords.length }}
+            {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}; personal spending
+            ({{ peso(historicalAnnualPersonalTotal) }}) is not counted.
+          </p>
+        </template>
       </OverviewTile>
 
-      <!-- Tenants who paid in the year -->
-      <OverviewTile :title="`Tenants in ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-12">
-        <template #actions>
-          <!--
-            This screen has three of these disclosures (tenants, units, ledger
-            entries), each rendering identically as "Show" or "Hide" - visually
-            fine beside its own OverviewTile heading, but a screen reader user
-            navigating by "buttons" list hears three unlabelled "Show" controls
-            with nothing distinguishing them. `aria-label` restates which
-            section each one opens, matching the tile's own title.
-          -->
-          <button
-            type="button"
-            class="pill-btn"
-            :aria-expanded="historicalTenantRosterOpen"
-            aria-controls="archive-roster"
-            :aria-label="`${historicalTenantRosterOpen ? 'Hide' : 'Show'} tenants in ${selectedArchiveYear}`"
-            @click="historicalTenantRosterOpen = !historicalTenantRosterOpen"
-          >
-            {{ historicalTenantRosterOpen ? 'Hide' : 'Show' }}
-          </button>
-        </template>
-        <!-- `v-if`, not `v-show`, so this disclosure actually unfolds each time
-             it opens: `.ws-reveal`'s `@starting-style` only plays on insertion,
-             and a `v-show` element is inserted once and toggled with
-             `display`, so it would only ever have played on the very first
-             archive-year visit rather than on every "Show" click. -->
-        <div v-if="historicalTenantRosterOpen" id="archive-roster" class="ws-reveal flex flex-col gap-4">
-          <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-          <template v-else>
-            <div class="flex flex-wrap items-center gap-3">
-              <div class="relative w-full sm:w-80 shrink-0">
-                <!-- left-4/pl-11: the one inset every search box in the
-                     workspace uses. Four screens had drifted 2px off it. -->
-                <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-                <label for="historical-roster-search" class="sr-only">Search by tenant or unit</label>
-                <input
-                  id="historical-roster-search"
-                  v-model="historicalSearchQuery"
-                  type="search"
-                  placeholder="Search"
-                  class="ws-input w-full pl-11"
-                />
-              </div>
-              <PillSelect
-                v-model="historicalClusterFilter"
-                :options="historicalClusterOptions"
-                aria-label="Filter by cluster"
-              />
-              <p class="text-sm text-ink-soft" aria-live="polite">
-                {{ historicalTenantRoster.length }} {{ historicalTenantRoster.length === 1 ? 'tenant' : 'tenants' }}
-              </p>
-            </div>
-            <div class="ws-table-wrap max-h-[28rem]">
-              <table class="ws-table">
-                <caption class="sr-only">Tenants who paid in {{ selectedArchiveYear }}</caption>
-                <thead>
-                  <tr class="text-xs text-ink-faint border-b border-line">
-                    <th scope="col" class="px-4 py-3 text-left font-medium">Tenant</th>
-                    <th scope="col" class="px-4 py-3 text-left font-medium">Unit</th>
-                    <th scope="col" class="px-4 py-3 text-left font-medium">Cluster</th>
-                    <th scope="col" class="px-4 py-3 text-right font-medium">Payments</th>
-                    <th scope="col" class="px-4 py-3 text-left font-medium">Months paid</th>
-                    <th scope="col" class="px-4 py-3 text-right font-medium">Rent and water paid</th>
-                    <th scope="col" class="px-4 py-3 text-left font-medium">Invoice no., first found</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="t in historicalTenantRoster" :key="`${t.name}-${t.unit}`">
-                    <th scope="row" class="px-4 py-3 text-left font-medium">{{ t.name }}</th>
-                    <td class="px-4 py-3 tabular">{{ t.unit }}</td>
-                    <td class="px-4 py-3 text-ink-soft">{{ t.cluster }}</td>
-                    <td class="px-4 py-3 text-right tabular">{{ t.monthsCount }}</td>
-                    <td class="px-4 py-3 text-xs text-ink-soft">{{ t.activeMonths.join(', ') }}</td>
-                    <td class="px-4 py-3 text-right font-semibold tabular">{{ peso(t.totalRemitted) }}</td>
-                    <td class="px-4 py-3 text-xs text-ink-soft tabular">{{ t.invoiceSample }}</td>
-                  </tr>
-                  <tr v-if="historicalTenantRoster.length === 0">
-                    <td colspan="7" class="px-4 py-8 text-center text-ink-soft">
-                      No tenants match this search for {{ selectedArchiveYear }}.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </template>
-        </div>
-      </OverviewTile>
-
-      <OverviewTile :title="`Units in ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-12">
-        <template #actions>
-          <button
-            type="button"
-            class="pill-btn"
-            :aria-expanded="historicalUnitTableOpen"
-            aria-controls="archive-units"
-            :aria-label="`${historicalUnitTableOpen ? 'Hide' : 'Show'} units in ${selectedArchiveYear}`"
-            @click="historicalUnitTableOpen = !historicalUnitTableOpen"
-          >
-            {{ historicalUnitTableOpen ? 'Hide' : 'Show' }}
-          </button>
-        </template>
-        <div v-if="historicalUnitTableOpen" id="archive-units" class="ws-reveal">
-          <UnavailableNote v-if="incomeRecordsFetchFailed || roomsFetchFailed" @retry="refreshAllData" />
-          <div v-else class="ws-table-wrap max-h-[28rem]">
-            <table class="ws-table">
-              <caption class="sr-only">Entries and collections per unit in {{ selectedArchiveYear }}</caption>
-              <thead>
-                <tr class="text-xs text-ink-faint border-b border-line">
-                  <th scope="col" class="px-4 py-3 text-left font-medium">Unit</th>
-                  <th scope="col" class="px-4 py-3 text-left font-medium">Cluster</th>
-                  <th scope="col" class="px-4 py-3 text-left font-medium">Floor</th>
-                  <th scope="col" class="px-4 py-3 text-right font-medium">Entries</th>
-                  <th scope="col" class="px-4 py-3 text-right font-medium">Average entry</th>
-                  <th scope="col" class="px-4 py-3 text-right font-medium">Rent and water entered</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(u, i) in historicalRoomUtilization"
-                  :key="u.unitCode"
-                  class="list-reveal-item"
-                  :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-                >
-                  <th scope="row" class="px-4 py-3 text-left font-semibold">{{ u.unitCode.toUpperCase() }}</th>
-                  <td class="px-4 py-3 text-ink-soft">{{ u.cluster }}</td>
-                  <td class="px-4 py-3 text-ink-soft">{{ u.floorLabel }}</td>
-                  <td class="px-4 py-3 text-right">{{ u.activeMonths }}</td>
-                  <td class="px-4 py-3 text-right text-ink-soft">{{ peso(u.averageMonthlyRevenue) }}</td>
-                  <td class="px-4 py-3 text-right font-semibold">{{ peso(u.totalRevenue) }}</td>
-                </tr>
-              </tbody>
-            </table>
+      <OverviewTile :title="`Tenants and units, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
+        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
+        <dl v-else class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-xs text-ink-faint">Tenants who paid</dt>
+            <dd class="text-4xl leading-none font-semibold tabular tracking-tight">{{ historicalTenantCount }}</dd>
           </div>
-        </div>
-      </OverviewTile>
-
-      <OverviewTile :title="`Ledger entries in ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-12">
-        <template #actions>
-          <button
-            type="button"
-            class="pill-btn"
-            :aria-expanded="historicalLedgerOpen"
-            aria-controls="archive-ledger"
-            :aria-label="`${historicalLedgerOpen ? 'Hide' : 'Show'} ledger entries in ${selectedArchiveYear}`"
-            @click="historicalLedgerOpen = !historicalLedgerOpen"
-          >
-            {{ historicalLedgerOpen ? 'Hide' : 'Show' }}
-          </button>
-        </template>
-        <div v-if="historicalLedgerOpen" id="archive-ledger" class="ws-reveal flex flex-col gap-4">
-          <div role="tablist" aria-label="Ledger" class="inline-flex self-start rounded-full bg-canvas p-1">
-            <button
-              id="ledger-tab-income"
-              type="button"
-              role="tab"
-              :aria-selected="historicalLedgerTab === 'income'"
-              aria-controls="ledger-panel"
-              :tabindex="historicalLedgerTab === 'income' ? 0 : -1"
-              :class="[
-                'press rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
-                historicalLedgerTab === 'income' ? 'bg-night text-on-night' : 'text-ink-soft',
-              ]"
-              @click="historicalLedgerTab = 'income'"
-              @keydown.right.prevent="historicalLedgerTab = 'expenses'"
-            >
-              Income <span class="tabular font-normal">{{ historicalIncomeRecords.length }}</span>
-            </button>
-            <button
-              id="ledger-tab-expenses"
-              type="button"
-              role="tab"
-              :aria-selected="historicalLedgerTab === 'expenses'"
-              aria-controls="ledger-panel"
-              :tabindex="historicalLedgerTab === 'expenses' ? 0 : -1"
-              :class="[
-                'press rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
-                historicalLedgerTab === 'expenses' ? 'bg-night text-on-night' : 'text-ink-soft',
-              ]"
-              @click="historicalLedgerTab = 'expenses'"
-              @keydown.left.prevent="historicalLedgerTab = 'income'"
-            >
-              Expenses <span class="tabular font-normal">{{ historicalExpenseRecords.length }}</span>
-            </button>
+          <div>
+            <dt class="text-xs text-ink-faint">Units with entries</dt>
+            <dd class="text-4xl leading-none font-semibold tabular tracking-tight">
+              {{ historicalUnitCount }}<span class="text-lg text-ink-faint">/{{ rooms.length || 33 }}</span>
+            </dd>
           </div>
-
-          <div
-            id="ledger-panel"
-            role="tabpanel"
-            :aria-labelledby="historicalLedgerTab === 'income' ? 'ledger-tab-income' : 'ledger-tab-expenses'"
-          >
-            <template v-if="historicalLedgerTab === 'income'">
-              <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-              <div v-else class="ws-reveal ws-table-wrap max-h-[32rem]">
-                <table class="ws-table">
-                  <caption class="sr-only">Income entries, {{ selectedArchiveYear }}</caption>
-                  <thead>
-                    <tr class="text-xs text-ink-faint border-b border-line">
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Date paid</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Unit</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Tenant</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Rent for</th>
-                      <th scope="col" class="px-4 py-3 text-right font-medium">Rent</th>
-                      <th scope="col" class="px-4 py-3 text-right font-medium">Water</th>
-                      <th scope="col" class="px-4 py-3 text-right font-medium">Total remitted</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Invoice no.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(r, i) in historicalIncomeRecords"
-                      :key="r.id"
-                      class="list-reveal-item"
-                      :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-                    >
-                      <td class="whitespace-nowrap text-ink-soft">{{ r.datePaid }}</td>
-                      <td class="font-semibold">{{ r.unit }}</td>
-                      <td>{{ r.contact }}</td>
-                      <td class="text-xs text-ink-soft">{{ r.rentFor }}</td>
-                      <td class="num text-ink-soft">{{ peso(r.rent, 2) }}</td>
-                      <td class="num text-ink-soft">{{ peso(r.water, 2) }}</td>
-                      <td class="num font-semibold">{{ peso(r.totalRemitted || r.rent, 2) }}</td>
-                      <td class="text-xs text-ink-soft">{{ r.invoice }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </template>
-            <template v-else>
-              <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
-              <div v-else class="ws-reveal ws-table-wrap max-h-[32rem]">
-                <table class="ws-table">
-                  <caption class="sr-only">Expense entries, {{ selectedArchiveYear }}</caption>
-                  <thead>
-                    <tr class="text-xs text-ink-faint border-b border-line">
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Date</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Invoice or supplier</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Category</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Split across areas</th>
-                      <th scope="col" class="px-4 py-3 text-right font-medium">Amount spent</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(e, i) in historicalExpenseRecords"
-                      :key="e.id"
-                      class="list-reveal-item"
-                      :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-                    >
-                      <td class="tabular whitespace-nowrap text-ink-soft">{{ e.date }}</td>
-                      <td>{{ e.description }}</td>
-                      <td class="text-ink-soft">{{ e.category }}</td>
-                      <td class="tabular text-xs text-ink-soft">
-                        <span v-for="(s, sIdx) in e.splits" :key="sIdx" class="mr-3 inline-block">
-                          {{ s.area }} {{ peso(s.amount, 2) }}
-                        </span>
-                      </td>
-                      <td class="num font-semibold">{{ peso(e.totalAmount || 0, 2) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </template>
-          </div>
-        </div>
+          <p class="col-span-2 text-sm text-ink-soft">Every receipt, by tenant or unit, is in Monthly Income.</p>
+        </dl>
       </OverviewTile>
     </div>
   </div>
 </template>
+
