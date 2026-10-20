@@ -700,8 +700,10 @@ router.post(
      * nullable, and Postgres does not treat NULLs as duplicates of each other,
      * so several tenants without an email coexist happily - and an onboarding
      * with no email cannot be matched to a prospect at all. That is honest
-     * rather than clever: `inquiries.prospect_email` is NOT NULL, so every
-     * enquiry-driven conversion has the address this needs.
+     * rather than clever. Since 20 Oct 2026 nothing sends an email here: the
+     * move-in form has none and an enquiry has none (085 made
+     * `inquiries.prospect_email` nullable). So this branch is now reached only by
+     * a direct API call, and a move-in always makes a new record.
      */
     let promoteProfileId: string | null = null;
     let promotedFrom: { role: string; account_status: string } | null = null;

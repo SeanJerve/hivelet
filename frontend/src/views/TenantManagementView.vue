@@ -14,7 +14,7 @@ import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { copyText } from '@/lib/copyText';
-import { EMAIL_NOT_SET, emergencyPhoneProblem } from '@/lib/contactDetails';
+import { emergencyPhoneProblem } from '@/lib/contactDetails';
 import { UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -128,7 +128,6 @@ function closeCredentialsReveal() {
  */
 const onboardDefaults = () => ({
   name: '',
-  email: '',
   phone: '',
   // No unit until she picks one. This opened on '1a', which is occupied, so the
   // form's first suggestion was a unit the submit then refused (B-61).
@@ -150,7 +149,6 @@ const onboardDefaults = () => ({
 
 const d0 = onboardDefaults();
 const newName = ref(d0.name);
-const newEmail = ref(d0.email);
 const newPhone = ref(d0.phone);
 const newUnit = ref(d0.unit);
 const newMoveIn = ref(d0.moveIn);
@@ -166,7 +164,6 @@ const newEmergPhoneError = ref('');
 function resetOnboardForm() {
   const d = onboardDefaults();
   newName.value = d.name;
-  newEmail.value = d.email;
   newPhone.value = d.phone;
   newUnit.value = d.unit;
   newMoveIn.value = d.moveIn;
@@ -293,7 +290,6 @@ function checkInquiryConversion() {
   if (route.query.convertInquiryId) {
     newName.value = String(route.query.name || '');
     newPhone.value = String(route.query.phone || '');
-    newEmail.value = String(route.query.email || '');
     if (route.query.unit) {
       // Was `.toLowerCase()`, which guaranteed a mismatch: the options below are
       // `u.unitCode` and the live list is uppercase, so converting an enquiry for
@@ -426,7 +422,7 @@ watch(() => route.query.convertInquiryId, () => {
 watch(isOnboardModalOpen, (open) => {
   if (!open) openedFromQuickAction.value = false;
   if (open || !route.query.convertInquiryId) return;
-  const { convertInquiryId, name, phone, email, unit, ...keep } = route.query;
+  const { convertInquiryId, name, phone, email: _oldEmail, unit, ...keep } = route.query;
   void router.replace({ query: keep });
 });
 
@@ -501,8 +497,7 @@ const rows = computed(() => {
       t.unitCode.toLowerCase().includes(query) ||
       t.phone.includes(query) ||
       // By digits too: numbers show spaced (0917 123 4567) whatever way they were stored.
-      (query.replace(/\D/g, '').length >= 3 && t.phone.replace(/\D/g, '').includes(query.replace(/\D/g, ''))) ||
-      t.email.toLowerCase().includes(query)
+      (query.replace(/\D/g, '').length >= 3 && t.phone.replace(/\D/g, '').includes(query.replace(/\D/g, '')))
     );
   });
   // Arranged by name or by unit (Sean, 2026-10-02: "a filter that can arrange the tenants by
@@ -834,10 +829,8 @@ async function handleOnboard() {
     const created = await api.post<{ id: string; login_id?: string | null; temporaryPassword: string | null }>('/admin/tenants', {
       // Spaces tidied, as the server also does: one name, one spelling.
       fullName: newName.value.replace(/\s+/g, ' ').trim(),
-      // Only an enquiry's own address, carried in by "Move them in", so the
-      // server can turn that enquirer's record into the tenant (BR-009). No
-      // phone: the tenant gives their own at first sign-in (073).
-      email: newEmail.value.trim(),
+      // No email (Sean, 20 Oct 2026: "emails are nothing in our website") and
+      // no phone: the tenant gives their own number at first sign-in (073).
       roomNumber: newUnit.value.toUpperCase(),
       moveInDate: newMoveIn.value,
       // A blank field is sent blank. The API takes all three as optional and
@@ -898,7 +891,7 @@ async function handleOnboard() {
       // failed, the toast has just told her to set the status by hand; leaving
       // the parameter in the URL so the NEXT onboarding retries it against a
       // different resident is not a recovery.
-      const { convertInquiryId, name, phone, email, unit, ...keep } = route.query;
+      const { convertInquiryId, name, phone, email: _oldEmail, unit, ...keep } = route.query;
       await router.replace({ query: keep });
     }
 
@@ -917,9 +910,8 @@ async function handleOnboard() {
       // with it when it auto-dismisses.
       onboardedCredentials.value = { name: onboardedName, loginId: created.login_id ?? null, password: created.temporaryPassword, reason: 'onboarded' };
     } else {
-      // Only reachable if onboarding somehow ran with neither an email nor
-      // a phone number - the form requires phone, so nothing generates
-      // this today, but the API's own type is honest that it can happen.
+      // Not reached today: every move-in gets a login ID and a starting
+      // password. The API's own type is honest that it can be null.
       showToast('success', 'Moved in', 'Their account is made and the unit is assigned.');
     }
   } catch (err: any) {
@@ -1055,7 +1047,7 @@ async function handleOnboard() {
       :cols="RESIDENT_TABLE_COLS"
       table-from="xl"
       empty-title="Nobody matches"
-      :empty-note="q ? 'Try a name, unit, phone number or email.' : ''"
+      :empty-note="q ? 'Try a name, unit or phone number.' : ''"
     >
       <template #head>
         <tr>
@@ -1160,7 +1152,7 @@ async function handleOnboard() {
       >
         <p class="text-base font-semibold text-ink">Nobody matches</p>
         <p v-if="q" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-          Try a name, unit, phone number or email.
+          Try a name, unit or phone number.
         </p>
       </div>
 
@@ -1372,23 +1364,7 @@ async function handleOnboard() {
                 {{ peso(editModalTenant.depositAmount) }}
               </dd>
             </div>
-            <!--
-              The two fields that hold something long get the whole row on a
-              phone. A column of this grid is 141px at a 375px viewport, and
-              `truncate` turned an address into "mariaconcepci…" with no hover
-              to read the `title` from. Across the row it has 303px, which most
-              addresses fit in, and the truncation is still there for the ones
-              that do not.
-            -->
-            <div class="col-span-2 min-w-0 sm:col-span-1">
-              <dt class="text-xs text-ink-faint">Email</dt>
-              <!-- `onFile`, not `||`: a missing email arrives as an em dash, which is
-                   truthy, so the dialog printed "—" instead of saying so. A placeholder
-                   (migration 067) arrives as the same dash (systemState, `realEmail`). -->
-              <dd class="mt-0.5 truncate text-ink" :title="onFile(editModalTenant.email) ?? undefined">
-                {{ onFile(editModalTenant.email) ?? EMAIL_NOT_SET }}
-              </dd>
-            </div>
+            <!-- No email row: email is no part of the website (Sean, 20 Oct 2026). -->
             <div>
               <dt class="text-xs text-ink-faint">Moved in</dt>
               <dd class="mt-0.5 text-ink">{{ editModalTenant.moveInDate }}</dd>
