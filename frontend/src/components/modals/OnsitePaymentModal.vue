@@ -663,7 +663,7 @@ function triggerRecord() {
   const mCovered = Math.max(1, Number(monthsCovered.value) || 1);
 
   if (occCount < 1) {
-    showToast('error', 'How many people live there?', 'Enter at least one occupant. Water is worked out from this number.');
+    showToast('error', 'How many people live there?', 'Enter at least one occupant.');
     // Focus to the field it is about; the reason shows inside the dialog (audit 2026-10-09).
     document.getElementById('onsite-occupants')?.focus();
     return;
@@ -818,7 +818,6 @@ function triggerRecord() {
   <WsModal
     v-if="isOnsitePaymentModalOpen"
     :title="recorded ? 'Payment recorded' : 'Record payment'"
-    :subtitle="recorded ? undefined : 'In person, or an online payment you are entering yourself.'"
     size="lg"
     :dismissible="false"
     @close="closeModal"
@@ -870,8 +869,7 @@ function triggerRecord() {
           {{ recorded.unit }} now has <strong>{{ recorded.occupantsUpdated.to }}</strong>
           {{ recorded.occupantsUpdated.to === 1 ? 'occupant' : 'occupants' }} on record (it was
           {{ recorded.occupantsUpdated.from }}). Water from now on is
-          {{ peso(recorded.occupantsUpdated.to * (waterRatePerOccupant ?? 200)) }} a month, and the
-          tenant sees the new count on their page.
+          {{ peso(recorded.occupantsUpdated.to * (waterRatePerOccupant ?? 200)) }} a month.
         </span>
       </p>
     </div>
@@ -921,7 +919,7 @@ function triggerRecord() {
               On record: {{ registeredOccupants }}. Saving this updates the tenant's record.
             </span>
             <span v-else-if="registeredOccupants === 0" class="ws-hint">
-              Nobody is on record here. Enter how many live there.
+              Nobody is on record here.
             </span>
           </label>
           <div class="ws-field">
@@ -962,7 +960,7 @@ function triggerRecord() {
               Saved as {{ invoicePreview }}
             </span>
             <span v-else-if="!invoiceNum.trim()" class="ws-hint">
-              Type the invoice number, or tap ACK if the slip has no number.
+              Tap ACK if the slip has no number.
             </span>
           </div>
         </div>
@@ -1082,8 +1080,8 @@ function triggerRecord() {
       >
         <AlertTriangle class="mt-0.5 size-4 shrink-0 text-verify" aria-hidden="true" />
         <span>
-          The ledger could not be loaded, so {{ selectedUnit.toUpperCase() }} was not checked for an
-          earlier payment this period. Make sure there isn't one before recording.
+          {{ selectedUnit.toUpperCase() }} could not be checked for an earlier payment this period.
+          Make sure there isn't one.
         </span>
       </div>
 
@@ -1114,8 +1112,7 @@ function triggerRecord() {
           </li>
         </ul>
         <p v-if="waitingPayments.length > 0" class="text-ink">
-          A GCash payment for this period is waiting for you to verify it. If the tenant is paying
-          again in cash, check that payment first.
+          Check the GCash payment in To verify first.
         </p>
         <p v-if="overlappingPayments.length > 0" class="text-ink">
           Fine if this settles a remaining balance. If it's the same payment entered twice, check
