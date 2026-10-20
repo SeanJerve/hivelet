@@ -85,6 +85,9 @@ const tenancyCapsules = computed<CapsuleMonth[]>(() =>
 const capsuleTerms = { recorded: 'Paid', unentered: 'Not entered', expected: 'Due', future: 'Not due yet' };
 
 const paidMonths = computed(() => months.value.filter((m) => m.paid > 0));
+// "Months paid, 0 of 2" counted a month whose period had not started (20 Oct 2026). Only months
+// that have come due, or that a payment already covers, are out of the total.
+const countedMonths = computed(() => months.value.filter((m) => m.state !== 'ahead' || m.paid > 0));
 const nothingMonths = computed(() => months.value.filter((m) => m.state === 'nothing'));
 const paidTotal = computed(() => Math.round(paidMonths.value.reduce((s, m) => s + m.paid, 0) * 100) / 100);
 const waitingTotal = computed(() => props.waiting.reduce((s, p) => s + (Number(p.amount) || 0), 0));
@@ -204,7 +207,7 @@ const rows = computed(() => [...months.value].reverse());
     <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
       <div>
         <dt class="text-xs text-ink-faint">Months paid</dt>
-        <dd class="text-lg font-semibold tabular">{{ paidMonths.length }} of {{ months.length }}</dd>
+        <dd class="text-lg font-semibold tabular">{{ paidMonths.length }} of {{ countedMonths.length }}</dd>
       </div>
       <div>
         <dt class="text-xs text-ink-faint">Paid in these months</dt>

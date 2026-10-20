@@ -140,6 +140,22 @@ export function buildPaymentMonths(
   if (known.length === 0) return [];
 
   const todayIdx = monthIndex(today);
+  /*
+   * This month's own period may not have started yet. A tenancy that runs from the 30th had
+   * October read "No payment is entered for October 2026" on 20 October, beside a September that
+   * was the period actually owed (live, loydtest, 20 Oct 2026). Its period starts on the 30th, so
+   * October is "Not due yet", not "nothing". The day comes from any known period start: periods
+   * run from one fixed day each month (above), clamped to a short month.
+   */
+  const knownStart = [...(standing?.owedPeriods ?? []).map((p) => p.start), ...receipts.map((r) => r.rent_period_start)]
+    .find(isIsoDate);
+  const cycleDay = knownStart ? Number(knownStart.slice(8, 10)) : null;
+  const thisMonthStartsLater = (() => {
+    if (!cycleDay) return false;
+    const y = Number(today.slice(0, 4));
+    const m = Number(today.slice(5, 7));
+    return Math.min(cycleDay, daysIn(y, m)) > Number(today.slice(8, 10));
+  })();
   const last = Math.max(todayIdx, ...known);
   const first = Math.max(Math.min(...known), last - (MAX_MONTHS_SHOWN - 1));
 
@@ -153,7 +169,7 @@ export function buildPaymentMonths(
     } else if (paidHere > 0) {
       state = 'paid';
     } else {
-      state = idx > todayIdx ? 'ahead' : 'nothing';
+      state = idx > todayIdx || (idx === todayIdx && thisMonthStartsLater) ? 'ahead' : 'nothing';
     }
     months.push({
       key: toKey(idx),
