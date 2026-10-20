@@ -69,16 +69,16 @@ the handler reads or writes those tables.
 | :--- | :--- | :--- | :--- | :--- |
 | Landing page, units and rates | `PublicGuestView.vue`, `CategoryRoomsView.vue` | `GET /public/rooms`, `GET /public/rates` | `public.ts:57`, `:92` | `rooms`, `room_photos`, `system_settings` |
 | The landlady's number to call | every public page (`LANDLADY.phone` in `lib/systemState.ts`) | `GET /public/contact` | `public.ts:136`, her account's own phone number and nothing else | `profiles` |
-| Send an inquiry | `InquireView.vue` (and the form on a unit) | `POST /public/inquiries` | `public.ts:178`, rate-limited per address (`middleware/rateLimit.ts`) | `inquiries` |
+| Send an inquiry | `InquireView.vue` (and the form on a unit) | `POST /public/inquiries` | `public.ts:179`, rate-limited per address (`middleware/rateLimit.ts`) | `inquiries` |
 | Read and answer the reply | `InquiryThreadView.vue` | `POST /public/inquiries/thread`, `.../thread/messages` | `public.ts:301`, `:340`; `services/inquiryThread.ts` | `inquiries`, `inquiry_messages` |
 
 ### Signing in
 
 | Feature | Screen | Endpoint | Backend |
 | :--- | :--- | :--- | :--- |
-| Sign in with email, phone or login ID | `LoginView.vue` | `POST /auth/login` | `auth.ts:76` → `services/authService.ts` (finds the account through the database function `resolve_login_identifier`) |
-| Change password (a tenant) | `ChangePasswordModal.vue` | `POST /auth/change-password` | `auth.ts:336`, checks the new password against known breaches (`utils/breachedPassword.ts`) |
-| Change number / password (the landlady) | `ChangeSignInModal.vue` | `POST /auth/change-sign-in` | `auth.ts:447` → `changeOwnSignIn`: current number AND current password first, one refusal for either |
+| Sign in with login ID or phone (an email is refused) | `LoginView.vue` | `POST /auth/login` | `auth.ts:76` → `services/authService.ts` (finds the account through the database function `resolve_login_identifier`) |
+| Change password (a tenant) | `ChangePasswordModal.vue` | `POST /auth/change-password` | `auth.ts:334`, checks the new password against known breaches (`utils/breachedPassword.ts`) |
+| Change number / password (the landlady) | `ChangeSignInModal.vue` | `POST /auth/change-sign-in` | `auth.ts:445` → `changeOwnSignIn`: current number AND current password first, one refusal for either |
 | Who am I | (every page) | `GET /auth/me` | `auth.ts:225` |
 
 ### The tenant's side

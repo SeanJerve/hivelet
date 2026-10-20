@@ -154,8 +154,8 @@ without her permission**: it shows real names and money. For practice, the demo 
 
 1. **The public site** shows each unit category with its rates, read live from the database. Vacant
    units show their **floor plan**.
-2. **Ask about a unit**: their name, a Philippine mobile number, an email address and the question,
-   then **Send inquiry**.
+2. **Ask about a unit**: their name, a Philippine mobile number and the question, then **Send
+   inquiry**. No email is asked for anywhere on the site.
 3. The visitor gets a **private link** and a **reference code**. Either one (the code with their
    phone number) opens **"Your inquiry"**, where the landlady's answer appears and they can write back.
    No account is needed, and no text or email is sent: they come back to the page.
@@ -163,7 +163,8 @@ without her permission**: it shows real names and money. For practice, the demo 
 ### A tenant (phone)
 
 1. **Sign in** with the **login ID** (for example HV-48213) and the starting password from the
-   landlady; choose a new password on first sign-in.
+   landlady; choose a new password and give their mobile number on first sign-in. After that they
+   sign in with the login ID or that number.
 2. **Overview**: the amount due and when it is due, **Pay with GCash**, **Request a repair**, recent
    payments, and the deposit held for their tenancy.
 3. **Payments and billing**: rent month by month. Only receipts the landlady verified count as paid;
