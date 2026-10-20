@@ -52,14 +52,15 @@ below. It is there to be read, not clicked. Only you see your own actions.
 
 - **Your rent**: the monthly rent, plus water at **₱200 per occupant per month**. *Tubig: ₱200 bawat
   nakatira bawat buwan.*
-- **Your rent, month by month**: your bills over time, up to the last 12 months.
-  *Ang inyong upa, buwan-buwan: hanggang sa huling 12 buwan.*
-  - One sentence says where you stand, for example **"Paid up to August 12, 2026. You are up to
-    date."** or how many months are due and how much in all. *Isang pangungusap ang nagsasabi kung
+- **Your rent, month by month**: your bills over time, at least 12 months at a time.
+  *Ang inyong upa, buwan-buwan: hindi bababa sa 12 buwan.*
+  - One sentence says where you stand, for example **"Paid up to August 12, 2026."** marked **Up
+    to date**, or how many months are due and how much in all. *Isang pangungusap ang nagsasabi kung
     hanggang kailan kayo bayad at kung may dapat pang bayaran.*
   - A bar for each month: **Paid**, **Due** (Due soon or Due today), **Not entered** (no payment
-    entered for that month yet), or **Not due yet**. *Bawat buwan: Paid (bayad), Due (dapat bayaran),
-    Not entered (wala pang naitalang bayad), Not due yet (hindi pa dapat bayaran).*
+    entered for that month yet), **Not due yet**, or a pale, empty **Nothing yet** for a month before
+    you moved in. *Bawat buwan: Paid (bayad), Due (dapat bayaran), Not entered (wala pang naitalang
+    bayad), Not due yet (hindi pa dapat bayaran), Nothing yet (bago kayo lumipat).*
   - **Months paid**, **Paid in these months** and **Due now**. Only receipts the landlady has
     **verified** count; a cancelled (voided) receipt never counts. A GCash payment you sent shows as
     **waiting** until she verifies it. *Ang mga resibong na-verify lang ng landlady ang binibilang.*
@@ -140,7 +141,7 @@ has the same bar at the top:
   or **Oldest first** (Repairs also has **Most urgent first**). The list changes the moment you pick.
   **On a phone**, tap **Filters** to open them under the bar, and tap it again to close them. The
   filters in use are named under the bar; **Clear** removes them.
-- **Show more** and **Show all** under a long list open more of it; **Show fewer** closes it again.
+- **Show 8 more** (or however many are next) and **Show all** under a long list open more of it; **Show fewer** closes it again.
 
 **Also on every screen:** a short ping means something was saved, or someone else's change has
 arrived. Tap a message at the top of the screen to close it. The phone's **Back** button goes back a
@@ -184,8 +185,9 @@ below. It is there to be read, not clicked. It shows only your own actions, neve
 
 - **Record payment**, **Record expense** and **Move someone in/out** are the green buttons at the top. **On a phone**,
   tap the green **+** at the bottom right to show them; tap it again to hide them.
-- **Another year:** tap the year beside the date (for example **2026 ⌄**) and choose one.
-  **Back to 2026** returns to this year.
+- **Another year:** tap the year beside the date (for example **2026 ⌄**) and choose one, or
+  **2026, this year** to come back. A past year shows its year only, not today's date, and can be
+  read but not added to: the green buttons are for this year.
 
 **The bell** at the top shows a **dot** when you have unread notifications; open it to read them.
 The **filter icon** beside the title shows only **Unread**, **Payments**, **Repairs** or
@@ -229,8 +231,9 @@ month (for example "Received, October 2026"), with its rent, water and 50% Share
 it came from** is the **year**: the year's total and how it divides across the clusters, and below
 that the year month by month. Monthly Expenses is laid out the same way ("Spent, October 2026" with
 utilities and repairs; **Where it went** is the year by area). **Filters** > **Month** shows
-another month in the dark card; **Filters** > **Year** picks another year, or **All years** for
-everything since the records began. **Filters** > **Group by** gathers the payments by **Cluster**
+another month in the dark card. The year beside the page name (for example **2026 ⌄**) picks
+another year, or **All years** for everything since the records began; a past year can be read but
+not added to, so **Record payment** is not shown there. **Filters** > **Group by** gathers the payments by **Cluster**
 (the usual view), by **Unit**, or by **Tenant (A to Z)**.
 
 **Download** asks what the file should cover: **Month** (pick the month and year), **Year** (pick
@@ -257,7 +260,7 @@ TOTAL**.
    or removed, so check the spelling.
 
 Editing and **Delete expense** work as for payments. Monthly Expenses also opens on **this year**,
-with **All years** in **Filters** > **Year**. **Download** asks **Month**, **Year** or **All**, as
+and its year is chosen the same way, beside the page name. **Download** asks **Month**, **Year** or **All**, as
 for income; a single month's file ends in "only" ("Monthly Expenses March 2026 only - ME032026").
 
 ### 5. Tenants
