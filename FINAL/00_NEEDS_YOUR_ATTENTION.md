@@ -25,7 +25,9 @@ numbers) and `BLOCKED_FOR_SEAN.md` (B numbers).
 | 1 | ~~Change number / password~~ **Done 20 Oct**: in her account menu; it asks for her current password and current number | - |
 | 1b | **F2F's headcount**: its tenancy records 4 people, but her receipt for the period from 31 August charged water for 1. Which is right? (check:relations now flags it) | The owner |
 | 1c | **A test tenant for check:api**: its tenant checks name a tenant by email, which no longer signs in. Put loydtest's login ID and password in database/seeded-tenant-credentials.json (B-82) | Sean |
-| 1d | **The demo copy's owner and evaluator accounts sign in by email**, which stops working once the demo is redeployed. Fine if the evaluations are over; otherwise give them phone numbers there | Sean |
+| 1a | ~~Emails~~ **Done 20 Oct**: no screen asks for, shows or accepts an email. Sign-in by email is refused; inquiries take a name, phone and question (migration 085); first sign-in and My details ask for the phone only. The manual, the tenant quick guide and the data dictionary say so | - |
+| 1d | **The demo copy's owner and evaluator accounts sign in by email**, which stops working once the demo is redeployed. Its database also needs migration 085, or a visitor's inquiry there is refused. Fine if the evaluations are over; otherwise give them phone numbers and run 085 there | Sean |
+| 1e | **The demo-account buttons on your laptop's sign-in page** (dev server only) now need each account's login ID: add an `"identifier"` to every entry in credentials/demo-accounts.json. I was not allowed to fill it from the database myself | Sean |
 | 2 | **The evaluation slides** still show the six-respondent scores (B-109, B-110) | Update in the deck |
 | 3 | **Make the GitHub repository private** before the defense (P9) | Sean |
 | 4 | **Move loydtest out of unit PH after the defense** (B-106) | Sean |
