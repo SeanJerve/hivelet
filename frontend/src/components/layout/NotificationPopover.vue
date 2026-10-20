@@ -453,9 +453,6 @@ onUnmounted(() => {
         >
           <AlertTriangle class="mx-auto size-8 text-verify" aria-hidden="true" />
           <p class="mt-3 text-sm font-semibold text-ink">Notifications could not be loaded</p>
-          <p class="mt-1 text-sm leading-6 text-ink-soft">
-            Check your connection and try again.
-          </p>
           <button
             type="button"
             class="pill-btn mt-4"
@@ -468,15 +465,7 @@ onUnmounted(() => {
         <div v-else-if="filteredNotifications.length === 0" class="px-6 py-12 text-center">
           <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
           <p class="mt-3 text-sm font-semibold text-ink">Nothing here</p>
-          <p class="mt-1 text-sm leading-6 text-ink-soft">
-            {{
-              activeFilter === 'unread'
-                ? 'You have read everything.'
-                : activeFilter === 'all'
-                  ? 'Nothing has come in yet.'
-                  : 'Nothing has come in under this filter.'
-            }}
-          </p>
+          <p v-if="activeFilter === 'unread'" class="mt-1 text-sm leading-6 text-ink-soft">You have read everything.</p>
         </div>
 
         <div v-else class="divide-y divide-line">
@@ -486,7 +475,7 @@ onUnmounted(() => {
             role="status"
             class="bg-verify-soft px-4 py-2.5 text-xs leading-5 text-verify"
           >
-            The latest could not be loaded. These are from the last time it worked.
+            The latest could not be loaded, so these may be behind.
           </p>
           <button
             v-for="(item, i) in filteredNotifications"

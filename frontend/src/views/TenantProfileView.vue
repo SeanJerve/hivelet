@@ -317,7 +317,7 @@ function handleReset() {
     <!-- No form at all on a failed read: see the catch in `fetchProfile`. -->
     <div v-else-if="loadFailed" class="ws-reveal rounded-tile bg-tile p-5 sm:p-6">
       <UnavailableNote
-        message="Your details could not be loaded. Nothing on file has changed. Please try again in a moment."
+        message="Your details could not be loaded. Nothing on file has changed."
         @retry="fetchProfile"
       />
     </div>
@@ -423,7 +423,7 @@ function handleReset() {
                    caret in a box that took no typing. Recessed and quieter, it reads as a
                    fact on file, which the hint under it then explains. -->
               <p class="ws-hint">
-                The landlady keeps your name on your tenancy record. Ask her if it needs changing.
+                Ask the landlady if it needs changing.
               </p>
             </div>
 
@@ -438,14 +438,12 @@ function handleReset() {
                 placeholder="you@email.com"
                 :class="['ws-input', emailError && 'border-overdue']"
                 :aria-invalid="emailError ? 'true' : undefined"
-                :aria-describedby="emailError ? 'email-error' : 'email-hint'"
+                :aria-describedby="emailError ? 'email-error' : savedSnapshot.email ? undefined : 'email-hint'"
                 @input="emailError = ''"
                 @blur="form.email.trim() && form.email.trim() !== savedSnapshot.email.trim() && (emailError = emailProblem(form.email))"
               />
               <p v-if="emailError" id="email-error" class="ws-reveal text-sm text-overdue">{{ emailError }}</p>
-              <p v-else id="email-hint" class="ws-hint">
-                {{ savedSnapshot.email ? 'Only you can change it.' : `${EMAIL_NOT_SET}. Add one you check.` }}
-              </p>
+              <p v-else-if="!savedSnapshot.email" id="email-hint" class="ws-hint">{{ EMAIL_NOT_SET }}. Add one you check.</p>
             </div>
 
             <div class="ws-field">
@@ -460,7 +458,7 @@ function handleReset() {
                 placeholder="0917 123 4567"
                 :class="['ws-input tabular', phoneError && 'border-overdue']"
                 :aria-invalid="phoneError ? 'true' : undefined"
-                :aria-describedby="phoneError ? 'phone-error' : 'phone-hint'"
+                :aria-describedby="phoneError ? 'phone-error' : phoneChanged && form.phone_number.trim() ? 'phone-hint' : undefined"
                 @input="phoneError = ''"
                 @blur="form.phone_number.trim() && phoneChanged && (phoneError = phoneProblem(form.phone_number))"
               />
@@ -468,7 +466,6 @@ function handleReset() {
               <p v-else-if="phoneChanged && form.phone_number.trim()" id="phone-hint" class="ws-reveal text-sm font-medium text-verify">
                 Once saved, you sign in with this new number, not {{ savedSnapshot.phone_number }}.
               </p>
-              <p v-else id="phone-hint" class="ws-hint">You sign in with this number.</p>
             </div>
 
             <div class="ws-field">
@@ -488,7 +485,6 @@ function handleReset() {
 
           <div class="border-t border-line pt-6">
             <h2 class="text-base font-semibold text-ink">If something happens to you</h2>
-            <p class="ws-hint mt-1">Who the landlady should ring.</p>
 
             <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div class="ws-field">
@@ -527,7 +523,7 @@ function handleReset() {
 
         <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line p-5 sm:p-6">
           <p class="text-sm text-ink-soft">
-            {{ writesUnavailable ? 'Saving needs a connection.' : isDirty ? 'You have changes that are not saved yet.' : 'Everything here is saved.' }}
+            {{ writesUnavailable ? 'Saving needs a connection.' : isDirty ? 'Not saved yet.' : 'All saved.' }}
           </p>
           <div class="flex items-center gap-2">
             <button type="button" :disabled="!isDirty || saving || loadFailed" class="pill-btn" @click="handleReset">

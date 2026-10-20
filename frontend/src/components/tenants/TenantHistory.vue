@@ -93,9 +93,7 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
   <div class="ws-reveal space-y-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <p class="max-w-3xl text-sm leading-6 text-ink-soft">
-        Who paid for each unit in {{ periodLabel }}, from the receipts in Monthly Income. Names are as
-        written on the payments; when one person was written two ways in the same unit, they are shown
-        once, with the other spelling under their name.
+        Who paid for each unit in {{ periodLabel }}
       </p>
       <!-- "Download", with the period and the format in its name and tooltip:
            the same short label as the ledgers' (Sean, 2026-10-01). -->
@@ -127,7 +125,7 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
 
     <UnavailableNote
       v-else-if="incomeRecordsFetchFailed && incomeRecords.length === 0"
-      message="The payments could not be loaded, so the history cannot be shown."
+      message="The payments could not be loaded."
       @retry="fetchIncomeRecords"
     />
 
@@ -138,7 +136,7 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
       noun="tenant"
       :cols="cols"
       :empty-title="`No payments for ${periodLabel}`"
-      :empty-note="query ? 'Try another name or unit.' : 'Nothing is recorded for this period yet.'"
+      :empty-note="query ? 'Try another name or unit.' : ''"
     >
       <template #head>
         <tr>

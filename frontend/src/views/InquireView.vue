@@ -155,8 +155,8 @@ async function submitInquiry() {
 
     if (!defaultRoom) {
       formError.value =
-        'Your message was not sent: every unit is taken or reserved at the moment, so none ' +
-        `is open for inquiries. Please try again in a few days, or call us on ${LANDLADY.phoneShown.replace(/ /g, '\u00a0')}.`; // no-break: the number never splits over two lines (audit 2026-10-09)
+        'Your message was not sent: no unit is open for inquiries right now. Try again in a ' +
+        `few days, or call us on ${LANDLADY.phoneShown.replace(/ /g, '\u00a0')}.`; // no-break: the number never splits over two lines (audit 2026-10-09)
       return;
     }
 

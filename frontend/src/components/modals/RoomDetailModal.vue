@@ -104,7 +104,7 @@ function statusLabel(status: string) {
         <!-- `rooms` is seeded, and 30 of the 33 seeded prices are stale. A rate
              shown without saying whether it is live is a rate someone quotes. -->
         <p v-if="roomsFetchFailed" class="mt-1 text-sm text-ink-soft">
-          The rate could not be loaded, so it is not shown here.
+          The rate could not be loaded.
         </p>
         <p v-else class="mt-1 text-3xl font-semibold tabular tracking-tight">
           {{ peso(activeRoomDetail.price) }}

@@ -305,7 +305,7 @@ onMounted(async () => {
     playSound('notify');
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (statusParam === 'cancelled') {
-    showToast('info', 'Payment cancelled', 'The online payment was cancelled before it was completed.');
+    showToast('info', 'Payment cancelled', 'Nothing was recorded.');
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
@@ -587,7 +587,7 @@ const paymentAwaitingVerification = computed(() =>
 );
 
 const awaitingVerificationLine =
-  'A payment you sent is waiting for the landlady to verify it. You can pay online again once she has checked it.';
+  'A payment you sent is waiting for the landlady to verify it.';
 
 const statusTone = computed(() => {
   const s = dueDateCountdown.value.severity;
@@ -653,7 +653,7 @@ const statusTone = computed(() => {
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           dark
-          message="Your bill could not be loaded, so the amount due is not shown. Please try again."
+          message="Your bill could not be loaded."
           @retry="fetchTenantData"
         />
         <template v-else-if="!isSettled">
@@ -719,15 +719,14 @@ const statusTone = computed(() => {
             <p class="mt-3 text-sm text-on-brand-soft">
               <template v-if="tenantData.nextDueDateDisplay">Next rent is due {{ tenantData.nextDueDateDisplay }}.</template>
               <template v-else-if="tenantData.dueDaysRemaining === 'Settled' && tenantData.paidThroughDisplay">
-                Your recorded payments cover rent up to {{ tenantData.paidThroughDisplay }}.
+                Payments recorded up to {{ tenantData.paidThroughDisplay }}.
               </template>
               <template v-else-if="tenantData.paidThroughDisplay">
-                Your recorded payments cover rent up to {{ tenantData.paidThroughDisplay }}.
-                <template v-if="tenantData.unbilledFromDisplay">Rent from {{ tenantData.unbilledFromDisplay }} has not been billed yet,</template>
-                <template v-else>Nothing after that has been billed yet,</template>
-                which is not the same as owing nothing.
+                Payments recorded up to {{ tenantData.paidThroughDisplay }}.
+                <template v-if="tenantData.unbilledFromDisplay">Rent from {{ tenantData.unbilledFromDisplay }} is not billed yet.</template>
+                <template v-else>Nothing after that is billed yet.</template>
               </template>
-              <template v-else>No bill has been raised for this period yet, which is not the same as owing nothing.</template>
+              <template v-else>No bill has been raised for this period yet.</template>
             </p>
           </div>
           <!--
@@ -752,7 +751,7 @@ const statusTone = computed(() => {
       >
         <UnavailableNote
           v-if="tenantDataLoadFailed"
-          message="Your bill could not be loaded. Try again in a moment."
+          message="Your bill could not be loaded."
           @retry="fetchTenantData"
         />
         <div v-else-if="!tenantData.hasBill" class="flex flex-col gap-2">
@@ -910,9 +909,6 @@ const statusTone = computed(() => {
                 </span>
               </li>
             </ul>
-            <p class="pt-1 text-xs leading-5 text-ink-faint">
-              Amounts include rent and water.
-            </p>
           </section>
         </div>
       </OverviewTile>

@@ -478,7 +478,6 @@ async function handleSave() {
                 <template v-if="occupantsSummary.count > 0">{{ occupantsSummary.text }}</template>
                 <template v-else>Nobody</template>
               </p>
-              <p class="ws-hint mt-0.5">From the tenancy records.</p>
             </div>
           </div>
         </div>

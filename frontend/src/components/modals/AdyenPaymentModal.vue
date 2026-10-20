@@ -431,9 +431,6 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       <p class="text-sm font-medium" role="status">
         {{ hasAttemptedPayment ? 'Confirming your payment' : 'Opening the payment page' }}
       </p>
-      <p class="text-sm text-ink-soft">
-        {{ hasAttemptedPayment ? 'Checking the result with Adyen. This takes a few seconds.' : 'This takes a few seconds.' }}
-      </p>
     </div>
 
     <!-- Paid -->
@@ -441,11 +438,10 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       <CheckCircle2 class="size-10 text-brand" aria-hidden="true" />
       <h3 class="text-lg font-semibold tracking-tight">Payment sent</h3>
       <p v-if="isRecorded" class="max-w-sm text-sm leading-6 text-ink-soft">
-        It is recorded and waiting for the landlady to verify it. It appears in your payment
-        history once she has.
+        It is waiting for the landlady to verify it.
       </p>
       <p v-else class="max-w-sm text-sm leading-6 text-ink-soft">
-        We are confirming it with the payment provider, which usually takes a few seconds. It then waits for the landlady to verify it. Nothing more is needed from you.
+        It is being confirmed, then the landlady verifies it. Nothing more is needed from you.
       </p>
     </div>
 

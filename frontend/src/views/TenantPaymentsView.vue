@@ -229,7 +229,7 @@ const standingSentence = computed(() => {
   const st = standing.value;
   if (!st || st.owedPeriods.length === 0) return '';
   const parts = [st.paidThrough
-    ? `Your recorded payments cover rent up to ${formatDateOnly(st.paidThrough, longDate)}.`
+    ? `Payments recorded up to ${formatDateOnly(st.paidThrough, longDate)}.`
     : 'No payment is recorded yet.'];
   if (st.status === 'overdue') {
     // "After that" needs a payment to follow; with none recorded the months simply are not entered.
@@ -465,11 +465,9 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
         tone: 'success',
         title: 'Payment received',
         body: res.recorded
-          ? 'Adyen has confirmed it. It now shows as waiting for the landlady to check it, and ' +
-            'you will not be asked to pay this bill again.'
-          : "Adyen has confirmed it, and we're recording it now. It usually appears within a " +
-            'few seconds. If this bill still looks unpaid for a moment, do not pay again; check ' +
-            'back shortly.',
+          ? 'It is waiting for the landlady to check it. You will not be asked to pay this bill again.'
+          : 'It is being recorded and usually appears within seconds. If this bill still looks ' +
+            'unpaid, do not pay again; check back shortly.',
       };
     } else {
       const stillProcessing = res?.gatewayStatus === 'paymentPending';
@@ -523,7 +521,7 @@ onMounted(async () => {
     gatewayNotice.value = {
       tone: 'warning',
       title: 'Payment cancelled',
-      body: 'The online payment was cancelled before it was completed.',
+      body: 'Nothing was recorded.',
     };
     window.history.replaceState({}, document.title, window.location.pathname);
   }
@@ -838,7 +836,7 @@ function refreshAll() {
          all-clear below can only be reached by a list that actually loaded. -->
     <OverviewTile v-else-if="billsLoadFailed" class="ws-reveal" title="Bills">
       <UnavailableNote
-        message="Your bills could not be loaded. Please try again, and tell the landlady if it keeps happening."
+        message="Your bills could not be loaded."
         @retry="refreshAll"
       />
     </OverviewTile>
@@ -892,9 +890,8 @@ function refreshAll() {
            settled account. Payment opens a week before the next period. -->
       <p class="text-sm leading-6 text-ink-soft">
         <template v-if="standing?.paidThrough">
-          Your recorded payments cover rent up to {{ formatDateOnly(standing.paidThrough, longDate) }}.
-          The next period starts {{ formatDateOnly(standing.nextPeriodStart, longDate) }}, and you can pay
-          for it here from a week before.
+          Payments recorded up to {{ formatDateOnly(standing.paidThrough, longDate) }}. The next period
+          starts {{ formatDateOnly(standing.nextPeriodStart, longDate) }}; you can pay from a week before.
         </template>
         <template v-else>You have no outstanding bills.</template>
       </p>
@@ -954,14 +951,12 @@ function refreshAll() {
           </button>
         </template>
         <p v-else class="mt-auto text-sm text-on-brand-soft">
-          {{ peso(billPending(bill), 2) }} has already been sent for this bill and is waiting for
-          the landlady to check it. You have not been charged twice.
+          {{ peso(billPending(bill), 2) }} you sent is waiting for the landlady to check it.
           <template v-if="billRemainderAfterPending(bill) > 0">
-            The remaining {{ peso(billRemainderAfterPending(bill), 2) }} is still owed, and can be
-            paid here once she has confirmed the payment that is already in.
+            The other {{ peso(billRemainderAfterPending(bill), 2) }} can be paid once she has.
           </template>
           <template v-else>
-            There is nothing more to pay here while she is checking it.
+            Nothing more to pay until she has.
           </template>
         </p>
       </OverviewTile>
@@ -1045,7 +1040,7 @@ function refreshAll() {
         :empty-title="loadingHistory ? 'Loading your payments' : searchQuery.trim() ? 'Nothing to show' : 'Nothing recorded'"
         :empty-note="
           loadingHistory
-            ? 'Your payment record is still being read. This is not the same as having none.'
+            ? ''
             : searchQuery.trim()
               ? `Nothing matches &quot;${searchQuery.trim()}&quot; in ${selectedYear}.`
               : `No payments are on record for ${selectedYear}.`

@@ -89,23 +89,23 @@ const FAQS = computed(() => [
     q: 'How does the monthly water fee work?',
     a:
       waterRatePerOccupant.value !== null
-        ? `Water is billed per person, at \u20B1${waterRatePerOccupant.value} for each registered occupant every month. It follows the number of people registered as living in the unit, so it changes if that changes.`
-        : 'Water is billed per person, for each registered occupant every month. It follows the number of people registered as living in the unit. Ask the landlady for the current rate.',
+        ? `Water is \u20B1${waterRatePerOccupant.value} a month for each person registered in the unit, so it changes when that number does.`
+        : 'Water is billed each month for each person registered in the unit. Ask the landlady for the current rate.',
   },
   {
     q: 'How is electricity handled?',
-    a: 'Every unit has its own electric meter and you pay for your own electricity separately. It is not part of your rent, and the boarding house does not bill you for it.',
+    a: 'Each unit has its own electric meter, and you pay for your electricity yourself. It is not part of your rent.',
   },
   {
     q: 'What payment methods does the boarding house accept?',
-    a: 'You can pay online with GCash through the portal, or pay in person on site. Either way it is recorded against your unit and you can see it in your own account. Online GCash payment is not live yet, so for now please pay in person.',
+    a: 'Online with GCash through the portal, or in person on site; either way it shows in your account. Online GCash payment is not live yet, so for now please pay in person.',
   },
   {
     q: 'What do I need to move in?',
     a:
       cheapestRent.value !== null
-        ? `A valid government or student ID, the tenant registration form, and two months of money: one month of rent in advance, and one month as a deposit. Our cheapest unit is ₱${cheapestRent.value.toLocaleString('en-PH')} a month, so that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} to bring on the day; for any other unit it is twice that unit's rent. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.`
-        : 'A valid government or student ID, the tenant registration form, and two months of money: one month of rent in advance, and one month as a deposit, so twice the monthly rent of the unit you take. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
+        ? `A valid government or student ID, the tenant registration form, and two months' rent: one month in advance and one as a deposit. For our cheapest unit, ₱${cheapestRent.value.toLocaleString('en-PH')} a month, that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} on the day. When you move out, the deposit pays for repairing and cleaning the unit, and whatever is left is returned to you.`
+        : "A valid government or student ID, the tenant registration form, and two months' rent: one month in advance and one as a deposit. When you move out, the deposit pays for repairing and cleaning the unit, and whatever is left is returned to you.",
   },
 ]);
 
@@ -445,9 +445,6 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
             Explore by unit category
           </h2>
-          <p class="max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">
-            Choose one to see its units, their rates and which are vacant.
-          </p>
         </div>
 
         <div v-if="isLoading" class="mt-8 sm:mt-10 border-t border-line">

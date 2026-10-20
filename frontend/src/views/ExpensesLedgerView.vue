@@ -163,7 +163,7 @@ async function onKindCreated(kind: ExpenseKind) {
   // Raised once the small dialog has gone (after the render that removes it),
   // so it shows in the one underneath rather than vanishing with it.
   await nextTick();
-  showToast('success', 'Kind added', `"${option}" is in the list and chosen for this expense.`);
+  showToast('success', 'Kind added', `"${option}" is chosen for this expense.`);
 }
 
 // Filter selectors
@@ -333,7 +333,7 @@ function areaProblem(allocs: { area: PropertyArea | '' }[]): string | null {
   const repeated = areas.find((a, i) => areas.indexOf(a) !== i);
   if (!repeated) return null;
   const label = PROPERTY_AREA_OPTIONS.find((o) => o.value === repeated)?.label ?? repeated;
-  return `${label} is given twice. Each area takes one amount: add the two parts together, or choose another area.`;
+  return `${label} is given twice. Add the two parts together, or choose another area.`;
 }
 
 function addAllocation(entryIndex: number) {
@@ -869,7 +869,7 @@ function handleDeleteFromEditModal() {
 function handleDeleteExpense(id: string, description: string) {
   showConfirm(
     'Delete this expense?',
-    `"${description}" is removed from the ledger and the reports, and cannot be brought back.`,
+    `"${description}" is removed from the ledger and cannot be brought back.`,
     async () => {
       try {
         await api.delete(`/admin/expense-entries/${id}`);
@@ -1056,7 +1056,7 @@ async function handleEditExpense() {
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           dark
-          message="Expenses could not be loaded. Check your connection and try again."
+          message="Expenses could not be loaded."
           @retry="fetchExpenses"
         />
         <!-- Nothing entered for the month: said, not shown as ₱0 (as on Monthly Income). -->
@@ -1123,9 +1123,6 @@ async function handleEditExpense() {
               </span>
             </li>
           </ul>
-          <p class="text-xs leading-5 text-ink-faint max-md:hidden">
-            Main House and Other are personal spending.
-          </p>
         </template>
       </OverviewTile>
     </div>
@@ -1157,10 +1154,10 @@ async function handleEditExpense() {
       <!-- The failure keeps its line; nothing matching gets a hint, as Tenants and
            Rooms and rates give one (audit 2026-10-09: the title stood alone). -->
       <p v-if="expenseRecordsFetchFailed" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-        Check your connection, then reload the page to try again.
+        Check your connection and reload the page.
       </p>
       <p v-else class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-        {{ q.trim() ? 'Try a word from the description or the kind of expense, or change the filters.' : 'Try another kind, month or year.' }}
+        {{ q.trim() ? 'Try another search, or change the filters.' : 'Try another kind, month or year.' }}
       </p>
     </div>
 
@@ -1288,7 +1285,6 @@ async function handleEditExpense() {
     <WsModal
       v-if="isAddOpen"
       title="Record expense"
-      subtitle="You can add several from one day at once."
       size="lg"
       :dismissible="false"
       @close="isAddOpen = false"

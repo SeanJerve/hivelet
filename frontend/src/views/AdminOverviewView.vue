@@ -774,7 +774,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           v-if="pendingPaymentsFailed"
           dark
           class="max-md:hidden"
-          message="The payments waiting for verification could not be loaded. There may still be some."
+          message="Payments to verify could not be loaded. Some may be waiting."
           @retry="refreshAllData"
         />
         <div v-else class="max-md:hidden">
@@ -811,7 +811,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <UnavailableNote
             v-if="maintenanceTicketsFetchFailed"
             dark
-            message="Repair requests could not be loaded. There may still be urgent ones."
+            message="Repairs could not be loaded. Some may be urgent."
             @retry="refreshAllData"
           />
           <div v-else class="flex flex-wrap items-center justify-between gap-3">
@@ -907,7 +907,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
-          message="Collections could not be loaded, so the months cannot be drawn."
+          message="Collections could not be loaded."
           @retry="refreshAllData"
         />
         <template v-else>
@@ -930,7 +930,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <dd class="text-lg font-semibold tabular">
                   {{ roomsFetchFailed ? 'Unavailable' : peso(baseMonthlyRunRate) }}
                 </dd>
-                <dd class="text-xs text-ink-soft">From the units occupied now</dd>
               </div>
             </dl>
           </PhoneMore>
@@ -975,7 +974,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <OverviewTile :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6 max-md:order-5">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
-          message="Income or expenses could not be loaded, so net figures cannot be worked out."
+          message="Income or expenses could not be loaded."
           @retry="refreshAllData"
         />
         <p v-else-if="!liveLatestCashMonth" class="text-sm text-ink-soft">
@@ -1072,7 +1071,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           </table>
           </div>
           <p class="text-xs leading-5 text-ink-faint">
-            Personal spending in {{ CURRENT_YEAR }}: {{ peso(livePersonalTotal) }}, not counted above
+            Personal, not deducted: {{ peso(livePersonalTotal) }}
           </p>
         </template>
       </OverviewTile>
@@ -1085,7 +1084,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       >
         <UnavailableNote
           v-if="maintenanceTicketsFetchFailed"
-          message="Repair requests could not be loaded. There may still be open ones."
+          message="Repairs could not be loaded."
           @retry="refreshAllData"
         />
         <p v-else-if="openTickets.length === 0" class="text-sm text-ink-soft">No repair requests are open.</p>

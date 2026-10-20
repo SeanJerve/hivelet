@@ -73,7 +73,7 @@ const heading = computed(() => {
 const detail = computed(() => {
   const n = shownCount.value;
   if (n === null) return 'Send the landlady a message to arrange one.';
-  if (n === 0) return 'Send the landlady a message to ask when one opens. Viewings are by appointment.';
+  if (n === 0) return 'Send the landlady a message to ask when one opens.';
   return 'Viewings are by appointment. Send the landlady a message to arrange one.';
 });
 

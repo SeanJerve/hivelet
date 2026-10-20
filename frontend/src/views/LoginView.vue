@@ -542,8 +542,7 @@ async function handleQuickLogin(account: DemoAccount) {
       @close="showMovedOut = false"
     >
       <p class="text-sm leading-6 text-ink-soft">
-        Your tenancy at the boarding house has ended, so this account no longer has access to the
-        tenant portal. Your payment records stay with the landlady.
+        This account no longer has access to the portal. Your payment records stay with the landlady.
       </p>
       <p class="text-sm leading-6 text-ink-soft">
         If you think this is a mistake, call

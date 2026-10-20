@@ -694,8 +694,8 @@ async function submitInquiry() {
         <div class="mt-10 sm:mt-14 grid gap-8 sm:grid-cols-2 max-w-3xl text-xs sm:text-[0.82rem] leading-relaxed text-ink-soft">
           <p>{{ currentCat.blurb }}</p>
           <p v-if="!isLoading && !loadFailed && categoryUnits.length">
-            {{ categoryUnits.length }} {{ categoryUnits.length === 1 ? 'unit' : 'units' }} of this
-            kind, <strong class="font-semibold text-ink">{{ availableHere }} vacant</strong> at the moment.
+            {{ categoryUnits.length }} {{ categoryUnits.length === 1 ? 'unit' : 'units' }},
+            <strong class="font-semibold text-ink">{{ availableHere }} vacant</strong>.
             <template v-if="rateCeiling > rateFloor">
               {{ peso(rateFloor) }} to {{ peso(rateCeiling) }} a month.
             </template>
@@ -1070,9 +1070,6 @@ async function submitInquiry() {
             <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
               The {{ categoryUnits.length }} units of this kind
             </h2>
-            <p class="max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">
-              Pick one to see its floor plan and details above.
-            </p>
           </div>
 
           <div class="mt-14 space-y-12" @mouseleave="hoveredUnit = null">

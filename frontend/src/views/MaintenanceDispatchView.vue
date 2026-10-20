@@ -275,19 +275,16 @@ const columns = computed(() => [
   {
     key: 'open',
     title: 'To dispatch',
-    caption: 'No technician assigned yet',
     tickets: filtered.value.filter((t) => t.status === 'Open'),
   },
   {
     key: 'progress',
     title: 'In progress',
-    caption: 'A technician is on it',
     tickets: filtered.value.filter((t) => t.status === 'In Progress'),
   },
   {
     key: 'done',
     title: 'Done',
-    caption: 'Resolved or closed',
     tickets: filtered.value.filter((t) => isDone(t.status)),
   },
 ]);
@@ -609,7 +606,7 @@ function handleDeleteTicketPrompt() {
     -->
     <UnavailableNote
       v-else-if="maintenanceTicketsFetchFailed"
-      message="The repair requests could not be loaded. There may still be open ones."
+      message="Repair requests could not be loaded."
       @retry="fetchTickets"
     />
 
@@ -627,10 +624,7 @@ function handleDeleteTicketPrompt() {
         class="rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4 min-w-0"
       >
         <header class="flex items-start justify-between gap-3">
-          <div>
-            <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>
-            <p class="mt-0.5 text-xs text-ink-faint">{{ col.caption }}</p>
-          </div>
+          <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>
           <span class="rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold tabular text-ink-soft">
             {{ col.tickets.length }}
           </span>
@@ -693,13 +687,12 @@ function handleDeleteTicketPrompt() {
     <WsModal
       v-if="isLogOpen"
       title="Log a repair"
-      subtitle="A repair you were told about or noticed."
       :dismissible="false"
       @close="isLogOpen = false"
     >
       <form id="log-repair-form" @submit.prevent="handleLogRepair" class="space-y-4 text-xs">
         <p v-if="logUnitOptions.length === 0" class="text-sm leading-6 text-verify">
-          The unit list could not be loaded, so a repair cannot be logged yet. Close this and try again.
+          The unit list could not be loaded. Close this and try again.
         </p>
         <template v-else>
           <label class="ws-field">

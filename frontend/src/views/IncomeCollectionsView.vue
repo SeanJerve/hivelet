@@ -1026,7 +1026,7 @@ async function handleEditIncome() {
       return;
     }
     if (waterVal % perOccupantRate !== 0) {
-      showToast('error', 'Check the water', `Water goes up in steps of ₱${perOccupantRate}: ₱0, ₱${perOccupantRate}, ₱${perOccupantRate * 2}, ₱${perOccupantRate * 3} and so on.`);
+      showToast('error', 'Check the water', `Water goes up in steps of ₱${perOccupantRate}.`);
       document.getElementById('edit-water')?.focus();
       return;
     }
@@ -1242,7 +1242,7 @@ const isDownloadOpen = ref(false);
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           dark
-          message="The collections could not be loaded, so no total is shown. Check your connection and try again."
+          message="The collections could not be loaded."
           @retry="fetchIncome"
         />
         <!-- A month with nothing entered says so instead of a ₱0 total and three ₱0 lines: the
@@ -1316,9 +1316,6 @@ const isDownloadOpen = ref(false);
               </span>
             </li>
           </ul>
-          <p v-if="waterRatePerOccupant !== null" class="text-xs leading-5 text-ink-faint max-md:hidden">
-            Water is {{ peso(waterRatePerOccupant) }} per person each month.
-          </p>
         </template>
       </OverviewTile>
 
@@ -1419,7 +1416,7 @@ const isDownloadOpen = ref(false);
 
       <OverviewTile v-else-if="pendingPaymentsError" class="ws-reveal" title="Payments to verify">
         <UnavailableNote
-          message="The payments to verify could not be loaded. There may still be some waiting."
+          message="The payments to verify could not be loaded. Some may be waiting."
           @retry="fetchPayments()"
         />
       </OverviewTile>
@@ -1541,7 +1538,7 @@ const isDownloadOpen = ref(false);
         <!-- The sentence the comment above promises, as Tenants and Rooms and rates
              give one (audit 2026-10-09): the title alone stood in an empty tile. -->
         <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-          {{ q.trim() ? 'Try a unit, a name or an invoice number, or change the filters.' : 'Try another month, year or cluster.' }}
+          {{ q.trim() ? 'Try another search, or change the filters.' : 'Try another month, year or cluster.' }}
         </p>
       </div>
 
@@ -1706,10 +1703,6 @@ const isDownloadOpen = ref(false);
                   <p class="text-sm font-semibold text-ink">
                     {{ group.label }}, all {{ group.records.length }}
                   </p>
-                  <!-- Only when some entries are still behind "Show more" (page size 8). -->
-                  <p v-if="group.records.length > 8" class="mt-0.5 text-xs text-ink-faint">
-                    Every entry in this cluster, not only the ones shown
-                  </p>
                 </div>
                 <!-- Labelled, as the desktop column header labels it; on a phone the
                      figure sat there with no name, beside a rent twice its size. -->
@@ -1790,12 +1783,12 @@ const isDownloadOpen = ref(false);
       v-else
       class="ws-reveal"
       :rows="rows"
-      caption="Every collection on screen, with unit, date, who paid, rent, water and what was remitted"
+      caption="All collections on screen, with unit, date, who paid, rent, water and what was remitted"
       noun="entry"
       :page-size="12"
       table-from="xl"
       empty-title="Nothing matches"
-      :empty-note="q.trim() ? 'Try a unit, a name or an invoice number, or change the filters.' : 'Try another month, year or cluster.'"
+      :empty-note="q.trim() ? 'Try another search, or change the filters.' : 'Try another month, year or cluster.'"
     >
       <template #head>
         <tr>
@@ -1872,10 +1865,6 @@ const isDownloadOpen = ref(false);
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-semibold text-ink">All {{ rows.length }} on screen</p>
-            <!-- Only when some entries are still behind "Show more" (page size 12). -->
-            <p v-if="rows.length > 12" class="mt-0.5 text-xs text-ink-faint">
-              Every entry the filters allow, not only the ones shown
-            </p>
           </div>
           <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
             <span class="block text-xs font-normal text-ink-faint">Remitted</span>
@@ -1963,8 +1952,7 @@ const isDownloadOpen = ref(false);
               v-if="roomsFetchFailed"
               class="mb-1.5 text-xs leading-snug text-verify"
             >
-              The unit list could not be refreshed, so the number of people has <strong>not</strong>
-              been filled in. Enter it yourself. It sets the water on this payment.
+              The unit list could not be refreshed. Enter the number of people yourself.
             </p>
             <!-- The warning above belongs to this field, so the label wraps the
                  select rather than sitting beside it unassociated. -->
@@ -2040,7 +2028,6 @@ const isDownloadOpen = ref(false);
             <label class="ws-field">
               How many people
               <input v-model.number="editOccupants" type="number" min="1" max="50" class="ws-input w-full" required />
-              <span class="ws-hint">Water is charged per person.</span>
             </label>
           </div>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
