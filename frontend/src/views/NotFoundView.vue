@@ -26,8 +26,7 @@ const home = computed(() => (isAuthenticated.value ? homeRouteForRole(currentRol
       There is no page at this address.
     </h1>
     <p class="mt-6 max-w-md text-sm leading-relaxed text-ink-soft">
-      The link may be mistyped, or the page may have moved. You asked for
-      <span class="break-all text-ink">{{ route.fullPath }}</span>.
+      You asked for <span class="break-all text-ink">{{ route.fullPath }}</span>.
     </p>
     <div class="mt-10 flex flex-wrap items-center gap-4">
       <RouterLink to="/public" class="pill-btn-brand px-5">Go to the home page</RouterLink>
