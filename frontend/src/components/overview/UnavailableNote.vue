@@ -10,7 +10,7 @@ withDefaults(
     retry?: boolean;
   }>(),
   {
-    message: 'This could not be loaded. That is not the same as there being nothing to show.',
+    message: 'This could not be loaded.',
     dark: false,
     retry: true,
   }

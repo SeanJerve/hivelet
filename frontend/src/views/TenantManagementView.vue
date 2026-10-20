@@ -953,7 +953,7 @@ async function handleOnboard() {
         </h1>
         <!-- Blank, not "0 residents", until the list has loaded; min-h keeps the header still. -->
         <p class="mt-1 min-h-6 max-w-2xl text-sm leading-6 text-ink-soft">
-          <template v-if="hasLoadedOnce && !tenantsFetchFailed">{{ activeCount }} living here<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.</template>
+          <template v-if="hasLoadedOnce && !tenantsFetchFailed">{{ activeCount }} living here<span v-if="prospectCount">, {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span></span></template>
         </p>
       </div>
 
@@ -1438,7 +1438,7 @@ async function handleOnboard() {
               -->
               <PillSelect id="edit-unit" v-model="editUnitCode" :options="editUnitOptions" aria-label="Unit" widthClass="w-full" />
               <p v-if="editUnitCode === '—'" class="ws-hint">
-                No unit yet. Pick one, or save without one.
+                No unit yet.
               </p>
             </div>
 
@@ -1524,8 +1524,8 @@ async function handleOnboard() {
       @confirm="confirmResetPassword"
     >
       <p class="text-sm leading-6 text-ink-soft">
-        <strong class="text-ink">{{ resetModalTenant.name }}</strong> gets a new one-time password, shown
-        once on the next screen. Their old one stops working now.
+        <strong class="text-ink">{{ resetModalTenant.name }}</strong> gets a new one-time password. Their
+        old one stops working now.
       </p>
     </ConfirmDialog>
 
@@ -1574,7 +1574,7 @@ async function handleOnboard() {
           class="ws-textarea w-full"
           placeholder="For example: lease ended."
         />
-        <p class="ws-hint">Kept with the move-out in the activity record. The tenant does not see it.</p>
+        <p class="ws-hint">The tenant does not see this.</p>
       </div>
     </ConfirmDialog>
 
@@ -1738,7 +1738,6 @@ async function handleOnboard() {
     <WsModal
       v-if="onboardedCredentials"
       :title="onboardedCredentials.reason === 'reset' ? 'Password reset' : 'Moved in'"
-      :subtitle="`How ${onboardedCredentials.name} signs in.`"
       size="sm"
       :dismissible="false"
       @close="closeCredentialsReveal"
