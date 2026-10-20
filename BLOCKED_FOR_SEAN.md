@@ -32,7 +32,7 @@ text without the heading changing.
 | B-01 | The public landing showed every unit as vacant when `/public/rooms` failed |
 | B-03 | The Adyen webhook serves one address at a time (production since 24 September; see CLAUDE.md) |
 | B-67 | Two unit descriptions still stated a retired water rule |
-| B-82, B-101 | Credentials for `check:api` and `check:relations`: `credentials/creds.txt` must hold the current passwords |
+| B-82, B-101 | **Done 20 Oct.** Credentials for `check:api` and `check:relations`: `credentials/creds.txt` holds the owner's (by phone), and `database/seeded-tenant-credentials.json` (gitignored) now names the test tenant loydtest by login ID, with the password Sean gave on 20 Oct. check:api signs in by login ID or phone and skips email-only entries (mutation-tested both); 78 of 78 pass, the tenant isolation checks included. **When loydtest moves out after the defense (B-106)**, the tenant checks stop with a plain message until another test tenant is put in that file |
 
 ## New (13 October 2026)
 
