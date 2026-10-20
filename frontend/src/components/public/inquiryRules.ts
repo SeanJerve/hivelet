@@ -15,7 +15,7 @@
  *
  * Mirrored from `inquirySchema` in backend/src/routes/public.ts:
  *   prospectName   min 2,  max 120
- *   prospectEmail  z.string().email()
+ *   (no email since 20 Oct 2026, migration 085: the inquiry is answered on its own page and by phone)
  *   prospectPhone  a Philippine mobile number, 09XX XXX XXXX or +63 (since 5 Oct 2026)
  *   message        min 5,  max 2000
  * The server still enforces them. This only means a visitor never has to meet
@@ -24,29 +24,14 @@
 import { ApiRequestError } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
 
-export type InquiryField = 'name' | 'email' | 'phone' | 'message';
+export type InquiryField = 'name' | 'phone' | 'message';
 export type InquiryErrors = Partial<Record<InquiryField, string>>;
 
 export interface InquiryInput {
   name: string;
-  email: string;
   phone: string;
   message: string;
 }
-
-/**
- * Zod's own email pattern, not a looser one of ours.
- *
- * The page used `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`, which accepts `a@b.c`,
- * `first,last@example.com` and `jose@café.example`. Zod 3.25 rejects all three, so each
- * passed the page and came back from the server as the nameless 422 above.
- * Copied from backend/node_modules/zod/v3/types.js (`emailRegex`, the active
- * one), and checked against `z.string().email()` on 23 addresses on
- * 2026-09-24 with no disagreement. If the backend's zod major version moves,
- * re-run that comparison. Also read by `lib/contactDetails.ts`, for the email
- * a tenant gives themselves: one copy of the pattern, not two.
- */
-export const EMAIL_PATTERN = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9-]*\.)+[A-Z]{2,}$/i;
 
 export const MESSAGE_MAX = 2000;
 
@@ -58,7 +43,7 @@ function phMobileDigits(raw: string): string {
 
 /**
  * One field's note, for when the visitor LEAVES it (technical evaluators,
- * 3 Oct 2026: check the email when you leave the field, not only on Send).
+ * 3 Oct 2026: check the field when you leave it, not only on Send).
  * An empty field says nothing yet: "required" waits for Send, so tabbing
  * through the form does not paint every field red.
  */
@@ -71,19 +56,12 @@ export function problemOnLeave(field: InquiryField, input: InquiryInput): string
 export function validateInquiry(input: InquiryInput): InquiryErrors {
   const errors: InquiryErrors = {};
   const name = input.name.trim();
-  const email = input.email.trim();
   const phone = input.phone.trim();
   const message = input.message.trim();
 
   if (!name) errors.name = 'Please enter your name.';
   else if (name.length < 2 || name.length > 120)
     errors.name = 'Please give your full name, between 2 and 120 characters.';
-
-  // `inquiries.prospect_email` is NOT NULL, so the address is asked for rather
-  // than invented.
-  if (!email) errors.email = 'Please enter an email address the landlady can reply to.';
-  else if (!EMAIL_PATTERN.test(email))
-    errors.email = 'That does not look like a complete email address, for example name@example.com.';
 
   // A Philippine mobile (technical evaluators, 3 Oct 2026: number validation).
   // The same rule as `phoneDigits` in lib/contactDetails.ts: 63 folds to 0.
@@ -102,7 +80,6 @@ export function validateInquiry(input: InquiryInput): InquiryErrors {
 /** The payload's field names, as the endpoint's 422 `details` spells them. */
 const SERVER_FIELD: Record<string, InquiryField> = {
   prospectName: 'name',
-  prospectEmail: 'email',
   prospectPhone: 'phone',
   message: 'message',
 };

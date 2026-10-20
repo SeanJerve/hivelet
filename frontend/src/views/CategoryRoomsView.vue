@@ -440,21 +440,20 @@ const inquiryDialog = ref<HTMLDialogElement | null>(null);
 const inquiryUnit = ref('');
 const inquiryName = ref('');
 const inquiryPhone = ref('');
-const inquiryEmail = ref('');
 const inquiryMsg = ref('Good day po! Interested ako sa unit. Pwede po bang mag-viewing?');
 
 /**
  * Field notes, a form-level failure, and a confirmation, as on `/inquire` -
  * the reasoning is on `errors` in `InquireView.vue`, and the rules themselves
  * in `components/public/inquiryRules.ts`. This dialog checked only that three
- * fields were not blank, so a visitor who cleared the message or typed
- * `juan@gmail` was sent to the server and handed back its own words, "Invalid
+ * fields were not blank, so a visitor who cleared the message or typed a
+ * short number was sent to the server and handed back its own words, "Invalid
  * inquiry payload.", in a toast.
  */
 const inquiryForm = ref<HTMLFormElement | null>(null);
 const inquiryErrors = reactive<InquiryErrors>({});
 const inquiryFormError = ref<string | null>(null);
-const inquirySentTo = ref<{ phone: string; email: string } | null>(null);
+const inquirySentTo = ref<{ phone: string } | null>(null);
 /** The visitor's way back in to read her reply (065); null before the migration ran. */
 const inquiryConversation = ref<{ token: string; referenceCode: string } | null>(null);
 const inquirySentHeading = ref<HTMLElement | null>(null);
@@ -464,10 +463,9 @@ const inquirySentHeading = ref<HTMLElement | null>(null);
  * Checked when the visitor leaves the field, not only on Send (technical
  * evaluators, 3 Oct 2026). An empty field waits for Send (problemOnLeave).
  */
-function leave(field: 'email' | 'phone') {
+function leave(field: 'phone') {
   const problem = problemOnLeave(field, {
     name: inquiryName.value,
-    email: inquiryEmail.value,
     phone: inquiryPhone.value,
     message: inquiryMsg.value,
   });
@@ -517,11 +515,10 @@ async function submitInquiry() {
   if (isSubmitting.value) return;
   inquiryFormError.value = null;
 
-  // `inquiries.prospect_email` is NOT NULL, so ask rather than invent.
+  // No email (Sean, 20 Oct 2026; migration 085): she answers on the inquiry page and by phone.
   setInquiryErrors(
     validateInquiry({
       name: inquiryName.value,
-      email: inquiryEmail.value,
       phone: inquiryPhone.value,
       message: inquiryMsg.value,
     })
@@ -556,7 +553,6 @@ async function submitInquiry() {
       {
         roomId: matchedRoom.id,
         prospectName: inquiryName.value.trim(),
-        prospectEmail: inquiryEmail.value.trim(),
         prospectPhone: inquiryPhone.value.trim(),
         message: inquiryMsg.value.trim(),
       },
@@ -573,10 +569,9 @@ async function submitInquiry() {
     if (inquiryConversation.value) {
       rememberInquiry({ ...inquiryConversation.value, unit: matchedRoom.room_number ?? null, sentAt: new Date().toISOString() });
     }
-    inquirySentTo.value = { phone: inquiryPhone.value.trim(), email: inquiryEmail.value.trim() };
+    inquirySentTo.value = { phone: inquiryPhone.value.trim() };
     inquiryName.value = '';
     inquiryPhone.value = '';
-    inquiryEmail.value = '';
     await nextTick();
     inquirySentHeading.value?.focus();
   } catch (err: unknown) {
@@ -1203,8 +1198,7 @@ async function submitInquiry() {
           <template v-if="inquiryConversation">We will reply on your inquiry page, and may also call
             <span class="text-ink break-all">{{ inquirySentTo.phone }}</span>.</template>
           <template v-else>We will reply by phone or message to
-            <span class="text-ink break-all">{{ inquirySentTo.phone }}</span> or
-            <span class="text-ink break-all">{{ inquirySentTo.email }}</span>.</template>
+            <span class="text-ink break-all">{{ inquirySentTo.phone }}</span>.</template>
         </p>
         <InquiryConversationLink
           v-if="inquiryConversation"
@@ -1265,34 +1259,6 @@ async function submitInquiry() {
             />
             <p v-if="inquiryErrors.name" id="cq-name-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
               {{ inquiryErrors.name }}
-            </p>
-          </div>
-
-          <!--
-            Email, then phone, with autocomplete (audit 2026-10-09): the order and the
-            autofill of the Inquire page, which sends the same inquiry. The two forms
-            asked for these in opposite orders, and only that one let the browser
-            fill them in.
-          -->
-          <div>
-            <label for="cq-email" class="block text-xs text-ink-faint">
-              Email address
-            </label>
-            <input
-              id="cq-email"
-              :aria-invalid="inquiryErrors.email ? 'true' : undefined"
-              :aria-describedby="inquiryErrors.email ? 'cq-email-error' : undefined"
-              @input="delete inquiryErrors.email"
-              @blur="leave('email')"
-              v-model="inquiryEmail"
-              type="email"
-              autocomplete="email"
-              required
-              placeholder="you@email.com"
-              :class="['ws-input mt-2', inquiryErrors.email && 'border-overdue']"
-            />
-            <p v-if="inquiryErrors.email" id="cq-email-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
-              {{ inquiryErrors.email }}
             </p>
           </div>
 

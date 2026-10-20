@@ -31,7 +31,6 @@ import {
 } from '@/components/public/inquiryRules';
 
 const inquiryName = ref('');
-const inquiryEmail = ref('');
 const inquiryPhone = ref('');
 const inquiryMsg = ref('');
 const isSubmitting = ref(false);
@@ -56,10 +55,9 @@ const formRef = ref<HTMLFormElement | null>(null);
  * Checked when the visitor leaves the field, not only on Send (technical
  * evaluators, 3 Oct 2026). An empty field waits for Send (problemOnLeave).
  */
-function leave(field: 'email' | 'phone') {
+function leave(field: 'phone') {
   const problem = problemOnLeave(field, {
     name: inquiryName.value,
-    email: inquiryEmail.value,
     phone: inquiryPhone.value,
     message: inquiryMsg.value,
   });
@@ -86,7 +84,7 @@ async function focusFirstInvalid() {
  * (Sean, 2026-09-30). The confirmation that had the button is gone by then.
  */
 const lastSaved = ref(savedInquiries()[0] ?? null);
-const sentTo = ref<{ phone: string; email: string } | null>(null);
+const sentTo = ref<{ phone: string } | null>(null);
 /** The visitor's way back in to read her reply (065); null before the migration ran. */
 const conversation = ref<{ token: string; referenceCode: string } | null>(null);
 const sentHeading = ref<HTMLElement | null>(null);
@@ -105,17 +103,12 @@ async function submitInquiry() {
   // enquiry twice in the landlady's portal.
   if (isSubmitting.value) return;
   formError.value = null;
-  // `inquiries.prospect_email` is NOT NULL in the database, so the form asks for
-  // an address rather than inventing one. It previously sent
-  // 'prospect@hivelet.ph' whenever the field was blank, which put an address the
-  // landlady cannot reply to on an inquiry she is expected to answer.
-  //
-  // The rules themselves, and why they live in one file shared with the
+  // No email (Sean, 20 Oct 2026; migration 085): she answers on the inquiry's own page and by
+  // phone. The rules themselves, and why they live in one file shared with the
   // category page's dialog, are in `components/public/inquiryRules.ts`.
   setErrors(
     validateInquiry({
       name: inquiryName.value,
-      email: inquiryEmail.value,
       phone: inquiryPhone.value,
       message: inquiryMsg.value,
     })
@@ -163,9 +156,6 @@ async function submitInquiry() {
     const saved = await api.post<{ conversation?: { token: string; referenceCode: string } | null; room_id?: string }>('/public/inquiries', {
       roomId: defaultRoom.id,
       prospectName: inquiryName.value.trim(),
-      // Sent blank when blank. This used to substitute 'prospect@hivelet.ph',
-      // writing a fake address into the inquiry the landlady would try to reply to.
-      prospectEmail: inquiryEmail.value.trim(),
       prospectPhone: inquiryPhone.value.trim(),
       message: inquiryMsg.value.trim(),
     }, false);
@@ -185,10 +175,9 @@ async function submitInquiry() {
     if (conversation.value) {
       rememberInquiry({ ...conversation.value, unit: null, sentAt: new Date().toISOString() });
     }
-    sentTo.value = { phone: inquiryPhone.value.trim(), email: inquiryEmail.value.trim() };
+    sentTo.value = { phone: inquiryPhone.value.trim() };
     inquiryName.value = '';
     inquiryPhone.value = '';
-    inquiryEmail.value = '';
     inquiryMsg.value = '';
     await nextTick();
     sentHeading.value?.focus();
@@ -294,7 +283,7 @@ async function submitInquiry() {
 
           A placeholder disappears the moment somebody types, so a half-filled
           form became four identical rules with no way to tell which was the
-          phone and which was the email - worst for the person coming back to
+          name and which was the phone - worst for the person coming back to
           check before sending, which is exactly when it matters. The asterisks
           went with them: every field here is required, the question too (the
           endpoint wants at least five characters), and each carries `required`
@@ -331,8 +320,7 @@ async function submitInquiry() {
             <template v-if="conversation">We will reply on your inquiry page, and may also call
               <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
             <template v-else>We will reply by phone or message to
-              <span class="text-ink break-all">{{ sentTo.phone }}</span> or
-              <span class="text-ink break-all">{{ sentTo.email }}</span>.</template>
+              <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
           </p>
           <InquiryConversationLink v-if="conversation" :token="conversation.token" :reference-code="conversation.referenceCode" />
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
@@ -363,14 +351,13 @@ async function submitInquiry() {
           @submit.prevent="submitInquiry"
         >
           <!--
-            One order at every width: name across the top, email and phone
-            side by side, the question full width underneath. On desktop the
+            One order at every width: name and phone side by side, the question full width underneath. On desktop the
             question used to stand in a second column beside the three fields
             (owner's call, 2026-09-26: it did not look right), and a form reads
             top to bottom.
           -->
           <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-            <div class="sm:col-span-2">
+            <div>
               <label
                 for="iq-name"
                 class="block text-xs text-ink-faint"
@@ -389,31 +376,6 @@ async function submitInquiry() {
               />
               <p v-if="errors.name" id="iq-name-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
                 {{ errors.name }}
-              </p>
-            </div>
-            <div>
-              <!-- Example placeholders, as the same fields have in the unit page's "Ask about
-                   unit" dialog and on Your inquiries; the labels above stay (audit 2026-10-09). -->
-              <label
-                for="iq-email"
-                class="block text-xs text-ink-faint"
-                >Email address</label
-              >
-              <input
-                id="iq-email"
-                v-model="inquiryEmail"
-                type="email"
-                autocomplete="email"
-                required
-                placeholder="you@email.com"
-                :aria-invalid="errors.email ? 'true' : undefined"
-                :aria-describedby="errors.email ? 'iq-email-error' : undefined"
-                :class="['ws-input mt-2', errors.email && 'border-overdue']"
-                @input="delete errors.email"
-                @blur="leave('email')"
-              />
-              <p v-if="errors.email" id="iq-email-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
-                {{ errors.email }}
               </p>
             </div>
             <div>

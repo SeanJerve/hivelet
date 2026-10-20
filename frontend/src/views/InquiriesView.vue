@@ -11,7 +11,7 @@ import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed,
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
-import { Inbox, Phone, Mail, Send, Loader2, UserPlus, XCircle, Trash2 } from 'lucide-vue-next';
+import { Inbox, Phone, Send, Loader2, UserPlus, XCircle, Trash2 } from 'lucide-vue-next';
 import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -219,8 +219,7 @@ const filteredInquiries = computed(() => {
     const matchesSearch =
       inq.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       inq.unit.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      inq.phone.includes(searchQuery.value) ||
-      inq.email.toLowerCase().includes(searchQuery.value.toLowerCase());
+      inq.phone.includes(searchQuery.value);
     return matchesSearch && (statusFilter.value === 'All' || inq.status === statusFilter.value);
   }), inquiryOrder.value, { unit: (i) => i.unit, name: (i) => i.name, date: (i) => i.date });
 });
@@ -576,14 +575,6 @@ async function handleSendReply() {
                 >
                   <Phone class="size-3.5" aria-hidden="true" />{{ showPhone(activeInquiry.phone) }}
                 </a>
-                <a
-                  v-if="activeInquiry.email"
-                  :href="`mailto:${activeInquiry.email}`"
-                  class="press inline-flex min-h-[2.75rem] min-w-0 items-center gap-1.5 py-1 hover:text-brand"
-                >
-                  <Mail class="size-3.5 shrink-0" aria-hidden="true" />
-                  <span class="truncate">{{ activeInquiry.email }}</span>
-                </a>
               </div>
 
               <p v-if="activeUnit" class="mt-2 text-sm text-ink-soft">
@@ -622,7 +613,6 @@ async function handleSendReply() {
                         convertInquiryId: activeInquiry.id,
                         name: activeInquiry.name,
                         phone: activeInquiry.phone,
-                        email: activeInquiry.email,
                         unit: activeInquiry.unit,
                       },
                     })
