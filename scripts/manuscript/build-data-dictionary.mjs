@@ -75,7 +75,7 @@ const DESC = {
   room_photos: { file_url: 'Where the image is kept', caption: 'Caption shown with it', display_order: 'Order in the unit\'s gallery', is_primary: 'The photo shown first', uploaded_by: 'Who added it' },
   room_price_history: { previous_price: 'The rate before the change', new_price: 'The rate after it', effective_date: 'When the new rate applies', reason: 'Why, if given', created_by: 'Who made the change' },
   profiles: {
-    auth_user_id: 'Link to a sign-in account of the hosting service, where one exists', email: 'Email address, optional (unique when given)', full_name: 'Full name',
+    auth_user_id: 'Link to a sign-in account of the hosting service, where one exists', email: 'Not used since 20 October 2026: nobody signs in with or gives an email (unique when present)', full_name: 'Full name',
     phone_number: 'Philippine mobile number (unique when given)', emergency_contact_name: 'Emergency contact', emergency_contact_phone: 'Emergency contact\'s number', occupation: 'Occupation, optional',
     facebook_url: 'Facebook profile, optional', role: 'admin, tenant, prospect or guest', account_status: 'active, or inactive once a tenant has moved out',
     password_hash: 'The password as a bcrypt hash; the password itself is never stored', last_login_at: 'Last successful sign-in', failed_login_count: 'Failed sign-ins in a row; five lock the account',
@@ -117,7 +117,7 @@ const DESC = {
   ticket_messages: { ticket_id: 'The repair request', sender_id: 'Who wrote it', message_body: 'The note' },
   ticket_attachments: { ticket_id: 'The repair request', file_url: 'Where the photo is kept', file_type: 'JPEG or PNG only' },
   inquiries: {
-    room_id: 'The unit asked about', prospect_name: 'Visitor\'s name', prospect_email: 'Visitor\'s email', prospect_phone: 'Visitor\'s Philippine mobile number', message: 'The question',
+    room_id: 'The unit asked about', prospect_name: 'Visitor\'s name', prospect_email: 'Kept on inquiries from before 20 October 2026; no longer asked', prospect_phone: 'Visitor\'s Philippine mobile number', message: 'The question',
     status: 'Pending, answered, closed or converted', converted_tenant_id: 'The tenant record it became, if the visitor moved in', access_token_hash: 'SHA-256 of the secret in the visitor\'s private link; the secret itself is never stored',
     reference_code: 'Short code that, with the visitor\'s phone number, opens the conversation',
   },

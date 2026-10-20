@@ -93,7 +93,7 @@ Everyone with a record: the administrator, tenants, and visitors recorded from a
 | :--- | :--- | :---: | :--- | :--- | :--- |
 | id | uuid | Yes | gen_random_uuid() | PK | Primary key |
 | auth_user_id | uuid |  |  |  | Link to a sign-in account of the hosting service, where one exists |
-| email | varchar(255) |  |  |  | Email address, optional (unique when given) |
+| email | varchar(255) |  |  |  | Not used since 20 October 2026: nobody signs in with or gives an email (unique when present) |
 | full_name | varchar(255) | Yes |  |  | Full name |
 | phone_number | varchar(50) |  |  |  | Philippine mobile number (unique when given) |
 | emergency_contact_name | varchar(255) |  |  |  | Emergency contact |
@@ -320,7 +320,7 @@ Questions sent from the public site about a unit.
 | id | uuid | Yes | gen_random_uuid() | PK | Primary key |
 | room_id | uuid | Yes |  | FK rooms.id | The unit asked about |
 | prospect_name | varchar(255) | Yes |  |  | Visitor's name |
-| prospect_email | varchar(255) | Yes |  |  | Visitor's email |
+| prospect_email | varchar(255) |  |  |  | Kept on inquiries from before 20 October 2026; no longer asked |
 | prospect_phone | varchar(50) | Yes |  |  | Visitor's Philippine mobile number |
 | message | text | Yes |  |  | The question |
 | status | inquiry_status_type (Pending, Contacted, Converted, Closed) | Yes | Pending |  | Pending, answered, closed or converted |

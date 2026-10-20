@@ -22,10 +22,10 @@ computer, and it can be installed on a phone's home screen (Part 1, step 6).
 1. Open **hivelet.vercel.app** and tap **Sign in**. *Buksan ang hivelet.vercel.app at pindutin ang Sign in.*
 2. Type your **login ID** (for example HV-48213) and the **starting password** the landlady gave
    you. *I-type ang inyong login ID at ang starting password na ibinigay ng landlady.*
-3. A window asks for **your own email, your own mobile number and your own password**. Type the
-   starting password again, then your new one twice. It must have **at least 10 characters, a
-   letter and a number**. Your name stays as the landlady recorded it. *Ilagay ang sariling email,
-   numero at password: hindi bababa sa 10 character, may letra at numero.*
+3. A window asks for **your own mobile number and your own password**. Type the starting
+   password again, then your new one twice. It must have **at least 10 characters, a letter and a
+   number**. Your name stays as the landlady recorded it. *Ilagay ang sariling numero at password:
+   hindi bababa sa 10 character, may letra at numero.*
 4. Keep your password to yourself. The slip stops working once you have your own.
    *Huwag ibahagi ang password.*
 
@@ -90,10 +90,10 @@ below. It is there to be read, not clicked. Only you see your own actions.
 
 ### 5. My details / Aking detalye
 
-Keep your email, phone number and the person to call **If something happens to you** up to date,
-then press **Save**. After your first sign-in you can sign in with your login ID, phone number or
-email. Your name can only be changed by the landlady. A phone number is spaced as you type it
-(0917 123 4567), and an email is checked as soon as you leave its box. Both your number and the
+Keep your phone number and the person to call **If something happens to you** up to date, then
+press **Save**. After your first sign-in you can sign in with your login ID or your phone number.
+Your name can only be changed by the landlady. A phone number is spaced as you type it
+(0917 123 4567). Both your number and the
 number of the person to call must be Philippine mobile numbers; if one is not, a note under the box
 says so and nothing is saved until it is corrected.
 
@@ -265,7 +265,7 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
 - **Move someone in**: name, unit, move-in date, occupants, emergency contact. No phone or email:
   the tenant gives their own. Press **Move them in**. Their **login ID** and a **one-time password**
   are shown: write both down and give them to the tenant in person (the password is shown only
-  once). At first sign-in they choose their own password and add their own email and phone.
+  once). At first sign-in they choose their own password and add their own phone number.
 - **Edit** (pencil on a tenant): change their details, unit or number of occupants, then **Save
   changes**. The water charge follows the number of occupants.
 - **Reset password** (in the same window): for a tenant who forgot theirs or lost the slip. Confirm,
