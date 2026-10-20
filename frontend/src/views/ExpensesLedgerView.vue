@@ -753,8 +753,8 @@ function getPersonalOtherAmount(e: ExpenseRecord): number {
  */
 function areaParts(e: ExpenseRecord): { label: string; amount: number | null }[] {
   const parts = [
-    { label: 'Boarding house', amount: getAreaAmount(e, 'Boarding House') },
-    { label: 'Main house', amount: getAreaAmount(e, 'Main House') },
+    { label: 'Boarding House', amount: getAreaAmount(e, 'Boarding House') },
+    { label: 'Main House', amount: getAreaAmount(e, 'Main House') },
     { label: 'Apartments', amount: getApartmentsAmount(e) },
     { label: 'Other (personal)', amount: getPersonalOtherAmount(e) },
   ].filter((p) => p.amount > 0);
@@ -1184,8 +1184,8 @@ async function handleEditExpense() {
         <tr>
           <th scope="col">What it was for</th>
           <th scope="col">Kind</th>
-          <th scope="col" class="num">Boarding house</th>
-          <th scope="col" class="num">Main house</th>
+          <th scope="col" class="num">Boarding House</th>
+          <th scope="col" class="num">Main House</th>
           <th scope="col" class="num">Apartments</th>
           <th scope="col" class="num">Other (personal)</th>
           <th scope="col" class="num">All of it</th>
