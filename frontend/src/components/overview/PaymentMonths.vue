@@ -69,7 +69,7 @@ const headline = computed(() => {
   const st = props.standing;
   if (!st) return null;
   const through = st.paidThrough ? `Paid up to ${formatDateOnly(st.paidThrough, longDate)}` : 'No payment recorded yet';
-  if (st.owedPeriods.length === 0) return { text: `${through}. You are up to date.`, tone: 'paid' as const, pill: 'Up to date' };
+  if (st.owedPeriods.length === 0) return { text: `${through}.`, tone: 'paid' as const, pill: 'Up to date' };
   if (st.periodsDue > 0 && st.status === 'overdue') {
     // From the ledger alone: months after the last payment entered. Not "overdue" - the
     // landlady may not have entered a payment yet (Sean, 2026-10-01).
@@ -77,7 +77,7 @@ const headline = computed(() => {
     const after = st.paidThrough ? ' after that' : '';
     const months = st.periodsDue === 1 ? `1 month${after} is` : `${st.periodsDue} months${after} are`;
     return {
-      text: `${through}. ${months} not entered yet. If you have paid the landlady, it appears here once she enters it.`,
+      text: `${through}. ${months} not entered yet.`,
       tone: 'unentered' as const,
       pill: 'Not entered',
     };
@@ -157,16 +157,11 @@ const rows = computed(() => [...months.value].reverse());
 
   <UnavailableNote
     v-else-if="failed"
-    message="Your rent history could not be loaded. Please try again, and tell the landlady if it keeps happening."
+    message="Your rent history could not be loaded."
     @retry="$emit('retry')"
   />
 
-  <div v-else-if="months.length === 0" class="flex flex-col gap-1">
-    <p class="text-lg font-semibold tracking-tight">Nothing entered yet</p>
-    <p class="text-sm leading-6 text-ink-soft">
-      Each month appears here once the landlady records a payment for it, or once rent falls due.
-    </p>
-  </div>
+  <p v-else-if="months.length === 0" class="text-lg font-semibold tracking-tight">Nothing entered yet</p>
 
   <div v-else class="flex flex-col gap-4 min-w-0">
     <p v-if="headline" class="flex flex-wrap items-center gap-x-3 gap-y-2 text-base font-semibold leading-6">
@@ -185,12 +180,10 @@ const rows = computed(() => [...months.value].reverse());
       <div>
         <dt class="text-xs text-ink-faint">Months paid</dt>
         <dd class="text-lg font-semibold tabular">{{ paidMonths.length }} of {{ months.length }}</dd>
-        <dd class="text-xs text-ink-soft">In the months shown</dd>
       </div>
       <div>
         <dt class="text-xs text-ink-faint">Paid in these months</dt>
         <dd class="text-lg font-semibold tabular">{{ peso(paidTotal, 2) }}</dd>
-        <dd class="text-xs text-ink-soft">From payments the landlady verified</dd>
       </div>
       <div>
         <dt class="text-xs text-ink-faint">{{ standing?.status === 'overdue' ? 'Not entered yet' : 'Due now' }}</dt>
@@ -204,7 +197,7 @@ const rows = computed(() => [...months.value].reverse());
     </dl>
 
     <p v-if="waitingTotal > 0" class="text-sm leading-6 text-ink-soft">
-      {{ peso(waitingTotal, 2) }} you sent is waiting for the landlady to verify it. It counts here once she does.
+      {{ peso(waitingTotal, 2) }} you sent is waiting for the landlady to verify it.
     </p>
     <p v-if="nothingMonths.length > 0" class="text-sm leading-6 text-ink-soft">
       No payment is entered for {{ nameList(nothingMonths) }}. If you paid for
