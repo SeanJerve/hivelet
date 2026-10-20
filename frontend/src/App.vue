@@ -113,15 +113,15 @@ onMounted(() => {
   // The confirmation for a forced password change, carried across the reload
   // that follows it (see ChangePasswordModal.vue).
   // The flag says which parts the forced step saved: '1' the password alone
-  // (as before), 'contact' the email and phone alone, 'both' all three.
+  // (as before), 'contact' the phone number alone, 'both' the two. No email since 20 Oct 2026.
   try {
     const saved = sessionStorage.getItem(PASSWORD_CHANGED_FLAG);
     if (saved) {
       sessionStorage.removeItem(PASSWORD_CHANGED_FLAG);
       if (saved === 'both') {
-        showToast('success', 'All set', 'Your new password, email and phone number are saved.');
+        showToast('success', 'All set', 'Your new password and phone number are saved.');
       } else if (saved === 'contact') {
-        showToast('success', 'Details saved', 'Your email and phone number are saved.');
+        showToast('success', 'Details saved', 'Your phone number is saved.');
       } else {
         showToast('success', 'Password changed', 'Your new password is active.');
       }
@@ -335,10 +335,10 @@ const hidesGlobalHeader = computed(() =>
       on, not just the ones that happen to render a header.
     -->
     <!--
-      Since 2026-09-30 the same step also asks a tenant for a real email and to
-      confirm their phone (`mustCompleteContact`): always alongside a starting
-      password, and on its own while their email is a placeholder (migration
-      067). The dialog decides which fields to show from the same two flags.
+      Since 2026-09-30 the same step also asks a tenant for their phone number
+      (`mustCompleteContact`): always alongside a starting password, and on its
+      own while they have none on file. It asked for an email too until
+      2026-10-20. The dialog decides which fields to show from the same two flags.
     -->
     <ChangePasswordModal
       :open="isAuthenticated && (mustChangePassword || mustCompleteContact)"

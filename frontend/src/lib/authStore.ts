@@ -23,9 +23,9 @@ export interface SessionUser {
    */
   mustChangePassword: boolean;
   /**
-   * True for a tenant who must give a real email and confirm their phone
-   * before using the portal: while on a starting password, or while their
-   * email is a placeholder (migration 067). Sent by the server on sign-in and
+   * True for a tenant who must give their phone number before using the
+   * portal: while on a starting password, or while they have none on file
+   * (no email since 2026-10-20). Sent by the server on sign-in and
    * on `/auth/me`; App.vue holds the forced step open on it. Optional because
    * a session cached before this existed has no such field.
    */

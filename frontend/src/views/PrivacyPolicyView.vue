@@ -14,7 +14,7 @@
  *   enquiry fields           backend/src/routes/public.ts `inquirySchema`: four fields
  *   enquiry audit row        same route, `auditFromRequest` INQUIRY_CREATE: name + IP address
  *   resident record          backend/src/routes/admin.ts `tenantOnboardSchema`
- *   what a resident edits    TenantProfileView.vue (email, phone, password, emergency contact);
+ *   what a resident edits    TenantProfileView.vue (phone, password, emergency contact; no email since 2026-10-20);
  *                            the name is the landlady's (services/contactDetails.ts, 2026-09-30)
  *   tickets                  backend/src/routes/tenant.ts `ticketSchema` (photo as attachment)
  *   activity record          backend/src/services/auditService.ts; UPDATE and DELETE revoked
@@ -84,7 +84,7 @@ const sections = Object.values(S);
 </script>
 
 <template>
-  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-10-01" :sections="sections">
+  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-10-20" :sections="sections">
     <template #lead>
       <p>
         This policy explains what Hivelet, the system the landlady uses to run the
@@ -120,8 +120,9 @@ const sections = Object.values(S);
 
       <h3>If you send an inquiry</h3>
       <p>
-        The inquiry form asks for your name, email address, phone number and your question. It
-        has no field for anything else. The system also notes when the inquiry arrived, and the
+        The inquiry form asks for your name, phone number and your question. It has no field for
+        anything else. Inquiries sent before 20 October 2026 also asked for an email address, which
+        is kept with them. The system also notes when the inquiry arrived, and the
         network (IP) address it came from, in the activity record described below.
       </p>
       <p>
@@ -136,9 +137,8 @@ const sections = Object.values(S);
         The landlady creates your account when you move in. It holds your name, the phone
         number you sign in with, your unit, your move-in date, the amount paid on moving in, and
         how many people live in the unit, because water is charged per person.
-        Your email address, phone number and password are yours to keep up to date: you are asked
-        for an email the first time you sign in, and can change all three on the My details
-        screen, along with an emergency contact's name and number. Your name is kept by
+        Your phone number and password are yours to keep up to date: you are asked for your mobile
+        number the first time you sign in, and can change both on the My details screen, along with an emergency contact's name and number. Your name is kept by
         the landlady; ask her if it is wrong.
       </p>
       <p>
@@ -223,8 +223,8 @@ const sections = Object.values(S);
       <ul>
         <li>
           <strong>Adyen</strong>, the payment processor, when you pay online with GCash. Hivelet
-          sends Adyen the amount, a reference for the bill, a reference for your account, and your
-          email address if one is on file. The GCash details you enter go to Adyen directly:
+          sends Adyen the amount, a reference for the bill, a reference for your account, and an
+          email address only if one from before 20 October 2026 is still stored on your account. The GCash details you enter go to Adyen directly:
           Hivelet never receives or stores your GCash number, MPIN or any one-time code. Adyen
           sends back whether the payment went through, the amount, and its own reference number.
           Adyen and GCash handle the payment itself under their own terms.
@@ -276,7 +276,7 @@ const sections = Object.values(S);
       <ul>
         <li>
           <strong>When you sign in:</strong> a sign-in token, so you stay signed in between visits,
-          and a copy of your name, email address and role, so the portal can still open on a
+          and a copy of your name, role and contact details, so the portal can still open on a
           phone with no signal. Signing out removes both. On a phone or computer other people
           use, sign out when you finish.
         </li>
@@ -397,7 +397,7 @@ const sections = Object.values(S);
         <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
         <a :href="`tel:${LANDLADY.phone}`" class="whitespace-nowrap">{{ LANDLADY.phoneShown }}</a> or in person at the address
         above. Tenants can already see their bills, payments and tickets in the portal, and
-        correct their own email address, phone number, password and emergency contact on the My
+        correct their own phone number, password and emergency contact on the My
         details screen. For anything else, including your name, ask her.
       </p>
       <p>
