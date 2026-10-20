@@ -621,11 +621,11 @@ async function submitInquiry() {
           <template v-if="!isAuthenticated">
             <RouterLink
               to="/inquire"
-              class="press inline-flex min-h-11 items-center transition-colors font-semibold"
+              class="press inline-flex min-h-11 items-center mr-4 transition-colors font-semibold"
             >
               Inquire now
             </RouterLink>
-            <span aria-hidden="true" class="pr-2">,</span>
+            <!-- No comma between the two (Sean, 20 Oct 2026: the landing header lost its own one). -->
             <RouterLink
               to="/login"
               class="press inline-flex min-h-11 items-center transition-colors font-semibold"
