@@ -12,7 +12,11 @@
  *   6. A new password is checked against Pwned Passwords before it is saved, and the check
  *      really answers (a known-breached password is found; a random one is not).
  *
+ *   4b-6b. The same for the administrator's Change number / password (`/auth/change-sign-in`,
+ *      B-111): failures counted, the password rule reused, the breach check before the save.
+ *
  * Mutation-tested 2026-10-07: each static shape was broken in the real file and the check failed.
+ * 4b, 5b and 6b mutation-tested 2026-10-19 the same way.
  */
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -65,6 +69,23 @@ const saveAt = changeBlock.indexOf('changeOwnPassword(');
 check('6 new password checked for breaches before it is saved',
   breachAt > 0 && saveAt > 0 && breachAt < saveAt,
   'change-password does not call timesBreached(newPassword) before changeOwnPassword');
+
+// The administrator's Change number / password (B-111, 19 Oct 2026) is the same kind of door: a
+// held session guessing the current password, and a new password to vet. Same two guards, and the
+// new password reuses passwordSchema's rule rather than a second copy of it.
+const signInBlock = auth.slice(auth.indexOf("'/auth/change-sign-in'"), auth.indexOf("'/auth/change-sign-in'") + 3200);
+check('4b failed number / password changes counted',
+  auth.includes("'/auth/change-sign-in'") &&
+    /passwordChangeFailures,/.test(signInBlock) && /passwordChangeFailures\.record\(req\)/.test(signInBlock),
+  '/auth/change-sign-in no longer applies and records passwordChangeFailures');
+check('5b the new password there takes the same rules',
+  /newPassword:\s*passwordSchema\.shape\.newPassword/.test(auth),
+  'signInChangeSchema no longer reuses passwordSchema.shape.newPassword');
+const breachAt2 = signInBlock.indexOf('timesBreached(newPassword)');
+const saveAt2 = signInBlock.indexOf('changeOwnSignIn(');
+check('6b new password there checked for breaches before it is saved',
+  breachAt2 > 0 && saveAt2 > 0 && breachAt2 < saveAt2,
+  'change-sign-in does not call timesBreached(newPassword) before changeOwnSignIn');
 
 // Live: the service answers, so the check is real rather than always failing open. The same call
 // as utils/breachedPassword.ts (k-anonymity: only five hex characters of the SHA-1 are sent).

@@ -113,6 +113,46 @@ router.get(
   })
 );
 
+/**
+ * GET /api/public/contact
+ *
+ * The number every page gives for calling the landlady (B-111, Sean 19 Oct
+ * 2026). It is her own account's phone number, the one she signs in with, so
+ * when she changes it with Change number / password every page follows.
+ * Until then it was typed into the frontend as `LANDLADY.phone`, which now
+ * stands in only when this cannot be reached (`check:liveness` rule 7 keeps
+ * that stand-in equal to this answer).
+ *
+ * ONLY THE NUMBER. Not her email, name, id or anything else on the row: the
+ * select names one column and the answer one field. The number is already on
+ * every public page, so publishing it here exposes nothing new. Digits only,
+ * 63 folded to 0, so a `tel:` link can use it as it comes.
+ *
+ * The administrator is the one `role = 'admin'` profile. Ordered and limited
+ * so a second one, should it ever exist, cannot make the answer change from
+ * call to call. `null` when she has no number on file: the pages keep their
+ * stand-in rather than print nothing.
+ */
+router.get(
+  '/public/contact',
+  optionalAuth,
+  requirePermission(PERMISSIONS.PROPERTY_VIEW_PUBLIC),
+  asyncHandler(async (_req, res) => {
+    const { data, error } = await db
+      .from('profiles')
+      .select('phone_number')
+      .eq('role', 'admin')
+      .eq('account_status', 'active')
+      .not('phone_number', 'is', null)
+      .order('created_at', { ascending: true })
+      .limit(1);
+    if (error) throw ApiError.internal(error.message);
+
+    const digits = phoneDigits((data?.[0] as { phone_number?: string | null } | undefined)?.phone_number);
+    res.status(200).json({ success: true, data: { phone: digits || null } });
+  })
+);
+
 const inquirySchema = z.object({
   roomId: z.string().uuid('A valid room must be selected.'),
   prospectName: z.string().min(2).max(120),

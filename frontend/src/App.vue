@@ -18,6 +18,7 @@ import RefreshSkeleton from '@/components/layout/RefreshSkeleton.vue';
 import { pullRefreshing } from '@/lib/pullToRefresh';
 import { startLiveUpdates, stopLiveUpdates } from '@/lib/live';
 import { isOffline, savedCopySince, savedAtLabel } from '@/lib/offlineCache';
+import { fetchLandladyContact } from '@/lib/systemState';
 
 // Every open page stays current while someone is signed in (lib/live.ts).
 watch(isAuthenticated, (signedIn) => (signedIn ? startLiveUpdates() : stopLiveUpdates()), { immediate: true });
@@ -104,6 +105,8 @@ function updateOnlineStatus() {
 }
 
 onMounted(() => {
+  // The number every page gives for calling her: her account's own (B-111, lib/systemState.ts).
+  void fetchLandladyContact();
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
 

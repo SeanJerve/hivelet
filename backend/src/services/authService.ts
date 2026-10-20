@@ -16,7 +16,13 @@ import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { recordAudit } from './auditService.js';
 import { likeLiteral } from '../utils/likeLiteral.js';
-import { assertContactAvailable, contactClash, isPlaceholderEmail, mustCompleteContact } from './contactDetails.js';
+import {
+  assertContactAvailable,
+  contactClash,
+  isPlaceholderEmail,
+  mustCompleteContact,
+  phoneDigits,
+} from './contactDetails.js';
 import type { AuthUser, JwtPayload } from '../types/auth.js';
 import type { StoredRole } from '../config/rbac.js';
 
@@ -525,6 +531,113 @@ export async function changeOwnPassword(
       role: data.role,
     }),
     previousContact: { email: data.email, phone_number: data.phone_number },
+  };
+}
+
+/**
+ * The one refusal for a wrong current number OR a wrong current password, on
+ * purpose not saying which (B-111, Sean 19 Oct 2026). Naming the wrong half
+ * would tell whoever holds her session that the other half was right. Code
+ * `INVALID_CREDENTIALS`, as `changeOwnPassword` throws, so the route charges it
+ * to `passwordChangeFailures` and the frontend's `isAuthFailure` does not take
+ * it for an ended session.
+ */
+export const SIGN_IN_CHECK_FAILED =
+  'Your current number or password is not right. Check both and try again.';
+
+export interface SignInChange {
+  newPhone?: string;
+  newPassword?: string;
+}
+
+/**
+ * The administrator changes her sign-in number, her password, or both
+ * (B-111). She signs in with her phone number (`resolve_login_identifier()`
+ * accepts it), so the number is a credential here, not a contact detail: to
+ * change either she proves BOTH her current password and her current number.
+ *
+ * - The password is compared with bcrypt first, always, so a wrong number does
+ *   not answer faster than a wrong password. The number is compared by its
+ *   digits (`phoneDigits`, 63 folded to 0, as `normalize_ph_phone()` does).
+ * - A new number is checked against every other sign-in by
+ *   `assertContactAvailable` (the index `idx_profiles_phone_login` decides a
+ *   race; `contactClash` gives its loser the same sentence). The same number
+ *   as now is no change.
+ * - A new password sets `password_changed_at`, which ends her other sessions
+ *   exactly as `changeOwnPassword` does; a number alone does not, since every
+ *   other session was opened by someone who knew the password that still
+ *   stands. A fresh token is returned either way, so this device stays in.
+ *
+ * Her email is not touched. It stays on the row (the check suites sign in
+ * with it); no screen offers it to her as her sign-in.
+ */
+export async function changeOwnSignIn(
+  profileId: string,
+  currentPassword: string,
+  currentPhone: string,
+  change: SignInChange
+): Promise<{
+  token: string;
+  previousPhone: string | null;
+  phoneChanged: boolean;
+  passwordChanged: boolean;
+}> {
+  const { data, error } = await db
+    .from('profiles')
+    .select('id, password_hash, email, phone_number, role')
+    .eq('id', profileId)
+    .maybeSingle<{
+      id: string;
+      password_hash: string | null;
+      email: string | null;
+      phone_number: string | null;
+      role: StoredRole;
+    }>();
+
+  if (error) throw ApiError.internal(error.message);
+  const refused = () => new ApiError(401, 'INVALID_CREDENTIALS', SIGN_IN_CHECK_FAILED);
+  if (!data?.password_hash) throw refused();
+
+  const passwordMatches = await bcrypt.compare(currentPassword, data.password_hash);
+  const onFile = phoneDigits(data.phone_number);
+  const phoneMatches = onFile !== '' && phoneDigits(currentPhone) === onFile;
+  if (!passwordMatches || !phoneMatches) throw refused();
+
+  const phoneChanged = change.newPhone !== undefined && phoneDigits(change.newPhone) !== onFile;
+  const passwordChanged = change.newPassword !== undefined;
+  if (!phoneChanged && !passwordChanged) {
+    throw ApiError.validation('Nothing to change.', {
+      newPhone: ['That is already your number. Type a different one, or a new password.'],
+    });
+  }
+  if (phoneChanged) await assertContactAvailable(profileId, { phone_number: change.newPhone! });
+
+  const now = new Date().toISOString();
+  const { error: updateError } = await db
+    .from('profiles')
+    .update({
+      ...(phoneChanged ? { phone_number: change.newPhone! } : {}),
+      ...(passwordChanged
+        ? {
+            password_hash: await bcrypt.hash(change.newPassword!, config.auth.bcryptRounds),
+            password_changed_at: now,
+            failed_login_count: 0,
+            locked_until: null,
+            must_change_password: false,
+          }
+        : {}),
+    })
+    .eq('id', profileId);
+
+  const clash = contactClash(updateError);
+  if (clash) throw clash;
+  if (updateError) throw ApiError.internal(updateError.message);
+
+  return {
+    token: issueToken({ profileId: data.id, email: data.email, role: data.role }),
+    previousPhone: data.phone_number,
+    phoneChanged,
+    passwordChanged,
   };
 }
 

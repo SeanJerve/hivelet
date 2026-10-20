@@ -194,6 +194,14 @@ before the redesign started.
 | **writes** | `POST /auth/change-password` | change my own password |
 | **writes** | `PUT /tenant/my-profile` | edit my details |
 
+### `components/modals/ChangeSignInModal.vue`
+
+1 call(s), **1 of them write**.
+
+| | Endpoint | What it is for |
+| :--- | :--- | :--- |
+| **writes** | `POST /auth/change-sign-in` | the landlady changes her sign-in number, her password, or both, after giving her current number and password (B-111) |
+
 ### `components/modals/NewExpenseKindDialog.vue`
 
 1 call(s), **1 of them write**.
@@ -252,7 +260,7 @@ before the redesign started.
 
 ### `lib/systemState.ts`
 
-6 call(s), **0 of them write**.
+7 call(s), **0 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
@@ -261,8 +269,9 @@ before the redesign started.
 | reads | `GET /admin/inquiries` | enquiries from the public site |
 | reads | `GET /admin/tenants` | the resident directory |
 | reads | `GET /admin/tickets` | the maintenance board |
+| reads | `GET /public/contact` | the landlady’s number to call, read from her own account: every page that shows or dials it, once at startup (reads only) |
 | reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 
 ---
 
-**23 files make 79 distinct calls, 38 of which write.** Generated 2026-10-12.
+**24 files make 81 distinct calls, 39 of which write.** Generated 2026-10-20.

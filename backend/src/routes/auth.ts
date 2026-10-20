@@ -12,6 +12,7 @@ import {
   getOwnProfile,
   updateOwnProfile,
   changeOwnPassword,
+  changeOwnSignIn,
 } from '../services/authService.js';
 import { requireAuth, requirePasswordCurrent } from '../middleware/auth.js';
 import { rateLimit, failureLimit } from '../middleware/rateLimit.js';
@@ -276,9 +277,14 @@ router.patch(
       );
     }
     // Only a tenant's email is theirs to change here. The administrator's is
-    // her sign-in address and is not changed through the self-service route.
+    // not changed through the self-service route.
     if (parsedProfile.data.email !== undefined && req.user!.role !== 'tenant') {
       throw ApiError.forbidden('Only a tenant changes their own email here.');
+    }
+    // Nor her number: she signs in with it, so it changes only behind her
+    // current password and number, through /auth/change-sign-in (B-111).
+    if (parsedProfile.data.phone_number !== undefined && req.user!.role !== 'tenant') {
+      throw ApiError.forbidden('Your sign-in number changes with Change number / password.');
     }
 
     const { before, after } = await updateOwnProfile(req.user!.profileId, parsedProfile.data);
@@ -397,6 +403,114 @@ router.post(
     // stores it, so this device stays signed in; every other device holding an
     // older token is signed out on its next request.
     res.status(200).json({ success: true, data: { message: 'Password updated.', token } });
+  })
+);
+
+/**
+ * What the administrator's Change number / password dialog sends (B-111).
+ * The new password takes the same rules as `passwordSchema` above (the field is
+ * reused, not retyped); the new number the same rule as every sign-in phone
+ * (`contactPhone`: a Philippine mobile, stored as typed, compared by digits).
+ * Either may be left out, not both.
+ */
+const signInChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required.'),
+    currentPhone: z.string().trim().min(1, 'Your current number is required.').max(50),
+    newPhone: contactPhone.optional(),
+    newPassword: passwordSchema.shape.newPassword.optional(),
+  })
+  .refine((v) => v.newPhone !== undefined || v.newPassword !== undefined, {
+    message: 'Type a new number, a new password, or both.',
+    path: ['newPhone'],
+  });
+
+/**
+ * POST /api/auth/change-sign-in
+ *
+ * The administrator's own number and password (B-111, Sean 19 Oct 2026). She
+ * signs in with her phone number, so the number is changed the way a password
+ * is: behind her current password AND her current number, one refusal for
+ * either being wrong (`changeOwnSignIn`), charged to the same
+ * `passwordChangeFailures` count as `/auth/change-password` so the two routes
+ * cannot be alternated to double the guesses.
+ *
+ * A tenant keeps `/auth/change-password` and My details; this is refused to
+ * them. Gated by `requirePasswordCurrent`: an account still on a starting
+ * password sets it through `/auth/change-password` first, so B-63's "428 on
+ * everything but three routes" stays literally true.
+ *
+ * Audited as the existing actions, so the Activity page and "Your recent
+ * actions" already know how to say them: `AUTH_PASSWORD_CHANGE` for the
+ * password, `PROFILE_UPDATE` with the number before and after for the number.
+ */
+router.post(
+  '/auth/change-sign-in',
+  requireAuth,
+  requirePasswordCurrent,
+  passwordChangeFailures,
+  asyncHandler(async (req, res) => {
+    if (req.user!.role !== 'admin') {
+      throw ApiError.forbidden('A tenant changes their password with Change password, and their number in My details.');
+    }
+    const parsed = signInChangeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation('Invalid sign-in change.', parsed.error.flatten().fieldErrors);
+    }
+    const { currentPassword, currentPhone, newPhone, newPassword } = parsed.data;
+
+    // As on /auth/change-password: a password from a public breach list is refused before
+    // anything is compared or saved. Fails open when the service cannot be reached.
+    if (newPassword !== undefined && ((await timesBreached(newPassword)) ?? 0) > 0) {
+      throw ApiError.validation('Invalid sign-in change.', {
+        newPassword: [
+          'This password has appeared in a data breach elsewhere, so it is easy to guess. Choose another.',
+        ],
+      });
+    }
+
+    let result: Awaited<ReturnType<typeof changeOwnSignIn>>;
+    try {
+      result = await changeOwnSignIn(req.user!.profileId, currentPassword, currentPhone, {
+        ...(newPhone !== undefined ? { newPhone } : {}),
+        ...(newPassword !== undefined ? { newPassword } : {}),
+      });
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'INVALID_CREDENTIALS') passwordChangeFailures.record(req);
+      throw err;
+    }
+
+    if (result.passwordChanged) {
+      await auditFromRequest(req, {
+        action: 'AUTH_PASSWORD_CHANGE',
+        entityType: 'PROFILE',
+        entityId: req.user!.profileId,
+      });
+    }
+    if (result.phoneChanged) {
+      await auditFromRequest(req, {
+        action: 'PROFILE_UPDATE',
+        entityType: 'PROFILE',
+        entityId: req.user!.profileId,
+        previousValues: { phone_number: result.previousPhone },
+        newValues: { phone_number: newPhone, note: 'Her sign-in number, changed with her password and number.' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message:
+          result.phoneChanged && result.passwordChanged
+            ? 'Number and password updated.'
+            : result.phoneChanged
+              ? 'Number updated.'
+              : 'Password updated.',
+        phoneChanged: result.phoneChanged,
+        passwordChanged: result.passwordChanged,
+        token: result.token,
+      },
+    });
   })
 );
 

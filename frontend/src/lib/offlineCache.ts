@@ -50,6 +50,7 @@ const ADMIN_READS: ReadonlySet<string> = new Set([
   '/admin/notifications',
   '/auth/me/recent-actions',
   '/public/rates',
+  '/public/contact',
 ]);
 
 /** A tenant's own: rent, balance, receipts, repairs, details, notifications. */
@@ -64,6 +65,7 @@ const TENANT_READS: ReadonlySet<string> = new Set([
   '/tenant/my-notifications',
   '/auth/me/recent-actions',
   '/public/rates',
+  '/public/contact',
 ]);
 
 /**

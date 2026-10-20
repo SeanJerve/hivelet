@@ -84,6 +84,25 @@ await check('public', '/health', null);
 await checkLockdown();
 await check('public', '/public/rooms', null);
 await check('public', '/public/rates', null);
+await check('public', '/public/contact', null);
+
+/**
+ * `/public/contact` is read by strangers, from the administrator's own row (B-111). It must
+ * answer with her number and NOTHING else: one key, `phone`, digits only. A second key is how an
+ * email or an id would leak, so the shape is pinned, not just the status. The value is not
+ * printed.
+ */
+{
+  let keys = null, digitsOnly = false;
+  try {
+    const j = await (await fetch(`${BASE}/public/contact`)).json();
+    keys = Object.keys(j?.data ?? {});
+    digitsOnly = j?.data?.phone === null || /^09\d{9}$/.test(String(j?.data?.phone));
+  } catch { /* reported below */ }
+  const ok = JSON.stringify(keys) === '["phone"]' && digitsOnly;
+  ok ? pass++ : (fail++, failures.push(`/public/contact answers ${JSON.stringify(keys)}, wanted only ["phone"], digits`));
+  console.log(`  ${ok ? 'OK  ' : 'FAIL'} ${''.padEnd(4)} ${'/public/contact gives the number only'.padEnd(42)} ${JSON.stringify(keys)}`);
+}
 
 // ---- admin --------------------------------------------------------------
 // Through the shared guard: a password already refused is not sent again (B-101).
@@ -367,6 +386,58 @@ if (changePasswordToken) {
   const ok401 = noToken.status === 401;
   ok401 ? pass++ : (fail++, failures.push(`change-password reachable without a token -> ${noToken.status}`));
   console.log(`  ${ok401 ? 'OK  ' : 'FAIL'} ${noToken.status}  refused with no token`);
+}
+
+/**
+ * CHANGE NUMBER / PASSWORD (B-111) - the administrator's, failure paths only, and none rotates
+ * anything. Every case below is refused before `changeOwnSignIn` writes. The success path is
+ * driven against a stand-in database by `scripts/check-sign-in-change.mjs` instead.
+ *
+ * The one that matters most is the right password with the WRONG number: it must be refused with
+ * the same 401 a wrong password gets, which this proves against the real row. Belt and braces:
+ * its "new" number is her number as it stands, so even a broken route would have nothing to
+ * change. Her number is read from /auth/me and never printed; the wrong one is it with its last
+ * digit moved on by one. One counted failure per run (the wrong-password case is the stand-in's),
+ * so with change-password's it is two of the ten a quarter-hour allows.
+ */
+if (adminToken) {
+  console.log('\nCHANGE NUMBER / PASSWORD (failure paths only - nothing is changed)');
+  const post = (body, token = adminToken) =>
+    fetch(`${BASE}/auth/change-sign-in`, {
+      method: 'POST',
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  const codeOf = async (r) => { try { return (await r.json())?.error?.code ?? null; } catch { return null; } };
+  const expect = async (label, r, want, wantCode = null) => {
+    const code = await codeOf(r);
+    const ok = r.status === want && (wantCode === null || code === wantCode);
+    ok ? pass++ : (fail++, failures.push(`change-sign-in: ${label} -> ${r.status} ${code ?? ''}`));
+    console.log(`  ${ok ? 'OK  ' : 'FAIL'} ${r.status}  ${label}`);
+  };
+
+  let ownPhone = null;
+  try {
+    const me = await (await fetch(`${BASE}/auth/me`, { headers: { Authorization: `Bearer ${adminToken}` } })).json();
+    ownPhone = String(me?.data?.profile?.phone_number ?? '').replace(/\D/g, '') || null;
+  } catch { /* reported below */ }
+
+  await expect('refused with no token', await post({ currentPassword: 'x', currentPhone: 'x', newPhone: 'x' }, null), 401);
+  if (tenantToken) {
+    await expect('refused to a tenant', await post({ currentPassword: 'x', currentPhone: 'x', newPassword: 'Correct9Horse' }, tenantToken), 403);
+  }
+  await expect('nothing new to set is refused', await post({ currentPassword: 'x', currentPhone: 'x' }), 422);
+  await expect('a new number that is not a mobile is refused', await post({ currentPassword: 'x', currentPhone: 'x', newPhone: '12345' }), 422);
+  await expect('a short new password is refused', await post({ currentPassword: 'x', currentPhone: 'x', newPassword: 'Short1' }), 422);
+
+  if (!ownPhone) {
+    fail++; failures.push('change-sign-in: the administrator has no number on /auth/me, so she cannot sign in by phone');
+    console.log('  FAIL      the administrator has no number on file');
+  } else {
+    const wrong = ownPhone.slice(0, -1) + String((Number(ownPhone.at(-1)) + 1) % 10);
+    await expect('right password, wrong number: the same 401 as a wrong password',
+      await post({ currentPassword: adminPass, currentPhone: wrong, newPhone: ownPhone }), 401, 'INVALID_CREDENTIALS');
+  }
 }
 
 /**
