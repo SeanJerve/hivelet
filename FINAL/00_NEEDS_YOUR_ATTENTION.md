@@ -21,8 +21,11 @@ numbers) and `BLOCKED_FOR_SEAN.md` (B numbers).
 
 | # | What | Who |
 | :-- | :--- | :--- |
-| 0 | **Which number should visitors call?** (B-111) The number on the owner's account is not the number the website has been showing. Built and tested, not yet live: every page will show her account's number, and she signs in with it. Ask her which is right; Claude then makes the two match and puts it live | Sean, with the owner |
-| 1 | **The admin signs in with her phone number, not admin@hivelet.ph**, and gets a **Change number / password** option that asks for the current password and the current number first (B-111) | Claude builds it. The number and the new password go in `credentials/` or are given in person, never in a document or chat |
+| 0 | ~~Which number visitors call~~ **Done 20 Oct**: her account now holds 0927 465 3938 (it held the app's example number), the site shows her account's number, and she signs in with it. **She signs in with that number now, not her email** | Tell her |
+| 1 | ~~Change number / password~~ **Done 20 Oct**: in her account menu; it asks for her current password and current number | - |
+| 1b | **F2F's headcount**: its tenancy records 4 people, but her receipt for the period from 31 August charged water for 1. Which is right? (check:relations now flags it) | The owner |
+| 1c | **A test tenant for check:api**: its tenant checks name a tenant by email, which no longer signs in. Put loydtest's login ID and password in database/seeded-tenant-credentials.json (B-82) | Sean |
+| 1d | **The demo copy's owner and evaluator accounts sign in by email**, which stops working once the demo is redeployed. Fine if the evaluations are over; otherwise give them phone numbers there | Sean |
 | 2 | **The evaluation slides** still show the six-respondent scores (B-109, B-110) | Update in the deck |
 | 3 | **Make the GitHub repository private** before the defense (P9) | Sean |
 | 4 | **Move loydtest out of unit PH after the defense** (B-106) | Sean |
