@@ -4,12 +4,12 @@
  * @description First-visit prompt on the public landing page, offering a route
  *   to the enquiry form.
  *
- * WHY A NATIVE <dialog>
- * --------------------
- * `showModal()` gives focus containment, Escape-to-close, background inertness
- * and a `::backdrop` from the platform. A div with `role="dialog"` would mean
- * reimplementing all four, and the usual result is a trap that leaks focus to
- * the page behind it.
+ * A SHEET, LIKE EVERY OTHER DIALOG
+ * -------------------------------
+ * It was a native <dialog> in the middle of the page. Pop-ups are for decisions
+ * now, everything else is the sheet from the bottom edge (Sean, 20 Oct 2026), so
+ * it is WsModal, which brings the focus trap, Escape, the scroll lock and the
+ * half-height rest a prompt this short gets.
  *
  * WHY IT IS REMEMBERED
  * --------------------
@@ -44,7 +44,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { isAuthenticated } from '@/lib/authStore';
-import { X } from 'lucide-vue-next';
+import WsModal from '@/components/ui/WsModal.vue';
 
 const props = defineProps<{
   /** Published units whose status is Available. Null while unknown: loading, or failed. */
@@ -78,7 +78,7 @@ const detail = computed(() => {
 });
 
 const router = useRouter();
-const dialogRef = ref<HTMLDialogElement | null>(null);
+const open = ref(false);
 
 function alreadyDismissed(): boolean {
   try {
@@ -99,27 +99,13 @@ function remember() {
 
 function close() {
   remember();
-  dialogRef.value?.close();
+  open.value = false;
 }
 
 function bookNow() {
   remember();
-  dialogRef.value?.close();
+  open.value = false;
   router.push('/inquire');
-}
-
-/**
- * A click landing on the dialog element itself - rather than on the panel
- * inside it - is a click on the backdrop, because the panel covers the whole
- * dialog box.
- */
-function onDialogClick(event: MouseEvent) {
-  if (event.target === dialogRef.value) close();
-}
-
-// Escape fires `cancel` before `close`; remember the dismissal either way.
-function onCancel() {
-  remember();
 }
 
 onMounted(() => {
@@ -127,98 +113,21 @@ onMounted(() => {
   // already restored the session before any page mounts.
   if (alreadyDismissed() || isAuthenticated.value) return;
   window.addEventListener('offline', onOffline);
-  dialogRef.value?.showModal();
-  dialogRef.value?.focus();
+  open.value = true;
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('offline', onOffline);
-  if (dialogRef.value?.open) dialogRef.value.close();
 });
 </script>
 
 <template>
-  <!--
-    Focus starts on the dialog itself (`tabindex="-1"`, focused in onMounted):
-    showModal() otherwise focuses its first control, the X, and with nothing
-    clicked yet Chrome draws the keyboard ring round it on arrival, the circle
-    Sean removed from every X (6 Oct 2026). `autofocus` on the dialog is the
-    spec's way and Chromium ignored it (tested). Tab reaches the X, ring and all.
-  -->
-  <dialog
-    ref="dialogRef"
-    tabindex="-1"
-    aria-labelledby="viewing-prompt-title"
-    class="ws-dialog outline-none m-auto w-[min(34rem,calc(100vw-2rem))] overflow-hidden rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-dim/70"
-    @click="onDialogClick"
-    @cancel="onCancel"
-  >
-    <div class="relative px-6 pb-8 pt-14 sm:px-14 sm:py-16 text-center">
-      <button
-        type="button"
-        class="icon-btn absolute right-3 top-3"
-        @click="close"
-      >
-        <span class="sr-only">Close</span>
-        <X class="size-4" />
-      </button>
-
-      <!--
-        `aria-live`: the dialog opens before the listing answers, so the heading
-        can change from the fallback to the count while it is already open and
-        announced. Polite, so the change is read once rather than interrupting.
-      -->
-      <div aria-live="polite">
-        <h2
-          id="viewing-prompt-title"
-          class="text-balance font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
-        >
-          {{ heading }}
-        </h2>
-        <!-- Was a second heading line, "Register your interest", over a button saying "Inquire now": two names for one action. -->
-        <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
-          {{ detail }}
-        </p>
-      </div>
-
-      <!--
-        `px-6`, not `px-10`. `.pill-btn-brand` already sets `padding: 0
-        1.125rem` (index.css); this button doubled it again on top for visual
-        weight, which is fine at a normal text size and genuinely broken at a
-        larger one.
-
-        At 200% browser text zoom - a real accessibility setting, not an edge
-        case, and the one WCAG 1.4.4 requires content to survive - the dialog
-        itself stays correctly sized (`w-[min(34rem,calc(100vw-2rem))]` is
-        anchored to `100vw`, which does not scale with text). This button's
-        `rem`-based padding does scale, and unbounded by the dialog's own
-        width, `px-10` alone ate more width than the dialog had left for it -
-        measured on an emulated handset at `html { font-size: 200% }`: the
-        button's own rect ran to x=404 against a 375px viewport, past even
-        `overflow-hidden` on the dialog, which is what actually swallowed the
-        overflow rather than showing it - the label was there and unreadable,
-        not visibly broken. `px-5` keeps some of the emphasis (6px more per
-        side than the base pill, not 22px) and measured with a genuine margin
-        at the same 200% zoom - about 15px between the button's right edge and
-        the dialog's own padded content area, not flush against it. Re-check
-        that measurement if this value changes again; it was right at the
-        edge, under 2px, at `px-6`.
-      -->
-      <!--
-        "Book now" over-promised: clicking it does not book anything, it opens
-        the enquiry form (bookNow() below just routes to /inquire), which this
-        file's own top comment says the wording must not do. "Inquire now"
-        matches AppHeader's existing label for the same destination, so a
-        first-time visitor meets the same words twice rather than two
-        different ones for one link (asked to simplify, 2026-09-24).
-      -->
-      <button
-        type="button"
-        class="pill-btn-brand mt-8 px-5"
-        @click="bookNow"
-      >
-        Inquire now
-      </button>
-    </div>
-  </dialog>
+  <WsModal v-if="open" :title="heading" size="sm" @close="close">
+    <!-- `aria-live`: the sheet opens before the listing answers, so the count can arrive while it is open. -->
+    <p aria-live="polite" class="text-sm leading-relaxed text-ink-soft">{{ detail }}</p>
+    <template #actions>
+      <!-- "Inquire now", the header's own word for this destination, not "Book now": nothing is booked. -->
+      <button type="button" class="pill-btn-brand" @click="bookNow">Inquire now</button>
+    </template>
+  </WsModal>
 </template>
