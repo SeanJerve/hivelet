@@ -79,8 +79,10 @@ const phoneChanged = computed(
 const initials = computed(() => {
   const name = form.value.full_name || currentUser.value?.fullName || 'Tenant';
   const parts = name.trim().split(/\s+/).filter(Boolean);
+  // A one-word name takes its first two letters, as the header does ("loydtest" is LO in both).
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
   const picked = parts.length >= 2 ? [parts[0], parts[parts.length - 1]] : parts;
-  return picked.map((p) => p[0]?.toUpperCase() || '').join('') || 'T';
+  return picked.map((p) => p![0]?.toUpperCase() || '').join('') || 'T';
 });
 
 const isDirty = computed(
