@@ -28,7 +28,7 @@ numbers) and `BLOCKED_FOR_SEAN.md` (B numbers).
 | 1a | ~~Emails~~ **Done 20 Oct**: no screen asks for, shows or accepts an email. Sign-in by email is refused; inquiries take a name, phone and question (migration 085); first sign-in and My details ask for the phone only. The manual, the tenant quick guide and the data dictionary say so | - |
 | 1d | **The demo copy's owner and evaluator accounts sign in by email**, which stops working once the demo is redeployed. Its database also needs migration 085, or a visitor's inquiry there is refused. Fine if the evaluations are over; otherwise give them phone numbers and run 085 there | Sean |
 | 1e | **The demo-account buttons on your laptop's sign-in page** (dev server only) now need each account's login ID: add an `"identifier"` to every entry in credentials/demo-accounts.json. I was not allowed to fill it from the database myself | Sean |
-| 2 | **The evaluation slides** still show the six-respondent scores (B-109, B-110) | Update in the deck |
+| 2 | ~~The evaluation slides~~ **Done 20 Oct**: the deck now shows ten respondents, 4.59 and the eight composites of Table 4-17. Slide 1 still needs names, adviser and date | The team, slide 1 only |
 | 3 | **Make the GitHub repository private** before the defense (P9) | Sean |
 | 4 | **Move loydtest out of unit PH after the defense** (B-106) | Sean |
 | 5 | Later: may the owner edit a move-in date (P8); two identical receipts with no invoice number at the same instant (B-105) | A decision, after the defense |
