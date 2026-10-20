@@ -102,7 +102,7 @@ function handleDeleteInquiry() {
   if (!inq) return;
   showConfirm(
     'Delete this inquiry?',
-    `${inq.name}, unit ${inq.unit.toUpperCase()}.\n\nThe inquiry and its conversation are removed for good. This cannot be undone.`,
+    `${inq.name}, unit ${inq.unit.toUpperCase()}.\n\nThe inquiry and its conversation are removed for good.`,
     async () => {
       isSubmitting.value = true;
       try {
@@ -457,7 +457,7 @@ async function handleSendReply() {
           -->
           <div v-else-if="inquiriesFetchFailed" class="ws-reveal p-4">
             <UnavailableNote
-              message="The inquiries could not be loaded. There may still be new ones waiting."
+              message="The inquiries could not be loaded. New ones may be waiting."
               @retry="fetchInquiries"
             />
           </div>
@@ -590,12 +590,12 @@ async function handleSendReply() {
                 <!-- The rate she quotes a prospective resident. `rooms` is seeded, so a
                      failed refresh would have her quoting a figure up to ₱1,900 out. Better
                      to show no price than a wrong one. -->
-                Filed under unit
+                Unit
                 <span class="font-semibold uppercase text-ink">{{ activeUnit.unitCode }}</span
-                ><template v-if="roomsLoaded && !roomsFetchFailed">, which rents for
+                ><template v-if="roomsLoaded && !roomsFetchFailed">,
                   <span class="tabular font-semibold text-ink">{{ peso(activeUnit.price) }}</span>
                   a month</template
-                >.
+                >
               </p>
             </div>
 
@@ -641,8 +641,7 @@ async function handleSendReply() {
         <!-- What was said -->
         <div class="max-h-[380px] flex-1 space-y-5 overflow-y-auto bg-canvas p-5 sm:p-6">
           <p v-if="threadError" class="ws-reveal rounded-2xl bg-overdue-soft p-4 text-sm leading-6 text-overdue">
-            The replies already on record could not be loaded, so only their original message is
-            shown. {{ threadError }}
+            The replies could not be loaded, so only the first message is shown. {{ threadError }}
           </p>
 
           <div
@@ -714,10 +713,7 @@ async function handleSendReply() {
       >
         <div>
           <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
-          <p class="mt-3 text-base font-semibold text-ink">Nothing picked yet</p>
-          <p class="mt-1 text-sm leading-6 text-ink-soft">
-            Choose an inquiry to read it and answer.
-          </p>
+          <p class="mt-3 text-base font-semibold text-ink">Choose an inquiry</p>
         </div>
       </div>
     </div>
