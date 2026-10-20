@@ -58,7 +58,7 @@ export class ApiError extends Error {
     // locked - so five wrong guesses and a sixth attempt will tell a caller
     // whether an address belongs to a resident. See the block in
     // `authService.login` that raises it, and § 3.8 of the judgement log.
-    return new ApiError(401, 'INVALID_CREDENTIALS', 'Invalid email or password.');
+    return new ApiError(401, 'INVALID_CREDENTIALS', 'Invalid login ID, phone number or password.');
   }
 
   static accountInactive() {

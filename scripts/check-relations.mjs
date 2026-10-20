@@ -75,7 +75,8 @@ if (!fs.existsSync(credsPath)) {
   process.exit(1);
 }
 const creds = fs.readFileSync(credsPath, 'utf8');
-const adminEmail = creds.match(/Email:\s*(\S+)/)?.[1];
+// Her phone number signs her in; email no longer does (Sean, 20 Oct 2026). `Email:` is an old file's fallback.
+const adminEmail = creds.match(/^Phone:\s*(\S+)/m)?.[1] ?? creds.match(/Email:\s*(\S+)/)?.[1];
 const adminPass = creds.match(/^Password:\s*(\S+)\s*$/m)?.[1];
 
 let pass = 0, fail = 0;

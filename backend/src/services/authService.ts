@@ -77,6 +77,17 @@ export async function login(
 ): Promise<LoginResult> {
   const identifier = identifierInput.trim();
 
+  /**
+   * Email no longer signs anyone in (Sean, 20 Oct 2026): a login ID or a phone number does. Every
+   * tenant has a login ID and the administrator signs in with her phone number (migration 084).
+   * An address is answered exactly like an unknown account, time spent included, so the refusal
+   * says nothing about which addresses are on file.
+   */
+  if (identifier.includes('@')) {
+    await bcrypt.compare(password, '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinva');
+    throw ApiError.invalidCredentials();
+  }
+
   const { data: rows, error } = await db.rpc('resolve_login_identifier', {
     p_identifier: identifier
   });

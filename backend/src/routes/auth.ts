@@ -48,7 +48,7 @@ const loginSchema = z
     password: z.string().min(1, 'Password is required.'),
   })
   .refine((v) => Boolean(v.identifier || v.email), {
-    message: 'Enter your email address or phone number.',
+    message: 'Enter your login ID or phone number.',
     path: ['identifier'],
   });
 
