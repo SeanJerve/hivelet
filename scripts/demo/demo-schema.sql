@@ -609,7 +609,7 @@ CREATE TABLE public.inquiries (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   room_id uuid NOT NULL,
   prospect_name character varying(255) NOT NULL,
-  prospect_email character varying(255) NOT NULL,
+  prospect_email character varying(255), -- nullable since 085 (20 Oct 2026): an inquiry needs no email
   prospect_phone character varying(50) NOT NULL,
   message text NOT NULL,
   status inquiry_status_type DEFAULT 'Pending'::inquiry_status_type NOT NULL,

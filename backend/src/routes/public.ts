@@ -156,7 +156,8 @@ router.get(
 const inquirySchema = z.object({
   roomId: z.string().uuid('A valid room must be selected.'),
   prospectName: z.string().min(2).max(120),
-  prospectEmail: z.string().email(),
+  // No email (Sean, 20 Oct 2026; migration 085): the inquiry is answered on its own page and by
+  // phone. An older copy of the form that still sends one has it dropped here, unread.
   // A Philippine mobile, 09XX XXX XXXX or +63 (technical evaluators, 3 Oct
   // 2026). Stored as typed; every comparison reads the digits (phoneKey).
   prospectPhone: z
@@ -221,7 +222,6 @@ router.post(
       .insert({
         room_id: input.roomId,
         prospect_name: input.prospectName,
-        prospect_email: input.prospectEmail,
         prospect_phone: input.prospectPhone,
         message: input.message,
         status: 'Pending',
