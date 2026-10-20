@@ -83,7 +83,6 @@ async function save() {
 <template>
   <WsModal
     title="New kind of expense"
-    subtitle="It goes in the list after your 13."
     size="sm"
     :dismissible="!busy"
     :close-disabled="busy"

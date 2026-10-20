@@ -268,7 +268,7 @@ async function sendRequest<T, M = Record<string, unknown>>(
         code: 'TIMEOUT',
         message:
           'This took too long to answer, so we cannot tell whether it was saved. ' +
-          'Check the list before trying again, so it is not sent twice.',
+          'Check before sending it again.',
       });
     }
     /**

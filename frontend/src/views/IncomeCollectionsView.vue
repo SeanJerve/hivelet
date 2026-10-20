@@ -1779,7 +1779,7 @@ const isDownloadOpen = ref(false);
       v-else
       class="ws-reveal"
       :rows="rows"
-      caption="Every collection on screen, with unit, date, who paid, rent, water and what was remitted"
+      caption="All collections on screen, with unit, date, who paid, rent, water and what was remitted"
       noun="entry"
       :page-size="12"
       table-from="xl"

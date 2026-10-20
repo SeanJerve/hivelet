@@ -77,11 +77,7 @@ const fileName = computed(() => {
   return reportFileName(props.kind, s.year, propertyToday(), s.kind === 'month' ? s.month : null);
 });
 
-const allNote = computed(() =>
-  props.kind === 'tenants'
-    ? 'Every year of payments, one sheet for each year.'
-    : 'Every year in the ledger, one sheet for each year.'
-);
+const allNote = 'All years, one sheet each.';
 
 const groupName = useId();
 const errorId = useId();
@@ -116,7 +112,7 @@ onBeforeUnmount(() => controller?.abort());
 </script>
 
 <template>
-  <WsModal :title="`Download ${title}`" subtitle="Choose what the Excel file covers." size="sm" @close="emit('close')">
+  <WsModal :title="`Download ${title}`" size="sm" @close="emit('close')">
     <fieldset class="min-w-0" :disabled="busy">
       <legend class="text-xs text-ink-faint">What to download</legend>
       <div class="mt-2 grid grid-cols-3 gap-1 rounded-full bg-canvas p-1">

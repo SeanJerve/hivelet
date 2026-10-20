@@ -136,7 +136,7 @@ function when(iso: string): string {
     </p>
 
     <p v-else-if="actions.length === 0" class="mt-1.5 text-sm text-ink-soft">
-      Nothing yet. What you do here will be listed, newest first.
+      Nothing yet.
     </p>
 
     <ol v-else :class="['mt-1.5 grid', rail ? 'gap-0.5' : 'gap-x-4 sm:grid-cols-3']">

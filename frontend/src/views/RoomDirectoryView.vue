@@ -481,7 +481,7 @@ function applyRoomFilters(v: FilterDraft) {
       v-else
       class="ws-reveal"
       :rows="filteredRooms"
-      caption="Every unit, with where it is, what it costs, who lives in it and its standing"
+      caption="All units, with where each is, what it costs, who lives in it and its standing"
       noun="unit"
       :page-size="12"
       table-from="xl"
