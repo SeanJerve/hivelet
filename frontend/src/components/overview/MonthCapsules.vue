@@ -43,12 +43,15 @@ const DEFAULT_TERMS: Record<MonthKind, string> = {
   unentered: 'Not entered yet',
   expected: 'Expected',
   future: 'Nothing to estimate from',
+  none: 'Nothing yet',
 };
 const term = (kind: MonthKind) => props.terms[kind] ?? DEFAULT_TERMS[kind];
 
 function defaultIndex(list: CapsuleMonth[]) {
   for (let i = list.length - 1; i >= 0; i--) if (list[i].kind === 'recorded') return i;
-  return 0;
+  // Not an empty month a chart was padded with: the first one that says something.
+  const first = list.findIndex((m) => m.kind !== 'none');
+  return first >= 0 ? first : 0;
 }
 
 const selected = ref(defaultIndex(props.months));
@@ -145,6 +148,11 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               />
               <span
+                v-else-if="m.kind === 'none'"
+                class="capsule-mark absolute inset-0 rounded-full bg-canvas"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              />
+              <span
                 v-else-if="m.kind === 'future'"
                 class="capsule-mark absolute inset-0 rounded-full border border-dashed border-hatch"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
@@ -168,7 +176,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
             <span
               :class="[
                 'leading-4 max-sm:flex max-sm:h-6 max-sm:items-center',
-                i === selected ? 'font-semibold text-ink' : 'text-ink-soft',
+                i === selected ? 'font-semibold text-ink' : m.kind === 'none' ? 'text-ink-faint' : 'text-ink-soft',
               ]"
             >
               <!--
@@ -203,6 +211,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />{{ term('recorded') }}</li>
         <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />{{ term('unentered') }}</li>
         <li v-if="kindsShown.has('expected')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />{{ term('expected') }}</li>
+        <li v-if="kindsShown.has('none')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-canvas border border-line" />{{ term('none') }}</li>
         <li v-if="kindsShown.has('future')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border border-dashed border-hatch" />{{ term('future') }}</li>
       </ul>
     </div>

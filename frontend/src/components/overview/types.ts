@@ -15,7 +15,9 @@ export interface Segment {
  *   expected   - a future month with a basis for an estimate
  *   future     - a future month with nothing to estimate from
  */
-export type MonthKind = 'recorded' | 'unentered' | 'expected' | 'future';
+// 'none': a month with nothing to show at all, drawn empty and without colour (a tenant's months
+// before the tenancy, so the chart still runs January to December; Sean, 20 Oct 2026).
+export type MonthKind = 'recorded' | 'unentered' | 'expected' | 'future' | 'none';
 
 export interface CapsuleMonth {
   short: string;

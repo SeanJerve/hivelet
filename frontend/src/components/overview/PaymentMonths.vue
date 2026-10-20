@@ -44,7 +44,32 @@ const months = computed(() => buildPaymentMonths(props.receipts, props.standing,
 
 const monthName = (m: PaymentMonth) => `${MONTH_LONG[m.month - 1]} ${m.year}`;
 
-const capsules = computed<CapsuleMonth[]>(() =>
+/**
+ * The chart runs January to December of the latest year shown (Sean, 20 Oct 2026: a tenant who
+ * moved in in September saw two capsules). Months before the first one with anything to say are
+ * empty and colourless ('none'); months after the last are "Not due yet", an outline. The figures
+ * under the chart still count only the tenancy's own months.
+ */
+const capsules = computed<CapsuleMonth[]>(() => {
+  const shown = tenancyCapsules.value;
+  // A tenancy with a year or more already fills the chart; only a shorter one is padded, to twelve.
+  if (!months.value.length || shown.length >= 12) return shown;
+  const first = months.value[0]!;
+  const last = months.value[months.value.length - 1]!;
+  const pad = (month: number, kind: 'none' | 'future'): CapsuleMonth => ({
+    short: MONTH_LONG[month - 1]!.slice(0, 3),
+    long: `${MONTH_LONG[month - 1]} ${last.year}`,
+    value: null,
+    kind,
+  });
+  const before: CapsuleMonth[] = [];
+  if (first.year === last.year) for (let m = 1; m < first.month; m++) before.push(pad(m, 'none'));
+  const after: CapsuleMonth[] = [];
+  for (let m = last.month + 1; m <= 12; m++) after.push(pad(m, 'future'));
+  return [...before, ...shown, ...after].slice(0, Math.max(12, shown.length));
+});
+
+const tenancyCapsules = computed<CapsuleMonth[]>(() =>
   months.value.map((m) => {
     const base = { short: MONTH_LONG[m.month - 1]!.slice(0, 3), long: monthName(m) };
     // A past period with no payment entered is "Not entered", never an amount owed: the ledger
