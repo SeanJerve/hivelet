@@ -268,7 +268,10 @@ router.patch(
   asyncHandler(async (req, res) => {
     refuseOwnNameChange(req.body);
     // `.strict()`: an unknown key is a 422 naming it rather than a silent drop.
-    const parsedProfile = ownProfileUpdateSchema.strict().safeParse(req.body ?? {});
+    // An email from an older copy of the app is dropped first, so `.strict()` does not refuse
+    // the rest of the save over it: email is no part of the website now (Sean, 20 Oct 2026).
+    const { email: _droppedEmail, ...profileBody } = (req.body ?? {}) as Record<string, unknown>;
+    const parsedProfile = ownProfileUpdateSchema.strict().safeParse(profileBody);
 
     if (!parsedProfile.success) {
       throw ApiError.validation(
@@ -276,12 +279,7 @@ router.patch(
         parsedProfile.error.flatten().fieldErrors
       );
     }
-    // Only a tenant's email is theirs to change here. The administrator's is
-    // not changed through the self-service route.
-    if (parsedProfile.data.email !== undefined && req.user!.role !== 'tenant') {
-      throw ApiError.forbidden('Only a tenant changes their own email here.');
-    }
-    // Nor her number: she signs in with it, so it changes only behind her
+    // Not the administrator's number: she signs in with it, so it changes only behind her
     // current password and number, through /auth/change-sign-in (B-111).
     if (parsedProfile.data.phone_number !== undefined && req.user!.role !== 'tenant') {
       throw ApiError.forbidden('Your sign-in number changes with Change number / password.');

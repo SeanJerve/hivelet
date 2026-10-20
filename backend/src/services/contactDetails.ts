@@ -67,9 +67,10 @@ export function placeholderEmailFor(profileId: string): string {
 }
 
 /**
- * Whether a tenant must give a real email and confirm their phone before using
- * the portal. Always while they are on a starting password (the first sign-in
- * asks for all three together), and whenever the email is a placeholder.
+ * Whether a tenant must confirm their phone before using the portal: always while
+ * they are on a starting password, and whenever no phone is on file. Email is no
+ * longer asked for (Sean, 20 Oct 2026: "emails are nothing in our website"), so a
+ * placeholder email no longer stops anyone.
  * An administrator is never asked: she signs in with her phone number (B-111).
  */
 export function mustCompleteContact(
@@ -87,7 +88,7 @@ export function mustCompleteContact(
 ): boolean {
   return (
     user.role === 'tenant' &&
-    (user.mustChangePassword || isPlaceholderEmail(user.email) || phoneNumber === null || phoneNumber === '')
+    (user.mustChangePassword || phoneNumber === null || phoneNumber === '')
   );
 }
 
@@ -204,7 +205,7 @@ export const emergencyPhone = z
   .refine((v) => v === '' || isPhMobile(v), 'Enter a Philippine mobile number, for example 0917 123 4567.');
 
 export const ownProfileUpdateSchema = z.object({
-  email: contactEmail.optional(),
+  // No email: an older copy of the app that still sends one has it dropped here (20 Oct 2026).
   phone_number: contactPhone.optional(),
   emergency_contact_name: z.string().trim().max(255).nullable().optional(),
   emergency_contact_phone: emergencyPhone.nullable().optional(),

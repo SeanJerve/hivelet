@@ -46,7 +46,8 @@ export interface DemoAccount {
   roleLabel: string;
   roleType: 'admin' | 'tenant' | 'inactive';
   name: string;
-  email: string;
+  /** What the button signs in with: a login ID or phone number. Never an email (20 Oct 2026). */
+  identifier?: string | null;
   /** `null` when `credentials/creds.txt` is absent or unreadable on this machine. */
   password: string | null;
   room?: string;

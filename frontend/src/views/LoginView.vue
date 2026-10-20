@@ -185,8 +185,13 @@ if (import.meta.env.DEV) {
 }
 
 async function handleQuickLogin(account: DemoAccount) {
-  email.value = account.email;
+  // A login ID or phone number: the server refuses an email (20 Oct 2026).
+  email.value = account.identifier ?? '';
   loginFailure.value = null;
+  if (!email.value) {
+    authError.value = 'This demo account has no login ID. Add "identifier" to credentials/demo-accounts.json.';
+    return;
+  }
   // A wrong guess counts toward locking a real resident out, so never submit one.
   if (!account.password) {
     password.value = '';
@@ -301,9 +306,8 @@ async function handleQuickLogin(account: DemoAccount) {
               </label>
               <!--
                 Login ID or phone number only (Sean, 17 Oct 2026: email sign-in was given up;
-                every tenant has a login ID and the owner a phone number). The server still
-                accepts an email it has on file, so nobody who signed in that way is locked
-                out; the page no longer offers it. A new tenant has only the login ID
+                every tenant has a login ID and the owner a phone number). Since 20 Oct 2026
+                the server refuses an email outright ("emails are nothing in our website"). A new tenant has only the login ID
                 the landlady gave them (073, e.g. HV-48213), so this is
                 type="text". type="email" would make the browser reject a
                 phone number before it was ever sent. For the same reason there
@@ -501,7 +505,7 @@ async function handleQuickLogin(account: DemoAccount) {
         <ul class="mt-6 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
           <li
             v-for="(acc, i) in demoAccounts"
-            :key="acc.email"
+            :key="acc.name + i"
             class="list-reveal-item flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-line bg-tile p-3"
             :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
           >

@@ -472,12 +472,11 @@ export async function changeOwnPassword(
   if (!matches) throw ApiError.invalidCredentials();
 
   const contactPatch: ContactPatch = {};
-  if (contact.email !== undefined) contactPatch.email = contact.email;
+  // A sent email is ignored: email is no part of the website now (Sean, 20 Oct 2026).
   if (contact.phone_number !== undefined) contactPatch.phone_number = contact.phone_number;
 
   /**
-   * A tenant with no phone, or only a placeholder email, gives their own in this
-   * same step (073: they first sign in with a login ID, and nothing personal is
+   * A tenant with no phone gives their own in this same step (073: they first sign in with a login ID, and nothing personal is
    * assumed). Checked after the current password, so a wrong one learns nothing.
    */
   if (data.role === 'tenant') {
@@ -485,11 +484,8 @@ export async function changeOwnPassword(
     if (!data.phone_number && !contactPatch.phone_number) {
       missing.phone_number = ['Add the mobile number you use, so the landlady can reach you.'];
     }
-    if (isPlaceholderEmail(data.email) && !contactPatch.email) {
-      missing.email = ['Add an email address you use.'];
-    }
     if (Object.keys(missing).length > 0) {
-      throw ApiError.validation('Add your own email and phone number.', missing);
+      throw ApiError.validation('Add your own phone number.', missing);
     }
   }
   if (Object.keys(contactPatch).length > 0) {
