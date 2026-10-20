@@ -222,15 +222,15 @@ function box(s, x, y, w, h, head, body, size = 13) {
   stat(s, 0.8, 1.5, '34 of 34', 'tenant tasks completed');
   stat(s, 3.9, 1.5, '31', 'of them without help (91%)');
   stat(s, 7.0, 1.5, '60 s', 'median time per task');
-  stat(s, 10.1, 1.5, '24 of 25', 'owner\'s walkthrough steps passed');
+  stat(s, 10.1, 1.5, '24 of 25', 'walkthrough steps the owner performed passed the first time');
   s.addText('Where tenants needed help: the first sign-in and finding their unit and rent. Chapter 5 recommends showing each new tenant those first.', { x: 0.8, y: 4.2, w: 11.7, h: 1.2, fontFace: FONT, fontSize: 18, color: C.ink });
 }
 
 // 16. ISO/IEC 25010 results
 {
-  const s = titled('ISO/IEC 25010 evaluation: 4.53, Very High Quality', 'Composite means (Table 4-17), mean of the group means. Six respondents: the owner, three tenants, a prospective tenant and a technical evaluator. Every characteristic at least High Quality.');
-  const labels = ['Portability', 'Functional Suitability', 'Security', 'Compatibility', 'Reliability', 'Performance Efficiency', 'Usability', 'Maintainability'];
-  const values = [4.89, 4.86, 4.70, 4.67, 4.62, 4.42, 4.12, 4.00];
+  const s = titled('ISO/IEC 25010 evaluation: 4.59, Very High Quality', 'Composite means (Table 4-17), mean of the group means. Ten respondents: the owner, three tenants, a prospective tenant and five technical evaluators. Every characteristic Very High Quality.');
+  const labels = ['Portability', 'Functional Suitability', 'Security', 'Reliability', 'Compatibility', 'Performance Efficiency', 'Usability', 'Maintainability'];
+  const values = [4.86, 4.79, 4.68, 4.61, 4.55, 4.48, 4.42, 4.32];
   s.addChart(pptx.ChartType.bar, [{ name: 'Composite mean', labels, values }], {
     x: 0.6, y: 1.3, w: 12.1, h: 5.4, barDir: 'bar', chartColors: [C.brand], valAxisMinVal: 1, valAxisMaxVal: 5,
     catAxisLabelFontFace: FONT, catAxisLabelFontSize: 14, valAxisLabelFontSize: 12, catAxisOrientation: 'maxMin',
@@ -240,12 +240,12 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 17. Measured and rated
 {
-  const s = titled('Measured and rated evidence agree on seven of eight', 'Usability is the exception: the measures pass, but the owner rated learning without help lower. Maintainability rests on the measurements from the code more than on the one rating (Section 4.4.5).');
+  const s = titled('Measured and rated evidence agree on all eight', 'Usability agrees once the later technical evaluators had rated it. The owner\'s two 3s still mark where a first-time user needs help (Section 4.4.5).');
   bullets(s, [
     '27 of the 31 sub-characteristics measured by tests; 25 rated by the survey',
-    'Usability (4.12): every task done, but learning without help rated lower',
-    'Maintainability (4.00): checks pass on every change, but three database calls in four sit inside the request handlers',
-    'The 14 comments of the technical evaluator were all acted on by 5 October',
+    'Usability (4.42): nine tasks in ten done without help; the owner rated learning without help lower',
+    'Maintainability (4.32): checks pass on every change, but three database calls in four sit inside the request handlers',
+    'The 14 comments of 3 October were all acted on by 5 October',
     '51 optimizations in all, each traced to the finding that caused it (Appendix M)',
   ]);
 }
@@ -257,7 +257,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
     ['1. Analyze the practices', 'Every gap in the owner\'s practices traced to a requirement and a module'],
     ['2. Develop the system', 'All six features built and in use on her real records, in her own layout'],
     ['3. Pilot test it', '82 of 83 tests passed (98.8%), with no critical defect'],
-    ['4. Evaluate and optimize', 'Very High Quality overall (4.53) on ISO/IEC 25010; 51 optimizations made'],
+    ['4. Evaluate and optimize', 'Very High Quality overall (4.59) on ISO/IEC 25010; 51 optimizations made'],
   ].forEach(([h, b], i) => box(s, 0.6 + (i % 2) * 6.15, 1.45 + Math.floor(i / 2) * 2.65, 5.95, 2.45, h, b, 19));
 }
 
