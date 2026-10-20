@@ -131,6 +131,10 @@ const yearsList = computed(() => {
   // anchor to Legazpi rather than to whoever is looking. A browser behind UTC+8
   // is still in the old year for its first eight hours of January.
   years.add(propertyToday().slice(0, 4));
+  // The year asked for by another page (the Overview's arrow, the other ledger) is offered even
+  // with nothing on this ledger for it, so the page opens on that year and says so, rather than
+  // quietly showing this year instead (20 Oct 2026).
+  if (pickedYear.value && /^\d{4}$/.test(pickedYear.value) && pickedYear.value <= propertyToday().slice(0, 4)) years.add(pickedYear.value);
   return ['All', ...Array.from(years).sort((a, b) => Number(b) - Number(a))];
 });
 
