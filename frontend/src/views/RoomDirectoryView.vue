@@ -273,7 +273,7 @@ function applyRoomFilters(v: FilterDraft) {
           The current rates could not be loaded.
         </p>
         <p class="mt-1 text-sm leading-6 text-verify">
-          The list below may be out of date. Please do not quote a rate from it until they load.
+          The rates below may be out of date. Do not quote one until they load.
         </p>
       </div>
       <button type="button" class="pill-btn" :disabled="isLoading" @click="fetchRooms">Try again</button>
@@ -463,7 +463,7 @@ function applyRoomFilters(v: FilterDraft) {
         <Search class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
         <p class="mt-3 text-base font-semibold text-ink">No unit matches</p>
         <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-          Clear the search, or pick “All units” and “All clusters”.
+          Clear the search, or change the filters.
         </p>
       </div>
     </div>
@@ -486,7 +486,7 @@ function applyRoomFilters(v: FilterDraft) {
       :page-size="12"
       table-from="xl"
       empty-title="No unit matches"
-      empty-note="Clear the search, or pick “All units” and “All clusters”."
+      empty-note="Clear the search, or change the filters."
     >
       <template #head>
         <tr>
