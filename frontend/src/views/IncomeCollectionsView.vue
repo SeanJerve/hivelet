@@ -500,17 +500,20 @@ function clusterChipsFor(year: string, month: string) {
 }
 
 /** The toolbar's switch and filters (components/ui/ListToolbar.vue); the refs above stay the state. */
-const incomeViews: ToolbarView<'grouped' | 'flat'>[] = [
-  { value: 'grouped', label: 'By cluster', icon: LayoutGrid },
+// The grouped view's name follows Group by, so "Show as: By cluster" never sits beside
+// "Group by: Unit" (20 Oct 2026). The other lists group by cluster only and keep "By cluster".
+const GROUPED_LABEL: Record<IncomeGroupBy, string> = { cluster: 'By cluster', unit: 'By unit', name: 'By tenant' };
+const incomeViews = computed<ToolbarView<'grouped' | 'flat'>[]>(() => [
+  { value: 'grouped', label: GROUPED_LABEL[incomeGroupBy.value], icon: LayoutGrid },
   { value: 'flat', label: 'As a list', icon: TableIcon },
-];
+]);
 const incomeFilters = computed<ToolbarFilter[]>(() => [
   {
     key: 'cluster',
     label: 'Cluster',
     value: selectedCluster.value,
     defaultValue: 'All',
-    options: (d) => clusterChipsFor(String(d.year), String(d.month)),
+    options: (d) => clusterChipsFor(filterYear.value, String(d.month)),
   },
   { key: 'month', label: 'Month', value: filterMonth.value, defaultValue: 'All', options: monthsList },
   {
@@ -675,28 +678,25 @@ const clusterGroups = computed(() => {
     { 
       key: 'Boarding House', 
       label: 'Boarding House',
-      desc: '22 Rooms',
       hasShareColumn: true, 
       units: ['1A', '1B', '1C', '1D', '1E', '1F', '1G', '1H', '2A', '2B', '2C', '2D', '2E', '2F', '2G', '3A', '3B', '3C', '3D', '3E', '3F', '3G'] 
     },
     {
       key: 'Back Apartment',
       label: 'Back Apartment',
-      desc: '5 Rooms',
       hasShareColumn: false,
       units: ['B1F', 'B2F', 'B2B', 'B3F', 'B3B']
     },
     {
       key: 'Penthouse',
       label: 'Penthouse',
-      desc: '1 Room (PH)',
+      named: true,
       hasShareColumn: false,
       units: ['PH']
     },
     {
       key: 'Front Apartment',
       label: 'Front Apartment',
-      desc: '3 Rooms',
       hasShareColumn: false,
       units: ['F1', 'F2F', 'F2B']
     },
@@ -716,13 +716,18 @@ const clusterGroups = computed(() => {
       // that is true everywhere.
       key: 'Linda',
       label: 'Linda Units',
-      desc: '2 Rooms (LF, LB)',
+      named: true,
       hasShareColumn: false,
       units: ['LF', 'LB', '*LF', '*LB']
     }
   ];
 
-  return definitions.map(def => {
+  return definitions.map((def: { key: string; label: string; hasShareColumn: boolean; units: string[]; named?: boolean }) => {
+    // Counted from the list, never written out (check:ledger reads a written number before 'units' as
+    // a claim about the property). '*LF' and '*LB' are Linda's electricity rows, not units. The
+    // Penthouse and Linda lines also name their units in brackets, as they always did.
+    const own = def.units.filter((u) => !u.startsWith('*'));
+    const desc = `${own.length} ${own.length === 1 ? 'unit' : 'units'}${def.named ? ` (${own.join(', ')})` : ''}`;
     const groupRecords = rows.value.filter(r => {
       const u = r.unit.toUpperCase();
       return def.units.includes(u) || r.cluster === def.key;
@@ -736,6 +741,7 @@ const clusterGroups = computed(() => {
 
     return {
       ...def,
+      desc,
       records: groupRecords,
       totalRent: gRent,
       totalShare: gShare,
