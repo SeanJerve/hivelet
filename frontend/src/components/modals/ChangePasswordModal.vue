@@ -23,15 +23,14 @@ import { showPhone } from '@/lib/phoneFormat';
  * finds out while typing instead of after submitting.
  */
 /*
- * THE FIRST SIGN-IN ALSO ASKS FOR AN EMAIL AND A PHONE (Sean, 2026-09-30).
- * A tenant owns their email, phone and password; the landlady owns their name.
- * In mandatory mode a tenant (`mustCompleteContact`) gives a real email and
- * confirms their phone here, prefilled from `/auth/me` - which stays reachable
- * while the password gate is up. With a starting password all three go to
- * `POST /auth/change-password` in ONE request, so the step lands whole or not
- * at all; with only a placeholder email (migration 067) the password fields
- * are hidden and `PUT /tenant/my-profile` takes the two. The rules are in
- * `lib/contactDetails.ts`, the server's in `services/contactDetails.ts`.
+ * THE FIRST SIGN-IN ALSO ASKS FOR A PHONE NUMBER (Sean, 2026-09-30; email dropped 20 Oct 2026).
+ * A tenant owns their phone and password; the landlady owns their name. In
+ * mandatory mode a tenant (`mustCompleteContact`) confirms their phone here,
+ * prefilled from `/auth/me`. With a starting password both go to
+ * `POST /auth/change-password` in ONE request, so the step lands whole or not at
+ * all; with only a missing phone the password fields are hidden and
+ * `PUT /tenant/my-profile` takes it. The rules are in `lib/contactDetails.ts`, the
+ * server's in `services/contactDetails.ts`.
  */
 import { ref, computed, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
@@ -45,7 +44,7 @@ import {
   mustCompleteContact,
   PASSWORD_CHANGED_FLAG,
 } from '@/lib/authStore';
-import { emailProblem, phoneDigits, phoneProblem, realEmail } from '@/lib/contactDetails';
+import { phoneDigits, phoneProblem } from '@/lib/contactDetails';
 import { stopNotificationsHeartbeat } from '@/lib/notificationsStore';
 import { Check, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import WsModal from '@/components/ui/WsModal.vue';
@@ -79,17 +78,15 @@ const newPasswordError = ref('');
  * Which halves this dialog asks for. Outside mandatory mode it is the plain
  * Change password dialog, as before. In mandatory mode the two flags decide:
  * an administrator on a starting password gets the password alone, a tenant
- * gets the contact fields too, and a tenant with only a placeholder email gets
- * the contact fields alone.
+ * gets their phone number too, and a tenant with no phone on file gets that
+ * alone. No email (Sean, 20 Oct 2026: "emails are nothing in our website").
  */
 const needsPassword = computed(() => !props.mandatory || mustChangePassword.value);
 const needsContact = computed(() => props.mandatory && mustCompleteContact.value);
 
-const email = ref('');
 const phone = ref('');
 /** The phone on file when the dialog opened, to say when it is being changed. */
 const phoneOnFile = ref('');
-const emailError = ref('');
 const phoneError = ref('');
 const contactLoading = ref(false);
 const contactLoadFailed = ref(false);
@@ -106,11 +103,9 @@ async function loadContact() {
   contactLoading.value = true;
   contactLoadFailed.value = false;
   try {
-    const me = await api.get<{ profile?: { email?: string | null; phone_number?: string | null } }>(
+    const me = await api.get<{ profile?: { phone_number?: string | null } }>(
       '/auth/me'
     );
-    // A placeholder is never shown as if it were theirs: the field starts empty.
-    email.value = realEmail(me?.profile?.email);
     phone.value = String(me?.profile?.phone_number ?? '').trim();
     phoneOnFile.value = phone.value;
   } catch {
@@ -135,7 +130,7 @@ const sameAsCurrent = computed(
 
 /**
  * The contact fields do not hold the button down: a disabled button cannot say
- * what is wrong, so a bad email or phone is named under its field on press.
+ * what is wrong, so a bad phone number is named under its field on press.
  * The password rules keep their live checklist and still gate it, as before.
  */
 const canSubmit = computed(
@@ -157,10 +152,8 @@ function reset() {
   formError.value = '';
   currentPasswordError.value = '';
   newPasswordError.value = '';
-  email.value = '';
   phone.value = '';
   phoneOnFile.value = '';
-  emailError.value = '';
   phoneError.value = '';
   contactLoadFailed.value = false;
 }
@@ -203,17 +196,15 @@ async function submit() {
   formError.value = '';
   currentPasswordError.value = '';
   newPasswordError.value = '';
-  emailError.value = '';
   phoneError.value = '';
 
   if (needsContact.value) {
-    emailError.value = emailProblem(email.value);
     phoneError.value = phoneProblem(phone.value);
-    if (emailError.value || phoneError.value) {
+    if (phoneError.value) {
       /**
        * To the field with the note (audit 2026-10-01). On a 320x640 phone the
        * set-up step is taller than the screen and its button is in the footer:
-       * the email note rendered above the visible part of the dialog while
+       * the note rendered above the visible part of the dialog while
        * focus stayed on the button.
        */
       await nextTick();
@@ -228,7 +219,6 @@ async function submit() {
     // the ordinary self-service route takes the two.
     if (!needsPassword.value) {
       await api.put('/tenant/my-profile', {
-        email: email.value.trim(),
         phone_number: phone.value.trim(),
       });
       clearMustCompleteContact();
@@ -244,8 +234,8 @@ async function submit() {
     const result = await api.post<{ token?: string } | null>('/auth/change-password', {
       currentPassword: currentPassword.value,
       newPassword: newPassword.value,
-      // In the same request, so the password never changes while the email is refused.
-      ...(needsContact.value ? { email: email.value.trim(), phoneNumber: phone.value.trim() } : {}),
+      // In the same request, so the password never changes while the number is refused.
+      ...(needsContact.value ? { phoneNumber: phone.value.trim() } : {}),
     });
 
     /**
@@ -292,11 +282,10 @@ async function submit() {
     if (err instanceof ApiRequestError && err.code === 'INVALID_CREDENTIALS') {
       currentPasswordError.value = 'That is not your current password.';
     } else if (err instanceof ApiRequestError && err.status === 409 && err.details) {
-      // Someone else already has that email or phone (services/contactDetails.ts).
+      // Someone else already has that phone number (services/contactDetails.ts).
       // Nothing was saved: the password and the details go in one write.
-      emailError.value = err.details.email?.[0] ?? '';
       phoneError.value = err.details.phone_number?.[0] ?? '';
-      if (!emailError.value && !phoneError.value) formError.value = err.message;
+      if (!phoneError.value) formError.value = err.message;
     } else if (err instanceof ApiRequestError && err.status === 422) {
       /**
        * A 422 said "Invalid password payload." and nothing else, so the person
@@ -307,9 +296,8 @@ async function submit() {
        */
       currentPasswordError.value = err.details?.currentPassword?.[0] ?? '';
       newPasswordError.value = err.details?.newPassword?.[0] ?? '';
-      emailError.value = err.details?.email?.[0] ?? '';
       phoneError.value = err.details?.phoneNumber?.[0] ?? err.details?.phone_number?.[0] ?? '';
-      if (!currentPasswordError.value && !newPasswordError.value && !emailError.value && !phoneError.value) {
+      if (!currentPasswordError.value && !newPasswordError.value && !phoneError.value) {
         formError.value = 'Something here was not accepted. Check each field and try again.';
       }
     } else if (err instanceof ApiRequestError && err.isAuthFailure) {
@@ -352,16 +340,16 @@ async function submit() {
         : needsContact && needsPassword
           ? 'Set up your account'
           : needsContact
-            ? 'Add your email'
+            ? 'Add your phone number'
             : 'Set your password'
     "
     :subtitle="
       !mandatory
         ? 'You will stay signed in on this device.'
         : needsContact && needsPassword
-          ? 'You signed in with a one-time starting password. Choose your own, and give an email and phone number you use.'
+          ? 'You signed in with a one-time starting password. Choose your own, and give the mobile number you use.'
           : needsContact
-            ? 'Give an email address you use, and check your phone number, so the landlady can reach you.'
+            ? 'Give the mobile number you use, so the landlady can reach you.'
             : 'You signed in with a one-time starting password. Choose your own before continuing.'
     "
     size="sm"
@@ -371,25 +359,6 @@ async function submit() {
   >
     <form id="change-password-form" class="flex flex-col gap-5" novalidate @submit.prevent="submit">
       <template v-if="needsContact">
-        <label class="ws-field">
-          Your email
-          <input
-            v-model="email"
-            type="email"
-            autocomplete="email"
-            inputmode="email"
-            placeholder="you@email.com"
-            :disabled="contactLoading"
-            :class="['ws-input', emailError && 'border-overdue']"
-            :aria-invalid="emailError ? 'true' : undefined"
-            :aria-describedby="emailError ? 'cp-email-error' : 'cp-email-hint'"
-            @input="emailError = ''"
-            @blur="email.trim() && (emailError = emailProblem(email))"
-          />
-          <span v-if="emailError" id="cp-email-error" class="ws-reveal text-sm text-overdue">{{ emailError }}</span>
-          <span v-else id="cp-email-hint" class="ws-hint">One you check. You can change it later in My details.</span>
-        </label>
-
         <label class="ws-field">
           Your mobile number
           <input

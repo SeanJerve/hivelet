@@ -18,17 +18,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { Save, CheckCircle2, AlertTriangle, X, RotateCcw, KeyRound } from 'lucide-vue-next';
-import { currentUser, restoreSession } from '@/lib/authStore';
+import { currentUser } from '@/lib/authStore';
 import { api, ApiRequestError } from '@/lib/api';
 import { showingSavedCopy, writesUnavailable } from '@/lib/offlineCache';
-import {
-  EMAIL_NOT_SET,
-  emailProblem,
-  phoneDigits,
-  phoneProblem,
-  emergencyPhoneProblem,
-  realEmail,
-} from '@/lib/contactDetails';
+import { phoneDigits, phoneProblem, emergencyPhoneProblem } from '@/lib/contactDetails';
 import { formatPhone } from '@/lib/phoneFormat';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { showToast } from '@/lib/systemState';
@@ -40,7 +33,6 @@ import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 /** Tenant-editable profile fields */
 interface EditableProfile {
   full_name: string;
-  email: string;
   phone_number: string;
   emergency_contact_name: string;
   emergency_contact_phone: string;
@@ -54,7 +46,6 @@ const identity = ref({
 
 const form = ref<EditableProfile>({
   full_name: currentUser.value?.fullName || '',
-  email: '',
   phone_number: '',
   emergency_contact_name: '',
   emergency_contact_phone: '',
@@ -76,7 +67,6 @@ const loadFailed = ref(false);
 const successNotice = ref('');
 const errorNotice = ref('');
 /** Said under the field it is about, from the page's own check or the server's. */
-const emailError = ref('');
 const phoneError = ref('');
 const ecPhoneError = ref('');
 const isPasswordOpen = ref(false);
@@ -145,10 +135,6 @@ async function fetchProfile() {
     // input placeholder, which is never submitted.
     form.value = {
       full_name: data?.full_name || currentUser.value?.fullName || '',
-      // No invented address, and no placeholder shown as one (migration 067):
-      // empty means "not set yet", and the template says so. This once fell back
-      // to 'tenant@hivelet.com', shown to the tenant as though it were theirs.
-      email: realEmail(data?.email),
       // Spaced as the field shows them (lib/phoneFormat.ts), so the field's own
       // formatting is not mistaken for a change she made.
       phone_number: formatPhone(data?.phone_number || ''),
@@ -187,20 +173,16 @@ async function handleSave() {
   }
 
   errorNotice.value = '';
-  emailError.value = '';
   phoneError.value = '';
   ecPhoneError.value = '';
 
-  // Only what changed is checked and sent. An email that was never set can stay
-  // unset here (the sign-in step asks for it); one on file cannot be cleared.
-  const emailChanged = form.value.email.trim() !== savedSnapshot.value.email.trim();
+  // Only what changed is checked and sent. No email (Sean, 20 Oct 2026).
   const sendPhone = phoneChanged.value;
-  if (emailChanged) emailError.value = emailProblem(form.value.email);
   if (sendPhone) phoneError.value = phoneProblem(form.value.phone_number);
   // Sent on every save, so checked on every save: a number on file from before the check would
   // otherwise be refused by the server with no word under its field.
   ecPhoneError.value = emergencyPhoneProblem(form.value.emergency_contact_phone);
-  if (emailError.value || phoneError.value || ecPhoneError.value) {
+  if (phoneError.value || ecPhoneError.value) {
     await focusFirstInvalid();
     return;
   }
@@ -223,7 +205,6 @@ async function handleSave() {
       emergency_contact_name: form.value.emergency_contact_name.trim(),
       emergency_contact_phone: form.value.emergency_contact_phone.trim(),
     };
-    if (emailChanged) payload.email = form.value.email.trim();
     if (sendPhone) payload.phone_number = form.value.phone_number.trim();
 
     // Surfaced rather than swallowed: a profile edit that silently fails leaves
@@ -238,16 +219,13 @@ async function handleSave() {
       ? `Your details are saved. You sign in with ${form.value.phone_number.trim()} from now on.`
       : 'Your details are saved.';
     showToast('success', 'Details saved', successNotice.value);
-    // The header and the sign-in step read the session, so it hears about a new email too.
-    if (emailChanged) void restoreSession();
   } catch (err: any) {
     // Someone else already has it (409), or the server's own check refused it
     // (422): said under the field, the way the page's own check says it.
     if (err instanceof ApiRequestError && (err.status === 409 || err.status === 422) && err.details) {
-      emailError.value = err.details.email?.[0] ?? '';
       phoneError.value = err.details.phone_number?.[0] ?? '';
       ecPhoneError.value = err.details.emergency_contact_phone?.[0] ?? '';
-      if (emailError.value || phoneError.value || ecPhoneError.value) {
+      if (phoneError.value || ecPhoneError.value) {
         errorNotice.value = 'Nothing was saved. Check the field marked below.';
         await focusFirstInvalid();
         return;
@@ -272,21 +250,20 @@ async function handleSave() {
 
 /**
  * Focus, and so scroll to, the field whose note just appeared (audit 2026-10-01).
- * Save is at the foot of the form and the email field near its head: on a
- * 320x640 phone the note "Enter a full email address" rendered 48px above the
+ * Save is at the foot of the form and the phone field near its head: on a
+ * 320x640 phone a field's note rendered 48px above the
  * screen while focus stayed on Save, so pressing Save appeared to do nothing.
  * The same move `/inquire` makes with `focusFirstInvalid`.
  */
 async function focusFirstInvalid() {
   await nextTick();
-  document.getElementById(emailError.value ? 'email' : phoneError.value ? 'phone' : 'ec-phone')?.focus();
+  document.getElementById(phoneError.value ? 'phone' : 'ec-phone')?.focus();
 }
 
 function handleReset() {
   form.value = { ...savedSnapshot.value };
   successNotice.value = '';
   errorNotice.value = '';
-  emailError.value = '';
   phoneError.value = '';
   ecPhoneError.value = '';
 }
@@ -390,9 +367,6 @@ function handleReset() {
             <template v-if="savedSnapshot.phone_number">
               You sign in with <span class="whitespace-nowrap">{{ savedSnapshot.phone_number }}</span>.
             </template>
-            <template v-else-if="savedSnapshot.email">
-              No phone number on file, so you sign in with {{ savedSnapshot.email }}.
-            </template>
             <template v-else>No phone number on file.</template>
           </p>
         </div>
@@ -419,31 +393,12 @@ function handleReset() {
                 required
               />
               <!-- `bg-canvas text-ink-soft` (audit 2026-10-09): it was drawn exactly like the
-                   email and mobile fields beside it, so it still looked typeable; a tap put a
+                   mobile field beside it, so it still looked typeable; a tap put a
                    caret in a box that took no typing. Recessed and quieter, it reads as a
                    fact on file, which the hint under it then explains. -->
               <p class="ws-hint">
                 Ask the landlady if it needs changing.
               </p>
-            </div>
-
-            <div class="ws-field">
-              <label for="email">Your email</label>
-              <input
-                id="email"
-                v-model="form.email"
-                type="email"
-                autocomplete="email"
-                inputmode="email"
-                placeholder="you@email.com"
-                :class="['ws-input', emailError && 'border-overdue']"
-                :aria-invalid="emailError ? 'true' : undefined"
-                :aria-describedby="emailError ? 'email-error' : savedSnapshot.email ? undefined : 'email-hint'"
-                @input="emailError = ''"
-                @blur="form.email.trim() && form.email.trim() !== savedSnapshot.email.trim() && (emailError = emailProblem(form.email))"
-              />
-              <p v-if="emailError" id="email-error" class="ws-reveal text-sm text-overdue">{{ emailError }}</p>
-              <p v-else-if="!savedSnapshot.email" id="email-hint" class="ws-hint">{{ EMAIL_NOT_SET }}. Add one you check.</p>
             </div>
 
             <div class="ws-field">

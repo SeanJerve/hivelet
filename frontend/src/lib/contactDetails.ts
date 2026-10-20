@@ -18,11 +18,6 @@
  * or neither. The server decides - this only lets a page agree with it before
  * anything is sent.
  */
-import { EMAIL_PATTERN } from '@/components/public/inquiryRules';
-
-/** What a screen says where a tenant has no real email yet. */
-export const EMAIL_NOT_SET = 'Not set yet';
-
 /** The four reserved top-level names and the three reserved example domains. */
 const RESERVED_EMAIL_DOMAIN = /(^|\.)(invalid|test|example|localhost)$|^example\.(com|net|org)$/i;
 
@@ -51,15 +46,6 @@ export function phoneDigits(raw: string | null | undefined): string {
 /** A Philippine mobile number, 09XX XXX XXXX. The server checks the same. */
 export function isPhMobile(raw: string | null | undefined): boolean {
   return /^09\d{9}$/.test(phoneDigits(raw));
-}
-
-/** The message for an email field, or '' when it is fine. Mirrors `contactEmail` on the server. */
-export function emailProblem(raw: string): string {
-  const email = raw.trim();
-  if (!email) return 'Enter your email address.';
-  if (!EMAIL_PATTERN.test(email)) return 'Enter a full email address, for example you@email.com.';
-  if (isPlaceholderEmail(email)) return 'Enter an email address you can receive mail at.';
-  return '';
 }
 
 /** The message for a sign-in phone field, or '' when it is fine. Mirrors `contactPhone`. */

@@ -49,7 +49,6 @@ import NotificationPopover from './NotificationPopover.vue';
 import { Menu, LogOut, LogIn, User, Bell, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import ChangeSignInModal from '@/components/modals/ChangeSignInModal.vue';
-import { realEmail } from '@/lib/contactDetails';
 import { showPhone } from '@/lib/phoneFormat';
 import ThemeChoice from '@/components/ui/ThemeChoice.vue';
 import ThemeToggle from '@/components/ui/ThemeToggle.vue';
@@ -540,10 +539,6 @@ onUnmounted(() => {
                     <!-- The administrator signs in with her number, so that is shown, not her email (B-111). -->
                     <p v-if="isAdmin" class="truncate text-xs text-ink-soft tabular">
                       {{ adminSignInNumber }}
-                    </p>
-                    <!-- A placeholder email (migration 067) is not shown: it is not an address. -->
-                    <p v-else-if="realEmail(currentUser.email)" class="truncate text-xs text-ink-soft">
-                      {{ realEmail(currentUser.email) }}
                     </p>
                     <p class="mt-1 text-xs font-semibold text-brand">
                       {{ isTenant ? 'Tenant' : 'Owner' }}
