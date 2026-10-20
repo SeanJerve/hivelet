@@ -146,7 +146,14 @@ const seeded = fs.existsSync(seededPath)
   ? JSON.parse(fs.readFileSync(seededPath, 'utf8'))
   : [];
 
-async function fixtureVerdict(email, password) {
+/*
+ * Since 20 Oct 2026 a fixture names its tenant by `identifier` (a login ID or phone number): the
+ * server refuses an email at sign-in. An entry with only an email is skipped without signing in.
+ */
+const alnum = (v) => String(v ?? '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+const phoneKey = (v) => { const d = String(v ?? '').replace(/D/g, ''); return /^63d{10}$/.test(d) ? '0' + d.slice(2) : d; };
+
+async function fixtureVerdict(identifier, password) {
   let db, bcrypt;
   try {
     const dotenv = (await import('dotenv')).default;
@@ -159,13 +166,16 @@ async function fixtureVerdict(email, password) {
   } catch {
     return { verified: false };
   }
-  const { data, error } = await db
+  // Read the candidates and match here, the way resolve_login_identifier() folds both.
+  const { data: rows, error } = await db
     .from('profiles')
-    .select('password_hash, role, account_status, locked_until')
-    .ilike('email', email)
-    .maybeSingle();
+    .select('password_hash, role, account_status, locked_until, login_id, phone_number')
+    .or('login_id.not.is.null,phone_number.not.is.null');
   if (error) return { verified: false };
-  if (!data) return { verified: true, ok: false, why: 'no profile has this email' };
+  const key = alnum(identifier);
+  const data = (rows ?? []).find((p) => (p.login_id && alnum(p.login_id) === key))
+    ?? (rows ?? []).find((p) => p.phone_number && phoneKey(p.phone_number) === phoneKey(identifier) && phoneKey(identifier).length >= 10);
+  if (!data) return { verified: true, ok: false, why: 'no profile has this login ID or phone number' };
   if (data.role !== 'tenant' || data.account_status !== 'active') {
     return { verified: true, ok: false, why: `profile is ${data.role}/${data.account_status}, not an active tenant` };
   }
@@ -179,13 +189,19 @@ async function fixtureVerdict(email, password) {
 }
 
 for (const entry of seeded) {
+  if (!entry.identifier) {
+    tenantBlocked ??= 'no fixture entry names a login ID or phone number (an email no longer signs in; ' +
+      'add "identifier" to database/seeded-tenant-credentials.json, B-82). Sign-in NOT attempted.';
+    continue;
+  }
+  entry.email = entry.identifier; // the label every message below prints
   const pw = entry.password ?? tenantPass;
   if (!pw) {
     tenantBlocked = 'no tenant password on this machine (the shared one was removed in B-82, and the ' +
       'fixture carries none). Sign-in NOT attempted, so no real tenant\'s failed-login allowance is touched.';
     break;
   }
-  const verdict = await fixtureVerdict(entry.email, pw);
+  const verdict = await fixtureVerdict(entry.identifier, pw);
   if (verdict.verified && !verdict.ok) {
     tenantBlocked = `${entry.email}: ${verdict.why}. Sign-in NOT attempted, so this real ` +
       "tenant's failed-login allowance is untouched. Point database/seeded-tenant-credentials.json " +
@@ -195,7 +211,7 @@ for (const entry of seeded) {
   const r = await fetch(`${BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: entry.email, password: pw })
+    body: JSON.stringify({ identifier: entry.identifier, password: pw })
   });
   const j = await r.json().catch(() => null);
   // Stop at the first refusal. Moving on would try the same password against the
