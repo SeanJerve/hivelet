@@ -108,15 +108,34 @@ function bookNow() {
   router.push('/inquire');
 }
 
+/*
+ * NOT ON ARRIVAL (20 Oct 2026). Opened the instant the page loaded, the sheet covered the lower
+ * half of the photograph the hero was resized to show. It now waits until the visitor has seen
+ * the hero: scrolled past most of it, or eight seconds on the page, whichever comes first.
+ */
+const WAIT_MS = 8000;
+let waitTimer: ReturnType<typeof setTimeout> | undefined;
+function show() {
+  clearTimeout(waitTimer);
+  window.removeEventListener('scroll', onScroll);
+  if (!alreadyDismissed()) open.value = true;
+}
+function onScroll() {
+  if (window.scrollY > window.innerHeight * 0.4) show();
+}
+
 onMounted(() => {
   // A signed-in resident or the landlady is not a prospect; the router has
   // already restored the session before any page mounts.
   if (alreadyDismissed() || isAuthenticated.value) return;
   window.addEventListener('offline', onOffline);
-  open.value = true;
+  window.addEventListener('scroll', onScroll, { passive: true });
+  waitTimer = setTimeout(show, WAIT_MS);
 });
 
 onBeforeUnmount(() => {
+  clearTimeout(waitTimer);
+  window.removeEventListener('scroll', onScroll);
   window.removeEventListener('offline', onOffline);
 });
 </script>
