@@ -331,10 +331,10 @@ const noteError = ref('');
  * state on one screen. The key is still the enum value.
  */
 const TIMELINE_STAGES = [
-  { key: 'Submitted',   label: 'Submitted',   desc: 'The landlady has your request.' },
-  { key: 'In Progress', label: 'In progress', desc: 'Work on it is underway.' },
-  { key: 'Resolved',    label: 'Done',        desc: 'The problem has been fixed.' },
-  { key: 'Closed',      label: 'Closed',      desc: 'This request is closed.' },
+  { key: 'Submitted',   label: 'Submitted' },
+  { key: 'In Progress', label: 'In progress' },
+  { key: 'Resolved',    label: 'Done' },
+  { key: 'Closed',      label: 'Closed' },
 ];
 
 /*
@@ -346,8 +346,8 @@ const TIMELINE_STAGES = [
  * stages are the whole of its history.
  */
 const CANCELLED_STAGES = [
-  { key: 'Submitted', label: 'Submitted', desc: 'The landlady had your request.' },
-  { key: 'Closed',    label: 'Cancelled', desc: 'You cancelled this request.' },
+  { key: 'Submitted', label: 'Submitted' },
+  { key: 'Closed',    label: 'Cancelled' },
 ];
 
 const timelineStages = computed(() =>
@@ -931,7 +931,7 @@ function formatDateTime(iso: string) {
                   >
                     <ImageIcon class="size-6 text-brand" aria-hidden="true" />
                     <span class="text-xs font-semibold text-ink">Add a photo</span>
-                    <span class="text-xs text-ink-soft">Optional. JPG or PNG.</span>
+                    <span class="text-xs text-ink-soft">JPG or PNG</span>
                   </label>
                 </div>
 
@@ -1253,7 +1253,6 @@ function formatDateTime(iso: string) {
     <WsModal
         v-if="isTimelineOpen && activeTimelineTicket"
         :title="activeTimelineTicket.title"
-        subtitle="Where your request has got to"
         size="md"
         @close="closeTimeline()"
       >
@@ -1294,11 +1293,6 @@ function formatDateTime(iso: string) {
                       tone="paid"
                       >Where it is now</StatusPill
                     >
-                  </p>
-                  <p
-                    :class="[ 'text-xs mt-0.5', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink-soft' : 'text-ink-soft' ]"
-                  >
-                    {{ stage.desc }}
                   </p>
                 </div>
               </div>
@@ -1343,12 +1337,10 @@ function formatDateTime(iso: string) {
               toast. Resolved tickets still take notes; the server allows them.
             -->
             <p v-if="isCancelled(activeTimelineTicket)" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
-              You cancelled this request, so it cannot take new notes. If the problem comes back, report
-              it again from this page.
+              You cancelled this request. If the problem comes back, report it again.
             </p>
             <p v-else-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
-              This request is closed, so it cannot take new notes. If the problem has come back, report
-              it again from this page.
+              This request is closed. If the problem has come back, report it again.
             </p>
             <template v-else>
               <div class="flex gap-2">
@@ -1384,7 +1376,7 @@ function formatDateTime(iso: string) {
     <ConfirmDialog
       v-if="cancelTarget"
       title="Cancel this repair request?"
-      :message="`“${cancelTarget.title}” will be closed and the landlady told. You can cancel one request an hour, and only before work on it starts.`"
+      :message="`“${cancelTarget.title}” will be closed and the landlady told.`"
       confirm-label="Cancel request"
       cancel-label="Keep it"
       destructive
