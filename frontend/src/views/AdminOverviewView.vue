@@ -1144,9 +1144,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <dt class="text-sm text-on-night-soft">Water</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalWater) }}</dd>
             </div>
-            <!-- BR-035: the label only. -->
+            <!-- BR-035: the label only. Its rows are named under it: only the Boarding House section of
+                 her workbook has the column, so the figure is half of that rent, not of the Rent line above
+                 (Sean, 21 Oct 2026: "why is 50% share 901..."). -->
             <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-on-night-soft">50% Share</dt>
+              <dt class="text-sm text-on-night-soft">50% Share <span class="block text-xs text-on-night-soft">Boarding House</span></dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualHalfOfRentShare) }}</dd>
             </div>
           </dl>
