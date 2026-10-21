@@ -174,6 +174,38 @@ export function peso(value: number, decimals = 0) {
 }
 
 /**
+ * Exactly what the figure is: whole pesos when it has no centavos, two decimals when it has
+ * (21 Oct 2026). A summary rounded to whole pesos showed Spent ₱3,745,420 over Operating
+ * ₱1,184,778 and Personal ₱2,560,641, which add to ₱3,745,419; the parts were .47 and .04. With
+ * nothing rounded, a total always equals the parts printed under it.
+ */
+/**
+ * Whole-number shares of a total that add up to exactly 100 (21 Oct 2026). Rounding each share on
+ * its own made the 2026 expense areas read 49 + 38 + 9 + 2 + 1 = 99%. The largest-remainder
+ * method rounds down, then gives the missing points to the shares that lost the most, so no share
+ * moves by more than one point and the column always totals 100.
+ */
+export function wholePercents(values: number[]): number[] {
+  const total = values.reduce((s, v) => s + Math.max(0, v), 0);
+  if (total <= 0) return values.map(() => 0);
+  const exact = values.map((v) => (Math.max(0, v) / total) * 100);
+  const whole = exact.map(Math.floor);
+  let missing = 100 - whole.reduce((s, v) => s + v, 0);
+  const order = exact.map((e, i) => ({ i, rest: e - whole[i]! })).sort((a, b) => b.rest - a.rest);
+  for (const { i } of order) {
+    if (missing <= 0) break;
+    whole[i]! += 1;
+    missing -= 1;
+  }
+  return whole;
+}
+
+export function pesoExact(value: number) {
+  const centavos = Math.round(Math.abs(value) * 100) % 100;
+  return peso(value, centavos === 0 ? 0 : 2);
+}
+
+/**
  * How a unit's live status reads to a prospect.
  *
  * Was `status === 'vacant' ? 'Available' : 'Reserved'` in both places this
