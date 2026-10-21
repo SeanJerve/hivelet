@@ -33,7 +33,10 @@ import {
   expenseRecordsFetchFailed,
   maintenanceTicketsFetchFailed,
 } from '@/lib/systemState';
-import { CLUSTERS, peso } from '@/lib/canonicalUnits';
+import { CLUSTERS, peso as pesoFixed, pesoExact, wholePercents } from '@/lib/canonicalUnits';
+// Every money figure on this page is shown as it is, centavos included when there are any
+// (lib/canonicalUnits.ts, pesoExact), so a total always equals the parts listed under it.
+const peso = (value: number, decimals?: number) => (decimals === undefined ? pesoExact(value) : pesoFixed(value, decimals));
 import { propertyToday } from '@/lib/propertyDate';
 import { pickedYear } from '@/lib/yearScope';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -47,6 +50,7 @@ import SegmentBar from '@/components/overview/SegmentBar.vue';
 import YearMenu from '@/components/ui/YearMenu.vue';
 import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
+import { payersOn, samePerson } from '@/lib/tenantHistory';
 import type { ArcUnit, CapsuleMonth, QuickAction, Segment } from '@/components/overview/types';
 import {
   Plus,
@@ -372,7 +376,6 @@ interface MonthIncomeData {
   /** Any expense entry at all this month. None means not entered, not "cost nothing". */
   hasExpenses: boolean;
   grossIncome: number;
-  halfOfRentShare: number;
   waterIncome: number;
   /** Operating expenses only. Personal/Main House costs are excluded (OD-05). */
   expenses: number;
@@ -400,10 +403,6 @@ const live12MonthsData = computed<MonthIncomeData[]>(() =>
         hasIncome: true,
         hasExpenses: matchingExpenses.length > 0,
         grossIncome,
-        halfOfRentShare: matchingRecords.reduce(
-          (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'Boarding House' ? r.rent / 2 : r.rent) || 0),
-          0
-        ),
         waterIncome: matchingRecords.reduce((sum, r) => sum + Number(r.water || 0), 0),
         expenses: recordedExpenses,
         personalExpenses: recordedPersonal,
@@ -427,7 +426,6 @@ const live12MonthsData = computed<MonthIncomeData[]>(() =>
       hasIncome: false,
       hasExpenses: matchingExpenses.length > 0,
       grossIncome: projectedGross,
-      halfOfRentShare: Math.round(projectedGross * 0.5),
       waterIncome: canProject ? baseMonthlyWater.value : 0,
       expenses: projectedExpenses,
       personalExpenses: recordedPersonal,
@@ -548,10 +546,6 @@ const historical12MonthsData = computed<MonthIncomeData[]>(() =>
       hasIncome: matchingRecords.length > 0,
       hasExpenses: matchingExpenses.length > 0,
       grossIncome,
-      halfOfRentShare: matchingRecords.reduce(
-        (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'Boarding House' ? r.rent / 2 : r.rent) || 0),
-        0
-      ),
       waterIncome: matchingRecords.reduce((sum, r) => sum + Number(r.water || 0), 0),
       expenses,
       personalExpenses: matchingExpenses.reduce((sum, e) => sum + Number(e.personalAmount ?? 0), 0),
@@ -599,9 +593,21 @@ const historicalExpenseCapsules = computed<CapsuleMonth[]>(() =>
 );
 
 /** Who paid that year, counted by the name on the receipt and the unit, as the roster was. */
-const historicalTenantCount = computed(
-  () => new Set(historicalIncomeRecords.value.map((r) => `${r.contact.trim()}__${r.unit}`)).size
-);
+/*
+ * People, not name-and-unit pairs (21 Oct 2026). Counting "name__unit" put a tenant who moved units
+ * in twice, and a name typed with extra spaces in twice (2025 read 46; the receipts name 44 people).
+ * One person written two ways is folded by the rule Tenants history uses (lib/tenantHistory.ts), so
+ * the two screens agree; "A, B" on one receipt is two payers there and here.
+ */
+const historicalTenantCount = computed(() => {
+  const people: string[] = [];
+  for (const r of historicalIncomeRecords.value) {
+    for (const payer of payersOn(r.contact)) {
+      if (!people.some((p) => samePerson(p, payer))) people.push(payer);
+    }
+  }
+  return people.length;
+});
 const historicalUnitCount = computed(
   () => new Set(historicalIncomeRecords.value.map((r) => r.unit.toUpperCase())).size
 );
@@ -1161,7 +1167,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         <template v-else>
           <SegmentBar :segments="historicalClusterSplit" :label="`How ${peso(historicalAnnualGrossTotal)} divides across the clusters`" />
           <ul class="flex flex-col gap-2.5">
-            <li v-for="c in historicalClusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-3 text-sm">
+            <li v-for="(c, i) in historicalClusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-3 text-sm">
               <span class="flex min-w-0 items-center gap-2">
                 <span
                   aria-hidden="true"
@@ -1178,7 +1184,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
               </span>
               <span class="flex shrink-0 items-baseline gap-3">
-                <span class="text-xs text-ink-faint tabular">{{ historicalAnnualGrossTotal > 0 ? Math.round((c.value / historicalAnnualGrossTotal) * 100) : 0 }}%</span>
+                <span class="text-xs text-ink-faint tabular">{{ wholePercents(historicalClusterSplit.map((s) => s.value))[i] }}%</span>
                 <span class="tabular font-semibold">{{ peso(c.value) }}</span>
               </span>
             </li>
