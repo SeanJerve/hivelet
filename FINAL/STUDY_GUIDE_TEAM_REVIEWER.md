@@ -35,7 +35,7 @@ defense with it.
 > PostgreSQL, and it runs on her real records.
 >
 > We tested it at three levels: **82 of 83 tests passed (98.8%)**, with no critical defect, and three
-> tenants completed **all 34 task attempts, 31 without help**. Six users rated it on **ISO/IEC 25010**:
+> tenants completed **all 34 task attempts, 31 without help**. Ten respondents rated it on **ISO/IEC 25010**:
 > **4.59 out of 5, Very High Quality**. All four objectives were met.
 
 ---

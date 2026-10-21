@@ -230,7 +230,7 @@ at the root (copy `.env.example`; never commit it); `npm run dev:backend` (port 
 ## 9. What the panel may ask, and what to show
 
 - **"Show us where the login is."** `backend/src/routes/auth.ts:76`, then `services/authService.ts`.
-- **"How are passwords stored?"** Hashed with bcrypt, cost 12, a salt per password (`admin.ts:807`).
+- **"How are passwords stored?"** Hashed with bcrypt, cost 12, a salt per password (`admin.ts:809`).
 - **"How do you stop a tenant seeing another tenant's bill?"** Every protected route names a permission
   (`config/rbac.ts`), tenant queries are scoped to the caller (`scopeService.ts`), and the database
   has row-level security on every table.
