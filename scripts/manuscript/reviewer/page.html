@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap">
 <style>
-/* Layout: a pocket reviewer. One reading column, the four ways to study as a sticky switch on top. */
+/* Layout: a pocket reviewer. One reading column, the five ways to study as a sticky switch on top. */
 :root {
   --bg: #f3f7f4;
   --surface: #ffffff;
@@ -34,6 +34,8 @@
   --good: #5cc08a; --bad: #f28b82; --bad-soft: #3a1d1b; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+/* Practice mode hides the answer with the attribute; a flex or grid rule must not show it again. */
+[hidden] { display: none !important; }
 body { background: var(--bg); color: var(--ink); font: 400 1rem/1.6 var(--body); }
 .wrap { max-width: 46rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 1.5rem 4rem; }
 h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
@@ -48,9 +50,10 @@ code { font-size: 0.85em; background: var(--brand-soft); padding: 0.05em 0.35em;
 .bar > i { display: block; height: 100%; background: var(--brand); width: 0; transition: width 300ms cubic-bezier(0.23, 1, 0.32, 1); }
 
 .modes { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin: 1.25rem calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 0.6rem max(16px, env(safe-area-inset-right, 0px)) 0.6rem max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); border-bottom: 1px solid var(--line); }
-.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; background: var(--surface); border: 1px solid var(--line); border-radius: 0.9rem; padding: 0.25rem; }
-.seg button { font: 700 0.9rem var(--body); border: 0; background: transparent; color: var(--muted); padding: 0.6rem 0.25rem; border-radius: 0.65rem; cursor: pointer; min-height: 2.75rem; }
+.seg { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.2rem; background: var(--surface); border: 1px solid var(--line); border-radius: 0.9rem; padding: 0.25rem; }
+.seg button { font: 700 0.9rem var(--body); border: 0; background: transparent; color: var(--muted); padding: 0.6rem 0.15rem; border-radius: 0.65rem; cursor: pointer; min-height: 2.75rem; min-width: 0; }
 .seg button[aria-selected="true"] { background: var(--brand); color: var(--on-brand); }
+@media (max-width: 26rem) { .seg { gap: 0.1rem; } .seg button { font-size: 0.76rem; padding-inline: 0.05rem; } }
 button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
 
 section[role="tabpanel"] { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
@@ -75,6 +78,7 @@ details.card[open] > summary::after { content: "–"; }
 .known .known-dot { background: var(--brand); border-color: var(--brand); }
 .answer { padding: 0 1rem 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
 .answer p, .answer blockquote { max-width: 40rem; }
+.flag { font-size: 0.8rem; font-weight: 700; color: var(--brand-strong); text-transform: uppercase; letter-spacing: 0.06em; }
 blockquote { margin: 0; padding: 0.65rem 0.85rem; border-left: 3px solid var(--bad); background: var(--bad-soft); border-radius: 0 0.5rem 0.5rem 0; }
 .proof { font-size: 0.85rem; color: var(--muted); }
 .proof b { color: var(--brand-strong); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; margin-right: 0.35rem; }
@@ -87,6 +91,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; }
 .practice { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
 .practice .q { font-family: var(--display); font-size: 1.35rem; font-weight: 600; line-height: 1.25; text-wrap: balance; }
 .practice .meta { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.practice .hint { color: var(--muted); font-size: 0.95rem; }
 
 .num-group { display: flex; flex-direction: column; gap: 0.5rem; }
 .num { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 0.75rem; padding: 0.75rem 1rem; align-items: start; }
@@ -98,6 +103,21 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; }
 .covered .v:not(.shown)::after { content: "Tap to show"; display: block; font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
 @media (max-width: 34rem) { .num { grid-template-columns: 1fr; gap: 0.25rem; } }
 
+/* Reading pages: the story, the screens, the tips. */
+.prose { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.prose h3 { margin-top: 0.5rem; }
+.prose ol, .prose ul { margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.prose > p, .prose li { max-width: 40rem; }
+.pitch { padding: 1.25rem 1.25rem 1.25rem 1.1rem; border-left: 4px solid var(--brand); display: flex; flex-direction: column; gap: 0.85rem; font-size: 1.05rem; }
+.pitch.hidden-text { cursor: pointer; }
+.pitch.hidden-text > p { filter: blur(7px); user-select: none; }
+.pitch.hidden-text::after { content: "Say it aloud first, then tap to check"; color: var(--muted); font-size: 0.85rem; }
+
+.check { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.7rem 1rem; cursor: pointer; }
+.check + .check { border-top: 1px solid var(--line); }
+.check input { flex: 0 0 auto; width: 1.15rem; height: 1.15rem; margin-top: 0.2rem; accent-color: var(--brand); }
+.check.done span { color: var(--muted); text-decoration: line-through; }
+
 .opts { display: grid; gap: 0.5rem; }
 .opt { text-align: left; font: 400 0.95rem/1.45 var(--body); padding: 0.75rem 0.9rem; border-radius: 0.8rem; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; min-height: 2.75rem; }
 .opt.right { border-color: var(--good); background: var(--brand-soft); }
@@ -107,28 +127,33 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; }
 .muted { color: var(--muted); }
 .list { display: flex; flex-direction: column; gap: 0.5rem; }
 .empty { padding: 1.25rem; color: var(--muted); }
-.day h2 { margin-top: 0.5rem; }
-.day .card { padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.day h2 { margin-top: 0.75rem; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:active, .chip:active, .seg button:active { transform: none; } }
 </style>
 
 <div class="wrap">
   <header>
     <h1>Hivelet defense reviewer</h1>
-    <p class="lede">The panel's likely questions, the numbers to know cold, and a quiz, taken word for word from the team's study guides as of 21 October 2026. If a chapter says something different, the chapter wins.</p>
+    <p class="lede">The whole capstone in one place: the story, the screens, the panel's likely questions, every source, the numbers to know cold, and the plan for the day. Taken word for word from the team's study guides as of 21 October 2026. If a chapter says something different, the chapter wins.</p>
     <div class="progress"><span id="prog-text">0 known</span><div class="bar" aria-hidden="true"><i id="prog-bar"></i></div><button class="btn" id="reset-known" type="button">Start over</button></div>
   </header>
 
   <nav class="modes" aria-label="Ways to study">
     <div class="seg" role="tablist">
-      <button role="tab" id="tab-q" aria-controls="p-q" aria-selected="true" type="button">Questions</button>
+      <button role="tab" id="tab-l" aria-controls="p-l" aria-selected="true" type="button">Learn</button>
+      <button role="tab" id="tab-q" aria-controls="p-q" aria-selected="false" type="button">Questions</button>
       <button role="tab" id="tab-n" aria-controls="p-n" aria-selected="false" type="button">Numbers</button>
       <button role="tab" id="tab-z" aria-controls="p-z" aria-selected="false" type="button">Quiz</button>
       <button role="tab" id="tab-d" aria-controls="p-d" aria-selected="false" type="button">The day</button>
     </div>
   </nav>
 
-  <section role="tabpanel" id="p-q" aria-labelledby="tab-q">
+  <section role="tabpanel" id="p-l" aria-labelledby="tab-l">
+    <div class="chips" id="l-chips" role="group" aria-label="Part"></div>
+    <div id="l-box" class="list"></div>
+  </section>
+
+  <section role="tabpanel" id="p-q" aria-labelledby="tab-q" hidden>
     <div class="tools">
       <input class="search" id="q-search" type="search" placeholder="Search the questions" aria-label="Search the questions">
       <button class="btn primary" id="q-practice" type="button">Practice one at a time</button>
@@ -147,14 +172,13 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; }
   </section>
 
   <section role="tabpanel" id="p-z" aria-labelledby="tab-z" hidden>
+    <div class="chips" id="z-chips" role="group" aria-label="What to quiz"></div>
     <div id="z-box"></div>
   </section>
 
   <section role="tabpanel" id="p-d" aria-labelledby="tab-d" class="day" hidden>
-    <h2>How to answer any question</h2>
-    <div class="card" id="d-how"></div>
-    <h2>If the live demo fails</h2>
-    <div class="card" id="d-fail"></div>
+    <div class="chips" id="d-chips" role="group" aria-label="Part"></div>
+    <div id="d-box" class="list"></div>
   </section>
 </div>
 
@@ -165,6 +189,7 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const KEY = 'hivelet-reviewer-known';
 const known = new Set(store.get(KEY, []));
 const qid = (q) => q.q;
@@ -173,6 +198,26 @@ function updateProgress() {
   const n = DATA.questions.filter((q) => known.has(qid(q))).length;
   $('#prog-text').textContent = `${n} of ${DATA.questions.length} questions known`;
   $('#prog-bar').style.width = `${(n / DATA.questions.length) * 100}%`;
+}
+
+/* A row of chips that shows one part at a time and remembers which. */
+function chipRow(el, parts, key, onPick) {
+  let current = store.get(key, parts[0].id);
+  if (!parts.some((p) => p.id === current)) current = parts[0].id;
+  const paint = () => [...el.children].forEach((c, i) => c.setAttribute('aria-pressed', String(parts[i].id === current)));
+  for (const p of parts) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = p.title;
+    b.addEventListener('click', () => { current = p.id; store.set(key, current); paint(); onPick(current); });
+    el.appendChild(b);
+  }
+  paint();
+  onPick(current);
+}
+function card(html, cls = 'card prose') {
+  const d = document.createElement('div');
+  d.className = cls; d.innerHTML = html;
+  return d;
 }
 
 /* ---------- tabs ---------- */
@@ -189,15 +234,67 @@ tabs.forEach((t, i) => {
   });
 });
 
+/* ---------- learn ---------- */
+function coverList(box, rows, placeholder) {
+  const tools = document.createElement('div');
+  tools.className = 'tools';
+  tools.innerHTML = `<input class="search" type="search"><label class="toggle"><input type="checkbox"> Cover the meanings</label>`;
+  const [search, cover] = tools.querySelectorAll('input');
+  search.placeholder = placeholder; search.setAttribute('aria-label', placeholder);
+  const list = document.createElement('div');
+  list.className = 'num-group';
+  const draw = () => {
+    const term = search.value.trim().toLowerCase();
+    list.innerHTML = '';
+    list.classList.toggle('covered', cover.checked);
+    const hits = rows.filter((r) => !term || (r.k + ' ' + r.v).replace(/<[^>]+>/g, '').toLowerCase().includes(term));
+    for (const r of hits) {
+      const row = card(`<div class="k">${r.k}</div><div class="v"><span>${r.v}</span></div>`, 'card num');
+      const v = row.querySelector('.v');
+      v.addEventListener('click', () => v.classList.add('shown'));
+      list.appendChild(row);
+    }
+    if (!hits.length) list.appendChild(card('No word matches that search.', 'card empty'));
+  };
+  search.addEventListener('input', draw);
+  cover.addEventListener('change', draw);
+  draw();
+  box.append(tools, list);
+}
+const learnParts = [
+  { id: 'pitch', title: 'In 90 seconds' },
+  { id: 'story', title: 'The story' },
+  { id: 'objectives', title: 'Objectives' },
+  { id: 'tour', title: 'The screens' },
+  { id: 'words', title: 'Words' },
+];
+chipRow($('#l-chips'), learnParts, 'hivelet-reviewer-learn', (id) => {
+  const box = $('#l-box');
+  box.innerHTML = '';
+  if (id === 'pitch') {
+    box.appendChild(card(DATA.learn.intro));
+    const tools = card(`<label class="toggle"><input type="checkbox" id="l-cover"> Cover it, say it aloud, then check</label>`, 'tools');
+    const pitch = card(DATA.learn.pitch, 'card pitch');
+    pitch.addEventListener('click', () => pitch.classList.remove('hidden-text'));
+    tools.querySelector('input').addEventListener('change', (e) => pitch.classList.toggle('hidden-text', e.target.checked));
+    box.append(tools, pitch);
+  } else if (id === 'words') {
+    coverList(box, DATA.words, 'Search the words');
+  } else {
+    box.appendChild(card(DATA.learn[id]));
+  }
+});
+
 /* ---------- questions ---------- */
 let topic = 0;
 const chips = $('#q-chips');
 [{ id: 0, title: 'All' }, ...DATA.sections].forEach((s) => {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'chip'; b.textContent = s.title; b.setAttribute('aria-pressed', String(s.id === 0));
-  b.addEventListener('click', () => { topic = s.id; [...chips.children].forEach((c) => c.setAttribute('aria-pressed', String(c === b))); renderQuestions(); });
+  b.addEventListener('click', () => { topic = s.id; [...chips.children].forEach((c) => c.setAttribute('aria-pressed', String(c === b))); renderQuestions(); if (!$('#q-practice-box').hidden) { deck = []; nextCard(); } });
   chips.appendChild(b);
 });
+const proof = (q) => (q.where ? `<p class="proof"><b>${q.pl || 'Proof'}</b>${q.where}</p>` : '');
 function knowButton(q, after) {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'btn';
@@ -227,7 +324,7 @@ function renderQuestions() {
       shown++;
       const d = document.createElement('details');
       d.className = 'card' + (known.has(qid(q)) ? ' known' : '');
-      d.innerHTML = `<summary><span class="known-dot" aria-hidden="true"></span><span></span></summary><div class="answer">${q.a}${q.where ? `<p class="proof"><b>Proof</b>${q.where}</p>` : ''}<div class="row-actions"></div></div>`;
+      d.innerHTML = `<summary><span class="known-dot" aria-hidden="true"></span><span></span></summary><div class="answer">${q.a}${proof(q)}<div class="row-actions"></div></div>`;
       d.querySelector('summary > span:last-child').textContent = q.q;
       d.querySelector('.row-actions').appendChild(knowButton(q, () => d.classList.toggle('known', known.has(qid(q)))));
       list.appendChild(d);
@@ -245,13 +342,14 @@ function nextCard() {
   if (!deck.length) {
     const pool = DATA.questions.filter((q) => (!topic || q.s === topic));
     const fresh = pool.filter((q) => !known.has(qid(q)));
-    deck = (fresh.length ? fresh : pool).slice().sort(() => Math.random() - 0.5);
+    deck = shuffle(fresh.length ? fresh : pool);
   }
   const q = deck.pop();
   const sec = DATA.sections.find((s) => s.id === q.s);
-  box.innerHTML = `<div class="card practice"><span class="meta"></span><p class="q"></p><div class="row-actions"><button class="btn primary" type="button" id="pr-show">Show the answer</button><button class="btn" type="button" id="pr-close">Back to the list</button></div><div class="answer" id="pr-ans" hidden style="padding:0">${q.a}${q.where ? `<p class="proof"><b>Proof</b>${q.where}</p>` : ''}<div class="row-actions" id="pr-mark"></div></div></div>`;
-  box.querySelector('.meta').textContent = sec.title;
+  box.innerHTML = `<div class="card practice"><span class="meta"></span><p class="q"></p>${sec.hint ? '<p class="hint"></p>' : ''}<div class="row-actions"><button class="btn primary" type="button" id="pr-show">Show the answer</button><button class="btn" type="button" id="pr-close">Back to the list</button></div><div class="answer" id="pr-ans" hidden style="padding:0">${q.a}${proof(q)}<div class="row-actions" id="pr-mark"></div></div></div>`;
+  box.querySelector('.meta').textContent = `${sec.title} · ${deck.length} left in this round`;
   box.querySelector('.q').textContent = q.q;
+  if (sec.hint) box.querySelector('.hint').textContent = sec.hint;
   $('#pr-show').addEventListener('click', () => { $('#pr-ans').hidden = false; $('#pr-show').hidden = true; });
   $('#pr-close').addEventListener('click', () => { box.hidden = true; $('#q-list').hidden = false; renderQuestions(); });
   const got = document.createElement('button');
@@ -278,9 +376,7 @@ function renderNumbers() {
     const box = document.createElement('div');
     box.className = 'num-group';
     for (const r of g.rows) {
-      const row = document.createElement('div');
-      row.className = 'card num';
-      row.innerHTML = `<div class="k">${r.k}</div><div class="v"><span>${r.v}</span></div>`;
+      const row = card(`<div class="k">${r.k}</div><div class="v"><span>${r.v}</span></div>`, 'card num');
       const v = row.querySelector('.v');
       v.addEventListener('click', () => v.classList.add('shown'));
       box.appendChild(row);
@@ -290,16 +386,19 @@ function renderNumbers() {
 }
 $('#n-cover').addEventListener('change', renderNumbers);
 
-/* ---------- quiz: each figure's own value against three others from the same table ---------- */
-const allRows = DATA.numbers.flatMap((g) => g.rows.map((r) => ({ ...r, group: g.title })));
+/* ---------- quiz: each answer against three others from the same table ---------- */
+const figureRows = DATA.numbers.flatMap((g) => g.rows.map((r) => ({ ...r, group: g.title })));
+const wordRows = DATA.words.map((r) => ({ ...r, group: 'Words' }));
+let quizPool = figureRows;
 let quiz = null;
 function newQuiz() {
-  const picks = allRows.slice().sort(() => Math.random() - 0.5).slice(0, 10);
+  const picks = shuffle(quizPool).slice(0, 10);
   quiz = { items: picks.map((r) => {
-    const same = allRows.filter((o) => o.group === r.group && o.plain !== r.plain);
-    const rest = allRows.filter((o) => o.group !== r.group && o.plain !== r.plain);
-    const wrong = [...same.sort(() => Math.random() - 0.5), ...rest.sort(() => Math.random() - 0.5)].slice(0, 3);
-    return { r, opts: [r, ...wrong].sort(() => Math.random() - 0.5), picked: null };
+    const all = r.group === 'Words' ? wordRows : figureRows;
+    const same = all.filter((o) => o.group === r.group && o.plain !== r.plain);
+    const rest = all.filter((o) => o.group !== r.group && o.plain !== r.plain);
+    const wrong = [...shuffle(same), ...shuffle(rest)].slice(0, 3);
+    return { r, opts: shuffle([r, ...wrong]), picked: null };
   }), i: 0 };
   renderQuiz();
 }
@@ -309,16 +408,14 @@ function renderQuiz() {
     const right = quiz.items.filter((x) => x.picked === x.r).length;
     box.innerHTML = `<div class="card practice"><span class="meta">Your score</span><p class="score">${right} / ${quiz.items.length}</p><p class="muted">${right === quiz.items.length ? 'Every one right.' : 'The ones you missed are below, with the right answer.'}</p><div class="list" id="z-missed"></div><div class="row-actions"><button class="btn primary" id="z-again" type="button">New quiz</button></div></div>`;
     for (const x of quiz.items.filter((x) => x.picked !== x.r)) {
-      const d = document.createElement('div');
-      d.className = 'card num';
-      d.innerHTML = `<div class="k">${x.r.k}</div><div class="v"><span>${x.r.v}</span></div>`;
-      $('#z-missed').appendChild(d);
+      $('#z-missed').appendChild(card(`<div class="k">${x.r.k}</div><div class="v"><span>${x.r.v}</span></div>`, 'card num'));
     }
     $('#z-again').addEventListener('click', newQuiz);
     return;
   }
   const it = quiz.items[quiz.i];
-  box.innerHTML = `<div class="card practice"><span class="meta">Question ${quiz.i + 1} of ${quiz.items.length} · ${it.r.group}</span><p class="q">${it.r.k}</p><div class="opts" id="z-opts"></div><div class="row-actions"><button class="btn primary" id="z-next" type="button" hidden>Next</button></div></div>`;
+  const ask = it.r.group === 'Words' ? 'What does this mean here?' : it.r.group;
+  box.innerHTML = `<div class="card practice"><span class="meta">Question ${quiz.i + 1} of ${quiz.items.length} · ${ask}</span><p class="q">${it.r.k}</p><div class="opts" id="z-opts"></div><div class="row-actions"><button class="btn primary" id="z-next" type="button" hidden>Next</button></div></div>`;
   for (const o of it.opts) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'opt'; b.innerHTML = o.v;
@@ -331,16 +428,57 @@ function renderQuiz() {
   }
   $('#z-next').addEventListener('click', () => { quiz.i++; renderQuiz(); });
 }
+chipRow($('#z-chips'), [
+  { id: 'figures', title: 'The numbers' },
+  { id: 'words', title: 'The words' },
+  { id: 'both', title: 'Both' },
+], 'hivelet-reviewer-quiz', (id) => {
+  quizPool = id === 'figures' ? figureRows : id === 'words' ? wordRows : [...figureRows, ...wordRows];
+  newQuiz();
+});
 
 /* ---------- the day ---------- */
-$('#d-how').innerHTML = DATA.how;
-$('#d-fail').innerHTML = DATA.failPlan;
+const CHECKED = 'hivelet-reviewer-checked';
+const checked = new Set(store.get(CHECKED, []));
+function checklist(items) {
+  const box = document.createElement('div');
+  box.className = 'card';
+  for (const html of items) {
+    const row = document.createElement('label');
+    row.className = 'check' + (checked.has(html) ? ' done' : '');
+    row.innerHTML = `<input type="checkbox"${checked.has(html) ? ' checked' : ''}><span>${html}</span>`;
+    row.querySelector('input').addEventListener('change', (e) => {
+      e.target.checked ? checked.add(html) : checked.delete(html);
+      row.classList.toggle('done', e.target.checked);
+      store.set(CHECKED, [...checked]);
+    });
+    box.appendChild(row);
+  }
+  return box;
+}
+function heading(text) { const h = document.createElement('h2'); h.textContent = text; return h; }
+chipRow($('#d-chips'), [
+  { id: 'answer', title: 'Answering' },
+  { id: 'tips', title: 'Tips' },
+  { id: 'demo', title: 'The demo' },
+  { id: 'notice', title: 'On the live site' },
+], 'hivelet-reviewer-day', (id) => {
+  const box = $('#d-box');
+  box.innerHTML = '';
+  if (id === 'answer') box.append(heading('How to answer any question'), card(DATA.day.how));
+  if (id === 'tips') box.append(card(DATA.day.tips));
+  if (id === 'notice') box.append(heading('Five things the panel may notice'), card(DATA.day.notice));
+  if (id === 'demo') {
+    box.append(heading('The day before'), checklist(DATA.day.before),
+      heading('If something fails'), card(DATA.day.fail),
+      heading('Right after'), checklist(DATA.day.after));
+  }
+});
 
 $('#reset-known').addEventListener('click', () => { known.clear(); saveKnown(); renderQuestions(); });
 renderQuestions();
 renderNumbers();
-newQuiz();
 updateProgress();
-const lastTab = document.getElementById(store.get('hivelet-reviewer-tab', 'tab-q'));
+const lastTab = document.getElementById(store.get('hivelet-reviewer-tab', 'tab-l'));
 if (lastTab) show(lastTab);
 </script>
