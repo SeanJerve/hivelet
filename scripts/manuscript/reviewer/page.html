@@ -1,0 +1,346 @@
+<title>Hivelet Defense Reviewer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap">
+<style>
+/* Layout: a pocket reviewer. One reading column, the four ways to study as a sticky switch on top. */
+:root {
+  --bg: #f3f7f4;
+  --surface: #ffffff;
+  --ink: #101713;
+  --muted: #56635b;
+  --line: #d9e3dc;
+  --brand: #17603f;
+  --brand-strong: #0e4a30;
+  --brand-soft: #e2f0e7;
+  --on-brand: #ffffff;
+  --good: #17603f;
+  --bad: #b3261e;
+  --bad-soft: #fbe9e7;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1411; --surface: #16201b; --ink: #eef5f0; --muted: #a6b7ac; --line: #26342c;
+    --brand: #5cc08a; --brand-strong: #8fd9af; --brand-soft: #1b3125; --on-brand: #0b1a12;
+    --good: #5cc08a; --bad: #f28b82; --bad-soft: #3a1d1b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1411; --surface: #16201b; --ink: #eef5f0; --muted: #a6b7ac; --line: #26342c;
+  --brand: #5cc08a; --brand-strong: #8fd9af; --brand-soft: #1b3125; --on-brand: #0b1a12;
+  --good: #5cc08a; --bad: #f28b82; --bad-soft: #3a1d1b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 1rem/1.6 var(--body); }
+.wrap { max-width: 46rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 1.5rem 4rem; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(1.75rem, 5vw, 2.4rem); font-weight: 700; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+code { font-size: 0.85em; background: var(--brand-soft); padding: 0.05em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+.lede { color: var(--muted); margin-top: 0.5rem; max-width: 40rem; }
+.progress { margin-top: 1rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.9rem; color: var(--muted); }
+.bar { flex: 1 1 10rem; height: 0.5rem; background: var(--line); border-radius: 99px; overflow: hidden; min-width: 8rem; }
+.bar > i { display: block; height: 100%; background: var(--brand); width: 0; transition: width 300ms cubic-bezier(0.23, 1, 0.32, 1); }
+
+.modes { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin: 1.25rem calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 0.6rem max(16px, env(safe-area-inset-right, 0px)) 0.6rem max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); border-bottom: 1px solid var(--line); }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; background: var(--surface); border: 1px solid var(--line); border-radius: 0.9rem; padding: 0.25rem; }
+.seg button { font: 700 0.9rem var(--body); border: 0; background: transparent; color: var(--muted); padding: 0.6rem 0.25rem; border-radius: 0.65rem; cursor: pointer; min-height: 2.75rem; }
+.seg button[aria-selected="true"] { background: var(--brand); color: var(--on-brand); }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+section[role="tabpanel"] { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.tools { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.search { flex: 1 1 14rem; min-width: 0; font: inherit; padding: 0.65rem 0.9rem; border-radius: 0.75rem; border: 1px solid var(--line); background: var(--surface); color: var(--ink); min-height: 2.75rem; }
+.chips { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.25rem; scrollbar-width: thin; }
+.chip, .btn { font: 700 0.85rem var(--body); border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 0.5rem 0.85rem; border-radius: 99px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+.chip[aria-pressed="true"] { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-strong); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+.btn:active, .chip:active, .seg button:active { transform: scale(0.97); }
+.toggle { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.9rem; color: var(--muted); cursor: pointer; min-height: 2.5rem; }
+.toggle input { width: 1.1rem; height: 1.1rem; accent-color: var(--brand); }
+
+.sec-title { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-top: 0.5rem; }
+.sec-title span { color: var(--muted); font-size: 0.85rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; }
+details.card > summary { list-style: none; cursor: pointer; padding: 0.9rem 1rem; display: flex; gap: 0.75rem; align-items: flex-start; font-weight: 700; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary::after { content: "+"; margin-left: auto; color: var(--muted); font-weight: 400; font-size: 1.2rem; line-height: 1.2; }
+details.card[open] > summary::after { content: "–"; }
+.known-dot { flex: 0 0 auto; width: 0.6rem; height: 0.6rem; border-radius: 99px; margin-top: 0.55rem; border: 2px solid var(--line); }
+.known .known-dot { background: var(--brand); border-color: var(--brand); }
+.answer { padding: 0 1rem 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.answer p, .answer blockquote { max-width: 40rem; }
+blockquote { margin: 0; padding: 0.65rem 0.85rem; border-left: 3px solid var(--bad); background: var(--bad-soft); border-radius: 0 0.5rem 0.5rem 0; }
+.proof { font-size: 0.85rem; color: var(--muted); }
+.proof b { color: var(--brand-strong); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; margin-right: 0.35rem; }
+.row-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 700; font-size: 0.8rem; }
+
+.practice { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.practice .q { font-family: var(--display); font-size: 1.35rem; font-weight: 600; line-height: 1.25; text-wrap: balance; }
+.practice .meta { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.num-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.num { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 0.75rem; padding: 0.75rem 1rem; align-items: start; }
+.num .k { color: var(--muted); font-size: 0.92rem; }
+.num .v { font-variant-numeric: tabular-nums; }
+.num .v strong { color: var(--brand-strong); }
+.covered .v { cursor: pointer; }
+.covered .v:not(.shown) > span { filter: blur(6px); user-select: none; }
+.covered .v:not(.shown)::after { content: "Tap to show"; display: block; font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+@media (max-width: 34rem) { .num { grid-template-columns: 1fr; gap: 0.25rem; } }
+
+.opts { display: grid; gap: 0.5rem; }
+.opt { text-align: left; font: 400 0.95rem/1.45 var(--body); padding: 0.75rem 0.9rem; border-radius: 0.8rem; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; min-height: 2.75rem; }
+.opt.right { border-color: var(--good); background: var(--brand-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt[disabled] { cursor: default; }
+.score { font-family: var(--display); font-size: 2.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.list { display: flex; flex-direction: column; gap: 0.5rem; }
+.empty { padding: 1.25rem; color: var(--muted); }
+.day h2 { margin-top: 0.5rem; }
+.day .card { padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:active, .chip:active, .seg button:active { transform: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Hivelet defense reviewer</h1>
+    <p class="lede">The panel's likely questions, the numbers to know cold, and a quiz, taken word for word from the team's study guides as of 21 October 2026. If a chapter says something different, the chapter wins.</p>
+    <div class="progress"><span id="prog-text">0 known</span><div class="bar" aria-hidden="true"><i id="prog-bar"></i></div><button class="btn" id="reset-known" type="button">Start over</button></div>
+  </header>
+
+  <nav class="modes" aria-label="Ways to study">
+    <div class="seg" role="tablist">
+      <button role="tab" id="tab-q" aria-controls="p-q" aria-selected="true" type="button">Questions</button>
+      <button role="tab" id="tab-n" aria-controls="p-n" aria-selected="false" type="button">Numbers</button>
+      <button role="tab" id="tab-z" aria-controls="p-z" aria-selected="false" type="button">Quiz</button>
+      <button role="tab" id="tab-d" aria-controls="p-d" aria-selected="false" type="button">The day</button>
+    </div>
+  </nav>
+
+  <section role="tabpanel" id="p-q" aria-labelledby="tab-q">
+    <div class="tools">
+      <input class="search" id="q-search" type="search" placeholder="Search the questions" aria-label="Search the questions">
+      <button class="btn primary" id="q-practice" type="button">Practice one at a time</button>
+    </div>
+    <div class="chips" id="q-chips" role="group" aria-label="Topic"></div>
+    <label class="toggle"><input type="checkbox" id="q-hide"> Hide the ones I know</label>
+    <div id="q-practice-box" hidden></div>
+    <div id="q-list" class="list"></div>
+  </section>
+
+  <section role="tabpanel" id="p-n" aria-labelledby="tab-n" hidden>
+    <div class="tools">
+      <label class="toggle"><input type="checkbox" id="n-cover"> Cover the answers, then tap to check yourself</label>
+    </div>
+    <div id="n-list" class="list"></div>
+  </section>
+
+  <section role="tabpanel" id="p-z" aria-labelledby="tab-z" hidden>
+    <div id="z-box"></div>
+  </section>
+
+  <section role="tabpanel" id="p-d" aria-labelledby="tab-d" class="day" hidden>
+    <h2>How to answer any question</h2>
+    <div class="card" id="d-how"></div>
+    <h2>If the live demo fails</h2>
+    <div class="card" id="d-fail"></div>
+  </section>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const $ = (s) => document.querySelector(s);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const KEY = 'hivelet-reviewer-known';
+const known = new Set(store.get(KEY, []));
+const qid = (q) => q.q;
+function saveKnown() { store.set(KEY, [...known]); updateProgress(); }
+function updateProgress() {
+  const n = DATA.questions.filter((q) => known.has(qid(q))).length;
+  $('#prog-text').textContent = `${n} of ${DATA.questions.length} questions known`;
+  $('#prog-bar').style.width = `${(n / DATA.questions.length) * 100}%`;
+}
+
+/* ---------- tabs ---------- */
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+function show(tab) {
+  tabs.forEach((t) => { const on = t === tab; t.setAttribute('aria-selected', String(on)); $('#' + t.getAttribute('aria-controls')).hidden = !on; });
+  store.set('hivelet-reviewer-tab', tab.id);
+}
+tabs.forEach((t, i) => {
+  t.addEventListener('click', () => show(t));
+  t.addEventListener('keydown', (e) => {
+    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (d) { const n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); show(n); }
+  });
+});
+
+/* ---------- questions ---------- */
+let topic = 0;
+const chips = $('#q-chips');
+[{ id: 0, title: 'All' }, ...DATA.sections].forEach((s) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'chip'; b.textContent = s.title; b.setAttribute('aria-pressed', String(s.id === 0));
+  b.addEventListener('click', () => { topic = s.id; [...chips.children].forEach((c) => c.setAttribute('aria-pressed', String(c === b))); renderQuestions(); });
+  chips.appendChild(b);
+});
+function knowButton(q, after) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'btn';
+  const paint = () => { b.textContent = known.has(qid(q)) ? 'Mark as still learning' : 'I know this one'; };
+  paint();
+  b.addEventListener('click', () => { known.has(qid(q)) ? known.delete(qid(q)) : known.add(qid(q)); saveKnown(); paint(); after && after(); });
+  return b;
+}
+function renderQuestions() {
+  const term = $('#q-search').value.trim().toLowerCase();
+  const hide = $('#q-hide').checked;
+  const list = $('#q-list');
+  list.innerHTML = '';
+  let shown = 0;
+  for (const s of DATA.sections) {
+    if (topic && s.id !== topic) continue;
+    const items = DATA.questions.filter((q) => q.s === s.id)
+      .filter((q) => !hide || !known.has(qid(q)))
+      .filter((q) => !term || (q.q + ' ' + q.a).toLowerCase().replace(/<[^>]+>/g, '').includes(term));
+    if (!items.length) continue;
+    const h = document.createElement('div');
+    h.className = 'sec-title';
+    h.innerHTML = `<h2></h2><span>${items.length} ${items.length === 1 ? 'question' : 'questions'}</span>`;
+    h.querySelector('h2').textContent = s.title;
+    list.appendChild(h);
+    for (const q of items) {
+      shown++;
+      const d = document.createElement('details');
+      d.className = 'card' + (known.has(qid(q)) ? ' known' : '');
+      d.innerHTML = `<summary><span class="known-dot" aria-hidden="true"></span><span></span></summary><div class="answer">${q.a}${q.where ? `<p class="proof"><b>Proof</b>${q.where}</p>` : ''}<div class="row-actions"></div></div>`;
+      d.querySelector('summary > span:last-child').textContent = q.q;
+      d.querySelector('.row-actions').appendChild(knowButton(q, () => d.classList.toggle('known', known.has(qid(q)))));
+      list.appendChild(d);
+    }
+  }
+  if (!shown) list.innerHTML = `<div class="card empty">${hide ? 'You have marked every question here as known.' : 'No question matches that search.'}</div>`;
+}
+$('#q-search').addEventListener('input', renderQuestions);
+$('#q-hide').addEventListener('change', renderQuestions);
+
+/* practice: one question at a time, the ones not yet known first */
+let deck = [];
+function nextCard() {
+  const box = $('#q-practice-box');
+  if (!deck.length) {
+    const pool = DATA.questions.filter((q) => (!topic || q.s === topic));
+    const fresh = pool.filter((q) => !known.has(qid(q)));
+    deck = (fresh.length ? fresh : pool).slice().sort(() => Math.random() - 0.5);
+  }
+  const q = deck.pop();
+  const sec = DATA.sections.find((s) => s.id === q.s);
+  box.innerHTML = `<div class="card practice"><span class="meta"></span><p class="q"></p><div class="row-actions"><button class="btn primary" type="button" id="pr-show">Show the answer</button><button class="btn" type="button" id="pr-close">Back to the list</button></div><div class="answer" id="pr-ans" hidden style="padding:0">${q.a}${q.where ? `<p class="proof"><b>Proof</b>${q.where}</p>` : ''}<div class="row-actions" id="pr-mark"></div></div></div>`;
+  box.querySelector('.meta').textContent = sec.title;
+  box.querySelector('.q').textContent = q.q;
+  $('#pr-show').addEventListener('click', () => { $('#pr-ans').hidden = false; $('#pr-show').hidden = true; });
+  $('#pr-close').addEventListener('click', () => { box.hidden = true; $('#q-list').hidden = false; renderQuestions(); });
+  const got = document.createElement('button');
+  got.type = 'button'; got.className = 'btn primary'; got.textContent = 'I knew it, next';
+  got.addEventListener('click', () => { known.add(qid(q)); saveKnown(); nextCard(); });
+  const again = document.createElement('button');
+  again.type = 'button'; again.className = 'btn'; again.textContent = 'Not yet, next';
+  again.addEventListener('click', () => { known.delete(qid(q)); saveKnown(); nextCard(); });
+  $('#pr-mark').append(got, again);
+}
+$('#q-practice').addEventListener('click', () => { deck = []; $('#q-practice-box').hidden = false; $('#q-list').hidden = true; nextCard(); $('#q-practice-box').scrollIntoView({ block: 'nearest' }); });
+
+/* ---------- numbers ---------- */
+function renderNumbers() {
+  const list = $('#n-list');
+  list.innerHTML = '';
+  list.classList.toggle('covered', $('#n-cover').checked);
+  for (const g of DATA.numbers) {
+    const h = document.createElement('div');
+    h.className = 'sec-title';
+    h.innerHTML = '<h2></h2>';
+    h.querySelector('h2').textContent = g.title;
+    list.appendChild(h);
+    const box = document.createElement('div');
+    box.className = 'num-group';
+    for (const r of g.rows) {
+      const row = document.createElement('div');
+      row.className = 'card num';
+      row.innerHTML = `<div class="k">${r.k}</div><div class="v"><span>${r.v}</span></div>`;
+      const v = row.querySelector('.v');
+      v.addEventListener('click', () => v.classList.add('shown'));
+      box.appendChild(row);
+    }
+    list.appendChild(box);
+  }
+}
+$('#n-cover').addEventListener('change', renderNumbers);
+
+/* ---------- quiz: each figure's own value against three others from the same table ---------- */
+const allRows = DATA.numbers.flatMap((g) => g.rows.map((r) => ({ ...r, group: g.title })));
+let quiz = null;
+function newQuiz() {
+  const picks = allRows.slice().sort(() => Math.random() - 0.5).slice(0, 10);
+  quiz = { items: picks.map((r) => {
+    const same = allRows.filter((o) => o.group === r.group && o.plain !== r.plain);
+    const rest = allRows.filter((o) => o.group !== r.group && o.plain !== r.plain);
+    const wrong = [...same.sort(() => Math.random() - 0.5), ...rest.sort(() => Math.random() - 0.5)].slice(0, 3);
+    return { r, opts: [r, ...wrong].sort(() => Math.random() - 0.5), picked: null };
+  }), i: 0 };
+  renderQuiz();
+}
+function renderQuiz() {
+  const box = $('#z-box');
+  if (quiz.i >= quiz.items.length) {
+    const right = quiz.items.filter((x) => x.picked === x.r).length;
+    box.innerHTML = `<div class="card practice"><span class="meta">Your score</span><p class="score">${right} / ${quiz.items.length}</p><p class="muted">${right === quiz.items.length ? 'Every one right.' : 'The ones you missed are below, with the right answer.'}</p><div class="list" id="z-missed"></div><div class="row-actions"><button class="btn primary" id="z-again" type="button">New quiz</button></div></div>`;
+    for (const x of quiz.items.filter((x) => x.picked !== x.r)) {
+      const d = document.createElement('div');
+      d.className = 'card num';
+      d.innerHTML = `<div class="k">${x.r.k}</div><div class="v"><span>${x.r.v}</span></div>`;
+      $('#z-missed').appendChild(d);
+    }
+    $('#z-again').addEventListener('click', newQuiz);
+    return;
+  }
+  const it = quiz.items[quiz.i];
+  box.innerHTML = `<div class="card practice"><span class="meta">Question ${quiz.i + 1} of ${quiz.items.length} · ${it.r.group}</span><p class="q">${it.r.k}</p><div class="opts" id="z-opts"></div><div class="row-actions"><button class="btn primary" id="z-next" type="button" hidden>Next</button></div></div>`;
+  for (const o of it.opts) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'opt'; b.innerHTML = o.v;
+    b.addEventListener('click', () => {
+      it.picked = o;
+      [...$('#z-opts').children].forEach((c, k) => { c.disabled = true; if (it.opts[k] === it.r) c.classList.add('right'); else if (it.opts[k] === o) c.classList.add('wrong'); });
+      $('#z-next').hidden = false; $('#z-next').focus();
+    });
+    $('#z-opts').appendChild(b);
+  }
+  $('#z-next').addEventListener('click', () => { quiz.i++; renderQuiz(); });
+}
+
+/* ---------- the day ---------- */
+$('#d-how').innerHTML = DATA.how;
+$('#d-fail').innerHTML = DATA.failPlan;
+
+$('#reset-known').addEventListener('click', () => { known.clear(); saveKnown(); renderQuestions(); });
+renderQuestions();
+renderNumbers();
+newQuiz();
+updateProgress();
+const lastTab = document.getElementById(store.get('hivelet-reviewer-tab', 'tab-q'));
+if (lastTab) show(lastTab);
+</script>
