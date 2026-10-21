@@ -22,7 +22,7 @@ import {
   asListedUnitCode,
   type IncomeRecord,
 } from '@/lib/systemState';
-import { peso, CLUSTERS } from '@/lib/canonicalUnits';
+import { peso, CLUSTERS, wholePercents } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
@@ -1301,7 +1301,7 @@ const isDownloadOpen = ref(false);
           <!-- The legend in two columns on a phone, name and share; the amounts
                from 768px (Loyd, 2026-10-03). -->
           <ul class="grid grid-cols-2 gap-x-3 gap-y-2 max-md:text-xs md:flex md:flex-col md:gap-2.5">
-            <li v-for="c in clusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-2 md:gap-3 md:text-sm">
+            <li v-for="(c, i) in clusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-2 md:gap-3 md:text-sm">
               <span class="flex min-w-0 items-center gap-2">
                 <span
                   aria-hidden="true"
@@ -1320,7 +1320,7 @@ const isDownloadOpen = ref(false);
               </span>
               <span class="flex shrink-0 items-baseline gap-3">
                 <span class="text-xs text-ink-faint tabular">
-                  {{ collectedAltogether > 0 ? Math.round((c.value / collectedAltogether) * 100) : 0 }}%
+                  {{ wholePercents(clusterSplit.map((s) => s.value))[i] }}%
                 </span>
                 <span class="tabular font-semibold max-md:hidden">{{ peso(c.value) }}</span>
               </span>

@@ -6,7 +6,7 @@ import { rememberFilters } from '@/lib/savedFilters';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
-import { peso } from '@/lib/canonicalUnits';
+import { peso, wholePercents } from '@/lib/canonicalUnits';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
@@ -1098,7 +1098,7 @@ async function handleEditExpense() {
           <!-- The legend in two columns on a phone, name and share; the amounts
                from 768px (Loyd, 2026-10-03). -->
           <ul class="grid grid-cols-2 gap-x-3 gap-y-2 max-md:text-xs md:flex md:flex-col md:gap-2.5">
-            <li v-for="a in areaSplit" :key="a.label" class="flex min-w-0 items-center justify-between gap-2 md:gap-3 md:text-sm">
+            <li v-for="(a, i) in areaSplit" :key="a.label" class="flex min-w-0 items-center justify-between gap-2 md:gap-3 md:text-sm">
               <span class="flex min-w-0 items-center gap-2">
                 <span
                   aria-hidden="true"
@@ -1117,7 +1117,7 @@ async function handleEditExpense() {
               </span>
               <span class="flex shrink-0 items-baseline gap-3">
                 <span class="text-xs text-ink-faint tabular">
-                  {{ totalJuly > 0 ? Math.round((a.value / totalJuly) * 100) : 0 }}%
+                  {{ wholePercents(areaSplit.map((s) => s.value))[i] }}%
                 </span>
                 <span class="tabular font-semibold max-md:hidden">{{ peso(a.value, 2) }}</span>
               </span>
