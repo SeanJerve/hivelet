@@ -23,7 +23,7 @@ numbers) and `BLOCKED_FOR_SEAN.md` (B numbers).
 | :-- | :--- | :--- |
 | 0 | ~~Which number visitors call~~ **Done 20 Oct**: her account now holds 0927 465 3938 (it held the app's example number), the site shows her account's number, and she signs in with it. **She signs in with that number now, not her email** | Tell her |
 | 1 | ~~Change number / password~~ **Done 20 Oct**: in her account menu; it asks for her current password and current number | - |
-| 1b | **F2F's headcount**: her record for F2F says **4 people** (set 27 Aug), but every receipt she wrote for F2F from November 2025 to August 2026 charged water for **1**. A September receipt for 4 people (₱800 water) was recorded and then cancelled. Ask her: how many live in F2F now? If 1, change it on Tenants > Edit; if 4, nothing to change, and the September bill's ₱200 water was what she charged | The owner |
+| 1b | ~~F2F's headcount~~ **Answered 21 Oct**: the record (4) is right. The earlier receipts were for 1 person; three roommates joined, and their water is charged from the next bill, which the system does by itself (4 x ₱200). check:relations records her answer and passes | - |
 | 1c | ~~A test tenant for check:api~~ **Done 20 Oct**: it signs in as loydtest by login ID; 78 of 78 pass, the tenant isolation checks included | - |
 | 1a | ~~Emails~~ **Done 20 Oct**: no screen asks for, shows or accepts an email. Sign-in by email is refused; inquiries take a name, phone and question (migration 085); first sign-in and My details ask for the phone only. The manual, the tenant quick guide and the data dictionary say so | - |
 | 1d | ~~The demo copy~~ **Done** (Sean, 20 Oct: "it's all done") | - |
