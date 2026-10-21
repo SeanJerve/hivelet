@@ -69,6 +69,18 @@ const KNOWN = {
   'b3415b46': 'bill is for unit 1A; its tenant\'s tenancies are both 1B (build-window test rows)',
 };
 
+/**
+ * Bills whose water the owner has confirmed against a headcount that has since changed. The water
+ * rule reads TODAY's occupant count, and nothing records what it was when a bill was raised, so a
+ * bill raised before roommates moved in fails it while being right. Each entry is her answer with
+ * its date, printed every run like KNOWN, so it is never silently dropped.
+ */
+const WATER_CONFIRMED = {
+  // F2F, 31 Aug to 29 Sep 2026: billed for 1. Three roommates joined (the record now says 4,
+  // correctly); their water is charged from the next bill. The owner, via Sean, 21 Oct 2026.
+  'db6521f6': 'F2F billed water for 1 before three roommates joined; the owner confirmed on 21 Oct 2026 that the record (4) and this bill are both right',
+};
+
 const credsPath = path.join(root, 'credentials', 'creds.txt');
 if (!fs.existsSync(credsPath)) {
   console.error('credentials/creds.txt not found - cannot run the relationship check.');
@@ -193,6 +205,7 @@ for (const b of bills ?? []) {
   const a = t ? (activeOf(t)[0] ?? allOf(t)[0]) : null;
   const room = a ? roomById.get(a.rooms?.id ?? a.room_id) : null;
   if (!a || room?.is_linda_unit) continue;   // BR-040: Linda's units are a fixed charge
+  if (WATER_CONFIRMED[id]) { pinned.push(`${id}: ${WATER_CONFIRMED[id]}`); continue; }
   check(`bill ${id}: water is occupants x ${rate}`,
     Math.abs(Number(b.water_amount) - Number(a.occupant_count) * rate) < 0.005,
     `${a.occupant_count} x ${rate} != ${b.water_amount}`);
