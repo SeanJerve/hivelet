@@ -100,6 +100,11 @@ const SKIP_PATH = new Set([
   // folder waits for the adviser. Neither is ever pulled, so neither can mislead a contributor.
   '_ARCHIVE (not in repo)',
   '_AI_USE (not in repo)',
+  // The study page's build output (gitignored, 21 Oct 2026). Every word in it is copied from the
+  // FINAL/STUDY_GUIDE_*.md files, DEMO_SCRIPT.md and scripts/manuscript/reviewer/, all read here.
+  // Inside its one-line JSON a quoted correction such as Never "32 units" is no longer prose, so
+  // it cannot be recognised as a citation and would fail a page that only repeats a passing guide.
+  path.join('FINAL', '_reviewer'),
 ]);
 const EXT = new Set(['.md', '.ts', '.vue', '.sql', '.mjs', '.js', '.cjs', '.json', '.html']);
 
