@@ -88,6 +88,10 @@ for (const [copy, original] of PAIRS) {
   const cPath = path.join(COPIES, copy);
   const oPath = path.join(OUTPUTS, original);
 
+  // Neither file here: nothing to compare. The originals were archived on 13 Oct 2026 (8f754c1a),
+  // and a machine can keep the gitignored, now empty folder (Lloyd's laptop, 21 Oct): skip, as
+  // for a clone without the folder. A copy whose original is gone is still a wrong pairing.
+  if (!existsSync(cPath) && !existsSync(oPath)) continue;
   if (!existsSync(oPath)) { fail(`${original} does not exist — this pairing is wrong`); continue; }
   if (!existsSync(cPath)) continue; // a copy that was never made is not drift
 

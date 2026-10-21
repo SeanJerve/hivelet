@@ -105,6 +105,10 @@ const SKIP_PATH = new Set([
   // Inside its one-line JSON a quoted correction such as Never "32 units" is no longer prose, so
   // it cannot be recognised as a citation and would fail a page that only repeats a passing guide.
   path.join('FINAL', '_reviewer'),
+  // The prompt-log export (scripts/ai-use/export-prompt-log.mjs, gitignored, 21 Oct 2026): what
+  // people typed, quoted verbatim - including rules stated as rules ("never call Adyen mock ..."),
+  // which read as the banned framing out of context. Never pulled, never published.
+  'ai-use-log',
 ]);
 const EXT = new Set(['.md', '.ts', '.vue', '.sql', '.mjs', '.js', '.cjs', '.json', '.html']);
 
