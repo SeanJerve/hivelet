@@ -1276,9 +1276,10 @@ const isDownloadOpen = ref(false);
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <!-- The section name sits under the label beside it from 768px, and under the figure on a
                    phone, so the three figures in a row stay level. -->
-              <dt class="text-sm text-on-night-soft">50% Share <span class="hidden text-xs md:block">Boarding House</span></dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthShare) }}</dd>
-              <span class="text-xs text-on-night-soft md:hidden">Boarding House</span>
+              <!-- Lighter than Rent and Water: those two make the total; this is inside Rent (22 Oct 2026). -->
+              <dt class="text-sm text-on-night-soft">50% Share <span class="hidden text-xs md:block">Half of Boarding House rent</span></dt>
+              <dd class="tabular text-base text-on-night-soft md:text-lg">{{ peso(monthShare) }}</dd>
+              <span class="text-xs text-on-night-soft md:hidden">Half of Boarding House rent</span>
             </div>
           </dl>
         </template>
