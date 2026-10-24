@@ -7,8 +7,10 @@ the live database on 13 October 2026. Line numbers are as of that day and drift 
 search for the name if a line has moved.
 
 **How to study it:** read Section 1 once, then pick the features you are most likely to be asked
-about (Section 3) and open each file named, in VS Code, while reading. Section 8 is the panel's
-likely questions.
+about (Section 3) and open each file named, in VS Code, while reading. Section 9 is the panel's
+likely questions. For every single file explained one by one, see `STUDY_GUIDE_CODE_FRONTEND_FILES.md`
+and `STUDY_GUIDE_CODE_BACKEND_FILES.md` (the backend one also covers every table, migration and check
+suite).
 
 ---
 
