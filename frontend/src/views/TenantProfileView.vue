@@ -1,13 +1,13 @@
 <!--
-  What a tenant can change about themselves: email, phone number, password
-  and emergency contact. The name and the account status belong to the
+  What a tenant can change about themselves: phone number, password and
+  emergency contact. The name and the account status belong to the
   tenancy record and are shown, not edited (System Bible Section 19, FR-010).
 
-  Email and phone joined on 2026-09-30 (Sean): the tenant owns their sign-in
-  and contact details, the landlady owns their name. The admin tenant dialog
-  shows email and phone read-only for the same reason. A placeholder email
-  (migration 067) is never shown as an address: the field starts empty and
-  says it is not set yet. Rules in lib/contactDetails.ts.
+  The phone joined on 2026-09-30 (Sean): the tenant owns their sign-in and
+  contact details, the landlady owns their name. The admin tenant dialog shows
+  the phone read-only for the same reason. The email field was removed on
+  2026-10-20 (Sean: "emails are nothing in our website"). Rules in
+  lib/contactDetails.ts.
 
   Occupation and Facebook page were editable here too; the owner asked for
   them removed as unnecessary (2026-09-26). The columns and the backend's

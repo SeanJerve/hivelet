@@ -1,5 +1,6 @@
 /**
- * The shapes `ListToolbar` and `FilterSheet` share.
+ * The shapes `ListToolbar` and its filter dialog share. (The dialog was once a
+ * separate `FilterSheet` component; it now lives inside ListToolbar.vue.)
  *
  * Every list screen narrowed itself with its own row of PillSelects - three on
  * Monthly Income, two on Rooms and rates, one on Repairs - each laid out its

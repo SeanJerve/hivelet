@@ -644,8 +644,6 @@ export function setLandladyPhone(phone: string): void {
 }
 
 // Global Modals State
-export const isRoomDetailModalOpen = ref(false);
-export const activeRoomDetail = ref<RoomItem | null>(null);
 export const isAdminEditUnitModalOpen = ref(false);
 export const activeAdminEditUnit = ref<RoomItem | null>(null);
 export const isOnsitePaymentModalOpen = ref(false);

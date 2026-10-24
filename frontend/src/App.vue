@@ -9,7 +9,6 @@ import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import ToastContainer from '@/components/ui/ToastContainer.vue';
 import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
-import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import PullToRefresh from '@/components/layout/PullToRefresh.vue';
@@ -323,7 +322,6 @@ const hidesGlobalHeader = computed(() =>
     <!-- Pull down to reload, installed app only (Sean, 2026-10-01; lib/pullToRefresh.ts). -->
     <PullToRefresh />
     <AdminEditUnitModal />
-    <RoomDetailModal />
     <OnsitePaymentModal />
     <!--
       B-53: a resident (or the administrator) signed in on a one-time password
@@ -355,7 +353,8 @@ const hidesGlobalHeader = computed(() =>
       called `resolveTicket()`, which mutated the in-memory array and made NO API
       call: the pill flipped, the modal closed, the ticket left the open list, and
       the next fetch brought it back unresolved. Same shape as the
-      LiveChatheadModal deletion - see the note at RoomDetailModal.vue:11.
+      LiveChatheadModal deletion. (RoomDetailModal went the same way on 24 Oct 2026:
+      mounted here, but nothing ever opened it.)
     -->
   </div>
 </template>
