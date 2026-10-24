@@ -1,7 +1,7 @@
 # APPENDIX J: EVALUATION INSTRUMENT
 
 The ISO/IEC 25010 questionnaire, as respondents saw it in a Google Form, from 30 September to
-4 October 2026. Each respondent answered Section 1, which sent them to the one section for their
+18 October 2026. Each respondent answered Section 1, which sent them to the one section for their
 group; the item numbers are those of Chapter 3, Table 4B. Rated items: owner and administrator
 28, tenants 18, technical evaluators 33, prospective tenants 12.
 

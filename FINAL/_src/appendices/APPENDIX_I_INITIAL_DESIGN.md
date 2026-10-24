@@ -3,7 +3,7 @@
 The interface was prototyped directly in code (Section 3.1.1), so the initial design is the first
 working version of the system, as it stood at the end of the first iteration on 28 August 2026.
 Figures I-1 to I-4 show four of its screens, with sample tenants. They differ from the system as
-built (Figures 7 to 11): the second iteration removed the automatic rent increase marked beside each
+built (Figures 10 to 14): the second iteration removed the automatic rent increase marked beside each
 tenant, which the owner does not apply, and corrected the number of units on the public page
 (Appendix M, Table M-19). The owner's financial screens of that version are not shown, because they
 carry figures from her records.
