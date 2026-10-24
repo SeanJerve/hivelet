@@ -39,7 +39,7 @@ The system shall support rent and water billing records.
 The system shall support individual due dates.
 
 ### FR-013 Overdue Monitoring
-The system shall identify overdue payments and grace-period status.
+The system shall identify overdue payments: a bill is overdue from the day after its due date, with no grace period (BR-012; the owner confirmed it).
 
 ### FR-014 Manual Payments
 The administrator shall be able to record manual payments.
@@ -107,8 +107,8 @@ The system shall validate that Water Payment equals Occupants × ₱200 and warn
 ### FR-035 One-Time Onboarding Fields
 The system shall capture Anniversary Date and Deposit once, at tenant onboarding, and reuse them on every subsequent monthly entry without re-entry.
 
-### FR-036 Linda Fixed Billing Flow
-The system shall support a distinct fixed-rate billing flow for Linda's units (LF, LB), separate from the standard per-occupant water model, remitted directly to Linda.
+### FR-036 Linda Billing Flow
+The system shall record Linda's units (LF, LB) in their own section, separate from the other clusters. Water is charged at the same per-occupant rate as every other unit (BR-040, revised when the owner confirmed it; the fixed charge was retired).
 
 ### FR-037 Monthly Expenses Ledger
 The system shall reproduce the landlady's Monthly Expenses ledger: date, OR/Supplier, one-or-more Property Area allocations, and one fixed expense category per entry, per `10_MONTHLY_EXPENSES_REPORT.md`.
