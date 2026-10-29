@@ -126,3 +126,6 @@ skills-lock.json
 
 # The study page built by scripts/manuscript/reviewer/build.mjs (published as an artifact)
 FINAL/_reviewer/
+
+# Signed consent forms (names and signatures): private, never committed
+/_CONSENT_FORMS (not in repo)/
