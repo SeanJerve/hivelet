@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testing round 2 (print)</title>
+<!-- Round 2 of the user test, November 2026. Same tasks, sheet and survey as 30 September
+     (docs/FINAL MANUSCRIPT/TESTING_DAY_TEST_CASES.md, Parts T and PR), so the two rounds can be
+     combined. Changed since then: no email anywhere, Studio rates now start at 5,000, and every
+     unit is occupied while the test account holds PH. -->
+<style>
+@page { size: A4 portrait; margin: 12mm; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 9.5pt/1.4 "Segoe UI", system-ui, Arial, sans-serif; color: #111; background: #fff; }
+h1 { font-size: 16pt; color: #17603f; margin: 0 0 3mm; }
+h2 { font-size: 12.5pt; color: #17603f; margin: 0 0 2mm; border-bottom: 1.5px solid #17603f; padding-bottom: 1mm; }
+h3 { font-size: 10.5pt; margin: 4mm 0 1.5mm; }
+p, ul, ol { margin: 0 0 2mm; }
+li { margin-bottom: 1mm; }
+.note { margin: 2mm 0; padding: 2mm 3mm; border-left: 3px solid #b45309; background: #fdf6ec; }
+table { border-collapse: collapse; width: 100%; margin: 2mm 0 3mm; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; page-break-inside: avoid; }
+th, td { border: 1px solid #999; padding: 1.2mm 1.8mm; vertical-align: top; text-align: left; }
+th { background: #e8f1ec; font-size: 8.5pt; }
+td.blank { height: 9mm; }
+.line { display: inline-block; min-width: 45mm; border-bottom: 1px solid #333; }
+.line.short { min-width: 18mm; }
+.box { display: inline-block; width: 3.5mm; height: 3.5mm; border: 1px solid #333; margin-right: 1.5mm; vertical-align: -0.5mm; }
+.page { break-after: page; page-break-after: always; }
+.page:last-child { break-after: auto; page-break-after: auto; }
+.small { font-size: 8.5pt; color: #333; }
+@media screen { body { background: #ddd; } .page { max-width: 194mm; margin: 6mm auto; background: #fff; padding: 10mm; box-shadow: 0 1px 6px rgba(0,0,0,.2); } }
+</style></head>
+<body>
+
+<!-- ============================================================ PAGE 1 -->
+<section class="page">
+<h1>Testing round 2: read this first</h1>
+<p><strong>Print:</strong> this page once. The consent form (page 2) <strong>one per person</strong>. The tenant
+task cards (page 3) once for the observer. The tenant observation sheet (page 4) <strong>one per
+tenant</strong>. The prospect page (page 5) <strong>one per prospective tenant</strong>. Page 6 is the
+list of what to send back.</p>
+
+<h3>Who</h3>
+<ul>
+<li><strong>5 to 7 tenants</strong> who were <em>not</em> among the three on 30 September. Mix them: different
+units and clusters, someone who pays cash, someone less used to apps, Android and iPhone.</li>
+<li><strong>1 or 2 prospective tenants</strong>: people who do not live there (a friend, a student looking for a room).</li>
+<li><strong>Nobody from the team</strong> tests or answers the survey.</li>
+</ul>
+
+<h3>Tester codes: continue from round 1</h3>
+<p>Tenants are <strong>T4, T5, T6 ...</strong> (T1 to T3 were used on 30 September). Prospects are
+<strong>PR2, PR3</strong>. Use the code on every sheet, never the name. Only the consent form carries the name.</p>
+
+<h3>Each session, in this order</h3>
+<ol>
+<li><strong>Consent form first.</strong> Signed before anything else. Fill in <em>Research team member present</em> yourself.</li>
+<li>Show the same short Hivelet video as on 30 September.</li>
+<li>Read each task card aloud (English, then Filipino). Write start time, end time, success, wrong taps, and what they say.</li>
+<li><strong>Help only when they are stuck</strong>, and write the level: 1 = a prompt ("what would you try?"), 2 = a hint where to look, 3 = shown how.</li>
+<li><strong>The survey straight away</strong>, on the <strong>same Google Form as 30 September</strong> (do not make a new one). Show the QR, step away while they answer.</li>
+</ol>
+
+<h3>Rules</h3>
+<ul>
+<li><strong>The system is live.</strong> A test repair request has a title starting <strong>TEST</strong>. Inquiries write <strong>TEST</strong> in the message.</li>
+<li><strong>Nobody completes a GCash payment.</strong> Open it, look, close it.</li>
+<li>Nobody types a password for someone else or photographs a password or slip.</li>
+<li>At most <strong>two inquiries from the same wifi in 15 minutes</strong>, then use mobile data.</li>
+<li>Tenants on their first sign-in need their <strong>sign-in slip from the landlady</strong> (login ID and temporary password). Ask her for the slips beforehand.</li>
+<li>Photos or screen recordings <strong>only if the consent form says yes</strong>. Write what happened, not what should have happened.</li>
+</ul>
+<p class="note">Run all of them by about <strong>8 November</strong>, so the paper can be updated and sent to the adviser before the defense.</p>
+</section>
+
+<!-- ============================================================ PAGE 2: CONSENT -->
+<section class="page">
+<h2>Form 1. Informed consent / Pahintulot na may Kaalaman</h2>
+<p><strong>Hivelet: A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House</strong><br>
+Group 4, BS Information Technology, Bicol University College of Science<br>
+Adviser: <span class="line"></span></p>
+
+<p><strong>What this is.</strong> We are testing the Hivelet system with the people who will use it: the landlady,
+the tenants, and people looking for a room at the Fe Galang Da Silva Boarding House. You will watch
+a short video about Hivelet, then use the system (on your own phone where possible) for about 10 to
+30 minutes while a member of our team watches and takes notes. Then you answer a short anonymous
+survey. We are testing the system, not you.</p>
+<p><em>Sinusubukan namin ang sistemang Hivelet kasama ang mga gagamit nito: ang landlady, ang mga
+nangungupahan, at ang mga naghahanap ng kwarto. Manonood kayo ng maikling video tungkol sa Hivelet,
+at gagamitin ninyo ang sistema (sa sarili ninyong cellphone kung maaari) nang mga 10 hanggang 30
+minuto habang nagmamasid at nagsusulat ang isang miyembro ng aming grupo. Pagkatapos ay sasagot kayo
+ng maikling survey na walang pangalan. Ang sistema ang sinusubukan namin, hindi kayo.</em></p>
+
+<p><strong>What we record.</strong> Notes on what you do, what you say, and how long it takes; with your
+permission, a recording of your screen and photos of the session. In our notes you are a code (for
+example T4), never your name. Your survey answers are anonymous.</p>
+
+<p><strong>Your privacy (Data Privacy Act of 2012, RA 10173).</strong> Tenants use their own account, which shows
+only their own unit, bills, payments and requests. People looking for a room use only the public
+website and need no account; an inquiry you send reaches the landlady like any real inquiry.
+Anything we use in our paper has names, phone numbers and amounts hidden. Recordings and notes are
+kept by the research team only and deleted after the defense. Taking part is voluntary. You may stop
+at any time, and it has no effect at all on your tenancy or on any future application for a room.</p>
+<p><em>Kusang-loob po ang paglahok. Maaari kayong tumigil anumang oras, at wala itong epekto sa inyong
+pag-upa o sa anumang pag-aaplay ninyo ng kwarto.</em></p>
+
+<p>Please tick / <em>Pakitsek</em>:</p>
+<p><span class="box"></span>I agree to take part in the test. / <em>Pumapayag akong lumahok.</em><br>
+<span class="box"></span>I agree to my phone screen being recorded. / <em>Pumapayag akong i-record ang screen ng aking cellphone.</em><br>
+<span class="box"></span>I agree to photos of the session being taken. / <em>Pumapayag akong kunan ng litrato ang session.</em><br>
+<span class="box"></span>My face may appear in the paper. / <em>Maaaring makita ang aking mukha sa papel.</em>
+<span class="small">(If not ticked, faces are blurred or cropped.)</span></p>
+
+<p>I am / <em>Ako ay</em>: &nbsp;<span class="box"></span>a tenant / <em>nangungupahan</em> &nbsp;&nbsp;<span class="box"></span>looking for a room / <em>naghahanap ng kwarto</em></p>
+<p>Name / <em>Pangalan</em>: <span class="line" style="min-width:75mm"></span> &nbsp; Unit (tenants only): <span class="line short"></span></p>
+<p>Signature / <em>Lagda</em>: <span class="line" style="min-width:75mm"></span> &nbsp; Date: <span class="line short"></span> November 2026</p>
+<p><strong>Research team member present:</strong> <span class="line" style="min-width:75mm"></span> &nbsp; Tester code: <span class="line short"></span></p>
+</section>
+
+<!-- ============================================================ PAGE 3: TENANT CARDS -->
+<section class="page">
+<h2>Tenant task cards (read aloud: English, then Filipino)</h2>
+<p class="small">On the tenant's own phone, at hivelet.vercel.app. "Should happen" is for the observer only; do not read it out.</p>
+<table>
+<thead><tr><th style="width:9%">Case</th><th style="width:52%">Read aloud</th><th>Should happen</th></tr></thead>
+<tbody>
+<tr><td>T-01</td><td>"Sign in with the slip the landlady gave you." <em>Mag-sign in po gamit ang slip na ibinigay ng landlady.</em></td><td>Asked to choose a new password straight away</td></tr>
+<tr><td>T-02</td><td>"Choose your own password." <em>Gumawa po ng sariling password.</em></td><td>Rules shown (10+ characters, a letter, a number); a weak one is refused with a reason; they confirm their phone number; a good one lands on Overview</td></tr>
+<tr><td>T-03</td><td>"Which unit is yours and how much is the rent?" <em>Anong unit ninyo at magkano ang upa?</em></td><td>Their correct unit and rate</td></tr>
+<tr><td>T-04</td><td>"Do you owe anything right now?" <em>May utang po ba kayo ngayon?</em></td><td>The answer is clear on screen and matches what they believe</td></tr>
+<tr><td>T-05</td><td>"Find your payments this year." <em>Hanapin po ang mga bayad ninyo ngayong taon.</em></td><td>Their receipts in Payments and billing. <strong>Ask if the list is right</strong> and write the answer</td></tr>
+<tr><td>T-06</td><td>"How is your bill made up?" <em>Paano po nabuo ang bill ninyo?</em></td><td>Rent and water (₱200 per occupant) visible</td></tr>
+<tr><td>T-07</td><td>"Find where to report something broken." <em>Hanapin po kung saan magre-report ng sira.</em></td><td>Finds Repairs</td></tr>
+<tr><td>T-08</td><td>"Report it, and say how urgent it is." <em>I-report po at sabihin kung gaano kaapurahan.</em> (a real problem, or a title starting TEST)</td><td>Says it was sent to the landlady; appears in their list</td></tr>
+<tr><td>T-09</td><td>"Add a photo of it." <em>Maglagay po ng litrato.</em></td><td>Photo attached, even a large phone photo</td></tr>
+<tr><td>T-10</td><td>"Add a note to your request." <em>Magdagdag po ng mensahe sa request.</em></td><td>Note appears in the thread</td></tr>
+<tr><td>T-11</td><td>"What is its status now?" <em>Ano po ang status nito?</em></td><td>Status visible (Submitted, In progress or Done)</td></tr>
+<tr><td>T-12</td><td>"Check your contact details and fix anything wrong." <em>Tingnan po ang contact details ninyo.</em></td><td>My details: phone saved, or nothing to change. No email is asked for</td></tr>
+<tr><td>T-13</td><td>"Do you have any notifications?" <em>May notification po ba kayo?</em></td><td>Bell opens; marking one read lowers the count</td></tr>
+<tr><td>T-14</td><td>"Open the GCash payment, but <strong>do not pay</strong>. Close it." <em>Buksan po ang GCash pero huwag magbayad. Isara.</em></td><td>GCash option appears; closing it changes nothing</td></tr>
+<tr><td>T-15</td><td>"Type /admin at the end of the address." <em>I-type po ang /admin sa dulo ng address.</em></td><td>Not allowed in; sent back to their own pages</td></tr>
+<tr><td>T-16</td><td>"Sign out, then press Back." <em>Mag-sign out po, tapos pindutin ang Back.</em></td><td>No personal data shown after sign-out</td></tr>
+<tr><td>T-17</td><td>"Sign in again with your <strong>new</strong> password." <em>Mag-sign in po ulit gamit ang bagong password.</em></td><td>Works; the slip password no longer works</td></tr>
+<tr><td>T-18</td><td>"Was anything confusing?" <em>May nakalito po ba?</em></td><td>Write their words exactly</td></tr>
+</tbody></table>
+<p class="small">A tenant who already chose their own password skips T-01, T-02 and T-17: write <strong>NT</strong> and why.
+Then the survey, the tenant section of the form.</p>
+</section>
+
+<!-- ============================================================ PAGE 4: TENANT SHEET -->
+<section class="page">
+<h2>Form 2. Observation sheet: tenant (one per tenant)</h2>
+<p>Tester code: <span class="line short"></span> &nbsp; Unit: <span class="line short"></span> &nbsp; Phone and browser: <span class="line"></span><br>
+Network: wifi / mobile data &nbsp; Observer: <span class="line"></span> &nbsp; Date: <span class="line short"></span> Nov 2026 &nbsp; Video shown at: <span class="line short"></span></p>
+<p class="small"><strong>Success:</strong> P = done alone (help 0 or 1), PH = done with help (level 2), F = not done (level 3, gave up, or wrong result), NT = not tried.
+<strong>Errors:</strong> wrong taps that led somewhere unintended. <strong>Help:</strong> level 1, 2 or 3, and when.</p>
+<table>
+<thead><tr><th style="width:8%">Case</th><th style="width:9%">Start</th><th style="width:9%">End</th><th style="width:9%">Success</th><th style="width:8%">Errors</th><th style="width:17%">Help (level, when)</th><th>What they said or did</th></tr></thead>
+<tbody>
+<tr><td>T-01</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-02</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-03</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-04</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-05</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-06</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-07</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-08</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-09</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-10</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-11</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-12</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-13</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-14</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-15</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-16</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-17</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+<tr><td>T-18</td><td></td><td></td><td></td><td></td><td></td><td class="blank"></td></tr>
+</tbody></table>
+<p>Survey answered at: <span class="line short"></span> &nbsp; Overall impression, in their own words:</p>
+<p><span class="line" style="min-width:100%"></span></p>
+<p><span class="line" style="min-width:100%"></span></p>
+</section>
+
+<!-- ============================================================ PAGE 5: PROSPECT -->
+<section class="page">
+<h2>Prospective tenant: task cards and observation sheet (one per person)</h2>
+<p>Tester code: <span class="line short"></span> &nbsp; Phone and browser: <span class="line"></span> &nbsp; Network: wifi / mobile data<br>
+Observer: <span class="line"></span> &nbsp; Date: <span class="line short"></span> Nov 2026</p>
+<p class="small">No account, no sign-in, their own phone, at hivelet.vercel.app. Read each card aloud; "Should happen" is for the observer.</p>
+<table>
+<thead><tr><th style="width:7%">Case</th><th style="width:33%">Read aloud</th><th style="width:20%">Should happen</th><th style="width:7%">Start</th><th style="width:7%">End</th><th style="width:7%">Success</th><th>Help / what they said</th></tr></thead>
+<tbody>
+<tr><td>PR-01</td><td>"You are looking for a room near Bicol University. Open this website and tell me what the place is." <em>Naghahanap po kayo ng kwarto malapit sa Bicol University. Buksan ang website at sabihin kung ano ang lugar na ito.</em></td><td>Understands it is a boarding house with 33 units</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>PR-02</td><td>"What kinds of units do they have?" <em>Anong mga uri ng unit ang mayroon sila?</em></td><td>Finds Studio, One-bedroom, Two-bedroom, Three-bedroom</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>PR-03</td><td>"Find how much a studio unit costs per month." <em>Hanapin kung magkano ang upa sa isang studio kada buwan.</em></td><td>Opens Studio; reads a rate (₱5,000 to ₱8,500)</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>PR-04</td><td>"Is any unit available right now?" <em>May bakante po bang unit ngayon?</em></td><td>Finds the unit status. Today every unit shows Occupied</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>PR-05</td><td>"Pick one unit and find which floor it is on and how many people can stay." <em>Pumili ng isang unit at hanapin kung anong palapag ito at ilang tao ang puwede.</em></td><td>Opens a unit's details; the floor plan shows</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>PR-06</td><td>"How is water charged?" <em>Paano sinisingil ang tubig?</em></td><td>Finds ₱200 per occupant a month</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>PR-07</td><td>"Find where the boarding house is and how to contact them." <em>Hanapin kung saan ang boarding house at paano sila kokontakin.</em></td><td>Finds the location and the contact number</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>PR-08</td><td>"Ask the landlady about a unit you like. Use your own name and number, and write 'TEST' in the message." <em>Magtanong sa landlady tungkol sa unit na gusto ninyo. Gamitin ang sariling pangalan at numero, at isulat ang 'TEST' sa mensahe.</em></td><td>Asks only name, phone and question. Says the inquiry is sent, with a reference code and a link</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>PR-09</td><td>"Was anything slow, confusing or missing?" <em>May mabagal, nakakalito, o kulang po ba?</em></td><td>Write their words exactly (NT)</td><td></td><td></td><td>NT</td><td></td></tr>
+</tbody></table>
+<p class="small">Then the survey, the prospective tenant section of the form.</p>
+<p>Survey answered at: <span class="line short"></span> &nbsp; Overall impression: <span class="line" style="min-width:110mm"></span></p>
+</section>
+
+<!-- ============================================================ PAGE 6: SEND BACK -->
+<section class="page">
+<h2>What to send Claude afterwards</h2>
+<table>
+<thead><tr><th style="width:5%"></th><th style="width:40%">What</th><th>How</th></tr></thead>
+<tbody>
+<tr><td><span class="box"></span></td><td><strong>The survey responses</strong></td><td>Google Forms &gt; Responses &gt; green Sheets icon &gt; File &gt; Download &gt; CSV. Send the file as downloaded; do not edit or sort it. It contains round 1 too, which is fine</td></tr>
+<tr><td><span class="box"></span></td><td><strong>A photo of every observation sheet</strong> (pages 4 and 5)</td><td>Flat, in good light, the whole sheet readable</td></tr>
+<tr><td><span class="box"></span></td><td><strong>A photo of every signed consent form</strong></td><td>These stay private and are never committed. Check <em>Research team member present</em> is filled in</td></tr>
+<tr><td><span class="box"></span></td><td><strong>The prospective tenant's consent form from 30 September</strong></td><td>Still missing. Find it, or have that person sign one now</td></tr>
+<tr><td><span class="box"></span></td><td><strong>Any problems found</strong></td><td>A sentence each: what they tried, what went wrong, on which phone</td></tr>
+<tr><td><span class="box"></span></td><td><strong>The adviser's OK</strong> for a second round</td><td>One line saying it was approved, and the date</td></tr>
+</tbody></table>
+<p>With these, Claude recomputes every number (each group's mean, the eight composites, the overall
+mean, the task success rates and times) and updates Chapter 3, Chapter 4, the abstract, Chapter 5,
+the slides and the study guides.</p>
+</section>
+
+</body></html>
