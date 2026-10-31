@@ -12,6 +12,7 @@
 --   (live_version) and their payments page, and that foreign key has no index.
 --
 -- The tables are small, so this saves milliseconds, not seconds. Indexes only: no row changes.
+-- Applied by Sean in the SQL editor on 31 Oct 2026. Backup: backups/2026-10-31T10-29-27.
 -- Verify:
 --   SELECT indexname FROM pg_indexes
 --    WHERE indexname IN ('idx_audit_logs_created', 'idx_audit_logs_actor_created', 'idx_income_tenant');
