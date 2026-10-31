@@ -29,6 +29,7 @@
 -- SAFETY: one DO block. Every condition below is checked first, or nothing changes. A second run
 -- finds the bill already moved and does nothing.
 --
+-- Applied by Sean in the SQL editor on 31 Oct 2026.
 -- Backup: backups/2026-10-31T11-03-39. Verify (expected one row: 2026-09-29, 2026-10-01, 2026-10-31,
 -- Due, 3):
 --   SELECT old.start_date, b.billing_period_start, b.billing_period_end, b.status,
