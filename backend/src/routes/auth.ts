@@ -17,6 +17,7 @@ import {
 import { requireAuth, requirePasswordCurrent } from '../middleware/auth.js';
 import { rateLimit, failureLimit } from '../middleware/rateLimit.js';
 import { config } from '../config/env.js';
+import { db } from '../config/db.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { timesBreached } from '../utils/breachedPassword.js';
 import { ApiError } from '../utils/ApiError.js';
@@ -73,6 +74,24 @@ const loginFailures = failureLimit({
   what: 'failed sign-in attempts',
 });
 
+/**
+ * The same budget, read from the trail. `loginFailures` above counts in one function's memory and
+ * Vercel runs many, so it undercounts (middleware/rateLimit.ts). Every failed sign-in is written to
+ * `audit_logs`, exempt from the refusal budget (auditService.ts), so that count holds across all
+ * of them. If this query fails the attempt goes on: the per-account lockout still stands.
+ */
+async function overRecordedLoginFailures(ip: string | null): Promise<boolean> {
+  if (!ip) return false;
+  const { count, error } = await db
+    .from('audit_logs')
+    .select('id', { count: 'exact', head: true })
+    .eq('action', 'AUTH_ACCESS_DENIED')
+    .eq('ip_address', ip)
+    .contains('new_values', { path: '/api/auth/login' })
+    .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString());
+  return !error && (count ?? 0) >= 30;
+}
+
 router.post(
   '/auth/login',
   loginFailures,
@@ -80,6 +99,13 @@ router.post(
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
       throw ApiError.validation('Invalid login payload.', parsed.error.flatten().fieldErrors);
+    }
+
+    if (await overRecordedLoginFailures(clientIp(req))) {
+      throw ApiError.tooManyRequests(
+        'Too many failed sign-in attempts from this connection. Try again in about 15 minutes. ' +
+          'If this is not you, your account itself is not affected.'
+      );
     }
 
     const identifier = parsed.data.identifier ?? parsed.data.email ?? '';

@@ -38,8 +38,13 @@
  * WHAT THIS IS NOT
  * ----------------
  * **Per process, and in memory.** Two backend processes would allow twice the
- * traffic, and a restart forgets everything. That is honest for a single-server
- * deployment and would need Redis or a database table to be more than that.
+ * traffic, and a restart forgets everything. That was honest for a single server,
+ * **and production is not one** (found 31 Oct 2026): on Vercel each function
+ * instance keeps its own count and a cold one starts at zero, so these limits are
+ * a first filter only. What must hold is counted in the database instead: failed
+ * sign-ins per address from `audit_logs` (`overRecordedLoginFailures`,
+ * routes/auth.ts), new inquiries site-wide from `inquiries` (`INQUIRY_CEILING`,
+ * routes/public.ts), and the per-account lockout on `profiles`.
  *
  * It is also **not** a defence against a distributed flood - a thousand
  * addresses sending one request each pass untouched. It stops the realistic

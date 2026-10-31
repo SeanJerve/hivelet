@@ -37,6 +37,37 @@ import QRCode from 'qrcode';
 const router = Router();
 
 /**
+ * Lets Vercel's edge answer a public read for 30 seconds, so a visitor is served from Singapore
+ * instead of waiting on a function in Seoul and the database behind it (about 200 ms, measured
+ * 31 Oct 2026), then for a further 60 while it fetches a fresh copy. A change the landlady makes
+ * therefore reaches a stranger's page within about a minute and a half.
+ *
+ * ANONYMOUS ONLY. An administrator sees Hidden rooms on this same URL, and the edge caches by URL.
+ * Vercel does not cache a request carrying Authorization, and `Vary` says so again, but the
+ * signed-in answer also says `no-store` so it holds whichever way that ever changes.
+ *
+ * Called just before the answer, not as middleware, so a failure is never marked cacheable.
+ */
+function cachePublicRead(req: Request, res: Response): void {
+  res.vary('Authorization');
+  res.set(
+    'Cache-Control',
+    req.headers.authorization ? 'private, no-store' : 'public, max-age=0, s-maxage=30, stale-while-revalidate=60'
+  );
+}
+
+/**
+ * The most new inquiries the whole site takes in a quarter of an hour, from anyone.
+ *
+ * The per-address limit on the route lives in one function's memory, and Vercel runs many, so by
+ * itself it does not hold (middleware/rateLimit.ts). This counts the table, so it holds across all
+ * of them and against many addresses, which is the harm itself: an inbox she cannot use. Three
+ * inquiries had arrived in the system's whole life on 31 Oct 2026, so thirty is far beyond real use.
+ */
+const INQUIRY_CEILING = 30;
+const INQUIRY_CEILING_WINDOW_MS = 15 * 60 * 1000;
+
+/**
  * Columns a public visitor may see. Note the absence of any tenant linkage.
  */
 const PUBLIC_ROOM_COLUMNS =
@@ -68,6 +99,7 @@ router.get(
     const { data, error } = await query;
     if (error) throw ApiError.internal(error.message);
 
+    cachePublicRead(req, res);
     res.status(200).json({
       success: true,
       data: data ?? [],
@@ -93,7 +125,7 @@ router.get(
   '/public/rates',
   optionalAuth,
   requirePermission(PERMISSIONS.PROPERTY_VIEW_PUBLIC),
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
     const waterRatePerOccupant = await getWaterRatePerOccupant();
     // Both Linda units, not just LF. BR-040's fixed charge is retired (see
     // `getLindaFixedWaterCharge`'s own docblock) - every unit bills heads x
@@ -106,6 +138,7 @@ router.get(
       LB: await getLindaFixedWaterCharge('LB'),
     };
 
+    cachePublicRead(req, res);
     res.status(200).json({
       success: true,
       data: { waterRatePerOccupant, lindaFixedWaterCharge, lindaFixedWaterCharges },
@@ -137,7 +170,7 @@ router.get(
   '/public/contact',
   optionalAuth,
   requirePermission(PERMISSIONS.PROPERTY_VIEW_PUBLIC),
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
     const { data, error } = await db
       .from('profiles')
       .select('phone_number')
@@ -149,6 +182,7 @@ router.get(
     if (error) throw ApiError.internal(error.message);
 
     const digits = phoneDigits((data?.[0] as { phone_number?: string | null } | undefined)?.phone_number);
+    cachePublicRead(req, res);
     res.status(200).json({ success: true, data: { phone: digits || null } });
   })
 );
@@ -193,6 +227,15 @@ router.post(
       throw ApiError.validation('Invalid inquiry payload.', parsed.error.flatten().fieldErrors);
     }
     const input = parsed.data;
+
+    // A failed count lets the inquiry through: a visitor is not refused over a check that broke.
+    const { count: recentInquiries, error: countError } = await db
+      .from('inquiries')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', new Date(Date.now() - INQUIRY_CEILING_WINDOW_MS).toISOString());
+    if (!countError && (recentInquiries ?? 0) >= INQUIRY_CEILING) {
+      throw ApiError.tooManyRequests('Too many inquiries are arriving right now. Please try again in a few minutes.');
+    }
 
     const { data: room, error: roomError } = await db
       .from('rooms')
