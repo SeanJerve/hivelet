@@ -40,7 +40,7 @@ const pillClass = computed(
       // transition the colour swap was an instant snap rather than a state
       // change the reader could follow. Named properties, same ease token as
       // every other colour transition in the workspace.
-      'transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
+      'transition-colors duration-150 ease-[var(--ease-out)]',
       pillClass,
     ]"
   >

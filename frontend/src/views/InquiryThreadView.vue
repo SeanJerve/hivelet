@@ -335,7 +335,7 @@ watch(() => route.hash, syncWithAddress);
                 </span>
                 <!-- The overview tiles' own arrow and hover nudge (components/overview/OverviewTile.vue). -->
                 <ArrowUpRight
-                  class="size-4 shrink-0 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+                  class="size-4 shrink-0 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
                   aria-hidden="true"
                 />
               </RouterLink>

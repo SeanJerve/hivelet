@@ -460,10 +460,10 @@ onUnmounted(() => {
                 an emergency among them.
               -->
               <Transition
-                enter-active-class="transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                enter-active-class="transition-[opacity,transform] duration-150 ease-[var(--ease-out)]"
                 enter-from-class="opacity-0 scale-50"
                 enter-to-class="opacity-100 scale-100"
-                leave-active-class="transition-[opacity,transform] duration-100 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                leave-active-class="transition-[opacity,transform] duration-100 ease-[var(--ease-out)]"
                 leave-from-class="opacity-100 scale-100"
                 leave-to-class="opacity-0 scale-50"
               >
@@ -655,10 +655,10 @@ onUnmounted(() => {
       left the drop un-animated (the account menu's bug, Sean, 2026-10-01).
     -->
     <Transition
-      enter-active-class="motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+      enter-active-class="motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-[var(--ease-out)]"
       enter-from-class="opacity-0 -translate-y-2"
       enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="motion-safe:transition-[opacity,translate] motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+      leave-active-class="motion-safe:transition-[opacity,translate] motion-safe:duration-150 motion-safe:ease-[var(--ease-out)]"
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2"
     >

@@ -352,10 +352,10 @@ onBeforeUnmount(() => {
             drifting apart doing identical work.
           -->
           <Transition
-            enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+            enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-[var(--ease-out)]"
             enter-from-class="opacity-0 scale-75"
             enter-to-class="opacity-100 scale-100"
-            leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-100 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+            leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-100 motion-safe:ease-[var(--ease-out)]"
             leave-from-class="opacity-100 scale-100"
             leave-to-class="opacity-0 scale-75"
           >
@@ -467,10 +467,10 @@ onBeforeUnmount(() => {
 
                     <!-- Same badge, same fix as the desktop nav above: 150ms/100ms to match AppHeader's notification badge instead of the 120ms/90ms this drawer copy had drifted to. -->
                     <Transition
-                      enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+                      enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-[var(--ease-out)]"
                       enter-from-class="opacity-0 scale-75"
                       enter-to-class="opacity-100 scale-100"
-                      leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-100 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+                      leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-100 motion-safe:ease-[var(--ease-out)]"
                       leave-from-class="opacity-100 scale-100"
                       leave-to-class="opacity-0 scale-75"
                     >
