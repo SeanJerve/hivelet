@@ -20,6 +20,7 @@ import {
   incomeRecords,
   expenseRecords,
   maintenanceTickets,
+  inquiries,
   fetchRooms,
   fetchIncomeRecords,
   fetchExpenseRecords,
@@ -333,6 +334,79 @@ const currentMonthRevenue = computed(() =>
 const currentMonthRecordCount = computed(
   () => liveIncomeRecords.value.filter((r) => r.month === CURRENT_MONTH).length
 );
+
+/**
+ * Needs your attention, sized by what is waiting (Sean, 1 Nov 2026): a zero stays small, a count
+ * with something behind it takes the room. Payments rank first, so with both waiting the repairs
+ * under the divider stay one step down.
+ */
+const LARGE_COUNT = 'text-6xl lg:text-7xl';
+const paymentCountSize = computed(() => (pendingCount.value > 0 ? LARGE_COUNT : 'text-2xl'));
+const repairCountSize = computed(() => {
+  if (urgentTickets.value.length === 0) return 'text-2xl';
+  return pendingCount.value > 0 ? 'text-4xl lg:text-5xl' : LARGE_COUNT;
+});
+
+/** The last two full months, those not yet entered for every occupied unit. Nothing when a list failed. */
+const monthsToEnter = computed(() => {
+  if (incomeRecordsFetchFailed.value || roomsFetchFailed.value) return [];
+  const occupied = rooms.filter(isOccupied).length;
+  return [2, 1]
+    .map((back) => new Date(Date.UTC(CURRENT_YEAR, CURRENT_MONTH - 1 - back, 1)))
+    .map((d) => {
+      const year = d.getUTCFullYear();
+      const month = d.getUTCMonth() + 1;
+      const units = incomeRecords
+        .filter((r) => r.year === year && r.month === month && r.unit)
+        .map((r) => r.unit.toUpperCase());
+      return { label: `${MONTH_LONG[month - 1]} ${year}`, entered: new Set(units).size, occupied };
+    })
+    .filter((m) => m.entered < m.occupied);
+});
+
+/**
+ * What the tile says when nothing is waiting, in place of two zeros: the receipts she has left to
+ * enter, then anything open that is not urgent. Every row is a count of records.
+ */
+const attentionNotes = computed(() => {
+  const notes = monthsToEnter.value.map((m) => ({
+    key: m.label,
+    label: m.label,
+    value: m.entered > 0 ? `${m.entered} of ${m.occupied} units entered` : 'Not entered yet',
+    to: '/admin/income',
+  }));
+  const openInquiries = inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').length;
+  if (openInquiries > 0) {
+    notes.push({ key: 'inquiries', label: 'Inquiries', value: `${openInquiries} waiting for an answer`, to: '/admin/inquiries' });
+  }
+  if (!maintenanceTicketsFetchFailed.value && openTickets.value.length > 0) {
+    notes.push({ key: 'repairs', label: 'Repairs', value: `${openTickets.value.length} open`, to: '/admin/tickets' });
+  }
+  return notes;
+});
+const attentionIsQuiet = computed(() => pendingCount.value === 0 && urgentTickets.value.length === 0);
+
+/**
+ * The latest month before this one with anything entered, for the rent tile while this month is
+ * empty (Sean, 1 Nov 2026: see the past month without going to it). The latest with records rather
+ * than strictly last month, since she enters a month or two behind. Summed as the month chart does.
+ */
+const lastEnteredMonth = computed(() => {
+  const position = (r: { year?: number; month?: number }) => (r.year ?? 0) * 12 + (r.month ?? 0) - 1;
+  const earlier = incomeRecords.filter((r) => r.year && r.month && position(r) < CURRENT_YEAR * 12 + CURRENT_MONTH - 1);
+  if (earlier.length === 0) return null;
+  const latest = Math.max(...earlier.map(position));
+  const rows = earlier.filter((r) => position(r) === latest);
+  return {
+    label: `${MONTH_LONG[latest % 12]} ${Math.floor(latest / 12)}`,
+    total: rows.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0),
+    count: rows.length,
+    recent: [...rows]
+      .sort((a, b) => String(b.rawDate ?? '').localeCompare(String(a.rawDate ?? '')))
+      .slice(0, 3)
+      .map((r, i) => ({ key: r.id ?? i, name: r.contact, unit: r.unit, amount: Number(r.totalRemitted || r.rent || 0) })),
+  };
+});
 
 /** The latest month of this year that has any collection entered, or 0. */
 
@@ -754,12 +828,20 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           />
           <router-link v-else to="/admin/income?tab=verify" class="press group/att flex flex-col gap-1">
             <span class="flex items-start justify-between gap-2">
-              <span class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl">{{ pendingCount }}</span>
-              <ArrowUpRight class="size-4 text-on-night-soft" aria-hidden="true" />
+              <span :class="['leading-none font-semibold tabular tracking-tight', pendingCount > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ pendingCount }}</span>
+              <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
             </span>
             <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
             <span v-if="pendingCount > 0" class="text-xs tabular text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
           </router-link>
+          <ul v-if="attentionIsQuiet && attentionNotes.length && !pendingPaymentsFailed" class="flex flex-col gap-1.5 text-xs">
+            <li v-for="n in attentionNotes" :key="n.key">
+              <router-link :to="n.to" class="press block">
+                <span class="block text-on-night-soft">{{ n.label }}</span>
+                <span class="block font-medium tabular">{{ n.value }}</span>
+              </router-link>
+            </li>
+          </ul>
           <UnavailableNote
             v-if="maintenanceTicketsFetchFailed"
             dark
@@ -769,8 +851,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           />
           <router-link v-else to="/admin/tickets" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
             <span class="flex items-start justify-between gap-2">
-              <span class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl">{{ urgentTickets.length }}</span>
-              <ArrowUpRight class="size-4 text-on-night-soft" aria-hidden="true" />
+              <span :class="['leading-none font-semibold tabular tracking-tight', urgentTickets.length > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ urgentTickets.length }}</span>
+              <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
             </span>
             <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
           </router-link>
@@ -785,13 +867,22 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         />
         <div v-else class="max-md:hidden">
           <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span class="text-4xl leading-none font-semibold tabular tracking-tight lg:text-5xl">{{ pendingCount }}</span>
+            <span :class="['leading-none font-semibold tabular tracking-tight', paymentCountSize]">{{ pendingCount }}</span>
             <span class="text-sm text-on-night-soft">
               {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
             </span>
           </p>
           <!-- No "Nothing is waiting for verification" under a 0: the count
-               is the answer (Sean, 2026-10-01: figures at a glance). -->
+               is the answer (Sean, 2026-10-01: figures at a glance). What fills
+               the room instead is what she still has to do (attentionNotes). -->
+          <ul v-if="attentionIsQuiet && attentionNotes.length" class="mt-4 divide-y divide-white/10">
+            <li v-for="n in attentionNotes" :key="n.key">
+              <router-link :to="n.to" class="press flex items-baseline justify-between gap-3 py-2 text-sm">
+                <span class="text-on-night-soft">{{ n.label }}</span>
+                <span class="font-medium tabular">{{ n.value }}</span>
+              </router-link>
+            </li>
+          </ul>
           <ul v-if="pendingPreview.length" class="mt-4 divide-y divide-white/10">
             <li
               v-for="(p, i) in pendingPreview"
@@ -820,15 +911,25 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             message="Repairs could not be loaded. Some may be urgent."
             @retry="refreshAllData"
           />
-          <div v-else class="flex flex-wrap items-center justify-between gap-3">
-            <p class="flex items-baseline gap-3">
-              <span class="text-3xl leading-none font-semibold tabular">{{ urgentTickets.length }}</span>
-              <span class="text-sm text-on-night-soft">
-                urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
-              </span>
-            </p>
-            <router-link to="/admin/tickets" class="press inline-block py-1 text-sm font-semibold">
-              Open repairs
+          <div v-else :class="['flex justify-between gap-3', urgentTickets.length ? 'items-start' : 'items-center']">
+            <div class="min-w-0">
+              <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span :class="['leading-none font-semibold tabular tracking-tight', repairCountSize]">{{ urgentTickets.length }}</span>
+                <span class="text-sm text-on-night-soft">
+                  urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
+                </span>
+              </p>
+              <ul v-if="urgentTickets.length" class="mt-2 flex flex-col gap-1 text-sm">
+                <li v-for="t in urgentTickets.slice(0, 2)" :key="t.id" class="truncate">
+                  {{ t.title }}<span class="text-on-night-soft">, Unit {{ t.unit }}</span>
+                </li>
+              </ul>
+            </div>
+            <router-link to="/admin/tickets" aria-label="Open repairs" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
+              <ArrowUpRight
+                class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+                aria-hidden="true"
+              />
             </router-link>
           </div>
         </div>
@@ -855,6 +956,20 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <p class="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Not entered yet</p>
             <!-- The phone's title is only "Rent and water", so the month goes here. -->
             <p class="mt-2 text-sm text-ink-soft md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }} {{ CURRENT_YEAR }}</p>
+            <!-- The last month with records, quiet beside the month she is looking at. -->
+            <div v-if="lastEnteredMonth" class="mt-3 text-sm text-ink-faint md:mt-4">
+              <p class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                <span>{{ lastEnteredMonth.label }}</span>
+                <span class="font-medium tabular text-ink-soft">{{ peso(lastEnteredMonth.total) }}</span>
+              </p>
+              <p class="text-xs">{{ lastEnteredMonth.count }} {{ lastEnteredMonth.count === 1 ? 'payment' : 'payments' }}</p>
+              <ul class="mt-2 flex flex-col gap-1 max-md:hidden">
+                <li v-for="r in lastEnteredMonth.recent" :key="r.key" class="flex items-baseline justify-between gap-3">
+                  <span class="min-w-0 truncate">{{ r.name }}<template v-if="r.unit">, {{ r.unit }}</template></span>
+                  <span class="tabular">{{ peso(r.amount) }}</span>
+                </li>
+              </ul>
+            </div>
           </div>
           <div v-else>
             <!--
@@ -862,8 +977,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               303px tile. Half a phone's width is less again, so `text-3xl` there,
               the size of Monthly Income's and Monthly Expenses' month figures,
               `text-4xl` on a tablet and `text-5xl` from 1024px. The counts beside
-              it in "Needs your attention" use the same steps: Loyd (2026-10-03)
-              saw a 0 there larger than the rent figure next to it. Below 360px the
+              it in "Needs your attention" used the same steps: Loyd (2026-10-03)
+              saw a 0 there larger than the rent figure next to it, and a 0 is
+              small there now (paymentCountSize). Below 360px the
               tile's text is 106px wide, which "₱141,000" fills at `text-2xl`, so
               all three step down together there.
             -->
