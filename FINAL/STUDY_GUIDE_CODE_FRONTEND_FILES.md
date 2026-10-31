@@ -560,7 +560,8 @@ Overview make one request and show the same three actions.
 
 **`live.ts`**
 Keeps open pages current. Every 2 seconds while a page is on screen it asks `GET /live/version` for a
-fingerprint of what that person can see, and reloads only what changed. A hidden tab asks nothing.
+fingerprint of what that person can see, and reloads only what changed. A hidden tab asks nothing,
+and a page nobody has touched for five minutes asks every 30 seconds until the next touch.
 Screens register their own reloads with `useLiveRefresh()`. See `STUDY_GUIDE_CODE.md`, Section 6.
 
 **`offlineCache.ts`**

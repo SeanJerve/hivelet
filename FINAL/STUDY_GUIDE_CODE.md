@@ -124,7 +124,7 @@ the handler reads or writes those tables.
 | A tenant sees only their own rows | Each tenant query is scoped to the caller | `services/scopeService.ts` |
 | Database-level protection | **Row-level security** on all 24 tables (checked 13 Oct); the browser never holds a database key | Supabase; `config/db.ts` |
 | Inputs | Every body and query is checked by **zod** schemas before use | `utils/validators.ts`, at each route |
-| The public form cannot be flooded | Per-address rate limit | `middleware/rateLimit.ts` |
+| The public form cannot be flooded | Per-address rate limit, and a site-wide ceiling counted in the database, 30 new inquiries in 15 minutes | `middleware/rateLimit.ts`, `INQUIRY_CEILING` in `routes/public.ts` |
 | Everything the owner changes is recorded | An audit trail the application cannot edit, delete or empty (migration 080) | `services/auditService.ts`, `audit_logs` |
 | Headers | HTTPS forced, no framing, no MIME sniffing | `vercel.json`, `helmet` in `server.ts` |
 | Gateway messages are genuine | Every Adyen notification is checked by **HMAC signature** before anything is written | `services/adyenWebhook.ts` |
@@ -176,7 +176,8 @@ refuses it whenever Adyen is configured, as it is on the live site.
 
 - **Live updates:** every open page asks the server whether anything changed, **every 2 seconds**
   while it is on screen (`frontend/src/lib/live.ts`, `INTERVAL_MS = 2000`), through one small
-  database function, `live_version`. Only what changed is reloaded.
+  database function, `live_version`. Only what changed is reloaded. A page nobody has touched for
+  five minutes asks every 30 seconds instead, and the next touch asks at once.
 - **Timeouts:** a page stops waiting after **25 seconds**, a save after **45 seconds**, and says it
   cannot tell whether the save arrived (`api.ts:238`).
 - **Installing:** the PWA plugin (`vite.config.ts:120`) makes a service worker that keeps the

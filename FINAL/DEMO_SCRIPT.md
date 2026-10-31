@@ -59,7 +59,8 @@ Its passwords are with Sean; never type them where the projector shows them.
 - Show the loydtest payment, then press **Reject payment**, not **Verify payment**. (Verifying would
   write a receipt into her ledger.) Say: "Verifying settles the bill and writes the receipt in one
   step; we reject this one because it was a demonstration."
-- On the phone, the payment now says **Not accepted**, within about 2 seconds.
+- On the phone, the payment now says **Not accepted**, within about 2 seconds. (Touch the phone first
+  if nobody has for five minutes: an untouched page checks every 30 seconds.)
 
 ### 4. A repair request (phone and laptop, 2 minutes). Objective 2: maintenance ticketing
 - Phone: **Repairs**, a new request with a photo, **Send request**.

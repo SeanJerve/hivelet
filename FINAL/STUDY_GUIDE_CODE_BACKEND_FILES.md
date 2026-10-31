@@ -119,8 +119,11 @@ A small limiter kept in memory, per client address. `rateLimit` counts requests 
 inquiries, inquiry look-ups and replies, and sign-up). `failureLimit` counts only **failed** attempts
 (used on sign-in, 30 failures per 15 minutes per address, and on password changes, 10 per 15 minutes).
 Counting only failures stops one password being tried against many accounts without ever slowing
-down a person who signs in correctly. The header says plainly that it is per process and does not stop
-a flood from many addresses.
+down a person who signs in correctly. These counts live in one function's memory, and Vercel runs
+many, so they are a first filter only. What must hold is counted in the database: failed sign-ins per
+address from `audit_logs` (`overRecordedLoginFailures` in `routes/auth.ts`, 30 in 15 minutes), new
+inquiries from anyone from `inquiries` (`INQUIRY_CEILING` in `routes/public.ts`, 30 in 15 minutes),
+and the per-account lockout on `profiles`.
 
 **`middleware/requireUuidParam.ts`**
 Checks that an id in the address (such as `:roomId`) is a real UUID (the long random id every row
