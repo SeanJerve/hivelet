@@ -545,7 +545,7 @@ for (const year of years) {
   }
 
   const receipts = await sql(
-    'monthly_income_records?select=year,month,contact_name,rooms:room_id(room_number)&voided_at=is.null'
+    'monthly_income_records?select=year,month,contact_name,invoice_number,rooms:room_id(room_number)&voided_at=is.null'
   );
   const units = new Set((await sql('rooms?select=room_number')).map((r) => String(r.room_number).toUpperCase()));
 
@@ -588,8 +588,16 @@ for (const year of years) {
       if (!ofMonth.length) continue;
       const { workbook: wb } = await buildTenantHistoryWorkbook(year, month);
       const mrows = readRows(wb.worksheets[0]);
+      const label = `${MONTHS[month - 1].slice(0, 3)} ${year}`;
+      // A month's sheet has no Payments column, only the invoice numbers, and a receipt may have no
+      // number (optional since 30 Sep 2026; the owner's first blanks came on 31 Oct). So the numbers
+      // are compared with the receipts that have one, and the units separately, or a receipt with a
+      // blank invoice could leave the sheet without anything noticing.
       const listed = mrows.reduce((n, r) => n + String(r.Invoice ?? r.Receipt ?? '').split(', ').filter(Boolean).length, 0);
-      check(`${MONTHS[month - 1].slice(0, 3)} ${year} receipts`, listed, payerCount(ofMonth));
+      check(`${label} invoice numbers`, listed, payerCount(ofMonth.filter((r) => r.invoice_number)));
+      const sheetUnits = new Set(mrows.map((r) => String(r.Unit).toUpperCase()));
+      const missing = [...new Set(ofMonth.map((r) => String(r.rooms?.room_number ?? '').toUpperCase()))].filter((u) => !sheetUnits.has(u));
+      check(`${label} units missing from the sheet`, missing.length, 0);
     }
   }
 }

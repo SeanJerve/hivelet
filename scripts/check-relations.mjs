@@ -79,6 +79,8 @@ const WATER_CONFIRMED = {
   // F2F, 31 Aug to 29 Sep 2026: billed for 1. Three roommates joined (the record now says 4,
   // correctly); their water is charged from the next bill. The owner, via Sean, 21 Oct 2026.
   'db6521f6': 'F2F billed water for 1 before three roommates joined; the owner confirmed on 21 Oct 2026 that the record (4) and this bill are both right',
+  // The same history: raised on 26 Sep for 1, and her own receipt of 31 Oct records 4 and 800.
+  'd65ec0ef': '2c billed water for 1 before roommates joined; the owner recorded 4 occupants and 800 on her own receipt of 31 Oct 2026',
 };
 
 const credsPath = path.join(root, 'credentials', 'creds.txt');
