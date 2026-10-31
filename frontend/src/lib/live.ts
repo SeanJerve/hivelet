@@ -40,11 +40,22 @@ type LiveVersion = { version: string | null };
  * made on one device now shows on another within about 2 to 3 seconds.
  */
 const INTERVAL_MS = 2000;
+/**
+ * A page left open with nobody at it. At 2 s one open tab is 1,800 calls an hour, which is
+ * 432,000 a month for a screen left on eight hours a day with nobody reading it. After five
+ * minutes without a touch, key or scroll it asks every 30 s; the next touch asks at once and
+ * returns to 2 s, so anyone actually using the page sees no difference.
+ */
+const IDLE_AFTER_MS = 5 * 60 * 1000;
+const IDLE_INTERVAL_MS = 30_000;
+const INPUT_EVENTS = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
 const pageRefreshers = new Set<Refresher>();
 let lastVersion: string | null = null;
 let timer: ReturnType<typeof setInterval> | undefined;
 let inFlight = false;
 let running = false;
+let lastInputAt = 0;
+let lastCheckAt = 0;
 
 /** A page's own loader, run whenever something it could show has changed. */
 export function useLiveRefresh(fn: Refresher): void {
@@ -93,7 +104,10 @@ setReconnectHandler(refreshEverything);
 
 async function check() {
   if (inFlight || !isAuthenticated.value || document.visibilityState !== 'visible') return;
+  const now = Date.now();
+  if (now - lastInputAt > IDLE_AFTER_MS && now - lastCheckAt < IDLE_INTERVAL_MS) return;
   inFlight = true;
+  lastCheckAt = now;
   try {
     const res = await api.get<LiveVersion>('/live/version');
     const version = res?.version ?? null;
@@ -112,8 +126,17 @@ async function check() {
   }
 }
 
+function onInput() {
+  const wasIdle = Date.now() - lastInputAt > IDLE_AFTER_MS;
+  lastInputAt = Date.now();
+  if (wasIdle) void check();
+}
+
 function onVisible() {
-  if (document.visibilityState === 'visible') void check();
+  if (document.visibilityState === 'visible') {
+    onInput();
+    void check();
+  }
 }
 
 /** Started when someone signs in (App.vue), stopped when they sign out. */
@@ -121,9 +144,11 @@ export function startLiveUpdates(): void {
   if (running) return;
   running = true;
   lastVersion = null;
+  lastInputAt = Date.now();
   void check();
   timer = setInterval(check, INTERVAL_MS);
   document.addEventListener('visibilitychange', onVisible);
+  INPUT_EVENTS.forEach((e) => window.addEventListener(e, onInput, { passive: true, capture: true }));
 }
 
 export function stopLiveUpdates(): void {
@@ -132,4 +157,5 @@ export function stopLiveUpdates(): void {
   if (timer) clearInterval(timer);
   timer = undefined;
   document.removeEventListener('visibilitychange', onVisible);
+  INPUT_EVENTS.forEach((e) => window.removeEventListener(e, onInput, { capture: true }));
 }
