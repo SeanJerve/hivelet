@@ -262,7 +262,7 @@ const unitVisualBase = computed(() => {
   const photo = photoOf(unit);
   if (photo) return photo;
   const plan = planFor(unit.room_number);
-  return plan ? `/floorplans/${plan.plan}.png` : null;
+  return plan ? `/floorplans/${plan.plan}.webp` : null;
 });
 const visualAttempt = ref(0);
 watch(unitVisualBase, () => {
@@ -908,7 +908,7 @@ async function submitInquiry() {
               -->
               <div v-if="planFor(activeUnit.room_number)" class="relative mx-auto w-full max-w-md">
                 <img
-                  :src="unitVisualSrc ?? `/floorplans/${planFor(activeUnit.room_number)!.plan}.png`"
+                  :src="unitVisualSrc ?? `/floorplans/${planFor(activeUnit.room_number)!.plan}.webp`"
                   :alt="planAlt(activeUnit)"
                   :width="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.w"
                   :height="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.h"

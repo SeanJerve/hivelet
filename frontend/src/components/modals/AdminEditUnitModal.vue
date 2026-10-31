@@ -167,14 +167,14 @@ const uploadedFileSize = ref<string>('');
 
 /**
  * The unit's floor plan, the same file the public unit page shows when a unit has no photograph
- * (CategoryRoomsView: photo first, else `/floorplans/<plan>.png`). Sean, 2026-10-02: "the
+ * (CategoryRoomsView: photo first, else `/floorplans/<plan>.webp`). Sean, 2026-10-02: "the
  * photograph should be the floor plan that can be seen on the public web, still editable". So the
  * owner sees exactly what visitors see: the plan until a photograph is saved, which then replaces
  * it on both pages. Display only - the save below sends `editPhotoUrl`, never this path.
  */
 const floorPlanUrl = computed(() => {
   const plan = unit.value ? planFor(unit.value.unitCode) : null;
-  return plan ? `/floorplans/${plan.plan}.png` : '';
+  return plan ? `/floorplans/${plan.plan}.webp` : '';
 });
 const showingFloorPlan = computed(() => !editPhotoUrl.value && !!floorPlanUrl.value);
 const unitPhoto = computed(() => editPhotoUrl.value || floorPlanUrl.value);
@@ -408,7 +408,7 @@ async function handleSave() {
                 v-if="unitPhoto"
                 :src="unitPhoto"
                 :alt="showingFloorPlan ? `Floor plan of unit ${unit.unitCode.toUpperCase()}` : `Unit ${unit.unitCode}`"
-                class="size-full transition-opacity duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                class="size-full transition-opacity duration-300 ease-[var(--ease-out)]"
                 :class="[isPhotoLoaded ? 'opacity-100' : 'opacity-0', showingFloorPlan ? 'bg-white object-contain p-2' : 'object-cover']"
                 @load="isPhotoLoaded = true"
                 @error="isPhotoLoaded = true"
