@@ -169,7 +169,7 @@ onUnmounted(() => {
           v-if="$slots['foot-card']"
           :class="[
             'rounded-2xl border border-line p-5',
-            flat ? 'bg-canvas' : 'rounded-tile bg-tile',
+            flat ? 'bg-well' : 'rounded-tile bg-tile',
           ]"
         >
           <slot name="foot-card" />

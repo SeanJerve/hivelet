@@ -625,7 +625,7 @@ function handleDeleteTicketPrompt() {
       >
         <header class="flex items-start justify-between gap-3">
           <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>
-          <span class="rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold tabular text-ink-soft">
+          <span class="rounded-full bg-well px-2.5 py-1 text-xs font-semibold tabular text-ink-soft">
             {{ col.tickets.length }}
           </span>
         </header>
@@ -759,7 +759,7 @@ function handleDeleteTicketPrompt() {
           the body column is 303px, the pair ran to x=339 - "Mark Resolved" 36px
           past the edge of the panel.
         -->
-        <div class="p-3 bg-canvas border border-line rounded-xl flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div class="p-3 bg-well border border-line rounded-xl flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <span class="font-semibold text-ink-soft text-xs">Quick actions</span>
           <div class="flex flex-wrap items-center gap-2">
             <!-- `savedStatus`, not `editStatus`: this bar reports the ticket as saved. -->
@@ -850,7 +850,7 @@ function handleDeleteTicketPrompt() {
             <p class="font-semibold text-xs text-ink-soft">
               Photo from the tenant
             </p>
-            <div class="flex flex-col items-center rounded-2xl bg-canvas p-3">
+            <div class="flex flex-col items-center rounded-2xl bg-well p-3">
               <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
                 <!--
                   A resident's photo arrives over the network like anything
@@ -883,7 +883,7 @@ function handleDeleteTicketPrompt() {
             </p>
 
             <!-- Message Stream Box -->
-            <div class="max-h-36 space-y-2 overflow-y-auto rounded-2xl bg-canvas p-3 text-sm">
+            <div class="max-h-36 space-y-2 overflow-y-auto rounded-2xl bg-well p-3 text-sm">
               <div v-if="loadingMessages" class="py-2 text-center text-ink-faint text-xs">
                 Loading messages…
               </div>

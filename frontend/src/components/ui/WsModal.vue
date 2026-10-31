@@ -85,7 +85,7 @@ const messageTone = {
   success: { box: 'bg-brand-soft', icon: 'text-brand', is: CheckCircle2 },
   warning: { box: 'bg-verify-soft', icon: 'text-verify', is: AlertTriangle },
   error: { box: 'bg-overdue-soft', icon: 'text-overdue', is: AlertCircle },
-  info: { box: 'bg-canvas', icon: 'text-ink-soft', is: Info },
+  info: { box: 'bg-well', icon: 'text-ink-soft', is: Info },
 } as const;
 const panel = ref<HTMLElement | null>(null);
 const overlay = ref<HTMLElement | null>(null);

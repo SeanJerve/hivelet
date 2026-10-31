@@ -916,7 +916,7 @@ function formatDateTime(iso: string) {
 
                 <div
                   v-if="!ticketPhotoUrl"
-                  class="press-plate border-2 border-dashed border-line rounded-xl p-5 text-center bg-canvas hover:bg-brand-soft/40 hover:border-brand/40"
+                  class="press-plate border-2 border-dashed border-line rounded-xl p-5 text-center bg-well hover:bg-brand-soft/40 hover:border-brand/40"
                 >
                   <input
                     id="ticket-photo-input"
@@ -1097,7 +1097,7 @@ function formatDateTime(iso: string) {
                   @click="toggleTicketExpanded(ticket.id)"
                   @keydown.enter.prevent="toggleTicketExpanded(ticket.id)"
                   @keydown.space.prevent="toggleTicketExpanded(ticket.id)"
-                  class="press-plate px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-canvas select-none group"
+                  class="press-plate px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-hover select-none group"
                 >
                   <div class="min-w-0">
                     <!-- break-words: the resident's own free text from
@@ -1153,7 +1153,7 @@ function formatDateTime(iso: string) {
                 <!-- Collapsible Body & Footer -->
                 <div :id="`ticket-body-${ticket.id}`" v-show="isTicketExpanded(ticket.id)" class="ws-reveal">
                   <!-- Body: description -->
-                  <div class="px-5 py-3.5 bg-canvas">
+                  <div class="px-5 py-3.5 bg-well">
                     <!-- break-words: same free-text overflow risk as the title above. -->
                     <p class="text-sm text-ink-soft leading-6 break-words">{{ ticket.description }}</p>
 
@@ -1323,7 +1323,7 @@ function formatDateTime(iso: string) {
                 <div class="size-7 rounded-full bg-night text-on-night text-xs font-semibold flex items-center justify-center shrink-0">
                   {{ note.author[0] }}
                 </div>
-                <div class="min-w-0 flex-1 bg-canvas border border-line rounded-xl px-3.5 py-2.5">
+                <div class="min-w-0 flex-1 bg-well border border-line rounded-xl px-3.5 py-2.5">
                   <p class="text-xs font-semibold text-ink">{{ note.author }}</p>
                   <p class="text-sm text-ink-soft mt-0.5 leading-6 break-words">{{ note.text }}</p>
                   <p class="text-xs text-ink-faint mt-1">{{ formatDateTime(note.timestamp) }}</p>
@@ -1336,10 +1336,10 @@ function formatDateTime(iso: string) {
               409 ("This ticket is closed"), so the box only ever led to an error
               toast. Resolved tickets still take notes; the server allows them.
             -->
-            <p v-if="isCancelled(activeTimelineTicket)" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
+            <p v-if="isCancelled(activeTimelineTicket)" class="rounded-xl bg-well px-3.5 py-2.5 text-sm text-ink-soft">
               You cancelled this request. If the problem comes back, report it again.
             </p>
-            <p v-else-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
+            <p v-else-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-well px-3.5 py-2.5 text-sm text-ink-soft">
               This request is closed. If the problem has come back, report it again.
             </p>
             <template v-else>

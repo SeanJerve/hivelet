@@ -430,7 +430,7 @@ async function submit() {
               :aria-label="reveal ? 'Hide password' : 'Show password'"
               @click="reveal = !reveal"
             >
-              <span class="grid size-9 place-items-center rounded-full transition-colors group-hover:bg-canvas">
+              <span class="grid size-9 place-items-center rounded-full transition-colors group-hover:bg-hover">
                 <EyeOff v-if="reveal" class="size-4 text-ink-soft" aria-hidden="true" />
                 <Eye v-else class="size-4 text-ink-soft" aria-hidden="true" />
               </span>

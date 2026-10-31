@@ -334,7 +334,7 @@ function applyRoomFilters(v: FilterDraft) {
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full flex-col gap-2.5 px-5 py-4 text-left hover:bg-canvas"
+            class="press-plate flex w-full flex-col gap-2.5 px-5 py-4 text-left hover:bg-hover"
             :aria-expanded="isClusterOpen(clusterName, clusterIndex)"
             :aria-controls="`cluster-units-${domId(clusterName)}`"
             @click="toggleCluster(clusterName, clusterIndex)"

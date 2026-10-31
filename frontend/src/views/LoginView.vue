@@ -356,7 +356,7 @@ async function handleQuickLogin(account: DemoAccount) {
                   :aria-label="showPassword ? 'Hide password' : 'Show password'"
                   @click="showPassword = !showPassword"
                 >
-                  <span class="grid size-9 place-items-center rounded-full transition-colors group-hover:bg-canvas">
+                  <span class="grid size-9 place-items-center rounded-full transition-colors group-hover:bg-hover">
                   <!-- A quick crossfade rather than a hard swap between the two
                        icon states, so toggling reads as a change of state
                        rather than a flicker. `mode="out-in"` keeps only one

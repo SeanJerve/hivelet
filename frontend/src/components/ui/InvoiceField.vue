@@ -57,7 +57,7 @@ function toggleAck() {
       title="Acknowledgement receipt (no number)"
       :class="[
         'press absolute right-1.5 top-1/2 inline-flex h-8 -translate-y-1/2 items-center gap-1 rounded-full border px-3 text-xs font-semibold tracking-wide transition-colors',
-        isAck ? 'border-brand bg-brand text-on-brand' : 'border-line bg-canvas text-ink-soft hover:text-ink',
+        isAck ? 'border-brand bg-brand text-on-brand' : 'border-line bg-well text-ink-soft hover:text-ink',
       ]"
       @click="toggleAck"
     >

@@ -1561,7 +1561,7 @@ const isDownloadOpen = ref(false);
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full flex-col items-start gap-3 p-5 text-left hover:bg-canvas sm:flex-row sm:flex-wrap sm:justify-between sm:p-6"
+            class="press-plate flex w-full flex-col items-start gap-3 p-5 text-left hover:bg-hover sm:flex-row sm:flex-wrap sm:justify-between sm:p-6"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -2062,7 +2062,7 @@ const isDownloadOpen = ref(false);
               <input v-model="editDate" type="date" class="ws-input w-full" required />
             </label>
             <!-- The same total box the payment form uses, so the twins read alike. -->
-            <div class="rounded-2xl bg-canvas px-4 py-3 sm:self-end">
+            <div class="rounded-2xl bg-well px-4 py-3 sm:self-end">
               <p class="text-xs text-ink-faint">Total</p>
               <p class="tabular mt-0.5 text-lg font-semibold leading-none text-brand">{{ peso(editTotal, 2) }}</p>
             </div>

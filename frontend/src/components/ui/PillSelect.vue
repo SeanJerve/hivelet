@@ -317,7 +317,7 @@ onBeforeUnmount(() => {
       ref="triggerRef"
       type="button"
       role="combobox"
-      class="press inline-flex w-full min-h-[2.75rem] h-11 items-center justify-between gap-2 rounded-full border border-line bg-tile px-3.5 py-2 text-sm font-medium text-ink shadow-xs hover:border-brand/40 disabled:cursor-not-allowed disabled:bg-canvas disabled:text-ink-faint cursor-pointer select-none"
+      class="press inline-flex w-full min-h-[2.75rem] h-11 items-center justify-between gap-2 rounded-full border border-line bg-tile px-3.5 py-2 text-sm font-medium text-ink shadow-xs hover:border-brand/40 disabled:cursor-not-allowed disabled:bg-well disabled:text-ink-faint cursor-pointer select-none"
       :class="{
         'border-brand ring-2 ring-brand/10': isOpen,
       }"
@@ -437,7 +437,7 @@ onBeforeUnmount(() => {
               :class="[
                 String(opt.value) === String(modelValue)
                   ? 'bg-brand/15 text-brand font-semibold'
-                  : 'bg-canvas text-ink-soft',
+                  : 'bg-well text-ink-soft',
               ]"
             >
               {{ opt.count }}

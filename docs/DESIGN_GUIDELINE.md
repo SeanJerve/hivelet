@@ -64,6 +64,16 @@ values in components. `check:tokens` counts them and the budget only goes down.
 | Verify | `verify` / `verify-soft` | `#8a5300` / `#fcefd6` | Waiting for verification, due soon, partial failure banner |
 | Overdue | `overdue` / `overdue-soft` | `#b3261e` / `#fde6e3` | Overdue, urgent, negative net income |
 
+**Three layers (1 Nov 2026).** `--canvas` is the page and nothing else. What sits inside a tile
+is `--well` (`#e7ece8`, dark `#141b17`), a pressable thing under the pointer is `--hover`
+(`#e3eae5`, dark `#27322c`, lighter than the tile there, as a raised thing is), and a tile's
+outline against the page is `--edge` (`#d3dcd6`, dark `#323e37`). Never fill or hover with
+`bg-canvas` inside a tile: a band of the page's colour reads as a hole through the card.
+
+**On the new layers, computed 1 Nov 2026 from the token values.** ink-faint on well 4.79 (dark
+6.36), ink-faint on hover 4.69 (dark 4.83). ink-soft on well 6.86 and on hover 6.71. brand on well
+6.31 and on hover 6.17. All need 4.5.
+
 **Measured contrast, 2026-09-18, in the browser against the live tokens.** Re-measure after
 changing any value.
 

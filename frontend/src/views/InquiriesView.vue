@@ -491,7 +491,7 @@ async function handleSendReply() {
                   'press-plate w-full p-4 text-left',
                   activeInquiry?.id === inq.id
                     ? 'bg-brand-soft'
-                    : 'hover:bg-canvas',
+                    : 'hover:bg-hover',
                 ]"
                 @click="selectInquiry(inq.id)"
               >
@@ -629,7 +629,7 @@ async function handleSendReply() {
         </div>
 
         <!-- What was said -->
-        <div class="max-h-[380px] flex-1 space-y-5 overflow-y-auto bg-canvas p-5 sm:p-6">
+        <div class="max-h-[380px] flex-1 space-y-5 overflow-y-auto bg-well p-5 sm:p-6">
           <p v-if="threadError" class="ws-reveal rounded-2xl bg-overdue-soft p-4 text-sm leading-6 text-overdue">
             The replies could not be loaded, so only the first message is shown. {{ threadError }}
           </p>
@@ -656,7 +656,7 @@ async function handleSendReply() {
             <div
               :class="[
                 'max-w-md break-words rounded-2xl px-4 py-3 text-sm leading-6',
-                msg.from === 'me' ? 'bg-brand text-on-brand' : 'bg-tile text-ink',
+                msg.from === 'me' ? 'bg-brand text-on-brand' : 'bg-tile text-ink shadow-card ring-1 ring-line',
               ]"
             >
               {{ msg.text }}

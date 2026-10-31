@@ -556,7 +556,7 @@ onUnmounted(() => {
                     v-if="isTenant"
                     to="/tenant/profile"
                     @click="isProfilePopoverOpen = false"
-                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
+                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-hover"
                   >
                     <User class="size-4 text-ink-soft" aria-hidden="true" />
                     <span>My details</span>
@@ -571,7 +571,7 @@ onUnmounted(() => {
                     v-if="!hasSidebar"
                     :to="brandRoute"
                     @click="isProfilePopoverOpen = false"
-                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
+                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-hover"
                   >
                     <LayoutDashboard class="size-4 text-ink-soft" aria-hidden="true" />
                     <span>Dashboard</span>
@@ -580,7 +580,7 @@ onUnmounted(() => {
                     v-else
                     to="/public"
                     @click="isProfilePopoverOpen = false"
-                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
+                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-hover"
                   >
                     <Globe class="size-4 text-ink-soft" aria-hidden="true" />
                     <span>Website</span>
@@ -593,7 +593,7 @@ onUnmounted(() => {
                   -->
                   <button
                     @click="openChangePassword"
-                    class="press flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-ink hover:bg-canvas"
+                    class="press flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-ink hover:bg-hover"
                   >
                     <Lock class="size-4 text-ink-soft" aria-hidden="true" />
                     <span>{{ isAdmin ? 'Change number / password' : 'Change password' }}</span>
@@ -676,7 +676,7 @@ onUnmounted(() => {
         <RouterLink
           to="/inquire"
           @click="isMobilePublicNavOpen = false"
-          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
+          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-hover hover:text-brand"
         >
           Inquire now
         </RouterLink>
@@ -684,7 +684,7 @@ onUnmounted(() => {
           v-if="!isAuthenticated"
           to="/login"
           @click="isMobilePublicNavOpen = false"
-          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
+          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-hover hover:text-brand"
         >
           Sign in
         </RouterLink>
@@ -692,7 +692,7 @@ onUnmounted(() => {
           v-else
           :to="brandRoute"
           @click="isMobilePublicNavOpen = false"
-          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
+          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-hover hover:text-brand"
         >
           Dashboard
         </RouterLink>

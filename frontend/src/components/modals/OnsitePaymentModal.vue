@@ -837,7 +837,7 @@ function triggerRecord() {
           <strong class="font-mono">{{ recorded.invoice }}</strong></template><template v-else>, with no invoice</template>.
         </span>
       </p>
-      <dl class="flex flex-col gap-2 rounded-2xl bg-canvas p-4 text-sm">
+      <dl class="flex flex-col gap-2 rounded-2xl bg-well p-4 text-sm">
         <div class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Covers</dt>
           <dd class="text-right">{{ recorded.months }} {{ recorded.months === 1 ? 'month' : 'months' }}, {{ recorded.period }}</dd>
@@ -924,7 +924,7 @@ function triggerRecord() {
           </label>
           <div class="ws-field">
             Water
-            <p class="ws-input w-full tabular bg-canvas text-ink" aria-live="polite">{{ peso(waterAmount, 2) }}</p>
+            <p class="ws-input w-full tabular bg-well text-ink" aria-live="polite">{{ peso(waterAmount, 2) }}</p>
             <span class="ws-hint">
               {{ Number(occupantsInput) || 0 }} × {{ peso(waterRatePerOccupant ?? 200) }} a month
             </span>
@@ -1029,7 +1029,7 @@ function triggerRecord() {
             Date received
             <input v-model="date" type="date" class="ws-input w-full" required @input="dateReceivedTyped = true" />
           </label>
-          <div class="rounded-2xl bg-canvas px-4 py-3">
+          <div class="rounded-2xl bg-well px-4 py-3">
             <p class="text-xs text-ink-faint">Total handed over</p>
             <p class="tabular mt-0.5 text-2xl font-semibold leading-none text-brand">
               {{ peso(totalAmountReceived, 2) }}

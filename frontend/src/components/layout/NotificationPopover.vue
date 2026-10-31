@@ -155,7 +155,7 @@ function chipTone(type: string, priority: string) {
     case 'Inquiry':
       return 'bg-brand-soft text-brand';
     default:
-      return 'bg-canvas text-ink-soft';
+      return 'bg-well text-ink-soft';
   }
 }
 
@@ -364,9 +364,9 @@ onUnmounted(() => {
               ref="filterButton"
               type="button"
               :class="[
-                'press relative grid size-9 place-items-center rounded-full text-ink-soft hover:bg-canvas hover:text-ink pointer-coarse:size-11',
+                'press relative grid size-9 place-items-center rounded-full text-ink-soft hover:bg-hover hover:text-ink pointer-coarse:size-11',
                 (isFilterOpen || activeFilter !== 'all') && 'text-ink',
-                isFilterOpen && 'bg-canvas',
+                isFilterOpen && 'bg-well',
               ]"
               :aria-label="activeFilter === 'all' ? 'Filter notifications' : `Filter notifications, showing ${activeFilterLabel}`"
               :aria-expanded="isFilterOpen"
@@ -397,7 +397,7 @@ onUnmounted(() => {
                     'press flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm pointer-coarse:min-h-11',
                     activeFilter === tab.key
                       ? 'bg-brand-soft font-semibold text-brand'
-                      : 'text-ink hover:bg-canvas',
+                      : 'text-ink hover:bg-hover',
                   ]"
                   @click="chooseFilter(tab.key)"
                 >
@@ -484,7 +484,7 @@ onUnmounted(() => {
             :class="[
               // Negative offset: these rows run edge to edge inside a scrolling
               // list, which clipped the workspace's outset focus outline.
-              'press-plate group flex w-full items-start gap-3 p-4 text-left hover:bg-canvas focus-visible:outline-offset-[-3px]',
+              'press-plate group flex w-full items-start gap-3 p-4 text-left hover:bg-hover focus-visible:outline-offset-[-3px]',
               item.is_read ? 'bg-tile' : 'bg-brand-soft/50',
               revealRows ? 'list-reveal-item' : '',
             ]"

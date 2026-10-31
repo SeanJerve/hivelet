@@ -449,7 +449,7 @@ onBeforeUnmount(() => {
                       'press flex min-h-11 items-center justify-between rounded-full px-4 text-sm',
                       isItemActive(item.to, item.aliases)
                         ? 'bg-brand-soft text-brand font-semibold'
-                        : 'text-ink-soft font-medium hover:bg-canvas hover:text-ink'
+                        : 'text-ink-soft font-medium hover:bg-hover hover:text-ink'
                     ]"
                   >
                     <div class="flex items-center gap-3">

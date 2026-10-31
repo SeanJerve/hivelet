@@ -24,7 +24,7 @@ const options: { value: ThemeChoice; label: string; icon: typeof Sun }[] = [
 <template>
   <fieldset class="min-w-0">
     <legend class="text-xs text-ink-faint">Appearance</legend>
-    <div class="mt-2 grid grid-cols-3 gap-1 rounded-full bg-canvas p-1">
+    <div class="mt-2 grid grid-cols-3 gap-1 rounded-full bg-well p-1">
       <label
         v-for="o in options"
         :key="o.value"

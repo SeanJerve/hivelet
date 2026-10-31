@@ -23,7 +23,7 @@ const pillClass = computed(
       paid: 'bg-brand-soft text-brand',
       verify: 'bg-verify-soft text-verify',
       overdue: 'bg-overdue-soft text-overdue',
-      neutral: 'bg-canvas text-ink-soft',
+      neutral: 'bg-well text-ink-soft',
       unentered: 'bg-tile text-ink-soft border border-line',
       expected: 'bg-tile text-ink-soft border border-dashed border-hatch',
       'on-dark': 'bg-white/10 text-on-night',

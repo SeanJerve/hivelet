@@ -149,7 +149,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
               />
               <span
                 v-else-if="m.kind === 'none'"
-                class="capsule-mark absolute inset-0 rounded-full bg-canvas"
+                class="capsule-mark absolute inset-0 rounded-full bg-well"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               />
               <span
@@ -211,7 +211,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />{{ term('recorded') }}</li>
         <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />{{ term('unentered') }}</li>
         <li v-if="kindsShown.has('expected')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />{{ term('expected') }}</li>
-        <li v-if="kindsShown.has('none')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-canvas border border-line" />{{ term('none') }}</li>
+        <li v-if="kindsShown.has('none')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-well border border-line" />{{ term('none') }}</li>
         <li v-if="kindsShown.has('future')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border border-dashed border-hatch" />{{ term('future') }}</li>
       </ul>
     </div>

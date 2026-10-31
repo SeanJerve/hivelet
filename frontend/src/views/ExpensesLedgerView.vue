@@ -1195,11 +1195,11 @@ async function handleEditExpense() {
 
       <template #row="{ row: group }">
         <tr>
-          <th scope="colgroup" colspan="6" class="bg-canvas text-sm text-ink-soft">
+          <th scope="colgroup" colspan="6" class="bg-well text-sm text-ink-soft">
             {{ group.dateStr }}
           </th>
-          <td class="num bg-canvas text-base font-semibold text-brand">{{ peso(group.dayTotal, 2) }}</td>
-          <td class="bg-canvas"><span class="sr-only">that day</span></td>
+          <td class="num bg-well text-base font-semibold text-brand">{{ peso(group.dayTotal, 2) }}</td>
+          <td class="bg-well"><span class="sr-only">that day</span></td>
         </tr>
         <tr v-for="e in group.records" :key="e.id" class="group">
           <th scope="row" class="font-medium wrap-anywhere text-ink">{{ e.description }}</th>
@@ -1261,7 +1261,7 @@ async function handleEditExpense() {
                 <li
                   v-for="part in areaParts(e)"
                   :key="part.label"
-                  class="inline-flex items-center gap-1.5 rounded-full bg-canvas px-2.5 py-1 text-xs text-ink-soft"
+                  class="inline-flex items-center gap-1.5 rounded-full bg-well px-2.5 py-1 text-xs text-ink-soft"
                 >
                   {{ part.label }}<span v-if="part.amount !== null" class="tabular font-semibold text-ink">{{ money(part.amount) }}</span>
                 </li>
@@ -1320,7 +1320,7 @@ async function handleEditExpense() {
               <div
                 v-for="(entry, index) in formEntries"
                 :key="index"
-                class="relative p-4 bg-canvas border border-line rounded-tile space-y-3"
+                class="relative p-4 bg-well border border-line rounded-tile space-y-3"
               >
                 <!-- Header with Item Index and Remove Item Button -->
                 <div class="flex items-center justify-between pb-2 border-b border-line/70">
@@ -1525,7 +1525,7 @@ async function handleEditExpense() {
                 <div
                   v-for="(alloc, aIdx) in editAllocations"
                   :key="aIdx"
-                  class="flex flex-wrap items-end gap-3 bg-canvas p-3 border border-line rounded-xl"
+                  class="flex flex-wrap items-end gap-3 bg-well p-3 border border-line rounded-xl"
                 >
                   <label class="ws-field w-full sm:w-auto sm:flex-1">
                     Which part of the property

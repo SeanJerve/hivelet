@@ -360,7 +360,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       the checkout call resolves, and a "₱0.00 to pay now" flash in that gap
       reads as a claim that nothing is owed.
     -->
-    <dl v-if="billInfo" class="rounded-2xl bg-canvas p-4 flex flex-col gap-2 text-sm">
+    <dl v-if="billInfo" class="rounded-2xl bg-well p-4 flex flex-col gap-2 text-sm">
       <div v-if="dueLabel" class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">Due</dt>
         <dd class="font-medium">{{ dueLabel }}</dd>

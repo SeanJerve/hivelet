@@ -391,10 +391,10 @@ function handleReset() {
                 :value="form.full_name"
                 type="text"
                 readonly
-                class="ws-input cursor-default bg-canvas text-ink-soft"
+                class="ws-input cursor-default bg-well text-ink-soft"
                 required
               />
-              <!-- `bg-canvas text-ink-soft` (audit 2026-10-09): it was drawn exactly like the
+              <!-- `bg-well text-ink-soft` (audit 2026-10-09): it was drawn exactly like the
                    mobile field beside it, so it still looked typeable; a tap put a
                    caret in a box that took no typing. Recessed and quieter, it reads as a
                    fact on file, which the hint under it then explains. -->

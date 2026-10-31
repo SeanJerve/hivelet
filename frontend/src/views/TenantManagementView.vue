@@ -1171,7 +1171,7 @@ async function handleOnboard() {
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full items-baseline justify-between gap-3 px-5 py-4 text-left hover:bg-canvas"
+            class="press-plate flex w-full items-baseline justify-between gap-3 px-5 py-4 text-left hover:bg-hover"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`residents-cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -1449,7 +1449,7 @@ async function handleOnboard() {
           </div>
 
           <!-- What the headcount means for the water bill, stated as a sentence. -->
-          <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft">
+          <p class="rounded-2xl bg-well px-4 py-3 text-sm leading-6 text-ink-soft">
             <strong class="font-semibold text-ink">{{ editOccupantsPreview }}</strong>
             in the unit, so water is
             <strong class="tabular font-semibold text-ink">{{ peso(editWaterPreview) }}</strong>
@@ -1688,7 +1688,7 @@ async function handleOnboard() {
             <p v-if="newEmergPhoneError" id="new-emerg-phone-error" class="ws-reveal text-sm text-overdue">{{ newEmergPhoneError }}</p>
           </div>
 
-          <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft col-span-2">
+          <p class="rounded-2xl bg-well px-4 py-3 text-sm leading-6 text-ink-soft col-span-2">
             <strong class="font-semibold text-ink">{{ newOccupantsPreview }}</strong>
             in the unit, so water is
             <strong class="tabular font-semibold text-ink">{{ peso(newWaterPreview) }}</strong>
@@ -1724,13 +1724,13 @@ async function handleOnboard() {
 
       <div v-if="onboardedCredentials.loginId" class="flex flex-col gap-1">
         <p class="text-xs text-ink-faint">Login ID</p>
-        <div class="rounded-2xl border border-line bg-canvas px-4 py-3">
+        <div class="rounded-2xl border border-line bg-well px-4 py-3">
           <code data-login-id class="select-all font-mono text-base font-semibold tracking-wide text-ink">{{ onboardedCredentials.loginId }}</code>
         </div>
       </div>
       <p class="text-xs text-ink-faint">One-time password</p>
 
-      <div class="flex items-center gap-2 rounded-2xl border border-line bg-canvas px-4 py-3">
+      <div class="flex items-center gap-2 rounded-2xl border border-line bg-well px-4 py-3">
         <code data-one-time-password class="flex-1 select-all break-all font-mono text-base font-semibold tracking-wide text-ink">{{ onboardedCredentials.password }}</code>
         <!-- Plain, not ringed: the ring is for close and go-to only (Sean, 2026-10-01). -->
         <button

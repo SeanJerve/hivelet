@@ -394,7 +394,7 @@ async function handleSave() {
             @change="onFileSelected"
           />
 
-          <div class="overflow-hidden rounded-2xl bg-canvas">
+          <div class="overflow-hidden rounded-2xl bg-well">
             <div class="relative h-44 w-full bg-night">
               <!--
                 Faded in on `@load` rather than shown the instant the `src`
@@ -472,7 +472,7 @@ async function handleSave() {
              or "Nobody", already says it, and Status is the next field down. -->
         <div class="ws-field">
           <span>Who lives here</span>
-          <div class="flex items-center justify-between gap-3 rounded-2xl bg-canvas px-4 py-3">
+          <div class="flex items-center justify-between gap-3 rounded-2xl bg-well px-4 py-3">
             <div class="min-w-0">
               <p class="text-sm font-semibold text-ink">
                 <template v-if="occupantsSummary.count > 0">{{ occupantsSummary.text }}</template>
@@ -505,7 +505,7 @@ async function handleSave() {
              greyed-out field read as one that was broken. -->
         <div class="ws-field">
           <span>How it is billed</span>
-          <p class="rounded-2xl bg-canvas px-4 py-3 text-sm text-ink">{{ billingRule }}</p>
+          <p class="rounded-2xl bg-well px-4 py-3 text-sm text-ink">{{ billingRule }}</p>
         </div>
 
         <!-- "Description", the word the unit's own details dialog uses for

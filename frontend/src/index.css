@@ -94,6 +94,8 @@
   /* Workspace system (docs/DESIGN_GUIDELINE.md). Screens move onto these one at a
      time; the roles above stay until nothing reads them. */
   --color-canvas: var(--canvas);
+  --color-well: var(--well);
+  --color-hover: var(--hover);
   --color-tile: var(--tile);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
@@ -212,6 +214,15 @@
      contrast in docs/DESIGN_GUIDELINE.md; re-measure after changing any. */
   --canvas: #edf1ee;
   --tile: #ffffff;
+  /* Three layers, and the page's colour belongs to the page alone (Sean, 1 Nov 2026: hovers and
+     the chat "blending in the bg"). Everything inset and every hover used to be --canvas, so a
+     band across a tile read as a hole through it to the page, and a hover in the dark theme went
+     darker than the tile, sinking below it. --well is what sits inside a tile, --hover is a
+     pressable thing answering the pointer (lighter than the tile in dark, as a raised thing is),
+     and --edge outlines a tile against the page. */
+  --well: #e7ece8;
+  --hover: #e3eae5;
+  --edge: #d3dcd6;
   --ink: #101713;
   --ink-soft: #45524a;
   --ink-faint: #5d6962;
@@ -363,6 +374,9 @@
 
   --canvas: #0f1412;
   --tile: #1a211d;
+  --well: #141b17;
+  --hover: #27322c;
+  --edge: #323e37;
   --ink: #e6ece8;
   --ink-soft: #b3bfb7;
   --ink-faint: #929f97;
@@ -783,12 +797,12 @@ html:has(> body[style*='overflow: hidden']) {
   border-color: var(--overdue-soft);
 }
 .badge-purple {
-  background-color: var(--canvas);
+  background-color: var(--well);
   color: var(--ink-soft);
   border-color: var(--line);
 }
 .badge-neutral {
-  background-color: var(--canvas);
+  background-color: var(--well);
   color: var(--ink-soft);
   border-color: var(--line);
 }
@@ -913,6 +927,12 @@ html:has(> body[style*='overflow: hidden']) {
     .icon-btn:hover:not(:disabled) {
       background-color: color-mix(in srgb, var(--ink) 7%, transparent);
     }
+  }
+
+  /* A tile sits above the page: an edge and a soft shadow, which take no layout. A tile that asks
+     for its own border or a larger shadow keeps it. */
+  .bg-tile:is(.rounded-tile, .rounded-2xl):not(.border, [class*='shadow-']) {
+    box-shadow: 0 0 0 1px var(--edge), var(--elev-card);
   }
 
   .pill-btn {
@@ -1477,7 +1497,7 @@ html:has(> body[style*='overflow: hidden']) {
   .ws-select:disabled,
   select:disabled,
   .ws-textarea:disabled {
-    background-color: var(--canvas);
+    background-color: var(--well);
     cursor: not-allowed;
   }
 
@@ -1625,7 +1645,7 @@ html:has(> body[style*='overflow: hidden']) {
   }
   .ws-table tbody tr:hover td,
   .ws-table tbody tr:hover th {
-    background-color: var(--canvas);
+    background-color: var(--hover);
   }
   .ws-table tbody tr.is-active:hover td,
   .ws-table tbody tr.is-active:hover th,
@@ -1668,7 +1688,7 @@ html:has(> body[style*='overflow: hidden']) {
     text-align: left;
     font-weight: 600;
     color: var(--ink);
-    background-color: var(--canvas);
+    background-color: var(--well);
     border-top: 2px solid var(--line);
   }
 

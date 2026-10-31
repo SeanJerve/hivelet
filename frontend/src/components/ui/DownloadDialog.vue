@@ -115,7 +115,7 @@ onBeforeUnmount(() => controller?.abort());
   <WsModal :title="`Download ${title}`" size="sm" @close="emit('close')">
     <fieldset class="min-w-0" :disabled="busy">
       <legend class="text-xs text-ink-faint">What to download</legend>
-      <div class="mt-2 grid grid-cols-3 gap-1 rounded-full bg-canvas p-1">
+      <div class="mt-2 grid grid-cols-3 gap-1 rounded-full bg-well p-1">
         <label
           v-for="o in options"
           :key="o.value"

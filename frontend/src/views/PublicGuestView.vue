@@ -487,7 +487,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             v-for="(c, i) in CATEGORIES"
             :key="c.key"
             :to="'/category/' + c.slug"
-            class="list-reveal-item press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-canvas sm:grid sm:grid-cols-[10.5rem_1fr_4rem_4.5rem] sm:items-baseline sm:gap-5 lg:grid-cols-[14rem_1fr_9rem_9rem] lg:gap-6"
+            class="list-reveal-item press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-hover sm:grid sm:grid-cols-[10.5rem_1fr_4rem_4.5rem] sm:items-baseline sm:gap-5 lg:grid-cols-[14rem_1fr_9rem_9rem] lg:gap-6"
             :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
           >
             <span class="flex items-baseline gap-2 text-base font-medium text-ink">
