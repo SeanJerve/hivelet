@@ -11,6 +11,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router';
 import { LogIn, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next';
 import { login, authError, isAuthenticating, homeRouteForRole, MOVED_OUT_FLAG } from '@/lib/authStore';
 import { lastPageFor } from '@/lib/lastPage';
+import { vPhoneIfNumber } from '@/lib/phoneFormat';
 import { showToast, LANDLADY } from '@/lib/systemState';
 import { ApiRequestError } from '@/lib/api';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -317,6 +318,7 @@ async function handleQuickLogin(account: DemoAccount) {
               <input
                 id="login-email"
                 v-model="email"
+                v-phone-if-number
                 type="text"
                 autocomplete="username"
                 required

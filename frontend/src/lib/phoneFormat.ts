@@ -82,6 +82,26 @@ export const vPhone: Directive<HTMLInputElement> = {
   },
 };
 
+function onInputIfNumber(e: Event) {
+  const el = e.target as HTMLInputElement;
+  if (/^[+\d\s]+$/.test(el.value)) reformat(el, true);
+}
+
+/**
+ * For the sign-in field, which takes a login ID or a phone number (Sean, 31 Oct 2026). Only what
+ * can be nothing but a number is spaced, so HV-12345 is left exactly as typed: every login ID
+ * starts with letters (read from `profiles` that day: none of the 34 is all digits). No keypad
+ * or length limit here, unlike `v-phone`: a login ID needs letters.
+ */
+export const vPhoneIfNumber: Directive<HTMLInputElement> = {
+  mounted(el) {
+    el.addEventListener('input', onInputIfNumber);
+  },
+  beforeUnmount(el) {
+    el.removeEventListener('input', onInputIfNumber);
+  },
+};
+
 /**
  * A number on file, for display: spaced when it is a number, and anything else
  * ("—", "Not on file") left exactly as it is.
