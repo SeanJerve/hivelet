@@ -796,6 +796,7 @@ const statusTone = computed(() => {
 
 
       <OverviewTile
+        boxed
         :title="tenantData.room || 'Your unit'"
         class="list-reveal-item order-5 md:order-none xl:col-span-3"
         style="animation-delay: 60ms"
