@@ -138,6 +138,8 @@
      interface hesitating. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  /* A small overshoot, for an icon answering the pointer. */
+  --ease-bump: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* The curve for things that ARRIVE - a page, a dialog, the drawer, a
      header menu (Sean, 2026-10-01: "everything feels so instant").
@@ -915,14 +917,13 @@ html:has(> body[style*='overflow: hidden']) {
   .pill-btn-quiet:active:not(:disabled),
   .pill-btn-danger:active:not(:disabled),
   .pill-btn-danger-quiet:active:not(:disabled),
-  .icon-btn:active:not(:disabled),
   .chip:active:not(:disabled) {
     transform: scale(0.97);
   }
 
   /* Close (X) and go-to (ArrowUpRight). No ring since 6 Oct 2026 (Sean: "remove all circle
      borders on all arrows and x", the phone never had them): the bare icon in a 44px box, so
-     the tap area is unchanged, with the same hover tint as `.icon-btn-plain` below. The border
+     the tap area is unchanged. It answers with a bump, at the end of this file. The border
      stays, transparent, so nothing that sizes against it moves. */
   .icon-btn {
     width: 2.75rem;
@@ -931,11 +932,6 @@ html:has(> body[style*='overflow: hidden']) {
     background-color: transparent;
     color: var(--ink);
     border: 1px solid transparent;
-  }
-  @media (hover: hover) {
-    .icon-btn:hover:not(:disabled) {
-      background-color: color-mix(in srgb, var(--ink) 7%, transparent);
-    }
   }
 
   /* A tile sits above the page: an edge and a soft shadow, which take no layout. A tile that asks
@@ -1158,11 +1154,6 @@ html:has(> body[style*='overflow: hidden']) {
     background-color: transparent;
     color: inherit;
   }
-  @media (hover: hover) {
-    .icon-btn.icon-btn-on-dark:hover:not(:disabled) {
-      background-color: rgba(255, 255, 255, 0.12);
-    }
-  }
 
   .pill-btn:disabled,
   .pill-btn-brand:disabled,
@@ -1210,12 +1201,8 @@ html:has(> body[style*='overflow: hidden']) {
   }
   @media (hover: hover) {
     .icon-btn-plain:hover:not(:disabled) {
-      background-color: color-mix(in srgb, var(--ink) 7%, transparent);
       color: var(--ink);
     }
-  }
-  .icon-btn-plain:active:not(:disabled) {
-    background-color: color-mix(in srgb, var(--ink) 10%, transparent);
   }
   .icon-btn-plain:disabled {
     opacity: 0.5;
@@ -1793,7 +1780,6 @@ html:has(> body[style*='overflow: hidden']) {
     .pill-btn-quiet:active:not(:disabled),
     .pill-btn-danger:active:not(:disabled),
     .pill-btn-danger-quiet:active:not(:disabled),
-    .icon-btn:active:not(:disabled),
     .chip:active:not(:disabled) {
       transform: none;
     }
@@ -2700,4 +2686,48 @@ dialog.ws-dialog[open]::backdrop {
  */
 #main.ptr-busy > :not([data-refresh-skeleton]) {
   display: none;
+}
+
+/* ------------------------------------------------------------- icon bump --
+ * How every icon-only control answers (Sean, 1 Nov 2026): a smooth little upscale, no grey disc.
+ * A disc made an icon look like a second, heavier button, and it did nothing on a touch screen.
+ * Hover grows it on a mouse. A press snaps larger and eases back through a small overshoot, and
+ * because the return is the slow part, even a quick tap shows the whole bump.
+ *
+ * Unlayered and after `.press`, which some of these also wear, so this wins over its 0.97.
+ */
+.icon-btn,
+.icon-btn-plain,
+.icon-bump {
+  transition:
+    transform 0.26s var(--ease-bump),
+    color 0.15s var(--ease-out);
+}
+@media (hover: hover) {
+  .icon-btn:hover:not(:disabled),
+  .icon-btn-plain:hover:not(:disabled),
+  .icon-bump:hover:not(:disabled) {
+    transform: scale(1.12);
+  }
+}
+.icon-btn:active:not(:disabled),
+.icon-btn-plain:active:not(:disabled),
+.icon-bump:active:not(:disabled) {
+  transform: scale(1.18);
+  transition-duration: 0.07s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn,
+  .icon-btn-plain,
+  .icon-bump {
+    transition: color 0.15s var(--ease-out);
+  }
+  .icon-btn:hover:not(:disabled),
+  .icon-btn-plain:hover:not(:disabled),
+  .icon-bump:hover:not(:disabled),
+  .icon-btn:active:not(:disabled),
+  .icon-btn-plain:active:not(:disabled),
+  .icon-bump:active:not(:disabled) {
+    transform: none;
+  }
 }

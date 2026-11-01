@@ -364,9 +364,8 @@ onUnmounted(() => {
               ref="filterButton"
               type="button"
               :class="[
-                'press relative grid size-9 place-items-center rounded-full text-ink-soft hover:bg-hover hover:text-ink pointer-coarse:size-11',
+                'icon-bump press relative grid size-9 place-items-center rounded-full text-ink-soft hover:text-ink pointer-coarse:size-11',
                 (isFilterOpen || activeFilter !== 'all') && 'text-ink',
-                isFilterOpen && 'bg-well',
               ]"
               :aria-label="activeFilter === 'all' ? 'Filter notifications' : `Filter notifications, showing ${activeFilterLabel}`"
               :aria-expanded="isFilterOpen"

@@ -301,7 +301,7 @@ onUnmounted(() => {
         <button
           v-if="hasSidebar"
           @click="toggleSidebar"
-          class="press flex lg:hidden -ml-1 p-3 rounded-xl text-ink-soft hover:bg-tile hover:text-ink cursor-pointer"
+          class="icon-bump press flex lg:hidden -ml-1 p-3 rounded-xl text-ink-soft hover:text-ink cursor-pointer"
           aria-label="Toggle navigation"
           :aria-expanded="isMobileSidebarOpen"
           aria-controls="workspace-mobile-nav"
@@ -319,8 +319,8 @@ onUnmounted(() => {
         <button
           v-if="isPublicRoute && !isLandingPage"
           @click="isMobilePublicNavOpen = !isMobilePublicNavOpen"
-          class="press flex md:hidden -ml-1 p-3 rounded-xl cursor-pointer"
-          :class="isLandingPage ? 'text-white hover:bg-white/10' : 'text-ink-soft hover:bg-tile hover:text-ink'"
+          class="icon-bump press flex md:hidden -ml-1 p-3 rounded-xl cursor-pointer"
+          :class="isLandingPage ? 'text-white' : 'text-ink-soft hover:text-ink'"
           aria-label="Toggle navigation menu"
           :aria-expanded="isMobilePublicNavOpen"
           aria-controls="public-mobile-nav"
@@ -378,7 +378,7 @@ onUnmounted(() => {
               Sign in
             </RouterLink>
             <!-- Light or dark, at the top where a phone finds it (technical evaluators, 3 Oct 2026). -->
-            <ThemeToggle class="ml-1 self-center text-white hover:bg-white/10" />
+            <ThemeToggle class="ml-1 self-center text-white" />
           </div>
         </template>
         <!-- Other public routes (fallback) -->
@@ -426,9 +426,7 @@ onUnmounted(() => {
               :class="[
                 // The bell is its icon alone, no circle and no fill (Sean,
                 // 2026-09-29): the circle crowded the account menu beside it.
-                // A soft fill on hover and while open still answers the pointer.
-                isLandingPage ? 'text-white hover:bg-white/10' : 'text-ink hover:bg-tile',
-                isPopoverOpen && (isLandingPage ? 'bg-white/15' : 'bg-tile')
+                isLandingPage ? 'text-white' : 'text-ink',
               ]"
               :aria-label="notificationsLabel"
               :aria-expanded="isPopoverOpen"
@@ -495,8 +493,7 @@ onUnmounted(() => {
             <button
               data-account-trigger
               @click="isProfilePopoverOpen = !isProfilePopoverOpen"
-              class="group press flex cursor-pointer items-center rounded-full p-1"
-              :class="isLandingPage ? 'hover:bg-white/10' : 'hover:bg-tile/80'"
+              class="icon-bump group press flex cursor-pointer items-center rounded-full p-1"
               :aria-label="`Account menu for ${isTenant ? currentUser.fullName : 'the administrator'}`"
               :aria-expanded="isProfilePopoverOpen"
               aria-controls="account-menu"

@@ -108,6 +108,10 @@ sidebar stay filled, since a number that small needs a shape to be seen.
 outline or fill, in dialogs too, so the safe choice beside them is the one that stands out. The 44px
 tap area stays.
 
+**Icon buttons bump (1 Nov 2026).** Every icon-only control answers with a smooth scale and no
+background: 1.12 on hover, 1.18 on a press, easing back through a small overshoot, so a touch screen
+sees it too. `.icon-btn`, `.icon-btn-plain`, or `.icon-bump` on anything else. None with reduced motion.
+
 **Colour is never the only cue.**
 - Status is always written in words: "Waiting for verification", "Not entered yet", "Overdue by 3
   days".
