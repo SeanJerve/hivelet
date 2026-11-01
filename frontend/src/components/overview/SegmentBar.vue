@@ -21,6 +21,7 @@ const toneClass: Record<Segment['tone'], string> = {
   soft: 'bg-series-soft',
   // A sixth, for the six property areas: with five, two areas shared a green.
   faint: 'bg-ink-faint',
+  empty: 'bg-line',
 };
 </script>
 
@@ -43,15 +44,14 @@ const toneClass: Record<Segment['tone'], string> = {
 
 <style scoped>
 /*
- * Each segment grows in from its trigger edge rather than simply being there,
- * the same fill-in the ring on OccupancyArc uses. The actual layout width is
+ * Each segment grows in from its trigger edge rather than simply being there.
+ * The actual layout width is
  * still set instantly by the inline `width` above, so the row's total and the
  * gap between segments never move - `transform: scaleX` only changes what is
  * PAINTED inside that already-final box, never what is LAID OUT, which is why
  * it is safe to animate here and `width` itself is not.
  *
- * Same 30ms-a-step, capped-at-ten stagger as `.list-reveal-item` and
- * OccupancyArc's ring, so a reader who sees several of these on one screen
+ * Same 30ms-a-step, capped-at-ten stagger as `.list-reveal-item`, so a reader who sees several of these on one screen
  * gets one consistent rhythm rather than a different one per chart.
  *
  * Deliberately still `--ease-out`, not the bounce MonthCapsules' bars got.

@@ -44,14 +44,13 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
-import OccupancyArc from '@/components/overview/OccupancyArc.vue';
 import PhoneMore from '@/components/overview/PhoneMore.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import YearMenu from '@/components/ui/YearMenu.vue';
 import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
 import { payersOn, samePerson } from '@/lib/tenantHistory';
-import type { ArcUnit, CapsuleMonth, QuickAction, Segment } from '@/components/overview/types';
+import type { CapsuleMonth, QuickAction, Segment } from '@/components/overview/types';
 import {
   Plus,
   ReceiptText,
@@ -477,13 +476,6 @@ const livePersonalTotal = computed(() =>
   liveExpenseRecords.value.reduce((s, e) => s + Number(e.personalAmount ?? 0), 0)
 );
 
-const arcUnits = computed<ArcUnit[]>(() =>
-  CLUSTERS.flatMap((c) =>
-    rooms
-      .filter((r) => r.cluster === c)
-      .map((r) => ({ code: r.unitCode.toUpperCase(), cluster: c, occupied: isOccupied(r) }))
-  )
-);
 /**
  * The Overview shows what has something to say (Sean, 1 Nov 2026). A tile with nothing in it is
  * not drawn, and the others take its room. A failed load counts as something to say: "could not
@@ -518,8 +510,8 @@ const tileSpans = computed(() => ({
 const phoneSpan = computed(() => (attentionShown.value && monthShown.value ? '' : 'max-md:col-span-2'));
 
 /**
- * Largest rent first, each with its colour in the bar, as Monthly Income orders its clusters. No
- * hatch among them: beside this tile's chart, hatching means not entered yet.
+ * Most units first, each with its colour in the bar. No hatch among them: beside this tile's
+ * chart, hatching means not entered yet.
  */
 const liveClusterPerformance = computed(() => {
   const tones = ['brand', 'bright', 'night', 'soft', 'faint'] as const;
@@ -533,12 +525,15 @@ const liveClusterPerformance = computed(() => {
       revenue: clusterRooms.reduce((s, r) => s + (r.tenant ? Number(r.price || 0) : 0), 0),
     };
   })
-    .sort((a, b) => b.revenue - a.revenue)
+    .sort((a, b) => b.occupied - a.occupied)
     .map((c, i) => ({ ...c, tone: tones[i % tones.length] }));
 });
-const clusterRentSplit = computed<Segment[]>(() =>
-  liveClusterPerformance.value.map((c) => ({ label: c.name, value: c.revenue, tone: c.tone }))
-);
+const occupiedCount = computed(() => rooms.length - vacantUnits.value.length);
+/** All the units, the occupied by cluster and the vacant as empty track at the end. */
+const clusterUnitSplit = computed<Segment[]>(() => [
+  ...liveClusterPerformance.value.map((c) => ({ label: c.name, value: c.occupied, tone: c.tone })),
+  { label: 'Vacant', value: vacantUnits.value.length, tone: 'empty' as const },
+]);
 
 /** The key's dot for a segment of the bar. */
 const toneDot: Record<Segment['tone'], string> = {
@@ -548,6 +543,7 @@ const toneDot: Record<Segment['tone'], string> = {
   soft: 'bg-series-soft',
   hatch: 'hatch border border-line',
   faint: 'bg-ink-faint',
+  empty: 'bg-line',
 };
 
 /* ========================================================================== *
@@ -950,21 +946,25 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           @retry="refreshAllData"
         />
         <template v-else>
-          <!-- The arc on a phone as well (Loyd, 2026-10-03: "I need the semicircle"),
-               a little narrower there so the month chart still fits below it. -->
-          <OccupancyArc :units="arcUnits" class="max-md:max-w-[14rem]" />
-          <!-- Only when there is something to name: the arc already says all are occupied. -->
-          <p v-if="vacantUnits.length" class="text-center text-sm text-ink-soft">
-            Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
-          </p>
-          <!-- One bar for how the rent divides, then the clusters as its key (Sean, 1 Nov 2026). A
-               bar per cluster was five full bars whenever the house is full. -->
-          <SegmentBar :segments="clusterRentSplit" label="How the rent divides across the clusters" />
+          <!-- The count and one bar of the same units replaced the semicircle (Sean, 1 Nov 2026):
+               the arc and a bar drew the one fact twice. -->
+          <div>
+            <p class="flex flex-wrap items-baseline gap-x-2">
+              <span class="text-5xl leading-none font-semibold tabular tracking-tight">
+                <span class="text-brand">{{ occupiedCount }}</span><span class="text-3xl text-ink-faint">/{{ rooms.length }}</span>
+              </span>
+              <span class="text-sm text-ink-soft">units occupied</span>
+            </p>
+            <p v-if="vacantUnits.length" class="mt-2 text-sm text-ink-soft">
+              Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
+            </p>
+          </div>
+          <SegmentBar :segments="clusterUnitSplit" :label="`${occupiedCount} of ${rooms.length} units occupied, by cluster`" />
           <table class="w-full text-sm">
             <caption class="sr-only">Occupied units and monthly rent by cluster</caption>
             <thead class="text-left text-xs text-ink-faint">
               <tr>
-                <th scope="col" class="pb-1 font-normal">Share of rent</th>
+                <th scope="col" class="pb-1 font-normal"><span class="sr-only">Cluster</span></th>
                 <th scope="col" class="pb-1 pl-3 text-right font-normal">Occupied</th>
                 <th scope="col" class="pb-1 pl-3 text-right font-normal">Rent</th>
               </tr>
@@ -998,7 +998,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           @retry="refreshAllData"
         />
         <template v-else>
-          <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" short tall />
+          <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" short />
           <PhoneMore everywhere title="Year to date" :summary="`${peso(monthlyRevenue)} entered`">
             <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>

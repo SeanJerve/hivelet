@@ -276,7 +276,6 @@ All of them are in `frontend/src/components/overview/`. Types are in `types.ts`.
 | `StatusPill` | A status in words. Tones: paid, verify, overdue, neutral, unentered, expected, on-dark | Decoration or a count |
 | `UnavailableNote` | Any section whose data failed to load. `dark` on brand or night tiles | Empty states |
 | `MonthCapsules` | Twelve months of one amount, with the four month kinds. Keyboard: arrows, Home, End | Unordered categories |
-| `OccupancyArc` | The 33 units as one segment each, grouped by cluster, vacant hatched | Percentages of anything else |
 | `SegmentBar` | A true part-to-whole: rent and water on one bill, expenses and net within one month's income | Parts that do not add up to the whole shown |
 
 These live in `frontend/src/components/ui/`:

@@ -3,7 +3,7 @@ import type { Component } from 'vue';
 export interface Segment {
   label: string;
   value: number;
-  tone: 'brand' | 'bright' | 'night' | 'hatch' | 'soft' | 'faint';
+  tone: 'brand' | 'bright' | 'night' | 'hatch' | 'soft' | 'faint' | 'empty';
 }
 
 /**
@@ -26,12 +26,6 @@ export interface CapsuleMonth {
   kind: MonthKind;
   /** A second line under the selected month's figure, its parts in words. */
   detail?: string;
-}
-
-export interface ArcUnit {
-  code: string;
-  cluster: string;
-  occupied: boolean;
 }
 
 /** One of the Overview's actions: a header button from 768px, a floating one below (QuickActionsFab). */

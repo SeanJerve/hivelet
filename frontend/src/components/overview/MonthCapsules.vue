@@ -27,8 +27,6 @@ const props = withDefaults(
      * a phone's first screen with three tiles (Loyd, 2026-10-03).
      */
     short?: boolean;
-    /** Taller on a wide screen, to stand beside the Overview's Occupancy tile. */
-    tall?: boolean;
     /**
      * Centavos in the selected month's figure. 0 for the landlady's ledgers,
      * which count whole pesos throughout; 2 on the tenant's payments page, where
@@ -114,7 +112,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
 <template>
   <div class="flex flex-col gap-4 min-w-0">
     <div class="flex gap-3 min-w-0">
-      <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 max-sm:pb-9 text-xs text-ink-faint tabular text-right shrink-0', short ? 'h-28 md:h-48' : 'h-48', tall && 'xl:h-72']">
+      <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 max-sm:pb-9 text-xs text-ink-faint tabular text-right shrink-0', short ? 'h-28 md:h-48' : 'h-48']">
         <span v-for="(t, i) in ticks" :key="i">{{ t }}</span>
       </div>
 
@@ -125,7 +123,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <div
           role="group"
           :aria-label="label"
-          :class="['grid gap-0.5 sm:gap-2 sm:min-w-[26rem]', short ? 'h-28 md:h-48' : 'h-48', tall && 'xl:h-72']"
+          :class="['grid gap-0.5 sm:gap-2 sm:min-w-[26rem]', short ? 'h-28 md:h-48' : 'h-48']"
           :style="{ gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))` }"
         >
           <button
@@ -226,7 +224,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
 <style scoped>
 /*
  * The twelve columns fill in together on first paint, the same treatment
- * OccupancyArc's ring and SegmentBar's segments use, and the same reason: a
+ * SegmentBar's segments use, and the same reason: a
  * height that is simply there on arrival reads as a static illustration, one
  * that grows to its measured value reads as a real figure. `transform: scaleY`
  * with a bottom origin changes only what is PAINTED - the inline `height`
@@ -239,7 +237,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
  * pretending they carry a height that means something.
  *
  * Same 30ms-a-step, capped-at-ten stagger as everywhere else this pass added
- * one, so a page that shows this chart next to OccupancyArc or a RecordTable
+ * one, so a page that shows this chart next to a SegmentBar or a RecordTable
  * reads as one system rather than three different timings.
  *
  * `--ease-out` at 0.3s. This was `--ease-bounce` at 0.5s, argued as the

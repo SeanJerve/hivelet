@@ -2170,7 +2170,7 @@ html:has(> body[style*='overflow: hidden']) {
 }
 
 /* --------------------------------------------------------------- bar-fill --
- * The same growth OccupancyArc's ring and SegmentBar's segments use, for a
+ * The same growth SegmentBar's segments use, for a
  * bar or pip that is not part of either component - an occupancy strip's
  * individual marks (RoomDirectoryView's matrix header, a per-unit
  * `flex-1 rounded-full` row packed edge to edge like SegmentBar's segments).

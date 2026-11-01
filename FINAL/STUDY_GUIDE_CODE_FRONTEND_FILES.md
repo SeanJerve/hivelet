@@ -391,10 +391,6 @@ Twelve months as rounded bars, used on the owner's Overview and the tenant's Pay
 yet entered is drawn hatched, not as a zero, because "nothing entered" is not "nothing collected".
 Each bar is a button that reads out its own value.
 
-**`OccupancyArc.vue`**
-Occupancy as a half ring, one segment per rentable unit, filled from the left. Which units are vacant
-is listed in words under the ring.
-
 **`OverviewTile.vue`**
 The standard tile used on both Overviews and the ledgers. Its tone shows importance: the green and
 dark tones are kept for the one or two things that need action.
