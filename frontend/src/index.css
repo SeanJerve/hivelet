@@ -1107,7 +1107,7 @@ html:has(> body[style*='overflow: hidden']) {
   }
   /* The word and its icon, no outline or fill (Sean, 1 Nov 2026): what cannot be undone should not
      be the most inviting thing beside the safe choice. The 44px tap area stays; it is the look
-     that goes. It answers with a smaller bump than an icon, at the end of this file. */
+     that goes. On hover the word darkens; only icons bump (Sean, 1 Nov 2026). */
   .pill-btn-danger-quiet {
     background-color: transparent;
     color: var(--overdue);
@@ -2687,6 +2687,7 @@ dialog.ws-dialog[open]::backdrop {
 
 /* ------------------------------------------------------------- icon bump --
  * How every icon-only control answers (Sean, 1 Nov 2026): a smooth little upscale, no grey disc.
+ * Icons alone: a button with a word in it never scales up (tried on 1 Nov 2026 and taken off).
  * A disc made an icon look like a second, heavier button, and it did nothing on a touch screen.
  * Hover grows it on a mouse. A press snaps larger and eases back through a small overshoot, and
  * because the return is the slow part, even a quick tap shows the whole bump.
@@ -2695,9 +2696,7 @@ dialog.ws-dialog[open]::backdrop {
  */
 .icon-btn,
 .icon-btn-plain,
-.icon-bump,
-.pill-btn-quiet,
-.pill-btn-danger-quiet {
+.icon-bump {
   transition:
     transform 0.26s var(--ease-bump),
     color 0.15s var(--ease-out);
@@ -2708,11 +2707,6 @@ dialog.ws-dialog[open]::backdrop {
   .icon-bump:hover:not(:disabled) {
     transform: scale(1.12);
   }
-  /* A word is wider than an icon, so the same scale would move its ends much further. */
-  .pill-btn-quiet:hover:not(:disabled),
-  .pill-btn-danger-quiet:hover:not(:disabled) {
-    transform: scale(1.05);
-  }
 }
 .icon-btn:active:not(:disabled),
 .icon-btn-plain:active:not(:disabled),
@@ -2720,23 +2714,12 @@ dialog.ws-dialog[open]::backdrop {
   transform: scale(1.18);
   transition-duration: 0.07s;
 }
-.pill-btn-quiet:active:not(:disabled),
-.pill-btn-danger-quiet:active:not(:disabled) {
-  transform: scale(1.08);
-  transition-duration: 0.07s;
-}
 @media (prefers-reduced-motion: reduce) {
   .icon-btn,
   .icon-btn-plain,
-  .icon-bump,
-  .pill-btn-quiet,
-  .pill-btn-danger-quiet {
+  .icon-bump {
     transition: color 0.15s var(--ease-out);
   }
-  .pill-btn-quiet:hover:not(:disabled),
-  .pill-btn-quiet:active:not(:disabled),
-  .pill-btn-danger-quiet:hover:not(:disabled),
-  .pill-btn-danger-quiet:active:not(:disabled),
   .icon-btn:hover:not(:disabled),
   .icon-btn-plain:hover:not(:disabled),
   .icon-bump:hover:not(:disabled),

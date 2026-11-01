@@ -110,10 +110,10 @@ tap area stays.
 
 **One shape to a row (1 Nov 2026).** Beside a main action, a low-priority choice (Cancel, Close, Sign
 out, Undo changes) is a plain word, `.pill-btn-quiet`, with no border. A secondary button that is the
-only action in its place keeps `.pill-btn`, or it stops looking pressable. Both quiet styles answer
-with the bump, 1.05 on hover and 1.08 on a press, never an underline or a fill.
+only action in its place keeps `.pill-btn`, or it stops looking pressable. Quiet buttons answer by
+darkening the word, never an underline, a fill or an upscale.
 
-**Icon buttons bump (1 Nov 2026).** Every icon-only control answers with a smooth scale and no
+**Icon buttons bump (1 Nov 2026).** Every icon-only control, and nothing with a word in it, answers with a smooth scale and no
 background: 1.12 on hover, 1.18 on a press, easing back through a small overshoot, so a touch screen
 sees it too. `.icon-btn`, `.icon-btn-plain`, or `.icon-bump` on anything else. None with reduced motion.
 
