@@ -333,7 +333,7 @@ onBeforeUnmount(() => {
       <div class="flex items-center gap-2 shrink-0">
         <span
           v-if="selectedCount !== undefined"
-          class="rounded-full bg-brand-soft text-brand px-2 py-0.5 text-xs tabular font-semibold"
+          class="text-xs tabular font-semibold text-ink-soft"
         >
           {{ selectedCount }}
         </span>

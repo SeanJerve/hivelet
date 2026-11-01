@@ -2,11 +2,19 @@
 /**
  * A status in words. The words carry the meaning; colour only repeats it.
  *
+ * Set in the type, like a note in a ledger, with no capsule around it (Sean, 1 Nov 2026). A
+ * tinted capsule with same-hue text in traffic-light colours is every generated dashboard's
+ * default, and softer tints would only have been a paler copy of it. So the colours are the
+ * property's earth tones instead of alarms: clay for what is wrong, ochre for what is waiting,
+ * the brand's green for what is done, and the ordinary soft ink for everything else. Weight
+ * marks the one that matters most. On a dark tile every status is the tile's own light text.
+ *
  * These carried a coloured dot before the word, everywhere, which said nothing
- * the word did not already say and made two pills side by side read as a list
- * of bullets. A marker earns its place only in a chart legend, where the shape
- * has to match a mark drawn in the chart. The one legend that needs that draws
- * its own marks (MonthCapsules), so no pill carries one.
+ * the word did not already say and made two side by side read as a list of
+ * bullets. A marker earns its place only in a chart legend, where the shape has
+ * to match a mark drawn in the chart. The one legend that needs that draws its
+ * own marks (MonthCapsules), so none carries one. Two in a row are separated by
+ * a mid-dot (`.status-word` in index.css).
  */
 import { computed } from 'vue';
 
@@ -17,16 +25,16 @@ const props = withDefaults(
   { tone: 'neutral' }
 );
 
-const pillClass = computed(
+const toneClass = computed(
   () =>
     ({
-      paid: 'bg-brand-soft text-brand',
-      verify: 'bg-verify-soft text-verify',
-      overdue: 'bg-overdue-soft text-overdue',
-      neutral: 'bg-well text-ink-soft',
-      unentered: 'bg-tile text-ink-soft border border-line',
-      expected: 'bg-tile text-ink-soft border border-dashed border-hatch',
-      'on-dark': 'bg-white/10 text-on-night',
+      paid: 'text-brand',
+      verify: 'text-status-wait',
+      overdue: 'font-semibold text-status-alert',
+      neutral: 'text-ink-soft',
+      unentered: 'text-ink-soft',
+      expected: 'text-ink-faint',
+      'on-dark': 'text-on-night',
     })[props.tone]
 );
 </script>
@@ -34,14 +42,14 @@ const pillClass = computed(
 <template>
   <span
     :class="[
-      'inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold leading-4',
+      'status-word inline-flex items-center whitespace-nowrap text-[0.8125rem] font-medium leading-5 in-[.on-dark]:text-on-night',
       // A ticket moving Open to Resolved, a unit going Vacant to Occupied - this
-      // pill stays mounted and only its tone prop changes, so without a
+      // word stays mounted and only its tone prop changes, so without a
       // transition the colour swap was an instant snap rather than a state
       // change the reader could follow. Named properties, same ease token as
       // every other colour transition in the workspace.
       'transition-colors duration-150 ease-[var(--ease-out)]',
-      pillClass,
+      toneClass,
     ]"
   >
     <slot />

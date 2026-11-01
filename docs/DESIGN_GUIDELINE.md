@@ -97,6 +97,13 @@ clears one early. No in-page banner with a dismiss button. A refusal inside an o
 the dialog closes or the next message replaces it, since the form it explains is still open. GCash
 return messages stay 9 seconds, 15 for a warning, because they say whether to pay again.
 
+**Status is a word, not a capsule (1 Nov 2026).** `StatusPill` sets the status in the type: clay
+`--status-alert` for what is wrong (`#9a3a28`, dark `#e3a08c`), ochre `--status-wait` for what is
+waiting (`#7a5616`, dark `#d8b878`), brand green for what is done, soft ink otherwise, and the tile's
+light text on a dark tile. At least 5.42:1 in light and 6.11:1 in dark on every surface it sits on. No
+tinted capsules and no dots: both are the default look of generated dashboards. Count badges in the
+sidebar stay filled, since a number that small needs a shape to be seen.
+
 **Colour is never the only cue.**
 - Status is always written in words: "Waiting for verification", "Not entered yet", "Overdue by 3
   days".

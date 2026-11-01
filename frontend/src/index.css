@@ -95,6 +95,8 @@
      time; the roles above stay until nothing reads them. */
   --color-canvas: var(--canvas);
   --color-well: var(--well);
+  --color-status-alert: var(--status-alert);
+  --color-status-wait: var(--status-wait);
   --color-hover: var(--hover);
   --color-tile: var(--tile);
   --color-ink: var(--ink);
@@ -223,6 +225,11 @@
   --well: #e7ece8;
   --hover: #e3eae5;
   --edge: #d3dcd6;
+  /* A status word set in the type: clay for what is wrong, ochre for what is waiting. Earth tones
+     rather than `--overdue` and `--verify`, which stay for filled alerts. At least 5.42:1 on
+     tile, well, hover and the selected row here, 6.11:1 in dark (1 Nov 2026). */
+  --status-alert: #9a3a28;
+  --status-wait: #7a5616;
   --ink: #101713;
   --ink-soft: #45524a;
   --ink-faint: #5d6962;
@@ -377,6 +384,8 @@
   --well: #141b17;
   --hover: #27322c;
   --edge: #323e37;
+  --status-alert: #e3a08c;
+  --status-wait: #d8b878;
   --ink: #e6ece8;
   --ink-soft: #b3bfb7;
   --ink-faint: #929f97;
@@ -933,6 +942,14 @@ html:has(> body[style*='overflow: hidden']) {
      for its own border or a larger shadow keeps it. */
   .bg-tile:is(.rounded-tile, .rounded-2xl):not(.border, [class*='shadow-']) {
     box-shadow: 0 0 0 1px var(--edge), var(--elev-card);
+  }
+
+  /* Two status words in a row (StatusPill), held apart by a mid-dot now they have no capsule. */
+  .status-word + .status-word::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: var(--ink-faint);
+    font-weight: 400;
   }
 
   .pill-btn {

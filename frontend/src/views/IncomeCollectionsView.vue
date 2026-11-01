@@ -1392,7 +1392,7 @@ const isDownloadOpen = ref(false);
           <span>To verify</span>
           <span
             v-if="pendingPayments.length > 0"
-            class="rounded-full bg-brand-soft text-brand px-2 py-0.5 text-xs tabular font-semibold"
+            class="text-sm tabular font-semibold text-status-wait"
           >
             {{ pendingPayments.length }}
           </span>

@@ -627,7 +627,7 @@ function handleDeleteTicketPrompt() {
       >
         <header class="flex items-start justify-between gap-3">
           <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>
-          <span class="rounded-full bg-well px-2.5 py-1 text-xs font-semibold tabular text-ink-soft">
+          <span class="pt-0.5 text-sm font-semibold tabular text-ink-soft">
             {{ col.tickets.length }}
           </span>
         </header>
