@@ -312,7 +312,7 @@ function handleReset() {
       <!-- Who you are here -->
       <!-- `bg-brand`, the colour of the same initials in the header button and the account
            menu above this page; it was the only `bg-night` one (audit 2026-10-09). -->
-      <div class="flex flex-col items-center gap-5 border-t border-line pt-4 text-center sm:flex-row sm:text-left">
+      <div class="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
         <span
           class="grid size-20 shrink-0 place-items-center rounded-full bg-brand text-2xl font-semibold text-on-brand"
           aria-hidden="true"
@@ -352,7 +352,7 @@ function handleReset() {
       </div>
 
       <!-- What you can change -->
-      <form @submit.prevent="handleSave" class="border-t border-line pt-4">
+      <form @submit.prevent="handleSave">
         <div class="space-y-6">
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div class="ws-field">
@@ -417,7 +417,7 @@ function handleReset() {
 
           </div>
 
-          <div class="border-t border-line pt-6">
+          <div class="pt-4">
             <h2 class="text-base font-semibold text-ink">If something happens to you</h2>
 
             <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -455,7 +455,7 @@ function handleReset() {
           </div>
         </div>
 
-        <div class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
           <p class="text-sm text-ink-soft">
             {{ writesUnavailable ? 'Saving needs a connection.' : isDirty ? 'Not saved yet.' : 'All saved.' }}
           </p>

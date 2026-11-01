@@ -34,6 +34,8 @@ const props = withDefaults(
     emptyTitle?: string;
     /** Sentence for the empty state. */
     emptyNote?: string;
+    /** Already inside a card, so it draws none of its own. */
+    bare?: boolean;
     /** Singular noun for the counts, e.g. "payment". */
     noun?: string;
     /**
@@ -107,7 +109,7 @@ onUnmounted(() => {
 
     <template v-else>
       <!-- The register, on a screen wide enough to read one -->
-      <div :class="['hidden overflow-hidden', tableFrom === 'xl' ? 'xl:block' : 'lg:block']">
+      <div :class="['hidden overflow-hidden', tableFrom === 'xl' ? 'xl:block' : 'lg:block', !bare && 'ws-table-card rounded-tile bg-tile px-4 sm:px-6']">
         <div class="ws-table-wrap" :class="{ 'is-first-load': revealFirstLoad }">
           <table
             class="ws-table"
@@ -132,8 +134,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- One block per row on a phone, on the page itself, with a rule between. -->
-      <div :class="['divide-y divide-line', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden']">
+      <!-- One block per row on a phone, in the one card, with a rule between. -->
+      <div :class="['divide-y divide-line', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden', !bare && 'ws-table-card rounded-tile bg-tile px-4 sm:px-6']">
         <div
           v-for="(row, i) in visible"
           :key="i"

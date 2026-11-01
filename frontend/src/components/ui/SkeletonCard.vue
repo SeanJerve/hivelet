@@ -19,7 +19,7 @@ withDefaults(defineProps<Props>(), { variant: 'room', count: 1 });
     <div
       v-for="i in count"
       :key="i"
-      class="flex flex-col gap-4 border-t border-line pt-4"
+      class="flex flex-col gap-4"
       aria-hidden="true"
     >
       <template v-if="variant === 'room'">

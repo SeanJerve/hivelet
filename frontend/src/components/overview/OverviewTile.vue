@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * One section of a dashboard: a rule, a title and what it holds, directly on the page. `boxed` puts
- * it in a box instead, and a box means one thing: this is waiting for you (Sean, 1 Nov 2026). Pass
- * it only while that is true, so the box leaves when there is nothing to do.
+ * One section of a dashboard: a title and what it holds, directly on the page, with space and no
+ * rule around it. `boxed` puts it in a box, for what is waiting for the person and for a table
+ * (Sean, 1 Nov 2026). For the first, pass it only while that is true.
  */
 import { useId } from 'vue';
 import { ArrowUpRight } from 'lucide-vue-next';
@@ -23,7 +23,7 @@ const titleId = useId();
 <template>
   <section
     :aria-labelledby="title ? titleId : undefined"
-    :class="['flex min-w-0 flex-col gap-4', boxed ? 'rounded-tile bg-tile p-4 sm:p-6' : 'border-t border-line pt-3']"
+    :class="['flex min-w-0 flex-col gap-4', boxed && 'ws-table-card rounded-tile bg-tile p-4 sm:p-6']"
   >
     <header v-if="title || to || $slots.actions" class="flex min-h-11 items-center justify-between gap-3">
       <h2 v-if="title" :id="titleId" class="text-base leading-6 font-semibold">

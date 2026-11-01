@@ -33,7 +33,7 @@ withDefaults(defineProps<Props>(), {
 <template>
   <div aria-hidden="true">
     <!-- The register, on a screen wide enough to read one -->
-    <div class="hidden w-full overflow-hidden lg:block">
+    <div class="hidden w-full overflow-hidden rounded-tile bg-tile px-6 lg:block">
       <div
         v-if="showHeader"
         class="flex items-center gap-4 border-b border-line py-4"
@@ -77,7 +77,7 @@ withDefaults(defineProps<Props>(), {
       settles into the same rhythm once the real content lands; this is a
       placeholder's proportions, not a promise of exactly what follows.
     -->
-    <div class="divide-y divide-line lg:hidden">
+    <div class="divide-y divide-line rounded-tile bg-tile px-4 lg:hidden">
       <div v-for="r in rows" :key="'card-' + r" class="py-4">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0 flex-1">

@@ -817,7 +817,7 @@ function refreshAll() {
     >
 
     <!-- Bills -->
-    <div v-if="loadingBills" class="flex flex-col gap-4 border-t border-line pt-4" aria-busy="true">
+    <div v-if="loadingBills" class="flex flex-col gap-4" aria-busy="true">
       <span class="sr-only" role="status">Loading your bills</span>
       <Skeleton class-name="h-4 w-32 rounded-full" />
       <Skeleton class-name="h-10 w-48 rounded-2xl" />
@@ -955,7 +955,7 @@ function refreshAll() {
 
     <!-- The rules she is billed under, with her own figures. See `rentFacts`. -->
     <OverviewTile v-if="showRentTile && rentFacts" title="Your rent" class="ws-reveal">
-      <dl class="flex flex-col divide-y divide-line text-sm">
+      <dl class="flex flex-col text-sm">
         <div class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
           <dt>Rent</dt>
           <dd class="font-semibold tabular">{{ peso(rentFacts.rent, 2) }}</dd>

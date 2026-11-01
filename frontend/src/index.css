@@ -1519,6 +1519,9 @@ html:has(> body[style*='overflow: hidden']) {
   .ws-workspace [role='dialog'] {
     --ws-table-surface: var(--tile);
   }
+  .ws-workspace .ws-table-card {
+    --ws-table-surface: var(--tile);
+  }
   .ws-workspace .ws-table-wrap {
     border: 0;
     border-radius: 0;

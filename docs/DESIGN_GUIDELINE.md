@@ -14,11 +14,12 @@ skills, and the pre-redesign audit `docs/OVERVIEW_AUDIT_2026-09-17.md`.
 - pill-shaped controls, and a round arrow button on a section that leads somewhere
 - hatching for a figure that is missing
 
-**Boxes only where something is waiting (Sean, 1 Nov 2026).** The admin and tenant dashboards sit
-directly on the page: a section is a rule, a title and its content, and rows are separated by
-rules, on a phone too. A box means one thing, this is waiting for you, and it leaves when that
-stops being true. Boxed today: Needs your attention, the payments to verify, repairs To dispatch,
-Amount due and each bill to pay, and notices that a page could not load or save. Never a chart.
+**Boxes for tables and for what is waiting (Sean, 1 Nov 2026).** The admin and tenant dashboards
+sit directly on the page: a section is a title and its content, held apart by space, with no rule
+between sections. Rules stay only between the rows of a table or list inside a box. A table is one
+box, on a phone too, never one box per row. What is waiting for the person is boxed while it waits:
+Needs your attention, the payments to verify, repairs To dispatch, Amount due, each bill to pay,
+and notices that a page could not load or save. Never a chart.
 What floats above the page keeps its surface: dialogs, menus, popovers, toasts and the floating button. The public site is unchanged. Where this
 file still says "tile", read "section". The last version with cards is the tag
 `v1.0.0-final-with-cards`.

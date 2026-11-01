@@ -588,7 +588,7 @@ function handleDeleteTicketPrompt() {
 
     <div v-if="isLoading" class="grid gap-x-10 gap-y-8 xl:grid-cols-3" aria-busy="true">
       <span class="sr-only" role="status">Loading repair requests</span>
-      <div v-for="i in 3" :key="i" class="border-t border-line pt-4 flex flex-col gap-3">
+      <div v-for="i in 3" :key="i" class="flex flex-col gap-3">
         <Skeleton class-name="h-4 w-28 rounded-full" />
         <Skeleton class-name="h-16 w-full rounded-2xl" />
         <Skeleton class-name="h-16 w-full rounded-2xl" />
@@ -625,7 +625,7 @@ function handleDeleteTicketPrompt() {
         :aria-labelledby="`col-${col.key}`"
         :class="[
           'flex min-w-0 flex-col gap-4',
-          col.key === 'open' && col.tickets.length ? 'self-start rounded-tile bg-tile p-4 sm:p-6' : 'border-t border-line pt-4',
+          col.key === 'open' && col.tickets.length && 'self-start rounded-tile bg-tile p-4 sm:p-6',
         ]"
       >
         <header class="flex items-start justify-between gap-3">
@@ -668,7 +668,7 @@ function handleDeleteTicketPrompt() {
 
             <!-- Delete beside Manage (Sean, 2026-10-02: a visible delete on repairs); the same
                  confirmation and removal as the Manage dialog's own Delete repair. -->
-            <div class="mt-1 flex items-center justify-between gap-2 border-t border-line/60 pt-3">
+            <div class="mt-1 flex items-center justify-between gap-2">
               <button type="button" class="pill-btn" @click="openEditModal(t)">
                 <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
                 Manage

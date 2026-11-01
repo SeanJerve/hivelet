@@ -1049,7 +1049,7 @@ async function handleEditExpense() {
           </p>
           <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
                blocks there, so the graphs below are on the first screen). -->
-          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
+          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-ink-soft">Utilities</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthUtilities, 2) }}</dd>
@@ -1219,13 +1219,13 @@ async function handleEditExpense() {
         expense went there, and carries its share when it was split.
       -->
       <template #card="{ row: group }">
-        <div class="flex items-end justify-between gap-3 border-b border-line pb-3">
+        <div class="flex items-end justify-between gap-3">
           <p class="text-sm text-ink-soft">{{ group.dateStr }}</p>
           <p class="tabular text-2xl font-semibold leading-none tracking-tight text-brand">{{ money(group.dayTotal) }}</p>
         </div>
 
-        <ul class="divide-y divide-line">
-          <li v-for="e in group.records" :key="e.id" class="py-3 last:pb-0">
+        <ul>
+          <li v-for="e in group.records" :key="e.id" class="pt-3">
             <div class="flex items-start justify-between gap-3">
               <!--
                 break-words: the description is typed freely (an invoice or

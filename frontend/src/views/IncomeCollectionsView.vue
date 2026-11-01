@@ -1262,7 +1262,7 @@ const isDownloadOpen = ref(false);
           </p>
           <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
                blocks there, so the graphs below are on the first screen). -->
-          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
+          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-ink-soft">Rent</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRent) }}</dd>
@@ -1420,7 +1420,7 @@ const isDownloadOpen = ref(false);
       that would make the motion feel like it is in the way.
     -->
     <div v-if="activeTab === 'verify'" id="income-panel" role="tabpanel" aria-labelledby="income-tab-verify" class="ws-reveal flex flex-col gap-4">
-      <div v-if="isLoading" class="flex flex-col gap-3 border-t border-line pt-4" aria-busy="true">
+      <div v-if="isLoading" class="flex flex-col gap-3" aria-busy="true">
         <span class="sr-only" role="status">Loading the verification queue</span>
         <Skeleton class-name="h-4 w-40 rounded-full" />
         <Skeleton class-name="h-20 w-full rounded-2xl" />
@@ -1563,12 +1563,12 @@ const isDownloadOpen = ref(false);
       <section
         v-for="(group, groupIndex) in displayGroups"
         :key="group.key"
-        class="border-t border-line"
+        class="mb-4 last:mb-0 ws-table-card rounded-tile bg-tile px-4 sm:px-6"
       >
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full flex-col items-start gap-3 py-4 text-left hover:bg-hover sm:flex-row sm:flex-wrap sm:justify-between"
+            class="press-plate flex w-full flex-col items-start gap-3 py-4 text-left sm:flex-row sm:flex-wrap sm:justify-between"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -1610,9 +1610,10 @@ const isDownloadOpen = ref(false);
         <div
           v-if="isClusterOpen(group.key, groupIndex)"
           :id="`cluster-${domId(group.key)}`"
-          class="ws-reveal pb-6"
+          class="ws-reveal pb-4"
         >
           <RecordTable
+            bare
             :rows="group.records"
             :caption="`${group.label}, by unit`"
             noun="entry"
@@ -1759,7 +1760,7 @@ const isDownloadOpen = ref(false);
                 </div>
               </div>
 
-              <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line/60 pt-2.5 text-xs">
+              <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                 <div>
                   <dt class="text-ink-faint">Paid</dt>
                   <dd class="mt-0.5 font-medium text-ink">{{ r.datePaid }}</dd>
@@ -1915,7 +1916,7 @@ const isDownloadOpen = ref(false);
           </div>
         </div>
 
-        <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line/60 pt-2.5 text-xs">
+        <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
           <div>
             <dt class="text-ink-faint">Paid</dt>
             <dd class="mt-0.5 font-medium text-ink">{{ r.datePaid }}</dd>

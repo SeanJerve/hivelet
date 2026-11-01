@@ -761,7 +761,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <div
         v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8', 'md:col-span-2 xl:col-span-4']"
         :key="i"
-        :class="['flex flex-col gap-4 border-t border-line pt-4', span]"
+        :class="['flex flex-col gap-4', span]"
       >
         <Skeleton class-name="h-4 w-32 rounded-full" />
         <Skeleton class-name="h-12 w-40 rounded-2xl" />
@@ -965,7 +965,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <th scope="col" class="pb-1 pl-3 text-right font-normal">Rent</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-line">
+            <tbody>
               <tr v-for="c in liveClusterPerformance" :key="c.name">
                 <th scope="row" class="py-1.5 text-left font-medium">
                   <span class="flex min-w-0 items-center gap-2">
@@ -1025,7 +1025,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile key="net" :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses#expense-records" to-label="Open the expense ledger" :class="['col-span-2 max-md:order-5', tileSpans.net]">
+      <OverviewTile key="net" boxed :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses#expense-records" to-label="Open the expense ledger" :class="['col-span-2 max-md:order-5', tileSpans.net]">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded."
@@ -1151,7 +1151,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         />
         <p v-else-if="openTickets.length === 0" class="text-sm text-ink-soft">No repair requests are open.</p>
         <template v-else>
-          <ul class="divide-y divide-line">
+          <ul>
             <li
               v-for="(t, i) in openTicketsPreview"
               :key="t.id"
@@ -1197,7 +1197,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         <template v-else>
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
           <p class="text-sm text-ink-soft">From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}</p>
-          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
+          <dl class="mt-auto flex flex-col">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="text-sm text-ink-soft">Rent</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalRent) }}</dd>
@@ -1249,7 +1249,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <!-- Everything recorded, so the two lines under it add up to it, as Rent and Water do above. -->
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualExpenseTotal + historicalAnnualPersonalTotal) }}</p>
           <p class="text-sm text-ink-soft">From {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}</p>
-          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
+          <dl class="mt-auto flex flex-col">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="text-sm text-ink-soft">Operating</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualExpenseTotal) }}</dd>
@@ -1268,7 +1268,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <p :class="['tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight', historicalAnnualNOI < 0 && 'text-overdue']">
             {{ peso(historicalAnnualNOI) }}
           </p>
-          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
+          <dl class="mt-auto flex flex-col">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="text-sm text-ink-soft">Received</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualGrossTotal) }}</dd>

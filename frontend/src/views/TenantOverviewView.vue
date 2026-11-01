@@ -615,7 +615,7 @@ const statusTone = computed(() => {
       <div
         v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-12']"
         :key="i"
-        :class="['flex flex-col gap-4 border-t border-line pt-4 min-h-64', span]"
+        :class="['flex flex-col gap-4 min-h-64', span]"
       >
         <Skeleton class-name="h-4 w-28 rounded-full" />
         <Skeleton class-name="h-12 w-40 rounded-2xl" />
@@ -756,7 +756,7 @@ const statusTone = computed(() => {
             ]"
             :label="`Rent ${peso(tenantData.baseRent, 2)} and water ${peso(tenantData.waterFee, 2)}`"
           />
-          <dl class="flex flex-col divide-y divide-line text-sm">
+          <dl class="flex flex-col text-sm">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="flex items-center gap-2">
                 <span aria-hidden="true" class="size-2.5 rounded-full bg-brand" />
@@ -837,6 +837,7 @@ const statusTone = computed(() => {
       </OverviewTile>
 
       <OverviewTile
+        boxed
         title="Payments"
         to="/tenant/payments#payment-record"
         to-label="Open payments and billing"

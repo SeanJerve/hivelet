@@ -328,7 +328,7 @@ function applyRoomFilters(v: FilterDraft) {
         v-for="(clusterName, clusterIndex) in activeClusters"
         :key="clusterName"
         v-show="getUnitsForCluster(clusterName).length > 0"
-        class="border-t border-line"
+        class="mb-4 last:mb-0 ws-table-card rounded-tile bg-tile px-4 sm:px-6"
       >
         <!-- The strip is one mark per unit in this cluster: solid when someone
              lives there, hatched when it is free. It stays visible when the
@@ -381,13 +381,13 @@ function applyRoomFilters(v: FilterDraft) {
         <div
           v-if="isClusterOpen(clusterName, clusterIndex)"
           :id="`cluster-units-${domId(clusterName)}`"
-          class="ws-reveal pb-8"
+          class="ws-reveal pb-6"
         >
           <div class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="group flex flex-col justify-between border-t border-line pt-4"
+              class="group flex flex-col justify-between"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
@@ -403,7 +403,7 @@ function applyRoomFilters(v: FilterDraft) {
                 <!-- Label above value, and the name wraps: it was truncated at
                      170px, which cut off "+ 1 roommate", the part that sets the
                      water bill. -->
-                <dl class="mt-4 border-t border-line pt-3 text-sm">
+                <dl class="mt-3 text-sm">
                   <div class="min-w-0">
                     <dt class="text-xs text-ink-faint">Tenant</dt>
                     <dd class="mt-0.5 break-words font-medium text-ink">
@@ -535,7 +535,7 @@ function applyRoomFilters(v: FilterDraft) {
           <StatusPill v-if="u.status !== 'settled'" :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
         </div>
 
-        <dl class="mt-4 border-t border-line pt-3 text-sm">
+        <dl class="mt-3 text-sm">
           <div class="min-w-0">
             <dt class="text-xs text-ink-faint">Tenant</dt>
             <dd class="mt-0.5 break-words font-medium text-ink">

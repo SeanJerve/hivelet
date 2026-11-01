@@ -783,7 +783,7 @@ function formatDateTime(iso: string) {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-8 items-stretch">
         <!-- Submit Ticket Form -->
         <!-- `min-w-0`: `overflow-hidden` used to keep a long title inside the column. -->
-        <div class="flex h-full min-w-0 flex-col border-t border-line pt-3 lg:col-span-5">
+        <div class="flex h-full min-w-0 flex-col lg:col-span-5">
           <div class="pb-4">
             <h2 class="text-base font-semibold text-ink">Report it</h2>
           </div>
@@ -948,7 +948,7 @@ function formatDateTime(iso: string) {
         </div>
 
         <!-- Ticket Tracker (Matching Admin Table Style) -->
-        <div class="flex h-full min-w-0 flex-col border-t border-line pt-3 lg:col-span-7 lg:border-l lg:pl-6">
+        <div class="flex h-full min-w-0 flex-col lg:col-span-7">
           <!-- Same shape as "Report it", so the two headers line up side by side at `lg`. -->
           <div class="pb-4">
             <h2 class="text-base font-semibold text-ink">Your requests</h2>
@@ -964,7 +964,7 @@ function formatDateTime(iso: string) {
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it
                holding which requests to show. -->
-          <div class="border-b border-line pb-4">
+          <div class="pb-4">
             <ListToolbar
               v-model:search="searchQuery"
               search-label="Search your requests"

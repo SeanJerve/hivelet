@@ -1105,7 +1105,7 @@ async function handleOnboard() {
           </div>
         </div>
 
-        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pt-2.5 text-xs text-ink-soft">
           <span>{{ householdLabel(t) }}</span>
           <span class="text-line" aria-hidden="true">·</span>
           <span>Moved in {{ t.moveInDate }}</span>
@@ -1159,7 +1159,7 @@ async function handleOnboard() {
       <section
         v-for="(group, groupIndex) in groupedRows"
         :key="group.key"
-        class="border-t border-line"
+        class="mb-4 last:mb-0 ws-table-card rounded-tile bg-tile px-4 sm:px-6"
       >
         <!--
           Collapsible, like the room directory and the income register. This
@@ -1289,7 +1289,7 @@ async function handleOnboard() {
               </div>
             </div>
 
-            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
+            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pt-2.5 text-xs text-ink-soft">
               <span>{{ householdLabel(t) }}</span>
               <span class="text-line" aria-hidden="true">·</span>
               <span>Moved in {{ t.moveInDate }}</span>
