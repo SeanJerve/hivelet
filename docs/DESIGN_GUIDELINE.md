@@ -278,6 +278,8 @@ All of them are in `frontend/src/components/overview/`. Types are in `types.ts`.
 | `MonthCapsules` | Twelve months of one amount, with the four month kinds. Keyboard: arrows, Home, End | Unordered categories |
 | `SegmentBar` | A true part-to-whole: rent and water on one bill, expenses and net within one month's income | Parts that do not add up to the whole shown |
 
+**A chart's key sits directly under the chart, before any figures, at every width.** It says what the marks mean, so it is read first.
+
 These live in `frontend/src/components/ui/`:
 
 | Component | Use it for | Do not use it for |
