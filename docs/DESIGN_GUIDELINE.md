@@ -104,6 +104,10 @@ light text on a dark tile. At least 5.42:1 in light and 6.11:1 in dark on every 
 tinted capsules and no dots: both are the default look of generated dashboards. Count badges in the
 sidebar stay filled, since a number that small needs a shape to be seen.
 
+**Red actions are a word and an icon (1 Nov 2026).** Reject, Delete, Void and the like have no
+outline or fill, in dialogs too, so the safe choice beside them is the one that stands out. The 44px
+tap area stays.
+
 **Colour is never the only cue.**
 - Status is always written in words: "Waiting for verification", "Not entered yet", "Overdue by 3
   days".

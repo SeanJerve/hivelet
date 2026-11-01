@@ -1110,14 +1110,20 @@ html:has(> body[style*='overflow: hidden']) {
       border-color: var(--overdue-strong);
     }
   }
+  /* The word and its icon, no outline or fill (Sean, 1 Nov 2026): what cannot be undone should not
+     be the most inviting thing beside the safe choice. The 44px tap area stays; it is the look
+     that goes. Hover darkens the word and underlines it rather than filling the shape. */
   .pill-btn-danger-quiet {
-    background-color: var(--tile);
+    background-color: transparent;
     color: var(--overdue);
-    border: 1px solid var(--overdue-soft);
+    border: 1px solid transparent;
+    padding: 0 0.625rem;
   }
   @media (hover: hover) {
     .pill-btn-danger-quiet:hover:not(:disabled) {
-      background-color: var(--overdue-soft);
+      color: var(--overdue-strong);
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
     }
   }
   .pill-btn-danger:disabled,

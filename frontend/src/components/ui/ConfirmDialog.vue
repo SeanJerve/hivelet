@@ -96,7 +96,7 @@ const confirmDisabled = computed(() => props.busy || !phraseSatisfied.value);
       <button type="button" class="pill-btn" :disabled="busy" @click="emit('cancel')">{{ cancelLabel }}</button>
       <button
         type="button"
-        :class="destructive ? 'pill-btn-danger' : 'pill-btn-brand'"
+        :class="destructive ? 'pill-btn-danger-quiet' : 'pill-btn-brand'"
         :disabled="confirmDisabled"
         @click="emit('confirm')"
       >

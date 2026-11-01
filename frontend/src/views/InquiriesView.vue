@@ -84,12 +84,14 @@ const confirmTitle = ref('');
 const confirmMessage = ref('');
 const confirmAction = ref<(() => void) | null>(null);
 const confirmLabel = ref('Close inquiry');
+const confirmDestructive = ref(false);
 
-function showConfirm(title: string, message: string, action: () => void, label = 'Close inquiry') {
+function showConfirm(title: string, message: string, action: () => void, label = 'Close inquiry', destructive = false) {
   confirmTitle.value = title;
   confirmMessage.value = message;
   confirmAction.value = action;
   confirmLabel.value = label;
+  confirmDestructive.value = destructive;
   isConfirmOpen.value = true;
 }
 
@@ -116,7 +118,8 @@ function handleDeleteInquiry() {
         isSubmitting.value = false;
       }
     },
-    'Delete inquiry'
+    'Delete inquiry',
+    true
   );
 }
 
@@ -771,6 +774,7 @@ async function handleSendReply() {
       :title="confirmTitle"
       :message="confirmMessage"
       :confirm-label="confirmLabel"
+      :destructive="confirmDestructive"
       @cancel="isConfirmOpen = false"
       @confirm="handleConfirmAccept"
     />
