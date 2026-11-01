@@ -16,13 +16,14 @@ import { floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
+import { methodInWords as methodLabel } from '@/lib/paymentMethod';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
-import { CreditCard, Wrench, Home } from 'lucide-vue-next';
+import { CreditCard, Wrench } from 'lucide-vue-next';
 
 const { showToast } = useToast();
 const router = useRouter();
@@ -52,13 +53,6 @@ const tenantData = ref({
   roomType: '',
   floor: 0,
   occupants: 0,
-  /**
-   * The deposit held for this tenancy (`room_assignments.deposit_amount`): one month, held while
-   * the tenant lives here and set against repairs at move-out (the owner, 19 Sep; B-31). Shown
-   * because a tenant asked to see it in the survey (Chapter 4, Table 23). 0 means none on record,
-   * and says so rather than printing ₱0.00.
-   */
-  deposit: 0,
   photoUrl: '',
   /**
   /**
@@ -193,11 +187,6 @@ const shownRejected = computed(() => rejectedPayments.value.filter((p) => shownP
 const shownPending = computed(() => pendingOnlinePayments.value.filter((p) => shownPaymentIds.value.has(p.id)));
 const shownReceipts = computed(() => recordedReceipts.value.filter((r) => shownPaymentIds.value.has(r.id)));
 
-/** `Adyen Online` is the ledger's name for a GCash payment made through this portal. */
-function methodLabel(method: string | null | undefined): string {
-  if (!method) return '';
-  return method === 'Adyen Online' ? 'GCash (online)' : method;
-}
 
 // Morning, noon, afternoon or evening by the property's clock, kept current
 // while the page stays open (lib/greeting.ts).
@@ -341,7 +330,6 @@ async function applyTenantData() {
       tenantData.value.roomType = activeRoom.rooms?.cluster_code || '';
       tenantData.value.floor = activeRoom.rooms?.floor || 0;
       tenantData.value.occupants = activeRoom.occupant_count || 0;
-      tenantData.value.deposit = Number(activeRoom.deposit_amount) || 0;
 
       // `rooms` has no photo of its own; photos live in `room_photos`, with
       // `is_primary` picking the one to lead with.
@@ -611,7 +599,7 @@ const statusTone = computed(() => {
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>
       <div
-        v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8', 'md:col-span-2 xl:col-span-4']"
+        v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-12']"
         :key="i"
         :class="['rounded-tile bg-tile p-6 flex flex-col gap-4 min-h-64', span]"
       >
@@ -792,10 +780,52 @@ const statusTone = computed(() => {
         </template>
       </OverviewTile>
 
-      <OverviewTile tone="night" title="Repairs" class="list-reveal-item order-2 md:order-none xl:col-span-3" style="animation-delay: 60ms">
-        <!-- The button says it; the sentence above it explained the obvious
-             (Sean, 2026-10-01, fewer words). -->
-        <router-link to="/tenant/tickets" class="pill-btn-light mt-auto self-start">
+
+      <!-- Their unit, and where to go when something in it breaks: one tile, since Repairs alone was
+           an empty card around one button (Sean, 1 Nov 2026). -->
+      <OverviewTile
+        :title="tenantData.room || 'Your unit'"
+        class="list-reveal-item order-2 md:order-none xl:col-span-3"
+        style="animation-delay: 60ms"
+      >
+        <UnavailableNote
+          v-if="tenantDataLoadFailed && !tenantData.room"
+          message="Your unit details could not be loaded."
+          @retry="fetchTenantData"
+        />
+        <template v-else>
+          <!-- Fades in on load rather than popping in once the network answers. The box already
+               holds its height, so nothing shifts while the image is still transparent. -->
+          <div v-if="tenantData.photoUrl" class="h-32 overflow-hidden rounded-2xl">
+            <img
+              :src="tenantData.photoUrl"
+              :alt="`Photo of ${tenantData.room}`"
+              :class="[
+                'size-full object-cover transition-opacity duration-300 ease-[var(--ease-out)]',
+                unitPhotoLoaded ? 'opacity-100' : 'opacity-0',
+              ]"
+              @load="unitPhotoLoaded = true"
+              @error="unitPhotoLoaded = true"
+            />
+          </div>
+          <!-- No "Building" row: it showed the cluster code ("Boarding House"), which means
+               nothing to a resident, about a place they already live in. -->
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div>
+              <dt class="text-xs text-ink-faint">Type</dt>
+              <dd class="font-medium">{{ tenantData.roomDetails || 'Not on file' }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Floor</dt>
+              <dd class="font-medium">{{ tenantData.floor ? floorLabelFor(tenantData.floor) : 'Not on file' }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Occupants</dt>
+              <dd class="font-medium">{{ tenantData.occupants || 'Not on file' }}</dd>
+            </div>
+          </dl>
+        </template>
+        <router-link to="/tenant/tickets" class="pill-btn mt-auto self-start">
           <Wrench class="size-4" aria-hidden="true" />
           Request a repair
         </router-link>
@@ -805,7 +835,7 @@ const statusTone = computed(() => {
         title="Payments"
         to="/tenant/payments#payment-record"
         to-label="Open payments and billing"
-        class="list-reveal-item order-4 md:order-none md:col-span-2 xl:col-span-8"
+        class="list-reveal-item order-4 md:order-none md:col-span-2 xl:col-span-12"
         style="animation-delay: 90ms"
       >
         <UnavailableNote
@@ -894,65 +924,6 @@ const statusTone = computed(() => {
         </div>
       </OverviewTile>
 
-      <OverviewTile
-        :title="tenantData.room || 'Your unit'"
-        class="list-reveal-item order-5 md:order-none md:col-span-2 xl:col-span-4"
-        style="animation-delay: 120ms"
-      >
-        <UnavailableNote
-          v-if="tenantDataLoadFailed && !tenantData.room"
-          message="Your unit details could not be loaded."
-          @retry="fetchTenantData"
-        />
-        <template v-else>
-          <!-- A photo earns the height. Without one the box only repeats the
-               unit number already in the title, so it is kept short. -->
-          <div :class="['relative overflow-hidden rounded-2xl', tenantData.photoUrl ? 'h-40' : 'h-24']">
-            <!-- Fades in on load rather than popping in once the network answers.
-                 The box already holds its full height, so nothing shifts while
-                 the image is still transparent - it just sits on the tile's own
-                 background until the photo is ready. -->
-            <img
-              v-if="tenantData.photoUrl"
-              :src="tenantData.photoUrl"
-              :alt="`Photo of ${tenantData.room}`"
-              :class="[
-                'size-full object-cover transition-opacity duration-300 ease-[var(--ease-out)]',
-                unitPhotoLoaded ? 'opacity-100' : 'opacity-0',
-              ]"
-              @load="unitPhotoLoaded = true"
-              @error="unitPhotoLoaded = true"
-            />
-            <div v-else class="flex size-full items-end justify-between bg-brand-soft p-4">
-              <span class="text-5xl font-semibold tracking-tight text-brand">
-                {{ tenantData.room.replace('Unit ', '') || '' }}
-              </span>
-              <Home class="size-6 text-brand" aria-hidden="true" />
-            </div>
-          </div>
-          <!-- No "Building" row: it showed the cluster code ("Boarding House"), which means
-               nothing to a resident, about a place they already live in. -->
-          <!-- Two by two since the deposit joined (Sean, 12 Oct): three across left it alone on a row. -->
-          <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <div>
-              <dt class="text-xs text-ink-faint">Type</dt>
-              <dd class="font-medium">{{ tenantData.roomDetails || 'Not on file' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Floor</dt>
-              <dd class="font-medium">{{ tenantData.floor ? floorLabelFor(tenantData.floor) : 'Not on file' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Occupants</dt>
-              <dd class="font-medium">{{ tenantData.occupants || 'Not on file' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Deposit</dt>
-              <dd class="font-medium tabular">{{ tenantData.deposit > 0 ? peso(tenantData.deposit, 2) : 'Not on file' }}</dd>
-            </div>
-          </dl>
-        </template>
-      </OverviewTile>
     </div>
   </div>
 </template>

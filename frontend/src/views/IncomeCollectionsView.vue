@@ -44,6 +44,7 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
+import { methodInWords } from '@/lib/paymentMethod';
 import type { FilterDraft, ToolbarFilter, ToolbarView } from '@/components/ui/listToolbar';
 
 const route = useRoute();
@@ -855,7 +856,7 @@ const editMethodOptions = computed(() => {
     { value: 'Bank Transfer', label: 'Bank Transfer' },
   ];
   if (editMethod.value === 'Adyen Online') {
-    base.push({ value: 'Adyen Online', label: 'Adyen Online (gateway)' });
+    base.push({ value: 'Adyen Online', label: methodInWords('Adyen Online') });
   }
   return base;
 });
@@ -1472,8 +1473,12 @@ const isDownloadOpen = ref(false);
 
             <dl class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-soft">
               <div class="flex gap-1.5">
-                <dt class="text-ink-faint">Method</dt>
-                <dd>{{ p.payment_method }}</dd>
+                <dt class="text-ink-faint">Paid with</dt>
+                <dd>{{ methodInWords(p.payment_method) }}</dd>
+              </div>
+              <div v-if="billPeriodText(p.bills)" class="flex gap-1.5">
+                <dt class="text-ink-faint">Rent and water for</dt>
+                <dd>{{ billPeriodText(p.bills) }}</dd>
               </div>
               <div class="flex gap-1.5 min-w-0">
                 <dt class="text-ink-faint">Reference</dt>
@@ -2142,8 +2147,8 @@ const isDownloadOpen = ref(false);
             <dt class="text-ink-faint">Water</dt>
             <dd class="tabular">{{ peso(Number(openedPayment.bills.water_amount) || 0, 2) }}</dd>
           </template>
-          <dt class="text-ink-faint">Method</dt>
-          <dd>{{ openedPayment.payment_method }}</dd>
+          <dt class="text-ink-faint">Paid with</dt>
+          <dd>{{ methodInWords(openedPayment.payment_method) }}</dd>
           <dt class="text-ink-faint">Reference</dt>
           <dd class="break-all">{{ openedPayment.transaction_reference || 'None recorded' }}</dd>
           <template v-if="openedPayment.paid_at">

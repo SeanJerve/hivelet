@@ -14,6 +14,7 @@ import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import { playSound } from '@/lib/sounds';
 import { useToast } from '@/lib/useToast';
+import { methodInWords as methodLabel } from '@/lib/paymentMethod';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
@@ -197,6 +198,24 @@ function ordinal(n: number): string {
 /** Beside a loaded bill state only: not while loading, and not over a failed read. */
 const showRentTile = computed(() => !loadingBills.value && !billsLoadFailed.value && standing.value !== null);
 
+/**
+ * The deposit held for this tenancy (`room_assignments.deposit_amount`): one month, held while the
+ * tenant lives here and set against repairs at move-out (the owner, 19 Sep; B-31). A tenant asked to
+ * see it in the survey (Chapter 4, Table 4-19). Beside the rent since 1 Nov 2026, off the Overview's
+ * unit tile. `null` until read, or when the read failed, and then the row is not drawn; 0 means none
+ * on record and says so rather than printing ₱0.00.
+ */
+const depositHeld = ref<number | null>(null);
+async function loadDeposit() {
+  try {
+    const data = await api.get<any[]>('/tenant/my-rooms');
+    const room = data?.find((r) => r.is_active) ?? data?.[0];
+    depositHeld.value = room ? Number(room.deposit_amount) || 0 : null;
+  } catch {
+    depositHeld.value = null;
+  }
+}
+
 const rentFacts = computed(() => {
   const st = standing.value;
   if (!st) return null;
@@ -375,14 +394,6 @@ const filteredPayments = computed(() => {
   });
 });
 
-/**
- * The method as the resident would say it, not upper-cased. `Adyen Online` is
- * the ledger's name for a GCash payment made through this portal.
- */
-function methodLabel(method: string | null | undefined): string {
-  if (!method) return 'Not recorded';
-  return method === 'Adyen Online' ? 'GCash (online)' : method;
-}
 
 const isVerified = (status: string) => status === 'VERIFIED & SETTLED' || status === 'VERIFIED';
 
@@ -531,6 +542,7 @@ onMounted(async () => {
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
+  void loadDeposit();
   const loading = Promise.all([fetchOutstandingBills(), fetchPaymentHistory()]);
   // `?pay=` below opens the checkout, and it waits for the page to arrive first
   // (lib/afterArrival.ts); without it, loading finishes as before.
@@ -965,6 +977,10 @@ function refreshAll() {
           <dd class="font-medium">
             {{ rentFacts.paidThrough ? formatDateOnly(rentFacts.paidThrough, longDate) : 'No payment on record yet' }}
           </dd>
+        </div>
+        <div v-if="depositHeld !== null" class="flex items-baseline justify-between gap-3 py-2.5">
+          <dt>Deposit held</dt>
+          <dd class="font-medium tabular">{{ depositHeld > 0 ? peso(depositHeld, 2) : 'Not on file' }}</dd>
         </div>
       </dl>
       <p class="text-sm leading-6 text-ink-soft">

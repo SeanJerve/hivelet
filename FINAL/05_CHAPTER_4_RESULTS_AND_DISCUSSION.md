@@ -221,7 +221,7 @@ owner changes a rate, a database trigger records the old rate, the new rate, the
 change, so no path can change a rate without leaving that record. The owner's workbook did not record
 move-in dates, so for the transferred tenancies the screen says the date is not recorded rather than
 showing a guessed one. Since 13 October 2026 a tenant also sees the deposit held for their tenancy on
-their own Overview, as one tenant asked in the survey (Table 4-19).
+their own Payments and billing page, as one tenant asked in the survey (Table 4-19).
 
 *Figure 4-7. Room and rate directory.*
 

@@ -165,9 +165,9 @@ without her permission**: it shows real names and money. For practice, the demo 
 1. **Sign in** with the **login ID** (for example HV-48213) and the starting password from the
    landlady; choose a new password and give their mobile number on first sign-in. After that they
    sign in with the login ID or that number.
-2. **Overview**: the amount due and when it is due, **Pay with GCash**, **Request a repair**, recent
-   payments, and the deposit held for their tenancy.
-3. **Payments and billing**: rent month by month. Only receipts the landlady verified count as paid;
+2. **Overview**: the amount due and when it is due, **Pay with GCash**, their unit with **Request a repair**,
+   and recent payments.
+3. **Payments and billing**: the rent, the deposit held, and rent month by month. Only receipts the landlady verified count as paid;
    a month with no receipt says **"Not entered"**, never "owed".
 4. **Pay with GCash**: Adyen's own payment window takes the payment. It shows as **waiting for the
    landlady** until she verifies it; then the bill is settled.
