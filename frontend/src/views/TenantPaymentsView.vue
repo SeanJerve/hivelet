@@ -786,7 +786,7 @@ function refreshAll() {
 </script>
 
 <template>
-  <div class="ws-focus flex flex-col gap-5 text-ink">
+  <div class="ws-focus flex flex-col gap-8 text-ink">
     <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div class="min-w-0">
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
@@ -813,11 +813,11 @@ function refreshAll() {
       ref="billsRegion"
       tabindex="-1"
       aria-label="Your bills"
-      :class="['outline-none grid gap-4', showRentTile && 'md:grid-cols-2', chartLeads && 'max-md:order-2']"
+      :class="['outline-none grid gap-x-10 gap-y-8', showRentTile && 'md:grid-cols-2', chartLeads && 'max-md:order-2']"
     >
 
     <!-- Bills -->
-    <div v-if="loadingBills" class="rounded-tile bg-tile p-6 flex flex-col gap-4" aria-busy="true">
+    <div v-if="loadingBills" class="flex flex-col gap-4 border-t border-line pt-4" aria-busy="true">
       <span class="sr-only" role="status">Loading your bills</span>
       <Skeleton class-name="h-4 w-32 rounded-full" />
       <Skeleton class-name="h-10 w-48 rounded-2xl" />
@@ -836,7 +836,6 @@ function refreshAll() {
          raises the OLDEST uncovered period, so the button pays that one. -->
     <OverviewTile
       v-else-if="outstandingBills.length === 0 && standing && standingOwes"
-      tone="brand"
       class="ws-reveal"
       :title="standing.status === 'overdue' ? 'Not entered yet' : 'Due'"
     >
@@ -844,7 +843,7 @@ function refreshAll() {
         <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">
           {{ peso(standing.totalDue > 0 ? standing.totalDue : standing.perPeriod.totalAmount, 2) }}
         </p>
-        <p class="mt-2 text-sm leading-6 text-on-brand-soft">{{ standingSentence }}</p>
+        <p class="mt-2 text-sm leading-6 text-ink-soft">{{ standingSentence }}</p>
       </div>
       <!--
         The period is in the sentence above, not on the button. As a label,
@@ -857,18 +856,18 @@ function refreshAll() {
       <button
         v-if="!writesUnavailable"
         type="button"
-        class="pill-btn-light mt-auto self-start"
+        class="pill-btn-brand mt-auto self-start"
         @click="openAdyenModalForCurrentPeriod"
       >
         <CreditCard class="size-4" aria-hidden="true" />
         Pay with GCash
       </button>
-      <p class="text-xs leading-5 text-on-brand-soft">
+      <p class="text-xs leading-5 text-ink-soft">
         Paid in person? It shows here once the landlady records it.
       </p>
     </OverviewTile>
 
-    <OverviewTile v-else-if="outstandingBills.length === 0" tone="soft" class="ws-reveal" title="Bills">
+    <OverviewTile v-else-if="outstandingBills.length === 0" class="ws-reveal" title="Bills">
       <p class="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Nothing is due</p>
       <!-- This used to promise "your next monthly statement will be issued on the
            5th". There is no scheduled bill generator and there is deliberately not
@@ -892,7 +891,6 @@ function refreshAll() {
       <OverviewTile
         v-for="(bill, i) in outstandingBills"
         :key="bill.id"
-        tone="brand"
         :title="billTileTitle(bill)"
         class="list-reveal-item"
         :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
@@ -900,23 +898,23 @@ function refreshAll() {
         <div>
           <!-- The balance, not the debt as issued. BR-013. -->
           <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">{{ peso(billBalance(bill), 2) }}</p>
-          <p class="mt-2 text-sm text-on-brand-soft">
+          <p class="mt-2 text-sm text-ink-soft">
             Due {{ new Date(bill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE }) }}
           </p>
         </div>
 
-        <dl class="flex flex-col gap-1.5 text-sm text-on-brand-soft">
+        <dl class="flex flex-col gap-1.5 text-sm text-ink-soft">
           <div class="flex items-baseline justify-between gap-3">
             <dt>Rent</dt>
-            <dd class="tabular text-on-brand">{{ peso(bill.rent_amount, 2) }}</dd>
+            <dd class="tabular text-ink">{{ peso(bill.rent_amount, 2) }}</dd>
           </div>
           <div class="flex items-baseline justify-between gap-3">
             <dt>Water</dt>
-            <dd class="tabular text-on-brand">{{ peso(bill.water_amount, 2) }}</dd>
+            <dd class="tabular text-ink">{{ peso(bill.water_amount, 2) }}</dd>
           </div>
           <div v-if="Number(bill.amount_paid) > 0" class="flex items-baseline justify-between gap-3">
             <dt>Already paid</dt>
-            <dd class="tabular text-on-brand">
+            <dd class="tabular text-ink">
               {{ peso(Number(bill.amount_paid), 2) }} of {{ peso(Number(bill.total_amount), 2) }}
             </dd>
           </div>
@@ -925,7 +923,7 @@ function refreshAll() {
                bill that never arrived. -->
           <div v-if="billPending(bill) > 0" class="flex items-baseline justify-between gap-3">
             <dt>Sent, waiting for verification</dt>
-            <dd class="tabular text-on-brand">{{ peso(billPending(bill), 2) }}</dd>
+            <dd class="tabular text-ink">{{ peso(billPending(bill), 2) }}</dd>
           </div>
         </dl>
 
@@ -934,14 +932,14 @@ function refreshAll() {
           <button
             v-if="!writesUnavailable"
             type="button"
-            class="pill-btn-light mt-auto self-start"
+            class="pill-btn-brand mt-auto self-start"
             @click="openAdyenModal(bill)"
           >
             <CreditCard class="size-4" aria-hidden="true" />
             Pay with GCash
           </button>
         </template>
-        <p v-else class="mt-auto text-sm text-on-brand-soft">
+        <p v-else class="mt-auto text-sm text-ink-soft">
           {{ peso(billPending(bill), 2) }} you sent is waiting for the landlady to check it.
           <template v-if="billRemainderAfterPending(bill) > 0">
             The other {{ peso(billRemainderAfterPending(bill), 2) }} can be paid once she has.
