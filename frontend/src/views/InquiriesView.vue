@@ -441,11 +441,13 @@ async function handleSendReply() {
 
     </div>
 
-    <div class="grid grid-cols-1 gap-4 xl:min-h-[620px] xl:grid-cols-12">
+    <!-- One height whatever the count (Sean, 1 Nov 2026): the inbox reaches down the screen with two
+         inquiries or two hundred, and the list scrolls inside it rather than growing the page. -->
+    <div class="grid grid-cols-1 gap-4 xl:h-[max(620px,calc(100dvh-12.75rem))] xl:grid-cols-12 xl:grid-rows-[minmax(0,1fr)]">
       <!-- The enquiries. Five twelfths on a laptop, four from 2xl (audit 2026-10-09):
            at a third of 1280 the list was 287px and its two dropdowns, two to a
            row since the toolbar fix, still read "All i..." and "Newest ...". -->
-      <div :class="['flex flex-col overflow-hidden rounded-tile bg-tile xl:col-span-5 2xl:col-span-4', conversationOpen && 'max-xl:hidden']">
+      <div :class="['flex min-h-0 flex-col overflow-hidden rounded-tile bg-tile max-xl:h-[max(26rem,calc(100dvh-12.5rem))] xl:col-span-5 2xl:col-span-4', conversationOpen && 'max-xl:hidden']">
         <div class="space-y-3 border-b border-line p-4">
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it. -->
@@ -461,7 +463,7 @@ async function handleSendReply() {
           </p>
         </div>
 
-        <div class="flex-1 xl:max-h-[540px] xl:overflow-y-auto">
+        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <!-- The first read. Without this the list fell straight through to its
                empty state - "Nothing matches what you have typed" - while the
                request that would have filled it was still in flight. Built from
@@ -561,7 +563,7 @@ async function handleSendReply() {
         v-if="activeInquiry"
         ref="detailPanel"
         :class="[
-          'ws-reveal flex scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile lg:min-h-[550px] xl:col-span-7 2xl:col-span-8',
+          'ws-reveal flex min-h-0 scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile lg:max-xl:h-[max(620px,calc(100dvh-8rem))] xl:col-span-7 2xl:col-span-8',
           'max-lg:fixed max-lg:inset-0 max-lg:z-[45] max-lg:rounded-none',
           conversationOpen ? 'chat-opening' : 'max-xl:hidden',
         ]"
@@ -681,7 +683,7 @@ async function handleSendReply() {
         </div>
 
         <!-- What was said -->
-        <div ref="threadScroller" class="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain bg-well p-4 sm:p-6 xl:max-h-[380px]">
+        <div ref="threadScroller" class="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain bg-well p-4 sm:p-6">
           <!-- Where it stands, as a messaging app marks the top of a thread. -->
           <p class="flex justify-center xl:hidden">
             <StatusPill :tone="statusTone(activeInquiry.status)">{{ statusWord(activeInquiry.status) }}</StatusPill>
