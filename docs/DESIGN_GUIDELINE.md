@@ -94,7 +94,12 @@ changing any value.
 | brand-bright on tile (data mark) | 3.47 | 3 |
 | hatch on tile (graphic) | 3.56 | 3 |
 
-**Messages fade by themselves (1 Nov 2026).** Every confirmation is a toast: top right, across the
+**Pop-ups are bright glass (2 Nov 2026).** Sheets, dialogs, menus, the drawer and toasts share the
+top bar's glass. The page behind is only lightly dimmed, and the blur evens out what is behind
+(`--glass-float-filter`), so a dark card under a panel never turns it grey. Inside one, an inset
+is a smaller pane and a tint is coloured glass, never a flat grey or colour block.
+
+**Messages fade by themselves (1 Nov 2026).** Every confirmation is a toast of light glass, top centre just under the top bar (2 Nov 2026). Before that: top right, across the
 top on a phone, no X, gone after its reading time (at least 4 seconds, about 60 ms a character). A tap
 clears one early. No in-page banner with a dismiss button. A refusal inside an open dialog stays until
 the dialog closes or the next message replaces it, since the form it explains is still open. GCash

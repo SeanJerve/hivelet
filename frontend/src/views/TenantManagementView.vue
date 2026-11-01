@@ -1569,133 +1569,135 @@ async function handleOnboard() {
           name beside their number. Pairs on a phone too (Loyd, 2026-10-03: "it
           looks too long"), now that a date field fits half the width on iOS.
         -->
-        <form @submit.prevent="handleOnboard" class="grid grid-cols-2 gap-x-3 gap-y-4 sm:gap-5">
-          <p v-if="openedFromQuickAction" class="ws-hint col-span-2">
-            Moving someone out?
-            <button
-              type="button"
-              class="press font-semibold text-ink"
-              @click="isOnboardModalOpen = false"
-            >Choose them from the list</button>
-          </p>
-          <div class="ws-field col-span-2">
-            <label for="new-name">Full name</label>
-            <input
-              id="new-name"
-              v-model="newName"
-              placeholder="Juan Dela Cruz"
-              class="ws-input w-full"
-              required
-            />
-          </div>
-          <!--
-            No email or phone here (Sean, 2026-10-01; migration 073). The numbers once
-            typed in for tenants were often not theirs, so nothing personal is assumed:
-            the system issues a login ID and a one-time password, and the tenant gives
-            their own email, phone and password at first sign-in. The name is hers.
-          -->
-          <p class="ws-hint col-span-2">They get a login ID and a one-time password.</p>
-          <div class="ws-field">
-            <label for="new-unit">Unit</label>
-            <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" aria-label="Unit" placeholder="Choose a unit" widthClass="w-full" />
-          </div>
-          <div class="ws-field">
-            <!-- OD-04, answered by the owner 2026-09-19: two months are collected at
-                 move-in, one of rent and one held as a deposit that is spent at move-out
-                 on fixing the unit. This field is ONE of those months - the rent month
-                 is recorded as an ordinary income receipt - so the figure is one month's
-                 rent and is not to be doubled (B-31).
-
-                 SETTLED 2026-09-20. Asked whether her screen should say "Deposit" or
-                 stay "Advance rent", she answered: leave it as deposit. So the four
-                 places she reads now say Deposit. The stored figure is unchanged - it
-                 was never the number that was in question. -->
-            <label for="new-advance">Deposit</label>
+        <form @submit.prevent="handleOnboard" class="flex flex-col">
+          <div class="grid grid-cols-2 gap-x-3 gap-y-4 sm:gap-5">
+            <p v-if="openedFromQuickAction" class="ws-hint col-span-2">
+              Moving someone out?
+              <button
+                type="button"
+                class="press font-semibold text-ink"
+                @click="isOnboardModalOpen = false"
+              >Choose them from the list</button>
+            </p>
+            <div class="ws-field col-span-2">
+              <label for="new-name">Full name</label>
+              <input
+                id="new-name"
+                v-model="newName"
+                placeholder="Juan Dela Cruz"
+                class="ws-input w-full"
+                required
+              />
+            </div>
             <!--
-              `min="0" step="any"`: every other money field in this app carries
-              both - this one had neither. `depositAmount` is validated server-side
-              by `money` (backend/src/routes/admin.ts), which allows two decimal
-              places and rejects negatives, so without `step="any"` a centavo figure
-              was silently unsubmittable, and without `min="0"` a typo'd negative
-              round-tripped to a 400 instead of being caught inline.
+              No email or phone here (Sean, 2026-10-01; migration 073). The numbers once
+              typed in for tenants were often not theirs, so nothing personal is assumed:
+              the system issues a login ID and a one-time password, and the tenant gives
+              their own email, phone and password at first sign-in. The name is hers.
             -->
-            <input
-              id="new-advance"
-              v-model.number="newDeposit"
-              type="number"
-              min="0"
-              step="any"
-              class="ws-input w-full"
-              required
-            />
-          </div>
-          <div class="ws-field">
-            <label for="new-move-in">Move-in date</label>
-            <input id="new-move-in" v-model="newMoveIn" type="date" class="ws-input w-full" required />
-          </div>
-          <div class="ws-field">
-            <label for="new-anniversary">Anniversary date</label>
-            <input
-              id="new-anniversary"
-              v-model="newAnniv"
-              type="date"
-              class="ws-input w-full"
-              required
-            />
-          </div>
-          <div class="ws-field">
-            <label for="new-sharing">Sharing the unit</label>
-            <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" aria-label="Sharing the unit" widthClass="w-full" />
-          </div>
+            <p class="ws-hint col-span-2">They get a login ID and a one-time password.</p>
+            <div class="ws-field">
+              <label for="new-unit">Unit</label>
+              <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" aria-label="Unit" placeholder="Choose a unit" widthClass="w-full" />
+            </div>
+            <div class="ws-field">
+              <!-- OD-04, answered by the owner 2026-09-19: two months are collected at
+                   move-in, one of rent and one held as a deposit that is spent at move-out
+                   on fixing the unit. This field is ONE of those months - the rent month
+                   is recorded as an ordinary income receipt - so the figure is one month's
+                   rent and is not to be doubled (B-31).
 
-          <div v-if="newHasRoommates === 'yes'" class="ws-reveal ws-field">
-            <label for="new-roommate-qty">How many roommates</label>
-            <input
-              id="new-roommate-qty"
-              v-model.number="newRoommateQty"
-              type="number"
-              min="1"
-              max="8"
-              class="ws-input w-full"
-              required
-            />
-          </div>
-          <div v-else aria-hidden="true" />
-          <div class="ws-field">
-            <label for="new-emerg-name">Emergency contact</label>
-            <input
-              id="new-emerg-name"
-              v-model="newEmergName"
-              placeholder="Maria Santos"
-              class="ws-input w-full"
-            />
-          </div>
-          <div class="ws-field">
-            <label for="new-emerg-phone">Their phone</label>
-            <input
-              id="new-emerg-phone"
-              v-model="newEmergPhone"
-              type="tel"
-              inputmode="tel"
-              v-phone
-              placeholder="0917 123 4567"
-              :class="['ws-input w-full tabular', newEmergPhoneError && 'border-overdue']"
-              :aria-invalid="newEmergPhoneError ? 'true' : undefined"
-              :aria-describedby="newEmergPhoneError ? 'new-emerg-phone-error' : undefined"
-              @input="newEmergPhoneError = ''"
-              @blur="newEmergPhoneError = emergencyPhoneProblem(newEmergPhone)"
-            />
-            <p v-if="newEmergPhoneError" id="new-emerg-phone-error" class="ws-reveal text-sm text-overdue">{{ newEmergPhoneError }}</p>
-          </div>
+                   SETTLED 2026-09-20. Asked whether her screen should say "Deposit" or
+                   stay "Advance rent", she answered: leave it as deposit. So the four
+                   places she reads now say Deposit. The stored figure is unchanged - it
+                   was never the number that was in question. -->
+              <label for="new-advance">Deposit</label>
+              <!--
+                `min="0" step="any"`: every other money field in this app carries
+                both - this one had neither. `depositAmount` is validated server-side
+                by `money` (backend/src/routes/admin.ts), which allows two decimal
+                places and rejects negatives, so without `step="any"` a centavo figure
+                was silently unsubmittable, and without `min="0"` a typo'd negative
+                round-tripped to a 400 instead of being caught inline.
+              -->
+              <input
+                id="new-advance"
+                v-model.number="newDeposit"
+                type="number"
+                min="0"
+                step="any"
+                class="ws-input w-full"
+                required
+              />
+            </div>
+            <div class="ws-field">
+              <label for="new-move-in">Move-in date</label>
+              <input id="new-move-in" v-model="newMoveIn" type="date" class="ws-input w-full" required />
+            </div>
+            <div class="ws-field">
+              <label for="new-anniversary">Anniversary date</label>
+              <input
+                id="new-anniversary"
+                v-model="newAnniv"
+                type="date"
+                class="ws-input w-full"
+                required
+              />
+            </div>
+            <div class="ws-field">
+              <label for="new-sharing">Sharing the unit</label>
+              <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" aria-label="Sharing the unit" widthClass="w-full" />
+            </div>
 
-          <p class="rounded-2xl bg-well px-4 py-3 text-sm leading-6 text-ink-soft col-span-2">
-            <strong class="font-semibold text-ink">{{ newOccupantsPreview }}</strong>
-            in the unit, so water is
-            <strong class="tabular font-semibold text-ink">{{ peso(newWaterPreview) }}</strong>
-            a month.
-          </p>
+            <div v-if="newHasRoommates === 'yes'" class="ws-reveal ws-field">
+              <label for="new-roommate-qty">How many roommates</label>
+              <input
+                id="new-roommate-qty"
+                v-model.number="newRoommateQty"
+                type="number"
+                min="1"
+                max="8"
+                class="ws-input w-full"
+                required
+              />
+            </div>
+            <div v-else aria-hidden="true" />
+            <div class="ws-field">
+              <label for="new-emerg-name">Emergency contact</label>
+              <input
+                id="new-emerg-name"
+                v-model="newEmergName"
+                placeholder="Maria Santos"
+                class="ws-input w-full"
+              />
+            </div>
+            <div class="ws-field">
+              <label for="new-emerg-phone">Their phone</label>
+              <input
+                id="new-emerg-phone"
+                v-model="newEmergPhone"
+                type="tel"
+                inputmode="tel"
+                v-phone
+                placeholder="0917 123 4567"
+                :class="['ws-input w-full tabular', newEmergPhoneError && 'border-overdue']"
+                :aria-invalid="newEmergPhoneError ? 'true' : undefined"
+                :aria-describedby="newEmergPhoneError ? 'new-emerg-phone-error' : undefined"
+                @input="newEmergPhoneError = ''"
+                @blur="newEmergPhoneError = emergencyPhoneProblem(newEmergPhone)"
+              />
+              <p v-if="newEmergPhoneError" id="new-emerg-phone-error" class="ws-reveal text-sm text-overdue">{{ newEmergPhoneError }}</p>
+            </div>
 
-          <div class="ws-actions border-t border-line pt-5 col-span-2">
+            <p class="rounded-2xl bg-well px-4 py-3 text-sm leading-6 text-ink-soft col-span-2">
+              <strong class="font-semibold text-ink">{{ newOccupantsPreview }}</strong>
+              in the unit, so water is
+              <strong class="tabular font-semibold text-ink">{{ peso(newWaterPreview) }}</strong>
+              a month.
+            </p>
+
+          </div>
+          <div class="ws-actions border-t border-line pt-5">
             <button type="button" class="pill-btn-quiet" @click="isOnboardModalOpen = false">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />

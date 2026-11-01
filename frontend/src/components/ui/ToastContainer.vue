@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * Toasts on the workspace system. One dark surface for every kind, because the
- * words carry the meaning; the icon and its colour only repeat it. They are
+ * Toasts on the workspace system. One pane of glass for every kind, because the
+ * words carry the meaning; the icon and its colour only repeat it. Top centre,
+ * just under the top bar, where they are easy to see (Sean, 2 Nov 2026). They are
  * announced politely, so a screen reader hears them without losing its place.
  *
  * ONE live region, the container, which is mounted with the app and so exists
@@ -22,37 +23,31 @@ const { toasts, dismissToast } = useToast();
 const shown = computed(() => toasts.value.filter((t) => !heldBy(t)));
 
 const iconTone: Record<string, string> = {
-  success: 'text-brand-bright',
-  warning: 'text-verify-soft',
-  error: 'text-overdue-soft',
-  info: 'text-on-night-soft',
+  success: 'text-brand',
+  warning: 'text-status-wait',
+  error: 'text-status-alert',
+  info: 'text-ink-soft',
 };
 </script>
 
 <template>
   <div
-    class="ws-focus pointer-events-none fixed inset-x-4 top-4 z-[60] flex flex-col items-end gap-2 sm:inset-x-auto sm:right-6 sm:top-6 sm:max-w-sm"
+    class="ws-focus pointer-events-none fixed inset-x-4 top-[calc(var(--notice-h,0px)+4.75rem)] z-[60] flex flex-col items-center gap-2"
     role="region"
     aria-label="Messages"
     aria-live="polite"
   >
     <!--
-      Every message fades by itself, top right, or across the top of a phone, with no X (Sean,
-      1 Nov 2026). A tap still clears one early (audit 2026-10-01). On a phone the stack is full width across the top of the
-      screen, above every dialog (z-60), so for its four seconds a toast sits
-      exactly over the menu button, the bell, the account menu and the X of
-      whatever dialog is open. A tap there landed on the toast's body and did
-      nothing at all, which is how "I closed it and the buttons stopped working"
-      reads from the outside: after a refused save, the dialog's X and then the
-      menu were measured as covered and dead until the toast timed out. Now the
-      first tap clears the toast, visibly, and the next one reaches what was
-      under it.
+      Every message fades by itself, with no X (Sean, 1 Nov 2026). A tap still
+      clears one early (audit 2026-10-01): the stack is above every dialog (z-60),
+      so for its four seconds a toast can cover what is under it, and the first
+      tap clears it so the next one reaches that.
     -->
     <TransitionGroup name="toast">
       <div
         v-for="toast in shown"
         :key="toast.id"
-        class="on-dark pointer-events-auto flex w-full cursor-pointer items-start gap-3 rounded-2xl bg-night p-4 text-on-night shadow-lift"
+        class="pointer-events-auto relative flex w-full max-w-sm cursor-pointer items-start gap-3 rounded-2xl bg-tile p-4 text-ink shadow-lift"
         @click="dismissToast(toast.id)"
       >
         <span class="mt-0.5 shrink-0" aria-hidden="true">
@@ -64,7 +59,7 @@ const iconTone: Record<string, string> = {
 
         <div class="min-w-0 flex-1">
           <p class="break-words text-sm font-semibold leading-snug">{{ toast.title }}</p>
-          <p class="mt-0.5 break-words text-sm leading-6 text-on-night-soft">{{ toast.message }}</p>
+          <p class="mt-0.5 break-words text-sm leading-6 text-ink-soft">{{ toast.message }}</p>
         </div>
 
       </div>
