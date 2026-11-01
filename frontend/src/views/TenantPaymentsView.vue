@@ -990,7 +990,7 @@ function refreshAll() {
     </OverviewTile>
 
     <!-- Payment record -->
-    <OverviewTile title="Payment record" class="max-md:order-3">
+    <OverviewTile id="payment-record" title="Payment record" class="scroll-mt-24 max-md:order-3">
       <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
            Sean, 2026-10-01): search, and the filter button beside it holding
            the year and the order. -->

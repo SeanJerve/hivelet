@@ -578,6 +578,8 @@ function handleDeleteTicketPrompt() {
       every list (Sean, 2026-10-01: "even if it has one filter").
     -->
     <ListToolbar
+      id="repairs-board"
+      class="scroll-mt-24"
       v-model:search="q"
       search-label="Search by title, unit or technician"
       :filters="repairFilters"

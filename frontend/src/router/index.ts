@@ -8,6 +8,7 @@ import {
   type Role,
 } from '@/lib/authStore';
 import { getStoredToken } from '@/lib/api';
+import { glideToSection } from '@/lib/glideToSection';
 import { rememberLastPage } from '@/lib/lastPage';
 
 /**
@@ -193,6 +194,11 @@ const router = createRouter({
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition;
+    // An arrow into another signed-in page: the page, then a glide to the section it pointed at.
+    if (to.hash && to.path !== from.path && /^\/(admin|tenant)/.test(to.path)) {
+      void glideToSection(to.hash);
+      return { top: 0 };
+    }
     if (to.hash) return scrollToHash(to.hash, to.path === from.path);
     return { top: 0 };
   },

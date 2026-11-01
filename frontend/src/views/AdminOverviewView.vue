@@ -359,7 +359,7 @@ const monthsToEnter = computed(() => {
       const units = incomeRecords
         .filter((r) => r.year === year && r.month === month && r.unit)
         .map((r) => r.unit.toUpperCase());
-      return { label: `${MONTH_LONG[month - 1]} ${year}`, entered: new Set(units).size, occupied };
+      return { year, month, label: `${MONTH_LONG[month - 1]} ${year}`, entered: new Set(units).size, occupied };
     })
     .filter((m) => m.entered < m.occupied);
 });
@@ -373,14 +373,14 @@ const attentionNotes = computed(() => {
     key: m.label,
     label: m.label,
     value: m.entered > 0 ? `${m.entered} of ${m.occupied} units entered` : 'Not entered yet',
-    to: '/admin/income',
+    to: `/admin/income?year=${m.year}&month=${m.month}#income-records`,
   }));
   const openInquiries = inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').length;
   if (openInquiries > 0) {
     notes.push({ key: 'inquiries', label: 'Inquiries', value: `${openInquiries} waiting for an answer`, to: '/admin/inquiries' });
   }
   if (!maintenanceTicketsFetchFailed.value && openTickets.value.length > 0) {
-    notes.push({ key: 'repairs', label: 'Repairs', value: `${openTickets.value.length} open`, to: '/admin/tickets' });
+    notes.push({ key: 'repairs', label: 'Repairs', value: `${openTickets.value.length} open`, to: '/admin/tickets#repairs-board' });
   }
   return notes;
 });
@@ -685,8 +685,9 @@ const historicalTenantCount = computed(() => {
 const historicalUnitCount = computed(
   () => new Set(historicalIncomeRecords.value.map((r) => r.unit.toUpperCase())).size
 );
-const archiveIncomeLink = computed(() => `/admin/income?year=${selectedArchiveYear.value}`);
-const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchiveYear.value}`);
+const archiveIncomeLink = computed(() => `/admin/income?year=${selectedArchiveYear.value}#income-records`);
+const archiveIncomeByMonthLink = computed(() => `/admin/income?year=${selectedArchiveYear.value}#income-by-month`);
+const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchiveYear.value}#expense-records`);
 
 </script>
 
@@ -826,7 +827,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             message="Payments to verify could not be loaded."
             @retry="refreshAllData"
           />
-          <router-link v-else to="/admin/income?tab=verify" class="press group/att flex flex-col gap-1">
+          <router-link v-else to="/admin/income?tab=verify#income-records" class="press group/att flex flex-col gap-1">
             <span class="flex items-start justify-between gap-2">
               <span :class="['leading-none font-semibold tracking-tight', pendingCount > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ pendingCount }}</span>
               <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
@@ -849,7 +850,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             message="Repairs could not be loaded."
             @retry="refreshAllData"
           />
-          <router-link v-else to="/admin/tickets" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
+          <router-link v-else to="/admin/tickets#repairs-board" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
             <span class="flex items-start justify-between gap-2">
               <span :class="['leading-none font-semibold tracking-tight', urgentTickets.length > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ urgentTickets.length }}</span>
               <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
@@ -874,7 +875,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
               </span>
             </p>
-            <router-link to="/admin/income?tab=verify" aria-label="Review payments" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
+            <router-link to="/admin/income?tab=verify#income-records" aria-label="Review payments" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
               <ArrowUpRight
                 class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
                 aria-hidden="true"
@@ -931,7 +932,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 </li>
               </ul>
             </div>
-            <router-link to="/admin/tickets" aria-label="Open repairs" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
+            <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
               <ArrowUpRight
                 class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
                 aria-hidden="true"
@@ -944,7 +945,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <OverviewTile
         :title="`Rent and water for ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
         phone-title="Rent and water"
-        to="/admin/income"
+        to="/admin/income#income-records"
         to-label="Open the income ledger"
         :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', phonePlace(monthHasFigures)]"
       >
@@ -1007,7 +1008,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Occupancy" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 md:col-span-1 xl:col-span-3">
+      <OverviewTile title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 md:col-span-1 xl:col-span-3">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -1029,7 +1030,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
 
       <OverviewTile
         :title="`Rent and water by month, ${CURRENT_YEAR}`"
-        to="/admin/income"
+        to="/admin/income#income-by-month"
         to-label="Open the income ledger"
         class="col-span-2 max-md:order-3 max-md:gap-3 max-md:p-4 xl:col-span-8"
       >
@@ -1064,7 +1065,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4 max-md:order-5">
+      <OverviewTile title="Units by cluster" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4 max-md:order-5">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -1099,7 +1100,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6 max-md:order-5">
+      <OverviewTile :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses#expense-records" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6 max-md:order-5">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded."
@@ -1206,7 +1207,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
 
       <OverviewTile
         title="Open repair requests"
-        to="/admin/tickets"
+        to="/admin/tickets#repairs-board"
         to-label="Open repairs"
         class="col-span-2 xl:col-span-6 max-md:order-5"
       >
@@ -1371,7 +1372,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </dl>
       </OverviewTile>
 
-      <OverviewTile :title="`Rent and water by month, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-6">
+      <OverviewTile :title="`Rent and water by month, ${selectedArchiveYear}`" :to="archiveIncomeByMonthLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-6">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <MonthCapsules v-else :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
       </OverviewTile>

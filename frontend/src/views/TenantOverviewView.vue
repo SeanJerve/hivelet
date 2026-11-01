@@ -803,7 +803,7 @@ const statusTone = computed(() => {
 
       <OverviewTile
         title="Payments"
-        to="/tenant/payments"
+        to="/tenant/payments#payment-record"
         to-label="Open payments and billing"
         class="list-reveal-item order-4 md:order-none md:col-span-2 xl:col-span-8"
         style="animation-delay: 90ms"

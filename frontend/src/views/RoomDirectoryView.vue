@@ -297,6 +297,8 @@ function applyRoomFilters(v: FilterDraft) {
       at its top (Sean, 2026-10-02: the switch inside Filters, so it's cleaner).
     -->
     <ListToolbar
+      id="rooms-list"
+      class="scroll-mt-24"
       v-model:view="viewMode"
       v-model:search="q"
       :views="roomViews"

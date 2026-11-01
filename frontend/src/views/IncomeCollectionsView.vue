@@ -1339,8 +1339,9 @@ const isDownloadOpen = ref(false);
       -->
       <OverviewTile
         v-if="rows.length > 0 && showMonthChart"
+        id="income-by-month"
         :title="`Rent and water by month, ${periodWord}`"
-        class="max-md:gap-3 max-md:p-4 xl:col-span-12"
+        class="scroll-mt-24 max-md:gap-3 max-md:p-4 xl:col-span-12"
       >
         <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short />
       </OverviewTile>
@@ -1354,7 +1355,7 @@ const isDownloadOpen = ref(false);
       ledger. Ledger / To verify stay tabs: they are two different lists, not
       two drawings of one.
     -->
-    <div class="flex flex-col gap-3">
+    <div id="income-records" class="flex scroll-mt-24 flex-col gap-3">
       <!-- Tabs: Ledger or To verify -->
       <div role="tablist" aria-label="Income view" class="flex items-center gap-5 shrink-0">
         <button

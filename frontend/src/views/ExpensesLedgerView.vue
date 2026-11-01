@@ -1132,6 +1132,8 @@ async function handleEditExpense() {
          ledger has one way of being drawn - so search, with the filter button
          beside it holding Kind, Month and Year. -->
     <ListToolbar
+      id="expense-records"
+      class="scroll-mt-24"
       v-model:search="q"
       search-label="Search the ledger"
       :filters="expenseFilters"
