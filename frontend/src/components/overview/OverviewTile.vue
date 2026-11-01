@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * A dashboard section. Only `brand` and `night` are boxes, for the one or two things on a screen
- * that ask for action. Anything else that is only information sits on the page (Sean, 1 Nov 2026).
+ * A dashboard section. `brand` and `night` are boxes, for the one or two things on a screen that
+ * ask for action. `boxed` is a plain box, for a chart or a total worth finding at a glance.
+ * Anything else that is only information sits on the page (Sean, 1 Nov 2026).
  */
 import { computed, useId } from 'vue';
 import { ArrowUpRight } from 'lucide-vue-next';
@@ -15,6 +16,7 @@ const props = withDefaults(
     /** Where the tile's arrow leads. Omit when there is nowhere to go. */
     to?: string;
     toLabel?: string;
+    boxed?: boolean;
   }>(),
   { tone: 'plain' }
 );
@@ -37,7 +39,7 @@ const toneClass = computed(
 <template>
   <section
     :aria-labelledby="title ? titleId : undefined"
-    :class="['flex flex-col gap-4 min-w-0', isDark ? 'rounded-tile p-5 sm:p-6' : 'py-2', toneClass]"
+    :class="['flex flex-col gap-4 min-w-0', isDark || boxed ? 'rounded-tile p-5 sm:p-6' : 'py-2', boxed && 'bg-tile', toneClass]"
   >
     <header v-if="title || to || $slots.actions" class="flex items-start justify-between gap-3">
       <h2 v-if="title" :id="titleId" class="text-[0.9375rem] leading-5 font-semibold pt-2.5">

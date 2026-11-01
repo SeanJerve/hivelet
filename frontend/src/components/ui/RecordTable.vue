@@ -134,8 +134,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- One block per row on a phone, on the page itself, with a rule between. -->
-      <div :class="['divide-y divide-line', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden']">
+      <!-- One block per row on a phone, in the one card, with a rule between. -->
+      <div :class="['divide-y divide-line', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden', !flat && 'rounded-tile bg-tile px-5']">
         <div
           v-for="(row, i) in visible"
           :key="i"

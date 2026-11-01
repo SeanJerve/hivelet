@@ -1245,7 +1245,7 @@ const isDownloadOpen = ref(false);
       zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not entered yet" opened the page).
     -->
     <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
+      <OverviewTile boxed :title="`Received, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           message="The collections could not be loaded."
@@ -1285,7 +1285,7 @@ const isDownloadOpen = ref(false);
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <OverviewTile boxed :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.
@@ -1340,6 +1340,7 @@ const isDownloadOpen = ref(false);
       <OverviewTile
         v-if="rows.length > 0 && showMonthChart"
         id="income-by-month"
+        boxed
         :title="`Income by month, ${periodWord}`"
         class="scroll-mt-24 max-md:gap-3 xl:col-span-12"
       >

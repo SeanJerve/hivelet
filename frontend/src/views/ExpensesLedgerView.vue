@@ -1048,7 +1048,7 @@ async function handleEditExpense() {
         to do on its own, and the pair reads as one product. It also stops a
         seven-figure peso amount from running out of a third-width tile.
       -->
-      <OverviewTile :title="`Spent, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
+      <OverviewTile boxed :title="`Spent, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           message="Expenses could not be loaded."
@@ -1076,7 +1076,7 @@ async function handleEditExpense() {
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it went, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <OverviewTile boxed :title="`Where it went, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.

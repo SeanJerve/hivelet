@@ -993,7 +993,7 @@ function refreshAll() {
          Needs both the receipts and the standing, so it waits for, and fails
          with, either. On a phone it comes before the bills when nothing is due
          (Loyd, 2026-10-03: what has something to show goes first). -->
-    <OverviewTile title="Your rent, month by month" class="max-md:order-1">
+    <OverviewTile boxed title="Your rent, month by month" class="max-md:order-1">
       <PaymentMonths
         :receipts="rawReceipts"
         :waiting="waitingPayments"
