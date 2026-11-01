@@ -747,7 +747,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     <div
       v-if="!isInitialLoading && anyLoadFailed"
       role="status"
-      class="ws-reveal flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify"
+      class="ws-reveal flex flex-wrap items-center justify-between gap-3 text-sm font-medium text-status-wait"
     >
       <span>Some figures could not be loaded.</span>
       <button type="button" class="pill-btn" :disabled="isRefreshing" @click="refreshAllData">Try again</button>
