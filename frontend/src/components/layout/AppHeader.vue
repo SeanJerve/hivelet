@@ -470,7 +470,9 @@ onUnmounted(() => {
                   class="absolute right-0.5 top-0.5 size-2.5 rounded-full ring-2 ring-canvas"
                   :class="hasEmergencyUnread ? 'bg-overdue' : 'bg-brand'"
                   aria-hidden="true"
-                />
+                >
+                  <span v-if="hasEmergencyUnread" class="absolute inset-0 rounded-full bg-overdue motion-safe:animate-ping" />
+                </span>
               </Transition>
             </button>
 

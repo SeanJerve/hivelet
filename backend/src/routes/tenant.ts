@@ -604,10 +604,23 @@ router.post(
       newValues: { room_id: input.roomId, priority: input.priority, title: input.title },
     });
 
-    // Notify Landlady about the new maintenance ticket
+    // Notify Landlady about the new maintenance ticket. The ticket is committed, so a failed
+    // lookup only leaves the unit out of the notice.
+    const { data: ticketRoom, error: ticketRoomError } = await db
+      .from('rooms')
+      .select('room_number')
+      .eq('id', input.roomId)
+      .maybeSingle();
+    warnIfWriteFailed({ error: ticketRoomError }, `Ticket ${data.id} unit for its notice`);
+    const unit = ticketRoom?.room_number ? `, Unit ${ticketRoom.room_number.toUpperCase()}` : '';
     await notificationService.notify({
-      title: `New Maintenance Ticket (${input.priority || 'Medium'})`,
-      message: `Tenant submitted ticket "${input.title}" (Priority: ${input.priority || 'Medium'}).`,
+      title:
+        input.priority === 'Emergency'
+          ? 'Emergency repair'
+          : input.priority === 'High'
+            ? 'Urgent repair'
+            : 'New repair request',
+      message: `${input.title}${unit}`,
       type: 'Maintenance',
       priority: (input.priority as any) || 'Medium',
       relatedEntityType: 'TICKET',

@@ -95,7 +95,9 @@ export const filteredNotifications = computed(() => {
     list = list.filter((n) => n.type === 'Inquiry' || n.type === 'Chat');
   }
 
-  return list;
+  // An unread emergency stays on top however much arrives after it (Sean, 1 Nov 2026).
+  const isPinned = (n: NotificationItem) => n.priority === 'Emergency' && !n.is_read;
+  return [...list.filter(isPinned), ...list.filter((n) => !isPinned(n))];
 });
 
 /**

@@ -40,7 +40,6 @@ import { isAdmin } from '@/lib/authStore';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { notificationTarget } from '@/lib/openFromQuery';
 import Skeleton from '@/components/ui/Skeleton.vue';
-import StatusPill from '@/components/overview/StatusPill.vue';
 import {
   Check,
   CheckCheck,
@@ -116,15 +115,6 @@ const FILTERS = computed(() =>
   isAdmin.value ? ALL_FILTERS : ALL_FILTERS.filter((f) => f.key !== 'inquiries')
 );
 
-// The page names the owner reads everywhere else; the stored types stay as they are.
-const TYPE_WORDS: Record<string, string> = {
-  Payment: 'Payment',
-  Billing: 'Bill',
-  Maintenance: 'Repair',
-  Inquiry: 'Inquiry',
-  Chat: 'Message',
-};
-
 function getIconForType(type: string) {
   switch (type) {
     case 'Payment':
@@ -142,20 +132,42 @@ function getIconForType(type: string) {
 }
 
 /**
- * The icon chip carries the same meaning as the badge beside it, so colour is
- * never the only thing saying a notice is urgent.
+ * Repair notices stored before 1 Nov 2026 read "New Maintenance Ticket (Emergency)" and "Tenant
+ * submitted ticket "..." (Priority: Emergency).", the urgency in brackets. New ones are worded
+ * plainly by the backend; these two say the old ones the same way on screen, and the rows stay
+ * as they were written.
  */
-function chipTone(type: string, priority: string) {
-  if (priority === 'Emergency') return 'bg-overdue-soft text-overdue';
-  if (priority === 'High') return 'bg-verify-soft text-verify';
+const OLD_REPAIR_TITLE = /^New Maintenance Ticket \((\w+)\)$/;
+const OLD_REPAIR_MESSAGE = /^Tenant submitted ticket "(.*)" \(Priority: \w+\)\.$/s;
+
+function headline(item: NotificationItem) {
+  const old = item.title.match(OLD_REPAIR_TITLE);
+  if (!old) return item.title;
+  if (old[1] === 'Emergency') return 'Emergency repair';
+  return old[1] === 'High' ? 'Urgent repair' : 'New repair request';
+}
+
+function detail(item: NotificationItem) {
+  return item.message.match(OLD_REPAIR_MESSAGE)?.[1] ?? item.message;
+}
+
+/** An unread emergency is the one row that should stop the eye. Once read it quietens. */
+function isAlarm(item: NotificationItem) {
+  return item.priority === 'Emergency' && !item.is_read;
+}
+
+/** The icon alone, in the colour of how urgent the notice is. */
+function iconTone(type: string, priority: string) {
+  if (priority === 'Emergency') return 'text-overdue';
+  if (priority === 'High') return 'text-verify';
   switch (type) {
     case 'Payment':
     case 'Billing':
     case 'Maintenance':
     case 'Inquiry':
-      return 'bg-brand-soft text-brand';
+      return 'text-brand';
     default:
-      return 'bg-well text-ink-soft';
+      return 'text-ink-soft';
   }
 }
 
@@ -484,28 +496,29 @@ onUnmounted(() => {
               // Negative offset: these rows run edge to edge inside a scrolling
               // list, which clipped the workspace's outset focus outline.
               'press-plate group flex w-full items-start gap-3 p-4 text-left hover:bg-hover focus-visible:outline-offset-[-3px]',
-              item.is_read ? 'bg-tile' : 'bg-brand-soft/50',
+              item.is_read ? 'bg-tile' : isAlarm(item) ? 'bg-overdue-soft' : item.priority === 'High' ? 'bg-verify-soft' : 'bg-brand-soft/50',
               revealRows ? 'list-reveal-item' : '',
             ]"
             :style="revealRows ? { animationDelay: `${Math.min(i, 9) * 30}ms` } : undefined"
             @click="handleNotificationClick(item)"
           >
-            <span
-              :class="[
-                'grid size-9 shrink-0 place-items-center rounded-xl',
-                chipTone(item.type, item.priority),
-              ]"
+            <component
+              :is="getIconForType(item.type)"
+              :class="['mt-0.5 size-5 shrink-0', iconTone(item.type, item.priority)]"
               aria-hidden="true"
-            >
-              <component :is="getIconForType(item.type)" class="size-4" />
-            </span>
+            />
 
             <span class="min-w-0 flex-1">
               <!-- The title wraps rather than truncating: at 375px even a
                    short one was cut off, and the row is the only place it is shown. -->
               <span class="flex items-baseline justify-between gap-3">
-                <span class="min-w-0 break-words text-sm font-semibold text-ink group-hover:text-brand">
-                  {{ item.title }}
+                <span
+                  :class="[
+                    'min-w-0 break-words text-sm font-semibold',
+                    isAlarm(item) ? 'text-status-alert' : 'text-ink group-hover:text-brand',
+                  ]"
+                >
+                  <span v-if="!item.is_read" class="sr-only">Unread: </span>{{ headline(item) }}
                 </span>
                 <time
                   :datetime="item.created_at"
@@ -521,16 +534,7 @@ onUnmounted(() => {
                 read in full from here (B-61).
               -->
               <span class="mt-0.5 block break-words text-sm leading-6 text-ink-soft">
-                {{ item.message }}
-              </span>
-
-              <span class="mt-2 flex flex-wrap items-center gap-2">
-                <StatusPill v-if="item.priority === 'Emergency'" tone="overdue">
-                  Needs someone now
-                </StatusPill>
-                <StatusPill v-else-if="item.priority === 'High'" tone="verify">Soon</StatusPill>
-                <span v-if="TYPE_WORDS[item.type]" class="text-xs font-medium text-ink-faint">{{ TYPE_WORDS[item.type] }}</span>
-                <span v-if="!item.is_read" class="text-xs font-semibold text-brand">Unread</span>
+                {{ detail(item) }}
               </span>
             </span>
           </button>
