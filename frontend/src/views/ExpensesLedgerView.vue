@@ -401,7 +401,7 @@ onMounted(() => {
   }
 });
 
-/** Search and Kind, without the period: shared by the ledger and the month card. */
+/** Search and Kind, without the period: shared by the ledger and the month figure. */
 function matchesSearchAndKind(e: ExpenseRecord): boolean {
   const query = q.value.toLowerCase().trim();
   const matchesQ =
@@ -460,7 +460,7 @@ const totalJuly = computed(() =>
   filtered.value.reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0)
 );
 
-/** The period in the year card's title, "2026" / "September 2026" / "all years" - Monthly Income's `periodWord`. */
+/** The period in the year section's title, "2026" / "September 2026" / "all years" - Monthly Income's `periodWord`. */
 const periodWord = computed(() => {
   const m = filterMonth.value === 'All' ? '' : (monthsList.find((x) => x.val === filterMonth.value)?.label ?? '');
   if (filterYear.value === 'All') return m ? `${m}, every year` : 'all years';
@@ -468,10 +468,10 @@ const periodWord = computed(() => {
 });
 
 /**
- * The headline card is one month (Sean, 2026-10-02: the screen is MONTHLY
- * Expenses; the year is the card beside it). Which month: lib/focusMonth.ts.
- * The sentence that used to sit above the cards ("These figures are for all of
- * 2026: every area, personal spending included") is gone: each card's title
+ * The headline figure is one month (Sean, 2026-10-02: the screen is MONTHLY
+ * Expenses; the year is the section beside it). Which month: lib/focusMonth.ts.
+ * The sentence that used to sit above the figures ("These figures are for all of
+ * 2026: every area, personal spending included") is gone: each section's title
  * names its period, and nobody reads a sentence about the figures.
  */
 const focus = computed(() =>
@@ -746,7 +746,7 @@ function getPersonalOtherAmount(e: ExpenseRecord): number {
 }
 
 /**
- * Where an expense landed, for the phone card's chips: the same four groups the
+ * Where an expense landed, for the phone row's chips: the same four groups the
  * desktop columns use, in their order, leaving out any that got nothing. One
  * group alone carries no amount (it is the whole expense, already shown beside
  * the description).
@@ -1025,37 +1025,18 @@ async function handleEditExpense() {
     <!-- What was spent, and where it landed -->
     <!-- On a phone a tile with nothing in it goes to the end (Loyd, 2026-10-03,
          the Overview's rule); a failed load keeps its place. -->
-    <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
+    <div class="grid gap-x-10 gap-y-8 xl:grid-cols-12">
       <!--
-        The one dark tile on this screen, and the one figure the screen exists
-        to state.
+        The one figure the screen exists to state. It leads by coming first and
+        by its size (Sean, 1 Nov 2026: the dark tile went with the cards).
 
-        This was `text-5xl` on a plain tile sitting beside another plain tile of
-        the same weight, so the screen opened on two equal surfaces and the eye
-        had nowhere to land. OverviewTile's own note reserves `night` for what
-        "asks for action", and a total spent does not - but the two registers
-        this one is read beside already use the tone the other way and neither
-        of their dark figures asks for anything: "Collected altogether" on the
-        income ledger is a sum, "Everything on record" on the audit trail is a
-        count. Both are the headline of the screen that owns them. Read as a
-        claim with a date on it, the tile's note describes the overview, where
-        the dark tile really is a queue of work; across the three admin
-        registers the rank the tone carries is "this is the figure the screen
-        is about". "Monthly Expenses" was the only one of the four without one.
-
-        The figure steps DOWN, 5xl to 4xl, to the same line "Collected
-        altogether" uses - the tone now does the work the size was being asked
-        to do on its own, and the pair reads as one product. It also stops a
-        seven-figure peso amount from running out of a third-width tile.
-
-        The rules inside are `white/10` and the quiet text `on-night-soft`,
-        which is the dark-tile idiom already in AdminOverviewView, not a new
-        colour.
+        4xl, the same line Monthly Income's Received figure uses, so the pair
+        reads as one product. It also stops a seven-figure peso amount from
+        running out of a third-width column.
       -->
-      <OverviewTile :title="`Spent, ${focus.label}`" tone="night" :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Spent, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
-          dark
           message="Expenses could not be loaded."
           @retry="fetchExpenses"
         />
@@ -1063,25 +1044,25 @@ async function handleEditExpense() {
         <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
         <template v-else>
           <p class="tabular text-3xl md:text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal, 2) }}</p>
-          <p class="text-sm leading-6 text-on-night-soft">
+          <p class="text-sm leading-6 text-ink-soft">
             {{ `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}
           </p>
           <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
-               cards there, so the graphs below are on the first screen). -->
-          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-white/10 pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-white/10 md:pt-1">
+               blocks there, so the graphs below are on the first screen). -->
+          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-on-night-soft">Utilities</dt>
+              <dt class="text-sm text-ink-soft">Utilities</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthUtilities, 2) }}</dd>
             </div>
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-on-night-soft">Repairs and cleaning</dt>
+              <dt class="text-sm text-ink-soft">Repairs and cleaning</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRepairs, 2) }}</dd>
             </div>
           </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it went, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Where it went, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.
@@ -1148,7 +1129,7 @@ async function handleEditExpense() {
     <span v-if="isLoading" class="sr-only" role="status">Loading the expense ledger</span>
     <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
 
-    <div v-else-if="groupedExpenses.length === 0" class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center">
+    <div v-else-if="groupedExpenses.length === 0" class="ws-reveal py-16 text-center">
       <p class="text-base font-semibold text-ink">
         <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
         <template v-else>Nothing matches</template>
@@ -1170,7 +1151,7 @@ async function handleEditExpense() {
 
       Three of the six columns are the areas an expense is split across, which
       is what makes this worth being a table: the figures line up down the page
-      and can be compared. Below 1280px (at 1024 the sidebar leaves ~660px) each day becomes a stack of tiles,
+      and can be compared. Below 1280px (at 1024 the sidebar leaves ~660px) each day becomes a stack of blocks,
       because three money columns read sideways on a phone is not a table.
     -->
     <RecordTable
@@ -1197,11 +1178,11 @@ async function handleEditExpense() {
 
       <template #row="{ row: group }">
         <tr>
-          <th scope="colgroup" colspan="6" class="bg-well text-sm text-ink-soft">
+          <th scope="colgroup" colspan="6" class="text-sm font-semibold text-ink">
             {{ group.dateStr }}
           </th>
-          <td class="num bg-well text-base font-semibold text-brand">{{ peso(group.dayTotal, 2) }}</td>
-          <td class="bg-well"><span class="sr-only">that day</span></td>
+          <td class="num text-base font-semibold text-brand">{{ peso(group.dayTotal, 2) }}</td>
+          <td><span class="sr-only">that day</span></td>
         </tr>
         <tr v-for="e in group.records" :key="e.id" class="group">
           <th scope="row" class="font-medium wrap-anywhere text-ink">{{ e.description }}</th>
@@ -1249,7 +1230,7 @@ async function handleEditExpense() {
               <!--
                 break-words: the description is typed freely (an invoice or
                 supplier name), so an unbroken run would otherwise run past the
-                card, which has no sideways scroll to fall back on.
+                row, which has no sideways scroll to fall back on.
               -->
               <p class="min-w-0 text-sm font-medium leading-snug break-words text-ink">{{ e.description }}</p>
               <!-- A day of one expense: its amount is the day's total above, not
@@ -1259,11 +1240,11 @@ async function handleEditExpense() {
             <p class="mt-0.5 text-xs text-ink-faint">{{ e.category }}</p>
 
             <div class="mt-2 flex items-center gap-2">
-              <ul class="flex min-w-0 flex-1 flex-wrap gap-1.5" :aria-label="`Where ${e.description} landed`">
+              <ul class="flex min-w-0 flex-1 flex-wrap gap-x-3 gap-y-1" :aria-label="`Where ${e.description} landed`">
                 <li
                   v-for="part in areaParts(e)"
                   :key="part.label"
-                  class="inline-flex items-center gap-1.5 rounded-full bg-well px-2.5 py-1 text-xs text-ink-soft"
+                  class="inline-flex items-center gap-1.5 text-xs text-ink-soft"
                 >
                   {{ part.label }}<span v-if="part.amount !== null" class="tabular font-semibold text-ink">{{ money(part.amount) }}</span>
                 </li>

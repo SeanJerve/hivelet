@@ -1523,6 +1523,10 @@ html:has(> body[style*='overflow: hidden']) {
     border: 0;
     border-radius: 0;
   }
+  .ws-workspace .ws-table tfoot td,
+  .ws-workspace .ws-table tfoot th {
+    background-color: var(--ws-table-surface);
+  }
   .ws-workspace .ws-table tr > :first-child,
   .ws-workspace .ws-table.ws-table-fixed tr > :first-child {
     padding-left: 0;

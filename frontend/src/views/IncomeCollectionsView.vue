@@ -234,8 +234,8 @@ async function fetchIncome() {
  * This used to set `isLoading`, the flag the queue and the ledger both read
  * for their FIRST load. So pressing Verify swapped the whole queue for a
  * skeleton announcing "Loading the verification queue" while one row was being
- * saved (B-61). The card being acted on now shows its own busy button, and the
- * other cards' buttons wait for it.
+ * saved (B-61). The payment being acted on now shows its own busy button, and
+ * the other payments' buttons wait for it.
  */
 const verifying = ref<{ id: string; status: 'Verified' | 'Rejected' } | null>(null);
 
@@ -635,11 +635,11 @@ const periodWord = computed(() => {
 });
 
 /**
- * The headline card is one month (Sean, 2026-10-02: the screen is MONTHLY
- * Income; the year is the card beside it, as on Monthly Expenses). Which
- * month: lib/focusMonth.ts. The sentence that sat above the cards ("These
+ * The headline figure is one month (Sean, 2026-10-02: the screen is MONTHLY
+ * Income; the year is the section beside it, as on Monthly Expenses). Which
+ * month: lib/focusMonth.ts. The sentence that sat above the figures ("These
  * figures are for all of 2026: all units, the Penthouse and Linda's units
- * included") is gone: each card's title names its period.
+ * included") is gone: each section's title names its period.
  */
 const focus = computed(() =>
   focusMonth(filterYear.value, filterMonth.value, (year) => [
@@ -1242,13 +1242,12 @@ const isDownloadOpen = ref(false);
       On a phone a tile with nothing in it goes to the end (Loyd, 2026-10-03,
       the same rule as the Overview): a month with nothing entered yet would
       otherwise open the page on ₱0 above the chart. A failed load is not a
-      zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not entered yet" opened the page).
+      zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width section saying only "Not entered yet" opened the page).
     -->
-    <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${focus.label}`" tone="night" :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
+    <div class="grid gap-x-10 gap-y-8 xl:grid-cols-12">
+      <OverviewTile :title="`Received, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
-          dark
           message="The collections could not be loaded."
           @retry="fetchIncome"
         />
@@ -1258,18 +1257,18 @@ const isDownloadOpen = ref(false);
         <template v-else>
           <!-- Rent plus water, the Remitted column's figure, for the one month. -->
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater) }}</p>
-          <p class="text-sm leading-6 text-on-night-soft">
+          <p class="text-sm leading-6 text-ink-soft">
             {{ `From ${monthRows.length} ${monthRows.length === 1 ? 'payment' : 'payments'}` }}
           </p>
           <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
-               cards there, so the graphs below are on the first screen). -->
-          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-white/10 pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-white/10 md:pt-1">
+               blocks there, so the graphs below are on the first screen). -->
+          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-on-night-soft">Rent</dt>
+              <dt class="text-sm text-ink-soft">Rent</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRent) }}</dd>
             </div>
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-on-night-soft">Water</dt>
+              <dt class="text-sm text-ink-soft">Water</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthWater) }}</dd>
             </div>
             <!-- BR-035: the label only; a system-computed figure, half of each row's Rent Amount. Boarding
@@ -1278,15 +1277,15 @@ const isDownloadOpen = ref(false);
               <!-- The section name sits under the label beside it from 768px, and under the figure on a
                    phone, so the three figures in a row stay level. -->
               <!-- Lighter than Rent and Water: those two make the total; this is inside Rent (22 Oct 2026). -->
-              <dt class="text-sm text-on-night-soft">50% Share <span class="hidden text-xs md:block">Half of Boarding House rent</span></dt>
-              <dd class="tabular text-base text-on-night-soft md:text-lg">{{ peso(monthShare) }}</dd>
-              <span class="text-xs text-on-night-soft md:hidden">Half of Boarding House rent</span>
+              <dt class="text-sm text-ink-soft">50% Share <span class="hidden text-xs md:block">Half of Boarding House rent</span></dt>
+              <dd class="tabular text-base text-ink-soft md:text-lg">{{ peso(monthShare) }}</dd>
+              <span class="text-xs text-ink-soft md:hidden">Half of Boarding House rent</span>
             </div>
           </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.
@@ -1342,7 +1341,7 @@ const isDownloadOpen = ref(false);
         v-if="rows.length > 0 && showMonthChart"
         id="income-by-month"
         :title="`Income by month, ${periodWord}`"
-        class="scroll-mt-24 max-md:gap-3 max-md:p-4 xl:col-span-12"
+        class="scroll-mt-24 max-md:gap-3 xl:col-span-12"
       >
         <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short />
       </OverviewTile>
@@ -1421,7 +1420,7 @@ const isDownloadOpen = ref(false);
       that would make the motion feel like it is in the way.
     -->
     <div v-if="activeTab === 'verify'" id="income-panel" role="tabpanel" aria-labelledby="income-tab-verify" class="ws-reveal flex flex-col gap-4">
-      <div v-if="isLoading" class="rounded-tile bg-tile p-6 flex flex-col gap-3" aria-busy="true">
+      <div v-if="isLoading" class="flex flex-col gap-3 border-t border-line pt-4" aria-busy="true">
         <span class="sr-only" role="status">Loading the verification queue</span>
         <Skeleton class-name="h-4 w-40 rounded-full" />
         <Skeleton class-name="h-20 w-full rounded-2xl" />
@@ -1434,7 +1433,7 @@ const isDownloadOpen = ref(false);
         />
       </OverviewTile>
 
-      <OverviewTile v-else-if="pendingPayments.length === 0" tone="soft" class="ws-reveal" title="Payments to verify">
+      <OverviewTile v-else-if="pendingPayments.length === 0" class="ws-reveal" title="Payments to verify">
         <p class="text-2xl font-semibold tracking-tight">Nothing is waiting</p>
       </OverviewTile>
 
@@ -1448,14 +1447,14 @@ const isDownloadOpen = ref(false);
           nothing collected. Remove with the change that wires the live account.
           Reworded without "test" for the live demo (Sean, 6 Oct 2026); the instruction is the same.
         -->
-        <p class="ws-reveal rounded-2xl bg-verify-soft px-4 py-3 text-sm leading-6 text-ink">
+        <p class="ws-reveal text-sm font-medium leading-6 text-status-wait">
           Online GCash payment is not live yet, so no money has reached you. Reject these for now.
         </p>
-        <ul class="grid gap-4 md:grid-cols-2">
+        <ul class="divide-y divide-line border-t border-line">
           <li
             v-for="(p, i) in pendingPayments"
             :key="p.id"
-            class="list-reveal-item rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4"
+            class="list-reveal-item flex flex-col gap-4 py-4"
             :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
           >
             <div class="flex items-start justify-between gap-3">
@@ -1540,7 +1539,7 @@ const isDownloadOpen = ref(false);
       that appears gets a fade-in rather than snapping into place the way it
       did before.
     -->
-    <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
+    <div v-else-if="viewMode === 'grouped'" class="ws-reveal">
       <!--
         The same empty state the "As a list" half of this screen renders, in
         the same shape - a title and a sentence under it, not one grey line.
@@ -1549,7 +1548,7 @@ const isDownloadOpen = ref(false);
       -->
       <div
         v-if="displayGroups.length === 0"
-        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
+        class="ws-reveal py-16 text-center"
       >
         <p class="text-base font-semibold text-ink">Nothing matches</p>
         <!-- The sentence the comment above promises, as Tenants and Rooms and rates
@@ -1562,12 +1561,12 @@ const isDownloadOpen = ref(false);
       <section
         v-for="(group, groupIndex) in displayGroups"
         :key="group.key"
-        class="overflow-hidden rounded-tile bg-tile"
+        class="border-t border-line"
       >
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full flex-col items-start gap-3 p-5 text-left hover:bg-hover sm:flex-row sm:flex-wrap sm:justify-between sm:p-6"
+            class="press-plate flex w-full flex-col items-start gap-3 py-4 text-left hover:bg-hover sm:flex-row sm:flex-wrap sm:justify-between"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -1609,7 +1608,7 @@ const isDownloadOpen = ref(false);
         <div
           v-if="isClusterOpen(group.key, groupIndex)"
           :id="`cluster-${domId(group.key)}`"
-          class="ws-reveal border-t border-line p-5 sm:p-6"
+          class="ws-reveal pb-6"
         >
           <RecordTable
             :rows="group.records"
@@ -1637,7 +1636,7 @@ const isDownloadOpen = ref(false);
                        header still says what the column is to a screen reader. -->
                   <span v-else class="sr-only">Electricity, Linda Units only</span>
                 </th>
-                <!-- Heads sits under the water it sets, as on the phone cards
+                <!-- Heads sits under the water it sets, as on the phone rows
                      ("Water, 2 heads"); a column of its own made the ledger
                      scroll sideways at 1280. -->
                 <th scope="col" class="num">Water</th>
@@ -1703,14 +1702,14 @@ const isDownloadOpen = ref(false);
             </template>
 
             <!--
-              The same subtotal as the `foot` row above it, in the card shape
+              The same subtotal as the `foot` row above it, in the stacked shape
               this register already uses on a phone. Without it, below `lg`
               every one of these figures disappeared and the cluster header's
               "Remitted" was the only total left on the screen - so a month
               checked on a phone had no breakdown at all.
 
               Same arithmetic, same fields, same order as the table foot; the
-              headcount rides on the Water label the way it does on a row card
+              headcount rides on the Water label the way it does on a phone row
               rather than becoming a column of its own.
             -->
             <template #foot-card>

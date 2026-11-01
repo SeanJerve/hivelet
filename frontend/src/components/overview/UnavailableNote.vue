@@ -6,12 +6,10 @@
 withDefaults(
   defineProps<{
     message?: string;
-    dark?: boolean;
     retry?: boolean;
   }>(),
   {
     message: 'This could not be loaded.',
-    dark: false,
     retry: true,
   }
 );
@@ -22,16 +20,13 @@ defineEmits<{ retry: [] }>();
 <template>
   <div
     role="status"
-    :class="[
-      'unavailable-note flex flex-col items-start gap-3 rounded-2xl border border-dashed p-4',
-      dark ? 'border-white/30' : 'border-hatch',
-    ]"
+    class="unavailable-note flex flex-col items-start gap-3"
   >
     <p class="text-sm leading-5">{{ message }}</p>
     <button
       v-if="retry"
       type="button"
-      :class="dark ? 'pill-btn-light' : 'pill-btn'"
+      class="pill-btn"
       @click="$emit('retry')"
     >
       Try again

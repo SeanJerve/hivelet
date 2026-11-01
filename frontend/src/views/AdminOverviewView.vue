@@ -791,7 +791,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       768px nothing changes.
     -->
     <TransitionGroup v-else-if="!isHistoricalMode" tag="div" name="tile" class="ws-reveal grid grid-cols-2 gap-x-6 gap-y-8 md:gap-x-10 md:gap-y-10 xl:grid-cols-12">
-      <!-- What needs her action. The only dark tile on the screen. -->
+      <!-- What needs her action, first and largest. -->
       <OverviewTile v-if="attentionShown" key="attention" title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 md:col-span-2', tileSpans.attention, phoneSpan]">
         <!--
           On a phone each half of this tile is one link, the count and its words
@@ -802,7 +802,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         <div class="flex flex-1 flex-col gap-3 md:hidden">
           <UnavailableNote
             v-if="pendingPaymentsFailed"
-            dark
             message="Payments to verify could not be loaded."
             @retry="refreshAllData"
           />
@@ -816,7 +815,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           </router-link>
           <UnavailableNote
             v-if="maintenanceTicketsFetchFailed"
-            dark
             class="mt-auto"
             message="Repairs could not be loaded."
             @retry="refreshAllData"
@@ -832,7 +830,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
 
         <UnavailableNote
           v-if="pendingPaymentsFailed"
-          dark
           class="max-md:hidden"
           message="Payments to verify could not be loaded. Some may be waiting."
           @retry="refreshAllData"
@@ -874,7 +871,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         <div class="mt-auto border-t border-line pt-4 max-md:hidden">
           <UnavailableNote
             v-if="maintenanceTicketsFetchFailed"
-            dark
             message="Repairs could not be loaded. Some may be urgent."
             @retry="refreshAllData"
           />
@@ -1196,7 +1192,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     -->
     <div v-else class="ws-reveal grid gap-x-10 gap-y-8 md:grid-cols-2 xl:grid-cols-12">
       <OverviewTile :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
+        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
