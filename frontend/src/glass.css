@@ -169,15 +169,13 @@ header.ws-glass::before {
 .ws-modal-panel,
 dialog.ws-dialog,
 .ws-workspace aside.sticky,
-.pill-btn,
 .pill-btn-brand,
-.pill-btn-night,
-.chip {
+.pill-btn-night {
   border-color: transparent;
 }
 
 /* The rim of light, drawn so it can fade around the curve as a border cannot. */
-.bg-tile::after,
+.bg-tile:not([role='combobox'])::after,
 .ws-modal-panel::after,
 .ws-workspace aside.sticky::after {
   content: '';
@@ -317,19 +315,16 @@ header.ws-glass {
 }
 
 /*
- * Buttons and every pill-shaped control are mirror glass, after the iPhone's own controls: clear in
- * the middle, a sheen across the top, a thick bright edge that blurs what passes under it, as the
- * rim of a lens does. Each control sets only its --mirror-tint. Like the sections, the glass is on
- * layers and not the control, so nothing nested in one is trapped by it.
+ * The main action on a screen is mirror glass, after the iPhone's own controls: clear in the
+ * middle, a sheen across the top, a thick bright edge that blurs what passes under it, as the rim
+ * of a lens does. Each one sets only its --mirror-tint. Like the sections, the glass is on layers
+ * and not the control, so nothing nested in one is trapped by it. Neutral controls stay plain, so
+ * the glass marks what matters (Sean, 1 Nov 2026).
  */
-.pill-btn,
 .pill-btn-brand,
 .pill-btn-night,
 .pill-btn-light,
-.pill-btn-danger,
-.chip,
-button[role='combobox'],
-nav a.bg-brand-soft {
+.pill-btn-danger {
   --mirror-tint: rgb(255 255 255 / 0.34);
   --mirror-sheen: 0.34;
   isolation: isolate;
@@ -341,10 +336,10 @@ nav a.bg-brand-soft {
     0 1px 2px rgb(16 60 40 / 0.1),
     0 7px 16px -9px rgb(16 60 40 / 0.34);
 }
-:is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft):not(.absolute) {
+:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger):not(.absolute) {
   position: relative;
 }
-:is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft)::before {
+:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -366,7 +361,7 @@ nav a.bg-brand-soft {
     inset 0 -1.5px 1.5px rgb(255 255 255 / 0.3),
     inset 0 -7px 10px -7px rgb(0 0 0 / 0.14);
 }
-:is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft)::after {
+:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -409,11 +404,6 @@ nav a.bg-brand-soft {
   --mirror-tint: rgb(255 255 255 / 0.9);
   color: #0f1b15;
 }
-.chip[aria-pressed='true'] {
-  --mirror-tint: rgb(14 72 46 / 0.78);
-  --mirror-sheen: 0.2;
-  color: #ffffff;
-}
 @media (hover: hover) {
   .pill-btn-brand:hover:not(:disabled) {
     --mirror-tint: rgb(14 72 46 / 0.88);
@@ -423,14 +413,25 @@ nav a.bg-brand-soft {
     background-color: transparent;
   }
 }
-[data-theme='dark'] :is(.pill-btn, .chip, button[role='combobox'], nav a.bg-brand-soft) {
-  --mirror-tint: rgb(255 255 255 / 0.08);
-  --mirror-sheen: 0.14;
-}
-[data-theme='dark'] .pill-btn-brand,
-[data-theme='dark'] .chip[aria-pressed='true'] {
+[data-theme='dark'] .pill-btn-brand {
   --mirror-tint: rgb(94 192 141 / 0.3);
   color: #ffffff;
+}
+
+/* Neutral controls: an outline and nothing behind it. */
+.pill-btn,
+.chip:not([aria-pressed='true']),
+.bg-tile[role='combobox'] {
+  background-color: transparent;
+  border-color: rgb(23 96 63 / 0.26);
+}
+.bg-tile[role='combobox'] {
+  box-shadow: none;
+}
+[data-theme='dark'] .pill-btn,
+[data-theme='dark'] .chip:not([aria-pressed='true']),
+[data-theme='dark'] .bg-tile[role='combobox'] {
+  border-color: rgb(255 255 255 / 0.22);
 }
 
 /* A sent message in a conversation is tinted glass too. */
@@ -554,15 +555,14 @@ select,
   body::before {
     background: none;
   }
-  :is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft)::before,
-  :is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft)::after {
+  :is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger)::before,
+  :is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger)::after {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
   .pill-btn-brand {
     --mirror-tint: #17603f;
   }
-  .pill-btn,
   .pill-btn-light {
     --mirror-tint: #ffffff;
   }
