@@ -516,8 +516,10 @@ const rows = computed(() => {
 /** How to look at the same rows: flat and alphabetical, or split by cluster. */
 type ViewMode = 'list' | 'grouped';
 const viewMode = ref<ViewMode>('grouped');
+/** One line to a record, for scanning all of the tenants at once. */
+const density = ref<'comfortable' | 'compact'>('comfortable');
 // Kept for the tab (lib/savedFilters.ts).
-rememberFilters('tenants', { year: historyYear, month: historyMonth, status: statusFilter, order: tenantOrder, view: viewMode });
+rememberFilters('tenants', { year: historyYear, month: historyMonth, status: statusFilter, order: tenantOrder, view: viewMode, density });
 
 /**
  * The toolbar's switch and filters (components/ui/ListToolbar.vue, Sean,
@@ -934,7 +936,7 @@ async function handleOnboard() {
 </script>
 
 <template>
-  <div class="ws-focus space-y-6">
+  <div :class="['ws-focus space-y-6', density === 'compact' && 'ws-compact']">
     <!-- Page header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
@@ -988,7 +990,18 @@ async function handleOnboard() {
       search-label="Search tenants"
       :filters="tenantFilters"
       @apply="applyTenantFilters"
-    />
+    >
+      <template #end>
+        <button
+          type="button"
+          class="chip"
+          :aria-pressed="density === 'compact'"
+          @click="density = density === 'compact' ? 'comfortable' : 'compact'"
+        >
+          Compact
+        </button>
+      </template>
+    </ListToolbar>
 
     <TenantHistory
       v-if="showingHistory"

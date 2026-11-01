@@ -230,6 +230,10 @@ function spanClass(index: number) {
 
     <!-- What is narrowing the list, in as few words as it takes, and one tap
          back to everything. Only while something is. -->
+    <div v-if="$slots.end" class="flex justify-end">
+      <slot name="end" />
+    </div>
+
     <div v-if="summary && active.length" class="flex flex-wrap items-center gap-x-2 text-sm text-ink-soft">
       <p class="min-w-0">
         <span class="sr-only">Filtered to </span>{{ active.map((a) => a.label).join(' · ') }}
