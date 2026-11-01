@@ -588,7 +588,7 @@ function handleDeleteTicketPrompt() {
 
     <div v-if="isLoading" class="grid gap-4 xl:grid-cols-3" aria-busy="true">
       <span class="sr-only" role="status">Loading repair requests</span>
-      <div v-for="i in 3" :key="i" class="rounded-tile bg-tile p-6 flex flex-col gap-3">
+      <div v-for="i in 3" :key="i" class="flex flex-col gap-3 py-2">
         <Skeleton class-name="h-4 w-28 rounded-full" />
         <Skeleton class-name="h-16 w-full rounded-2xl" />
         <Skeleton class-name="h-16 w-full rounded-2xl" />
@@ -623,7 +623,10 @@ function handleDeleteTicketPrompt() {
         v-for="col in columns"
         :key="col.key"
         :aria-labelledby="`col-${col.key}`"
-        class="rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4 min-w-0"
+        :class="[
+          'flex min-w-0 flex-col gap-4',
+          col.key === 'open' && col.tickets.length ? 'self-start rounded-tile bg-tile p-5 sm:p-6' : 'py-2',
+        ]"
       >
         <header class="flex items-start justify-between gap-3">
           <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>
@@ -634,11 +637,11 @@ function handleDeleteTicketPrompt() {
 
         <p v-if="col.tickets.length === 0" class="py-4 text-sm text-ink-soft">Nothing here.</p>
 
-        <ul v-else class="flex flex-col gap-3">
+        <ul v-else class="flex flex-col divide-y divide-line">
           <li
             v-for="t in col.tickets"
             :key="t.id"
-            class="rounded-2xl border border-line p-4 flex flex-col gap-2.5"
+            class="flex flex-col gap-2.5 py-4 first:pt-0 last:pb-0"
           >
             <div class="flex items-start justify-between gap-3">
               <p class="text-base font-bold uppercase tracking-tight text-ink">

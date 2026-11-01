@@ -20,7 +20,7 @@ import Skeleton from '@/components/ui/Skeleton.vue';
       <Skeleton class-name="h-32 w-full rounded-tile" />
       <Skeleton class-name="hidden h-32 w-full rounded-tile lg:block" />
     </div>
-    <div class="space-y-3 rounded-tile bg-tile p-5">
+    <div class="space-y-3">
       <Skeleton class-name="h-10 w-full rounded-full" />
       <Skeleton v-for="n in 6" :key="n" class-name="h-14 w-full rounded-xl" />
     </div>

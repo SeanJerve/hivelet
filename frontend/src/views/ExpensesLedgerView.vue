@@ -1047,15 +1047,10 @@ async function handleEditExpense() {
         altogether" uses - the tone now does the work the size was being asked
         to do on its own, and the pair reads as one product. It also stops a
         seven-figure peso amount from running out of a third-width tile.
-
-        The rules inside are `white/10` and the quiet text `on-night-soft`,
-        which is the dark-tile idiom already in AdminOverviewView, not a new
-        colour.
       -->
-      <OverviewTile :title="`Spent, ${focus.label}`" tone="night" :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Spent, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
-          dark
           message="Expenses could not be loaded."
           @retry="fetchExpenses"
         />
@@ -1063,25 +1058,25 @@ async function handleEditExpense() {
         <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
         <template v-else>
           <p class="tabular text-3xl md:text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal, 2) }}</p>
-          <p class="text-sm leading-6 text-on-night-soft">
+          <p class="text-sm leading-6 text-ink-soft">
             {{ `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}
           </p>
           <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
                cards there, so the graphs below are on the first screen). -->
-          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-white/10 pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-white/10 md:pt-1">
+          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-on-night-soft">Utilities</dt>
+              <dt class="text-sm text-ink-soft">Utilities</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthUtilities, 2) }}</dd>
             </div>
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-on-night-soft">Repairs and cleaning</dt>
+              <dt class="text-sm text-ink-soft">Repairs and cleaning</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRepairs, 2) }}</dd>
             </div>
           </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it went, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Where it went, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.
@@ -1148,7 +1143,7 @@ async function handleEditExpense() {
     <span v-if="isLoading" class="sr-only" role="status">Loading the expense ledger</span>
     <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
 
-    <div v-else-if="groupedExpenses.length === 0" class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center">
+    <div v-else-if="groupedExpenses.length === 0" class="ws-reveal py-16 text-center">
       <p class="text-base font-semibold text-ink">
         <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
         <template v-else>Nothing matches</template>
@@ -1259,11 +1254,11 @@ async function handleEditExpense() {
             <p class="mt-0.5 text-xs text-ink-faint">{{ e.category }}</p>
 
             <div class="mt-2 flex items-center gap-2">
-              <ul class="flex min-w-0 flex-1 flex-wrap gap-1.5" :aria-label="`Where ${e.description} landed`">
+              <ul class="flex min-w-0 flex-1 flex-wrap gap-x-3 gap-y-1" :aria-label="`Where ${e.description} landed`">
                 <li
                   v-for="part in areaParts(e)"
                   :key="part.label"
-                  class="inline-flex items-center gap-1.5 rounded-full bg-well px-2.5 py-1 text-xs text-ink-soft"
+                  class="inline-flex items-center gap-1.5 text-xs text-ink-soft"
                 >
                   {{ part.label }}<span v-if="part.amount !== null" class="tabular font-semibold text-ink">{{ money(part.amount) }}</span>
                 </li>

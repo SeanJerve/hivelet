@@ -383,11 +383,11 @@ function applyRoomFilters(v: FilterDraft) {
           :id="`cluster-units-${domId(clusterName)}`"
           class="ws-reveal border-t border-line p-5 sm:p-6"
         >
-          <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="group flex flex-col justify-between rounded-2xl border border-line p-4"
+              class="group flex flex-col justify-between border-b border-line py-5 first:pt-0 last:border-b-0 sm:pr-8 sm:first:pt-5"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
@@ -403,7 +403,7 @@ function applyRoomFilters(v: FilterDraft) {
                 <!-- Label above value, and the name wraps: it was truncated at
                      170px, which cut off "+ 1 roommate", the part that sets the
                      water bill. -->
-                <dl class="mt-4 border-t border-line pt-3 text-sm">
+                <dl class="mt-3 text-sm">
                   <div class="min-w-0">
                     <dt class="text-xs text-ink-faint">Tenant</dt>
                     <dd class="mt-0.5 break-words font-medium text-ink">
@@ -460,7 +460,7 @@ function applyRoomFilters(v: FilterDraft) {
       -->
       <div
         v-if="filteredRooms.length === 0"
-        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
+        class="ws-reveal py-16 text-center"
       >
         <Search class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
         <p class="mt-3 text-base font-semibold text-ink">No unit matches</p>
@@ -535,7 +535,7 @@ function applyRoomFilters(v: FilterDraft) {
           <StatusPill v-if="u.status !== 'settled'" :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
         </div>
 
-        <dl class="mt-4 border-t border-line pt-3 text-sm">
+        <dl class="mt-3 text-sm">
           <div class="min-w-0">
             <dt class="text-xs text-ink-faint">Tenant</dt>
             <dd class="mt-0.5 break-words font-medium text-ink">

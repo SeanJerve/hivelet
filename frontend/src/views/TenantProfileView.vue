@@ -292,7 +292,7 @@ function handleReset() {
     <SkeletonCard v-if="loading" variant="list" :count="2" />
 
     <!-- No form at all on a failed read: see the catch in `fetchProfile`. -->
-    <div v-else-if="loadFailed" class="ws-reveal rounded-tile bg-tile p-5 sm:p-6">
+    <div v-else-if="loadFailed" class="ws-reveal">
       <UnavailableNote
         message="Your details could not be loaded. Nothing on file has changed."
         @retry="fetchProfile"
@@ -312,7 +312,7 @@ function handleReset() {
       <!-- Who you are here -->
       <!-- `bg-brand`, the colour of the same initials in the header button and the account
            menu above this page; it was the only `bg-night` one (audit 2026-10-09). -->
-      <div class="flex flex-col items-center gap-5 rounded-tile bg-tile p-5 text-center sm:flex-row sm:p-6 sm:text-left">
+      <div class="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
         <span
           class="grid size-20 shrink-0 place-items-center rounded-full bg-brand text-2xl font-semibold text-on-brand"
           aria-hidden="true"
@@ -352,8 +352,8 @@ function handleReset() {
       </div>
 
       <!-- What you can change -->
-      <form @submit.prevent="handleSave" class="overflow-hidden rounded-tile bg-tile">
-        <div class="space-y-6 p-5 sm:p-6">
+      <form @submit.prevent="handleSave">
+        <div class="space-y-6">
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div class="ws-field">
               <label for="full-name">Your name</label>
@@ -417,7 +417,7 @@ function handleReset() {
 
           </div>
 
-          <div class="border-t border-line pt-6">
+          <div class="pt-2">
             <h2 class="text-base font-semibold text-ink">If something happens to you</h2>
 
             <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -455,7 +455,7 @@ function handleReset() {
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-6">
           <p class="text-sm text-ink-soft">
             {{ writesUnavailable ? 'Saving needs a connection.' : isDirty ? 'Not saved yet.' : 'All saved.' }}
           </p>

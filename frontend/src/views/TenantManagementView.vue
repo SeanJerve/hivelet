@@ -1105,7 +1105,7 @@ async function handleOnboard() {
           </div>
         </div>
 
-        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-ink-soft">
           <span>{{ householdLabel(t) }}</span>
           <span class="text-line" aria-hidden="true">·</span>
           <span>Moved in {{ t.moveInDate }}</span>
@@ -1148,7 +1148,7 @@ async function handleOnboard() {
       -->
       <div
         v-if="groupedRows.length === 0"
-        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
+        class="ws-reveal py-16 text-center"
       >
         <p class="text-base font-semibold text-ink">Nobody matches</p>
         <p v-if="q" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
@@ -1276,12 +1276,12 @@ async function handleOnboard() {
         </div>
         </div>
 
-        <!-- The same residents, one tile each, on anything narrower. -->
-        <div class="space-y-3 xl:hidden">
+        <!-- The same residents, one block each, on anything narrower. -->
+        <div class="divide-y divide-line xl:hidden">
           <div
             v-for="t in visibleResidents(group.key, group.residents)"
             :key="t.id"
-            class="group rounded-2xl border border-line p-5"
+            class="group py-4 first:pt-0"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
@@ -1294,7 +1294,7 @@ async function handleOnboard() {
               </div>
             </div>
 
-            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
+            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-ink-soft">
               <span>{{ householdLabel(t) }}</span>
               <span class="text-line" aria-hidden="true">·</span>
               <span>Moved in {{ t.moveInDate }}</span>

@@ -25,8 +25,11 @@ skills, and the pre-redesign audit `docs/OVERVIEW_AUDIT_2026-09-17.md`.
    - The landlady's first question is what needs her action: payments to verify, urgent repairs.
    - The resident's first question is what they owe and how to pay.
    - Monitoring comes after. On a phone, the source order is the priority order.
-2. **One loud tile per screen.** `night` or `brand` marks the tile that asks for action. A second
-   dark tile is allowed only for a second, different call to action.
+2. **A box means this needs you.** `night` or `brand`, and the payments to verify and repairs To
+   dispatch, are boxed. Anything that is only information sits on the page: stats, charts, summaries
+   and the rows inside a list. Tables keep their card, and on a phone their rows are blocks with a
+   rule between, never one card per row. The main action is mirror glass; neutral buttons and
+   dropdowns are plain outlines, so the glass marks what matters (Sean, 1 Nov 2026).
 3. **Never present an absence as a fact.** A failed load, a month not yet entered, and a real zero
    are three different things, drawn three different ways (section 5). `HANDOFF_TO_DESIGN.md`
    section 4 still binds every screen.

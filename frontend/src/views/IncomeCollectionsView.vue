@@ -1245,10 +1245,9 @@ const isDownloadOpen = ref(false);
       zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not entered yet" opened the page).
     -->
     <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${focus.label}`" tone="night" :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Received, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
-          dark
           message="The collections could not be loaded."
           @retry="fetchIncome"
         />
@@ -1258,18 +1257,18 @@ const isDownloadOpen = ref(false);
         <template v-else>
           <!-- Rent plus water, the Remitted column's figure, for the one month. -->
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater) }}</p>
-          <p class="text-sm leading-6 text-on-night-soft">
+          <p class="text-sm leading-6 text-ink-soft">
             {{ `From ${monthRows.length} ${monthRows.length === 1 ? 'payment' : 'payments'}` }}
           </p>
           <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
                cards there, so the graphs below are on the first screen). -->
-          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-white/10 pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-white/10 md:pt-1">
+          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-on-night-soft">Rent</dt>
+              <dt class="text-sm text-ink-soft">Rent</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRent) }}</dd>
             </div>
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-on-night-soft">Water</dt>
+              <dt class="text-sm text-ink-soft">Water</dt>
               <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthWater) }}</dd>
             </div>
             <!-- BR-035: the label only; a system-computed figure, half of each row's Rent Amount. Boarding
@@ -1278,15 +1277,15 @@ const isDownloadOpen = ref(false);
               <!-- The section name sits under the label beside it from 768px, and under the figure on a
                    phone, so the three figures in a row stay level. -->
               <!-- Lighter than Rent and Water: those two make the total; this is inside Rent (22 Oct 2026). -->
-              <dt class="text-sm text-on-night-soft">50% Share <span class="hidden text-xs md:block">Half of Boarding House rent</span></dt>
-              <dd class="tabular text-base text-on-night-soft md:text-lg">{{ peso(monthShare) }}</dd>
-              <span class="text-xs text-on-night-soft md:hidden">Half of Boarding House rent</span>
+              <dt class="text-sm text-ink-soft">50% Share <span class="hidden text-xs md:block">Half of Boarding House rent</span></dt>
+              <dd class="tabular text-base text-ink-soft md:text-lg">{{ peso(monthShare) }}</dd>
+              <span class="text-xs text-ink-soft md:hidden">Half of Boarding House rent</span>
             </div>
           </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 max-md:p-4 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.
@@ -1342,7 +1341,7 @@ const isDownloadOpen = ref(false);
         v-if="rows.length > 0 && showMonthChart"
         id="income-by-month"
         :title="`Income by month, ${periodWord}`"
-        class="scroll-mt-24 max-md:gap-3 max-md:p-4 xl:col-span-12"
+        class="scroll-mt-24 max-md:gap-3 xl:col-span-12"
       >
         <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short />
       </OverviewTile>
@@ -1434,7 +1433,7 @@ const isDownloadOpen = ref(false);
         />
       </OverviewTile>
 
-      <OverviewTile v-else-if="pendingPayments.length === 0" tone="soft" class="ws-reveal" title="Payments to verify">
+      <OverviewTile v-else-if="pendingPayments.length === 0" class="ws-reveal" title="Payments to verify">
         <p class="text-2xl font-semibold tracking-tight">Nothing is waiting</p>
       </OverviewTile>
 
@@ -1549,7 +1548,7 @@ const isDownloadOpen = ref(false);
       -->
       <div
         v-if="displayGroups.length === 0"
-        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
+        class="ws-reveal py-16 text-center"
       >
         <p class="text-base font-semibold text-ink">Nothing matches</p>
         <!-- The sentence the comment above promises, as Tenants and Rooms and rates

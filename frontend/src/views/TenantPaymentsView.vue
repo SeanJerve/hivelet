@@ -868,7 +868,7 @@ function refreshAll() {
       </p>
     </OverviewTile>
 
-    <OverviewTile v-else-if="outstandingBills.length === 0" tone="soft" class="ws-reveal" title="Bills">
+    <OverviewTile v-else-if="outstandingBills.length === 0" class="ws-reveal" title="Bills">
       <p class="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Nothing is due</p>
       <!-- This used to promise "your next monthly statement will be issued on the
            5th". There is no scheduled bill generator and there is deliberately not
@@ -1028,7 +1028,6 @@ function refreshAll() {
       <RecordTable
         v-else
         :rows="filteredPayments"
-        flat
         :caption="`Your payments in ${selectedYear}`"
         noun="payment"
         :page-size="8"

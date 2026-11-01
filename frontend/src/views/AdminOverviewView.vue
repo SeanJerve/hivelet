@@ -761,7 +761,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <div
         v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8', 'md:col-span-2 xl:col-span-4']"
         :key="i"
-        :class="['rounded-tile bg-tile p-6 flex flex-col gap-4', span]"
+        :class="['flex flex-col gap-4 py-2', span]"
       >
         <Skeleton class-name="h-4 w-32 rounded-full" />
         <Skeleton class-name="h-12 w-40 rounded-2xl" />
@@ -909,7 +909,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         phone-title="Income"
         to="/admin/income#income-records"
         to-label="Open the income ledger"
-        :class="['max-md:order-1 max-md:gap-3 max-md:p-4', tileSpans.month, phoneSpan]"
+        :class="['max-md:order-1 max-md:gap-3', tileSpans.month, phoneSpan]"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -939,7 +939,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 xl:col-span-5">
+      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 xl:col-span-5">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -990,7 +990,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         :title="`Income by month, ${CURRENT_YEAR}`"
         to="/admin/income#income-by-month"
         to-label="Open the income ledger"
-        class="col-span-2 max-md:order-3 max-md:gap-3 max-md:p-4 xl:col-span-7"
+        class="col-span-2 max-md:order-3 max-md:gap-3 xl:col-span-7"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -1195,19 +1195,19 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       lines, no sentences. Each money card's arrow opens that year's ledger.
     -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <OverviewTile tone="night" :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
+      <OverviewTile :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
+        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
-          <p class="text-sm text-on-night-soft">From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}</p>
-          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1">
+          <p class="text-sm text-ink-soft">From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}</p>
+          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-on-night-soft">Rent</dt>
+              <dt class="text-sm text-ink-soft">Rent</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalRent) }}</dd>
             </div>
             <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-on-night-soft">Water</dt>
+              <dt class="text-sm text-ink-soft">Water</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalWater) }}</dd>
             </div>
             <!-- BR-035: the label only. Its rows are named under it: only the Boarding House section of
@@ -1215,9 +1215,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                  (Sean, 21 Oct 2026: "why is 50% share 901..."). -->
             <!-- Set apart and lighter than Rent and Water (Sean, 22 Oct 2026: "at first glance it doesn't add
                  up"): Rent + Water is the total above; this line is inside Rent, never added to it. -->
-            <div class="mt-2 flex items-baseline justify-between gap-3 border-t border-dashed border-white/20 py-2.5">
-              <dt class="text-sm text-on-night-soft">50% Share <span class="block text-xs text-on-night-soft">Half of Boarding House rent</span></dt>
-              <dd class="tabular text-lg text-on-night-soft">{{ peso(historicalAnnualHalfOfRentShare) }}</dd>
+            <div class="mt-2 flex items-baseline justify-between gap-3 border-t border-dashed border-line py-2.5">
+              <dt class="text-sm text-ink-soft">50% Share <span class="block text-xs text-ink-soft">Half of Boarding House rent</span></dt>
+              <dd class="tabular text-lg text-ink-soft">{{ peso(historicalAnnualHalfOfRentShare) }}</dd>
             </div>
           </dl>
         </template>

@@ -615,7 +615,7 @@ const statusTone = computed(() => {
       <div
         v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-12']"
         :key="i"
-        :class="['rounded-tile bg-tile p-6 flex flex-col gap-4 min-h-64', span]"
+        :class="['flex flex-col gap-4 min-h-64 py-2', span]"
       >
         <Skeleton class-name="h-4 w-28 rounded-full" />
         <Skeleton class-name="h-12 w-40 rounded-2xl" />

@@ -780,14 +780,13 @@ function formatDateTime(iso: string) {
         </h1>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-8 items-stretch">
         <!-- Submit Ticket Form -->
-        <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-5">
-          <div class="border-b border-line p-5 sm:p-6">
+        <div class="flex h-full min-w-0 flex-col lg:col-span-5">
+          <div class="pb-4">
             <h2 class="text-base font-semibold text-ink">Report it</h2>
           </div>
 
-          <!-- `p-5 sm:p-6`, matching the header strip directly above it. -->
           <!--
             `novalidate` (audit 2026-10-01): the browser's own "Please fill out
             this field" bubble answered an empty title before `handleTicketSubmit`
@@ -795,7 +794,7 @@ function formatDateTime(iso: string) {
             request appeared to do nothing. The page's own check covers both
             fields, in its own words, the way `/inquire` already does.
           -->
-          <form novalidate @submit.prevent="handleTicketSubmit" class="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+          <form novalidate @submit.prevent="handleTicketSubmit" class="space-y-4 flex-1 flex flex-col justify-between">
             <div class="space-y-4">
               <!-- `tabindex` and `scroll-mt-24`: `showTicketError` focuses it and
                    scrolls it clear of the sticky 64px header. -->
@@ -948,17 +947,10 @@ function formatDateTime(iso: string) {
         </div>
 
         <!-- Ticket Tracker (Matching Admin Table Style) -->
-        <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-7">
-          <!--
-            `bg-canvas` used to sit here, which painted this strip a visibly
-            different grey-green from "Report it" beside it - a plain white
-            `bg-tile` card with just a `border-b` for its own header. Same
-            border-only treatment here now, so the two panels read as one pair
-            rather than one looking finished and the other looking like a draft.
-          -->
+        <div class="flex h-full min-w-0 flex-col lg:col-span-7">
           <!-- Same shape and padding as "Report it", so the two header strips
                line up side by side at `lg`. -->
-          <div class="border-b border-line p-5 sm:p-6">
+          <div class="pb-4">
             <h2 class="text-base font-semibold text-ink">Your requests</h2>
             <!-- A count computed from a list that failed to load is a claim, not
                  an absence. It read 0 out of a dropped request. -->
@@ -972,7 +964,7 @@ function formatDateTime(iso: string) {
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it
                holding which requests to show. -->
-          <div class="border-b border-line px-5 py-4 sm:px-6">
+          <div class="pb-4">
             <ListToolbar
               v-model:search="searchQuery"
               search-label="Search your requests"
@@ -992,12 +984,8 @@ function formatDateTime(iso: string) {
             page, and neither tells you which one it is about to do. At
             `lg` and up the two panels sit side by side and the cap is what
             keeps them the same height, so it stays there.
-
-            `p-5 sm:p-6` rather than a flat `p-6`, matching `OverviewTile` and
-            the "Report it" header above it; a flat 24px gutter on a 375px
-            screen spends 13% of the width on padding.
           -->
-          <div class="p-5 sm:p-6 flex-1 lg:overflow-y-auto lg:max-h-[580px]">
+          <div class="flex-1 lg:overflow-y-auto lg:max-h-[580px]">
             <div v-if="loadingTickets" class="space-y-4">
               <SkeletonCard variant="list" :count="2" />
             </div>
@@ -1036,11 +1024,11 @@ function formatDateTime(iso: string) {
               </p>
             </div>
 
-            <div v-else class="space-y-3">
+            <div v-else class="divide-y divide-line">
               <article
                 v-for="(ticket, i) in filteredTickets"
                 :key="ticket.id"
-                class="list-reveal-item border border-line rounded-tile overflow-hidden hover:border-brand/40 hover:shadow-xs transition-[border-color,box-shadow] duration-150 ease-[var(--ease-out)] bg-tile"
+                class="list-reveal-item"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
                 <!--
@@ -1060,7 +1048,7 @@ function formatDateTime(iso: string) {
                   @click="toggleTicketExpanded(ticket.id)"
                   @keydown.enter.prevent="toggleTicketExpanded(ticket.id)"
                   @keydown.space.prevent="toggleTicketExpanded(ticket.id)"
-                  class="press-plate px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-hover select-none group"
+                  class="press-plate py-3.5 flex items-start justify-between gap-4 cursor-pointer hover:bg-hover select-none group"
                 >
                   <div class="min-w-0">
                     <!-- break-words: the resident's own free text from
@@ -1116,7 +1104,7 @@ function formatDateTime(iso: string) {
                 <!-- Collapsible Body & Footer -->
                 <div :id="`ticket-body-${ticket.id}`" v-show="isTicketExpanded(ticket.id)" class="ws-reveal">
                   <!-- Body: description -->
-                  <div class="px-5 py-3.5 bg-well">
+                  <div class="pb-3.5">
                     <!-- break-words: same free-text overflow risk as the title above. -->
                     <p class="text-sm text-ink-soft leading-6 break-words">{{ ticket.description }}</p>
 
@@ -1159,7 +1147,7 @@ function formatDateTime(iso: string) {
                     other, and from 28rem they sit at the end of the pills as before.
                   -->
                   <div
-                    class="@container px-5 py-3 border-t border-line bg-tile"
+                    class="@container pb-3.5"
                   >
                   <div class="flex flex-wrap items-center gap-2">
                     <StatusPill :tone="priorityTone(ticket.priority)">
