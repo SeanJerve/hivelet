@@ -1481,7 +1481,7 @@ async function handleOnboard() {
           </div>
 
           <div class="ws-actions border-t border-line pt-5">
-            <button type="button" class="pill-btn sm:w-44" @click="editModalTenant = null">Cancel</button>
+            <button type="button" class="pill-btn-quiet sm:w-44" @click="editModalTenant = null">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand sm:w-44">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <Check v-else class="size-4" aria-hidden="true" />
@@ -1696,7 +1696,7 @@ async function handleOnboard() {
           </p>
 
           <div class="ws-actions border-t border-line pt-5 col-span-2">
-            <button type="button" class="pill-btn" @click="isOnboardModalOpen = false">Cancel</button>
+            <button type="button" class="pill-btn-quiet" @click="isOnboardModalOpen = false">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <span>Move them in</span>

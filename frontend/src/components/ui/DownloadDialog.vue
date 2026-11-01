@@ -182,7 +182,7 @@ onBeforeUnmount(() => controller?.abort());
     <p v-if="error" :id="errorId" role="alert" class="ws-reveal text-sm leading-6 text-overdue">{{ error }}</p>
 
     <template #actions>
-      <button type="button" class="pill-btn" @click="emit('close')">Cancel</button>
+      <button type="button" class="pill-btn-quiet" @click="emit('close')">Cancel</button>
       <button
         type="button"
         class="pill-btn-brand"

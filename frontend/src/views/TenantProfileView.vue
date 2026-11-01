@@ -460,7 +460,7 @@ function handleReset() {
             {{ writesUnavailable ? 'Saving needs a connection.' : isDirty ? 'Not saved yet.' : 'All saved.' }}
           </p>
           <div class="flex items-center gap-2">
-            <button type="button" :disabled="!isDirty || saving || loadFailed" class="pill-btn" @click="handleReset">
+            <button type="button" :disabled="!isDirty || saving || loadFailed" class="pill-btn-quiet" @click="handleReset">
               <RotateCcw class="size-3.5" aria-hidden="true" />
               <span>Undo changes</span>
             </button>

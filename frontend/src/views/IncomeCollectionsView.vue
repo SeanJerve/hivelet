@@ -2105,7 +2105,7 @@ const isDownloadOpen = ref(false);
               <Trash2 class="size-4" aria-hidden="true" />
               <span>Delete payment</span>
             </button>
-            <button type="button" @click="isEditOpen = false" class="pill-btn">Cancel</button>
+            <button type="button" @click="isEditOpen = false" class="pill-btn-quiet">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <Check v-else class="size-4" aria-hidden="true" />

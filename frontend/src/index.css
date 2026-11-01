@@ -1021,7 +1021,6 @@ html:has(> body[style*='overflow: hidden']) {
   }
   @media (hover: hover) {
     .pill-btn-quiet:hover:not(:disabled) {
-      background-color: var(--tile);
       color: var(--ink);
     }
   }
@@ -1108,7 +1107,7 @@ html:has(> body[style*='overflow: hidden']) {
   }
   /* The word and its icon, no outline or fill (Sean, 1 Nov 2026): what cannot be undone should not
      be the most inviting thing beside the safe choice. The 44px tap area stays; it is the look
-     that goes. Hover darkens the word and underlines it rather than filling the shape. */
+     that goes. It answers with a smaller bump than an icon, at the end of this file. */
   .pill-btn-danger-quiet {
     background-color: transparent;
     color: var(--overdue);
@@ -1118,8 +1117,6 @@ html:has(> body[style*='overflow: hidden']) {
   @media (hover: hover) {
     .pill-btn-danger-quiet:hover:not(:disabled) {
       color: var(--overdue-strong);
-      text-decoration: underline;
-      text-underline-offset: 0.2em;
     }
   }
   .pill-btn-danger:disabled,
@@ -1245,7 +1242,7 @@ html:has(> body[style*='overflow: hidden']) {
   }
   /* 10px a side instead of 18 on a phone: it is what lets "Save changes" and
      "Change password" share a 375px row as halves instead of each taking one. */
-  .ws-actions > :is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-danger, .pill-btn-danger-quiet) {
+  .ws-actions > :is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-danger, .pill-btn-danger-quiet, .pill-btn-quiet) {
     padding-inline: 0.625rem;
   }
   .ws-actions > .ws-action-apart {
@@ -1262,7 +1259,7 @@ html:has(> body[style*='overflow: hidden']) {
       flex: 0 0 auto;
       min-width: 7.5rem;
     }
-    .ws-actions > :is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-danger, .pill-btn-danger-quiet) {
+    .ws-actions > :is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-danger, .pill-btn-danger-quiet, .pill-btn-quiet) {
       padding-inline: 1.125rem;
     }
     .ws-actions > .ws-action-apart {
@@ -2698,7 +2695,9 @@ dialog.ws-dialog[open]::backdrop {
  */
 .icon-btn,
 .icon-btn-plain,
-.icon-bump {
+.icon-bump,
+.pill-btn-quiet,
+.pill-btn-danger-quiet {
   transition:
     transform 0.26s var(--ease-bump),
     color 0.15s var(--ease-out);
@@ -2709,6 +2708,11 @@ dialog.ws-dialog[open]::backdrop {
   .icon-bump:hover:not(:disabled) {
     transform: scale(1.12);
   }
+  /* A word is wider than an icon, so the same scale would move its ends much further. */
+  .pill-btn-quiet:hover:not(:disabled),
+  .pill-btn-danger-quiet:hover:not(:disabled) {
+    transform: scale(1.05);
+  }
 }
 .icon-btn:active:not(:disabled),
 .icon-btn-plain:active:not(:disabled),
@@ -2716,12 +2720,23 @@ dialog.ws-dialog[open]::backdrop {
   transform: scale(1.18);
   transition-duration: 0.07s;
 }
+.pill-btn-quiet:active:not(:disabled),
+.pill-btn-danger-quiet:active:not(:disabled) {
+  transform: scale(1.08);
+  transition-duration: 0.07s;
+}
 @media (prefers-reduced-motion: reduce) {
   .icon-btn,
   .icon-btn-plain,
-  .icon-bump {
+  .icon-bump,
+  .pill-btn-quiet,
+  .pill-btn-danger-quiet {
     transition: color 0.15s var(--ease-out);
   }
+  .pill-btn-quiet:hover:not(:disabled),
+  .pill-btn-quiet:active:not(:disabled),
+  .pill-btn-danger-quiet:hover:not(:disabled),
+  .pill-btn-danger-quiet:active:not(:disabled),
   .icon-btn:hover:not(:disabled),
   .icon-btn-plain:hover:not(:disabled),
   .icon-bump:hover:not(:disabled),

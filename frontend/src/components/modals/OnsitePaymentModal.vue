@@ -1044,14 +1044,14 @@ function triggerRecord() {
 
     <template v-if="recorded" #actions>
       <button type="button" class="pill-btn" @click="recordAnother">Record another</button>
-      <button type="button" class="pill-btn" @click="closeModal">Done</button>
+      <button type="button" class="pill-btn-quiet" @click="closeModal">Done</button>
       <button type="button" class="pill-btn-brand" @click="seeInLedger">
         See it in Monthly Income
         <ArrowUpRight class="size-4" aria-hidden="true" />
       </button>
     </template>
     <template v-else #actions>
-      <button type="button" class="pill-btn" @click="closeModal">Cancel</button>
+      <button type="button" class="pill-btn-quiet" @click="closeModal">Cancel</button>
       <button type="submit" form="onsite-payment-form" :disabled="isSubmitting" class="pill-btn-brand">
         <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
         <Check v-else class="size-4" aria-hidden="true" />
@@ -1171,7 +1171,7 @@ function triggerRecord() {
       </dl>
 
       <template #actions>
-        <button type="button" class="pill-btn" @click="isConfirmOpen = false">Go back</button>
+        <button type="button" class="pill-btn-quiet" @click="isConfirmOpen = false">Go back</button>
         <button type="button" class="pill-btn-brand" @click="handleConfirmAccept">
           {{ overlappingPayments.length > 0 || waitingPayments.length > 0 || overlapCheckFailed ? 'Record it anyway' : 'Record it' }}
         </button>

@@ -4,6 +4,7 @@
  * happen rather than "Confirm", and a destructive one is styled as destructive.
  */
 import { ref, computed, useId } from 'vue';
+import { DoorOpen, Trash2, X } from 'lucide-vue-next';
 import WsModal from '@/components/ui/WsModal.vue';
 
 const props = withDefaults(
@@ -47,6 +48,14 @@ const phraseSatisfied = computed(() => {
 });
 
 const confirmDisabled = computed(() => props.busy || !phraseSatisfied.value);
+
+/** A destructive confirm is its word and an icon, as every red action is. */
+const destructiveIcon = computed(() => {
+  if (!props.destructive) return null;
+  if (/^(delete|remove)/i.test(props.confirmLabel)) return Trash2;
+  if (/^move/i.test(props.confirmLabel)) return DoorOpen;
+  return X;
+});
 </script>
 
 <template>
@@ -93,13 +102,14 @@ const confirmDisabled = computed(() => props.busy || !phraseSatisfied.value);
     </div>
 
     <template #actions>
-      <button type="button" class="pill-btn" :disabled="busy" @click="emit('cancel')">{{ cancelLabel }}</button>
+      <button type="button" class="pill-btn-quiet" :disabled="busy" @click="emit('cancel')">{{ cancelLabel }}</button>
       <button
         type="button"
         :class="destructive ? 'pill-btn-danger-quiet' : 'pill-btn-brand'"
         :disabled="confirmDisabled"
         @click="emit('confirm')"
       >
+        <component :is="destructiveIcon" v-if="destructiveIcon" class="size-4" aria-hidden="true" />
         {{ confirmLabel }}
       </button>
     </template>

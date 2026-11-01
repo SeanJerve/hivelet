@@ -1177,7 +1177,7 @@ function formatDateTime(iso: string) {
                     <button
                       v-if="canCancel(ticket) && !writesUnavailable"
                       type="button"
-                      class="pill-btn pill-btn-compact"
+                      class="pill-btn-quiet pill-btn-compact"
                       @click.stop="askCancel(ticket)"
                     >
                       Cancel request

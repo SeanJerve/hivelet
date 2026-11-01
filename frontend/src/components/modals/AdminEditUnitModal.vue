@@ -522,7 +522,7 @@ async function handleSave() {
       </form>
 
     <template #actions>
-      <button type="button" class="pill-btn" @click="closeModal">Cancel</button>
+      <button type="button" class="pill-btn-quiet" @click="closeModal">Cancel</button>
       <button type="submit" form="edit-unit-form" :disabled="isSaving" class="pill-btn-brand">
         <Loader2 v-if="isSaving" class="size-4 animate-spin" aria-hidden="true" />
         <Check v-else class="size-4" aria-hidden="true" />

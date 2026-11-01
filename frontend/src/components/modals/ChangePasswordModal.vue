@@ -499,10 +499,10 @@ async function submit() {
     </form>
 
     <template #actions>
-      <button v-if="!mandatory" type="button" class="pill-btn" :disabled="isSubmitting" @click="close">
+      <button v-if="!mandatory" type="button" class="pill-btn-quiet" :disabled="isSubmitting" @click="close">
         Cancel
       </button>
-      <button v-else type="button" class="pill-btn" :disabled="isSubmitting" @click="signOutInstead">
+      <button v-else type="button" class="pill-btn-quiet" :disabled="isSubmitting" @click="signOutInstead">
         Sign out
       </button>
       <button

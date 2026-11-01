@@ -315,7 +315,7 @@ async function submit() {
     </form>
 
     <template #actions>
-      <button type="button" class="pill-btn" :disabled="isSubmitting" @click="close">Cancel</button>
+      <button type="button" class="pill-btn-quiet" :disabled="isSubmitting" @click="close">Cancel</button>
       <button type="submit" form="change-sign-in-form" class="pill-btn-brand" :disabled="!canSubmit">
         <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
         {{ isSubmitting ? 'Changing' : 'Save changes' }}

@@ -109,7 +109,7 @@ async function save() {
     </form>
 
     <template #actions>
-      <button type="button" class="pill-btn" :disabled="busy" @click="emit('close')">Cancel</button>
+      <button type="button" class="pill-btn-quiet" :disabled="busy" @click="emit('close')">Cancel</button>
       <button type="submit" form="new-expense-kind" class="pill-btn-brand disabled:opacity-50" :disabled="busy">
         <Loader2 v-if="busy" class="size-4 animate-spin" aria-hidden="true" />
         <span>Add kind</span>

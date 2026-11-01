@@ -85,6 +85,18 @@ const confirmMessage = ref('');
 const confirmAction = ref<(() => void) | null>(null);
 const confirmLabel = ref('Close inquiry');
 const confirmDestructive = ref(false);
+/**
+ * What is about to go, shown in the dialog itself (Sean, 1 Nov 2026): the person and every word of
+ * the conversation, so she checks the thing rather than a sentence about it. Copied when the
+ * dialog opens, so a reply arriving meanwhile cannot change what she confirmed.
+ */
+interface DeletePreview {
+  name: string;
+  detail: string;
+  date: string;
+  messages: MessageBubble[];
+}
+const deletePreview = ref<DeletePreview | null>(null);
 
 function showConfirm(title: string, message: string, action: () => void, label = 'Close inquiry', destructive = false) {
   confirmTitle.value = title;
@@ -92,6 +104,7 @@ function showConfirm(title: string, message: string, action: () => void, label =
   confirmAction.value = action;
   confirmLabel.value = label;
   confirmDestructive.value = destructive;
+  deletePreview.value = null;
   isConfirmOpen.value = true;
 }
 
@@ -105,7 +118,7 @@ function handleDeleteInquiry() {
   if (!inq) return;
   showConfirm(
     'Delete this inquiry?',
-    `${inq.name}, unit ${inq.unit.toUpperCase()}.\n\nThe inquiry and its conversation are removed for good.`,
+    '',
     async () => {
       isSubmitting.value = true;
       try {
@@ -121,6 +134,12 @@ function handleDeleteInquiry() {
     'Delete inquiry',
     true
   );
+  deletePreview.value = {
+    name: inq.name,
+    detail: [`Unit ${inq.unit.toUpperCase()}`, showPhone(inq.phone)].filter(Boolean).join(', '),
+    date: inq.date,
+    messages: [...activeMessages.value],
+  };
 }
 
 function handleConfirmAccept() {
@@ -651,7 +670,7 @@ async function handleSendReply() {
               <template v-if="isLeadOpen(activeInquiry.status)">
                 <button
                   type="button"
-                  class="pill-btn max-xl:flex-1"
+                  class="pill-btn-quiet max-xl:flex-1"
                   :disabled="isSubmitting || writesUnavailable"
                   :title="writesUnavailable ? 'Needs a connection' : undefined"
                   @click="handleCloseLead"
@@ -777,7 +796,37 @@ async function handleSendReply() {
       :destructive="confirmDestructive"
       @cancel="isConfirmOpen = false"
       @confirm="handleConfirmAccept"
-    />
+    >
+      <template v-if="deletePreview">
+        <div class="overflow-hidden rounded-2xl bg-well">
+          <div class="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-semibold text-ink">{{ deletePreview.name }}</p>
+              <p class="truncate text-xs text-ink-soft">{{ deletePreview.detail }}</p>
+            </div>
+            <span v-if="deletePreview.date" class="shrink-0 text-xs text-ink-faint">{{ deletePreview.date }}</span>
+          </div>
+          <ul class="max-h-52 space-y-3 overflow-y-auto overscroll-contain p-4">
+            <li
+              v-for="m in deletePreview.messages"
+              :key="m.id"
+              :class="['flex flex-col', m.from === 'me' ? 'items-end' : 'items-start']"
+            >
+              <p class="mb-0.5 px-1 text-xs text-ink-faint">{{ m.author }}</p>
+              <p
+                :class="[
+                  'max-w-[85%] break-words rounded-2xl px-3 py-2 text-sm leading-5',
+                  m.from === 'me' ? 'bg-brand text-on-brand' : 'bg-tile text-ink',
+                ]"
+              >
+                {{ m.text }}
+              </p>
+            </li>
+          </ul>
+        </div>
+        <p class="mt-3 text-sm text-ink-soft">This can't be undone.</p>
+      </template>
+    </ConfirmDialog>
   </div>
 </template>
 

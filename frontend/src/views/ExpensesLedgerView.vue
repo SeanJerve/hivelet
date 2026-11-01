@@ -1462,7 +1462,7 @@ async function handleEditExpense() {
           <!-- `.ws-actions` (index.css; Sean, 2026-10-01): equal halves on a
                phone, right-aligned from 640px, one height. -->
           <div class="ws-actions mt-4 pt-4 border-t border-line">
-            <button type="button" @click="isAddOpen = false" class="pill-btn">Cancel</button>
+            <button type="button" @click="isAddOpen = false" class="pill-btn-quiet">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand disabled:opacity-50">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <span>{{ formEntries.length === 1 ? 'Save expense' : `Save ${formEntries.length} expenses` }}</span>
@@ -1599,7 +1599,7 @@ async function handleEditExpense() {
               <Trash2 class="size-4" aria-hidden="true" />
               <span>Delete expense</span>
             </button>
-            <button type="button" @click="isEditOpen = false" class="pill-btn">Cancel</button>
+            <button type="button" @click="isEditOpen = false" class="pill-btn-quiet">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand disabled:opacity-50">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <span>Save changes</span>

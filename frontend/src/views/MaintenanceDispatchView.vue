@@ -729,7 +729,7 @@ function handleDeleteTicketPrompt() {
         </template>
       </form>
       <template #actions>
-        <button type="button" class="pill-btn" :disabled="isSubmitting" @click="isLogOpen = false">Cancel</button>
+        <button type="button" class="pill-btn-quiet" :disabled="isSubmitting" @click="isLogOpen = false">Cancel</button>
         <button
           type="submit"
           form="log-repair-form"
@@ -962,7 +962,7 @@ function handleDeleteTicketPrompt() {
               <Trash2 class="size-4" aria-hidden="true" />
               <span>Delete repair</span>
             </button>
-            <button type="button" @click="isEditModalOpen = false" class="pill-btn">Cancel</button>
+            <button type="button" @click="isEditModalOpen = false" class="pill-btn-quiet">Cancel</button>
             <button type="submit" :disabled="isSubmitting || writesUnavailable" :title="writesUnavailable ? 'Needs a connection' : undefined" class="pill-btn-brand">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
               <Check v-else class="size-4" aria-hidden="true" />

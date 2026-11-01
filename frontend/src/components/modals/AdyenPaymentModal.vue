@@ -495,7 +495,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
         <ShieldCheck class="size-4 text-brand" aria-hidden="true" />
         Payment details stay with Adyen
       </p>
-      <button type="button" class="pill-btn" @click="emit('close')">
+      <button type="button" class="pill-btn-quiet" @click="emit('close')">
         {{ isCompleted ? 'Done' : errorMessage ? 'Close' : 'Cancel' }}
       </button>
     </template>
