@@ -562,7 +562,7 @@ async function handleSendReply() {
         ref="detailPanel"
         :class="[
           'ws-reveal flex scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile lg:min-h-[550px] xl:col-span-7 2xl:col-span-8',
-          'max-lg:fixed max-lg:inset-0 max-lg:z-[45] max-lg:rounded-none max-lg:!shadow-none',
+          'max-lg:fixed max-lg:inset-0 max-lg:z-[45] max-lg:rounded-none',
           conversationOpen ? 'chat-opening' : 'max-xl:hidden',
         ]"
         @keydown.esc="closeConversation"
