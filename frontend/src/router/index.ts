@@ -231,6 +231,13 @@ router.beforeEach(async (to) => {
     }
   }
 
+  // Inquiring is for visitors. Someone signed in has their own portal, so an old conversation
+  // link or a saved /inquire address takes them there (Sean, 2 Nov 2026). This runs on every
+  // load, so a hard refresh lands in the same place.
+  if (isAuthenticated.value && (to.name === 'Inquire' || to.name === 'InquiryThread')) {
+    return homeRouteForRole(currentRole.value);
+  }
+
   const allowedRoles = to.meta.roles;
 
   if (!allowedRoles || allowedRoles.length === 0) {

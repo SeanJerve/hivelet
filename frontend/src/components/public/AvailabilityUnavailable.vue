@@ -30,6 +30,7 @@
  */
 import { RouterLink } from 'vue-router';
 import { Phone, MessageSquare, RotateCw } from 'lucide-vue-next';
+import { isAuthenticated } from '@/lib/authStore';
 import { LANDLADY } from '@/lib/systemState';
 
 withDefaults(
@@ -83,7 +84,7 @@ function reload() {
           Call {{ LANDLADY.phoneShown }}
         </a>
 
-        <RouterLink to="/inquire" class="pill-btn">
+        <RouterLink v-if="!isAuthenticated" to="/inquire" class="pill-btn">
           <MessageSquare class="size-4" aria-hidden="true" />
           Inquire now
         </RouterLink>

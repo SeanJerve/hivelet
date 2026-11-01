@@ -673,6 +673,7 @@ onUnmounted(() => {
         class="md:hidden flex flex-col items-start gap-1 border-t border-line bg-tile px-4 py-3 shadow-md"
       >
         <RouterLink
+          v-if="!isAuthenticated"
           to="/inquire"
           @click="isMobilePublicNavOpen = false"
           class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-hover hover:text-brand"

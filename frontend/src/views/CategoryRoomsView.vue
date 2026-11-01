@@ -1024,7 +1024,7 @@ async function submitInquiry() {
               -->
             </div>
 
-            <div class="mt-12">
+            <div v-if="!isAuthenticated" class="mt-12">
               <button
                 type="button"
                 class="pill-btn-brand w-full px-8"
@@ -1058,12 +1058,12 @@ async function submitInquiry() {
         list of one, already shown above, was a second copy of the same card.
         The vacancy count is in the overview at the top of the page.
       -->
-      <section v-if="categoryUnits.length > 1" aria-label="The units of this kind" class="w-full border-t border-line">
+      <section v-if="categoryUnits.length > 1" :aria-label="`${categoryUnits.length} ${currentCat.title} units`" class="w-full border-t border-line">
         <div class="ws-page ws-content ws-band">
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
             <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
-              The {{ categoryUnits.length }} units of this kind
+              {{ categoryUnits.length }} {{ currentCat.title }} units
             </h2>
           </div>
 
