@@ -20,7 +20,6 @@ import {
   incomeRecords,
   expenseRecords,
   maintenanceTickets,
-  inquiries,
   fetchRooms,
   fetchIncomeRecords,
   fetchExpenseRecords,
@@ -352,61 +351,7 @@ const repairCountSize = computed(() => {
   return pendingCount.value > 0 ? 'text-4xl lg:text-5xl' : LARGE_COUNT;
 });
 
-/** The last two full months, those not yet entered for every occupied unit. Nothing when a list failed. */
-const monthsToEnter = computed(() => {
-  if (incomeRecordsFetchFailed.value || roomsFetchFailed.value) return [];
-  const occupied = rooms.filter(isOccupied).length;
-  return [2, 1]
-    .map((back) => new Date(Date.UTC(CURRENT_YEAR, CURRENT_MONTH - 1 - back, 1)))
-    .map((d) => {
-      const year = d.getUTCFullYear();
-      const month = d.getUTCMonth() + 1;
-      const units = incomeRecords
-        .filter((r) => r.year === year && r.month === month && r.unit)
-        .map((r) => r.unit.toUpperCase());
-      return { year, month, label: `${MONTH_LONG[month - 1]} ${year}`, entered: new Set(units).size, occupied };
-    })
-    .filter((m) => m.entered < m.occupied);
-});
 
-/**
- * The one thing the tile says when nothing is waiting, in place of two zeros (Sean, 1 Nov 2026:
- * only the most important). A person waiting for an answer, then open repairs, then the oldest
- * month not fully entered. A count of records, whichever it is.
- */
-const attentionNotes = computed(() => {
-  const openInquiries = inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').length;
-  if (openInquiries > 0) {
-    return [{ key: 'inquiries', label: 'Inquiries', value: `${openInquiries} waiting for an answer`, to: '/admin/inquiries' }];
-  }
-  if (!maintenanceTicketsFetchFailed.value && openTickets.value.length > 0) {
-    return [{ key: 'repairs', label: 'Repairs', value: `${openTickets.value.length} open`, to: '/admin/tickets#repairs-board' }];
-  }
-  return monthsToEnter.value.slice(0, 1).map((m) => ({
-    key: m.label,
-    label: m.label,
-    value: m.entered > 0 ? `${m.entered} of ${m.occupied} units entered` : 'Not entered yet',
-    to: `/admin/income?year=${m.year}&month=${m.month}#income-records`,
-  }));
-});
-const attentionIsQuiet = computed(() => pendingCount.value === 0 && urgentTickets.value.length === 0);
-
-/**
- * The latest month before this one with anything entered, for the rent tile while this month is
- * empty (Sean, 1 Nov 2026: see the past month without going to it). The latest with records rather
- * than strictly last month, since she enters a month or two behind. Summed as the month chart does.
- */
-const lastEnteredMonth = computed(() => {
-  const position = (r: { year?: number; month?: number }) => (r.year ?? 0) * 12 + (r.month ?? 0) - 1;
-  const earlier = incomeRecords.filter((r) => r.year && r.month && position(r) < CURRENT_YEAR * 12 + CURRENT_MONTH - 1);
-  if (earlier.length === 0) return null;
-  const latest = Math.max(...earlier.map(position));
-  const rows = earlier.filter((r) => position(r) === latest);
-  return {
-    label: `${MONTH_LONG[latest % 12]} ${Math.floor(latest / 12)}`,
-    total: rows.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0),
-  };
-});
 
 /** The latest month of this year that has any collection entered, or 0. */
 
@@ -512,7 +457,11 @@ const live12MonthsData = computed<MonthIncomeData[]>(() =>
 const liveCapsules = computed<CapsuleMonth[]>(() =>
   live12MonthsData.value.map((d) => {
     const long = `${MONTH_LONG[d.monthNum - 1]} ${CURRENT_YEAR}`;
-    if (d.hasIncome) return { short: d.month, long, value: d.grossIncome, kind: 'recorded' };
+    if (d.hasIncome) {
+      const water = d.waterIncome ?? 0;
+      const detail = `Rent ${peso(d.grossIncome - water)}, water ${peso(water)}`;
+      return { short: d.month, long, value: d.grossIncome, kind: 'recorded', detail };
+    }
     if (d.monthNum <= CURRENT_MONTH) return { short: d.month, long, value: null, kind: 'unentered' };
     if (d.isProjected) return { short: d.month, long, value: d.grossIncome, kind: 'expected' };
     return { short: d.month, long, value: null, kind: 'future' };
@@ -537,22 +486,42 @@ const arcUnits = computed<ArcUnit[]>(() =>
   )
 );
 /**
- * On a phone the tiles go in the order of what has something to show (Loyd,
- * 2026-10-03). Needs your attention and this month's rent and water lead when
- * they hold a figure, and when they are zero they move below occupancy and the
- * month chart instead of opening the screen on "0, 0, ₱0". A failed load counts
- * as something to show: "could not be loaded" is not a zero. Two tiles in the
- * same place share a row; one alone takes the width.
+ * The Overview shows what has something to say (Sean, 1 Nov 2026). A tile with nothing in it is
+ * not drawn, and the others take its room. A failed load counts as something to say: "could not
+ * be loaded" is not a zero, and hiding it would read as all clear (B-61).
+ *
+ * These wait a moment after the data arrives, so the page settles first and a tile with news then
+ * makes its entrance, the others moving aside for it. `tile-*` in index.css.
  */
-const attentionHasFigures = computed(
-  () => pendingPaymentsFailed.value || maintenanceTicketsFetchFailed.value || pendingCount.value > 0 || urgentTickets.value.length > 0
+const TILE_ENTRANCE_DELAY_MS = 450;
+const tilesSettled = ref(false);
+watch(isInitialLoading, (loading) => {
+  if (!loading) setTimeout(() => (tilesSettled.value = true), TILE_ENTRANCE_DELAY_MS);
+});
+const attentionShown = computed(
+  () =>
+    tilesSettled.value &&
+    (pendingPaymentsFailed.value || maintenanceTicketsFetchFailed.value || pendingCount.value > 0 || urgentTickets.value.length > 0)
 );
-const monthHasFigures = computed(() => incomeRecordsFetchFailed.value || currentMonthRevenue.value > 0);
-const pairedOnPhone = computed(() => attentionHasFigures.value === monthHasFigures.value);
-const phonePlace = (leads: boolean) => [
-  leads ? 'max-md:order-1' : 'max-md:order-4',
-  !pairedOnPhone.value && 'max-md:col-span-2',
-];
+const monthShown = computed(
+  () => tilesSettled.value && (incomeRecordsFetchFailed.value || currentMonthRecordCount.value > 0)
+);
+const repairsShown = computed(
+  () => tilesSettled.value && (maintenanceTicketsFetchFailed.value || openTickets.value.length > 0)
+);
+
+/** The width of each tile on the twelve-column grid, by which of the others are showing. */
+const tileSpans = computed(() => {
+  const top = Number(attentionShown.value) + Number(monthShown.value);
+  return {
+    attention: monthShown.value ? 'xl:col-span-5' : 'xl:col-span-8',
+    month: attentionShown.value ? 'xl:col-span-4' : 'xl:col-span-8',
+    occupancy: [top === 2 ? 'xl:col-span-3' : 'xl:col-span-4', monthShown.value ? 'md:col-span-1' : 'md:col-span-2'],
+    net: top === 0 || !repairsShown.value ? (top === 0 ? 'xl:col-span-8' : 'xl:col-span-12') : 'xl:col-span-6',
+    repairs: top === 0 ? 'xl:col-span-12' : 'xl:col-span-6',
+  };
+});
+const phoneSpan = computed(() => (attentionShown.value && monthShown.value ? '' : 'max-md:col-span-2'));
 
 const liveClusterPerformance = computed(() =>
   CLUSTERS.map((clusterName) => {
@@ -811,9 +780,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       the reading order on a phone follows what is drawn, not the source. From
       768px nothing changes.
     -->
-    <div v-else-if="!isHistoricalMode" class="ws-reveal grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-12">
+    <TransitionGroup v-else-if="!isHistoricalMode" tag="div" name="tile" class="ws-reveal grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-12">
       <!-- What needs her action. The only dark tile on the screen. -->
-      <OverviewTile tone="night" title="Needs your attention" :class="['max-md:gap-3 max-md:p-4 md:col-span-2 xl:col-span-5', phonePlace(attentionHasFigures)]">
+      <OverviewTile v-if="attentionShown" key="attention" tone="night" title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 max-md:p-4 md:col-span-2', tileSpans.attention, phoneSpan]">
         <!--
           On a phone each half of this tile is one link, the count and its words
           together, instead of a count, a button and a link stacked: at half a
@@ -835,14 +804,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
             <span v-if="pendingCount > 0" class="text-xs tabular text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
           </router-link>
-          <ul v-if="attentionIsQuiet && attentionNotes.length && !pendingPaymentsFailed" class="flex flex-col gap-1.5 text-xs">
-            <li v-for="n in attentionNotes" :key="n.key">
-              <router-link :to="n.to" class="press block">
-                <span class="block text-on-night-soft">{{ n.label }}</span>
-                <span class="block font-medium tabular">{{ n.value }}</span>
-              </router-link>
-            </li>
-          </ul>
           <UnavailableNote
             v-if="maintenanceTicketsFetchFailed"
             dark
@@ -882,17 +843,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               />
             </router-link>
           </div>
-          <!-- No "Nothing is waiting for verification" under a 0: the count
-               is the answer (Sean, 2026-10-01: figures at a glance). What fills
-               the room instead is what she still has to do (attentionNotes). -->
-          <ul v-if="attentionIsQuiet && attentionNotes.length" class="mt-4">
-            <li v-for="n in attentionNotes" :key="n.key">
-              <router-link :to="n.to" class="press flex items-baseline justify-between gap-3 py-2 text-sm">
-                <span class="text-on-night-soft">{{ n.label }}</span>
-                <span class="font-medium tabular">{{ n.value }}</span>
-              </router-link>
-            </li>
-          </ul>
           <ul v-if="pendingPreview.length" class="mt-4 divide-y divide-white/10">
             <li
               v-for="(p, i) in pendingPreview"
@@ -943,11 +893,13 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       </OverviewTile>
 
       <OverviewTile
+        v-if="monthShown"
+        key="month"
         :title="`Income for ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
         phone-title="Income"
         to="/admin/income#income-records"
         to-label="Open the income ledger"
-        :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', phonePlace(monthHasFigures)]"
+        :class="['max-md:order-1 max-md:gap-3 max-md:p-4', tileSpans.month, phoneSpan]"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -955,23 +907,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           @retry="refreshAllData"
         />
         <template v-else>
-          <!-- Nothing entered for the month says so, as Monthly Income's and Monthly
-               Expenses' month tiles have since 03d98b2: this tile alone still read
-               "₱0 / 0 payments entered for October so far" while Monthly Income said
-               "Not entered yet" for the same month (audit 2026-10-09). -->
-          <div v-if="currentMonthRecordCount === 0">
-            <p class="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Not entered yet</p>
-            <!-- The phone's title is only "Income", so the month goes here. -->
-            <p class="mt-2 text-sm text-ink-soft md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }} {{ CURRENT_YEAR }}</p>
-            <!-- The last month with records, quiet beside the month she is looking at. -->
-            <div v-if="lastEnteredMonth" class="mt-3 text-sm text-ink-faint md:mt-4">
-              <p class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                <span>{{ lastEnteredMonth.label }}</span>
-                <span class="font-medium tabular text-ink-soft">{{ peso(lastEnteredMonth.total) }}</span>
-              </p>
-            </div>
-          </div>
-          <div v-else>
+          <div>
             <!--
               `text-5xl` did not fit a phone: "₱1,284,750.00" is 327.7px in a
               303px tile. Half a phone's width is less again, so `text-3xl` there,
@@ -1001,7 +937,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 md:col-span-1 xl:col-span-3">
+      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" :class="['col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4', tileSpans.occupancy]">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -1022,6 +958,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       </OverviewTile>
 
       <OverviewTile
+        key="by-month"
         :title="`Income by month, ${CURRENT_YEAR}`"
         to="/admin/income#income-by-month"
         to-label="Open the income ledger"
@@ -1062,7 +999,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Units by cluster" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4 max-md:order-5">
+      <OverviewTile key="clusters" title="Units by cluster" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4 max-md:order-5">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -1097,7 +1034,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses#expense-records" to-label="Open the expense ledger" class="col-span-2 xl:col-span-6 max-md:order-5">
+      <OverviewTile key="net" :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses#expense-records" to-label="Open the expense ledger" :class="['col-span-2 max-md:order-5', tileSpans.net]">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded."
@@ -1203,10 +1140,12 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       </OverviewTile>
 
       <OverviewTile
+        v-if="repairsShown"
+        key="repairs"
         title="Open repair requests"
         to="/admin/tickets#repairs-board"
         to-label="Open repairs"
-        class="col-span-2 xl:col-span-6 max-md:order-5"
+        :class="['col-span-2 max-md:order-5', tileSpans.repairs]"
       >
         <UnavailableNote
           v-if="maintenanceTicketsFetchFailed"
@@ -1245,7 +1184,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           </p>
         </template>
       </OverviewTile>
-    </div>
+    </TransitionGroup>
 
     <!-- ================================================================== *
      * Archive year

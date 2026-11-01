@@ -499,7 +499,7 @@ Part 1, §5.
 
 **Needs a connection.** Shown on buttons that cannot work offline. **Where:** App. K, Part 2, §10.
 
-**Needs your attention.** The Overview tile counting payments to verify and urgent repairs. A zero stays small and a count with something waiting grows; when nothing is waiting it shows the one most important thing left: an inquiry waiting, open repairs, or the oldest month still to enter. **Where:**
+**Needs your attention.** The Overview tile counting payments to verify and urgent repairs. It appears only when one of them is waiting or could not be loaded. **Where:**
 App. K, Part 2, §2.
 
 **No connection · Transactions unavailable.** The thin bar shown at the top when the device is

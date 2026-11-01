@@ -2729,3 +2729,37 @@ dialog.ws-dialog[open]::backdrop {
     transform: none;
   }
 }
+
+/* ---------------------------------------------------------- overview tiles --
+ * A tile with news arriving on the admin Overview (Sean, 1 Nov 2026): the others move aside first,
+ * then it pops out into the space. The delay on the entrance is what puts them in that order.
+ */
+.tile-move {
+  transition: transform 0.5s var(--ease-in-out);
+}
+.tile-enter-active {
+  transition:
+    opacity 0.4s var(--ease-out) 0.3s,
+    transform 0.5s var(--ease-bump) 0.3s;
+}
+.tile-enter-from {
+  opacity: 0;
+  transform: scale(0.94);
+}
+.tile-leave-active {
+  transition: opacity 0.2s var(--ease-out);
+}
+.tile-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile-move {
+    transition: none;
+  }
+  .tile-enter-active {
+    transition: opacity 0.2s var(--ease-out);
+  }
+  .tile-enter-from {
+    transform: none;
+  }
+}

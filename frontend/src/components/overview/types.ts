@@ -24,6 +24,8 @@ export interface CapsuleMonth {
   long: string;
   value: number | null;
   kind: MonthKind;
+  /** A second line under the selected month's figure, its parts in words. */
+  detail?: string;
 }
 
 export interface ArcUnit {

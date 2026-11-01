@@ -1,7 +1,8 @@
 # Next: the dynamic admin Overview
 
-Sean's plan, 1 Nov 2026, saved at the end of a session with no room left to build it. Nothing here is
-built yet. Admin Overview only (`frontend/src/views/AdminOverviewView.vue`).
+Sean's plan, 1 Nov 2026. **Built the same day.** What stayed a judgement call: Needs your attention hides at 0
+payments and 0 urgent repairs even with an inquiry waiting, since the sidebar counts those. A tile with news
+also arrives mid-visit, not only on opening.
 
 ## 1. The month chart tile
 
