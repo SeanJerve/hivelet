@@ -290,7 +290,6 @@ function isOccupied(r: RoomItem) {
   return r.status === 'settled' || r.status === 'pending' || r.tenant !== null;
 }
 
-const totalRoomsCount = computed(() => rooms.length);
 const vacantUnits = computed(() => rooms.filter((r) => !isOccupied(r)));
 
 const pendingCount = computed(() => pendingPayments.value.length);
@@ -511,16 +510,11 @@ const repairsShown = computed(
 );
 
 /** The width of each tile on the twelve-column grid, by which of the others are showing. */
-const tileSpans = computed(() => {
-  const top = Number(attentionShown.value) + Number(monthShown.value);
-  return {
-    attention: monthShown.value ? 'xl:col-span-5' : 'xl:col-span-8',
-    month: attentionShown.value ? 'xl:col-span-4' : 'xl:col-span-8',
-    occupancy: [top === 2 ? 'xl:col-span-3' : 'xl:col-span-4', monthShown.value ? 'md:col-span-1' : 'md:col-span-2'],
-    net: top === 0 || !repairsShown.value ? (top === 0 ? 'xl:col-span-8' : 'xl:col-span-12') : 'xl:col-span-6',
-    repairs: top === 0 ? 'xl:col-span-12' : 'xl:col-span-6',
-  };
-});
+const tileSpans = computed(() => ({
+  attention: monthShown.value ? 'xl:col-span-7' : 'xl:col-span-12',
+  month: attentionShown.value ? 'xl:col-span-5' : 'xl:col-span-12',
+  net: repairsShown.value ? 'xl:col-span-6' : 'xl:col-span-12',
+}));
 const phoneSpan = computed(() => (attentionShown.value && monthShown.value ? '' : 'max-md:col-span-2'));
 
 const liveClusterPerformance = computed(() =>
@@ -776,7 +770,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       month's rent and water, occupancy and the month chart together. The first
       two are half-width tiles side by side, the arc and the chart are smaller,
       and the figures each tile adds after its headline fold under "More"
-      (PhoneMore). Which come first follows `phonePlace` above: CSS `order`, so
+      (PhoneMore). Which come first follows CSS `order`, so
       the reading order on a phone follows what is drawn, not the source. From
       768px nothing changes.
     -->
@@ -876,11 +870,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
                 </span>
               </p>
-              <ul v-if="urgentTickets.length" class="mt-2 flex flex-col gap-1 text-sm">
-                <li v-for="t in urgentTickets.slice(0, 2)" :key="t.id" class="truncate">
-                  {{ t.title }}<span class="text-on-night-soft">, Unit {{ t.unit }}</span>
-                </li>
-              </ul>
             </div>
             <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
               <ArrowUpRight
@@ -926,18 +915,10 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <span class="md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }}, </span>{{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }}<span class="max-md:hidden"> entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }}</span> so far
             </p>
           </div>
-          <div class="mt-auto flex flex-col gap-3 md:gap-4">
-            <PhoneMore>
-              <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-line pt-4 text-sm">
-                <span class="text-ink-soft">Total for {{ CURRENT_YEAR }}</span>
-                <span class="font-semibold tabular">{{ peso(monthlyRevenue) }}</span>
-              </div>
-            </PhoneMore>
-          </div>
         </template>
       </OverviewTile>
 
-      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" :class="['col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4', tileSpans.occupancy]">
+      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 xl:col-span-4">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -947,13 +928,29 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <!-- The arc on a phone as well (Loyd, 2026-10-03: "I need the semicircle"),
                a little narrower there so the month chart still fits below it. -->
           <OccupancyArc :units="arcUnits" class="max-md:max-w-[14rem]" />
-          <p class="text-center text-sm text-ink-soft">
-            <template v-if="totalRoomsCount && vacantUnits.length === totalRoomsCount">All {{ totalRoomsCount }} units are vacant.</template>
-            <template v-else-if="vacantUnits.length">
-              Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
-            </template>
-            <template v-else>All {{ totalRoomsCount }} units are occupied.</template>
+          <!-- Only when there is something to name: the arc already says all are occupied. -->
+          <p v-if="vacantUnits.length" class="text-center text-sm text-ink-soft">
+            Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
           </p>
+          <!-- Each cluster once, in one list (Sean, 1 Nov 2026): Units by cluster repeated this
+               tile's question in a tile of its own, with a bar for what the arc draws. -->
+          <table class="w-full text-sm">
+            <caption class="sr-only">Occupied units and monthly rent by cluster</caption>
+            <thead class="text-left text-xs text-ink-faint">
+              <tr>
+                <th scope="col" class="pb-1 font-normal"><span class="sr-only">Cluster</span></th>
+                <th scope="col" class="pb-1 pl-3 text-right font-normal">Occupied</th>
+                <th scope="col" class="pb-1 pl-3 text-right font-normal">Rent</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line">
+              <tr v-for="c in liveClusterPerformance" :key="c.name">
+                <th scope="row" class="py-1.5 text-left font-medium">{{ c.name }}</th>
+                <td class="py-1.5 pl-3 text-right tabular text-ink-soft whitespace-nowrap">{{ c.occupied }} of {{ c.total }}</td>
+                <td class="py-1.5 pl-3 text-right tabular whitespace-nowrap">{{ peso(c.revenue) }}</td>
+              </tr>
+            </tbody>
+          </table>
         </template>
       </OverviewTile>
 
@@ -970,7 +967,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           @retry="refreshAllData"
         />
         <template v-else>
-          <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" short />
+          <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" short tall />
           <PhoneMore everywhere title="Year to date" :summary="`${peso(monthlyRevenue)} entered`">
             <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
@@ -997,39 +994,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             </dl>
           </PhoneMore>
         </template>
-      </OverviewTile>
-
-      <OverviewTile key="clusters" title="Units by cluster" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 xl:col-span-4 max-md:order-5">
-        <UnavailableNote
-          v-if="roomsFetchFailed"
-          message="Room status could not be loaded."
-          @retry="refreshAllData"
-        />
-        <ul v-else class="flex flex-col gap-4">
-          <li
-            v-for="(c, i) in liveClusterPerformance"
-            :key="c.name"
-            class="list-reveal-item"
-            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-          >
-            <div class="flex items-baseline justify-between gap-3 text-sm">
-              <span class="font-medium">{{ c.name }}</span>
-              <span class="tabular text-ink-soft">{{ c.occupied }} of {{ c.total }} occupied</span>
-            </div>
-            <div class="mt-2 flex gap-1" aria-hidden="true">
-              <span
-                v-for="n in c.total"
-                :key="n"
-                class="bar-fill h-2 flex-1 origin-left rounded-full"
-                :class="n <= c.occupied ? 'bg-brand' : 'hatch border border-line'"
-                :style="{ animationDelay: `${Math.min(n - 1, 9) * 30}ms` }"
-              />
-            </div>
-            <p class="mt-1.5 text-xs text-ink-faint tabular">
-              Total rent {{ peso(c.revenue) }}
-            </p>
-          </li>
-        </ul>
       </OverviewTile>
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
@@ -1151,7 +1115,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         title="Open repair requests"
         to="/admin/tickets#repairs-board"
         to-label="Open repairs"
-        :class="['col-span-2 max-md:order-5', tileSpans.repairs]"
+        class="col-span-2 max-md:order-5 xl:col-span-6"
       >
         <UnavailableNote
           v-if="maintenanceTicketsFetchFailed"

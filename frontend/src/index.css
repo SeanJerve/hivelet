@@ -2172,11 +2172,9 @@ html:has(> body[style*='overflow: hidden']) {
 /* --------------------------------------------------------------- bar-fill --
  * The same growth OccupancyArc's ring and SegmentBar's segments use, for a
  * bar or pip that is not part of either component - an occupancy strip's
- * individual marks (AdminOverviewView "Units by cluster",
- * RoomDirectoryView's matrix header, both a per-unit `flex-1 rounded-full`
- * row packed edge to edge like SegmentBar's segments) and a single
- * share-of-a-whole bar drawn in its own track (AdminOverviewView "Collected
- * by cluster"). Global rather than scoped like SegmentBar's own
+ * individual marks (RoomDirectoryView's matrix header, a per-unit
+ * `flex-1 rounded-full` row packed edge to edge like SegmentBar's segments).
+ * Global rather than scoped like SegmentBar's own
  * `.segment-fill` because it is reused across more than one file, the same
  * reason `.list-reveal-item` above lives here instead of in one component.
  *

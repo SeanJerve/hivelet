@@ -309,7 +309,7 @@ into a sliver and put the bottom of the screen behind the whole ledger.
 
 | Screen | Row order |
 | :--- | :--- |
-| Admin overview, live year | Needs your attention (night) · Collected this month · Occupancy · Collections by month · Units by cluster · Net income · Open repair requests |
+| Admin overview, live year | Needs your attention (night) · Income for the month · Occupancy, with the clusters under it · Income by month · Net income · Open repair requests. Needs your attention, Income for the month and Open repair requests show only with something to say |
 | Admin overview, archive year | Collected (brand) · 50% Share · Operating expenses · Net operating income · Collections by month · Collected by cluster · Month by month · Tenants · Units · Ledger entries |
 | Tenant overview | Amount due (brand) · Current or latest bill · Repairs (night) · Payments · Unit |
 | Repairs (dispatch) | Filters · a board of three columns: to dispatch, in progress, done. A ticket is a card with one Manage button |
