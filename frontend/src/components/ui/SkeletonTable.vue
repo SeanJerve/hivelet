@@ -33,10 +33,10 @@ withDefaults(defineProps<Props>(), {
 <template>
   <div aria-hidden="true">
     <!-- The register, on a screen wide enough to read one -->
-    <div class="hidden w-full overflow-hidden rounded-tile bg-tile lg:block">
+    <div class="hidden w-full overflow-hidden lg:block">
       <div
         v-if="showHeader"
-        class="flex items-center gap-4 border-b border-line px-5 py-4 sm:px-6"
+        class="flex items-center gap-4 border-b border-line py-4"
       >
         <div v-for="c in columns" :key="'th-' + c" class="flex-1">
           <Skeleton
@@ -49,7 +49,7 @@ withDefaults(defineProps<Props>(), {
         <div
           v-for="r in rows"
           :key="'tr-' + r"
-          class="flex items-center gap-4 px-5 py-4 sm:px-6"
+          class="flex items-center gap-4 py-4"
         >
           <div
             v-for="c in columns"
@@ -77,8 +77,8 @@ withDefaults(defineProps<Props>(), {
       settles into the same rhythm once the real content lands; this is a
       placeholder's proportions, not a promise of exactly what follows.
     -->
-    <div class="space-y-3 lg:hidden">
-      <div v-for="r in rows" :key="'card-' + r" class="rounded-2xl bg-tile p-5">
+    <div class="divide-y divide-line lg:hidden">
+      <div v-for="r in rows" :key="'card-' + r" class="py-4">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
             <Skeleton class-name="h-4 w-28 rounded-full" />

@@ -15,12 +15,12 @@ import Skeleton from '@/components/ui/Skeleton.vue';
       <Skeleton class-name="h-3 w-24 rounded-full" />
       <Skeleton class-name="h-8 w-56 max-w-full rounded-xl" />
     </div>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
       <Skeleton class-name="h-32 w-full rounded-tile" />
       <Skeleton class-name="h-32 w-full rounded-tile" />
       <Skeleton class-name="hidden h-32 w-full rounded-tile lg:block" />
     </div>
-    <div class="space-y-3 rounded-tile bg-tile p-5">
+    <div class="space-y-3">
       <Skeleton class-name="h-10 w-full rounded-full" />
       <Skeleton v-for="n in 6" :key="n" class-name="h-14 w-full rounded-xl" />
     </div>

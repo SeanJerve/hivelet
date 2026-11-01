@@ -114,7 +114,7 @@ function when(iso: string): string {
   <section
     v-else-if="variant !== 'line'"
     :aria-labelledby="headingId"
-    :class="rail ? 'px-4' : 'rounded-tile bg-tile px-4 py-3.5 sm:px-5 sm:py-4'"
+    :class="rail && 'px-4'"
   >
     <h2 :id="headingId" class="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-ink-faint">
       Recently

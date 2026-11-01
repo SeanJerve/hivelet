@@ -10,10 +10,16 @@ workspace, a sage and teal HR board, and an ink and cyan board. Also the Scovill
 skills, and the pre-redesign audit `docs/OVERVIEW_AUDIT_2026-09-17.md`.
 
 **What was taken from the references:**
-- a soft tinted canvas with borderless rounded tiles
-- one dark or saturated tile that carries the most important thing
-- pill-shaped controls, and a round arrow button on a tile that leads somewhere
+- a soft tinted canvas
+- pill-shaped controls, and a round arrow button on a section that leads somewhere
 - hatching for a figure that is missing
+
+**No cards on the dashboards (Sean, 1 Nov 2026).** The admin and tenant dashboards sit directly on
+the page: a section is a rule, a title and its content, with no fill, no padding of its own and no
+tone. Rows are separated by rules, on a phone too. Only what floats above the page keeps a surface:
+dialogs, menus, popovers, toasts and the floating button. The public site is unchanged. Where this
+file still says "tile", read "section". The last version with cards is the tag
+`v1.0.0-final-with-cards`.
 
 **What was not taken:** stock photos of people, decorative gauges, and invented numbers.
 
@@ -25,8 +31,8 @@ skills, and the pre-redesign audit `docs/OVERVIEW_AUDIT_2026-09-17.md`.
    - The landlady's first question is what needs her action: payments to verify, urgent repairs.
    - The resident's first question is what they owe and how to pay.
    - Monitoring comes after. On a phone, the source order is the priority order.
-2. **One loud tile per screen.** `night` or `brand` marks the tile that asks for action. A second
-   dark tile is allowed only for a second, different call to action.
+2. **Lead by order and size.** What asks for action comes first with the largest figures. No
+   section is filled or tinted to stand out.
 3. **Never present an absence as a fact.** A failed load, a month not yet entered, and a real zero
    are three different things, drawn three different ways (section 5). `HANDOFF_TO_DESIGN.md`
    section 4 still binds every screen.
