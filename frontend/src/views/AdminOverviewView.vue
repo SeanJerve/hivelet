@@ -828,7 +828,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           />
           <router-link v-else to="/admin/income?tab=verify" class="press group/att flex flex-col gap-1">
             <span class="flex items-start justify-between gap-2">
-              <span :class="['leading-none font-semibold tabular tracking-tight', pendingCount > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ pendingCount }}</span>
+              <span :class="['leading-none font-semibold tracking-tight', pendingCount > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ pendingCount }}</span>
               <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
             </span>
             <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
@@ -851,7 +851,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           />
           <router-link v-else to="/admin/tickets" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
             <span class="flex items-start justify-between gap-2">
-              <span :class="['leading-none font-semibold tabular tracking-tight', urgentTickets.length > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ urgentTickets.length }}</span>
+              <span :class="['leading-none font-semibold tracking-tight', urgentTickets.length > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ urgentTickets.length }}</span>
               <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
             </span>
             <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
@@ -866,12 +866,21 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           @retry="refreshAllData"
         />
         <div v-else class="max-md:hidden">
-          <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span :class="['leading-none font-semibold tabular tracking-tight', paymentCountSize]">{{ pendingCount }}</span>
-            <span class="text-sm text-on-night-soft">
-              {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
-            </span>
-          </p>
+          <div :class="['flex justify-between gap-3', pendingCount ? 'items-start' : 'items-center']">
+            <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+              <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot. -->
+              <span :class="['leading-none font-semibold tracking-tight', paymentCountSize]">{{ pendingCount }}</span>
+              <span class="text-sm text-on-night-soft">
+                {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
+              </span>
+            </p>
+            <router-link to="/admin/income?tab=verify" aria-label="Review payments" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
+              <ArrowUpRight
+                class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+                aria-hidden="true"
+              />
+            </router-link>
+          </div>
           <!-- No "Nothing is waiting for verification" under a 0: the count
                is the answer (Sean, 2026-10-01: figures at a glance). What fills
                the room instead is what she still has to do (attentionNotes). -->
@@ -899,9 +908,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <span class="text-sm font-semibold tabular">{{ peso(p.amount, 2) }}</span>
             </li>
           </ul>
-          <router-link v-if="pendingCount > 0" to="/admin/income?tab=verify" class="pill-btn-light mt-4">
-            Review payments
-          </router-link>
         </div>
 
         <div class="mt-auto border-t border-white/10 pt-4 max-md:hidden">
@@ -914,7 +920,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <div v-else :class="['flex justify-between gap-3', urgentTickets.length ? 'items-start' : 'items-center']">
             <div class="min-w-0">
               <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span :class="['leading-none font-semibold tabular tracking-tight', repairCountSize]">{{ urgentTickets.length }}</span>
+                <span :class="['leading-none font-semibold tracking-tight', repairCountSize]">{{ urgentTickets.length }}</span>
                 <span class="text-sm text-on-night-soft">
                   urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
                 </span>
