@@ -517,11 +517,13 @@ const tileSpans = computed(() => ({
 }));
 const phoneSpan = computed(() => (attentionShown.value && monthShown.value ? '' : 'max-md:col-span-2'));
 
-/** The longest cluster sets the tick size, so one tick is one unit in every row. */
-const largestCluster = computed(() => Math.max(1, ...liveClusterPerformance.value.map((c) => c.total)));
-
-const liveClusterPerformance = computed(() =>
-  CLUSTERS.map((clusterName) => {
+/**
+ * Largest rent first, each with its colour in the bar, as Monthly Income orders its clusters. No
+ * hatch among them: beside this tile's chart, hatching means not entered yet.
+ */
+const liveClusterPerformance = computed(() => {
+  const tones = ['brand', 'bright', 'night', 'soft', 'faint'] as const;
+  return CLUSTERS.map((clusterName) => {
     const clusterRooms = rooms.filter((r) => r.cluster === clusterName);
     const occupied = clusterRooms.filter(isOccupied).length;
     return {
@@ -531,7 +533,22 @@ const liveClusterPerformance = computed(() =>
       revenue: clusterRooms.reduce((s, r) => s + (r.tenant ? Number(r.price || 0) : 0), 0),
     };
   })
+    .sort((a, b) => b.revenue - a.revenue)
+    .map((c, i) => ({ ...c, tone: tones[i % tones.length] }));
+});
+const clusterRentSplit = computed<Segment[]>(() =>
+  liveClusterPerformance.value.map((c) => ({ label: c.name, value: c.revenue, tone: c.tone }))
 );
+
+/** The key's dot for a segment of the bar. */
+const toneDot: Record<Segment['tone'], string> = {
+  brand: 'bg-brand',
+  bright: 'bg-brand-bright',
+  night: 'bg-series-night',
+  soft: 'bg-series-soft',
+  hatch: 'hatch border border-line',
+  faint: 'bg-ink-faint',
+};
 
 /* ========================================================================== *
  * 2. Archive year
@@ -926,7 +943,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 xl:col-span-4">
+      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 xl:col-span-5">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -940,40 +957,31 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <p v-if="vacantUnits.length" class="text-center text-sm text-ink-soft">
             Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
           </p>
-          <!-- The arc taken apart by cluster (Sean, 1 Nov 2026): the same ticks at one size in
-               every row, so a row's length is how many units it has. -->
-          <div class="flex flex-col gap-3">
-            <p aria-hidden="true" class="-mb-2 text-right text-xs text-ink-faint">Rent</p>
-            <ul class="flex flex-col gap-3">
-              <li
-                v-for="(c, i) in liveClusterPerformance"
-                :key="c.name"
-                class="list-reveal-item"
-                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-              >
-                <div class="flex items-baseline justify-between gap-3 text-sm">
-                  <span class="font-medium">{{ c.name }}</span>
-                  <span class="tabular"><span class="sr-only">Rent </span>{{ peso(c.revenue) }}</span>
-                </div>
-                <div class="mt-1.5 flex items-center gap-3">
-                  <div
-                    class="grid min-w-0 flex-1 gap-0.5"
-                    :style="{ gridTemplateColumns: `repeat(${largestCluster}, minmax(0, 1fr))` }"
-                    aria-hidden="true"
-                  >
-                    <span
-                      v-for="n in c.total"
-                      :key="n"
-                      class="bar-fill h-3.5 origin-left rounded-[2px]"
-                      :class="n <= c.occupied ? 'bg-brand' : 'bg-line'"
-                      :style="{ animationDelay: `${Math.min(n - 1, 9) * 30}ms` }"
-                    />
-                  </div>
-                  <span class="shrink-0 text-xs tabular text-ink-soft">{{ c.occupied }} of {{ c.total }}</span>
-                </div>
-              </li>
-            </ul>
-          </div>
+          <!-- One bar for how the rent divides, then the clusters as its key (Sean, 1 Nov 2026). A
+               bar per cluster was five full bars whenever the house is full. -->
+          <SegmentBar :segments="clusterRentSplit" label="How the rent divides across the clusters" />
+          <table class="w-full text-sm">
+            <caption class="sr-only">Occupied units and monthly rent by cluster</caption>
+            <thead class="text-left text-xs text-ink-faint">
+              <tr>
+                <th scope="col" class="pb-1 font-normal">Share of rent</th>
+                <th scope="col" class="pb-1 pl-3 text-right font-normal">Occupied</th>
+                <th scope="col" class="pb-1 pl-3 text-right font-normal">Rent</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line">
+              <tr v-for="c in liveClusterPerformance" :key="c.name">
+                <th scope="row" class="py-1.5 text-left font-medium">
+                  <span class="flex min-w-0 items-center gap-2">
+                    <span aria-hidden="true" :class="['size-3 shrink-0 rounded-full', toneDot[c.tone]]" />
+                    <span class="min-w-0 break-words leading-snug">{{ c.name }}</span>
+                  </span>
+                </th>
+                <td class="py-1.5 pl-3 text-right tabular text-ink-soft whitespace-nowrap">{{ c.occupied }} of {{ c.total }}</td>
+                <td class="py-1.5 pl-3 text-right tabular whitespace-nowrap">{{ peso(c.revenue) }}</td>
+              </tr>
+            </tbody>
+          </table>
         </template>
       </OverviewTile>
 
@@ -982,7 +990,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         :title="`Income by month, ${CURRENT_YEAR}`"
         to="/admin/income#income-by-month"
         to-label="Open the income ledger"
-        class="col-span-2 max-md:order-3 max-md:gap-3 max-md:p-4 xl:col-span-8"
+        class="col-span-2 max-md:order-3 max-md:gap-3 max-md:p-4 xl:col-span-7"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -1225,15 +1233,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <span class="flex min-w-0 items-center gap-2">
                 <span
                   aria-hidden="true"
-                  :class="[
-                    'size-3 shrink-0 rounded-full',
-                    c.tone === 'brand' && 'bg-brand',
-                    c.tone === 'bright' && 'bg-brand-bright',
-                    c.tone === 'night' && 'bg-series-night',
-                    c.tone === 'soft' && 'bg-series-soft',
-                    c.tone === 'hatch' && 'hatch border border-line',
-                    c.tone === 'faint' && 'bg-ink-faint',
-                  ]"
+                  :class="['size-3 shrink-0 rounded-full', toneDot[c.tone]]"
                 />
                 <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
               </span>
