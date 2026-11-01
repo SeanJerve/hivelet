@@ -41,15 +41,15 @@ const toneClass = computed(
     :aria-labelledby="title ? titleId : undefined"
     :class="['flex flex-col gap-4 min-w-0', isDark || boxed ? 'rounded-tile p-5 sm:p-6' : 'py-2', boxed && 'bg-tile', toneClass]"
   >
-    <header v-if="title || to || $slots.actions" class="flex items-start justify-between gap-3">
+    <header v-if="title || to || $slots.actions" class="flex items-start">
       <h2 v-if="title" :id="titleId" class="text-[0.9375rem] leading-5 font-semibold pt-2.5">
         <template v-if="phoneTitle">
           <span class="md:hidden">{{ phoneTitle }}</span><span class="max-md:hidden">{{ title }}</span>
         </template>
         <template v-else>{{ title }}</template>
       </h2>
-      <div class="flex items-center gap-2 shrink-0 ml-auto">
-        <slot name="actions" />
+      <!-- Beside the title, not across the tile from it (Sean, 2 Nov 2026). -->
+      <div class="ml-0.5 shrink-0">
         <!--
           `title` is optional, and every current caller that sets `to` also
           sets `toLabel` - but a future one that does not would have this
@@ -74,6 +74,9 @@ const toneClass = computed(
             aria-hidden="true"
           />
         </router-link>
+      </div>
+      <div v-if="$slots.actions" class="ml-auto shrink-0 pl-3">
+        <slot name="actions" />
       </div>
     </header>
     <slot />

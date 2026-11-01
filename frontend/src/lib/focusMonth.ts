@@ -6,12 +6,15 @@
  *   - A month picked in Filters: that month (of the picked year, or this year
  *     when "All years" is picked).
  *   - No month picked, this year or all years: this month, as the property
- *     counts it (lib/propertyDate.ts). A month just begun can be P0 so far;
- *     that is what has been entered, and the card says which month it is.
+ *     counts it (lib/propertyDate.ts), or the latest month before it with
+ *     entries when it has none yet (Sean, 2 Nov 2026: a card saying only "Not
+ *     entered yet" for most of a month tells the owner nothing). The card's
+ *     title names the month, so an earlier month never reads as this one.
  *   - No month picked, a past year: that year's last month with entries, or
  *     December when it has none.
  *
- * Both screens call this, so they always show the same month.
+ * Income and expenses are entered separately, so the two screens can show
+ * different months.
  */
 import { propertyToday } from '@/lib/propertyDate';
 
@@ -47,8 +50,10 @@ export function focusMonth(
   let month: number;
   const picked = MONTH_SHORT.indexOf(filterMonth as (typeof MONTH_SHORT)[number]);
   if (picked >= 0) month = picked + 1;
-  else if (year === thisYear) month = thisMonth;
-  else {
+  else if (year === thisYear) {
+    const months = monthsWithEntries(year).filter((m) => m <= thisMonth);
+    month = months.length ? Math.max(...months) : thisMonth;
+  } else {
     const months = monthsWithEntries(year);
     month = months.length ? Math.max(...months) : 12;
   }

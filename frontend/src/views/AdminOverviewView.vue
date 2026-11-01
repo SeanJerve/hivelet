@@ -807,7 +807,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             @retry="refreshAllData"
           />
           <router-link v-else to="/admin/income?tab=verify#income-records" class="press group/att flex flex-col gap-1">
-            <span class="flex items-start justify-between gap-2">
+            <span class="flex items-start gap-2">
               <span :class="['leading-none font-semibold tracking-tight', pendingCount > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ pendingCount }}</span>
               <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
             </span>
@@ -822,7 +822,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             @retry="refreshAllData"
           />
           <router-link v-else to="/admin/tickets#repairs-board" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
-            <span class="flex items-start justify-between gap-2">
+            <span class="flex items-start gap-2">
               <span :class="['leading-none font-semibold tracking-tight', urgentTickets.length > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ urgentTickets.length }}</span>
               <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
             </span>
@@ -838,7 +838,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           @retry="refreshAllData"
         />
         <div v-else class="max-md:hidden">
-          <div :class="['flex justify-between gap-3', pendingCount ? 'items-start' : 'items-center']">
+          <div :class="['flex gap-1', pendingCount ? 'items-start' : 'items-center']">
             <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
               <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot. -->
               <span :class="['leading-none font-semibold tracking-tight', paymentCountSize]">{{ pendingCount }}</span>
@@ -878,7 +878,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             message="Repairs could not be loaded. Some may be urgent."
             @retry="refreshAllData"
           />
-          <div v-else :class="['flex justify-between gap-3', urgentTickets.length ? 'items-start' : 'items-center']">
+          <div v-else :class="['flex gap-1', urgentTickets.length ? 'items-start' : 'items-center']">
             <div class="min-w-0">
               <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span :class="['leading-none font-semibold tracking-tight', repairCountSize]">{{ urgentTickets.length }}</span>

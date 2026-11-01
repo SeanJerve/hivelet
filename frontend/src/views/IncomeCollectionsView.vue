@@ -1167,7 +1167,7 @@ const isDownloadOpen = ref(false);
           <!-- The phone's Download. `-my-1` keeps its py-1 hit area from pushing the title down. -->
           <button
             type="button"
-            class="press relative -my-1 inline-flex sm:hidden shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+            class="press icon-bump relative -my-1 inline-flex sm:hidden shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
             aria-haspopup="dialog"
             :aria-label="`Download ${exportYear} for Excel`"
             :title="`Download ${exportYear} for Excel`"
@@ -1185,7 +1185,7 @@ const isDownloadOpen = ref(false);
           <div class="flex items-center gap-5 sm:justify-end">
             <button
               type="button"
-              class="press relative hidden sm:inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+              class="press icon-bump relative hidden sm:inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
               aria-haspopup="dialog"
               :aria-label="`Download ${exportYear} for Excel`"
               :title="`Download ${exportYear} for Excel`"
