@@ -79,7 +79,7 @@ const dialogId = useId();
  * a phone; they are drawn here instead, under the title, and a refusal stays
  * until it is dismissed or the dialog closes. Reasoning in `lib/useToast.ts`.
  */
-const { toasts, dismissToast } = useToast();
+const { toasts } = useToast();
 const messages = computed(() => toasts.value.filter((t) => t.dialogId === dialogId));
 const messageTone = {
   success: { box: 'bg-brand-soft', icon: 'text-brand', is: CheckCircle2 },
@@ -621,14 +621,6 @@ onBeforeUnmount(() => {
             <p class="break-words text-sm font-semibold leading-snug text-ink">{{ m.title }}</p>
             <p v-if="m.message" class="mt-0.5 break-words text-sm leading-6 text-ink-soft">{{ m.message }}</p>
           </div>
-          <button
-            type="button"
-            class="icon-btn -my-1.5 shrink-0"
-            aria-label="Dismiss this message"
-            @click="dismissToast(m.id)"
-          >
-            <X class="size-4" aria-hidden="true" />
-          </button>
         </div>
       </div>
 

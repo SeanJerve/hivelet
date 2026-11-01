@@ -14,7 +14,7 @@
  */
 import { computed } from 'vue';
 import { useToast, heldBy } from '../../lib/useToast';
-import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-vue-next';
+import { CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-vue-next';
 
 const { toasts, dismissToast } = useToast();
 // A message raised while a dialog is open is drawn inside that dialog, under
@@ -37,8 +37,8 @@ const iconTone: Record<string, string> = {
     aria-live="polite"
   >
     <!--
-      A tap anywhere on a toast dismisses it, not only on its X (audit
-      2026-10-01). On a phone the stack is full width across the top of the
+      Every message fades by itself, top right, or across the top of a phone, with no X (Sean,
+      1 Nov 2026). A tap still clears one early (audit 2026-10-01). On a phone the stack is full width across the top of the
       screen, above every dialog (z-60), so for its four seconds a toast sits
       exactly over the menu button, the bell, the account menu and the X of
       whatever dialog is open. A tap there landed on the toast's body and did
@@ -46,8 +46,7 @@ const iconTone: Record<string, string> = {
       reads from the outside: after a refused save, the dialog's X and then the
       menu were measured as covered and dead until the toast timed out. Now the
       first tap clears the toast, visibly, and the next one reaches what was
-      under it. The X stays for the keyboard and for screen readers; this
-      handler is the pointer's way out and adds no tab stop.
+      under it.
     -->
     <TransitionGroup name="toast">
       <div
@@ -68,14 +67,6 @@ const iconTone: Record<string, string> = {
           <p class="mt-0.5 break-words text-sm leading-6 text-on-night-soft">{{ toast.message }}</p>
         </div>
 
-        <button
-          type="button"
-          class="icon-btn icon-btn-on-dark size-9 shrink-0"
-          aria-label="Dismiss this message"
-          @click.stop="dismissToast(toast.id)"
-        >
-          <X class="size-4" aria-hidden="true" />
-        </button>
       </div>
     </TransitionGroup>
   </div>
@@ -106,6 +97,10 @@ const iconTone: Record<string, string> = {
    * deliberately does not use.
    */
   transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+/* Leaving on its own, unasked, so it fades rather than snapping out. */
+.toast-leave-active {
+  transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
 }
 .toast-enter-from {
   opacity: 0;

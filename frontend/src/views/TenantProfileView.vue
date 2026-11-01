@@ -17,7 +17,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
-import { Save, CheckCircle2, AlertTriangle, X, RotateCcw, KeyRound } from 'lucide-vue-next';
+import { Save, AlertTriangle, RotateCcw, KeyRound } from 'lucide-vue-next';
 import { currentUser } from '@/lib/authStore';
 import { api, ApiRequestError } from '@/lib/api';
 import { showingSavedCopy, writesUnavailable } from '@/lib/offlineCache';
@@ -64,7 +64,6 @@ const saving = ref(false);
  * top of a failed read writes empty strings over whatever was really on file.
  */
 const loadFailed = ref(false);
-const successNotice = ref('');
 const errorNotice = ref('');
 /** Said under the field it is about, from the page's own check or the server's. */
 const phoneError = ref('');
@@ -164,7 +163,6 @@ async function handleSave() {
   // whole profile while the first save is still in flight.
   // Enter in a field submits even while Save is disabled for having no connection.
   if (saving.value || writesUnavailable.value) return;
-  successNotice.value = '';
 
   // The form is not a picture of what is stored, so it must not be written back.
   if (loadFailed.value) {
@@ -217,10 +215,11 @@ async function handleSave() {
     // into the session made an edit the server refused look like it had been accepted.
 
     savedSnapshot.value = { ...form.value };
-    successNotice.value = sendPhone
-      ? `Your details are saved. You sign in with ${form.value.phone_number.trim()} from now on.`
-      : 'Your details are saved.';
-    showToast('success', 'Details saved', successNotice.value);
+    showToast(
+      'success',
+      'Details saved',
+      sendPhone ? `You sign in with ${form.value.phone_number.trim()} from now on.` : 'Your details are saved.'
+    );
   } catch (err: any) {
     // Someone else already has it (409), or the server's own check refused it
     // (422): said under the field, the way the page's own check says it.
@@ -264,7 +263,6 @@ async function focusFirstInvalid() {
 
 function handleReset() {
   form.value = { ...savedSnapshot.value };
-  successNotice.value = '';
   errorNotice.value = '';
   phoneError.value = '';
   ecPhoneError.value = '';
@@ -302,27 +300,6 @@ function handleReset() {
     </div>
 
     <div v-else class="ws-reveal space-y-4 sm:space-y-6">
-      <!-- What just happened, when something did -->
-      <div
-        v-if="successNotice"
-        class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
-        role="status"
-      >
-        <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
-          <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
-          {{ successNotice }}
-        </p>
-        <!-- No `size-9`: it overrode `.icon-btn`'s own 2.75rem down to 36px. -->
-        <button
-          type="button"
-          class="icon-btn shrink-0"
-          aria-label="Dismiss this message"
-          @click="successNotice = ''"
-        >
-          <X class="size-4" aria-hidden="true" />
-        </button>
-      </div>
-
       <div
         v-if="errorNotice"
         class="ws-reveal flex items-start gap-2.5 rounded-tile bg-overdue-soft p-4 sm:p-5"

@@ -75,12 +75,21 @@ function dismissToast(id: string) {
   toasts.value = toasts.value.filter(t => t.id !== id);
 }
 
+/**
+ * Long enough to read (Sean, 1 Nov 2026: every message fades by itself, with no X). Four seconds
+ * suits a short confirmation; a longer message stays about as long as its words take.
+ */
+const MIN_TOAST_MS = 4000;
+const TOAST_MS_PER_CHARACTER = 60;
+const readingTime = (title: string, message: string) =>
+  Math.max(MIN_TOAST_MS, (title.length + message.length) * TOAST_MS_PER_CHARACTER);
+
 export function useToast() {
   function showToast(
     type: 'success' | 'warning' | 'error' | 'info',
     title: string,
     message: string,
-    duration = 4000,
+    duration = readingTime(title, message),
     options: ToastOptions = {}
   ) {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;

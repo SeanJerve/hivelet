@@ -137,15 +137,6 @@ const ticketPhotoName = ref('');
  * exists precisely to say what the thing is.
  */
 const ticketPhotoType = ref('');
-const ticketNotice = ref('');
-/**
- * The confirmation sits above both panels. At 375px the form is stacked and
- * its Submit button is a long scroll below it, so a resident who sent a
- * request saw the form empty itself and nothing else (B-61, reproduced in the
- * mocked-API harness). `handleTicketSubmit` focuses it, which scrolls it into
- * view and hands it to a screen reader in one step.
- */
-const ticketNoticeEl = ref<HTMLElement | null>(null);
 const ticketError = ref('');
 /** Which field the error is about, so it is tied to that field and focus goes there. */
 const ticketErrorField = ref<'ticket-title' | 'ticket-desc' | null>(null);
@@ -722,19 +713,14 @@ async function handleTicketSubmit() {
     // The ticket commits before its attachments do. If the photo failed, the
     // ticket still exists and the server says so here rather than returning an
     // error - submitting again would file the same complaint twice.
-    ticketNotice.value = created?.attachmentWarning
-      ? `"${ticketTitle.value.trim()}" was sent to the landlady. ${created.attachmentWarning}`
-      : `"${ticketTitle.value.trim()}" was sent to the landlady.`;
-    // The notice above is the confirmation, not a toast, so it pings here (Sean, 2026-10-01).
-    playSound('notify');
+    const sent = `"${ticketTitle.value.trim()}" was sent to the landlady.`;
+    if (created?.attachmentWarning) showToast('warning', 'Request sent', `${sent} ${created.attachmentWarning}`, undefined, { sound: true });
+    else showToast('success', 'Request sent', sent);
     ticketTitle.value = '';
     ticketDescription.value = '';
     ticketCategory.value = 'Plumbing';
     ticketPriority.value = 'Medium';
     removePhoto();
-
-    await nextTick();
-    ticketNoticeEl.value?.focus();
 
     await fetchTickets();
   } catch (err: any) {
@@ -792,29 +778,6 @@ function formatDateTime(iso: string) {
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Repairs
         </h1>
-      </div>
-
-      <div
-        v-if="ticketNotice"
-        ref="ticketNoticeEl"
-        tabindex="-1"
-        class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5 outline-none"
-        role="status"
-      >
-        <p class="flex min-w-0 items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
-          <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
-          <!-- The resident's own title, which can be one unbroken run. -->
-          <span class="min-w-0 wrap-anywhere">{{ ticketNotice }}</span>
-        </p>
-        <!-- No `size-9`: it overrode `.icon-btn`'s own 2.75rem down to 36px. -->
-        <button
-          type="button"
-          class="icon-btn shrink-0"
-          aria-label="Dismiss this message"
-          @click="ticketNotice = ''"
-        >
-          <X class="size-4" aria-hidden="true" />
-        </button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">

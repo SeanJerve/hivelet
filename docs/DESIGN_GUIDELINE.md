@@ -91,6 +91,12 @@ changing any value.
 | brand-bright on tile (data mark) | 3.47 | 3 |
 | hatch on tile (graphic) | 3.56 | 3 |
 
+**Messages fade by themselves (1 Nov 2026).** Every confirmation is a toast: top right, across the
+top on a phone, no X, gone after its reading time (at least 4 seconds, about 60 ms a character). A tap
+clears one early. No in-page banner with a dismiss button. A refusal inside an open dialog stays until
+the dialog closes or the next message replaces it, since the form it explains is still open. GCash
+return messages stay 9 seconds, 15 for a warning, because they say whether to pay again.
+
 **Colour is never the only cue.**
 - Status is always written in words: "Waiting for verification", "Not entered yet", "Overdue by 3
   days".

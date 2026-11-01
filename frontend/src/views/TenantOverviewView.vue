@@ -16,19 +16,17 @@ import { floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
-import { playSound } from '@/lib/sounds';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
-import { CreditCard, Wrench, X, CheckCircle2, Home } from 'lucide-vue-next';
+import { CreditCard, Wrench, Home } from 'lucide-vue-next';
 
 const { showToast } = useToast();
 const router = useRouter();
 
-const submissionNotice = ref('');
 const activeBillId = ref<string | null>(null);
 
 const payingOnline = ref(false);
@@ -299,10 +297,7 @@ onMounted(async () => {
   const refParam = params.get('ref');
 
   if (statusParam === 'success' && refParam) {
-    submissionNotice.value = `Your GCash payment (reference ${refParam}) was submitted. It counts as paid once the landlady verifies it.`;
-    // The notice above says it, and stays; a toast saying the same thing
-    // beside it went (Sean, 2026-10-01). The ping is still the confirmation.
-    playSound('notify');
+    showToast('success', 'Payment submitted', `Your GCash payment (reference ${refParam}) is waiting for the landlady to check it. It counts as paid once she does.`);
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (statusParam === 'cancelled') {
     showToast('info', 'Payment cancelled', 'Nothing was recorded.');
@@ -612,20 +607,6 @@ const statusTone = computed(() => {
       </p>
       <!-- What they did last is in the sidebar on every width, the phone's menu included (Sean, 17 Oct 2026). -->
     </header>
-
-    <div
-      v-if="submissionNotice"
-      role="status"
-      class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
-    >
-      <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
-        <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
-        {{ submissionNotice }}
-      </p>
-      <button type="button" class="icon-btn shrink-0" aria-label="Dismiss this message" @click="submissionNotice = ''">
-        <X class="size-4" aria-hidden="true" />
-      </button>
-    </div>
 
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>

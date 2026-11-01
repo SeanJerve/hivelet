@@ -13,10 +13,11 @@ import { api } from '@/lib/api';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import { playSound } from '@/lib/sounds';
+import { useToast } from '@/lib/useToast';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
-import { CreditCard, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
+import { CreditCard } from 'lucide-vue-next';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -104,16 +105,20 @@ async function closeAdyenModal() {
 /**
  * The outcome of a GCash return, kept on the page until it is dismissed.
  *
- * It was a toast, gone in four seconds, and it is the one message a resident
- * coming back from the GCash app most needs to read: whether the money went,
- * and whether to pay again (B-61).
+ * The one message a resident coming back from the GCash app most needs to read: whether the
+ * money went, and whether to pay again (B-61). A toast like every other message (Sean, 1 Nov
+ * 2026), but it was gone in four seconds, so this one stays well past its reading time, and a
+ * warning, which can say "do not pay again", the longest.
  */
+const { showToast } = useToast();
 interface GatewayNotice {
   tone: 'success' | 'warning';
   title: string;
   body: string;
 }
-const gatewayNotice = ref<GatewayNotice | null>(null);
+function notifyGateway({ tone, title, body }: GatewayNotice) {
+  showToast(tone, title, body, tone === 'success' ? 9000 : 15000, { sound: false });
+}
 
 /**
  * Adyen's session status in a resident's words. The raw value used to be
@@ -461,23 +466,23 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
        * makes this same distinction for its in-page confirmation panel; this is
        * the matching redirect-return leg for GCash.
        */
-      gatewayNotice.value = {
+      notifyGateway({
         tone: 'success',
         title: 'Payment received',
         body: res.recorded
           ? 'It is waiting for the landlady to check it. You will not be asked to pay this bill again.'
           : 'It is being recorded and usually appears within seconds. If this bill still looks ' +
             'unpaid, do not pay again; check back shortly.',
-      };
+      });
     } else {
       const stillProcessing = res?.gatewayStatus === 'paymentPending';
-      gatewayNotice.value = {
+      notifyGateway({
         tone: 'warning',
         title: stillProcessing ? 'Payment still processing' : 'Payment not completed',
         body:
           gatewayStatusWords(res?.gatewayStatus) +
           (stillProcessing ? '' : ' If money did leave your GCash, tell the landlady and do not pay again.'),
-      };
+      });
     }
   } catch {
     /**
@@ -490,13 +495,13 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
      * transport error ("Check that the API is running"), neither of which a
      * resident can act on; this sentence already says everything they can.
      */
-    gatewayNotice.value = {
+    notifyGateway({
       tone: 'warning',
       title: 'Could not confirm your payment here',
       body:
         'If money left your GCash the payment is safe: it is recorded with Adyen and reaches ' +
         'the landlady separately. Do not pay again; check this page shortly.',
-    };
+    });
   }
   return true;
 }
@@ -511,18 +516,18 @@ onMounted(async () => {
 
   if (statusParam === 'success') {
     playSound('notify');
-    gatewayNotice.value = {
+    notifyGateway({
       tone: 'success',
       title: 'Payment submitted',
       body: refParam ? `GCash payment ${refParam} is waiting for verification.` : 'Your payment was submitted.',
-    };
+    });
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (statusParam === 'cancelled') {
-    gatewayNotice.value = {
+    notifyGateway({
       tone: 'warning',
       title: 'Payment cancelled',
       body: 'Nothing was recorded.',
-    };
+    });
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
@@ -787,32 +792,6 @@ function refreshAll() {
         </RouterLink>
       </div>
     </header>
-
-    <div
-      v-if="gatewayNotice"
-      :class="[
-        'ws-reveal flex items-start justify-between gap-3 rounded-tile p-4 sm:p-5',
-        gatewayNotice.tone === 'success' ? 'bg-brand-soft' : 'bg-verify-soft',
-      ]"
-      role="status"
-    >
-      <div class="min-w-0">
-        <p
-          :class="[
-            'flex items-center gap-2.5 text-sm font-semibold leading-6',
-            gatewayNotice.tone === 'success' ? 'text-brand' : 'text-ink',
-          ]"
-        >
-          <CheckCircle2 v-if="gatewayNotice.tone === 'success'" class="size-5 shrink-0" aria-hidden="true" />
-          <AlertTriangle v-else class="size-5 shrink-0" aria-hidden="true" />
-          {{ gatewayNotice.title }}
-        </p>
-        <p class="mt-1 text-sm leading-6 text-ink-soft">{{ gatewayNotice.body }}</p>
-      </div>
-      <button type="button" class="icon-btn shrink-0" aria-label="Dismiss this message" @click="gatewayNotice = null">
-        <X class="size-4" aria-hidden="true" />
-      </button>
-    </div>
 
     <!-- `tabindex="-1"`: where focus lands when the dialog closes and its Pay
          button is gone. See `payTrigger`. -->
