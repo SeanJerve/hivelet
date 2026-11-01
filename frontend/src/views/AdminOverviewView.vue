@@ -971,8 +971,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         />
         <template v-else>
           <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" short />
-          <PhoneMore everywhere>
-            <dl class="grid grid-cols-2 gap-4 border-t border-line pt-4 sm:grid-cols-4">
+          <PhoneMore everywhere title="Year to date" :summary="`${peso(monthlyRevenue)} entered`">
+            <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
                 <dt class="text-xs text-ink-faint">Rent</dt>
                 <dd class="text-lg font-semibold tabular">{{ peso(entered.rent) }}</dd>
@@ -1093,7 +1093,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                follows the tile's width, not the screen's. At 1280 this tile is half
                a row (389px) and the four columns needed 407, so Net - the figure she
                reads it for - was cut off behind a sideways scroll on a laptop. -->
-          <PhoneMore everywhere>
+          <PhoneMore
+            everywhere
+            title="Month by month"
+            :summary="`${liveRecordedMonths.length} ${liveRecordedMonths.length === 1 ? 'month' : 'months'}`"
+          >
           <div class="ws-table-wrap @container">
           <table class="ws-table">
             <caption class="sr-only">Collections, operating expenses and net operating income by month</caption>

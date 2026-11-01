@@ -206,8 +206,9 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
       <p v-if="current" class="min-w-0" aria-live="polite">
         <span class="block text-xs leading-4 text-ink-faint">{{ current.long }}</span>
         <span class="block text-xl leading-7 font-semibold tabular tracking-tight text-ink">{{ describe(current) }}</span>
-        <span v-if="current.detail" class="block text-xs leading-5 tabular text-ink-soft">{{ current.detail }}</span>
       </p>
+      <div class="flex flex-col gap-2 sm:items-end">
+      <p v-if="current?.detail" class="text-sm tabular text-ink-soft" aria-live="polite">{{ current.detail }}</p>
       <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft">
         <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />{{ term('recorded') }}</li>
         <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />{{ term('unentered') }}</li>
@@ -215,6 +216,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <li v-if="kindsShown.has('none')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-well border border-line" />{{ term('none') }}</li>
         <li v-if="kindsShown.has('future')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border border-dashed border-hatch" />{{ term('future') }}</li>
       </ul>
+      </div>
     </div>
   </div>
 </template>
