@@ -8,7 +8,7 @@ Chapter 4 cites K, M, N and O by letter, so those letters must not change.
 | :--- | :--- | :--- | :--- |
 | A | Letter of Request | The signed letter to the owner. **[TO DO: scan it in; the manuscript has the heading only]** | The team's copy |
 | B | Appointments | The adviser appointment papers. **[TO DO: scan them in; the manuscript has the heading only]** | The team's copies |
-| C | Gantt Chart | The schedule as it ran: the three iterations, the Module 01 gap, and the dated events | `FINAL/appendices/APPENDIX_C_GANTT_CHART.md` |
+| C | Gantt Chart | The schedule as it ran: the first build, the three iterations, the Module 01 gap, and the dated events | `FINAL/appendices/APPENDIX_C_GANTT_CHART.md` |
 | D | Context Diagram | The as-built context diagram, the same image as Figure 6 | `docs/FINAL MANUSCRIPT/figures/figure-6-context-diagram.png` |
 | E | Data Flow Diagram (Level 1) | The as-built level 1 diagram, the same image as Figure 7 | `docs/FINAL MANUSCRIPT/figures/figure-7-data-flow-level-1.png` |
 | F | Data Flow Diagram (Child Diagrams) | Processes 1.0, 3.0, 4.0 and 5.0 opened into their steps | `FINAL/appendices/APPENDIX_F_CHILD_DATA_FLOW_DIAGRAMS.md` |

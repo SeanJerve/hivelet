@@ -18,7 +18,7 @@ Small boarding houses that run on spreadsheets, paper receipts and messages are 
 property management systems on the market, which assume larger operations. This study designed,
 developed and evaluated Hivelet, a web-based apartment management system delivered as a Progressive
 Web Application, for the Fe Galang Da Silva Boarding House, a 33-unit property in Legazpi City. The
-system was built in three Agile iterations with Vue, Express and PostgreSQL, pilot tested at the unit
+system was developed in three Agile iterations with Vue, Express and PostgreSQL, pilot tested at the unit
 and integration, system and acceptance levels, and evaluated on the eight characteristics of ISO/IEC
 25010:2011 by the owner, three tenants, a prospective tenant and five technical evaluators. The results
 are summarized below in the order of the specific objectives.

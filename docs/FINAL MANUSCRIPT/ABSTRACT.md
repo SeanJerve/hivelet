@@ -11,7 +11,7 @@ This study designed, developed and evaluated Hivelet, a web-based apartment mana
 delivered as a Progressive Web Application, for the Fe Galang Da Silva Boarding House, a 33-unit
 property in Legazpi City. The owner's existing practices were analyzed, and her own records,
 937 income rows and 1,327 expense allocations, were transferred into the system, which exposed
-problems the spreadsheet had hidden. The system was built in three Agile iterations with Vue,
+problems the spreadsheet had hidden. The system was developed in three Agile iterations with Vue,
 Express and PostgreSQL, and provides tenant and room management, inquiries about units, financial
 tracking with optional GCash payment through Adyen, maintenance requests with notifications,
 role-based access control, and installation from the browser on a phone or computer, without an app

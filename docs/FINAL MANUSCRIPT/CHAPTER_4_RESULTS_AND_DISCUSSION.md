@@ -129,15 +129,17 @@ real tenant's name or payment appears in any figure.
 
 ### 4.2.1 System Architecture and Technology Stack
 
-The system was built in three Agile iterations (Section 3.2). The first (24 July to 28 August 2026)
-built a working system and transferred the owner's records into it. The second (12 to 14 September)
-checked the system and its documents against each other, corrected 22 recorded errors and added
-automated checks. The third (15 September to the defense) took the owner's answers, put the system
-in her and her tenants' hands, and refined it from their feedback, the testing and the evaluation.
-Appendix M, Table M-19, sets out what each iteration did in each phase of Section 3.2. Each was tested
-and reviewed by the means available to it; the formal evaluation against ISO/IEC 25010 was carried
-out once, in the third, because Section 3.3 places it in actual use. Table 7 lists the technology
-used.
+A first working system was built from 24 July to 28 August 2026, and the owner's records were
+transferred into it. It was then developed in three Agile iterations (Section 3.2). The first (12 to
+14 September) checked the system and its documents against each other, corrected 22 recorded errors
+and added automated checks. The second (15 September to 31 October) took the owner's answers, put the
+system in her and her tenants' hands, and refined it from their feedback, the testing and the
+evaluation. The third (from 1 November) redesigned the look of the screens and joined the sign-in and
+inquiry pages into one screen. The functions tested and evaluated were not changed, so the results
+of the second iteration stand. Appendix M, Table M-19, sets out what each iteration did in each phase
+of Section 3.2. Each was tested and reviewed by the means available to it; the formal evaluation
+against ISO/IEC 25010 was carried out once, in the second, because Section 3.3 places it in actual
+use. Table 7 lists the technology used.
 
 **Table 7.** Technology stack of the developed system
 

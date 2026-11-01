@@ -618,37 +618,37 @@ function framework() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Appendix C. Gantt chart of the three iterations as they ran (docs/12_ITERATION_HISTORY.md and
-// Appendix M, Table M-19): every phase of Section 3.2 in each iteration, the Module 01 gap, and
-// the dated events Chapter 4 reports.
+// Appendix C. Gantt chart of the first build and the three iterations as they ran (Appendix M,
+// Table M-19): every phase of Section 3.2 in each iteration, the Module 01 gap, and the dated
+// events Chapter 4 reports.
 // ---------------------------------------------------------------------------------------------
 function gantt() {
   const W = 1040, H = 600;
-  const x0 = 250, x1 = 1010; // 20 July to 20 October 2026
+  const x0 = 250, x1 = 1010; // 20 July to 20 November 2026
   const day = (m, d) => (Date.UTC(2026, m - 1, d) - Date.UTC(2026, 6, 20)) / 864e5;
-  const span = day(10, 20);
+  const span = day(11, 20);
   const X = (m, d) => x0 + ((x1 - x0) * day(m, d)) / span;
-  let s = T(W / 2, 26, 'Hivelet development schedule, July to October 2026', { size: 18, weight: 'bold' });
+  let s = T(W / 2, 26, 'Hivelet development schedule, July to November 2026', { size: 18, weight: 'bold' });
   // Month grid.
-  for (const [m, name] of [[8, 'August'], [9, 'September'], [10, 'October']]) {
+  for (const [m, name] of [[8, 'August'], [9, 'September'], [10, 'October'], [11, 'November']]) {
     s += line([[X(m, 1), 56], [X(m, 1), H - 40]], { head: 'none', sw: 1, stroke: '#bbb' });
     s += T(X(m, 1) + 6, 66, name, { size: 14, anchor: 'start', fill: MUTED });
   }
   s += T(x0 + 6, 66, 'July', { size: 14, anchor: 'start', fill: MUTED });
   // Iteration bands across the top.
-  const it = [[[7, 24], [8, 28], 'Iteration 1: Construction'], [[9, 12], [9, 14], 'Iteration 2'], [[9, 15], [10, 20], 'Iteration 3: Consolidation and testing']];
+  const it = [[[7, 24], [8, 28], 'First build'], [[9, 12], [9, 14], 'Iteration 1'], [[9, 15], [10, 31], 'Iteration 2: Consolidation and testing'], [[11, 1], [11, 20], 'Iteration 3']];
   for (const [a, b, name] of it) {
     s += rect(X(...a), 80, X(...b) - X(...a), 34, { sw: 1.4, fill: '#eee' });
-    // A bar too narrow for its name (Iteration 2, three days) is named underneath instead.
-    if (X(...b) - X(...a) > 120) s += T((X(...a) + X(...b)) / 2, 97, name, { size: 14, weight: 'bold' });
+    // A bar too narrow for its name (Iteration 1, three days) is named underneath instead.
+    if (X(...b) - X(...a) > 90) s += T((X(...a) + X(...b)) / 2, 97, name, { size: 14, weight: 'bold' });
   }
   s += rect(X(8, 29), 80, X(9, 11) - X(8, 29), 34, { sw: 1.2, dash: '5 4' });
   s += T((X(8, 29) + X(9, 11)) / 2, 97, 'Module 01', { size: 12.5, fill: MUTED });
-  s += T(X(9, 13), 130, 'Iteration 2: Verification, 12 to 14 Sep', { size: 12.5, weight: 'bold' });
-  // One row per phase; a bar in every iteration the phase ran in.
+  s += T(X(9, 13), 130, 'Iteration 1: Verification, 12 to 14 Sep', { size: 12.5, weight: 'bold' });
+  // One row per phase; a bar in every iteration the phase ran in. The numbers index `it`.
   const rows = [
-    ['Requirements', [1, 2, 3]], ['Design', [1, 2, 3]], ['Development', [1, 2, 3]],
-    ['Testing', [1, 2, 3]], ['Deployment', [1, 3]], ['Review and maintenance', [1, 2, 3]],
+    ['Requirements', [2, 3, 4]], ['Design', [2, 3, 4]], ['Development', [1, 2, 3, 4]],
+    ['Testing', [2, 3, 4]], ['Deployment', [3, 4]], ['Review and maintenance', [2, 3, 4]],
   ];
   const top = 150, rh = 48;
   rows.forEach(([name, its], i) => {

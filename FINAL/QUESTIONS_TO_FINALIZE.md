@@ -24,6 +24,9 @@ Section 1.**
 | P14 | ~~Done 18 Oct~~ **The owner's September and October receipts.** Her records in the system stop at August (15 receipts that month, none since), so the Overview reads "Not entered yet" for October and four tenants (1a, 1c, 2c, F1) see an amount due for a period her workbook had not marked paid at the end of August. Entering them **on Monthly Income** settles those bills; an import does not (B-107) | Sean, 18 Oct: the owners enter them themselves on Monthly Income when the time comes |
 | P15 | ~~Run migration 082~~ **Done 13 Oct (082 and 083).** (B-107): two tenants, 1d and F2B, are shown an overdue amount for August, which they paid | Found in the audit, 13 Oct. For Sean, before the defense |
 
+| P16 | **New screenshots for the paper**: Figures 10 to 14 and every other figure of a screen show the design before Iteration 3 (the glass redesign of 1 to 2 November) | Retake once the design is final, with sample tenants only, then replace the images in the manuscript |
+| P17 | **The last batch of tenants and prospects** (Sean, 2 Nov 2026): their results go into Sections 4.3 and 4.4, and Iteration 3's Review row in Table M-19 | Waiting for the batch. The tests and evaluators already reported stay as they are |
+
 ## 2. The answers, and what each changed
 
 **Who is who.** Mrs. Fe Galang Da Silva owns the business; Michelle, Lloyd's mother, is the landlady
