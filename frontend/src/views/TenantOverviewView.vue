@@ -629,7 +629,7 @@ const statusTone = computed(() => {
            cascade - 30ms apart, same rhythm as any other first-load list in
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
-      <OverviewTile :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" :class="['list-reveal-item md:order-none md:col-span-2 xl:col-span-5', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
+      <OverviewTile :boxed="!settledOnPhone" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" :class="['list-reveal-item md:order-none md:col-span-2 xl:col-span-5', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
         <template v-if="!tenantDataLoadFailed && !isSettled && !(fromLedgerOnly && standingStatus === 'overdue')" #actions>
           <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
         </template>

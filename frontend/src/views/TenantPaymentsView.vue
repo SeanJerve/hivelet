@@ -836,6 +836,7 @@ function refreshAll() {
          raises the OLDEST uncovered period, so the button pays that one. -->
     <OverviewTile
       v-else-if="outstandingBills.length === 0 && standing && standingOwes"
+      boxed
       class="ws-reveal"
       :title="standing.status === 'overdue' ? 'Not entered yet' : 'Due'"
     >
@@ -891,6 +892,7 @@ function refreshAll() {
       <OverviewTile
         v-for="(bill, i) in outstandingBills"
         :key="bill.id"
+        boxed
         :title="billTileTitle(bill)"
         class="list-reveal-item"
         :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"

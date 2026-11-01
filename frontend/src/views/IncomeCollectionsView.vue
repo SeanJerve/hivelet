@@ -1447,10 +1447,11 @@ const isDownloadOpen = ref(false);
           nothing collected. Remove with the change that wires the live account.
           Reworded without "test" for the live demo (Sean, 6 Oct 2026); the instruction is the same.
         -->
-        <p class="ws-reveal text-sm font-medium leading-6 text-status-wait">
+        <div class="ws-reveal flex flex-col gap-2 rounded-tile bg-tile p-4 sm:p-6">
+        <p class="text-sm font-medium leading-6 text-status-wait">
           Online GCash payment is not live yet, so no money has reached you. Reject these for now.
         </p>
-        <ul class="divide-y divide-line border-t border-line">
+        <ul class="divide-y divide-line">
           <li
             v-for="(p, i) in pendingPayments"
             :key="p.id"
@@ -1515,6 +1516,7 @@ const isDownloadOpen = ref(false);
             </div>
           </li>
         </ul>
+        </div>
       </template>
     </div>
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * One section of a dashboard: a rule, a title and what it holds, directly on the page. These were
- * cards with four tones until Sean took every container off the dashboards (1 Nov 2026). What used
- * to be said by a dark card is said by coming first and by the size of its figures.
+ * One section of a dashboard: a rule, a title and what it holds, directly on the page. `boxed` puts
+ * it in a box instead, and a box means one thing: this is waiting for you (Sean, 1 Nov 2026). Pass
+ * it only while that is true, so the box leaves when there is nothing to do.
  */
 import { useId } from 'vue';
 import { ArrowUpRight } from 'lucide-vue-next';
@@ -14,6 +14,7 @@ defineProps<{
   /** Where the tile's arrow leads. Omit when there is nowhere to go. */
   to?: string;
   toLabel?: string;
+  boxed?: boolean;
 }>();
 
 const titleId = useId();
@@ -22,7 +23,7 @@ const titleId = useId();
 <template>
   <section
     :aria-labelledby="title ? titleId : undefined"
-    class="flex min-w-0 flex-col gap-4 border-t border-line pt-3"
+    :class="['flex min-w-0 flex-col gap-4', boxed ? 'rounded-tile bg-tile p-4 sm:p-6' : 'border-t border-line pt-3']"
   >
     <header v-if="title || to || $slots.actions" class="flex min-h-11 items-center justify-between gap-3">
       <h2 v-if="title" :id="titleId" class="text-base leading-6 font-semibold">

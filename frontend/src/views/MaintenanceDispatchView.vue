@@ -623,7 +623,10 @@ function handleDeleteTicketPrompt() {
         v-for="col in columns"
         :key="col.key"
         :aria-labelledby="`col-${col.key}`"
-        class="border-t border-line pt-4 flex flex-col gap-4 min-w-0"
+        :class="[
+          'flex min-w-0 flex-col gap-4',
+          col.key === 'open' && col.tickets.length ? 'self-start rounded-tile bg-tile p-4 sm:p-6' : 'border-t border-line pt-4',
+        ]"
       >
         <header class="flex items-start justify-between gap-3">
           <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>

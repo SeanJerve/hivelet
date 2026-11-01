@@ -747,7 +747,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     <div
       v-if="!isInitialLoading && anyLoadFailed"
       role="status"
-      class="ws-reveal flex flex-wrap items-center justify-between gap-3 text-sm font-medium text-status-wait"
+      class="ws-reveal flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-verify-soft px-4 py-3 text-sm font-medium text-status-wait"
     >
       <span>Some figures could not be loaded.</span>
       <button type="button" class="pill-btn" :disabled="isRefreshing" @click="refreshAllData">Try again</button>
@@ -792,7 +792,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     -->
     <TransitionGroup v-else-if="!isHistoricalMode" tag="div" name="tile" class="ws-reveal grid grid-cols-2 gap-x-6 gap-y-8 md:gap-x-10 md:gap-y-10 xl:grid-cols-12">
       <!-- What needs her action, first and largest. -->
-      <OverviewTile v-if="attentionShown" key="attention" title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 md:col-span-2', tileSpans.attention, phoneSpan]">
+      <OverviewTile v-if="attentionShown" key="attention" boxed title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 md:col-span-2', tileSpans.attention, phoneSpan]">
         <!--
           On a phone each half of this tile is one link, the count and its words
           together, instead of a count, a button and a link stacked: at half a

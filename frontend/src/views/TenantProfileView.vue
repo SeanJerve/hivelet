@@ -302,7 +302,7 @@ function handleReset() {
     <div v-else class="ws-reveal space-y-8">
       <div
         v-if="errorNotice"
-        class="ws-reveal flex items-start gap-2.5"
+        class="ws-reveal flex items-start gap-2.5 rounded-2xl bg-overdue-soft p-4"
         role="alert"
       >
         <AlertTriangle class="mt-0.5 size-5 shrink-0 text-overdue" aria-hidden="true" />
