@@ -1147,9 +1147,10 @@ observation sheet. **Where:** Section 3.3.
 seconds, then a hint, then a demonstration. After the prompt counts as without help; after a hint,
 with help; a demonstration, not completed. **Where:** Section 3.3.
 
-**Iteration.** One pass round the Agile cycle. Three: Construction (24 Jul to 28 Aug 2026),
-Verification (12 to 14 Sep), Consolidation and testing (15 Sep to the defense). **Where:**
-Section 4.2.1; App. M, Table M-19.
+**Iteration.** One pass round the Agile cycle. Three, after a first build (24 Jul to 28 Aug 2026):
+Iteration 1, Verification and correction (12 to 14 Sep), Iteration 2, Consolidation and testing
+(15 Sep to 31 Oct), and Iteration 3, Interface redesign (from 1 Nov). **Where:** Section 4.2.1; App. M,
+Table M-19.
 
 **ISO/IEC 25000 (SQuaRE).** The family of quality standards that 25010, 25022, 25023 and 25040 belong
 to: Systems and software Quality Requirements and Evaluation. **Where:** Section 3.3.
@@ -1179,7 +1180,7 @@ and control. The paper's theory base. **Where:** Section 2.1.2; Figure 2-1.
 **Measured quality.** What the tests showed for each sub-characteristic. **Where:** Section 3.3;
 Table 4-18.
 
-**Module 01.** The documents submitted between the first and second iterations; 22 errors in them
+**Module 01.** The documents submitted between the first build and Iteration 1; 22 errors in them
 were corrected. **Where:** App. C; App. M, Table M-19.
 
 **Needfinding.** Learning what users need by interviewing and watching them. **Where:** Section 3.2.1.

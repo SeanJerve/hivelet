@@ -123,14 +123,15 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 7. Method
 {
-  const s = titled('Method: Agile, in three iterations', 'Iteration 2 is the honest part of the story: it checked the system and its documents against each other and corrected 22 recorded errors, many written in Iteration 1 with the AI assistant and never checked.');
+  const s = titled('Method: Agile, in three iterations', 'Iteration 1 is the honest part of the story: it checked the system and its documents against each other and corrected 22 recorded errors, many written in the first build with the AI assistant and never checked.');
   image(s, 'appendix-c-gantt-chart.png', 0.5, 1.2, 7.6, 4.6);
   bullets(s, [
-    'Construction, 24 July to 28 August',
-    'Verification, 12 to 14 September: 22 recorded errors corrected',
-    'Consolidation and testing, 15 September to the defense',
+    'First build, 24 July to 28 August',
+    'Iteration 1, 12 to 14 September: 22 recorded errors corrected',
+    'Iteration 2, 15 September to 31 October: testing and evaluation',
+    'Iteration 3, from 1 November: interface redesign',
   ], { x: 8.3, w: 4.6, h: 3.6, size: 17, numbered: true });
-  s.addText('Every iteration ran every phase: requirements, design, development, testing, deployment and review.', { x: 8.3, y: 5.0, w: 4.6, h: 1.2, fontFace: FONT, fontSize: 14, italic: true, color: C.faint, valign: 'top' });
+  s.addText('Each iteration ran the phases it needed: requirements, design, development, testing, deployment and review. Iteration 1 had no deployment work.', { x: 8.3, y: 5.0, w: 4.6, h: 1.2, fontFace: FONT, fontSize: 14, italic: true, color: C.faint, valign: 'top' });
 }
 
 // 8. Architecture

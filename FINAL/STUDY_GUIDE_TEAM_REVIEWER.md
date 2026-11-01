@@ -93,7 +93,7 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 | :--- | :--- |
 | Requirements | **44** functional, **49** business rules, **10** non-functional |
 | As worded / in part / interface only / not as worded | 25 / 15 / 1 / 3 (graded 16 Sep) |
-| Iterations | **3**: 24 Jul to 28 Aug; 12 to 14 Sep (22 errors corrected); 15 Sep to the defense |
+| Iterations | **3**, after a first build (24 Jul to 28 Aug): 12 to 14 Sep (22 errors corrected); 15 Sep to 31 Oct; from 1 Nov (interface redesign) |
 | Database | **21** tables and 37 foreign keys in the ERD; **24** tables and 238 columns in Appendix N (three are backups from corrections) |
 | Routes checked against the permission matrix | **55** (administrator and tenant); **71** request handlers reviewed for security |
 | App size when installed | about **1.2 MB** |
@@ -305,7 +305,7 @@ Cover the answers and test yourself, or quiz each other. The answer to every que
 <details><summary>2. What did her own records show when transferred?</summary>937 income rows and 1,327 expense allocations; 402 of 937 (43%) with no anniversary date and no deposit; five invoice numbers each used twice.</details>
 <details><summary>3. State the general objective.</summary>To design, develop and evaluate Hivelet, a web-based apartment management system that improves administrative workflow integration, communication and operational control for a small, resource-constrained boarding house.</details>
 <details><summary>4. Name the six features.</summary>Tenant and room management; booking and reservations (inquiries); financial tracking with optional online payment; maintenance ticketing and notifications; role-based access control; PWA support.</details>
-<details><summary>5. What were the three iterations?</summary>Construction (24 Jul to 28 Aug), verification (12 to 14 Sep, 22 errors corrected), consolidation and testing (15 Sep to the defense).</details>
+<details><summary>5. What were the three iterations?</summary>After a first build (24 Jul to 28 Aug), Iteration 1 was verification and correction (12 to 14 Sep, 22 errors corrected), Iteration 2 was consolidation and testing (15 Sep to 31 Oct), and Iteration 3 was the interface redesign (from 1 Nov).</details>
 <details><summary>6. What is the stack?</summary>Vue 3 and TypeScript (PWA), Express in TypeScript, PostgreSQL on Supabase, Adyen with GCash, hosted on Vercel.</details>
 <details><summary>7. How many tests passed?</summary>82 of 83 (98.8%), no critical defect, course standard 90%.</details>
 <details><summary>8. What was the one failed test?</summary>Walkthrough step 23b: ₱0 shown instead of "—" with no connection; fixed and passed on 13 Oct.</details>

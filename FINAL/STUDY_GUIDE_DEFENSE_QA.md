@@ -135,10 +135,17 @@ The owner's needs changed as she used the system, and Agile let us show her work
 device each iteration and change them. *Section 3.2.*
 
 **What were the iterations?**
-Three. Construction, 24 July to 28 August 2026 (a working system and her records transferred).
-Verification, 12 to 14 September (the system and documents checked against each other; 22 recorded
-errors corrected). Consolidation, 15 September to the defense (her answers, real users, testing and
-evaluation). *Section 4.2.1; Appendix M, Table M-19.*
+Three, after a first build from 24 July to 28 August 2026 (a working system and her records
+transferred). Iteration 1, verification and correction, 12 to 14 September (the system and documents
+checked against each other; 22 recorded errors corrected). Iteration 2, consolidation and testing,
+15 September to 31 October (her answers, real users, testing and evaluation). Iteration 3, interface
+redesign, from 1 November. *Section 4.2.1; Appendix M, Table M-19.*
+
+**Your evaluators rated an earlier design. Do the results still hold?**
+Yes. The evaluation was done in Iteration 2. Iteration 3 changed how the screens look and joined the
+sign-in and inquiry pages, and it did not change the functions we tested, so the functional,
+reliability, security and performance results stand. The ratings on how the interface looks were given
+on the design before the redesign, and the paper says so. *Section 4.2.1; Appendix M, Table M-19.*
 
 **Why no Figma or separate design tool?**
 The screens were prototyped directly in Vue and Tailwind so the landlady and tenants could try them on

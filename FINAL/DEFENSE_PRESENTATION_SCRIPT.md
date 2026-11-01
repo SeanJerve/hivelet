@@ -66,13 +66,14 @@ the next iteration." [2.3, Figure 2-2]
 ## Block B. The build (slides 7 to 12)
 
 **Slide 7. Agile in three iterations** (50 s)
-**Land: iteration 2 is where we checked our own work.**
-"Construction, 24 July to 28 August: a working system and her records transferred. Verification,
+**Land: iteration 1 is where we checked our own work.**
+"First a build, 24 July to 28 August: a working system and her records transferred. Iteration 1,
 12 to 14 September: we checked the system and its documents against each other and corrected 22
-recorded errors. Consolidation, from 15 September: her answers, real users, testing and the
-evaluation." [4.2.1, Appendix M Table M-19]
+recorded errors. Iteration 2, 15 September to 31 October: her answers, real users, testing and the
+evaluation. Iteration 3, from 1 November: a redesign of how the screens look, with the functions we
+tested left as they were." [4.2.1, Appendix M Table M-19]
 *Likely question: "Did AI write it?" Yes, much of the code, at our direction; we reviewed and
-verified it, and iteration 2 exists because we did not trust it unchecked. [Q&A guide, Section 4]*
+verified it, and iteration 1 exists because we did not trust it unchecked. [Q&A guide, Section 4]*
 
 **Slide 8. How it is built** (40 s)
 **Land: the browser never talks to the database.**

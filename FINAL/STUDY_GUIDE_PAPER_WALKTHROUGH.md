@@ -854,12 +854,16 @@ The section then has four labelled parts.
 - Some rules live in the database itself so nothing can bypass them.
 
 **Key facts and numbers**
-- Iteration 1: **24 July to 28 August 2026**, a working system and the owner's records transferred.
-- Iteration 2: **12 to 14 September**, system and documents checked against each other, **22 recorded
+- A first build (not an iteration): **24 July to 28 August 2026**, a working system and the owner's
+  records transferred.
+- Iteration 1: **12 to 14 September**, system and documents checked against each other, **22 recorded
   errors** corrected, automated checks added.
-- Iteration 3: **15 September to the defense**, the owner's answers, real users, feedback, testing and
+- Iteration 2: **15 September to 31 October**, the owner's answers, real users, feedback, testing and
   evaluation.
-- The formal ISO/IEC 25010 evaluation was done once, in the third iteration.
+- Iteration 3: **from 1 November**, the interface redesign: a glass look in light and dark, and the
+  sign-in and inquiry pages joined in one screen. The functions tested and evaluated were not changed,
+  so the results of Iteration 2 stand.
+- The formal ISO/IEC 25010 evaluation was done once, in Iteration 2.
 - The ERD (Figure 4-6), drawn from the database's own catalogue on **5 October 2026**: **21 tables**,
   each with a primary key, and **37 foreign keys**.
 - Rules enforced by the database: one unit cannot have two active tenancies; one invoice number cannot
@@ -1721,9 +1725,9 @@ supervised. Also marked **[TO DO: scan them in]**.
 
 **Appendix C. Gantt Chart.** Figure C-1, the development schedule from July to October 2026, taken
 from the project's version history. A **Gantt chart** shows each activity as a bar along a timeline. It
-shows the three iterations, that the second iteration had no deployment work, and a dashed block for
-the Module 01 documents between the first and second iterations. It is there to show the Agile
-schedule as it really ran.
+shows the first build, the three iterations, that Iteration 1 had no deployment work, and a dashed
+block for the Module 01 documents between the first build and Iteration 1. It is there to show the
+Agile schedule as it really ran.
 
 **Appendix D. Context Diagram.** The same image as Figure 4-3, placed here as the full-page version.
 
@@ -1742,7 +1746,7 @@ the design one level deeper.
 **Appendix I. Initial Design.** Figures I-1 to I-4: four screens of the first working version, **28
 August 2026** (public landing page, a unit category, the tenant directory, the tenant overview on a
 phone), with sample tenants. Because the interface was prototyped in code, the first version is the
-initial design. It notes the second iteration removed an automatic rent increase the owner does not
+initial design. It notes Iteration 1 removed an automatic rent increase the owner does not
 apply and corrected the number of units on the public page. It is there to show how the design
 changed.
 
