@@ -1,0 +1,395 @@
+/*
+ * Glass on the light page (Sean, 1 Nov 2026). Everything for it is in this file,
+ * loaded after index.css, so removing the one import in main.ts puts the old surfaces back.
+ *
+ * The page stays near white with soft blurred patches of light green fixed behind it, only so
+ * the glass on each component has something to show. Surfaces are translucent white with a bright
+ * rim, and a faint green hairline in the rim defines an edge white alone could not on a white page.
+ *
+ * Three weights: a section, what floats (more opaque, so a form stays readable over a busy page),
+ * and the dark and green tiles, which stay tinted glass. Contrast is measured against the darkest
+ * green in the wash: re-measure if the wash or --tile changes.
+ */
+:root {
+  --tile: rgb(255 255 255 / 0.52);
+  --ink-faint: #525e57;
+  --well: rgb(23 96 63 / 0.05);
+  --hover: rgb(23 96 63 / 0.08);
+  --line: rgb(23 96 63 / 0.12);
+  --edge: rgb(23 96 63 / 0.14);
+  --brand-soft: rgb(23 96 63 / 0.11);
+  --verify-soft: rgb(252 228 180 / 0.62);
+  --overdue-soft: rgb(253 214 208 / 0.66);
+  --series-soft: #a9cdb8;
+
+  --glass-float: rgb(255 255 255 / 0.82);
+  --glass-chrome: rgb(255 255 255 / 0.5);
+  --glass-night: rgb(13 27 20 / 0.92);
+  --glass-brand: rgb(23 96 63 / 0.94);
+  --glass-solid: rgb(255 255 255 / 0.95);
+  --glass-rim: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.95),
+    rgb(23 96 63 / 0.16) 32%,
+    rgb(23 96 63 / 0.1) 62%,
+    rgb(255 255 255 / 0.85)
+  );
+  --glass-sheen: inset 0 1px 1px rgb(255 255 255 / 0.9), inset 0 -1px 1px rgb(255 255 255 / 0.4),
+    inset 0 0 18px rgb(255 255 255 / 0.3);
+  --glass-drop: 0 2px 6px -3px rgb(23 96 63 / 0.1), 0 14px 32px -18px rgb(23 96 63 / 0.26);
+  --glass-drop-float: 0 28px 60px -24px rgb(16 60 40 / 0.36);
+  --glass-blur: 14px;
+  --glass-blur-float: 24px;
+  --ws-table-surface: rgb(255 255 255 / 0.72);
+
+  --wash-base: #f8fbf9;
+  --wash-1: rgb(150 226 182 / 0.55);
+  --wash-2: rgb(196 238 170 / 0.55);
+  --wash-3: rgb(160 230 205 / 0.5);
+  --wash-4: rgb(212 244 196 / 0.6);
+  --wash-5: rgb(140 220 170 / 0.4);
+}
+
+[data-theme='dark'] {
+  --tile: rgb(255 255 255 / 0.06);
+  --ink-faint: #929f97;
+  --well: rgb(255 255 255 / 0.05);
+  --hover: rgb(255 255 255 / 0.09);
+  --line: rgb(255 255 255 / 0.12);
+  --edge: rgb(255 255 255 / 0.16);
+  --brand-soft: rgb(94 192 141 / 0.16);
+  --verify-soft: rgb(233 179 90 / 0.16);
+  --overdue-soft: rgb(255 143 128 / 0.16);
+  --series-soft: #a3d9bc;
+
+  --glass-float: rgb(26 35 30 / 0.84);
+  --glass-chrome: rgb(14 20 17 / 0.5);
+  --glass-night: rgb(46 66 55 / 0.62);
+  --glass-brand: rgb(29 97 66 / 0.8);
+  --glass-solid: rgb(26 35 30 / 0.96);
+  --glass-rim: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.36),
+    rgb(255 255 255 / 0.08) 32%,
+    rgb(255 255 255 / 0.05) 62%,
+    rgb(255 255 255 / 0.24)
+  );
+  --glass-sheen: inset 0 1px 1px rgb(255 255 255 / 0.14), inset 0 0 18px rgb(255 255 255 / 0.03);
+  --glass-drop: 0 14px 32px -18px rgb(0 0 0 / 0.6);
+  --glass-drop-float: 0 28px 60px -24px rgb(0 0 0 / 0.8);
+  --ws-table-surface: rgb(30 40 35 / 0.78);
+
+  --wash-base: #0e1513;
+  --wash-1: rgb(47 138 92 / 0.3);
+  --wash-2: rgb(90 150 70 / 0.18);
+  --wash-3: rgb(40 130 110 / 0.22);
+  --wash-4: rgb(70 150 90 / 0.16);
+  --wash-5: rgb(47 138 92 / 0.18);
+}
+
+/* The light green wash, fixed behind everything. */
+html {
+  background-color: var(--wash-base);
+}
+/* Clear, or body's own background paints over a layer at z-index -1. */
+body {
+  background: transparent;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(52vmax 44vmax at 6% 8%, var(--wash-1), transparent 70%),
+    radial-gradient(44vmax 38vmax at 92% 4%, var(--wash-2), transparent 70%),
+    radial-gradient(50vmax 42vmax at 96% 62%, var(--wash-3), transparent 70%),
+    radial-gradient(46vmax 40vmax at 34% 100%, var(--wash-4), transparent 70%),
+    radial-gradient(34vmax 30vmax at 44% 44%, var(--wash-5), transparent 72%);
+}
+#app > div:first-child,
+.bg-background,
+.bg-canvas:not(.ws-skip) {
+  background: transparent;
+}
+
+/*
+ * The glass itself. The blur sits on a layer under the content, never on the surface. Blur on a
+ * surface makes it the containing block for anything `position: fixed` inside it, and a WsModal
+ * opened inside a tile or inside another modal is exactly that (see `.ws-modal-panel` in
+ * index.css). It also stops anything nested in it from blurring. `isolation` keeps the layer
+ * behind the content without doing either.
+ */
+.bg-tile:not(.shadow-lift, .shadow-2xl),
+.bg-night,
+.ws-brand-tile,
+.ws-modal-panel,
+.ws-workspace aside.sticky,
+header.ws-glass {
+  isolation: isolate;
+  --surface-blur: var(--glass-blur);
+}
+.bg-tile:not(.shadow-lift, .shadow-2xl, .absolute, .fixed, .sticky, [class*='max-lg:fixed']),
+.bg-night:not(.absolute, .fixed, .sticky),
+.ws-brand-tile,
+.ws-modal-panel {
+  position: relative;
+}
+@media (min-width: 1024px) {
+  .bg-tile[class*='max-lg:fixed'] {
+    position: relative;
+  }
+}
+.bg-tile:not(.shadow-lift, .shadow-2xl)::before,
+.bg-night::before,
+.ws-brand-tile::before,
+.ws-modal-panel::before,
+.ws-workspace aside.sticky::before,
+header.ws-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(var(--surface-blur)) saturate(150%);
+  backdrop-filter: blur(var(--surface-blur)) saturate(150%);
+  box-shadow: var(--glass-sheen);
+}
+.bg-tile:not(.shadow-lift, .shadow-2xl),
+.bg-tile:is(.rounded-tile, .rounded-2xl):not(.border, [class*='shadow-']),
+.ws-workspace aside.sticky {
+  box-shadow: var(--glass-drop);
+}
+.bg-tile,
+.bg-night,
+.ws-brand-tile,
+.ws-modal-panel,
+dialog.ws-dialog,
+.ws-workspace aside.sticky,
+.pill-btn,
+.pill-btn-brand,
+.pill-btn-night,
+.chip {
+  border-color: transparent;
+}
+
+/* The rim of light, drawn so it can fade around the curve as a border cannot. */
+.bg-tile::after,
+.ws-modal-panel::after,
+.ws-workspace aside.sticky::after,
+.pill-btn::after,
+.chip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--glass-rim);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+.bg-night::after,
+.ws-brand-tile::after,
+.pill-btn-brand::after,
+.pill-btn-night::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.5),
+    rgb(255 255 255 / 0.1) 34%,
+    rgb(255 255 255 / 0.06) 62%,
+    rgb(255 255 255 / 0.32)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+/* Inquiries' conversation fills a phone screen, so the list must not read through it. */
+@media (max-width: 1023px) {
+  .bg-tile[class*='max-lg:fixed'] {
+    background-color: var(--glass-float);
+  }
+}
+/* `isolation` makes a stacking context, so an open menu in a tile would sit under the next tile. */
+.bg-tile:has([aria-expanded='true']) {
+  z-index: 20;
+}
+
+/* What floats: menus, popovers, the drawer and dialogs. These can scroll, so they take the blur
+   directly, since a layer inside would scroll away with the content. */
+.bg-tile.shadow-lift:not(.ws-modal-panel),
+.bg-tile.shadow-2xl,
+dialog.ws-dialog {
+  background-color: var(--glass-float);
+  -webkit-backdrop-filter: blur(var(--glass-blur-float)) saturate(170%);
+  backdrop-filter: blur(var(--glass-blur-float)) saturate(170%);
+  box-shadow: var(--glass-sheen), var(--glass-drop-float);
+}
+.ws-modal-panel {
+  --surface-blur: var(--glass-blur-float);
+  background-color: var(--glass-float);
+  box-shadow: var(--glass-drop-float);
+}
+/* A form's sticky buttons, over the fields scrolling under them. */
+.ws-modal-body .ws-actions {
+  background-color: var(--glass-solid);
+}
+dialog.ws-dialog::backdrop,
+dialog::backdrop {
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+/* The dark and green tiles, and the toasts, stay tinted glass. The fill is on the layer, not the
+   tile: a fill on the tile is blurred into the layer's backdrop along with the bright page just
+   outside its rounded corners, which shows as pale smudges in each corner. */
+.bg-night,
+.ws-brand-tile {
+  background-color: transparent;
+  box-shadow: var(--glass-drop);
+}
+.bg-night::before {
+  background-color: var(--glass-night);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.2);
+}
+.ws-brand-tile::before {
+  background-color: var(--glass-brand);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.2);
+}
+
+/* The top bar and the sidebar. */
+header.ws-glass {
+  --surface-blur: var(--glass-blur-float);
+  background-color: var(--glass-chrome);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 -1px 0 var(--line);
+}
+.ws-workspace aside.sticky {
+  top: 5rem;
+  height: calc(100dvh - 6.5rem);
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 1.75rem;
+  background-color: var(--tile);
+}
+
+/* Buttons and fields. */
+.pill-btn,
+.chip {
+  background-color: var(--tile);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.7),
+    0 2px 6px -3px rgb(23 96 63 / 0.18);
+}
+[data-theme='dark'] .pill-btn,
+[data-theme='dark'] .chip {
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.12);
+}
+.ws-input,
+input.ws-input,
+input[type='search'],
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='number'],
+select,
+.ws-textarea {
+  /* No blur of its own: it would paint over the search icon laid on top of the field. */
+  background-color: var(--tile);
+  border-color: var(--edge);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.5);
+}
+[data-theme='dark'] .ws-input,
+[data-theme='dark'] input,
+[data-theme='dark'] select,
+[data-theme='dark'] .ws-textarea {
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
+}
+.pill-btn-brand,
+.pill-btn-night {
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px) saturate(160%);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.3),
+    0 8px 18px -10px rgb(15 60 40 / 0.5);
+}
+.pill-btn-brand {
+  background-color: color-mix(in srgb, var(--brand) 90%, transparent);
+}
+.pill-btn-night {
+  background-color: var(--glass-night);
+}
+/* The main action on a green or dark tile stays bright enough to read as the action. */
+.pill-btn-light {
+  background-color: rgb(255 255 255 / 0.95);
+  color: #0f1b15;
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 8px 18px -10px rgb(0 0 0 / 0.45);
+}
+
+/* A sticky table head blurs the rows passing under it. */
+.ws-table thead th {
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+/* A phone has less to spare for blur. */
+@media (max-width: 767px) {
+  :root,
+  [data-theme='dark'] {
+    --glass-blur: 10px;
+    --glass-blur-float: 18px;
+  }
+}
+
+/* Whoever asks for less transparency or more contrast gets solid surfaces. */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  :root {
+    --tile: #ffffff;
+    --glass-float: #ffffff;
+    --glass-chrome: #edf1ee;
+    --glass-night: #0f1b15;
+    --glass-brand: #17603f;
+    --glass-solid: #ffffff;
+    --ws-table-surface: #ffffff;
+    --glass-blur: 0px;
+    --glass-blur-float: 0px;
+  }
+  [data-theme='dark'] {
+    --tile: #1a211d;
+    --glass-float: #1a211d;
+    --glass-chrome: #0f1412;
+    --glass-night: #24332b;
+    --glass-brand: #1d6142;
+    --glass-solid: #1a211d;
+    --ws-table-surface: #1a211d;
+  }
+  body::before {
+    background: none;
+  }
+}

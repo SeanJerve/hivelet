@@ -10,6 +10,7 @@ import { installTheme } from './lib/theme'
 import { CATEGORIES } from './lib/unitCategories'
 import { vPhone } from './lib/phoneFormat'
 import './index.css'
+import './glass.css'
 
 // An open page that outlived a deploy loads the new version on its next
 // navigation instead of going dead (lib/staleVersion.ts).
