@@ -1901,6 +1901,11 @@ router.delete(
       .maybeSingle();
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Inquiry not found.');
+    // Closed first, then deleted (Sean, 1 Nov 2026). The screen only offers delete on a finished
+    // inquiry; this holds the rule for anything that calls the route directly.
+    if (before.status !== 'Closed' && before.status !== 'Converted') {
+      throw ApiError.conflict('Close this inquiry before deleting it.');
+    }
 
     const { error } = await db.from('inquiries').delete().eq('id', req.params.inquiryId);
     if (error) throw ApiError.internal(error.message);

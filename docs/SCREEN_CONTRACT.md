@@ -131,7 +131,7 @@ before the redesign started.
 
 ### `views/TenantPaymentsView.vue`
 
-6 call(s), **1 of them write**.
+7 call(s), **1 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
@@ -139,6 +139,7 @@ before the redesign started.
 | reads | `GET /tenant/my-bills` | my bills |
 | reads | `GET /tenant/my-income-records` | my receipts |
 | reads | `GET /tenant/my-payments` | my payments |
+| reads | `GET /tenant/my-rooms` | my unit |
 | reads | `GET /tenant/my-standing` | whether my records cover today, and which periods are owed |
 | **writes** | `POST /tenant/payments/adyen/verify-session` | confirm the gateway session on return |
 
@@ -274,4 +275,4 @@ before the redesign started.
 
 ---
 
-**24 files make 81 distinct calls, 39 of which write.** Generated 2026-10-20.
+**24 files make 82 distinct calls, 39 of which write.** Generated 2026-11-01.

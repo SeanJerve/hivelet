@@ -621,7 +621,10 @@ async function handleSendReply() {
             >
               <Phone class="size-4" aria-hidden="true" />
             </a>
+            <!-- Closed first, then deleted (Sean, 1 Nov 2026): two steps, so an inquiry still being
+                 answered has no delete on it at all. The server holds the same rule. -->
             <button
+              v-if="!isLeadOpen(activeInquiry.status)"
               type="button"
               class="icon-btn-plain text-overdue"
               aria-label="Delete inquiry"
