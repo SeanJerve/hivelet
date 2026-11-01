@@ -6,12 +6,12 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { writesUnavailable } from '@/lib/offlineCache';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, roomsLoaded, fetchRooms, showToast } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
-import { Inbox, Phone, Send, Loader2, UserPlus, XCircle, Trash2 } from 'lucide-vue-next';
+import { ArrowLeft, Inbox, Phone, Send, Loader2, UserPlus, XCircle, Trash2 } from 'lucide-vue-next';
 import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -22,6 +22,7 @@ import type { ToolbarFilter } from '@/components/ui/listToolbar';
 const TODAY_LONG = todayLong();
 
 const router = useRouter();
+const route = useRoute();
 
 interface MessageBubble {
   id: string | number;
@@ -172,6 +173,7 @@ onMounted(async () => {
    */
   if (!roomsLoaded.value) void fetchRooms().catch(() => {});
   await fetchInquiries();
+  if (conversationOpen.value) activeInquiryId.value = chatId.value;
   // Only when nothing is chosen yet: a notification may already have opened one.
   if (!activeInquiryId.value && inquiries.length > 0) {
     activeInquiryId.value = inquiries[0].id;
@@ -230,22 +232,43 @@ const activeInquiry = computed(() => {
 });
 
 /**
- * Choosing an enquiry on a phone scrolls to it.
+ * One screen at a time below `xl`, as a messaging app is (Sean, 1 Nov 2026): the list, or one
+ * conversation, never the list with a conversation under it. From `xl` the two sit side by side
+ * and this changes nothing on screen.
  *
- * Below `xl` the detail panel sits UNDER the whole list, so a tap changed a
- * panel that was off screen and nothing appeared to happen (B-61). From `xl`
- * the two are side by side and the page must not move. `scroll-mt-24` on the
- * panel keeps its heading clear of the sticky workspace header.
+ * The open conversation is in the address (`?chat=<id>`) rather than a flag, so a phone's Back
+ * button closes it, a reload stays on it, and a conversation deleted meanwhile falls back to the
+ * list on its own.
  */
 const detailPanel = ref<HTMLElement | null>(null);
+const heading = ref<HTMLElement | null>(null);
+const threadScroller = ref<HTMLElement | null>(null);
+
+const chatId = computed(() => (typeof route.query.chat === 'string' ? route.query.chat : null));
+const conversationOpen = computed(() => !!chatId.value && inquiries.some((i) => i.id === chatId.value));
 
 async function selectInquiry(id: string) {
   activeInquiryId.value = id;
   if (window.matchMedia('(min-width: 1280px)').matches) return;
+  if (chatId.value !== id) await router.push({ query: { ...route.query, chat: id } });
   await nextTick();
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  detailPanel.value?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  detailPanel.value?.scrollIntoView({ block: 'start' });
+  heading.value?.focus({ preventScroll: true });
 }
+
+function closeConversation() {
+  // Back when the list is what came before; a link straight to a conversation has nothing behind it.
+  if (window.history.state?.back) {
+    router.back();
+    return;
+  }
+  const { chat: _chat, ...rest } = route.query;
+  router.replace({ query: rest });
+}
+
+watch(chatId, (id) => {
+  if (id && inquiries.some((i) => i.id === id)) activeInquiryId.value = id;
+}, { immediate: true });
 
 const activeUnit = computed(() => {
   if (!activeInquiry.value) return null;
@@ -340,6 +363,16 @@ watch(
   { immediate: true }
 );
 
+// A conversation opens on its newest message, and stays there as one arrives.
+watch(
+  [activeInquiryId, () => activeMessages.value.length, conversationOpen],
+  async () => {
+    await nextTick();
+    if (threadScroller.value) threadScroller.value.scrollTop = threadScroller.value.scrollHeight;
+  },
+  { flush: 'post' }
+);
+
 async function handleSendReply() {
   if (!activeInquiry.value || !replyMessage.value.trim()) return;
   isSubmitting.value = true;
@@ -396,7 +429,7 @@ async function handleSendReply() {
        it was meant to be worked. -->
   <div class="ws-focus space-y-6">
     <!-- Page header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div :class="['flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', conversationOpen && 'max-xl:hidden']">
       <div>
         <!-- Today, in place of "Admin" (Sean, 19 Oct 2026): this page shows the present, so it has no year menu. -->
         <p class="text-sm text-ink-faint">{{ TODAY_LONG }}</p>
@@ -408,11 +441,11 @@ async function handleSendReply() {
 
     </div>
 
-    <div class="grid min-h-[620px] grid-cols-1 gap-4 xl:grid-cols-12">
+    <div class="grid grid-cols-1 gap-4 xl:min-h-[620px] xl:grid-cols-12">
       <!-- The enquiries. Five twelfths on a laptop, four from 2xl (audit 2026-10-09):
            at a third of 1280 the list was 287px and its two dropdowns, two to a
            row since the toolbar fix, still read "All i..." and "Newest ...". -->
-      <div class="flex flex-col overflow-hidden rounded-tile bg-tile xl:col-span-5 2xl:col-span-4">
+      <div :class="['flex flex-col overflow-hidden rounded-tile bg-tile xl:col-span-5 2xl:col-span-4', conversationOpen && 'max-xl:hidden']">
         <div class="space-y-3 border-b border-line p-4">
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it. -->
@@ -428,7 +461,7 @@ async function handleSendReply() {
           </p>
         </div>
 
-        <div class="max-h-[540px] flex-1 overflow-y-auto">
+        <div class="flex-1 xl:max-h-[540px] xl:overflow-y-auto">
           <!-- The first read. Without this the list fell straight through to its
                empty state - "Nothing matches what you have typed" - while the
                request that would have filled it was still in flight. Built from
@@ -490,7 +523,7 @@ async function handleSendReply() {
                 :class="[
                   'press-plate w-full p-4 text-left',
                   activeInquiry?.id === inq.id
-                    ? 'bg-brand-soft'
+                    ? 'xl:bg-brand-soft max-xl:hover:bg-hover'
                     : 'hover:bg-hover',
                 ]"
                 @click="selectInquiry(inq.id)"
@@ -527,24 +560,43 @@ async function handleSendReply() {
       <div
         v-if="activeInquiry"
         ref="detailPanel"
-        class="ws-reveal flex min-h-[550px] scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile xl:col-span-7 2xl:col-span-8"
+        :class="[
+          'ws-reveal flex scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile lg:min-h-[550px] xl:col-span-7 2xl:col-span-8',
+          'max-lg:fixed max-lg:inset-0 max-lg:z-[45] max-lg:rounded-none max-lg:!shadow-none',
+          conversationOpen ? 'chat-opening' : 'max-xl:hidden',
+        ]"
+        @keydown.esc="closeConversation"
       >
-        <div class="border-b border-line p-5 sm:p-6">
+        <div class="border-b border-line p-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:p-5 xl:p-6">
           <!-- Delete sits top right, level with the name, at every width (Sean, 2026-10-02). -->
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pt-2">
-              <h2 class="min-w-0 break-words text-lg font-semibold tracking-tight text-ink">
+          <div class="flex items-center justify-between gap-1 xl:items-start xl:gap-3">
+            <button type="button" class="icon-btn -ml-1 xl:hidden" aria-label="Back to inquiries" @click="closeConversation">
+              <ArrowLeft class="size-5" aria-hidden="true" />
+            </button>
+            <div class="min-w-0 flex-1 xl:flex xl:flex-wrap xl:items-center xl:gap-x-2 xl:gap-y-1 xl:pt-2">
+              <h2 ref="heading" tabindex="-1" class="min-w-0 truncate text-base font-semibold tracking-tight text-ink outline-none xl:whitespace-normal xl:break-words xl:text-lg">
                 {{ activeInquiry.name }}
               </h2>
+              <!-- Below `xl` the header is one line, so the unit goes under the name. -->
+              <p v-if="activeUnit" class="truncate text-xs text-ink-soft xl:hidden">
+                Unit <span class="font-semibold uppercase">{{ activeUnit.unitCode }}</span><template v-if="roomsLoaded && !roomsFetchFailed">, {{ peso(activeUnit.price) }} a month</template>
+              </p>
               <span
                 v-if="activeInquiry.referenceCode"
-                class="tabular text-xs tracking-[0.08em] text-ink-faint"
+                class="tabular text-xs tracking-[0.08em] text-ink-faint max-xl:hidden"
               >{{ activeInquiry.referenceCode }}</span>
               <!-- Was a hardcoded "Active Prospect" on every lead, whatever its status. -->
-              <StatusPill :tone="statusTone(activeInquiry.status)">
+              <StatusPill :tone="statusTone(activeInquiry.status)" class="max-xl:hidden">
                 {{ statusWord(activeInquiry.status) }}
               </StatusPill>
             </div>
+            <a
+              :href="`tel:${activeInquiry.phone}`"
+              class="icon-btn xl:hidden"
+              :aria-label="`Call ${showPhone(activeInquiry.phone)}`"
+            >
+              <Phone class="size-4" aria-hidden="true" />
+            </a>
             <button
               type="button"
               class="icon-btn-plain text-overdue"
@@ -558,7 +610,7 @@ async function handleSendReply() {
           </div>
 
           <div class="flex flex-wrap items-start justify-between gap-4">
-            <div class="min-w-0">
+            <div class="min-w-0 max-xl:hidden">
 
               <!--
                 `min-h-[2.75rem]`, the height every other control in the
@@ -590,11 +642,11 @@ async function handleSendReply() {
               </p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2 empty:hidden max-xl:mt-2 max-xl:w-full">
               <template v-if="isLeadOpen(activeInquiry.status)">
                 <button
                   type="button"
-                  class="pill-btn"
+                  class="pill-btn max-xl:flex-1"
                   :disabled="isSubmitting || writesUnavailable"
                   :title="writesUnavailable ? 'Needs a connection' : undefined"
                   @click="handleCloseLead"
@@ -605,7 +657,7 @@ async function handleSendReply() {
 
                 <button
                   type="button"
-                  class="pill-btn-brand"
+                  class="pill-btn-brand max-xl:flex-1"
                   @click="
                     router.push({
                       path: '/admin/tenants',
@@ -629,7 +681,11 @@ async function handleSendReply() {
         </div>
 
         <!-- What was said -->
-        <div class="max-h-[380px] flex-1 space-y-5 overflow-y-auto bg-well p-5 sm:p-6">
+        <div ref="threadScroller" class="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain bg-well p-4 sm:p-6 xl:max-h-[380px]">
+          <!-- Where it stands, as a messaging app marks the top of a thread. -->
+          <p class="flex justify-center xl:hidden">
+            <StatusPill :tone="statusTone(activeInquiry.status)">{{ statusWord(activeInquiry.status) }}</StatusPill>
+          </p>
           <p v-if="threadError" class="ws-reveal rounded-2xl bg-overdue-soft p-4 text-sm leading-6 text-overdue">
             The replies could not be loaded, so only the first message is shown. {{ threadError }}
           </p>
@@ -668,7 +724,7 @@ async function handleSendReply() {
              (Sean, 2026-10-02). Nothing goes out by text or email: the reply is
              saved to `inquiry_messages`, and since 065 the visitor reads it on
              their inquiry page. -->
-        <form @submit.prevent="handleSendReply" class="space-y-2 border-t border-line p-4 sm:p-5">
+        <form @submit.prevent="handleSendReply" class="space-y-2 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-5">
           <label for="reply" class="sr-only">Your answer</label>
           <div class="relative">
             <textarea
@@ -699,7 +755,7 @@ async function handleSendReply() {
 
       <div
         v-else
-        class="grid place-items-center rounded-tile bg-tile p-12 text-center xl:col-span-7 2xl:col-span-8"
+        class="grid place-items-center rounded-tile bg-tile p-12 text-center max-xl:hidden xl:col-span-7 2xl:col-span-8"
       >
         <div>
           <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
@@ -718,3 +774,19 @@ async function handleSendReply() {
     />
   </div>
 </template>
+
+<style scoped>
+/* Opening a conversation below `xl`: it comes in from the side the list leaves by, as in a
+   messaging app. Short, and nothing moves for someone who asked for less motion. */
+@media (max-width: 1279px) and (prefers-reduced-motion: no-preference) {
+  .chat-opening {
+    animation: chat-in 220ms var(--ease-out-soft) both;
+  }
+}
+@keyframes chat-in {
+  from {
+    opacity: 0;
+    transform: translateX(1.5rem);
+  }
+}
+</style>
