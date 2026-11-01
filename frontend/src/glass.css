@@ -11,7 +11,7 @@
  * green in the wash: re-measure if the wash or --tile changes.
  */
 :root {
-  --tile: rgb(255 255 255 / 0.52);
+  --tile: rgb(255 255 255 / 0.46);
   --ink-faint: #525e57;
   --well: rgb(23 96 63 / 0.05);
   --hover: rgb(23 96 63 / 0.08);
@@ -22,24 +22,25 @@
   --overdue-soft: rgb(253 214 208 / 0.66);
   --series-soft: #a9cdb8;
 
-  --glass-float: rgb(255 255 255 / 0.82);
+  --glass-float: rgb(255 255 255 / 0.74);
   --glass-chrome: rgb(255 255 255 / 0.5);
-  --glass-night: rgb(13 27 20 / 0.92);
-  --glass-brand: rgb(23 96 63 / 0.94);
+  --glass-night: rgb(13 27 20 / 0.88);
+  --glass-brand: rgb(23 96 63 / 0.9);
   --glass-solid: rgb(255 255 255 / 0.95);
   --glass-rim: linear-gradient(
     135deg,
-    rgb(255 255 255 / 0.95),
-    rgb(23 96 63 / 0.16) 32%,
-    rgb(23 96 63 / 0.1) 62%,
-    rgb(255 255 255 / 0.85)
+    #ffffff,
+    rgb(255 255 255 / 0.5) 26%,
+    rgb(23 96 63 / 0.16) 50%,
+    rgb(255 255 255 / 0.45) 74%,
+    #ffffff
   );
   --glass-sheen: inset 0 1px 1px rgb(255 255 255 / 0.9), inset 0 -1px 1px rgb(255 255 255 / 0.4),
     inset 0 0 18px rgb(255 255 255 / 0.3);
   --glass-drop: 0 2px 6px -3px rgb(23 96 63 / 0.1), 0 14px 32px -18px rgb(23 96 63 / 0.26);
   --glass-drop-float: 0 28px 60px -24px rgb(16 60 40 / 0.36);
   --glass-blur: 14px;
-  --glass-blur-float: 24px;
+  --glass-blur-float: 28px;
   --ws-table-surface: rgb(255 255 255 / 0.72);
 
   --wash-base: #f8fbf9;
@@ -121,7 +122,7 @@ body::before {
  * index.css). It also stops anything nested in it from blurring. `isolation` keeps the layer
  * behind the content without doing either.
  */
-.bg-tile:not(.shadow-lift, .shadow-2xl),
+.bg-tile:not(.shadow-lift, .shadow-2xl, [role='combobox']),
 .bg-night,
 .ws-brand-tile,
 .ws-modal-panel,
@@ -130,7 +131,7 @@ header.ws-glass {
   isolation: isolate;
   --surface-blur: var(--glass-blur);
 }
-.bg-tile:not(.shadow-lift, .shadow-2xl, .absolute, .fixed, .sticky, [class*='max-lg:fixed']),
+.bg-tile:not(.shadow-lift, .shadow-2xl, [role='combobox'], .absolute, .fixed, .sticky, [class*='max-lg:fixed']),
 .bg-night:not(.absolute, .fixed, .sticky),
 .ws-brand-tile,
 .ws-modal-panel {
@@ -141,7 +142,7 @@ header.ws-glass {
     position: relative;
   }
 }
-.bg-tile:not(.shadow-lift, .shadow-2xl)::before,
+.bg-tile:not(.shadow-lift, .shadow-2xl, [role='combobox'])::before,
 .bg-night::before,
 .ws-brand-tile::before,
 .ws-modal-panel::before,
@@ -157,7 +158,7 @@ header.ws-glass::before {
   backdrop-filter: blur(var(--surface-blur)) saturate(150%);
   box-shadow: var(--glass-sheen);
 }
-.bg-tile:not(.shadow-lift, .shadow-2xl),
+.bg-tile:not(.shadow-lift, .shadow-2xl, [role='combobox']),
 .bg-tile:is(.rounded-tile, .rounded-2xl):not(.border, [class*='shadow-']),
 .ws-workspace aside.sticky {
   box-shadow: var(--glass-drop);
@@ -178,9 +179,7 @@ dialog.ws-dialog,
 /* The rim of light, drawn so it can fade around the curve as a border cannot. */
 .bg-tile::after,
 .ws-modal-panel::after,
-.ws-workspace aside.sticky::after,
-.pill-btn::after,
-.chip::after {
+.ws-workspace aside.sticky::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -198,9 +197,7 @@ dialog.ws-dialog,
     linear-gradient(#000 0 0);
 }
 .bg-night::after,
-.ws-brand-tile::after,
-.pill-btn-brand::after,
-.pill-btn-night::after {
+.ws-brand-tile::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -231,6 +228,11 @@ dialog.ws-dialog,
   }
 }
 /* `isolation` makes a stacking context, so an open menu in a tile would sit under the next tile. */
+/* An open dropdown stays above the tile after it, including while its filter panel fades in. */
+.ws-focus div:has(button[role='combobox'][aria-expanded='true']) {
+  position: relative;
+  z-index: 30;
+}
 .bg-tile:has([aria-expanded='true']) {
   z-index: 20;
 }
@@ -249,6 +251,19 @@ dialog.ws-dialog {
   --surface-blur: var(--glass-blur-float);
   background-color: var(--glass-float);
   box-shadow: var(--glass-drop-float);
+}
+:root:not([data-theme='dark']) :is(.ws-modal-panel, .bg-tile.shadow-lift, .bg-tile.shadow-2xl) {
+  --ink-faint: #434f48;
+  --ink-soft: #37433c;
+}
+/* Rows in the notification list are the panel's own glass, not a pane on top of it. */
+[role='dialog'] button.bg-tile {
+  background-color: transparent;
+  box-shadow: none;
+}
+[role='dialog'] button.bg-tile::before,
+[role='dialog'] button.bg-tile::after {
+  display: none;
 }
 /* A form's sticky buttons, over the fields scrolling under them. */
 .ws-modal-body .ws-actions {
@@ -276,6 +291,13 @@ dialog::backdrop {
   background-color: var(--glass-brand);
   box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.2);
 }
+.bg-night::before,
+.ws-brand-tile::before {
+  background-image: linear-gradient(172deg, rgb(255 255 255 / 0.1), transparent 30%);
+}
+.bg-night.shadow-lift::before {
+  background-color: rgb(13 27 20 / 0.8);
+}
 
 /* The top bar and the sidebar. */
 header.ws-glass {
@@ -294,20 +316,138 @@ header.ws-glass {
   background-color: var(--tile);
 }
 
-/* Buttons and fields. */
+/*
+ * Buttons and every pill-shaped control are mirror glass, after the iPhone's own controls: clear in
+ * the middle, a sheen across the top, a thick bright edge that blurs what passes under it, as the
+ * rim of a lens does. Each control sets only its --mirror-tint. Like the sections, the glass is on
+ * layers and not the control, so nothing nested in one is trapped by it.
+ */
 .pill-btn,
-.chip {
-  background-color: var(--tile);
-  -webkit-backdrop-filter: blur(10px) saturate(150%);
-  backdrop-filter: blur(10px) saturate(150%);
+.pill-btn-brand,
+.pill-btn-night,
+.pill-btn-light,
+.pill-btn-danger,
+.chip,
+button[role='combobox'],
+nav a.bg-brand-soft {
+  --mirror-tint: rgb(255 255 255 / 0.34);
+  --mirror-sheen: 0.34;
+  isolation: isolate;
+  background-color: transparent;
+  border-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow:
-    inset 0 1px 1px rgb(255 255 255 / 0.7),
-    0 2px 6px -3px rgb(23 96 63 / 0.18);
+    0 1px 2px rgb(16 60 40 / 0.1),
+    0 7px 16px -9px rgb(16 60 40 / 0.34);
 }
-[data-theme='dark'] .pill-btn,
-[data-theme='dark'] .chip {
-  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.12);
+:is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft):not(.absolute) {
+  position: relative;
 }
+:is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: var(--mirror-tint);
+  background-image: linear-gradient(
+    180deg,
+    rgb(255 255 255 / var(--mirror-sheen)),
+    rgb(255 255 255 / 0.03) 44%,
+    transparent 62%,
+    rgb(255 255 255 / 0.1)
+  );
+  -webkit-backdrop-filter: blur(3px) saturate(190%) brightness(1.05);
+  backdrop-filter: blur(3px) saturate(190%) brightness(1.05);
+  box-shadow:
+    inset 0 1.5px 1px rgb(255 255 255 / 0.7),
+    inset 0 -1.5px 1.5px rgb(255 255 255 / 0.3),
+    inset 0 -7px 10px -7px rgb(0 0 0 / 0.14);
+}
+:is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 2.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.85),
+    rgb(255 255 255 / 0.3) 30%,
+    rgb(255 255 255 / 0.14) 56%,
+    rgb(255 255 255 / 0.62)
+  );
+  -webkit-backdrop-filter: blur(6px) brightness(1.16);
+  backdrop-filter: blur(6px) brightness(1.16);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+.pill-btn-brand {
+  --mirror-tint: rgb(14 72 46 / 0.78);
+  --mirror-sheen: 0.2;
+  color: #ffffff;
+}
+.pill-btn-night {
+  --mirror-tint: rgb(13 27 20 / 0.82);
+  --mirror-sheen: 0.16;
+}
+.pill-btn-danger {
+  --mirror-tint: rgb(160 30 24 / 0.82);
+  --mirror-sheen: 0.18;
+  color: #ffffff;
+}
+.pill-btn-light {
+  --mirror-tint: rgb(255 255 255 / 0.9);
+  color: #0f1b15;
+}
+.chip[aria-pressed='true'] {
+  --mirror-tint: rgb(14 72 46 / 0.78);
+  --mirror-sheen: 0.2;
+  color: #ffffff;
+}
+@media (hover: hover) {
+  .pill-btn-brand:hover:not(:disabled) {
+    --mirror-tint: rgb(14 72 46 / 0.88);
+    background-color: transparent;
+  }
+  .pill-btn-light:hover:not(:disabled) {
+    background-color: transparent;
+  }
+}
+[data-theme='dark'] :is(.pill-btn, .chip, button[role='combobox'], nav a.bg-brand-soft) {
+  --mirror-tint: rgb(255 255 255 / 0.08);
+  --mirror-sheen: 0.14;
+}
+[data-theme='dark'] .pill-btn-brand,
+[data-theme='dark'] .chip[aria-pressed='true'] {
+  --mirror-tint: rgb(94 192 141 / 0.3);
+  color: #ffffff;
+}
+
+/* A sent message in a conversation is tinted glass too. */
+[class*='max-w-'].bg-brand {
+  background-color: rgb(14 72 46 / 0.8);
+  -webkit-backdrop-filter: blur(6px) saturate(170%);
+  backdrop-filter: blur(6px) saturate(170%);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.32),
+    inset 0 0 0 1px rgb(255 255 255 / 0.1);
+}
+[data-theme='dark'] [class*='max-w-'].bg-brand {
+  background-color: rgb(94 192 141 / 0.3);
+  color: #ffffff;
+}
+
+/* Fields. */
 .ws-input,
 input.ws-input,
 input[type='search'],
@@ -319,37 +459,59 @@ input[type='number'],
 select,
 .ws-textarea {
   /* No blur of its own: it would paint over the search icon laid on top of the field. */
-  background-color: var(--tile);
-  border-color: var(--edge);
-  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.5);
+  background-color: rgb(255 255 255 / 0.4);
+  border-color: rgb(255 255 255 / 0.75);
+  box-shadow:
+    inset 0 1px 2px rgb(16 60 40 / 0.1),
+    0 0 0 1px rgb(23 96 63 / 0.09);
 }
 [data-theme='dark'] .ws-input,
 [data-theme='dark'] input,
 [data-theme='dark'] select,
 [data-theme='dark'] .ws-textarea {
+  background-color: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.16);
   box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
 }
-.pill-btn-brand,
-.pill-btn-night {
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
-  backdrop-filter: blur(10px) saturate(160%);
-  box-shadow:
-    inset 0 1px 1px rgb(255 255 255 / 0.3),
-    0 8px 18px -10px rgb(15 60 40 / 0.5);
+/* The public site's questions, as one pane of glass. */
+#faqs dl {
+  position: relative;
+  isolation: isolate;
+  padding-inline: 1.25rem;
+  border: 0;
+  border-radius: 1.75rem;
+  background-color: var(--tile);
+  box-shadow: var(--glass-drop);
 }
-.pill-btn-brand {
-  background-color: color-mix(in srgb, var(--brand) 90%, transparent);
+#faqs dl::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  box-shadow: var(--glass-sheen);
 }
-.pill-btn-night {
-  background-color: var(--glass-night);
+#faqs dl::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--glass-rim);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
 }
-/* The main action on a green or dark tile stays bright enough to read as the action. */
-.pill-btn-light {
-  background-color: rgb(255 255 255 / 0.95);
-  color: #0f1b15;
-  box-shadow:
-    inset 0 1px 0 #ffffff,
-    0 8px 18px -10px rgb(0 0 0 / 0.45);
+#faqs dl > div:last-child {
+  border-bottom: 0;
 }
 
 /* A sticky table head blurs the rows passing under it. */
@@ -391,5 +553,17 @@ select,
   }
   body::before {
     background: none;
+  }
+  :is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft)::before,
+  :is(.pill-btn, .pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, .chip, button[role='combobox'], nav a.bg-brand-soft)::after {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .pill-btn-brand {
+    --mirror-tint: #17603f;
+  }
+  .pill-btn,
+  .pill-btn-light {
+    --mirror-tint: #ffffff;
   }
 }
