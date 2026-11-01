@@ -32,8 +32,10 @@ import { rememberLastPage } from '@/lib/lastPage';
  */
 import PublicGuestView from '@/views/PublicGuestView.vue';
 import LoginView from '@/views/LoginView.vue';
+import VisitorShell from '@/components/public/VisitorShell.vue';
 const InquireView = () => import('@/views/InquireView.vue');
 const InquiryThreadView = () => import('@/views/InquiryThreadView.vue');
+
 const PrivacyPolicyView = () => import('@/views/PrivacyPolicyView.vue');
 const TermsView = () => import('@/views/TermsView.vue');
 const CategoryRoomsView = () => import('@/views/CategoryRoomsView.vue');
@@ -61,14 +63,22 @@ const routes: RouteRecordRaw[] = [
   // Public
   { path: '/', name: 'Home', redirect: '/public' },
   { path: '/public', name: 'PublicGuest', component: PublicGuestView },
-  { path: '/inquire', name: 'Inquire', component: InquireView },
-  // The sender of an enquiry reads Michelle's reply and answers it, without an account (065).
-  { path: '/inquiry', name: 'InquiryThread', component: InquiryThreadView },
   { path: '/privacy', name: 'PrivacyPolicy', component: PrivacyPolicyView },
   { path: '/terms', name: 'Terms', component: TermsView },
   { path: '/category/:categorySlug', name: 'CategoryRooms', component: CategoryRoomsView },
   { path: '/category/:categorySlug/units', name: 'CategoryUnits', component: CategoryRoomsView },
-  { path: '/login', name: 'Login', component: LoginView },
+  // One screen: the photograph stays and only the left side changes (Sean, 2 Nov 2026).
+  {
+    path: '/visitor',
+    redirect: '/inquire',
+    component: VisitorShell,
+    children: [
+      { path: '/login', name: 'Login', component: LoginView },
+      { path: '/inquire', name: 'Inquire', component: InquireView },
+      // The sender of an enquiry reads Michelle's reply and answers it, without an account (065).
+      { path: '/inquiry', name: 'InquiryThread', component: InquiryThreadView },
+    ],
+  },
 
   // Tenant Portal
   {

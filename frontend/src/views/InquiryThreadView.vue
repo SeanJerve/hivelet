@@ -233,198 +233,172 @@ watch(() => route.hash, syncWithAddress);
 </script>
 
 <template>
-  <div class="ws-focus flex-1 w-full font-editorial bg-canvas">
-    <div class="ws-page ws-content pb-16 pt-6 sm:pt-10">
-      <div class="mx-auto max-w-2xl">
-        <!-- Loading: the link is being read. -->
-        <div v-if="loading && !thread" class="space-y-3" aria-busy="true">
-          <p class="sr-only" role="status">Loading your conversation</p>
-          <div class="h-8 w-2/3 rounded-tile bg-surface-sunken animate-pulse" />
-          <div class="h-20 w-full rounded-tile bg-surface-sunken animate-pulse" />
-          <div class="h-20 w-5/6 rounded-tile bg-surface-sunken animate-pulse" />
-        </div>
-
-        <!-- The conversation -->
-        <section v-else-if="thread" aria-labelledby="thread-heading">
-          <button
-            type="button"
-            class="press inline-flex min-h-11 items-center gap-1.5 text-xs text-ink-soft hover:text-ink font-semibold"
-            @click="backToList"
-          >
-            <ArrowLeft class="size-3.5" aria-hidden="true" />
-            Your inquiries
-          </button>
-          <h1
-            id="thread-heading"
-            ref="heading"
-            tabindex="-1"
-            class="mt-2 text-2xl sm:text-3xl font-medium tracking-[-0.02em] text-ink outline-none"
-          >
-            Your inquiry
-          </h1>
-          <p class="mt-2 text-xs text-ink-soft">
-            Sent {{ when(thread.inquiry.sentAt) }}<template v-if="thread.inquiry.referenceCode"> · Reference
-              <span class="font-medium text-ink tracking-[0.08em]">{{ thread.inquiry.referenceCode }}</span></template>
-          </p>
-          <p class="mt-4 text-sm text-ink" role="status">{{ statusLine }}</p>
-
-          <!-- The same bubbles as the owner's side (InquiriesView), each as wide as its message. -->
-          <ol class="mt-6 space-y-4" aria-label="Messages">
-            <li
-              v-for="m in thread.messages"
-              :key="m.id"
-              :class="['flex flex-col', m.from === 'you' ? 'items-end' : 'items-start']"
-            >
-              <p class="mb-1 px-1 text-xs text-ink-faint">
-                <span class="font-semibold text-ink-soft">{{ m.from === 'you' ? 'You' : 'Boarding house' }}</span>
-                · {{ when(m.sentAt) }}
-              </p>
-              <p
-                :class="[
-                  'max-w-md whitespace-pre-line break-words rounded-2xl px-4 py-3 text-sm leading-6',
-                  m.from === 'you' ? 'bg-brand text-on-brand' : 'bg-tile text-ink shadow-card ring-1 ring-line',
-                ]"
-              >{{ m.body }}</p>
-            </li>
-          </ol>
-
-          <div class="mt-4 flex flex-wrap items-center gap-3">
-            <button type="button" class="pill-btn" :disabled="loading" @click="refresh">
-              <RotateCw :class="['size-4', loading && 'animate-spin']" aria-hidden="true" />
-              Check for a reply
-            </button>
-            <button v-if="conversationToken" type="button" class="pill-btn" @click="copyConversationLink">
-              <Check v-if="linkCopied" class="size-4" aria-hidden="true" />
-              <Copy v-else class="size-4" aria-hidden="true" />
-              {{ linkCopied ? 'Link copied' : 'Copy conversation link' }}
-            </button>
-          </div>
-          <p v-if="linkCopyFailed && conversationToken" class="mt-3 text-xs leading-relaxed text-ink-soft break-all">
-            Copying did not work here. Keep this address instead: {{ conversationUrl(conversationToken) }}
-          </p>
-          <span class="sr-only" role="status" aria-live="polite">{{ linkCopied ? 'Link copied' : '' }}</span>
-
-          <form v-if="!closed" class="mt-8" novalidate @submit.prevent="sendReply">
-            <label for="thread-reply" class="sr-only">Write a reply</label>
-            <textarea
-              id="thread-reply"
-              v-model="reply"
-              rows="3"
-              maxlength="2000"
-              :aria-invalid="replyError ? 'true' : undefined"
-              :aria-describedby="replyError ? 'thread-reply-error' : undefined"
-              :class="['ws-textarea w-full', replyError && 'border-overdue']"
-              placeholder="Write a reply"
-            ></textarea>
-            <p v-if="replyError" id="thread-reply-error" class="mt-1.5 text-xs leading-relaxed text-overdue" role="alert">
-              {{ replyError }}
-            </p>
-            <button type="submit" class="pill-btn-brand mt-3" :disabled="sending">
-              <Send class="size-4" aria-hidden="true" />
-              {{ sending ? 'Sending' : 'Send' }}
-            </button>
-          </form>
-          <p v-else class="mt-8 text-sm text-ink-soft">
-            This conversation is closed.
-            <RouterLink to="/inquire" class="hover:text-ink font-semibold">Send a new inquiry</RouterLink>
-            to ask something else.
-          </p>
-        </section>
-
-        <!-- No link: the enquiries this browser sent, and the code form. -->
-        <section v-else aria-labelledby="find-heading">
-          <!--
-            The breadcrumb and heading of its two sibling forms, Inquire and Sign in
-            (audit 2026-10-09). This page is where both of them send a visitor
-            ("Read the reply", "Your inquiries" in the footer), and it alone had no
-            way home in the page and a smaller heading: 24px against their 28px on a
-            phone, 30px against 43px at 1440.
-          -->
-          <nav aria-label="Breadcrumb">
-            <ol class="flex flex-wrap items-center gap-x-2 text-xs text-ink-soft">
-              <li>
-                <RouterLink
-                  to="/public"
-                  class="press inline-flex min-h-11 items-center gap-1.5 hover:text-ink transition-colors font-semibold"
-                >
-                  <ArrowLeft class="size-3.5" aria-hidden="true" />
-                  Home
-                </RouterLink>
-              </li>
-              <li aria-hidden="true" class="text-ink-faint">/</li>
-              <li aria-current="page" class="text-ink">Your inquiries</li>
-            </ol>
-          </nav>
-          <h1 id="find-heading" class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
-            Your inquiries
-          </h1>
-          <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-            Enter your reference code and phone number to read the reply.
-          </p>
-
-          <p v-if="loadError && !lookupError" class="mt-6 text-sm text-overdue" role="alert">{{ loadError }}</p>
-
-          <ul v-if="saved.length" class="mt-6 divide-y divide-line border-y border-line">
-            <li v-for="s in saved" :key="s.token">
-              <RouterLink
-                :to="`/inquiry#t=${encodeURIComponent(s.token)}`"
-                class="group/goto press flex min-h-14 items-center justify-between gap-4 py-3 text-sm text-ink hover:text-ink-soft"
-              >
-                <span>
-                  Sent {{ when(s.sentAt) }}
-                  <span class="block text-xs text-ink-soft">Reference {{ s.referenceCode }}</span>
-                </span>
-                <!-- The overview tiles' own arrow and hover nudge (components/overview/OverviewTile.vue). -->
-                <ArrowUpRight
-                  class="size-4 shrink-0 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
-                  aria-hidden="true"
-                />
-              </RouterLink>
-            </li>
-          </ul>
-
-          <form class="mt-8 max-w-md" novalidate @submit.prevent="lookUp">
-            <label for="find-ref" class="block text-xs text-ink-faint">Reference code</label>
-            <input
-              id="find-ref"
-              v-model="refInput"
-              class="ws-input mt-2 uppercase tracking-[0.08em]"
-              autocomplete="off"
-              autocapitalize="characters"
-              spellcheck="false"
-              placeholder="K7QM-3XRD"
-              :aria-describedby="lookupError ? 'find-error' : undefined"
-            />
-            <label for="find-phone" class="mt-4 block text-xs text-ink-faint">Phone number</label>
-            <input
-              id="find-phone"
-              v-model="phoneInput"
-              v-phone
-              class="ws-input mt-2"
-              type="tel"
-              inputmode="tel"
-              autocomplete="tel"
-              placeholder="0917 123 4567"
-              :aria-describedby="lookupError ? 'find-error' : undefined"
-            />
-            <p v-if="lookupError" id="find-error" class="mt-2 text-xs leading-relaxed text-overdue" role="alert">
-              {{ lookupError }}
-            </p>
-            <div class="mt-4 flex flex-wrap items-center gap-3">
-              <button type="submit" class="pill-btn-brand" :disabled="loading">
-                {{ loading ? 'Opening' : 'Open inquiry' }}
-              </button>
-              <RouterLink to="/inquire" class="pill-btn">Send another inquiry</RouterLink>
-            </div>
-          </form>
-
-          <p class="mt-10 text-xs leading-relaxed text-ink-soft">
-            Need help? Call
-            <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
-            <a :href="`tel:${LANDLADY.phone}`" class="whitespace-nowrap hover:text-ink font-semibold">{{ LANDLADY.phoneShown }}</a>.
-          </p>
-        </section>
-      </div>
+  <div class="flex flex-1 flex-col">
+    <!-- Loading: the link is being read. -->
+    <div v-if="loading && !thread" class="space-y-3" aria-busy="true">
+      <p class="sr-only" role="status">Loading your conversation</p>
+      <div class="h-8 w-2/3 rounded-tile bg-surface-sunken animate-pulse" />
+      <div class="h-20 w-full rounded-tile bg-surface-sunken animate-pulse" />
+      <div class="h-20 w-5/6 rounded-tile bg-surface-sunken animate-pulse" />
     </div>
+
+    <!-- The conversation -->
+    <section v-else-if="thread" aria-labelledby="thread-heading">
+      <button
+        type="button"
+        class="press inline-flex min-h-11 items-center gap-1.5 text-xs text-ink-soft hover:text-ink font-semibold"
+        @click="backToList"
+      >
+        <ArrowLeft class="size-3.5" aria-hidden="true" />
+        Back
+      </button>
+      <h1
+        id="thread-heading"
+        ref="heading"
+        tabindex="-1"
+        class="mt-2 text-2xl sm:text-3xl font-medium tracking-[-0.02em] text-ink outline-none"
+      >
+        Your inquiry
+      </h1>
+      <p class="mt-2 text-xs text-ink-soft">
+        Sent {{ when(thread.inquiry.sentAt) }}<template v-if="thread.inquiry.referenceCode"> · Reference
+          <span class="font-medium text-ink tracking-[0.08em]">{{ thread.inquiry.referenceCode }}</span></template>
+      </p>
+      <p class="mt-4 text-sm text-ink" role="status">{{ statusLine }}</p>
+
+      <!-- The same bubbles as the owner's side (InquiriesView), each as wide as its message. -->
+      <ol class="mt-6 space-y-4" aria-label="Messages">
+        <li
+          v-for="m in thread.messages"
+          :key="m.id"
+          :class="['flex flex-col', m.from === 'you' ? 'items-end' : 'items-start']"
+        >
+          <p class="mb-1 px-1 text-xs text-ink-faint">
+            <span class="font-semibold text-ink-soft">{{ m.from === 'you' ? 'You' : 'Boarding house' }}</span>
+            · {{ when(m.sentAt) }}
+          </p>
+          <p
+            :class="[
+              'max-w-md whitespace-pre-line break-words rounded-2xl px-4 py-3 text-sm leading-6',
+              m.from === 'you' ? 'bg-brand text-on-brand' : 'bg-tile text-ink shadow-card ring-1 ring-line',
+            ]"
+          >{{ m.body }}</p>
+        </li>
+      </ol>
+
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <button type="button" class="pill-btn" :disabled="loading" @click="refresh">
+          <RotateCw :class="['size-4', loading && 'animate-spin']" aria-hidden="true" />
+          Check for a reply
+        </button>
+        <button v-if="conversationToken" type="button" class="pill-btn" @click="copyConversationLink">
+          <Check v-if="linkCopied" class="size-4" aria-hidden="true" />
+          <Copy v-else class="size-4" aria-hidden="true" />
+          {{ linkCopied ? 'Link copied' : 'Copy conversation link' }}
+        </button>
+      </div>
+      <p v-if="linkCopyFailed && conversationToken" class="mt-3 text-xs leading-relaxed text-ink-soft break-all">
+        Copying did not work here. Keep this address instead: {{ conversationUrl(conversationToken) }}
+      </p>
+      <span class="sr-only" role="status" aria-live="polite">{{ linkCopied ? 'Link copied' : '' }}</span>
+
+      <form v-if="!closed" class="mt-8" novalidate @submit.prevent="sendReply">
+        <label for="thread-reply" class="sr-only">Write a reply</label>
+        <textarea
+          id="thread-reply"
+          v-model="reply"
+          rows="3"
+          maxlength="2000"
+          :aria-invalid="replyError ? 'true' : undefined"
+          :aria-describedby="replyError ? 'thread-reply-error' : undefined"
+          :class="['ws-textarea w-full', replyError && 'border-overdue']"
+          placeholder="Write a reply"
+        ></textarea>
+        <p v-if="replyError" id="thread-reply-error" class="mt-1.5 text-xs leading-relaxed text-overdue" role="alert">
+          {{ replyError }}
+        </p>
+        <button type="submit" class="pill-btn-brand mt-3" :disabled="sending">
+          <Send class="size-4" aria-hidden="true" />
+          {{ sending ? 'Sending' : 'Send' }}
+        </button>
+      </form>
+      <p v-else class="mt-8 text-sm text-ink-soft">
+        This conversation is closed.
+        <RouterLink to="/inquire" class="hover:text-ink font-semibold">Send a new inquiry</RouterLink>
+        to ask something else.
+      </p>
+    </section>
+
+    <!-- No link: the enquiries this browser sent, and the code form. -->
+    <section v-else aria-labelledby="find-heading">
+      <h1 id="find-heading" class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
+        Your inquiries
+      </h1>
+      <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
+        Enter your reference code and phone number to read the reply.
+      </p>
+
+      <p v-if="loadError && !lookupError" class="mt-6 text-sm text-overdue" role="alert">{{ loadError }}</p>
+
+      <ul v-if="saved.length" class="mt-6 divide-y divide-line border-y border-line">
+        <li v-for="s in saved" :key="s.token">
+          <RouterLink
+            :to="`/inquiry#t=${encodeURIComponent(s.token)}`"
+            class="group/goto press flex min-h-14 items-center justify-between gap-4 py-3 text-sm text-ink hover:text-ink-soft"
+          >
+            <span>
+              Sent {{ when(s.sentAt) }}
+              <span class="block text-xs text-ink-soft">Reference {{ s.referenceCode }}</span>
+            </span>
+            <!-- The overview tiles' own arrow and hover nudge (components/overview/OverviewTile.vue). -->
+            <ArrowUpRight
+              class="size-4 shrink-0 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+              aria-hidden="true"
+            />
+          </RouterLink>
+        </li>
+      </ul>
+
+      <form class="mt-8 max-w-md" novalidate @submit.prevent="lookUp">
+        <label for="find-ref" class="block text-xs text-ink-faint">Reference code</label>
+        <input
+          id="find-ref"
+          v-model="refInput"
+          class="ws-input mt-2 uppercase tracking-[0.08em]"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          placeholder="K7QM-3XRD"
+          :aria-describedby="lookupError ? 'find-error' : undefined"
+        />
+        <label for="find-phone" class="mt-4 block text-xs text-ink-faint">Phone number</label>
+        <input
+          id="find-phone"
+          v-model="phoneInput"
+          v-phone
+          class="ws-input mt-2"
+          type="tel"
+          inputmode="tel"
+          autocomplete="tel"
+          placeholder="0917 123 4567"
+          :aria-describedby="lookupError ? 'find-error' : undefined"
+        />
+        <p v-if="lookupError" id="find-error" class="mt-2 text-xs leading-relaxed text-overdue" role="alert">
+          {{ lookupError }}
+        </p>
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <button type="submit" class="pill-btn-brand" :disabled="loading">
+            {{ loading ? 'Opening' : 'Open inquiry' }}
+          </button>
+          <RouterLink to="/inquire" class="pill-btn">Send another inquiry</RouterLink>
+        </div>
+      </form>
+
+      <p class="mt-10 text-xs leading-relaxed text-ink-soft">
+        Need help? Call
+        <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
+        <a :href="`tel:${LANDLADY.phone}`" class="whitespace-nowrap hover:text-ink font-semibold">{{ LANDLADY.phoneShown }}</a>.
+      </p>
+    </section>
   </div>
 </template>

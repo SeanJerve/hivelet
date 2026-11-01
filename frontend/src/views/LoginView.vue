@@ -8,7 +8,7 @@
 import type { DemoAccount } from '@/lib/demoAccounts.dev';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
-import { LogIn, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next';
+import { LogIn, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import { login, authError, isAuthenticating, homeRouteForRole, MOVED_OUT_FLAG } from '@/lib/authStore';
 import { lastPageFor } from '@/lib/lastPage';
 import { vPhoneIfNumber } from '@/lib/phoneFormat';
@@ -16,7 +16,6 @@ import { showToast, LANDLADY } from '@/lib/systemState';
 import { ApiRequestError } from '@/lib/api';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import WsModal from '@/components/ui/WsModal.vue';
-import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -206,306 +205,204 @@ async function handleQuickLogin(account: DemoAccount) {
 </script>
 
 <template>
-  <div class="ws-focus flex-1 w-full font-editorial bg-canvas">
+  <div class="flex flex-1 flex-col">
+    <h1 class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
+      Sign in to your account
+    </h1>
+
+    <div
+      v-if="deniedReason"
+      role="status"
+      class="ws-reveal mt-6 flex items-start gap-2.5 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify max-w-2xl"
+    >
+      <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      {{ deniedReason }}
+    </div>
+
     <!--
-      One screen tall on desktop, not a page to scroll. `lg:h-dvh` pins the two
-      columns to the viewport, and the form stays top-aligned under the
-      masthead (centred was tried and read as floating). On a screen too short
-      for the form, only this column scrolls (`lg:overflow-y-auto`), so the
-      submit button is never cut off. Phones scroll the page as normal: two
-      fields, the notes and the on-screen keyboard do not fit on one phone
-      screen.
+      One column, and Sign in straight under the password. The two fields
+      sat side by side from 640px, with the note and both policy links
+      between them and the button.
     -->
-    <div class="grid min-h-dvh grid-cols-1 lg:h-dvh lg:grid-cols-2">
-
-      <!-- Left: the form -->
-      <div class="ws-page flex flex-col pb-8 sm:pb-10 lg:pb-8 lg:overflow-y-auto">
-
-        <!--
-          The landing page's masthead bar, repeated: `h-16 items-center`, the
-          same `font-display` wordmark, on the same `ws-page` gutter. Moving
-          from the landing page to here, "Hivelet" now stays exactly where it
-          was. It used to start 32px down inside this column's padding, so the
-          page visibly dropped on arrival. Contact goes onto one line for the
-          same reason: two stacked lines do not fit a 64px bar. It may wrap on
-          a 320px phone, which the bar's height still holds.
-        -->
-        <!-- 44px targets, text unmoved: see the same bar in InquireView.vue. -->
-        <div class="flex min-h-16 flex-wrap items-center justify-between gap-x-6">
-          <RouterLink
-            to="/public"
-            class="press inline-flex min-h-11 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+    <form class="mt-8 lg:mt-6 max-w-md" @submit.prevent="handleSubmit">
+      <div class="grid gap-y-5">
+        <div>
+          <label
+            for="login-email"
+            class="block text-xs text-ink-faint"
           >
-            Hivelet
-          </RouterLink>
-
+            Login ID or phone number
+          </label>
           <!--
-            Inquire's bar exactly (audit 2026-10-09): the theme toggle up here, where the
-            evaluators asked for it on every public page (3 Oct) and where Inquire, the
-            landing page and the category pages have it, rather than under the form;
-            and "Contact us" from 640px, as there, so the bar keeps one row on a phone.
+            Login ID or phone number only (Sean, 17 Oct 2026: email sign-in was given up;
+            every tenant has a login ID and the owner a phone number). Since 20 Oct 2026
+            the server refuses an email outright ("emails are nothing in our website"). A new tenant has only the login ID
+            the landlady gave them (073, e.g. HV-48213), so this is
+            type="text". type="email" would make the browser reject a
+            phone number before it was ever sent. For the same reason there
+            is no inputmode="tel": an iPhone's telephone keypad has no
+            letters, so a login ID could not be typed at all.
           -->
-          <p class="flex flex-wrap items-baseline justify-end gap-x-3">
-            <span class="hidden text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft sm:inline">Contact us</span>
+          <input
+            id="login-email"
+            v-model="email"
+            v-phone-if-number
+            type="text"
+            autocomplete="username"
+            required
+            placeholder="e.g. HV-12345"
+            class="ws-input mt-2"
+          />
+        </div>
+
+        <div>
+          <label
+            for="login-password"
+            class="block text-xs text-ink-faint"
+          >
+            Password
+          </label>
+          <div class="relative mt-2">
+            <input
+              id="login-password"
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="current-password"
+              required
+              class="ws-input pr-12"
+            />
+            <!--
+              A 44px button around the 36px circle that was the whole
+              target (measured 36x36 at 375). The circle is now an inner
+              span that carries the hover fill, so what a reader sees is
+              unchanged; `right-0.5` puts it back 6px from the field's
+              edge, where `right-1.5` had it. It fits the field's `pr-12`.
+            -->
+            <button
+              type="button"
+              class="group press-plate absolute right-0.5 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full cursor-pointer"
+              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              @click="showPassword = !showPassword"
+            >
+              <span class="icon-bump grid size-9 place-items-center rounded-full">
+              <!-- A quick crossfade rather than a hard swap between the two
+                   icon states, so toggling reads as a change of state
+                   rather than a flicker. `mode="out-in"` keeps only one
+                   icon in the flow at a time, since the button has no
+                   spare width for two to sit side by side mid-transition.
+                   Transitioning `scale`, not `transform` - Tailwind 4
+                   compiles `scale-*` to the individual `scale` property
+                   (see the `.press`/`.press-plate` note in index.css), so
+                   a `transform` entry in this list would transition
+                   nothing. -->
+              <Transition
+                mode="out-in"
+                enter-active-class="transition-[opacity,scale] duration-100 ease-[var(--ease-out)]"
+                leave-active-class="transition-[opacity,scale] duration-75 ease-[var(--ease-out)]"
+                enter-from-class="opacity-0 motion-safe:scale-90"
+                leave-to-class="opacity-0 motion-safe:scale-90"
+              >
+                <component
+                  :is="showPassword ? EyeOff : Eye"
+                  :key="showPassword ? 'eye-off' : 'eye-on'"
+                  class="size-4 text-ink-soft"
+                  aria-hidden="true"
+                />
+              </Transition>
+              </span>
+            </button>
+          </div>
+          <!--
+            No email or SMS reset, on purpose (2026-09-30): many tenants have no
+            email, SMS needs a paid provider, and everyone concerned sees the
+            landlady. A forgotten password is reset in person: a tenant's by her,
+            from Tenants > Edit > Reset password (B-83); hers by the team
+            (scripts/reset-owner-password.mjs). The note speaks to tenants only;
+            the owner's route is not advertised on a public page (Sean, 2026-09-30).
+          -->
+          <button
+            type="button"
+            class="press mt-1 inline-flex min-h-11 items-center text-xs text-ink-soft hover:text-ink transition-colors cursor-pointer font-semibold"
+            :aria-expanded="showForgot"
+            aria-controls="login-forgot"
+            @click="showForgot = !showForgot"
+          >
+            Forgot your password?
+          </button>
+          <!--
+            "Call" is the link, not the number (Sean, 17 Oct 2026): a phone opens its own
+            call prompt with the number in it, so the page does not print the number, and
+            the sentence says the other way, in person. Bold, green and underlined so it
+            reads as something to tap.
+          -->
+          <p v-show="showForgot" id="login-forgot" class="ws-reveal max-w-xl text-sm leading-6 text-ink-soft">
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
-            >
-              {{ LANDLADY.phoneShown }}
-            </a>
-            <ThemeToggle class="self-center text-ink" />
+              class="font-semibold text-brand underline underline-offset-2 hover:text-brand-strong"
+              aria-label="Call the landlady"
+            >Call</a>
+            or approach the landlady in person for a new one.
           </p>
         </div>
-
-        <!--
-          A breadcrumb above the title, where the way back used to be a link
-          at the very bottom of the form. `min-h-11` keeps "Home" at the
-          app's 44px tap-target size.
-        -->
-        <nav aria-label="Breadcrumb" class="mt-8 sm:mt-10 lg:mt-6">
-          <ol class="flex flex-wrap items-center gap-x-2 text-xs text-ink-soft">
-            <li>
-              <RouterLink
-                to="/public"
-                class="press inline-flex min-h-11 items-center gap-1.5 hover:text-ink transition-colors font-semibold"
-              >
-                <ArrowLeft class="size-3.5" aria-hidden="true" />
-                Home
-              </RouterLink>
-            </li>
-            <li aria-hidden="true" class="text-ink-faint">/</li>
-            <li aria-current="page" class="text-ink">Sign in</li>
-          </ol>
-        </nav>
-
-        <h1 class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
-          Sign in to your account
-        </h1>
-
-        <div
-          v-if="deniedReason"
-          role="status"
-          class="ws-reveal mt-6 flex items-start gap-2.5 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify max-w-2xl"
-        >
-          <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          {{ deniedReason }}
-        </div>
-
-        <!--
-          One column, and Sign in straight under the password. The two fields
-          sat side by side from 640px, with the note and both policy links
-          between them and the button.
-        -->
-        <form class="mt-8 lg:mt-6 max-w-md" @submit.prevent="handleSubmit">
-          <div class="grid gap-y-5">
-            <div>
-              <label
-                for="login-email"
-                class="block text-xs text-ink-faint"
-              >
-                Login ID or phone number
-              </label>
-              <!--
-                Login ID or phone number only (Sean, 17 Oct 2026: email sign-in was given up;
-                every tenant has a login ID and the owner a phone number). Since 20 Oct 2026
-                the server refuses an email outright ("emails are nothing in our website"). A new tenant has only the login ID
-                the landlady gave them (073, e.g. HV-48213), so this is
-                type="text". type="email" would make the browser reject a
-                phone number before it was ever sent. For the same reason there
-                is no inputmode="tel": an iPhone's telephone keypad has no
-                letters, so a login ID could not be typed at all.
-              -->
-              <input
-                id="login-email"
-                v-model="email"
-                v-phone-if-number
-                type="text"
-                autocomplete="username"
-                required
-                placeholder="e.g. HV-12345"
-                class="ws-input mt-2"
-              />
-            </div>
-
-            <div>
-              <label
-                for="login-password"
-                class="block text-xs text-ink-faint"
-              >
-                Password
-              </label>
-              <div class="relative mt-2">
-                <input
-                  id="login-password"
-                  v-model="password"
-                  :type="showPassword ? 'text' : 'password'"
-                  autocomplete="current-password"
-                  required
-                  class="ws-input pr-12"
-                />
-                <!--
-                  A 44px button around the 36px circle that was the whole
-                  target (measured 36x36 at 375). The circle is now an inner
-                  span that carries the hover fill, so what a reader sees is
-                  unchanged; `right-0.5` puts it back 6px from the field's
-                  edge, where `right-1.5` had it. It fits the field's `pr-12`.
-                -->
-                <button
-                  type="button"
-                  class="group press-plate absolute right-0.5 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full cursor-pointer"
-                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
-                  @click="showPassword = !showPassword"
-                >
-                  <span class="icon-bump grid size-9 place-items-center rounded-full">
-                  <!-- A quick crossfade rather than a hard swap between the two
-                       icon states, so toggling reads as a change of state
-                       rather than a flicker. `mode="out-in"` keeps only one
-                       icon in the flow at a time, since the button has no
-                       spare width for two to sit side by side mid-transition.
-                       Transitioning `scale`, not `transform` - Tailwind 4
-                       compiles `scale-*` to the individual `scale` property
-                       (see the `.press`/`.press-plate` note in index.css), so
-                       a `transform` entry in this list would transition
-                       nothing. -->
-                  <Transition
-                    mode="out-in"
-                    enter-active-class="transition-[opacity,scale] duration-100 ease-[var(--ease-out)]"
-                    leave-active-class="transition-[opacity,scale] duration-75 ease-[var(--ease-out)]"
-                    enter-from-class="opacity-0 motion-safe:scale-90"
-                    leave-to-class="opacity-0 motion-safe:scale-90"
-                  >
-                    <component
-                      :is="showPassword ? EyeOff : Eye"
-                      :key="showPassword ? 'eye-off' : 'eye-on'"
-                      class="size-4 text-ink-soft"
-                      aria-hidden="true"
-                    />
-                  </Transition>
-                  </span>
-                </button>
-              </div>
-              <!--
-                No email or SMS reset, on purpose (2026-09-30): many tenants have no
-                email, SMS needs a paid provider, and everyone concerned sees the
-                landlady. A forgotten password is reset in person: a tenant's by her,
-                from Tenants > Edit > Reset password (B-83); hers by the team
-                (scripts/reset-owner-password.mjs). The note speaks to tenants only;
-                the owner's route is not advertised on a public page (Sean, 2026-09-30).
-              -->
-              <button
-                type="button"
-                class="press mt-1 inline-flex min-h-11 items-center text-xs text-ink-soft hover:text-ink transition-colors cursor-pointer font-semibold"
-                :aria-expanded="showForgot"
-                aria-controls="login-forgot"
-                @click="showForgot = !showForgot"
-              >
-                Forgot your password?
-              </button>
-              <!--
-                "Call" is the link, not the number (Sean, 17 Oct 2026): a phone opens its own
-                call prompt with the number in it, so the page does not print the number, and
-                the sentence says the other way, in person. Bold, green and underlined so it
-                reads as something to tap.
-              -->
-              <p v-show="showForgot" id="login-forgot" class="ws-reveal max-w-xl text-sm leading-6 text-ink-soft">
-                <a
-                  :href="`tel:${LANDLADY.phone}`"
-                  class="font-semibold text-brand underline underline-offset-2 hover:text-brand-strong"
-                  aria-label="Call the landlady"
-                >Call</a>
-                or approach the landlady in person for a new one.
-              </p>
-            </div>
-          </div>
-
-          <div
-            v-if="shownError"
-            role="alert"
-            class="ws-reveal mt-6 flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
-          >
-            <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {{ shownError }}
-          </div>
-
-          <button
-            type="submit"
-            :disabled="!canSubmit"
-            class="pill-btn-brand mt-6 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />
-            <LogIn v-else class="size-4" aria-hidden="true" />
-            <span>{{ isAuthenticating ? 'Signing in…' : 'Sign in' }}</span>
-          </button>
-
-          <p class="mt-8 max-w-xl text-xs leading-relaxed text-ink-soft">
-            Only tenants of the boarding house can sign in.
-            <RouterLink to="/inquire" class="whitespace-nowrap font-bold text-ink hover:text-brand">Inquire now</RouterLink>
-          </p>
-          <!--
-            Signing in is where a resident starts using the portal, so the rules
-            for it and what it keeps about them are one tap away here (B-61).
-            Same underline as the Home breadcrumb above, and the same 44px row.
-          -->
-          <p class="mt-1 flex flex-wrap gap-x-5 text-xs text-ink-soft">
-            <RouterLink
-              to="/terms"
-              class="press inline-flex min-h-11 items-center hover:text-ink transition-colors font-semibold"
-            >
-              Terms of use
-            </RouterLink>
-            <RouterLink
-              to="/privacy"
-              class="press inline-flex min-h-11 items-center hover:text-ink transition-colors font-semibold"
-            >
-              Privacy policy
-            </RouterLink>
-          </p>
-        </form>
       </div>
 
-      <!-- Right: Real building exterior showcase with clear background image -->
-      <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 pb-10 sm:pb-14 overflow-hidden bg-night">
-        <img
-          src="/fe-galang-building.webp"
-          alt=""
-          aria-hidden="true"
-          class="absolute inset-0 w-full h-full object-cover object-center"
-          width="1790"
-          height="879"
-          loading="lazy"
-        />
-        <!-- Contrast gradient overlay: unblurred to keep building details clear and vibrant -->
-        <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/25 to-night/50" />
+      <div
+        v-if="shownError"
+        role="alert"
+        class="ws-reveal mt-6 flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
+      >
+        <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        {{ shownError }}
+      </div>
 
-        <!-- On the masthead's line, not 56px below it: the same 64px bar. -->
-        <div class="relative z-10 flex h-16 items-center">
-          <p class="text-[0.7rem] tracking-[0.18em] uppercase text-white/80 drop-shadow-sm">
-            {{ LANDLADY.address }}
-          </p>
-        </div>
+      <button
+        type="submit"
+        :disabled="!canSubmit"
+        class="pill-btn-brand mt-6 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />
+        <LogIn v-else class="size-4" aria-hidden="true" />
+        <span>{{ isAuthenticating ? 'Signing in…' : 'Sign in' }}</span>
+      </button>
 
-        <div class="relative z-10">
-          <p class="font-medium tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,4.4vw,3.75rem)] drop-shadow-sm">
-            Fe Galang Da Silva<br />Boarding House
-          </p>
-        </div>
-      </aside>
-
-    </div>
+      <p class="mt-8 max-w-xl text-xs leading-relaxed text-ink-soft">
+        Only tenants of the boarding house can sign in.
+        <RouterLink to="/inquire" class="whitespace-nowrap font-bold text-ink hover:text-brand">Inquire now</RouterLink>
+      </p>
+      <!--
+        Signing in is where a resident starts using the portal, so the rules
+        for it and what it keeps about them are one tap away here (B-61).
+        Same underline as the Home breadcrumb above, and the same 44px row.
+      -->
+      <p class="mt-1 flex flex-wrap gap-x-5 text-xs text-ink-soft">
+        <RouterLink
+          to="/terms"
+          class="press inline-flex min-h-11 items-center hover:text-ink transition-colors font-semibold"
+        >
+          Terms of use
+        </RouterLink>
+        <RouterLink
+          to="/privacy"
+          class="press inline-flex min-h-11 items-center hover:text-ink transition-colors font-semibold"
+        >
+          Privacy policy
+        </RouterLink>
+      </p>
+    </form>
 
     <!--
       Development only. `demoAccounts` is empty in a built application - the
       module it comes from sits behind `import.meta.env.DEV` - so this whole
       section is absent rather than rendering hollow.
     -->
-    <section v-if="demoAccounts.length > 0" class="border-t border-line px-6 py-12 sm:px-10 lg:px-16">
+    <section v-if="demoAccounts.length > 0" class="mt-12 border-t border-line pt-8">
       <div class="mx-auto w-full max-w-5xl">
         <h2 class="text-lg font-semibold tracking-tight">Demo accounts</h2>
         <p class="mt-1 text-sm text-ink-soft">
           One click signs you in. This panel only exists while the dev server is running.
         </p>
 
-        <ul class="mt-6 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        <ul class="mt-6 grid gap-2 sm:grid-cols-2">
           <li
             v-for="(acc, i) in demoAccounts"
             :key="acc.name + i"

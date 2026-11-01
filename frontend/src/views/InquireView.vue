@@ -16,9 +16,8 @@
  * Adding the others is a schema change, not a design change.
  */
 import { ref, reactive, nextTick } from 'vue';
-import { Loader2, ArrowLeft, AlertCircle, ArrowUpRight } from 'lucide-vue-next';
+import { Loader2, AlertCircle, ArrowUpRight } from 'lucide-vue-next';
 import { LANDLADY } from '@/lib/systemState';
-import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 import { api } from '@/lib/api';
 import { rememberInquiry, savedInquiries } from '@/lib/myInquiries';
 import InquiryConversationLink from '@/components/public/InquiryConversationLink.vue';
@@ -187,313 +186,195 @@ async function submitInquiry() {
 </script>
 
 <template>
-  <div class="ws-focus flex-1 w-full font-editorial bg-canvas">
+  <div class="flex flex-1 flex-col">
+    <!-- Every link here says "Inquire now"; the page was titled "Register your interest", the wording the owner dropped. -->
+    <h1 class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
+      Send an inquiry
+    </h1>
+    <p class="mt-3 text-sm text-ink-soft">Viewings are by appointment.</p>
+
     <!--
-      One screen tall on desktop, not a page to scroll. `lg:h-dvh` pins the two
-      columns to the viewport, and the form stays top-aligned under the
-      masthead (centred was tried and read as floating). On a screen too short
-      for the form, only this column scrolls (`lg:overflow-y-auto`), so the
-      submit button is never cut off. Phones scroll the page as normal: four
-      fields and the on-screen keyboard do not fit on one phone screen.
+      The labels are visible, and were placeholders.
 
-      On desktop the question box sits beside the three short fields instead
-      of under them, and the title is allowed two lines instead of three.
-      Measured 2026-09-24: that is what lets the whole form fit a 1536x864
-      laptop (Windows at 125% scaling) without scrolling.
+      A placeholder disappears the moment somebody types, so a half-filled
+      form became four identical rules with no way to tell which was the
+      name and which was the phone - worst for the person coming back to
+      check before sending, which is exactly when it matters. The asterisks
+      went with them: every field here is required, the question too (the
+      endpoint wants at least five characters), and each carries `required`
+      for assistive technology. `novalidate` keeps the browser's own bubble
+      out of it - see `errors` in the script.
     -->
-    <div class="grid min-h-dvh grid-cols-1 lg:h-dvh lg:grid-cols-2">
+    <!--
+      The confirmation takes the form's place once the message is saved.
+      Focus moves to its heading, so a screen reader reads the outcome and
+      a keyboard continues from here rather than from the top of the page.
+    -->
+    <p v-if="!sentTo && lastSaved" class="mt-6 max-w-xl text-sm leading-relaxed text-ink-soft">
+      You sent an inquiry on {{ new Date(lastSaved.sentAt).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', day: 'numeric', month: 'short' }) }}.
+      <RouterLink
+        :to="`/inquiry#t=${encodeURIComponent(lastSaved.token)}`"
+        class="group/goto press inline-flex min-h-11 items-center gap-1 font-semibold text-ink"
+      >
+        Open your conversation
+        <ArrowUpRight
+          class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+          aria-hidden="true"
+        />
+      </RouterLink>
+    </p>
+    <div v-if="sentTo" class="ws-reveal mt-8 lg:mt-6 max-w-2xl">
+      <h2
+        ref="sentHeading"
+        tabindex="-1"
+        class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em] outline-none"
+      >
+        Your inquiry is sent
+      </h2>
+      <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
+        <template v-if="conversation">We will reply on your inquiry page, and may also call
+          <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
+        <template v-else>We will reply by phone or message to
+          <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
+      </p>
+      <InquiryConversationLink v-if="conversation" :token="conversation.token" :reference-code="conversation.referenceCode" />
+      <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
+        If it is urgent, call
+        <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
+        <a
+          :href="`tel:${LANDLADY.phone}`"
+          class="press whitespace-nowrap text-ink transition-colors font-semibold"
+        >{{ LANDLADY.phoneShown }}</a>.
+      </p>
+    </div>
 
-      <!-- Left: the form -->
-      <div class="ws-page flex flex-col pb-8 sm:pb-10 lg:pb-8 lg:overflow-y-auto">
-
-        <!--
-          The landing page's masthead bar, repeated: `h-16 items-center`, the
-          same `font-display` wordmark, on the same `ws-page` gutter. Moving
-          from the landing page to here, "Hivelet" now stays exactly where it
-          was. It used to start 32px down inside this column's padding, so the
-          page visibly dropped on arrival. Contact goes onto one line for the
-          same reason: two stacked lines do not fit a 64px bar. It may wrap on
-          a 320px phone, which the bar's height still holds.
-        -->
-        <!--
-          `inline-flex min-h-11 items-center` on both links: they measured 70x28
-          and 99x28 at 375px. The bar centres them, so a 44px box around the
-          same line of text leaves the text exactly where it was (x=56,
-          y=18-46 at 1366) and only the part that answers a thumb grows.
-        -->
-        <div class="flex min-h-16 flex-wrap items-center justify-between gap-x-6">
-          <RouterLink
-            to="/public"
-            class="press inline-flex min-h-11 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+    <form
+      v-else
+      ref="formRef"
+      novalidate
+      class="mt-8 lg:mt-6 max-w-2xl"
+      @submit.prevent="submitInquiry"
+    >
+      <!--
+        One order at every width: name and phone side by side, the question full width underneath. On desktop the
+        question used to stand in a second column beside the three fields
+        (owner's call, 2026-09-26: it did not look right), and a form reads
+        top to bottom.
+      -->
+      <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+        <div>
+          <label
+            for="iq-name"
+            class="block text-xs text-ink-faint"
+            >Your name</label
           >
-            Hivelet
-          </RouterLink>
-
-          <p class="flex flex-wrap items-baseline justify-end gap-x-3">
-            <!-- The label from 640px only: with it the bar wrapped to two rows on a 390px phone,
-                 "Hivelet" alone on the first; the tappable number says what it is. -->
-            <span class="hidden text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft sm:inline">Contact us</span>
-            <a
-              :href="`tel:${LANDLADY.phone}`"
-              class="press inline-flex min-h-11 items-center text-sm font-semibold text-ink transition-colors"
-            >
-              {{ LANDLADY.phoneShown }}
-            </a>
-            <!-- Light or dark, at the top where a phone finds it (technical evaluators, 3 Oct 2026). -->
-            <ThemeToggle class="self-center text-ink" />
+          <input
+            id="iq-name"
+            v-model="inquiryName"
+            type="text"
+            autocomplete="name"
+            required
+            :aria-invalid="errors.name ? 'true' : undefined"
+            :aria-describedby="errors.name ? 'iq-name-error' : undefined"
+            :class="['ws-input mt-2', errors.name && 'border-overdue']"
+            @input="delete errors.name"
+          />
+          <p v-if="errors.name" id="iq-name-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+            {{ errors.name }}
           </p>
         </div>
-
-        <!--
-          A breadcrumb above the title, where the way back used to be a link
-          at the very bottom of the form. `min-h-11` keeps "Home" at the
-          app's 44px tap-target size.
-        -->
-        <nav aria-label="Breadcrumb" class="mt-8 sm:mt-10 lg:mt-6">
-          <ol class="flex flex-wrap items-center gap-x-2 text-xs text-ink-soft">
-            <li>
-              <RouterLink
-                to="/public"
-                class="press inline-flex min-h-11 items-center gap-1.5 hover:text-ink transition-colors font-semibold"
-              >
-                <ArrowLeft class="size-3.5" aria-hidden="true" />
-                Home
-              </RouterLink>
-            </li>
-            <li aria-hidden="true" class="text-ink-faint">/</li>
-            <li aria-current="page" class="text-ink">Inquire</li>
-          </ol>
-        </nav>
-
-        <!-- Every link here says "Inquire now"; the page was titled "Register your interest", the wording the owner dropped. -->
-        <h1 class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
-          Send an inquiry
-        </h1>
-        <p class="mt-3 text-sm text-ink-soft">Viewings are by appointment.</p>
-
-        <!--
-          The labels are visible, and were placeholders.
-
-          A placeholder disappears the moment somebody types, so a half-filled
-          form became four identical rules with no way to tell which was the
-          name and which was the phone - worst for the person coming back to
-          check before sending, which is exactly when it matters. The asterisks
-          went with them: every field here is required, the question too (the
-          endpoint wants at least five characters), and each carries `required`
-          for assistive technology. `novalidate` keeps the browser's own bubble
-          out of it - see `errors` in the script.
-        -->
-        <!--
-          The confirmation takes the form's place once the message is saved.
-          Focus moves to its heading, so a screen reader reads the outcome and
-          a keyboard continues from here rather than from the top of the page.
-        -->
-        <p v-if="!sentTo && lastSaved" class="mt-6 max-w-xl text-sm leading-relaxed text-ink-soft">
-          You sent an inquiry on {{ new Date(lastSaved.sentAt).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', day: 'numeric', month: 'short' }) }}.
-          <RouterLink
-            :to="`/inquiry#t=${encodeURIComponent(lastSaved.token)}`"
-            class="group/goto press inline-flex min-h-11 items-center gap-1 font-semibold text-ink"
+        <div>
+          <label
+            for="iq-phone"
+            class="block text-xs text-ink-faint"
+            >Phone number</label
           >
-            Open your conversation
-            <ArrowUpRight
-              class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
-              aria-hidden="true"
-            />
-          </RouterLink>
-        </p>
-        <div v-if="sentTo" class="ws-reveal mt-8 lg:mt-6 max-w-2xl">
-          <h2
-            ref="sentHeading"
-            tabindex="-1"
-            class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em] outline-none"
-          >
-            Your inquiry is sent
-          </h2>
-          <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
-            <template v-if="conversation">We will reply on your inquiry page, and may also call
-              <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
-            <template v-else>We will reply by phone or message to
-              <span class="text-ink break-all">{{ sentTo.phone }}</span>.</template>
-          </p>
-          <InquiryConversationLink v-if="conversation" :token="conversation.token" :reference-code="conversation.referenceCode" />
-          <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-            If it is urgent, call
-            <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
-            <a
-              :href="`tel:${LANDLADY.phone}`"
-              class="press whitespace-nowrap text-ink transition-colors font-semibold"
-            >{{ LANDLADY.phoneShown }}</a>.
+          <input
+            id="iq-phone"
+            v-model="inquiryPhone"
+            v-phone
+            type="tel"
+            autocomplete="tel"
+            required
+            placeholder="0917 123 4567"
+            :aria-invalid="errors.phone ? 'true' : undefined"
+            :aria-describedby="errors.phone ? 'iq-phone-error' : undefined"
+            :class="['ws-input mt-2', errors.phone && 'border-overdue']"
+            @input="delete errors.phone"
+            @blur="leave('phone')"
+          />
+          <p v-if="errors.phone" id="iq-phone-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+            {{ errors.phone }}
           </p>
         </div>
-
-        <form
-          v-else
-          ref="formRef"
-          novalidate
-          class="mt-8 lg:mt-6 max-w-2xl"
-          @submit.prevent="submitInquiry"
-        >
-          <!--
-            One order at every width: name and phone side by side, the question full width underneath. On desktop the
-            question used to stand in a second column beside the three fields
-            (owner's call, 2026-09-26: it did not look right), and a form reads
-            top to bottom.
-          -->
-          <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-            <div>
-              <label
-                for="iq-name"
-                class="block text-xs text-ink-faint"
-                >Your name</label
-              >
-              <input
-                id="iq-name"
-                v-model="inquiryName"
-                type="text"
-                autocomplete="name"
-                required
-                :aria-invalid="errors.name ? 'true' : undefined"
-                :aria-describedby="errors.name ? 'iq-name-error' : undefined"
-                :class="['ws-input mt-2', errors.name && 'border-overdue']"
-                @input="delete errors.name"
-              />
-              <p v-if="errors.name" id="iq-name-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
-                {{ errors.name }}
-              </p>
-            </div>
-            <div>
-              <label
-                for="iq-phone"
-                class="block text-xs text-ink-faint"
-                >Phone number</label
-              >
-              <input
-                id="iq-phone"
-                v-model="inquiryPhone"
-                v-phone
-                type="tel"
-                autocomplete="tel"
-                required
-                placeholder="0917 123 4567"
-                :aria-invalid="errors.phone ? 'true' : undefined"
-                :aria-describedby="errors.phone ? 'iq-phone-error' : undefined"
-                :class="['ws-input mt-2', errors.phone && 'border-overdue']"
-                @input="delete errors.phone"
-                @blur="leave('phone')"
-              />
-              <p v-if="errors.phone" id="iq-phone-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
-                {{ errors.phone }}
-              </p>
-            </div>
-            <div class="sm:col-span-2">
-              <label
-                for="iq-msg"
-                class="block text-xs text-ink-faint"
-                >Your question</label
-              >
-              <!--
-                A textarea, not a single-line input squeezed into half the
-                grid row. The endpoint asks for a real question (min 5, max
-                2000 characters - see the validation above), and a one-line
-                box that scrolls its own text sideways does not invite one.
-                Full width for the same reason: this is the field that
-                decides whether there is anything to answer.
-              -->
-              <textarea
-                id="iq-msg"
-                v-model="inquiryMsg"
-                rows="4"
-                required
-                placeholder="For example: which unit, when you would like to move in, or a time to view."
-                :aria-invalid="errors.message ? 'true' : undefined"
-                :aria-describedby="errors.message ? 'iq-msg-error' : undefined"
-                :class="['ws-textarea w-full mt-2', errors.message && 'border-overdue']"
-                @input="delete errors.message"
-              ></textarea>
-              <p v-if="errors.message" id="iq-msg-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
-                {{ errors.message }}
-              </p>
-            </div>
-          </div>
-
-          <!--
-            A failed send says so here, beside the button that retries it, and
-            stays until the next attempt. It used to be a toast that left after
-            a few seconds, worded for a developer ("Check that the API is
-            running") or not at all ("Internal server error.").
-          -->
-          <div
-            v-if="formError"
-            role="alert"
-            class="ws-reveal mt-6 flex max-w-xl items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
+        <div class="sm:col-span-2">
+          <label
+            for="iq-msg"
+            class="block text-xs text-ink-faint"
+            >Your question</label
           >
-            <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {{ formError }}
-          </div>
-
-                    <!--
-            At 200% text on a 375px phone this button ran to x=473 and was cut off:
-            `.pill-btn-brand` is `white-space: nowrap`, and `px-8` sat on top of its own
-            padding (the pairing BookViewingPrompt and CategoryRoomsView already fixed).
-            `px-5`, and it may wrap within the column (`max-w-full whitespace-normal`).
-            At normal size the label is one line, and `min-height` keeps it 44px.
+          <!--
+            A textarea, not a single-line input squeezed into half the
+            grid row. The endpoint asks for a real question (min 5, max
+            2000 characters - see the validation above), and a one-line
+            box that scrolls its own text sideways does not invite one.
+            Full width for the same reason: this is the field that
+            decides whether there is anything to answer.
           -->
-          <button
-            type="submit"
-            :disabled="isSubmitting"
-            class="pill-btn-brand mt-6 max-w-full whitespace-normal px-5 py-2.5 text-center disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <!-- "Send inquiry", not "Register your interest" (asked to simplify, 2026-09-24). -->
-
-            <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
-            <span>{{ isSubmitting ? 'Sending…' : 'Send inquiry' }}</span>
-          </button>
-
-          <p class="mt-4 max-w-xl text-xs leading-relaxed text-ink-soft">
-            Already sent one?
-            <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center hover:text-ink font-semibold">Read the reply</RouterLink>
+          <textarea
+            id="iq-msg"
+            v-model="inquiryMsg"
+            rows="4"
+            required
+            placeholder="For example: which unit, when you would like to move in, or a time to view."
+            :aria-invalid="errors.message ? 'true' : undefined"
+            :aria-describedby="errors.message ? 'iq-msg-error' : undefined"
+            :class="['ws-textarea w-full mt-2', errors.message && 'border-overdue']"
+            @input="delete errors.message"
+          ></textarea>
+          <p v-if="errors.message" id="iq-msg-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+            {{ errors.message }}
           </p>
-        </form>
+        </div>
       </div>
 
-      <!-- Right: Real building exterior showcase with clear background image -->
-      <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 pb-10 sm:pb-14 overflow-hidden bg-night">
-        <!-- Crisp building background photograph (unblurred) -->
-        <!--
-          `loading="lazy"` is doing real work here, not box-ticking. This panel
-          is `hidden lg:flex`, and display:none does NOT stop a browser
-          fetching an <img> inside it - checked in the network log at 375px,
-          where the building photograph came back 200 OK on a screen that never
-          shows it. That is 284 KB of someone's mobile data for a picture they
-          cannot see. Lazy defers it until it scrolls into view, which on a
-          phone is never.
-        -->
-        <img
-          src="/fe-galang-building.webp"
-          alt=""
-          aria-hidden="true"
-          class="absolute inset-0 w-full h-full object-cover object-center"
-          width="1790"
-          height="879"
-          loading="lazy"
-        />
-        <!-- Contrast gradient overlay: unblurred to keep building details clear and vibrant -->
-        <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/25 to-night/50" />
+      <!--
+        A failed send says so here, beside the button that retries it, and
+        stays until the next attempt. It used to be a toast that left after
+        a few seconds, worded for a developer ("Check that the API is
+        running") or not at all ("Internal server error.").
+      -->
+      <div
+        v-if="formError"
+        role="alert"
+        class="ws-reveal mt-6 flex max-w-xl items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
+      >
+        <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        {{ formError }}
+      </div>
 
-        <!-- On the masthead's line, not 56px below it: the same 64px bar. -->
-        <div class="relative z-10 flex h-16 items-center">
-          <p class="text-[0.7rem] tracking-[0.18em] uppercase text-white/80 drop-shadow-sm">
-            {{ LANDLADY.address }}
-          </p>
-        </div>
+                <!--
+        At 200% text on a 375px phone this button ran to x=473 and was cut off:
+        `.pill-btn-brand` is `white-space: nowrap`, and `px-8` sat on top of its own
+        padding (the pairing BookViewingPrompt and CategoryRoomsView already fixed).
+        `px-5`, and it may wrap within the column (`max-w-full whitespace-normal`).
+        At normal size the label is one line, and `min-height` keeps it 44px.
+      -->
+      <button
+        type="submit"
+        :disabled="isSubmitting"
+        class="pill-btn-brand mt-6 max-w-full whitespace-normal px-5 py-2.5 text-center disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        <!-- "Send inquiry", not "Register your interest" (asked to simplify, 2026-09-24). -->
 
-        <div class="relative z-10">
-          <p class="font-medium tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,4.4vw,3.75rem)] drop-shadow-sm">
-            Fe Galang Da Silva<br />Boarding House
-          </p>
-        </div>
-      </aside>
+        <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+        <span>{{ isSubmitting ? 'Sending…' : 'Send inquiry' }}</span>
+      </button>
 
-    </div>
+      <p class="mt-4 max-w-xl text-xs leading-relaxed text-ink-soft">
+        Already sent one?
+        <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center hover:text-ink font-semibold">Read the reply</RouterLink>
+      </p>
+    </form>
   </div>
 </template>
