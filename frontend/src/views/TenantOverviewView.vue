@@ -16,6 +16,8 @@ import { floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
+import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
+import type { QuickAction } from '@/components/overview/types';
 import { methodInWords as methodLabel } from '@/lib/paymentMethod';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -569,6 +571,12 @@ const paymentAwaitingVerification = computed(() =>
     : pendingOnlinePayments.value.length > 0
 );
 
+/**
+ * Their one regular action, where the landlady's are (Sean, 1 Nov 2026): the top right of the page
+ * from 768px, and the floating button on a phone.
+ */
+const quickActions: QuickAction[] = [{ to: '/tenant/tickets', label: 'Request a repair', icon: Wrench, primary: true }];
+
 const awaitingVerificationLine =
   'A payment you sent is waiting for the landlady to verify it.';
 
@@ -582,9 +590,8 @@ const statusTone = computed(() => {
 
 <template>
   <div class="ws-focus flex flex-col gap-5 text-ink">
-    <!-- No quick links here: "Request a repair" and "Payment history" repeated
-         the Repairs tile's button and the Payments tile's link below. -->
-    <header class="min-w-0">
+    <header class="flex min-w-0 items-end justify-between gap-4">
+      <div class="min-w-0">
       <p class="text-sm text-ink-faint">{{ todayLabel }}</p>
       <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight break-words">
         Good {{ partOfDay }}<template v-if="firstName">, {{ firstName }}</template>
@@ -594,7 +601,14 @@ const statusTone = computed(() => {
         {{ tenantData.room }}<template v-if="tenantData.floor">, {{ floorLabelFor(tenantData.floor) }}</template>
       </p>
       <!-- What they did last is in the sidebar on every width, the phone's menu included (Sean, 17 Oct 2026). -->
+      </div>
+      <router-link v-if="!writesUnavailable" to="/tenant/tickets" class="pill-btn-brand shrink-0 max-md:hidden">
+        <Wrench class="size-4" aria-hidden="true" />
+        Request a repair
+      </router-link>
     </header>
+
+    <QuickActionsFab v-if="!writesUnavailable" :actions="quickActions" />
 
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>
@@ -781,8 +795,6 @@ const statusTone = computed(() => {
       </OverviewTile>
 
 
-      <!-- Their unit, and where to go when something in it breaks: one tile, since Repairs alone was
-           an empty card around one button (Sean, 1 Nov 2026). -->
       <OverviewTile
         :title="tenantData.room || 'Your unit'"
         class="list-reveal-item order-2 md:order-none xl:col-span-3"
@@ -825,10 +837,6 @@ const statusTone = computed(() => {
             </div>
           </dl>
         </template>
-        <router-link to="/tenant/tickets" class="pill-btn mt-auto self-start">
-          <Wrench class="size-4" aria-hidden="true" />
-          Request a repair
-        </router-link>
       </OverviewTile>
 
       <OverviewTile

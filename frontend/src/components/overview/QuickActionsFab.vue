@@ -90,7 +90,17 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
         class="fixed z-30 flex flex-col-reverse items-end gap-3 right-[max(1rem,env(safe-area-inset-right))] bottom-[calc(1rem+env(safe-area-inset-bottom))]"
         @focusout="onFocusOut"
       >
+        <!-- One action needs no menu: the tap goes there, and the button shows what it is. -->
+        <router-link
+          v-if="actions.length === 1"
+          :to="actions[0].to"
+          class="pill-btn-brand h-14 px-5 shadow-lift"
+          :aria-label="actions[0].label"
+        >
+          <component :is="actions[0].icon" class="size-6" aria-hidden="true" />
+        </router-link>
         <button
+          v-else
           ref="toggle"
           type="button"
           class="pill-btn-brand h-14 px-5 shadow-lift"
