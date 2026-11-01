@@ -242,7 +242,6 @@ const rows = computed(() => [...months.value].reverse());
       <RecordTable
         class="mt-3"
         :rows="rows"
-        flat
         caption="Your rent by month"
         noun="month"
         :page-size="12"

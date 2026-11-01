@@ -1028,7 +1028,6 @@ function refreshAll() {
       <RecordTable
         v-else
         :rows="filteredPayments"
-        flat
         :caption="`Your payments in ${selectedYear}`"
         noun="payment"
         :page-size="8"

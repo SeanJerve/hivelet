@@ -10,8 +10,8 @@
  * This one:
  *   - shows a first page and asks before showing more, so the page stays the
  *     height of the screen until the reader wants more of it
- *   - becomes one tile per row below `lg`, because a table read sideways on a
- *     phone is not a table
+ *   - becomes a stacked list below `lg`, one block of lines per row with a rule between,
+ *     because a table read sideways on a phone is not a table
  *   - carries the caption, the sticky head and the empty state in one place
  *
  * The caller supplies the columns through `head` and `row`, and the phone
@@ -36,8 +36,6 @@ const props = withDefaults(
     emptyNote?: string;
     /** Singular noun for the counts, e.g. "payment". */
     noun?: string;
-    /** Drops the tile chrome, for a table already sitting inside a tile. */
-    flat?: boolean;
     /**
      * Column widths, one per column ('' leaves one to take the rest). Set it
      * where several tables of one shape are stacked, clusters for instance:
@@ -53,7 +51,7 @@ const props = withDefaults(
      */
     tableFrom?: 'lg' | 'xl';
   }>(),
-  { pageSize: 10, emptyTitle: 'Nothing here', emptyNote: '', noun: 'row', flat: false }
+  { pageSize: 10, emptyTitle: 'Nothing here', emptyNote: '', noun: 'row' }
 );
 
 const { visible, remaining, nextStep, showMore, showEverything, showFewer } = usePaged(
@@ -99,7 +97,7 @@ onUnmounted(() => {
   <div>
     <div
       v-if="rows.length === 0"
-      :class="['ws-reveal px-6 py-16 text-center', flat ? '' : 'rounded-tile bg-tile']"
+      class="ws-reveal px-6 py-16 text-center"
     >
       <p class="text-base font-semibold text-ink">{{ emptyTitle }}</p>
       <p v-if="emptyNote" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
@@ -109,7 +107,7 @@ onUnmounted(() => {
 
     <template v-else>
       <!-- The register, on a screen wide enough to read one -->
-      <div :class="['hidden overflow-hidden', tableFrom === 'xl' ? 'xl:block' : 'lg:block', flat ? '' : 'rounded-tile bg-tile']">
+      <div :class="['hidden overflow-hidden', tableFrom === 'xl' ? 'xl:block' : 'lg:block']">
         <div class="ws-table-wrap" :class="{ 'is-first-load': revealFirstLoad }">
           <table
             class="ws-table"
@@ -134,20 +132,12 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!--
-        One tile per row, on a phone. A flat card is bordered, not filled
-        `bg-canvas`: the soft status pills are canvas-coloured too, and on a
-        canvas card they lost their outline (the directory's Vacant pill, 2026-09-25).
-      -->
-      <div :class="['space-y-3', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden']">
+      <!-- One block per row on a phone, on the page itself, with a rule between. -->
+      <div :class="['divide-y divide-line', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden']">
         <div
           v-for="(row, i) in visible"
           :key="i"
-          :class="[
-            'group rounded-2xl p-5',
-            flat ? 'border border-line' : 'rounded-tile bg-tile',
-            revealFirstLoad ? 'list-reveal-item' : '',
-          ]"
+          :class="['group py-4', revealFirstLoad ? 'list-reveal-item' : '']"
           :style="revealFirstLoad ? { animationDelay: `${Math.min(i, 9) * 30}ms` } : undefined"
         >
           <slot name="card" :row="row" :index="i" />
@@ -159,19 +149,12 @@ onUnmounted(() => {
           the whole per-cluster breakdown - rent, the 50% column, water and the
           headcount - simply was not rendered. The only figure that
           survived was the one the cluster header carries on its own.
-          It takes the same surface as the cards it closes, with a border
-          standing in for the 2px rule `.ws-table tfoot` draws above itself, so
-          it reads as a conclusion rather than as one more entry. No stagger:
+          It takes the 2px rule `.ws-table tfoot` draws above itself, so it reads
+          as a conclusion rather than as one more entry. No stagger:
           the desktop reveal is scoped to `tbody tr` and leaves its own footer
           still, and this is the same line.
         -->
-        <div
-          v-if="$slots['foot-card']"
-          :class="[
-            'rounded-2xl border border-line p-5',
-            flat ? 'bg-well' : 'rounded-tile bg-tile',
-          ]"
-        >
+        <div v-if="$slots['foot-card']" class="border-t-2 border-line py-4">
           <slot name="foot-card" />
         </div>
       </div>

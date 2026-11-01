@@ -1612,7 +1612,6 @@ const isDownloadOpen = ref(false);
           class="ws-reveal border-t border-line p-5 sm:p-6"
         >
           <RecordTable
-            flat
             :rows="group.records"
             :caption="`${group.label}, by unit`"
             noun="entry"

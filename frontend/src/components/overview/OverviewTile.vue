@@ -1,46 +1,31 @@
 <script setup lang="ts">
 /**
- * The workspace tile. Tone carries rank, not decoration: `brand` and `night`
- * are reserved for the one or two things on a screen that ask for action.
+ * One section of a dashboard: a rule, a title and what it holds, directly on the page. These were
+ * cards with four tones until Sean took every container off the dashboards (1 Nov 2026). What used
+ * to be said by a dark card is said by coming first and by the size of its figures.
  */
-import { computed, useId } from 'vue';
+import { useId } from 'vue';
 import { ArrowUpRight } from 'lucide-vue-next';
 
-const props = withDefaults(
-  defineProps<{
-    title?: string;
-    /** A shorter title below 768px, for a tile that is half a phone's width. */
-    phoneTitle?: string;
-    tone?: 'plain' | 'soft' | 'brand' | 'night';
-    /** Where the tile's arrow leads. Omit when there is nowhere to go. */
-    to?: string;
-    toLabel?: string;
-  }>(),
-  { tone: 'plain' }
-);
+defineProps<{
+  title?: string;
+  /** A shorter title below 768px, for a tile that is half a phone's width. */
+  phoneTitle?: string;
+  /** Where the tile's arrow leads. Omit when there is nowhere to go. */
+  to?: string;
+  toLabel?: string;
+}>();
 
 const titleId = useId();
-
-const isDark = computed(() => props.tone === 'brand' || props.tone === 'night');
-
-const toneClass = computed(
-  () =>
-    ({
-      plain: 'bg-tile text-ink',
-      soft: 'bg-brand-soft text-ink',
-      brand: 'ws-brand-tile bg-brand text-on-brand on-dark',
-      night: 'bg-night text-on-night on-dark',
-    })[props.tone]
-);
 </script>
 
 <template>
   <section
     :aria-labelledby="title ? titleId : undefined"
-    :class="['rounded-tile p-5 sm:p-6 flex flex-col gap-4 min-w-0', toneClass]"
+    class="flex min-w-0 flex-col gap-4 border-t border-line pt-3"
   >
-    <header v-if="title || to || $slots.actions" class="flex items-start justify-between gap-3">
-      <h2 v-if="title" :id="titleId" class="text-[0.9375rem] leading-5 font-semibold pt-2.5">
+    <header v-if="title || to || $slots.actions" class="flex min-h-11 items-center justify-between gap-3">
+      <h2 v-if="title" :id="titleId" class="text-base leading-6 font-semibold">
         <template v-if="phoneTitle">
           <span class="md:hidden">{{ phoneTitle }}</span><span class="max-md:hidden">{{ title }}</span>
         </template>
@@ -58,7 +43,7 @@ const toneClass = computed(
           v-if="to"
           :to="to"
           :aria-label="toLabel || (title ? `Open ${title}` : 'Open')"
-          :class="['icon-btn icon-btn-goto group/goto', isDark && 'icon-btn-on-dark']"
+          class="icon-btn icon-btn-goto group/goto"
         >
           <!--
             A one-pixel nudge toward where the link leads, on hover only - the
