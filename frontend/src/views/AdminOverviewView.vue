@@ -365,24 +365,24 @@ const monthsToEnter = computed(() => {
 });
 
 /**
- * What the tile says when nothing is waiting, in place of two zeros: the receipts she has left to
- * enter, then anything open that is not urgent. Every row is a count of records.
+ * The one thing the tile says when nothing is waiting, in place of two zeros (Sean, 1 Nov 2026:
+ * only the most important). A person waiting for an answer, then open repairs, then the oldest
+ * month not fully entered. A count of records, whichever it is.
  */
 const attentionNotes = computed(() => {
-  const notes = monthsToEnter.value.map((m) => ({
+  const openInquiries = inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').length;
+  if (openInquiries > 0) {
+    return [{ key: 'inquiries', label: 'Inquiries', value: `${openInquiries} waiting for an answer`, to: '/admin/inquiries' }];
+  }
+  if (!maintenanceTicketsFetchFailed.value && openTickets.value.length > 0) {
+    return [{ key: 'repairs', label: 'Repairs', value: `${openTickets.value.length} open`, to: '/admin/tickets#repairs-board' }];
+  }
+  return monthsToEnter.value.slice(0, 1).map((m) => ({
     key: m.label,
     label: m.label,
     value: m.entered > 0 ? `${m.entered} of ${m.occupied} units entered` : 'Not entered yet',
     to: `/admin/income?year=${m.year}&month=${m.month}#income-records`,
   }));
-  const openInquiries = inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').length;
-  if (openInquiries > 0) {
-    notes.push({ key: 'inquiries', label: 'Inquiries', value: `${openInquiries} waiting for an answer`, to: '/admin/inquiries' });
-  }
-  if (!maintenanceTicketsFetchFailed.value && openTickets.value.length > 0) {
-    notes.push({ key: 'repairs', label: 'Repairs', value: `${openTickets.value.length} open`, to: '/admin/tickets#repairs-board' });
-  }
-  return notes;
 });
 const attentionIsQuiet = computed(() => pendingCount.value === 0 && urgentTickets.value.length === 0);
 
@@ -400,11 +400,6 @@ const lastEnteredMonth = computed(() => {
   return {
     label: `${MONTH_LONG[latest % 12]} ${Math.floor(latest / 12)}`,
     total: rows.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0),
-    count: rows.length,
-    recent: [...rows]
-      .sort((a, b) => String(b.rawDate ?? '').localeCompare(String(a.rawDate ?? '')))
-      .slice(0, 3)
-      .map((r, i) => ({ key: r.id ?? i, name: r.contact, unit: r.unit, amount: Number(r.totalRemitted || r.rent || 0) })),
   };
 });
 
@@ -885,7 +880,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <!-- No "Nothing is waiting for verification" under a 0: the count
                is the answer (Sean, 2026-10-01: figures at a glance). What fills
                the room instead is what she still has to do (attentionNotes). -->
-          <ul v-if="attentionIsQuiet && attentionNotes.length" class="mt-4 divide-y divide-white/10">
+          <ul v-if="attentionIsQuiet && attentionNotes.length" class="mt-4">
             <li v-for="n in attentionNotes" :key="n.key">
               <router-link :to="n.to" class="press flex items-baseline justify-between gap-3 py-2 text-sm">
                 <span class="text-on-night-soft">{{ n.label }}</span>
@@ -969,13 +964,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <span>{{ lastEnteredMonth.label }}</span>
                 <span class="font-medium tabular text-ink-soft">{{ peso(lastEnteredMonth.total) }}</span>
               </p>
-              <p class="text-xs">{{ lastEnteredMonth.count }} {{ lastEnteredMonth.count === 1 ? 'payment' : 'payments' }}</p>
-              <ul class="mt-2 flex flex-col gap-1 max-md:hidden">
-                <li v-for="r in lastEnteredMonth.recent" :key="r.key" class="flex items-baseline justify-between gap-3">
-                  <span class="min-w-0 truncate">{{ r.name }}<template v-if="r.unit">, {{ r.unit }}</template></span>
-                  <span class="tabular">{{ peso(r.amount) }}</span>
-                </li>
-              </ul>
             </div>
           </div>
           <div v-else>
