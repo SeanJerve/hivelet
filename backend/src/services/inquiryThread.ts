@@ -103,13 +103,37 @@ export type ThreadInquiry = {
 };
 
 /**
+ * Was this enquiry deleted? Deleting removes the row, and the audit entry it
+ * leaves is the only record of it (DELETE /admin/inquiries/:inquiryId). The
+ * entry keeps the reference code and phone number, so the same two things that
+ * would have opened the enquiry can say it is gone, and the code alone says
+ * nothing. It keeps no link secret, so a dead link cannot be told apart this way.
+ */
+async function wasDeleted(code: string, key: string): Promise<boolean> {
+  const { data, error } = await db
+    .from('audit_logs')
+    .select('previous_values')
+    .eq('action', 'INQUIRY_DELETE')
+    .contains('previous_values', { reference_code: code })
+    .limit(5);
+  if (error) {
+    console.error('[inquiryThread] could not read deleted enquiries:', error.message);
+    return false;
+  }
+  return (data ?? []).some((row: any) => phoneKey(row.previous_values?.prospect_phone) === key);
+}
+
+/**
  * The enquiry these credentials open, or a 404 that says nothing about which
  * part was wrong (a code that exists with the wrong phone looks exactly like a
- * code that does not exist).
+ * code that does not exist). Only a deleted enquiry is named as one, and only
+ * to someone holding its code and phone number.
  */
 export async function findThreadInquiry(creds: ThreadCredentials): Promise<ThreadInquiry> {
   const notFound = () =>
     ApiError.notFound('No inquiry matches that. Check the link, or the reference code and phone number.');
+
+  const send = 'To ask something new, send another inquiry.';
 
   let query = db
     .from('inquiries')
@@ -130,7 +154,16 @@ export async function findThreadInquiry(creds: ThreadCredentials): Promise<Threa
     throw ApiError.notFound('Reading replies here is not switched on yet. Please call instead.');
   }
   if (error) throw ApiError.internal(error.message);
-  if (!data) throw notFound();
+  if (!data) {
+    if (creds.token) {
+      throw ApiError.notFound(`This link no longer opens an inquiry. It may have been closed and removed. ${send}`);
+    }
+    const code = normaliseReferenceCode(creds.reference ?? '');
+    if (code && (await wasDeleted(code, phoneKey(creds.phone)))) {
+      throw ApiError.notFound(`This inquiry was closed and has been removed. ${send}`);
+    }
+    throw notFound();
+  }
 
   const row = data as any;
   if (!creds.token && phoneKey(row.prospect_phone) !== phoneKey(creds.phone)) throw notFound();

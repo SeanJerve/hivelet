@@ -439,6 +439,7 @@ async function handleQuickLogin(account: DemoAccount) {
 
           <p class="mt-8 max-w-xl text-xs leading-relaxed text-ink-soft">
             Only tenants of the boarding house can sign in.
+            <RouterLink to="/inquire" class="whitespace-nowrap font-bold text-ink hover:text-brand">Inquire now</RouterLink>
           </p>
           <!--
             Signing in is where a resident starts using the portal, so the rules

@@ -16,10 +16,11 @@
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowUpRight, RotateCw, Send } from 'lucide-vue-next';
+import { ArrowLeft, ArrowUpRight, Check, Copy, RotateCw, Send } from 'lucide-vue-next';
 import { api, ApiRequestError, isUnconfirmed } from '@/lib/api';
+import { copyText } from '@/lib/copyText';
 import { LANDLADY } from '@/lib/systemState';
-import { savedInquiries, rememberInquiry, forgetInquiry, type SavedInquiry } from '@/lib/myInquiries';
+import { savedInquiries, rememberInquiry, forgetInquiry, conversationUrl, type SavedInquiry } from '@/lib/myInquiries';
 import { playSound } from '@/lib/sounds';
 
 type Creds = { token: string } | { reference: string; phone: string };
@@ -67,6 +68,27 @@ const when = (iso: string) =>
     minute: '2-digit',
   });
 
+/**
+ * The link needs the conversation's token. Opened with the reference code there is none in the
+ * address, so it comes from this phone's saved inquiries, and without one there is no link to copy.
+ */
+const conversationToken = computed(() => {
+  if (creds.value && 'token' in creds.value) return creds.value.token;
+  const code = thread.value?.inquiry.referenceCode;
+  return savedInquiries().find((s) => s.referenceCode === code)?.token ?? null;
+});
+const linkCopied = ref(false);
+const linkCopyFailed = ref(false);
+
+async function copyConversationLink() {
+  if (!conversationToken.value) return;
+  linkCopyFailed.value = false;
+  const ok = await copyText(conversationUrl(conversationToken.value));
+  linkCopied.value = ok;
+  linkCopyFailed.value = !ok;
+  if (ok) setTimeout(() => (linkCopied.value = false), 2500);
+}
+
 function tokenFromHash(): string | null {
   const m = /(?:^#|&)t=([^&]+)/.exec(route.hash || '');
   return m ? decodeURIComponent(m[1]) : null;
@@ -96,6 +118,10 @@ async function load(next: Creds, { focus = true } = {}) {
     if (err instanceof ApiRequestError && err.status === 404) {
       loadError.value = err.message;
       if ('token' in next) {
+        // Saved here means it opened once, so a link that no longer works was removed.
+        if (err.message.startsWith('This link') && savedInquiries().some((s) => s.token === next.token)) {
+          loadError.value = 'This inquiry was closed and has been removed. To ask something new, send another inquiry.';
+        }
         forgetInquiry(next.token);
         saved.value = savedInquiries();
       }
@@ -242,29 +268,44 @@ watch(() => route.hash, syncWithAddress);
           </p>
           <p class="mt-4 text-sm text-ink" role="status">{{ statusLine }}</p>
 
-          <ol class="mt-6 space-y-3" aria-label="Messages">
+          <!-- The same bubbles as the owner's side (InquiriesView), each as wide as its message. -->
+          <ol class="mt-6 space-y-4" aria-label="Messages">
             <li
               v-for="m in thread.messages"
               :key="m.id"
-              :class="['max-w-[85%] rounded-tile border px-4 py-3', m.from === 'you' ? 'ml-auto border-brand-soft bg-brand-soft' : 'mr-auto border-line bg-surface']"
+              :class="['flex flex-col', m.from === 'you' ? 'items-end' : 'items-start']"
             >
-              <p class="text-[0.7rem] text-ink-soft">
-                <span class="font-medium text-ink">{{ m.from === 'you' ? 'You' : 'Boarding house' }}</span>
+              <p class="mb-1 px-1 text-xs text-ink-faint">
+                <span class="font-semibold text-ink-soft">{{ m.from === 'you' ? 'You' : 'Boarding house' }}</span>
                 · {{ when(m.sentAt) }}
               </p>
-              <p class="mt-1 whitespace-pre-line break-words text-sm leading-relaxed text-ink">{{ m.body }}</p>
+              <p
+                :class="[
+                  'max-w-md whitespace-pre-line break-words rounded-2xl px-4 py-3 text-sm leading-6',
+                  m.from === 'you' ? 'bg-brand text-on-brand' : 'bg-tile text-ink shadow-card ring-1 ring-line',
+                ]"
+              >{{ m.body }}</p>
             </li>
           </ol>
 
-          <div class="mt-4 flex items-center gap-3">
+          <div class="mt-4 flex flex-wrap items-center gap-3">
             <button type="button" class="pill-btn" :disabled="loading" @click="refresh">
               <RotateCw :class="['size-4', loading && 'animate-spin']" aria-hidden="true" />
               Check for a reply
             </button>
+            <button v-if="conversationToken" type="button" class="pill-btn" @click="copyConversationLink">
+              <Check v-if="linkCopied" class="size-4" aria-hidden="true" />
+              <Copy v-else class="size-4" aria-hidden="true" />
+              {{ linkCopied ? 'Link copied' : 'Copy conversation link' }}
+            </button>
           </div>
+          <p v-if="linkCopyFailed && conversationToken" class="mt-3 text-xs leading-relaxed text-ink-soft break-all">
+            Copying did not work here. Keep this address instead: {{ conversationUrl(conversationToken) }}
+          </p>
+          <span class="sr-only" role="status" aria-live="polite">{{ linkCopied ? 'Link copied' : '' }}</span>
 
           <form v-if="!closed" class="mt-8" novalidate @submit.prevent="sendReply">
-            <label for="thread-reply" class="block text-xs text-ink-faint">Write back</label>
+            <label for="thread-reply" class="sr-only">Write a reply</label>
             <textarea
               id="thread-reply"
               v-model="reply"
@@ -272,8 +313,8 @@ watch(() => route.hash, syncWithAddress);
               maxlength="2000"
               :aria-invalid="replyError ? 'true' : undefined"
               :aria-describedby="replyError ? 'thread-reply-error' : undefined"
-              :class="['ws-textarea w-full mt-2', replyError && 'border-overdue']"
-              placeholder="For example: a time you can come to view the unit."
+              :class="['ws-textarea w-full', replyError && 'border-overdue']"
+              placeholder="Write a reply"
             ></textarea>
             <p v-if="replyError" id="thread-reply-error" class="mt-1.5 text-xs leading-relaxed text-overdue" role="alert">
               {{ replyError }}
@@ -321,7 +362,7 @@ watch(() => route.hash, syncWithAddress);
             Enter your reference code and phone number to read the reply.
           </p>
 
-          <p v-if="loadError && !saved.length && !lookupError" class="mt-6 text-sm text-overdue" role="alert">{{ loadError }}</p>
+          <p v-if="loadError && !lookupError" class="mt-6 text-sm text-overdue" role="alert">{{ loadError }}</p>
 
           <ul v-if="saved.length" class="mt-6 divide-y divide-line border-y border-line">
             <li v-for="s in saved" :key="s.token">
@@ -369,14 +410,15 @@ watch(() => route.hash, syncWithAddress);
             <p v-if="lookupError" id="find-error" class="mt-2 text-xs leading-relaxed text-overdue" role="alert">
               {{ lookupError }}
             </p>
-            <button type="submit" class="pill-btn-brand mt-4" :disabled="loading">
-              {{ loading ? 'Opening' : 'Open inquiry' }}
-            </button>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <button type="submit" class="pill-btn-brand" :disabled="loading">
+                {{ loading ? 'Opening' : 'Open inquiry' }}
+              </button>
+              <RouterLink to="/inquire" class="pill-btn">Send another inquiry</RouterLink>
+            </div>
           </form>
 
           <p class="mt-10 text-xs leading-relaxed text-ink-soft">
-            No inquiry yet?
-            <RouterLink to="/inquire" class="font-bold text-ink hover:text-brand">Send one</RouterLink>.
             Need help? Call
             <!-- whitespace-nowrap: at 320-414px the number split as "0927 465 / 3938", a number nobody can dial from two lines (audit 2026-10-09). -->
             <a :href="`tel:${LANDLADY.phone}`" class="whitespace-nowrap hover:text-ink font-semibold">{{ LANDLADY.phoneShown }}</a>.

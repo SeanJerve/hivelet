@@ -89,13 +89,6 @@ const sentTo = ref<{ phone: string } | null>(null);
 const conversation = ref<{ token: string; referenceCode: string } | null>(null);
 const sentHeading = ref<HTMLElement | null>(null);
 
-async function sendAnother() {
-  sentTo.value = null;
-  conversation.value = null;
-  await nextTick();
-  document.getElementById('iq-name')?.focus();
-}
-
 async function submitInquiry() {
   // Submit disables on `isSubmitting`, but Enter inside any field here submits
   // the form directly - a second Enter before Vue's next render still reaches
@@ -331,16 +324,6 @@ async function submitInquiry() {
               class="press whitespace-nowrap text-ink transition-colors font-semibold"
             >{{ LANDLADY.phoneShown }}</a>.
           </p>
-          <div class="mt-8 flex flex-wrap items-center gap-6">
-            <RouterLink to="/public" :class="[conversation ? 'pill-btn' : 'pill-btn-brand', 'px-8']">Back to the property</RouterLink>
-            <button
-              type="button"
-              class="press inline-flex min-h-11 items-center text-xs text-ink-soft hover:text-ink transition-colors cursor-pointer font-semibold"
-              @click="sendAnother"
-            >
-              Send another inquiry
-            </button>
-          </div>
         </div>
 
         <form
