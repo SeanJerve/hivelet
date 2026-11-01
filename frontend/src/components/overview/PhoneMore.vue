@@ -10,21 +10,27 @@
  *
  * `max-md:hidden`, not `v-if`: the content stays in the page, so a screen
  * reader on a phone still reaches it once it is opened, and nothing re-mounts.
+ *
+ * `everywhere` folds it at every width (Sean, 1 Nov 2026), for a tile whose extra detail would
+ * otherwise stretch the short tiles beside it.
  */
 import { ref, useId } from 'vue';
 import { ChevronDown } from 'lucide-vue-next';
+
+defineProps<{ everywhere?: boolean }>();
 
 const open = ref(false);
 const id = useId();
 </script>
 
 <template>
-  <div :id="id" :class="['flex flex-col gap-4', !open && 'max-md:hidden']">
+  <div :id="id" :class="['flex flex-col gap-4', !open && (everywhere ? 'hidden' : 'max-md:hidden')]">
     <slot />
   </div>
   <button
     type="button"
-    class="press -my-2 inline-flex min-h-11 items-center gap-1 self-start text-xs font-semibold opacity-80 hover:opacity-100 md:hidden"
+    class="press -my-2 inline-flex min-h-11 items-center gap-1 self-start text-xs font-semibold opacity-80 hover:opacity-100"
+    :class="!everywhere && 'md:hidden'"
     :aria-expanded="open"
     :aria-controls="id"
     @click="open = !open"
