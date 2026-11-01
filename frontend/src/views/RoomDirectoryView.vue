@@ -267,7 +267,7 @@ function applyRoomFilters(v: FilterDraft) {
       and RATE Directory, and its whole job is to be believed, so a failed load
       has to say so rather than quietly show the old figures.
     -->
-    <div v-if="roomsFetchFailed" class="ws-reveal flex flex-col items-start gap-3 rounded-tile bg-verify-soft p-4 sm:p-6" role="alert">
+    <div v-if="roomsFetchFailed" class="ws-reveal flex flex-col items-start gap-3 rounded-tile bg-verify-soft p-5 sm:p-6" role="alert">
       <div>
         <p class="text-base font-semibold text-verify">
           The current rates could not be loaded.
@@ -310,7 +310,7 @@ function applyRoomFilters(v: FilterDraft) {
 
     <!-- SKELETON LOADING STATE -->
     <div v-if="isLoading" class="space-y-6">
-      <div v-if="viewMode === 'matrix'" class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div v-if="viewMode === 'matrix'" class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <SkeletonCard variant="room" :count="8" />
       </div>
       <SkeletonTable v-else :columns="7" :rows="8" />
@@ -323,12 +323,12 @@ function applyRoomFilters(v: FilterDraft) {
       a routine re-render, so the branch that appears fades in rather than
       snapping into place the way both used to.
     -->
-    <div v-else-if="viewMode === 'matrix'" class="ws-reveal">
+    <div v-else-if="viewMode === 'matrix'" class="ws-reveal space-y-6">
       <div
         v-for="(clusterName, clusterIndex) in activeClusters"
         :key="clusterName"
         v-show="getUnitsForCluster(clusterName).length > 0"
-        class="mb-4 last:mb-0 ws-table-card rounded-tile bg-tile px-4 sm:px-6"
+        class="overflow-hidden rounded-tile bg-tile"
       >
         <!-- The strip is one mark per unit in this cluster: solid when someone
              lives there, hatched when it is free. It stays visible when the
@@ -336,7 +336,7 @@ function applyRoomFilters(v: FilterDraft) {
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full flex-col gap-2.5 py-4 text-left"
+            class="press-plate flex w-full flex-col gap-2.5 px-5 py-4 text-left hover:bg-hover"
             :aria-expanded="isClusterOpen(clusterName, clusterIndex)"
             :aria-controls="`cluster-units-${domId(clusterName)}`"
             @click="toggleCluster(clusterName, clusterIndex)"
@@ -381,13 +381,13 @@ function applyRoomFilters(v: FilterDraft) {
         <div
           v-if="isClusterOpen(clusterName, clusterIndex)"
           :id="`cluster-units-${domId(clusterName)}`"
-          class="ws-reveal pb-6"
+          class="ws-reveal border-t border-line p-5 sm:p-6"
         >
-          <div class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="group flex flex-col justify-between"
+              class="group flex flex-col justify-between rounded-2xl border border-line p-4"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
@@ -403,7 +403,7 @@ function applyRoomFilters(v: FilterDraft) {
                 <!-- Label above value, and the name wraps: it was truncated at
                      170px, which cut off "+ 1 roommate", the part that sets the
                      water bill. -->
-                <dl class="mt-3 text-sm">
+                <dl class="mt-4 border-t border-line pt-3 text-sm">
                   <div class="min-w-0">
                     <dt class="text-xs text-ink-faint">Tenant</dt>
                     <dd class="mt-0.5 break-words font-medium text-ink">
@@ -417,7 +417,7 @@ function applyRoomFilters(v: FilterDraft) {
                 Hover-reveal, no border - back to this after a detour through
                 two full-width labelled buttons that doubled every card's
                 height across 33 cards. `.row-action` fades them in on
-                `:hover`/`:focus-within` of the `group` block and stays opaque
+                `:hover`/`:focus-within` of the `group` card and stays opaque
                 on touch, where hover does not exist (owner's call, 2026-09-26).
               -->
               <div class="mt-3 flex items-end justify-between gap-2">
@@ -460,7 +460,7 @@ function applyRoomFilters(v: FilterDraft) {
       -->
       <div
         v-if="filteredRooms.length === 0"
-        class="ws-reveal px-6 py-16 text-center"
+        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
       >
         <Search class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
         <p class="mt-3 text-base font-semibold text-ink">No unit matches</p>
@@ -473,7 +473,7 @@ function applyRoomFilters(v: FilterDraft) {
     <!--
       The register. It needed 950px, so it scrolled sideways on a laptop and on
       every phone. The cluster and the kind of unit share one column, and below
-      `xl` it becomes one block per unit, laid out like the cluster view: at 1024
+      `xl` it becomes one tile per unit, laid out like the cluster cards: at 1024
       the sidebar leaves 636px and the table needed 646.
 
       The billing line is not repeated here: it is the same for every unit, so
@@ -535,7 +535,7 @@ function applyRoomFilters(v: FilterDraft) {
           <StatusPill v-if="u.status !== 'settled'" :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
         </div>
 
-        <dl class="mt-3 text-sm">
+        <dl class="mt-4 border-t border-line pt-3 text-sm">
           <div class="min-w-0">
             <dt class="text-xs text-ink-faint">Tenant</dt>
             <dd class="mt-0.5 break-words font-medium text-ink">

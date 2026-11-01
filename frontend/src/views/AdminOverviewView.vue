@@ -747,7 +747,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     <div
       v-if="!isInitialLoading && anyLoadFailed"
       role="status"
-      class="ws-reveal flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-verify-soft px-4 py-3 text-sm font-medium text-status-wait"
+      class="ws-reveal flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify"
     >
       <span>Some figures could not be loaded.</span>
       <button type="button" class="pill-btn" :disabled="isRefreshing" @click="refreshAllData">Try again</button>
@@ -756,12 +756,12 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     <!-- ================================================================== *
      * First load
      * ================================================================== -->
-    <div v-if="isInitialLoading" class="grid gap-x-10 gap-y-8 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
+    <div v-if="isInitialLoading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading the overview</span>
       <div
         v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8', 'md:col-span-2 xl:col-span-4']"
         :key="i"
-        :class="['flex flex-col gap-4', span]"
+        :class="['rounded-tile bg-tile p-6 flex flex-col gap-4', span]"
       >
         <Skeleton class-name="h-4 w-32 rounded-full" />
         <Skeleton class-name="h-12 w-40 rounded-2xl" />
@@ -790,9 +790,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       the reading order on a phone follows what is drawn, not the source. From
       768px nothing changes.
     -->
-    <TransitionGroup v-else-if="!isHistoricalMode" tag="div" name="tile" class="ws-reveal grid grid-cols-2 gap-x-6 gap-y-8 md:gap-x-10 md:gap-y-10 xl:grid-cols-12">
-      <!-- What needs her action, first and largest. -->
-      <OverviewTile v-if="attentionShown" key="attention" boxed title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 md:col-span-2', tileSpans.attention, phoneSpan]">
+    <TransitionGroup v-else-if="!isHistoricalMode" tag="div" name="tile" class="ws-reveal grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-12">
+      <!-- What needs her action. The only dark tile on the screen. -->
+      <OverviewTile v-if="attentionShown" key="attention" tone="night" title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 max-md:p-4 md:col-span-2', tileSpans.attention, phoneSpan]">
         <!--
           On a phone each half of this tile is one link, the count and its words
           together, instead of a count, a button and a link stacked: at half a
@@ -802,34 +802,37 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         <div class="flex flex-1 flex-col gap-3 md:hidden">
           <UnavailableNote
             v-if="pendingPaymentsFailed"
+            dark
             message="Payments to verify could not be loaded."
             @retry="refreshAllData"
           />
           <router-link v-else to="/admin/income?tab=verify#income-records" class="press group/att flex flex-col gap-1">
             <span class="flex items-start justify-between gap-2">
               <span :class="['leading-none font-semibold tracking-tight', pendingCount > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ pendingCount }}</span>
-              <ArrowUpRight class="size-4 text-ink" aria-hidden="true" />
+              <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
             </span>
-            <span class="text-sm text-ink-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
-            <span v-if="pendingCount > 0" class="text-xs tabular text-ink-soft">{{ peso(pendingTotal, 2) }} in total</span>
+            <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
+            <span v-if="pendingCount > 0" class="text-xs tabular text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
           </router-link>
           <UnavailableNote
             v-if="maintenanceTicketsFetchFailed"
+            dark
             class="mt-auto"
             message="Repairs could not be loaded."
             @retry="refreshAllData"
           />
-          <router-link v-else to="/admin/tickets#repairs-board" class="press mt-auto flex flex-col gap-1 border-t border-line pt-3">
+          <router-link v-else to="/admin/tickets#repairs-board" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
             <span class="flex items-start justify-between gap-2">
               <span :class="['leading-none font-semibold tracking-tight', urgentTickets.length > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ urgentTickets.length }}</span>
-              <ArrowUpRight class="size-4 text-ink" aria-hidden="true" />
+              <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
             </span>
-            <span class="text-sm text-ink-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
+            <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
           </router-link>
         </div>
 
         <UnavailableNote
           v-if="pendingPaymentsFailed"
+          dark
           class="max-md:hidden"
           message="Payments to verify could not be loaded. Some may be waiting."
           @retry="refreshAllData"
@@ -839,18 +842,18 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
               <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot. -->
               <span :class="['leading-none font-semibold tracking-tight', paymentCountSize]">{{ pendingCount }}</span>
-              <span class="text-sm text-ink-soft">
+              <span class="text-sm text-on-night-soft">
                 {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
               </span>
             </p>
-            <router-link to="/admin/income?tab=verify#income-records" aria-label="Review payments" class="icon-btn icon-btn-goto group/goto shrink-0">
+            <router-link to="/admin/income?tab=verify#income-records" aria-label="Review payments" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
               <ArrowUpRight
                 class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
                 aria-hidden="true"
               />
             </router-link>
           </div>
-          <ul v-if="pendingPreview.length" class="mt-4 divide-y divide-line">
+          <ul v-if="pendingPreview.length" class="mt-4 divide-y divide-white/10">
             <li
               v-for="(p, i) in pendingPreview"
               :key="p.id"
@@ -859,7 +862,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             >
               <span class="min-w-0">
                 <span class="block text-sm font-medium">{{ p.name }}</span>
-                <span class="block text-xs text-ink-soft">
+                <span class="block text-xs text-on-night-soft">
                   <template v-if="p.unit">Unit {{ p.unit }}</template><template v-if="p.unit && p.date">, </template>{{ p.date }}
                 </span>
               </span>
@@ -868,9 +871,10 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           </ul>
         </div>
 
-        <div class="mt-auto border-t border-line pt-4 max-md:hidden">
+        <div class="mt-auto border-t border-white/10 pt-4 max-md:hidden">
           <UnavailableNote
             v-if="maintenanceTicketsFetchFailed"
+            dark
             message="Repairs could not be loaded. Some may be urgent."
             @retry="refreshAllData"
           />
@@ -878,17 +882,17 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <div class="min-w-0">
               <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span :class="['leading-none font-semibold tracking-tight', repairCountSize]">{{ urgentTickets.length }}</span>
-                <span class="text-sm text-ink-soft">
+                <span class="text-sm text-on-night-soft">
                   urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
                 </span>
               </p>
               <ul v-if="urgentTickets.length" class="mt-2 flex flex-col gap-1 text-sm">
                 <li v-for="t in urgentTickets.slice(0, 2)" :key="t.id" class="truncate">
-                  {{ t.title }}<span class="text-ink-soft">, Unit {{ t.unit }}</span>
+                  {{ t.title }}<span class="text-on-night-soft">, Unit {{ t.unit }}</span>
                 </li>
               </ul>
             </div>
-            <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto group/goto shrink-0">
+            <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
               <ArrowUpRight
                 class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
                 aria-hidden="true"
@@ -905,7 +909,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         phone-title="Income"
         to="/admin/income#income-records"
         to-label="Open the income ledger"
-        :class="['max-md:order-1 max-md:gap-3', tileSpans.month, phoneSpan]"
+        :class="['max-md:order-1 max-md:gap-3 max-md:p-4', tileSpans.month, phoneSpan]"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -935,7 +939,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 xl:col-span-5">
+      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 max-md:p-4 xl:col-span-5">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -965,7 +969,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <th scope="col" class="pb-1 pl-3 text-right font-normal">Rent</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-line">
               <tr v-for="c in liveClusterPerformance" :key="c.name">
                 <th scope="row" class="py-1.5 text-left font-medium">
                   <span class="flex min-w-0 items-center gap-2">
@@ -986,7 +990,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         :title="`Income by month, ${CURRENT_YEAR}`"
         to="/admin/income#income-by-month"
         to-label="Open the income ledger"
-        class="col-span-2 max-md:order-3 max-md:gap-3 xl:col-span-7"
+        class="col-span-2 max-md:order-3 max-md:gap-3 max-md:p-4 xl:col-span-7"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -1025,7 +1029,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile key="net" boxed :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses#expense-records" to-label="Open the expense ledger" :class="['col-span-2 max-md:order-5', tileSpans.net]">
+      <OverviewTile key="net" :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses#expense-records" to-label="Open the expense ledger" :class="['col-span-2 max-md:order-5', tileSpans.net]">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded."
@@ -1151,7 +1155,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         />
         <p v-else-if="openTickets.length === 0" class="text-sm text-ink-soft">No repair requests are open.</p>
         <template v-else>
-          <ul>
+          <ul class="divide-y divide-line">
             <li
               v-for="(t, i) in openTicketsPreview"
               :key="t.id"
@@ -1190,20 +1194,20 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       A past year in the ledgers' own cards (Sean, 20 Oct 2026): a figure, then its parts on ruled
       lines, no sentences. Each money card's arrow opens that year's ledger.
     -->
-    <div v-else class="ws-reveal grid gap-x-10 gap-y-8 md:grid-cols-2 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
+    <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+      <OverviewTile tone="night" :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
+        <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
         <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
-          <p class="text-sm text-ink-soft">From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}</p>
-          <dl class="mt-auto flex flex-col">
+          <p class="text-sm text-on-night-soft">From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}</p>
+          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Rent</dt>
+              <dt class="text-sm text-on-night-soft">Rent</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalRent) }}</dd>
             </div>
             <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Water</dt>
+              <dt class="text-sm text-on-night-soft">Water</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalWater) }}</dd>
             </div>
             <!-- BR-035: the label only. Its rows are named under it: only the Boarding House section of
@@ -1211,9 +1215,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                  (Sean, 21 Oct 2026: "why is 50% share 901..."). -->
             <!-- Set apart and lighter than Rent and Water (Sean, 22 Oct 2026: "at first glance it doesn't add
                  up"): Rent + Water is the total above; this line is inside Rent, never added to it. -->
-            <div class="mt-2 flex items-baseline justify-between gap-3 border-t border-dashed border-line py-2.5">
-              <dt class="text-sm text-ink-soft">50% Share <span class="block text-xs text-ink-soft">Half of Boarding House rent</span></dt>
-              <dd class="tabular text-lg text-ink-soft">{{ peso(historicalAnnualHalfOfRentShare) }}</dd>
+            <div class="mt-2 flex items-baseline justify-between gap-3 border-t border-dashed border-white/20 py-2.5">
+              <dt class="text-sm text-on-night-soft">50% Share <span class="block text-xs text-on-night-soft">Half of Boarding House rent</span></dt>
+              <dd class="tabular text-lg text-on-night-soft">{{ peso(historicalAnnualHalfOfRentShare) }}</dd>
             </div>
           </dl>
         </template>
@@ -1249,7 +1253,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <!-- Everything recorded, so the two lines under it add up to it, as Rent and Water do above. -->
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualExpenseTotal + historicalAnnualPersonalTotal) }}</p>
           <p class="text-sm text-ink-soft">From {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}</p>
-          <dl class="mt-auto flex flex-col">
+          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="text-sm text-ink-soft">Operating</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualExpenseTotal) }}</dd>
@@ -1268,7 +1272,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <p :class="['tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight', historicalAnnualNOI < 0 && 'text-overdue']">
             {{ peso(historicalAnnualNOI) }}
           </p>
-          <dl class="mt-auto flex flex-col">
+          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="text-sm text-ink-soft">Received</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualGrossTotal) }}</dd>

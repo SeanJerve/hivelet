@@ -1000,9 +1000,9 @@ async function handleOnboard() {
     <!--
       Shaped like whichever view mode is about to render, not always the flat
       list. `viewMode` opens on 'grouped' - several collapsible cluster
-      sections, each its own block - and a single 6-row table here promised one
+      sections, each its own tile - and a single 6-row table here promised one
       flat list on every first load, the opposite of what appeared once
-      `groupedRows` arrived. Two shorter tables reads as "a few sections," the
+      `groupedRows` arrived. Two shorter tiles reads as "a few sections," the
       shape "grouped" actually is; RoomDirectoryView does the same swap
       between its own two view modes.
     -->
@@ -1029,7 +1029,7 @@ async function handleOnboard() {
     />
 
     <!--
-      A register on a wide screen, a record per block on a narrow one, and a
+      A register on a wide screen, a record per tile on a narrow one, and a
       first page of ten with the rest behind a control. It used to be one table
       1,000px wide at every size rendering all 44 rows, so a laptop scrolled
       sideways and every phone scrolled both ways.
@@ -1105,7 +1105,7 @@ async function handleOnboard() {
           </div>
         </div>
 
-        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pt-2.5 text-xs text-ink-soft">
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
           <span>{{ householdLabel(t) }}</span>
           <span class="text-line" aria-hidden="true">·</span>
           <span>Moved in {{ t.moveInDate }}</span>
@@ -1136,9 +1136,9 @@ async function handleOnboard() {
       was being made on the FIRST thing a phone showed - the client opened it
       on a handset on 2026-09-23 and the columns were cut off mid-word with the
       edit control off screen. Each cluster now carries the same `lg:hidden`
-      stacked list RecordTable renders, written out below rather than shared.
+      card stack RecordTable renders, written out below rather than shared.
     -->
-    <div v-else-if="viewMode === 'grouped'" class="ws-reveal">
+    <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
       <!--
         The same empty state "As a list" renders through RecordTable, in the
         same shape and with the same words. It was a single grey line with
@@ -1148,7 +1148,7 @@ async function handleOnboard() {
       -->
       <div
         v-if="groupedRows.length === 0"
-        class="ws-reveal px-6 py-16 text-center"
+        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
       >
         <p class="text-base font-semibold text-ink">Nobody matches</p>
         <p v-if="q" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
@@ -1159,7 +1159,7 @@ async function handleOnboard() {
       <section
         v-for="(group, groupIndex) in groupedRows"
         :key="group.key"
-        class="mb-4 last:mb-0 ws-table-card rounded-tile bg-tile px-4 sm:px-6"
+        class="overflow-hidden rounded-tile bg-tile"
       >
         <!--
           Collapsible, like the room directory and the income register. This
@@ -1171,7 +1171,7 @@ async function handleOnboard() {
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full items-baseline justify-between gap-3 py-4 text-left"
+            class="press-plate flex w-full items-baseline justify-between gap-3 px-5 py-4 text-left hover:bg-hover"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`residents-cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -1193,18 +1193,23 @@ async function handleOnboard() {
         </h2>
 
         <!--
-          The table sits straight under the heading, on the page. The section's
-          rule and the heading are what set it apart, so it needs no frame or
-          padding of its own.
+          The table sits INSIDE the padding now, which is what squares the
+          corner off under the heading.
+          `.ws-table-wrap` carries its own `border-radius: 1rem` (index.css), and
+          this was flush against the tile's edges directly beneath the header -
+          so its rounded top corners cut into the straight line under the title.
+          Every other register puts the table inside `border-t border-line` plus
+          padding, which is what makes the radius read as a deliberate inset
+          rather than a notch. Same structure here now.
         -->
         <div
           v-if="isClusterOpen(group.key, groupIndex)"
           :id="`residents-cluster-${domId(group.key)}`"
-          class="ws-reveal pb-8"
+          class="ws-reveal border-t border-line p-5 sm:p-6"
         >
         <!--
           THE TABLE IS FOR A SCREEN WIDE ENOUGH TO READ ONE, and below `lg`
-          this cluster renders the same tenants as stacked blocks instead - the shape
+          this cluster renders the same residents as tiles instead - the shape
           RecordTable gives "As a list", and the one the client asked to see
           everywhere after opening this screen on a handset.
 
@@ -1219,7 +1224,7 @@ async function handleOnboard() {
 
           Five of these do not go through RecordTable for the reason given
           below - it owns one empty state and one ShowMore per list, and five
-          nested would fight over both - so the phone markup is repeated from the
+          nested would fight over both - so the card markup is repeated from the
           `#card` template above rather than shared. Same fields, same order.
         -->
         <div class="hidden xl:block">
@@ -1271,12 +1276,12 @@ async function handleOnboard() {
         </div>
         </div>
 
-        <!-- The same tenants, one block each, on anything narrower. -->
-        <div class="divide-y divide-line xl:hidden">
+        <!-- The same residents, one tile each, on anything narrower. -->
+        <div class="space-y-3 xl:hidden">
           <div
             v-for="t in visibleResidents(group.key, group.residents)"
             :key="t.id"
-            class="group py-4 first:pt-0"
+            class="group rounded-2xl border border-line p-5"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
@@ -1289,7 +1294,7 @@ async function handleOnboard() {
               </div>
             </div>
 
-            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pt-2.5 text-xs text-ink-soft">
+            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-2.5 text-xs text-ink-soft">
               <span>{{ householdLabel(t) }}</span>
               <span class="text-line" aria-hidden="true">·</span>
               <span>Moved in {{ t.moveInDate }}</span>

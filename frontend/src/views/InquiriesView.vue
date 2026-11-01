@@ -465,12 +465,12 @@ async function handleSendReply() {
 
     <!-- One height whatever the count (Sean, 1 Nov 2026): the inbox reaches down the screen with two
          inquiries or two hundred, and the list scrolls inside it rather than growing the page. -->
-    <div class="grid grid-cols-1 xl:h-[max(620px,calc(100dvh-12.75rem))] xl:grid-cols-12 xl:grid-rows-[minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-4 xl:h-[max(620px,calc(100dvh-12.75rem))] xl:grid-cols-12 xl:grid-rows-[minmax(0,1fr)]">
       <!-- The enquiries. Five twelfths on a laptop, four from 2xl (audit 2026-10-09):
            at a third of 1280 the list was 287px and its two dropdowns, two to a
            row since the toolbar fix, still read "All i..." and "Newest ...". -->
-      <div :class="['flex min-h-0 flex-col max-xl:h-[max(26rem,calc(100dvh-12.5rem))] xl:col-span-5 2xl:col-span-4', conversationOpen && 'max-xl:hidden']">
-        <div class="space-y-3 border-b border-line pb-4 xl:pr-4">
+      <div :class="['flex min-h-0 flex-col overflow-hidden rounded-tile bg-tile max-xl:h-[max(26rem,calc(100dvh-12.5rem))] xl:col-span-5 2xl:col-span-4', conversationOpen && 'max-xl:hidden']">
+        <div class="space-y-3 border-b border-line p-4">
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it. -->
           <ListToolbar
@@ -489,10 +489,12 @@ async function handleSendReply() {
           <!-- The first read. Without this the list fell straight through to its
                empty state - "Nothing matches what you have typed" - while the
                request that would have filled it was still in flight. Built from
-               the same row shape as the real list. -->
+               the same row shape as the real list, not the generic tile card -
+               this panel is already on --tile, so a card-shaped placeholder
+               would have drawn no edge against it. -->
           <div v-if="isLoading" class="divide-y divide-line" aria-busy="true">
             <span class="sr-only" role="status">Loading inquiries</span>
-            <div v-for="i in 3" :key="i" class="space-y-2.5 py-4 xl:px-4">
+            <div v-for="i in 3" :key="i" class="space-y-2.5 p-4">
               <div class="flex items-start justify-between gap-2">
                 <Skeleton class-name="h-4 w-32 rounded-full" />
                 <Skeleton class-name="h-3 w-12 shrink-0 rounded-full" />
@@ -509,7 +511,7 @@ async function handleSendReply() {
             you have typed" - which is a statement about the SEARCH, on a screen
             that had not managed to read anything at all.
           -->
-          <div v-else-if="inquiriesFetchFailed" class="ws-reveal py-4">
+          <div v-else-if="inquiriesFetchFailed" class="ws-reveal p-4">
             <UnavailableNote
               message="The inquiries could not be loaded. New ones may be waiting."
               @retry="fetchInquiries"
@@ -518,11 +520,11 @@ async function handleSendReply() {
 
           <!-- Two different empties. This said "Nothing matches what you have
                typed" to an inbox with nothing in it and nothing typed (B-61). -->
-          <p v-else-if="inquiries.length === 0" class="ws-reveal py-8 text-center text-sm text-ink-soft">
+          <p v-else-if="inquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
             No inquiries yet.
           </p>
 
-          <p v-else-if="filteredInquiries.length === 0" class="ws-reveal py-8 text-center text-sm text-ink-soft">
+          <p v-else-if="filteredInquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
             <template v-if="searchQuery.trim()">No inquiry matches “{{ searchQuery.trim() }}”.</template>
             <!-- Only the status filter can empty the list without a search. -->
             <template v-else>No inquiry is “{{ statusWord(statusFilter) }}”.</template>
@@ -543,7 +545,7 @@ async function handleSendReply() {
                 type="button"
                 :aria-current="activeInquiry?.id === inq.id ? 'true' : undefined"
                 :class="[
-                  'press-plate w-full py-4 text-left xl:px-4',
+                  'press-plate w-full p-4 text-left',
                   activeInquiry?.id === inq.id
                     ? 'xl:bg-brand-soft max-xl:hover:bg-hover'
                     : 'hover:bg-hover',
@@ -583,13 +585,13 @@ async function handleSendReply() {
         v-if="activeInquiry"
         ref="detailPanel"
         :class="[
-          'ws-reveal flex min-h-0 scroll-mt-24 flex-col border-line max-lg:bg-canvas lg:max-xl:h-[max(620px,calc(100dvh-8rem))] xl:col-span-7 xl:border-l 2xl:col-span-8',
-          'max-lg:fixed max-lg:inset-0 max-lg:z-[45]',
+          'ws-reveal flex min-h-0 scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile lg:max-xl:h-[max(620px,calc(100dvh-8rem))] xl:col-span-7 2xl:col-span-8',
+          'max-lg:fixed max-lg:inset-0 max-lg:z-[45] max-lg:rounded-none',
           conversationOpen ? 'chat-opening' : 'max-xl:hidden',
         ]"
         @keydown.esc="closeConversation"
       >
-        <div class="border-b border-line p-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:p-5 lg:px-0 xl:py-6 xl:pr-0 xl:pl-6">
+        <div class="border-b border-line p-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:p-5 xl:p-6">
           <!-- Delete sits top right, level with the name, at every width (Sean, 2026-10-02). -->
           <div class="flex items-center justify-between gap-1 xl:items-start xl:gap-3">
             <button type="button" class="icon-btn -ml-1 xl:hidden" aria-label="Back to inquiries" @click="closeConversation">
@@ -706,12 +708,12 @@ async function handleSendReply() {
         </div>
 
         <!-- What was said -->
-        <div ref="threadScroller" class="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4 sm:p-6 lg:px-1 xl:pr-0 xl:pl-6">
+        <div ref="threadScroller" class="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain bg-well p-4 sm:p-6">
           <!-- Where it stands, as a messaging app marks the top of a thread. -->
           <p class="flex justify-center xl:hidden">
             <StatusPill :tone="statusTone(activeInquiry.status)">{{ statusWord(activeInquiry.status) }}</StatusPill>
           </p>
-          <p v-if="threadError" class="ws-reveal text-sm leading-6 text-overdue">
+          <p v-if="threadError" class="ws-reveal rounded-2xl bg-overdue-soft p-4 text-sm leading-6 text-overdue">
             The replies could not be loaded, so only the first message is shown. {{ threadError }}
           </p>
 
@@ -749,7 +751,7 @@ async function handleSendReply() {
              (Sean, 2026-10-02). Nothing goes out by text or email: the reply is
              saved to `inquiry_messages`, and since 065 the visitor reads it on
              their inquiry page. -->
-        <form @submit.prevent="handleSendReply" class="space-y-2 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-5 lg:px-0 xl:pr-0 xl:pl-6">
+        <form @submit.prevent="handleSendReply" class="space-y-2 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-5">
           <label for="reply" class="sr-only">Your answer</label>
           <div class="relative">
             <textarea
@@ -780,7 +782,7 @@ async function handleSendReply() {
 
       <div
         v-else
-        class="grid place-items-center border-line p-12 text-center max-xl:hidden xl:col-span-7 xl:border-l 2xl:col-span-8"
+        class="grid place-items-center rounded-tile bg-tile p-12 text-center max-xl:hidden xl:col-span-7 2xl:col-span-8"
       >
         <div>
           <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />

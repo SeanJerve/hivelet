@@ -29,7 +29,7 @@ const id = useId();
   <button
     v-if="everywhere"
     type="button"
-    class="press-plate relative -mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3 text-left hover:bg-hover"
+    class="press-plate relative -mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3 text-left before:absolute before:inset-x-2 before:top-0 before:h-px before:bg-line hover:bg-hover"
     :aria-expanded="open"
     :aria-controls="id"
     @click="open = !open"

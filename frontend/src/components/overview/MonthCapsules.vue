@@ -162,7 +162,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
                 :class="[
                   'capsule-fill w-full origin-bottom rounded-full transition-colors',
                   m.kind === 'expected'
-                    ? 'border-2 border-dashed border-ink-faint'
+                    ? 'border-2 border-dashed border-ink-faint bg-tile'
                     : i === selected
                       ? 'bg-brand'
                       : 'bg-brand-bright group-hover:bg-brand-strong/80',

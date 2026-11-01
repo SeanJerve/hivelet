@@ -586,9 +586,9 @@ function handleDeleteTicketPrompt() {
       @apply="applyRepairFilters"
     />
 
-    <div v-if="isLoading" class="grid gap-x-10 gap-y-8 xl:grid-cols-3" aria-busy="true">
+    <div v-if="isLoading" class="grid gap-4 xl:grid-cols-3" aria-busy="true">
       <span class="sr-only" role="status">Loading repair requests</span>
-      <div v-for="i in 3" :key="i" class="flex flex-col gap-3">
+      <div v-for="i in 3" :key="i" class="rounded-tile bg-tile p-6 flex flex-col gap-3">
         <Skeleton class-name="h-4 w-28 rounded-full" />
         <Skeleton class-name="h-16 w-full rounded-2xl" />
         <Skeleton class-name="h-16 w-full rounded-2xl" />
@@ -613,7 +613,7 @@ function handleDeleteTicketPrompt() {
     />
 
     <!-- One column until xl: at 1024 three columns were 202px and a title beside its priority pill had 28px. -->
-    <div v-else class="ws-reveal grid gap-x-10 gap-y-8 xl:grid-cols-3">
+    <div v-else class="ws-reveal grid gap-4 xl:grid-cols-3">
       <!-- A search that empties the board says so once, as Inquiries does; three
            "Nothing here." alone read as no repairs at all (audit 2026-10-09). -->
       <p v-if="q.trim() && columns.every((c) => c.tickets.length === 0)" class="text-sm text-ink-soft xl:col-span-3" role="status">
@@ -623,10 +623,7 @@ function handleDeleteTicketPrompt() {
         v-for="col in columns"
         :key="col.key"
         :aria-labelledby="`col-${col.key}`"
-        :class="[
-          'flex min-w-0 flex-col gap-4',
-          col.key === 'open' && col.tickets.length && 'self-start rounded-tile bg-tile p-4 sm:p-6',
-        ]"
+        class="rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4 min-w-0"
       >
         <header class="flex items-start justify-between gap-3">
           <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>
@@ -637,11 +634,11 @@ function handleDeleteTicketPrompt() {
 
         <p v-if="col.tickets.length === 0" class="py-4 text-sm text-ink-soft">Nothing here.</p>
 
-        <ul v-else class="flex flex-col divide-y divide-line">
+        <ul v-else class="flex flex-col gap-3">
           <li
             v-for="t in col.tickets"
             :key="t.id"
-            class="py-4 first:pt-0 last:pb-0 flex flex-col gap-2.5"
+            class="rounded-2xl border border-line p-4 flex flex-col gap-2.5"
           >
             <div class="flex items-start justify-between gap-3">
               <p class="text-base font-bold uppercase tracking-tight text-ink">
@@ -653,7 +650,7 @@ function handleDeleteTicketPrompt() {
             <p class="text-lg font-semibold leading-snug break-words text-ink">{{ t.title }}</p>
             <StatusPill v-if="t.cancelledByTenant" tone="neutral" class="self-start">Cancelled by the tenant</StatusPill>
 
-            <!-- By the item's own width (audit 2026-10-09): in a board column at 1280
+            <!-- By the card's own width (audit 2026-10-09): in a board column at 1280
                  (206px) the three facts wrapped one to a line, each with a dot left
                  hanging at its end. Narrow, they stack without dots; one line from 24rem. -->
             <div class="@container">
@@ -668,7 +665,7 @@ function handleDeleteTicketPrompt() {
 
             <!-- Delete beside Manage (Sean, 2026-10-02: a visible delete on repairs); the same
                  confirmation and removal as the Manage dialog's own Delete repair. -->
-            <div class="mt-1 flex items-center justify-between gap-2">
+            <div class="mt-1 flex items-center justify-between gap-2 border-t border-line/60 pt-3">
               <button type="button" class="pill-btn" @click="openEditModal(t)">
                 <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
                 Manage

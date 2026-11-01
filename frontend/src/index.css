@@ -273,7 +273,7 @@
      dark theme both are dark surfaces, so a segment drawn in either all but
      vanished into the tile under it (Sean, 2026-10-01). */
   --series-night: #0f1b15;
-  --series-soft: #a9cdb8;
+  --series-soft: #e2f0e7;
 
   /* Elevation. The values `--shadow-card` and `--shadow-lift` always had; they
      moved here from `@theme` so the dark theme can deepen them. */
@@ -1506,37 +1506,6 @@ html:has(> body[style*='overflow: hidden']) {
   .ws-textarea:disabled {
     background-color: var(--well);
     cursor: not-allowed;
-  }
-
-  /* The dashboards sit directly on the page, with no cards (Sean, 1 Nov 2026). A rule is the only
-     thing between sections, so it takes the stronger line, and a sticky table cell paints the page.
-     Whatever floats above the page keeps its own surface. */
-  .ws-workspace {
-    --line: var(--edge);
-    --ws-table-surface: var(--canvas);
-  }
-  .ws-workspace dialog,
-  .ws-workspace [role='dialog'] {
-    --ws-table-surface: var(--tile);
-  }
-  .ws-workspace .ws-table-card {
-    --ws-table-surface: var(--tile);
-  }
-  .ws-workspace .ws-table-wrap {
-    border: 0;
-    border-radius: 0;
-  }
-  .ws-workspace .ws-table tfoot td,
-  .ws-workspace .ws-table tfoot th {
-    background-color: var(--ws-table-surface);
-  }
-  .ws-workspace .ws-table tr > :first-child,
-  .ws-workspace .ws-table.ws-table-fixed tr > :first-child {
-    padding-left: 0;
-  }
-  .ws-workspace .ws-table tr > :last-child,
-  .ws-workspace .ws-table.ws-table-fixed tr > :last-child {
-    padding-right: 0;
   }
 
   /* Tables. Long ledgers scroll inside .ws-table-wrap with a sticky head. */

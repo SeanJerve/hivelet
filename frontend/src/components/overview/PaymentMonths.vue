@@ -204,7 +204,7 @@ const rows = computed(() => [...months.value].reverse());
       :label="`Your rent by month, ${capsules[0]!.long} to ${capsules.at(-1)!.long}`"
     />
 
-    <dl class="grid gap-4 sm:grid-cols-3">
+    <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
       <div>
         <dt class="text-xs text-ink-faint">Months paid</dt>
         <dd class="text-lg font-semibold tabular">{{ paidMonths.length }} of {{ countedMonths.length }}</dd>
@@ -232,7 +232,7 @@ const rows = computed(() => [...months.value].reverse());
       {{ nothingMonths.length === 1 ? 'it' : 'them' }}, ask the landlady to check her records.
     </p>
 
-    <details class="group">
+    <details class="group border-t border-line pt-3">
       <summary
         class="press inline-flex min-h-11 cursor-pointer items-center text-sm text-ink-soft hover:text-ink transition-colors font-semibold"
       >
@@ -242,6 +242,7 @@ const rows = computed(() => [...months.value].reverse());
       <RecordTable
         class="mt-3"
         :rows="rows"
+        flat
         caption="Your rent by month"
         noun="month"
         :page-size="12"

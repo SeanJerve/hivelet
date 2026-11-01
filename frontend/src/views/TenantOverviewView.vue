@@ -218,7 +218,7 @@ function shortDate(value: string | null | undefined, withYear = false) {
 }
 
 /**
- * Due-date countdown. Severity drives the tone of the status beside the amount.
+ * Due-date countdown. Severity drives the tone of the status on the amount card.
  * @businessRule BR-033 - the cycle runs from each tenancy's own anniversary date.
  *   The due date shown comes from the bill the backend raised; this only counts
  *   down to it.
@@ -584,7 +584,7 @@ const statusTone = computed(() => {
   const s = dueDateCountdown.value.severity;
   if (s === 'overdue' || s === 'danger') return 'overdue' as const;
   if (s === 'warning') return 'verify' as const;
-  return 'neutral' as const;
+  return 'on-dark' as const;
 });
 </script>
 
@@ -610,12 +610,12 @@ const statusTone = computed(() => {
 
     <QuickActionsFab v-if="!writesUnavailable" :actions="quickActions" />
 
-    <div v-if="loading" class="grid gap-x-10 gap-y-8 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
+    <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>
       <div
         v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-12']"
         :key="i"
-        :class="['flex flex-col gap-4 min-h-64', span]"
+        :class="['rounded-tile bg-tile p-6 flex flex-col gap-4 min-h-64', span]"
       >
         <Skeleton class-name="h-4 w-28 rounded-full" />
         <Skeleton class-name="h-12 w-40 rounded-2xl" />
@@ -623,18 +623,19 @@ const statusTone = computed(() => {
       </div>
     </div>
 
-    <div v-else class="grid gap-x-10 gap-y-8 md:grid-cols-2 xl:grid-cols-12">
-      <!-- What the resident owes, and the way to pay it. The largest figure here.
+    <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+      <!-- What the resident owes, and the way to pay it. The only brand tile.
            The five tiles below arrive together once per visit, so a short
            cascade - 30ms apart, same rhythm as any other first-load list in
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
-      <OverviewTile :boxed="!settledOnPhone" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" :class="['list-reveal-item md:order-none md:col-span-2 xl:col-span-5', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
+      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" :class="['list-reveal-item md:order-none md:col-span-2 xl:col-span-5', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
         <template v-if="!tenantDataLoadFailed && !isSettled && !(fromLedgerOnly && standingStatus === 'overdue')" #actions>
           <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
         </template>
         <UnavailableNote
           v-if="tenantDataLoadFailed"
+          dark
           message="Your bill could not be loaded."
           @retry="fetchTenantData"
         />
@@ -655,22 +656,24 @@ const statusTone = computed(() => {
               0px of overflow in every case, one line at 100%.
             -->
             <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl break-all">{{ peso(tenantData.totalAmountDue, 2) }}</p>
-            <p v-if="tenantData.dueDate" class="mt-3 text-sm text-ink-soft">Due {{ tenantData.dueDate }}</p>
+            <p v-if="tenantData.dueDate" class="mt-3 text-sm text-on-brand-soft">Due {{ tenantData.dueDate }}</p>
             <!-- Which dates this pays for, in the words the Payments list uses. -->
-            <p v-if="tenantData.billPeriodDisplay" class="mt-1 text-sm text-ink-soft">Rent for {{ tenantData.billPeriodDisplay }}</p>
-            <p v-if="owedSummary" class="mt-3 text-sm leading-6 text-ink-soft">{{ owedSummary }}</p>
+            <p v-if="tenantData.billPeriodDisplay" class="mt-1 text-sm text-on-brand-soft">Rent for {{ tenantData.billPeriodDisplay }}</p>
+            <p v-if="owedSummary" class="mt-3 text-sm leading-6 text-on-brand-soft">{{ owedSummary }}</p>
           </div>
-          <!-- `mt-auto`: at the foot of the section, level with the end of the
-               Current bill list beside it, which sets the height of the row. -->
+          <!-- `mt-auto`: at the foot of the tile, level with Request a repair
+               beside it. The row is as tall as the Current bill tile, and the
+               button used to sit under the figure with a band of empty green
+               below it. -->
           <div class="mt-auto flex flex-col items-start gap-2">
             <!-- See `paymentAwaitingVerification`: the button is not offered
                  when the checkout would refuse it. -->
-            <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-ink">
+            <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand">
               {{ awaitingVerificationLine }}
             </p>
             <!-- Not offline or from the saved copy: paying needs the connection it lacks
                  (lib/offlineCache.ts `writesUnavailable`). -->
-            <button v-else-if="!writesUnavailable" type="button" class="pill-btn-brand" :disabled="payingOnline" @click="handlePayOnline">
+            <button v-else-if="!writesUnavailable" type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
               <CreditCard class="size-4" aria-hidden="true" />
               {{ payingOnline ? 'Opening the payment page' : 'Pay with GCash' }}
             </button>
@@ -696,7 +699,7 @@ const statusTone = computed(() => {
             <p class="text-4xl leading-none font-semibold tracking-tight break-words sm:text-5xl">
               {{ tenantData.dueDaysRemaining === 'Settled' ? 'Settled' : 'Not billed yet' }}
             </p>
-            <p class="mt-3 text-sm text-ink-soft">
+            <p class="mt-3 text-sm text-on-brand-soft">
               <template v-if="tenantData.nextDueDateDisplay">Next rent is due {{ tenantData.nextDueDateDisplay }}.</template>
               <template v-else-if="tenantData.dueDaysRemaining === 'Settled' && tenantData.paidThroughDisplay">
                 Payments recorded up to {{ tenantData.paidThroughDisplay }}.
@@ -716,7 +719,7 @@ const statusTone = computed(() => {
             account. Payment opens a week before the next period starts, and
             this tile turns into the amount-due tile by itself when it does.
           -->
-          <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-ink sm:max-w-64">
+          <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand sm:max-w-64">
             {{ awaitingVerificationLine }}
           </p>
         </div>
@@ -756,7 +759,7 @@ const statusTone = computed(() => {
             ]"
             :label="`Rent ${peso(tenantData.baseRent, 2)} and water ${peso(tenantData.waterFee, 2)}`"
           />
-          <dl class="flex flex-col text-sm">
+          <dl class="flex flex-col divide-y divide-line text-sm">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="flex items-center gap-2">
                 <span aria-hidden="true" class="size-2.5 rounded-full bg-brand" />
@@ -837,7 +840,6 @@ const statusTone = computed(() => {
       </OverviewTile>
 
       <OverviewTile
-        boxed
         title="Payments"
         to="/tenant/payments#payment-record"
         to-label="Open payments and billing"

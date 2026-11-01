@@ -10,19 +10,10 @@ workspace, a sage and teal HR board, and an ink and cyan board. Also the Scovill
 skills, and the pre-redesign audit `docs/OVERVIEW_AUDIT_2026-09-17.md`.
 
 **What was taken from the references:**
-- a soft tinted canvas
-- pill-shaped controls, and a round arrow button on a section that leads somewhere
+- a soft tinted canvas with borderless rounded tiles
+- one dark or saturated tile that carries the most important thing
+- pill-shaped controls, and a round arrow button on a tile that leads somewhere
 - hatching for a figure that is missing
-
-**Boxes for tables and for what is waiting (Sean, 1 Nov 2026).** The admin and tenant dashboards
-sit directly on the page: a section is a title and its content, held apart by space, with no rule
-between sections. Rules stay only between the rows of a table or list inside a box. A table is one
-box, on a phone too, never one box per row. What is waiting for the person is boxed while it waits:
-Needs your attention, the payments to verify, repairs To dispatch, Amount due, each bill to pay,
-and notices that a page could not load or save. Never a chart.
-What floats above the page keeps its surface: dialogs, menus, popovers, toasts and the floating button. The public site is unchanged. Where this
-file still says "tile", read "section". The last version with cards is the tag
-`v1.0.0-final-with-cards`.
 
 **What was not taken:** stock photos of people, decorative gauges, and invented numbers.
 
@@ -34,8 +25,8 @@ file still says "tile", read "section". The last version with cards is the tag
    - The landlady's first question is what needs her action: payments to verify, urgent repairs.
    - The resident's first question is what they owe and how to pay.
    - Monitoring comes after. On a phone, the source order is the priority order.
-2. **Lead by order and size.** What asks for action comes first with the largest figures. No
-   section is filled or tinted to stand out.
+2. **One loud tile per screen.** `night` or `brand` marks the tile that asks for action. A second
+   dark tile is allowed only for a second, different call to action.
 3. **Never present an absence as a fact.** A failed load, a month not yet entered, and a real zero
    are three different things, drawn three different ways (section 5). `HANDOFF_TO_DESIGN.md`
    section 4 still binds every screen.
