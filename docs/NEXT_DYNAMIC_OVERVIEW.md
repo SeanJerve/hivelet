@@ -5,7 +5,7 @@ built yet. Admin Overview only (`frontend/src/views/AdminOverviewView.vue`).
 
 ## 1. The month chart tile
 
-- Say **Income**, not "Rent and water": "Income by month, 2026" and "Income for November 2026".
+- Done 1 Nov: **Income** wording; Rent and Water beside Monthly average and Expected, as year totals.
 - The chart's selected month today shows one number ("₱263,650 recorded"). Show that month's **rent
   value and water value** separately instead.
 - **Monthly average** and **Expected each month** sit together on one side.

@@ -278,6 +278,11 @@ const liveIncomeRecords = computed(() => incomeRecords.filter((r) => r.year === 
 const liveExpenseRecords = computed(() => expenseRecords.filter((e) => e.year === CURRENT_YEAR));
 
 /** Year to date: every collection entered for the current year. */
+/** The year's income in its two parts, summed from the same receipts (Sean, 1 Nov 2026). */
+const entered = computed(() => ({
+  rent: liveIncomeRecords.value.reduce((sum, r) => sum + Number(r.rent || 0), 0),
+  water: liveIncomeRecords.value.reduce((sum, r) => sum + Number(r.water || 0), 0),
+}));
 const monthlyRevenue = computed(() =>
   liveIncomeRecords.value.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0)
 );
@@ -938,8 +943,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       </OverviewTile>
 
       <OverviewTile
-        :title="`Rent and water for ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
-        phone-title="Rent and water"
+        :title="`Income for ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
+        phone-title="Income"
         to="/admin/income#income-records"
         to-label="Open the income ledger"
         :class="['max-md:gap-3 max-md:p-4 xl:col-span-4', phonePlace(monthHasFigures)]"
@@ -956,7 +961,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                "Not entered yet" for the same month (audit 2026-10-09). -->
           <div v-if="currentMonthRecordCount === 0">
             <p class="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Not entered yet</p>
-            <!-- The phone's title is only "Rent and water", so the month goes here. -->
+            <!-- The phone's title is only "Income", so the month goes here. -->
             <p class="mt-2 text-sm text-ink-soft md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }} {{ CURRENT_YEAR }}</p>
             <!-- The last month with records, quiet beside the month she is looking at. -->
             <div v-if="lastEnteredMonth" class="mt-3 text-sm text-ink-faint md:mt-4">
@@ -1017,7 +1022,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       </OverviewTile>
 
       <OverviewTile
-        :title="`Rent and water by month, ${CURRENT_YEAR}`"
+        :title="`Income by month, ${CURRENT_YEAR}`"
         to="/admin/income#income-by-month"
         to-label="Open the income ledger"
         class="col-span-2 max-md:order-3 max-md:gap-3 max-md:p-4 xl:col-span-8"
@@ -1030,13 +1035,17 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         <template v-else>
           <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" short />
           <PhoneMore>
-            <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
+            <dl class="grid grid-cols-2 gap-4 border-t border-line pt-4 sm:grid-cols-4">
               <div>
-                <dt class="text-xs text-ink-faint">Total entered</dt>
-                <dd class="text-lg font-semibold tabular">{{ peso(monthlyRevenue) }}</dd>
+                <dt class="text-xs text-ink-faint">Rent</dt>
+                <dd class="text-lg font-semibold tabular">{{ peso(entered.rent) }}</dd>
                 <dd class="text-xs text-ink-soft">
                   Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}
                 </dd>
+              </div>
+              <div>
+                <dt class="text-xs text-ink-faint">Water</dt>
+                <dd class="text-lg font-semibold tabular">{{ peso(entered.water) }}</dd>
               </div>
               <div>
                 <dt class="text-xs text-ink-faint">Monthly average</dt>
@@ -1153,7 +1162,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <thead>
               <tr>
                 <th scope="col">Month</th>
-                <th scope="col" class="num">Rent and water</th>
+                <th scope="col" class="num">Income</th>
                 <!-- On a phone the four columns did not fit 303px and Net, the figure
                      she reads this for, sat off-screen behind a sideways scroll. There
                      the spending moves under Rent and water as a second line. -->
@@ -1360,7 +1369,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </dl>
       </OverviewTile>
 
-      <OverviewTile :title="`Rent and water by month, ${selectedArchiveYear}`" :to="archiveIncomeByMonthLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-6">
+      <OverviewTile :title="`Income by month, ${selectedArchiveYear}`" :to="archiveIncomeByMonthLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-6">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <MonthCapsules v-else :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
       </OverviewTile>

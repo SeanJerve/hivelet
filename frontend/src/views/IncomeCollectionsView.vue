@@ -1341,7 +1341,7 @@ const isDownloadOpen = ref(false);
       <OverviewTile
         v-if="rows.length > 0 && showMonthChart"
         id="income-by-month"
-        :title="`Rent and water by month, ${periodWord}`"
+        :title="`Income by month, ${periodWord}`"
         class="scroll-mt-24 max-md:gap-3 max-md:p-4 xl:col-span-12"
       >
         <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short />
