@@ -145,7 +145,7 @@ async function submit() {
       phoneChanged && passwordChanged
         ? `Sign in with ${shown} and your new password from now on.`
         : phoneChanged
-          ? `Sign in with ${shown} from now on. Every page now gives this number for calling you.`
+          ? `Sign in with ${shown} from now on. All pages now give this number for calling you.`
           : 'Your new password is active. Use it next time you sign in.'
     );
     emit('close');

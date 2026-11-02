@@ -241,7 +241,7 @@ onMounted(() => {
     <Teleport to="body">
       <Transition name="legal-drawer">
         <div v-if="drawerOpen" class="fixed inset-0 z-50 lg:hidden">
-          <div class="absolute inset-0 bg-night/40" aria-hidden="true" @click="closeDrawer()" />
+          <div class="absolute inset-0 bg-dim/30" aria-hidden="true" @click="closeDrawer()" />
           <div
             ref="drawerRef"
             role="dialog"

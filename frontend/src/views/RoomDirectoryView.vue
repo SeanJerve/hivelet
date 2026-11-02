@@ -267,7 +267,7 @@ function applyRoomFilters(v: FilterDraft) {
       and RATE Directory, and its whole job is to be believed, so a failed load
       has to say so rather than quietly show the old figures.
     -->
-    <div v-if="roomsFetchFailed" class="ws-reveal flex flex-col items-start gap-3 rounded-tile bg-verify-soft p-5 sm:p-6" role="alert">
+    <div v-if="roomsFetchFailed" class="ws-reveal flex flex-col items-start gap-3 rounded-2xl bg-verify-soft px-4 py-3" role="alert">
       <div>
         <p class="text-base font-semibold text-verify">
           The current rates could not be loaded.

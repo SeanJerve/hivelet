@@ -463,7 +463,7 @@ const totalJuly = computed(() =>
 /** The period in the year card's title, "2026" / "September 2026" / "all years" - Monthly Income's `periodWord`. */
 const periodWord = computed(() => {
   const m = filterMonth.value === 'All' ? '' : (monthsList.find((x) => x.val === filterMonth.value)?.label ?? '');
-  if (filterYear.value === 'All') return m ? `${m}, every year` : 'all years';
+  if (filterYear.value === 'All') return m ? `${m}, all years` : 'all years';
   return m ? `${m} ${filterYear.value}` : filterYear.value;
 });
 
@@ -1317,7 +1317,7 @@ async function handleEditExpense() {
               <div
                 v-for="(entry, index) in formEntries"
                 :key="index"
-                class="relative p-4 bg-well border border-line rounded-tile space-y-3"
+                class="relative p-4 bg-well rounded-2xl space-y-3"
               >
                 <!-- Header with Item Index and Remove Item Button -->
                 <div class="flex items-center justify-between pb-2 border-b border-line/70">
@@ -1389,7 +1389,7 @@ async function handleEditExpense() {
                     <div
                       v-for="(alloc, aIdx) in entry.allocations"
                       :key="aIdx"
-                      class="flex flex-wrap items-end gap-3 bg-tile p-3 border border-line rounded-xl"
+                      class="flex flex-wrap items-end gap-3 bg-well p-3 rounded-2xl"
                     >
                       <label class="ws-field w-full sm:w-auto sm:flex-1">
                         Which part of the property
@@ -1522,7 +1522,7 @@ async function handleEditExpense() {
                 <div
                   v-for="(alloc, aIdx) in editAllocations"
                   :key="aIdx"
-                  class="flex flex-wrap items-end gap-3 bg-well p-3 border border-line rounded-xl"
+                  class="flex flex-wrap items-end gap-3 bg-well p-3 rounded-2xl"
                 >
                   <label class="ws-field w-full sm:w-auto sm:flex-1">
                     Which part of the property

@@ -366,7 +366,7 @@ const sections = Object.values(S);
       <h2 :id="S.security.id" tabindex="-1">{{ S.security.title }}</h2>
       <ul>
         <li>Passwords are stored only in scrambled (hashed) form, so nobody, the landlady included, can read yours.</li>
-        <li>Every new tenant account starts with a one-time password, which has to be replaced the first time it is used.</li>
+        <li>All new tenant accounts start with a one-time password, which has to be replaced the first time it is used.</li>
         <li>Five wrong passwords in a row lock an account for 15 minutes.</li>
         <li>
           Your browser never reads the database directly. Every request goes through Hivelet's

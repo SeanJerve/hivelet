@@ -670,7 +670,7 @@ onUnmounted(() => {
       <div
         v-if="isPublicRoute && !isLandingPage && isMobilePublicNavOpen"
         id="public-mobile-nav"
-        class="md:hidden flex flex-col items-start gap-1 border-t border-line bg-tile px-4 py-3 shadow-md"
+        class="md:hidden flex flex-col items-start gap-1 border-t border-line bg-tile px-4 py-3 shadow-lift"
       >
         <RouterLink
           v-if="!isAuthenticated"

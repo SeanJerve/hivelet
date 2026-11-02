@@ -565,6 +565,11 @@ button[role='combobox'] {
   --mirror-tint: rgb(94 192 141 / 0.3);
   color: #ffffff;
 }
+@media (hover: hover) {
+  [data-theme='dark'] .pill-btn-brand:hover:not(:disabled) {
+    --mirror-tint: rgb(94 192 141 / 0.42);
+  }
+}
 
 button[role='combobox']::before {
   box-shadow:

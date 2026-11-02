@@ -888,7 +888,7 @@ function handleDeleteTicketPrompt() {
             </p>
 
             <!-- Message Stream Box -->
-            <div class="max-h-36 space-y-2 overflow-y-auto rounded-2xl bg-well p-3 text-sm">
+            <div class="max-h-48 space-y-3 overflow-y-auto py-1">
               <div v-if="loadingMessages" class="py-2 text-center text-ink-faint text-xs">
                 Loading messages…
               </div>
@@ -902,19 +902,18 @@ function handleDeleteTicketPrompt() {
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 :class="['flex flex-col', msg.profiles?.role === 'admin' ? 'items-end' : 'items-start']"
               >
-                <div
-                  :class="[ 'max-w-[85%] rounded-xl px-3 py-1.5 text-xs', msg.profiles?.role === 'admin' ? 'bg-night text-on-night' : 'bg-tile border border-line text-ink' ]"
-                >
-                  <p class="font-semibold text-xs opacity-75 mb-0.5">
-                    {{ msg.profiles?.role === 'admin' ? 'You' : (msg.profiles?.full_name || 'Tenant') }}
-                  </p>
-                  <!-- The resident's own words: a pasted link or a long run with no
-                       spaces must wrap inside the bubble, not run out of it. -->
-                  <p class="break-words whitespace-pre-line">{{ msg.message_body }}</p>
-                  <p class="text-[0.6875rem] opacity-70 text-right mt-0.5">
-                    {{ messageTime(msg.created_at) }}
-                  </p>
-                </div>
+                <p class="mb-1 px-1 text-xs text-ink-faint">
+                  <span class="font-semibold text-ink-soft">{{ msg.profiles?.role === 'admin' ? 'You' : (msg.profiles?.full_name || 'Tenant') }}</span>
+                  · {{ messageTime(msg.created_at) }}
+                </p>
+                <!-- The tenant's own words: a pasted link or a long run with no spaces must wrap
+                     inside the bubble, not run out of it. -->
+                <p
+                  :class="[
+                    'max-w-md whitespace-pre-line break-words rounded-2xl px-4 py-3 text-sm leading-6',
+                    msg.profiles?.role === 'admin' ? 'bg-brand text-on-brand' : 'bg-tile text-ink shadow-card ring-1 ring-line',
+                  ]"
+                >{{ msg.message_body }}</p>
               </div>
             </div>
 

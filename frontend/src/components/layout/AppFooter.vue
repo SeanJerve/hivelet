@@ -111,7 +111,7 @@ const portalRoute = computed(() => {
                 :to="portalRoute"
                 class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
               >
-                Portal
+                Dashboard
               </RouterLink>
             </li>
           </ul>

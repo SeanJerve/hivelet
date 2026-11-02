@@ -905,8 +905,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <OverviewTile
         v-if="monthShown"
         key="month"
-        :title="`Income for ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
-        phone-title="Income"
+        boxed
+        :title="`Received, ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
+        phone-title="Received"
         to="/admin/income#income-records"
         to-label="Open the income ledger"
         :class="['max-md:order-1 max-md:gap-3', tileSpans.month, phoneSpan]"

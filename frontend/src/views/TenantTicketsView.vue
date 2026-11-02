@@ -773,7 +773,6 @@ function formatDateTime(iso: string) {
     <div class="ws-focus space-y-5">
       <!-- Page header -->
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
         <!-- No subtitle that restates the page (Sean, 2026-10-01, fewer words). -->
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Repairs
@@ -802,7 +801,7 @@ function formatDateTime(iso: string) {
                 v-if="ticketError"
                 id="ticket-error"
                 tabindex="-1"
-                class="ws-reveal flex scroll-mt-24 items-start gap-2.5 rounded-2xl bg-overdue-soft p-4 outline-none"
+                class="ws-reveal flex scroll-mt-24 items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 outline-none"
                 role="alert"
               >
                 <AlertTriangle class="mt-0.5 size-4 shrink-0 text-overdue" aria-hidden="true" />
@@ -1258,7 +1257,7 @@ function formatDateTime(iso: string) {
 
             <p
               v-if="timelineError"
-              class="mb-3 rounded-xl border border-verify-soft bg-verify-soft/60 px-3.5 py-2.5 text-xs text-ink-soft"
+              class="mb-3 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-ink-soft"
             >
               <strong class="text-ink">Replies could not be loaded.</strong>
               Close this and open it again to try once more.
@@ -1268,17 +1267,19 @@ function formatDateTime(iso: string) {
               <div
                 v-for="(note, i) in timelineNotes"
                 :key="note.id"
-                class="list-reveal-item flex gap-3"
+                :class="['list-reveal-item flex flex-col', note.author === 'You' ? 'items-end' : 'items-start']"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
-                <div class="size-7 rounded-full bg-night text-on-night text-xs font-semibold flex items-center justify-center shrink-0">
-                  {{ note.author[0] }}
-                </div>
-                <div class="min-w-0 flex-1 bg-well border border-line rounded-xl px-3.5 py-2.5">
-                  <p class="text-xs font-semibold text-ink">{{ note.author }}</p>
-                  <p class="text-sm text-ink-soft mt-0.5 leading-6 break-words">{{ note.text }}</p>
-                  <p class="text-xs text-ink-faint mt-1">{{ formatDateTime(note.timestamp) }}</p>
-                </div>
+                <p class="mb-1 px-1 text-xs text-ink-faint">
+                  <span class="font-semibold text-ink-soft">{{ note.author }}</span>
+                  · {{ formatDateTime(note.timestamp) }}
+                </p>
+                <p
+                  :class="[
+                    'max-w-md break-words rounded-2xl px-4 py-3 text-sm leading-6',
+                    note.author === 'You' ? 'bg-brand text-on-brand' : 'bg-tile text-ink shadow-card ring-1 ring-line',
+                  ]"
+                >{{ note.text }}</p>
               </div>
             </div>
 
@@ -1287,10 +1288,10 @@ function formatDateTime(iso: string) {
               409 ("This ticket is closed"), so the box only ever led to an error
               toast. Resolved tickets still take notes; the server allows them.
             -->
-            <p v-if="isCancelled(activeTimelineTicket)" class="rounded-xl bg-well px-3.5 py-2.5 text-sm text-ink-soft">
+            <p v-if="isCancelled(activeTimelineTicket)" class="text-sm text-ink-soft">
               You cancelled this request. If the problem comes back, report it again.
             </p>
-            <p v-else-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-well px-3.5 py-2.5 text-sm text-ink-soft">
+            <p v-else-if="activeTimelineTicket.status === 'Closed'" class="text-sm text-ink-soft">
               This request is closed. If the problem has come back, report it again.
             </p>
             <template v-else>

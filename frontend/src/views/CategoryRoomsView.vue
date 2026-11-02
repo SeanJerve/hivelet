@@ -638,7 +638,7 @@ async function submitInquiry() {
               :to="portalRoute"
               class="press inline-flex min-h-11 items-center transition-colors font-semibold"
             >
-              Portal
+              Dashboard
             </RouterLink>
           </template>
           <!-- Light or dark, at the top where a phone finds it (technical evaluators, 3 Oct 2026). -->
@@ -790,12 +790,12 @@ async function submitInquiry() {
           Nothing of this kind is listed
         </h2>
         <p class="mt-5 max-w-xl text-xs sm:text-sm text-ink-soft leading-relaxed">
-          Try another kind above, or
-          <RouterLink
-            to="/inquire"
-            class="press inline-block text-ink transition-colors font-semibold"
-          >ask the landlady</RouterLink>
-          when one will be free.
+          Try another kind above<template v-if="!isAuthenticated">, or
+            <RouterLink
+              to="/inquire"
+              class="press inline-block text-ink transition-colors font-semibold"
+            >ask the landlady</RouterLink>
+            when one will be free</template>.
         </p>
       </div>
     </section>
@@ -962,8 +962,8 @@ async function submitInquiry() {
             -->
             <p
               :class="[
-                'absolute left-0 top-0 px-4 py-2 text-[0.7rem] font-semibold tracking-[0.18em] uppercase shadow-lift',
-                isAvailable(activeUnit) ? 'bg-brand text-on-brand' : 'bg-ink text-canvas',
+                'absolute left-4 top-4 rounded-full bg-tile px-3 py-1 text-sm font-semibold',
+                isAvailable(activeUnit) ? 'text-brand' : 'text-ink-soft',
               ]"
             >
               {{ isAvailable(activeUnit) ? 'Vacant' : 'Occupied' }}
@@ -1192,7 +1192,7 @@ async function submitInquiry() {
           tabindex="-1"
           class="font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)] outline-none"
         >
-          Your message about unit {{ inquiryUnit.toUpperCase() }} is saved
+          Your inquiry is sent
         </h2>
         <p class="mt-4 max-w-md text-sm text-ink-soft leading-relaxed">
           <template v-if="inquiryConversation">We will reply on your inquiry page, and may also call
@@ -1345,7 +1345,7 @@ async function submitInquiry() {
           -->
           <button
             type="button"
-            class="press inline-flex min-h-11 items-center text-xs text-ink-soft hover:text-ink transition-colors cursor-pointer font-semibold"
+            class="pill-btn-quiet"
             @click="closeInquiry"
           >
             Cancel

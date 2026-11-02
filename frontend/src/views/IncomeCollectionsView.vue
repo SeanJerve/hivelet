@@ -630,7 +630,7 @@ const collectedAltogether = computed(() => totalRent.value + totalWater.value);
  */
 const periodWord = computed(() => {
   const m = filterMonth.value === 'All' ? '' : (monthsList.find((x) => x.val === filterMonth.value)?.label ?? '');
-  if (filterYear.value === 'All') return m ? `${m}, every year` : 'all years';
+  if (filterYear.value === 'All') return m ? `${m}, all years` : 'all years';
   return m ? `${m} ${filterYear.value}` : filterYear.value;
 });
 
@@ -1256,7 +1256,7 @@ const isDownloadOpen = ref(false);
         <p v-else-if="monthRows.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
         <template v-else>
           <!-- Rent plus water, the Remitted column's figure, for the one month. -->
-          <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater) }}</p>
+          <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater, 2) }}</p>
           <p class="text-sm leading-6 text-ink-soft">
             {{ `From ${monthRows.length} ${monthRows.length === 1 ? 'payment' : 'payments'}` }}
           </p>
@@ -1265,11 +1265,11 @@ const isDownloadOpen = ref(false);
           <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-ink-soft">Rent</dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRent) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRent, 2) }}</dd>
             </div>
             <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
               <dt class="text-sm text-ink-soft">Water</dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthWater) }}</dd>
+              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthWater, 2) }}</dd>
             </div>
             <!-- BR-035: the label only; a system-computed figure, half of each row's Rent Amount. Boarding
                  House rows only, as her workbook has the column, so the section is named (21 Oct 2026). -->
@@ -1278,7 +1278,7 @@ const isDownloadOpen = ref(false);
                    phone, so the three figures in a row stay level. -->
               <!-- Lighter than Rent and Water: those two make the total; this is inside Rent (22 Oct 2026). -->
               <dt class="text-sm text-ink-soft">50% Share <span class="hidden text-xs md:block">Half of Boarding House rent</span></dt>
-              <dd class="tabular text-base text-ink-soft md:text-lg">{{ peso(monthShare) }}</dd>
+              <dd class="tabular text-base text-ink-soft md:text-lg">{{ peso(monthShare, 2) }}</dd>
               <span class="text-xs text-ink-soft md:hidden">Half of Boarding House rent</span>
             </div>
           </dl>
@@ -1292,12 +1292,12 @@ const isDownloadOpen = ref(false);
         </p>
         <template v-else>
           <p class="flex flex-wrap items-baseline gap-x-2">
-            <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(collectedAltogether) }}</span>
+            <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(collectedAltogether, 2) }}</span>
             <span class="text-sm text-ink-soft">received from {{ rows.length }} {{ rows.length === 1 ? 'payment' : 'payments' }}</span>
           </p>
           <SegmentBar
             :segments="clusterSplit"
-            :label="`How ${peso(collectedAltogether)} divides across the clusters`"
+            :label="`How ${peso(collectedAltogether, 2)} divides across the clusters`"
           />
           <!-- The legend in two columns on a phone, name and share; the amounts
                from 768px (Loyd, 2026-10-03). -->
@@ -1323,7 +1323,7 @@ const isDownloadOpen = ref(false);
                 <span class="text-xs text-ink-faint tabular">
                   {{ wholePercents(clusterSplit.map((s) => s.value))[i] }}%
                 </span>
-                <span class="tabular font-semibold max-md:hidden">{{ peso(c.value) }}</span>
+                <span class="tabular font-semibold max-md:hidden">{{ peso(c.value, 2) }}</span>
               </span>
             </li>
           </ul>

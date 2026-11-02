@@ -273,7 +273,6 @@ function handleReset() {
   <div class="ws-focus space-y-5">
     <!-- Page header -->
     <div>
-      <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
       <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
         My details
       </h1>
@@ -302,7 +301,7 @@ function handleReset() {
     <div v-else class="ws-reveal space-y-4 sm:space-y-6">
       <div
         v-if="errorNotice"
-        class="ws-reveal flex items-start gap-2.5 rounded-tile bg-overdue-soft p-4 sm:p-5"
+        class="ws-reveal flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3"
         role="alert"
       >
         <AlertTriangle class="mt-0.5 size-5 shrink-0 text-overdue" aria-hidden="true" />

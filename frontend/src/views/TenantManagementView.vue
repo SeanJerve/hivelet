@@ -133,7 +133,6 @@ const onboardDefaults = () => ({
   // form's first suggestion was a unit the submit then refused (B-61).
   unit: '',
   moveIn: propertyToday(),
-  anniv: propertyToday(),
   // BR-039: the advance rent equals the rent in effect at move-in. It is pre-filled
   // from the unit's LIVE price the moment a unit is chosen (see the watcher below),
   // so the administrator sees and confirms the figure rather than the API
@@ -152,7 +151,6 @@ const newName = ref(d0.name);
 const newPhone = ref(d0.phone);
 const newUnit = ref(d0.unit);
 const newMoveIn = ref(d0.moveIn);
-const newAnniv = ref(d0.anniv);
 const newDeposit = ref(d0.deposit);
 const newHasRoommates = ref<'no' | 'yes'>(d0.hasRoommates);
 const newRoommateQty = ref<number>(d0.roommateQty);
@@ -167,7 +165,6 @@ function resetOnboardForm() {
   newPhone.value = d.phone;
   newUnit.value = d.unit;
   newMoveIn.value = d.moveIn;
-  newAnniv.value = d.anniv;
   newDeposit.value = d.deposit;
   newHasRoommates.value = d.hasRoommates;
   newRoommateQty.value = d.roommateQty;
@@ -1646,16 +1643,6 @@ async function handleOnboard() {
             <div class="ws-field">
               <label for="new-move-in">Move-in date</label>
               <input id="new-move-in" v-model="newMoveIn" type="date" class="ws-input w-full" required />
-            </div>
-            <div class="ws-field">
-              <label for="new-anniversary">Anniversary date</label>
-              <input
-                id="new-anniversary"
-                v-model="newAnniv"
-                type="date"
-                class="ws-input w-full"
-                required
-              />
             </div>
             <div class="ws-field">
               <label for="new-sharing">Sharing the unit</label>
