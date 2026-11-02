@@ -25,7 +25,7 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
-import { CreditCard, Wrench } from 'lucide-vue-next';
+import { CreditCard, Home, Wrench } from 'lucide-vue-next';
 
 const { showToast } = useToast();
 const router = useRouter();
@@ -820,6 +820,9 @@ const statusTone = computed(() => {
               @load="unitPhotoLoaded = true"
               @error="unitPhotoLoaded = true"
             />
+          </div>
+          <div v-else class="grid h-28 place-items-center rounded-2xl bg-brand-soft">
+            <Home class="size-14 text-brand" stroke-width="1.5" aria-hidden="true" />
           </div>
           <!-- No "Building" row: it showed the cluster code ("Boarding House"), which means
                nothing to a resident, about a place they already live in. -->
