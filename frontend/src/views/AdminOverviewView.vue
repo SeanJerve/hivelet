@@ -905,7 +905,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <OverviewTile
         v-if="monthShown"
         key="month"
-        boxed
         :title="`Received, ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
         phone-title="Received"
         to="/admin/income#income-records"
@@ -1197,7 +1196,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       lines, no sentences. Each money card's arrow opens that year's ledger.
     -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <OverviewTile boxed :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
+      <OverviewTile :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>
@@ -1248,7 +1247,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile boxed :title="`Spent, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-4">
+      <OverviewTile :title="`Spent, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-4">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalExpenseRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>

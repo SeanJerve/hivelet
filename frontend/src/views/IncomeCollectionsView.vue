@@ -1245,7 +1245,7 @@ const isDownloadOpen = ref(false);
       zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not entered yet" opened the page).
     -->
     <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
-      <OverviewTile boxed :title="`Received, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Received, ${focus.waitingFor ?? focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           message="The collections could not be loaded."
@@ -1255,6 +1255,11 @@ const isDownloadOpen = ref(false);
              records cannot tell an empty month from one not typed in yet (Sean, honest states). -->
         <p v-else-if="monthRows.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
         <template v-else>
+          <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
+          <template v-if="focus.waitingFor">
+            <p class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Nothing for {{ focus.waitingFor.split(' ')[0] }} yet</p>
+            <p class="mt-1 text-sm font-semibold text-ink-soft">{{ focus.label }}</p>
+          </template>
           <!-- Rent plus water, the Remitted column's figure, for the one month. -->
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater, 2) }}</p>
           <p class="text-sm leading-6 text-ink-soft">

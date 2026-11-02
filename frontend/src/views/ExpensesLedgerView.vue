@@ -1048,7 +1048,7 @@ async function handleEditExpense() {
         to do on its own, and the pair reads as one product. It also stops a
         seven-figure peso amount from running out of a third-width tile.
       -->
-      <OverviewTile boxed :title="`Spent, ${focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Spent, ${focus.waitingFor ?? focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           message="Expenses could not be loaded."
@@ -1057,6 +1057,11 @@ async function handleEditExpense() {
         <!-- Nothing entered for the month: said, not shown as ₱0 (as on Monthly Income). -->
         <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
         <template v-else>
+          <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
+          <template v-if="focus.waitingFor">
+            <p class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Nothing for {{ focus.waitingFor.split(' ')[0] }} yet</p>
+            <p class="mt-1 text-sm font-semibold text-ink-soft">{{ focus.label }}</p>
+          </template>
           <p class="tabular text-3xl md:text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal, 2) }}</p>
           <p class="text-sm leading-6 text-ink-soft">
             {{ `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}

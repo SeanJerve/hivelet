@@ -26,8 +26,8 @@ skills, and the pre-redesign audit `docs/OVERVIEW_AUDIT_2026-09-17.md`.
    - The resident's first question is what they owe and how to pay.
    - Monitoring comes after. On a phone, the source order is the priority order.
 2. **Boxes are for what needs you and what you look for.** `night` or `brand`, the payments to
-   verify and repairs To dispatch ask for action. The month charts and the Received, Spent and
-   where-it-went summaries are boxed to be found at a glance. Other information sits on the page.
+   verify and repairs To dispatch ask for action. The month charts and the where-it-came-from and
+   where-it-went summaries are boxed to be found at a glance. Received and Spent sit on the page. Other information sits on the page.
    Lists and tables are one card, on a phone too, with rules between rows, never one card per row.
    The main action and dropdowns are mirror glass; neutral buttons are plain outlines (Sean, 1 Nov 2026).
 3. **Never present an absence as a fact.** A failed load, a month not yet entered, and a real zero

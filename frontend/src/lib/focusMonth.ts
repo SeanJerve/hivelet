@@ -30,6 +30,8 @@ export interface FocusMonth {
   month: number;
   /** "October 2026". */
   label: string;
+  /** This month, when it has nothing yet and the month above is an earlier one: "November 2026". */
+  waitingFor: string | null;
 }
 
 /**
@@ -58,7 +60,12 @@ export function focusMonth(
       const earlier = monthsWithEntries(lastYear);
       if (earlier.length) {
         const m = Math.max(...earlier);
-        return { year: lastYear, month: m, label: `${MONTH_LONG[m - 1]} ${lastYear}` };
+        return {
+          year: lastYear,
+          month: m,
+          label: `${MONTH_LONG[m - 1]} ${lastYear}`,
+          waitingFor: `${MONTH_LONG[thisMonth - 1]} ${thisYear}`,
+        };
       }
     }
     month = months.length ? Math.max(...months) : thisMonth;
@@ -66,5 +73,11 @@ export function focusMonth(
     const months = monthsWithEntries(year);
     month = months.length ? Math.max(...months) : 12;
   }
-  return { year, month, label: `${MONTH_LONG[month - 1]} ${year}` };
+  const waiting = picked < 0 && year === thisYear && month !== thisMonth;
+  return {
+    year,
+    month,
+    label: `${MONTH_LONG[month - 1]} ${year}`,
+    waitingFor: waiting ? `${MONTH_LONG[thisMonth - 1]} ${thisYear}` : null,
+  };
 }
