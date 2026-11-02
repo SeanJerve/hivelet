@@ -89,23 +89,22 @@ const FAQS = computed(() => [
     q: 'How does the monthly water fee work?',
     a:
       waterRatePerOccupant.value !== null
-        ? `Water is \u20B1${waterRatePerOccupant.value} a month for each person registered in the unit, so it changes when that number does.`
-        : 'Water is billed each month for each person registered in the unit. Ask the landlady for the current rate.',
+        ? `The monthly water fee is \u20B1${waterRatePerOccupant.value} per registered person in the unit. The total monthly charge will automatically adjust to reflect any changes in the number of registered residents.`
+        : 'The monthly water fee is charged per registered person in the unit. The total monthly charge will automatically adjust to reflect any changes in the number of registered residents. Ask the landlady for the current rate.',
   },
   {
     q: 'How is electricity handled?',
-    a: 'Each unit has its own electric meter, and you pay for your electricity yourself. It is not part of your rent.',
+    a: 'Each unit is equipped with its own electric meter. Electricity usage is billed separately based on individual consumption and is not included in the monthly rent.',
   },
   {
     q: 'What payment methods does the boarding house accept?',
-    a: 'Online with GCash through the portal, or in person on site; either way it shows in your account. Online GCash payment is not live yet, so for now please pay in person.',
+    a: 'The boarding house accepts payments either in person on-site or online via GCash through the tenant portal. All transactions are automatically recorded in your account ledger. Please note that the online GCash integration is currently under development. Until then, all payments must be submitted in person.',
   },
   {
+    // Owner's wording, 2026-11-02. It no longer works the cheapest unit through
+    // to a peso total, so the live-rent lookup that fed it is gone.
     q: 'What do I need to move in?',
-    a:
-      cheapestRent.value !== null
-        ? `A valid government or student ID, the tenant registration form, and two months' rent: one month in advance and one as a deposit. For our cheapest unit, ₱${cheapestRent.value.toLocaleString('en-PH')} a month, that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} on the day. When you move out, the deposit pays for repairing and cleaning the unit, and whatever is left is returned to you.`
-        : "A valid government or student ID, the tenant registration form, and two months' rent: one month in advance and one as a deposit. When you move out, the deposit pays for repairing and cleaning the unit, and whatever is left is returned to you.",
+    a: "A valid government or student ID, the tenant registration form, and two months' rent: one month in advance and one as a deposit. Upon move-out, the security deposit is applied toward any necessary unit repairs or cleaning fees, and the remaining balance will be refunded to you.",
   },
 ]);
 
@@ -173,32 +172,6 @@ const unitsPending = computed(() => !roomsLoaded.value && !roomsFetchFailed.valu
  * Null until it answers; the answer then omits the figure rather than guessing.
  */
 const waterRatePerOccupant = ref<number | null>(null);
-
-/**
- * The cheapest published rent, read from the live units already on this page.
- *
- * The move-in answer used to say "For a unit at P4,500 that is P9,000". That
- * figure was hardcoded, and migration 045 has just made it plainly wrong - the
- * cheapest published unit is P5,000 and the dearest is P30,000.
- *
- * It was also invisible to the check written to catch exactly this.
- * `check:liveness` rule 5 looks for a headline of the form `P N /mo`, and this
- * sentence carries no `/mo`, so the rule found nothing to compare and printed
- * "nothing to get wrong - every rate there is read from /public/rooms". That
- * sentence was false while this literal sat twelve lines above it.
- *
- * Reading it from `liveUnits` removes the literal rather than correcting it, so
- * there is nothing left to go stale the next time she changes a rate.
- *
- * `unitsReady` first, because until `/public/rooms` answers `liveUnits` is the
- * `CANONICAL_UNITS` seed (see THREE STATES above). Opening this answer during
- * the load quoted the seed's ₱4,500 against a live ₱5,000 (B-61, 2026-09-24).
- */
-const cheapestRent = computed<number | null>(() => {
-  if (!unitsReady.value) return null;
-  const published = liveUnits.filter((u) => u.visibility === 'Published' && u.price > 0);
-  return published.length === 0 ? null : Math.min(...published.map((u) => u.price));
-});
 
 /**
  * How many published units are vacant, for the first-visit prompt.

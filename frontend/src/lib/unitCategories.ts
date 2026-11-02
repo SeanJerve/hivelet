@@ -22,6 +22,14 @@
  * Twenty of the thirty-three are studios and the site had no studio category at
  * all.
  *
+ * That table is history now. LB and LF became studios later, and migration 088
+ * (2026-11-02) moved sixteen units on Lloyd's word. Live since 088:
+ *
+ *     Studio          x10   1e-1h, 2f, 2g, 3f, 3g, LB, LF
+ *     One-bedroom      x5   2e, 3e, B2B, B2F, F1
+ *     Two-bedroom     x16   1a-1d, 2a-2d, 3a-3d, B1F, B3F, F2B, F2F
+ *     Three-bedroom    x2   B3B, PH
+ *
  * WHY IT IS A MODULE RATHER THAN A CONST INSIDE ONE VIEW
  * ------------------------------------------------------
  * Because the correction reached one of the two screens that categorise units.
@@ -98,14 +106,15 @@ export const CATEGORIES: UnitCategory[] = [
     key: 'Two-bedroom',
     slug: 'two-bedroom',
     title: 'Two-bedroom',
-    blurb: 'Two bedrooms, in the back and front apartments.',
+    blurb: 'Two bedrooms, in the boarding house and in the apartments beside it.',
     icon: Building2,
   },
   {
     key: 'Three-bedroom',
     slug: 'three-bedroom',
     title: 'Three-bedroom',
-    blurb: 'The penthouse, on the top floor.',
+    // Not "The penthouse" alone: B3B is a three-bedroom too since migration 088.
+    blurb: 'Three bedrooms, in the penthouse and the back apartment.',
     icon: Hotel,
   },
 ];
