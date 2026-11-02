@@ -3,7 +3,7 @@ import { computed, ref, onMounted, onUnmounted, watch, watchEffect } from 'vue';
 import { useRoute, useRouter, RouterView } from 'vue-router';
 import { WifiOff } from 'lucide-vue-next';
 import { useToast } from '@/lib/useToast';
-import { isAuthenticated, mustChangePassword, mustCompleteContact, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
+import { isAdmin, isAuthenticated, isTenant, mustChangePassword, mustCompleteContact, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
@@ -135,9 +135,13 @@ onUnmounted(() => {
   window.removeEventListener('offline', updateOnlineStatus);
 });
 
-const isWorkspaceSection = computed(() => 
-  route.path.startsWith('/admin') || route.path.startsWith('/basis') || route.path.startsWith('/tenant')
-);
+// An address that is no page has no workspace to show, unless it is under the viewer's own.
+const isWorkspaceSection = computed(() => {
+  const tenantPath = route.path.startsWith('/tenant');
+  const adminPath = route.path.startsWith('/admin') || route.path.startsWith('/basis');
+  if (route.name === 'NotFound') return tenantPath ? isTenant.value : adminPath && isAdmin.value;
+  return tenantPath || adminPath;
+});
 
 /**
  * Where AppFooter renders. `/privacy` and `/terms` joined on 2026-09-24: the footer is where a

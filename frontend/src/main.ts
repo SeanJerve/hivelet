@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import { setAuthFailureHandler } from './lib/api'
 import { currentRole, handleAuthFailure, MOVED_OUT_FLAG } from './lib/authStore'
+import { watchOtherTabs } from './lib/api'
 import { warmRoutes } from './lib/warmRoutes'
 import { installStaleVersionRecovery } from './lib/staleVersion'
 import { installTheme } from './lib/theme'
@@ -54,7 +55,8 @@ setAuthFailureHandler((error) => {
   // (MOVED_OUT_FLAG). Only from a signed-in page, or the very first load, which
   // the router guard then sends to /login; not from a public page, where there
   // is nothing to explain.
-  if (error.code === 'ACCOUNT_INACTIVE' && (current.matched.length === 0 || current.meta.roles)) {
+  const needsSignIn = current.matched.length === 0 ? router.resolve(window.location.pathname).meta.roles : current.meta.roles
+  if (error.code === 'ACCOUNT_INACTIVE' && needsSignIn) {
     try {
       sessionStorage.setItem(MOVED_OUT_FLAG, '1')
     } catch {
@@ -191,6 +193,12 @@ function dismissSplash() {
 }
 window.addEventListener('error', dismissSplash, { once: true })
 window.setTimeout(dismissSplash, SPLASH_CAP_MS)
+
+// Signed out in another tab: this one follows, and a signed-in page goes to sign-in.
+watchOtherTabs(() => {
+  handleAuthFailure()
+  if (router.currentRoute.value.meta.roles) router.push('/login')
+})
 
 const app = createApp(App)
 // Every phone field spaces its number as it is typed (lib/phoneFormat.ts).

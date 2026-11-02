@@ -52,7 +52,6 @@ function plainReason(reason: string): string {
   if ((m = r.match(/^String must contain at most (\d+) character/i))) return `Use at most ${m[1]} characters.`;
   if (/^Expected number/i.test(r) || /^Number must be/i.test(r)) return 'Enter a valid amount or number.';
   if (/^Invalid (uuid|enum value)|must be a UUID/i.test(r)) return 'That choice was not recognised. Reload the page and try again.';
-  if (/^Invalid email/i.test(r)) return 'Enter a full email address, for example you@email.com.';
   if (!r) return 'Check this and try again.';
   const sentence = r.charAt(0).toUpperCase() + r.slice(1);
   return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;
@@ -117,6 +116,21 @@ export function isUnconfirmed(err: unknown): boolean {
 /** The toast title for a failed write: the caller's own, unless it may have saved. */
 export function failureTitle(err: unknown, title: string): string {
   return isUnconfirmed(err) ? 'Not confirmed' : title;
+}
+
+/**
+ * A sign-out or a different sign-in in another tab. Each tab keeps its own copy of the token, so
+ * without this a shared computer stayed signed in on every other open tab.
+ */
+export function watchOtherTabs(onSignedOut: () => void): void {
+  window.addEventListener('storage', (e) => {
+    if (e.key !== TOKEN_STORAGE_KEY) return;
+    if (!e.newValue) onSignedOut();
+    else if (e.newValue !== sessionStorage.getItem(TOKEN_STORAGE_KEY)) {
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, e.newValue);
+      window.location.reload();
+    }
+  });
 }
 
 export function getStoredToken(): string | null {

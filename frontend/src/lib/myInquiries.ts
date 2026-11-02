@@ -41,6 +41,15 @@ export function forgetInquiry(token: string): void {
   }
 }
 
+/** Signing in or out on a shared phone: the next person does not see these. */
+export function forgetAllInquiries(): void {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    /* nothing to do */
+  }
+}
+
 /** The conversation page's address for a secret. The secret rides in the #fragment, which browsers never send to a server. */
 export function conversationUrl(token: string): string {
   return `${window.location.origin}/inquiry#t=${encodeURIComponent(token)}`;

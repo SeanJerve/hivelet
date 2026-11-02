@@ -211,7 +211,7 @@ async function handleQuickLogin(account: DemoAccount) {
     </h1>
 
     <div
-      v-if="deniedReason"
+      v-if="deniedReason && !showMovedOut"
       role="status"
       class="ws-reveal mt-6 flex items-start gap-2.5 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify max-w-2xl"
     >
