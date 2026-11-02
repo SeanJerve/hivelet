@@ -123,6 +123,7 @@ function handleDeleteInquiry() {
       isSubmitting.value = true;
       try {
         await api.delete(`/admin/inquiries/${inq.id}`);
+        activeInquiryId.value = null;
         await fetchInquiriesState();
         showToast('success', 'Inquiry deleted', `${inq.name}'s inquiry is gone.`);
       } catch (err: any) {
@@ -377,9 +378,12 @@ async function loadThread(inquiryId: string) {
   }
 }
 
+// The inquiry on screen, not the picked id: after a delete the list falls back to its first row.
+// A reply half written goes with the person it was for, never on to the next one.
 watch(
-  activeInquiryId,
+  () => activeInquiry.value?.id,
   (id) => {
+    replyMessage.value = '';
     if (id) loadThread(id);
   },
   { immediate: true }
@@ -713,7 +717,7 @@ async function handleSendReply() {
           <p class="flex justify-center xl:hidden">
             <StatusPill :tone="statusTone(activeInquiry.status)">{{ statusWord(activeInquiry.status) }}</StatusPill>
           </p>
-          <p v-if="threadError" class="ws-reveal rounded-2xl bg-overdue-soft p-4 text-sm leading-6 text-overdue">
+          <p v-if="threadError" class="ws-reveal rounded-2xl bg-overdue-soft px-4 py-3 text-sm leading-6 text-overdue">
             The replies could not be loaded, so only the first message is shown. {{ threadError }}
           </p>
 
@@ -818,8 +822,8 @@ async function handleSendReply() {
               <p class="mb-0.5 px-1 text-xs text-ink-faint">{{ m.author }}</p>
               <p
                 :class="[
-                  'max-w-[85%] break-words rounded-2xl px-3 py-2 text-sm leading-5',
-                  m.from === 'me' ? 'bg-brand text-on-brand' : 'bg-tile text-ink',
+                  'max-w-md break-words rounded-2xl px-4 py-3 text-sm leading-6',
+                  m.from === 'me' ? 'bg-brand text-on-brand' : 'bg-tile text-ink shadow-card ring-1 ring-line',
                 ]"
               >
                 {{ m.text }}

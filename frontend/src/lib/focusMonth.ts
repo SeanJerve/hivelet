@@ -52,6 +52,15 @@ export function focusMonth(
   if (picked >= 0) month = picked + 1;
   else if (year === thisYear) {
     const months = monthsWithEntries(year).filter((m) => m <= thisMonth);
+    // All years, in a January with nothing entered yet: last year's last month, as above.
+    if (!months.length && filterYear === 'All') {
+      const lastYear = String(Number(thisYear) - 1);
+      const earlier = monthsWithEntries(lastYear);
+      if (earlier.length) {
+        const m = Math.max(...earlier);
+        return { year: lastYear, month: m, label: `${MONTH_LONG[m - 1]} ${lastYear}` };
+      }
+    }
     month = months.length ? Math.max(...months) : thisMonth;
   } else {
     const months = monthsWithEntries(year);

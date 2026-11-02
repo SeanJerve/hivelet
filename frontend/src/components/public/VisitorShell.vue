@@ -24,6 +24,8 @@ const SECTIONS = [
 ];
 const orderOf = (name: unknown) => SECTIONS.findIndex((s) => s.name === name);
 
+/** Pressing the section already open starts it over: a second inquiry after the first is sent. */
+const restarts = ref(0);
 const direction = ref<'forward' | 'back'>('forward');
 const column = ref<HTMLElement | null>(null);
 
@@ -83,6 +85,7 @@ watch(
               route.name === s.name ? 'text-ink' : 'text-ink-faint hover:text-ink',
             ]"
             :aria-current="route.name === s.name ? 'page' : undefined"
+            @click="route.name === s.name && restarts++"
           >
             {{ s.label }}
           </RouterLink>
@@ -90,7 +93,7 @@ watch(
 
         <RouterView v-slot="{ Component }">
           <Transition :name="`visitor-${direction}`" mode="out-in">
-            <component :is="Component" />
+            <component :is="Component" :key="`${String(route.name)}-${restarts}`" />
           </Transition>
         </RouterView>
       </div>

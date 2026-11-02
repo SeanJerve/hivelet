@@ -36,6 +36,8 @@ const creds = ref<Creds | null>(null);
 const thread = ref<Thread | null>(null);
 const loading = ref(false);
 const loadError = ref<string | null>(null);
+/** A background check failed: what is on screen stays, with a line saying so. */
+const refreshFailed = ref(false);
 const saved = ref<SavedInquiry[]>([]);
 
 const refInput = ref('');
@@ -106,6 +108,7 @@ async function load(next: Creds, { focus = true } = {}) {
     if (before !== undefined && after > before) playSound('notify');
     creds.value = next;
     thread.value = data;
+    refreshFailed.value = false;
     if ('token' in next && data.inquiry.referenceCode) {
       rememberInquiry({ token: next.token, referenceCode: data.inquiry.referenceCode, unit: data.inquiry.unit, sentAt: data.inquiry.sentAt });
     }
@@ -114,6 +117,11 @@ async function load(next: Creds, { focus = true } = {}) {
       heading.value?.focus();
     }
   } catch (err) {
+    const gone = err instanceof ApiRequestError && err.status === 404;
+    if (!focus && thread.value && !gone) {
+      refreshFailed.value = true;
+      return;
+    }
     thread.value = null;
     if (err instanceof ApiRequestError && err.status === 404) {
       loadError.value = err.message;
@@ -237,9 +245,9 @@ watch(() => route.hash, syncWithAddress);
     <!-- Loading: the link is being read. -->
     <div v-if="loading && !thread" class="space-y-3" aria-busy="true">
       <p class="sr-only" role="status">Loading your conversation</p>
-      <div class="h-8 w-2/3 rounded-tile bg-surface-sunken animate-pulse" />
-      <div class="h-20 w-full rounded-tile bg-surface-sunken animate-pulse" />
-      <div class="h-20 w-5/6 rounded-tile bg-surface-sunken animate-pulse" />
+      <div class="h-8 w-2/3 rounded-2xl bg-well animate-pulse" />
+      <div class="h-20 w-full rounded-2xl bg-well animate-pulse" />
+      <div class="h-20 w-5/6 rounded-2xl bg-well animate-pulse" />
     </div>
 
     <!-- The conversation -->
@@ -297,6 +305,9 @@ watch(() => route.hash, syncWithAddress);
           {{ linkCopied ? 'Link copied' : 'Copy conversation link' }}
         </button>
       </div>
+      <p v-if="refreshFailed" class="mt-3 text-xs leading-relaxed text-ink-soft" role="status">
+        Could not check for a reply just now. Your messages are safe. Try again in a moment.
+      </p>
       <p v-if="linkCopyFailed && conversationToken" class="mt-3 text-xs leading-relaxed text-ink-soft break-all">
         Copying did not work here. Keep this address instead: {{ conversationUrl(conversationToken) }}
       </p>
@@ -324,7 +335,7 @@ watch(() => route.hash, syncWithAddress);
       </form>
       <p v-else class="mt-8 text-sm text-ink-soft">
         This conversation is closed.
-        <RouterLink to="/inquire" class="hover:text-ink font-semibold">Send a new inquiry</RouterLink>
+        <RouterLink to="/inquire" class="hover:text-ink font-semibold">Send another inquiry</RouterLink>
         to ask something else.
       </p>
     </section>
