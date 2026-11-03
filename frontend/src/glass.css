@@ -234,10 +234,17 @@ dialog.ws-dialog,
     linear-gradient(#000 0 0);
 }
 
-/* Inquiries' conversation fills a phone screen, so the list must not read through it. */
+/*
+ * Inquiries' conversation fills a phone screen: a page of its own, not something floating, so it
+ * is solid. As glass, the top bar's name, bell and the list read through its header (Lloyd,
+ * 3 Nov 2026: "it should be solid bc its an independent component not a pop up").
+ */
 @media (max-width: 1023px) {
   .bg-tile[class*='max-lg:fixed'] {
-    background-color: var(--glass-float);
+    background-color: var(--wash-base);
+  }
+  .bg-tile[class*='max-lg:fixed']::before {
+    content: none;
   }
 }
 /* `isolation` makes a stacking context, so an open menu in a tile would sit under the next tile. */
