@@ -378,6 +378,12 @@ onBeforeUnmount(() => {
       one of its edges, so it cannot run off a phone screen: every PillSelect
       on every page was opened at 375 and 320px and measured under its
       trigger, inside the viewport.
+
+      `@click.prevent` (Lloyd, 3 Nov 2026, "a recursing bug"): most screens put
+      this control inside a <label>, and a label hands any click inside it that
+      did not land on a button to its first button - the trigger. A tap in the
+      list's padding, between two options or on its scrollbar toggled the list
+      shut, and a second one opened it again. A cancelled click is not handed on.
     -->
     <Transition name="ws-pop">
       <div
@@ -387,6 +393,7 @@ onBeforeUnmount(() => {
         role="listbox"
         :aria-label="ariaLabel"
         class="absolute top-full z-50 mt-1.5 w-full rounded-2xl border border-line bg-tile p-1.5 shadow-lift overflow-hidden"
+        @click.prevent
         :class="align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'"
       >
         <div class="max-h-64 overflow-y-auto space-y-0.5">

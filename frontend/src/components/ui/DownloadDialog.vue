@@ -15,11 +15,17 @@
  *
  * The segments are native radios, as in ThemeChoice.vue: arrow keys move
  * between them and a screen reader announces the group and the choice.
+ *
+ * A pop-up in the middle of the screen, not a sheet (Lloyd, 3 Nov 2026: "it's
+ * unnecessary to have a very few component on a sliding bar"). The year and
+ * the month are chips rather than dropdowns: the dropdowns sat in <label>s, and
+ * a tap in the open list that missed an option was handed back to the
+ * dropdown's button by the label, so the list closed and reopened under her
+ * finger. PillSelect now cancels that itself; here there is nothing to open.
  */
 import { computed, onBeforeUnmount, ref, useId } from 'vue';
 import { FileSpreadsheet } from 'lucide-vue-next';
 import WsModal from '@/components/ui/WsModal.vue';
-import PillSelect from '@/components/ui/PillSelect.vue';
 import { propertyToday } from '@/lib/propertyDate';
 import { downloadReport, reportFileName, type DownloadScope, type ReportKind } from '@/lib/downloadReport';
 
@@ -39,7 +45,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: [] }>();
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const [todayYear, todayMonth] = propertyToday().split('-').map(Number);
 
 const yearList = computed(() => {
@@ -47,8 +53,6 @@ const yearList = computed(() => {
   set.add(todayYear);
   return [...set].sort((a, b) => b - a);
 });
-const yearOptions = computed(() => yearList.value.map((y) => ({ value: y, label: String(y) })));
-const monthOptions = MONTHS.map((label, i) => ({ value: i + 1, label }));
 
 const scopeKind = ref<DownloadScope['kind']>(props.initialScope ?? (props.month ? 'month' : 'year'));
 const pickedYear = ref<number>(yearList.value.includes(props.year) ? props.year : yearList.value[0]);
@@ -80,10 +84,19 @@ const fileName = computed(() => {
 const allNote = 'All years, one sheet each.';
 
 const groupName = useId();
+const yearGroup = useId();
+const monthGroup = useId();
 const errorId = useId();
 const busy = ref(false);
 const error = ref('');
 let controller: AbortController | null = null;
+
+/** One segment or chip: a native radio in a pill. */
+const chip = (on: boolean) => [
+  'press flex min-h-9 cursor-pointer items-center justify-center rounded-full px-2 text-sm font-semibold tabular outline-offset-2 pointer-coarse:min-h-11',
+  'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-ink',
+  on ? 'bg-tile text-ink shadow-card' : 'text-ink-soft hover:text-ink',
+];
 
 function choose(kind: DownloadScope['kind']) {
   scopeKind.value = kind;
@@ -112,19 +125,11 @@ onBeforeUnmount(() => controller?.abort());
 </script>
 
 <template>
-  <WsModal :title="`Download ${title}`" size="sm" @close="emit('close')">
+  <WsModal :title="`Download ${title}`" size="sm" decision @close="emit('close')">
     <fieldset class="min-w-0" :disabled="busy">
       <legend class="text-xs text-ink-faint">What to download</legend>
       <div class="mt-2 grid grid-cols-3 gap-1 rounded-full bg-well p-1">
-        <label
-          v-for="o in options"
-          :key="o.value"
-          :class="[
-            'press flex min-h-9 cursor-pointer items-center justify-center rounded-full px-2 text-sm font-semibold outline-offset-2 pointer-coarse:min-h-11',
-            'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-ink',
-            scopeKind === o.value ? 'bg-tile text-ink shadow-card' : 'text-ink-soft hover:text-ink',
-          ]"
-        >
+        <label v-for="o in options" :key="o.value" :class="chip(scopeKind === o.value)">
           <input
             type="radio"
             class="sr-only"
@@ -138,41 +143,27 @@ onBeforeUnmount(() => controller?.abort());
       </div>
     </fieldset>
 
-    <div v-if="scopeKind === 'month'" class="grid grid-cols-2 gap-3">
-      <label class="ws-field">
-        Month
-        <PillSelect
-          v-model="pickedMonth"
-          :options="monthOptions"
-          aria-label="Month"
-          width-class="w-full"
-          :disabled="busy"
-        />
-      </label>
-      <label class="ws-field">
-        Year
-        <PillSelect
-          v-model="pickedYear"
-          :options="yearOptions"
-          aria-label="Year"
-          width-class="w-full"
-          :disabled="busy"
-        />
-      </label>
-    </div>
+    <fieldset v-if="scopeKind !== 'all'" class="min-w-0" :disabled="busy">
+      <legend class="text-xs text-ink-faint">Year</legend>
+      <div class="mt-2 flex flex-wrap gap-1 rounded-3xl bg-well p-1">
+        <label v-for="y in yearList" :key="y" :class="['flex-1 basis-16', chip(pickedYear === y)]">
+          <input type="radio" class="sr-only" :name="yearGroup" :value="y" :checked="pickedYear === y" @change="pickedYear = y; error = ''" />
+          <span>{{ y }}</span>
+        </label>
+      </div>
+    </fieldset>
 
-    <label v-else-if="scopeKind === 'year'" class="ws-field">
-      Year
-      <PillSelect
-        v-model="pickedYear"
-        :options="yearOptions"
-        aria-label="Year"
-        width-class="w-full"
-        :disabled="busy"
-      />
-    </label>
+    <fieldset v-if="scopeKind === 'month'" class="min-w-0" :disabled="busy">
+      <legend class="text-xs text-ink-faint">Month</legend>
+      <div class="mt-2 grid grid-cols-4 gap-1 rounded-3xl bg-well p-1">
+        <label v-for="(m, i) in MONTHS" :key="m" :class="chip(pickedMonth === i + 1)">
+          <input type="radio" class="sr-only" :name="monthGroup" :value="i + 1" :checked="pickedMonth === i + 1" @change="pickedMonth = i + 1; error = ''" />
+          <span>{{ m }}</span>
+        </label>
+      </div>
+    </fieldset>
 
-    <p v-else class="text-sm leading-6 text-ink-soft">{{ allNote }}</p>
+    <p v-if="scopeKind === 'all'" class="text-sm leading-6 text-ink-soft">{{ allNote }}</p>
 
     <p class="flex items-start gap-2 text-sm leading-6 text-ink-soft">
       <FileSpreadsheet class="mt-1 size-4 shrink-0" aria-hidden="true" />
