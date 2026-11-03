@@ -7,7 +7,9 @@
  * default, and softer tints would only have been a paler copy of it. So the colours are the
  * property's earth tones instead of alarms: clay for what is wrong, ochre for what is waiting,
  * the brand's green for what is done, and the ordinary soft ink for everything else. Weight
- * marks the one that matters most. On a dark tile every status is the tile's own light text.
+ * marks the one that matters most. On a dark tile a status is the tile's own light text, except
+ * the two that ask for action, which keep their hue in the dark theme's lighter shade (Lloyd,
+ * 3 Nov 2026: the Emergency on Needs your attention read as plain text).
  *
  * These carried a coloured dot before the word, everywhere, which said nothing
  * the word did not already say and made two side by side read as a list of
@@ -29,8 +31,8 @@ const toneClass = computed(
   () =>
     ({
       paid: 'text-brand',
-      verify: 'text-status-wait',
-      overdue: 'font-semibold text-status-alert',
+      verify: 'text-status-wait in-[.on-dark]:text-on-night-wait',
+      overdue: 'font-semibold text-status-alert in-[.on-dark]:text-on-night-alert',
       neutral: 'text-ink-soft',
       unentered: 'text-ink-soft',
       expected: 'text-ink-faint',
@@ -42,7 +44,8 @@ const toneClass = computed(
 <template>
   <span
     :class="[
-      'status-word inline-flex items-center whitespace-nowrap text-[0.8125rem] font-medium leading-5 in-[.on-dark]:text-on-night',
+      'status-word inline-flex items-center whitespace-nowrap text-[0.8125rem] font-medium leading-5',
+      props.tone !== 'verify' && props.tone !== 'overdue' && 'in-[.on-dark]:text-on-night',
       // A ticket moving Open to Resolved, a unit going Vacant to Occupied - this
       // word stays mounted and only its tone prop changes, so without a
       // transition the colour swap was an instant snap rather than a state

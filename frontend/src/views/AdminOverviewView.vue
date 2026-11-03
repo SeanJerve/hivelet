@@ -294,10 +294,12 @@ const vacantUnits = computed(() => rooms.filter((r) => !isOccupied(r)));
 const pendingCount = computed(() => pendingPayments.value.length);
 const pendingTotal = computed(() => pendingPayments.value.reduce((s, p) => s + (Number(p.amount) || 0), 0));
 
+/** Rows each part of Needs your attention lists before the rest become a count (Lloyd, 3 Nov 2026). */
+const ATTENTION_ROWS = 3;
 const pendingPreview = computed(() =>
   [...pendingPayments.value]
     .sort((a, b) => String(b.paid_at ?? '').localeCompare(String(a.paid_at ?? '')))
-    .slice(0, 3)
+    .slice(0, ATTENTION_ROWS)
     .map((p) => ({
       id: String(p.id),
       name: p.profiles?.full_name ?? 'Name not on file',
@@ -338,16 +340,18 @@ const currentMonthRecordCount = computed(
 );
 
 /**
- * Needs your attention, sized by what is waiting (Sean, 1 Nov 2026): a zero stays small, a count
- * with something behind it takes the room. Payments rank first, so with both waiting the repairs
- * under the divider stay one step down.
+ * Needs your attention holds two parts side by side, payments on the left and urgent repairs on
+ * the right, and a part with nothing waiting is not drawn (Lloyd, 3 Nov 2026: "if the payment is
+ * one only and there's no urgent repairs, then that whole card will only have one"). Each lists
+ * three at most; the rest are a count and a link. A failed load still shows its part: "could not
+ * be loaded" is not a zero (B-61).
  */
-const LARGE_COUNT = 'text-6xl lg:text-7xl';
-const paymentCountSize = computed(() => (pendingCount.value > 0 ? LARGE_COUNT : 'text-2xl'));
-const repairCountSize = computed(() => {
-  if (urgentTickets.value.length === 0) return 'text-2xl';
-  return pendingCount.value > 0 ? 'text-4xl lg:text-5xl' : LARGE_COUNT;
-});
+const paymentsWaiting = computed(() => pendingPaymentsFailed.value || pendingCount.value > 0);
+const repairsWaiting = computed(() => maintenanceTicketsFetchFailed.value || urgentTickets.value.length > 0);
+const attentionBoth = computed(() => paymentsWaiting.value && repairsWaiting.value);
+const urgentPreview = computed(() =>
+  [...urgentTickets.value].sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]).slice(0, ATTENTION_ROWS)
+);
 
 
 
@@ -489,11 +493,7 @@ const tilesSettled = ref(false);
 watch(isInitialLoading, (loading) => {
   if (!loading) setTimeout(() => (tilesSettled.value = true), TILE_ENTRANCE_DELAY_MS);
 });
-const attentionShown = computed(
-  () =>
-    tilesSettled.value &&
-    (pendingPaymentsFailed.value || maintenanceTicketsFetchFailed.value || pendingCount.value > 0 || urgentTickets.value.length > 0)
-);
+const attentionShown = computed(() => tilesSettled.value && (paymentsWaiting.value || repairsWaiting.value));
 const monthShown = computed(
   () => tilesSettled.value && (incomeRecordsFetchFailed.value || currentMonthRecordCount.value > 0)
 );
@@ -501,12 +501,37 @@ const repairsShown = computed(
   () => tilesSettled.value && (maintenanceTicketsFetchFailed.value || openTickets.value.length > 0)
 );
 
-/** The width of each tile on the twelve-column grid, by which of the others are showing. */
-const tileSpans = computed(() => ({
-  attention: monthShown.value ? 'xl:col-span-7' : 'xl:col-span-12',
-  month: attentionShown.value ? 'xl:col-span-5' : 'xl:col-span-12',
-  net: repairsShown.value ? 'xl:col-span-6' : 'xl:col-span-12',
-}));
+/**
+ * The width of each tile on the twelve-column grid, by which of the others are showing. Halves,
+ * two to a row, rather than the 7 and 5 they were (Lloyd, 3 Nov 2026: "repositioning equally
+ * instead of having asymmetric orientations"). Needs your attention takes the whole row when both
+ * its parts are showing, and half, beside Occupancy, when one is. A half left alone at the end
+ * takes the whole row.
+ */
+const tileSpans = computed(() => {
+  const order: { key: string; full: boolean }[] = [
+    ...(attentionShown.value ? [{ key: 'attention', full: attentionBoth.value }] : []),
+    ...(monthShown.value ? [{ key: 'month', full: false }] : []),
+    { key: 'occupancy', full: false },
+    { key: 'byMonth', full: false },
+    { key: 'net', full: false },
+    ...(repairsShown.value ? [{ key: 'repairs', full: false }] : []),
+  ];
+  const spans: Record<string, string> = {};
+  let alone: string | null = null; // a half with nothing yet beside it
+  for (const t of order) {
+    if (t.full) {
+      if (alone) spans[alone] = 'xl:col-span-12';
+      alone = null;
+      spans[t.key] = 'xl:col-span-12';
+    } else {
+      spans[t.key] = 'xl:col-span-6';
+      alone = alone ? null : t.key;
+    }
+  }
+  if (alone) spans[alone] = 'xl:col-span-12';
+  return spans;
+});
 const phoneSpan = computed(() => (attentionShown.value && monthShown.value ? '' : 'max-md:col-span-2'));
 
 /**
@@ -617,7 +642,7 @@ const historicalCapsules = computed<CapsuleMonth[]>(() =>
   }))
 );
 
-/** Where the year's rent and water came from, by cluster, as Monthly Income's "Where it came from". */
+/** Where the year's rent and water came from, by cluster, as Monthly Income's "Income by cluster". */
 const historicalClusterSplit = computed<Segment[]>(() => {
   const totals = new Map<string, number>();
   for (const r of historicalIncomeRecords.value) {
@@ -794,110 +819,141 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <!-- What needs her action. The only dark tile on the screen. -->
       <OverviewTile v-if="attentionShown" key="attention" tone="night" title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 max-md:p-4 md:col-span-2', tileSpans.attention, phoneSpan]">
         <!--
-          On a phone each half of this tile is one link, the count and its words
+          On a phone each part of this tile is one link, the count and its words
           together, instead of a count, a button and a link stacked: at half a
           phone's width those made the first row 400px tall (Loyd, 2026-10-03).
           The payments themselves are one tap away on Monthly Income.
         -->
         <div class="flex flex-1 flex-col gap-3 md:hidden">
-          <UnavailableNote
-            v-if="pendingPaymentsFailed"
-            dark
-            message="Payments to verify could not be loaded."
-            @retry="refreshAllData"
-          />
-          <router-link v-else to="/admin/income?tab=verify#income-records" class="press group/att flex flex-col gap-1">
-            <span class="flex items-start gap-2">
-              <span :class="['leading-none font-semibold tracking-tight', pendingCount > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ pendingCount }}</span>
-              <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
-            </span>
-            <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
-            <span v-if="pendingCount > 0" class="text-xs tabular text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
-          </router-link>
-          <UnavailableNote
-            v-if="maintenanceTicketsFetchFailed"
-            dark
-            class="mt-auto"
-            message="Repairs could not be loaded."
-            @retry="refreshAllData"
-          />
-          <router-link v-else to="/admin/tickets#repairs-board" class="press mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
-            <span class="flex items-start gap-2">
-              <span :class="['leading-none font-semibold tracking-tight', urgentTickets.length > 0 ? 'text-3xl max-[359px]:text-2xl' : 'text-xl']">{{ urgentTickets.length }}</span>
-              <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
-            </span>
-            <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
-          </router-link>
-        </div>
-
-        <UnavailableNote
-          v-if="pendingPaymentsFailed"
-          dark
-          class="max-md:hidden"
-          message="Payments to verify could not be loaded. Some may be waiting."
-          @retry="refreshAllData"
-        />
-        <div v-else class="max-md:hidden">
-          <div :class="['flex gap-1', pendingCount ? 'items-start' : 'items-center']">
-            <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-              <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot. -->
-              <span :class="['leading-none font-semibold tracking-tight', paymentCountSize]">{{ pendingCount }}</span>
-              <span class="text-sm text-on-night-soft">
-                {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
+          <template v-if="paymentsWaiting">
+            <UnavailableNote
+              v-if="pendingPaymentsFailed"
+              dark
+              message="Payments to verify could not be loaded."
+              @retry="refreshAllData"
+            />
+            <router-link v-else to="/admin/income?tab=verify#income-records" class="press group/att flex flex-col gap-1">
+              <span class="flex items-start gap-2">
+                <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ pendingCount }}</span>
+                <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
               </span>
-            </p>
-            <router-link to="/admin/income?tab=verify#income-records" aria-label="Review payments" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
-              <ArrowUpRight
-                class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
-                aria-hidden="true"
-              />
+              <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
+              <span class="text-xs tabular text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
             </router-link>
-          </div>
-          <ul v-if="pendingPreview.length" class="mt-4 divide-y divide-white/10">
-            <li
-              v-for="(p, i) in pendingPreview"
-              :key="p.id"
-              class="list-reveal-item flex items-center justify-between gap-3 py-2.5"
-              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+          </template>
+          <template v-if="repairsWaiting">
+            <UnavailableNote
+              v-if="maintenanceTicketsFetchFailed"
+              dark
+              :class="attentionBoth && 'mt-auto'"
+              message="Repairs could not be loaded."
+              @retry="refreshAllData"
+            />
+            <router-link
+              v-else
+              to="/admin/tickets#repairs-board"
+              :class="['press flex flex-col gap-1', attentionBoth && 'mt-auto border-t border-white/10 pt-3']"
             >
-              <span class="min-w-0">
-                <span class="block text-sm font-medium">{{ p.name }}</span>
-                <span class="block text-xs text-on-night-soft">
-                  <template v-if="p.unit">Unit {{ p.unit }}</template><template v-if="p.unit && p.date">, </template>{{ p.date }}
-                </span>
+              <span class="flex items-start gap-2">
+                <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ urgentTickets.length }}</span>
+                <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
               </span>
-              <span class="text-sm font-semibold tabular">{{ peso(p.amount, 2) }}</span>
-            </li>
-          </ul>
+              <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
+            </router-link>
+          </template>
         </div>
 
-        <div class="mt-auto border-t border-white/10 pt-4 max-md:hidden">
-          <UnavailableNote
-            v-if="maintenanceTicketsFetchFailed"
-            dark
-            message="Repairs could not be loaded. Some may be urgent."
-            @retry="refreshAllData"
-          />
-          <div v-else :class="['flex gap-1', urgentTickets.length ? 'items-start' : 'items-center']">
-            <div class="min-w-0">
-              <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span :class="['leading-none font-semibold tracking-tight', repairCountSize]">{{ urgentTickets.length }}</span>
-                <span class="text-sm text-on-night-soft">
-                  urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
-                </span>
-              </p>
-              <ul v-if="urgentTickets.length" class="mt-2 flex flex-col gap-1 text-sm">
-                <li v-for="t in urgentTickets.slice(0, 2)" :key="t.id" class="truncate">
-                  {{ t.title }}<span class="text-on-night-soft">, Unit {{ t.unit }}</span>
+        <!-- From 768px: the two parts side by side, each a count, its link and three rows at most. -->
+        <div :class="['grid gap-6 max-md:hidden', attentionBoth && 'md:grid-cols-2 md:gap-0 md:divide-x md:divide-white/10']">
+          <div v-if="paymentsWaiting" :class="['min-w-0', attentionBoth && 'md:pr-6']">
+            <UnavailableNote
+              v-if="pendingPaymentsFailed"
+              dark
+              message="Payments to verify could not be loaded. Some may be waiting."
+              @retry="refreshAllData"
+            />
+            <template v-else>
+              <div class="flex items-start gap-1">
+                <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot. -->
+                  <span class="text-5xl leading-none font-semibold tracking-tight lg:text-6xl">{{ pendingCount }}</span>
+                  <span class="text-sm text-on-night-soft">
+                    {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify, {{ peso(pendingTotal, 2) }} in total
+                  </span>
+                </p>
+                <router-link to="/admin/income?tab=verify#income-records" aria-label="Review payments" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
+                  <ArrowUpRight
+                    class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+                    aria-hidden="true"
+                  />
+                </router-link>
+              </div>
+              <ul class="mt-4 divide-y divide-white/10">
+                <li
+                  v-for="(p, i) in pendingPreview"
+                  :key="p.id"
+                  class="list-reveal-item flex items-center justify-between gap-3 py-2.5"
+                  :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+                >
+                  <span class="min-w-0">
+                    <span class="block break-words text-sm font-medium">{{ p.name }}</span>
+                    <span class="block text-xs text-on-night-soft">
+                      <template v-if="p.unit">Unit {{ p.unit }}</template><template v-if="p.unit && p.date">, </template>{{ p.date }}
+                    </span>
+                  </span>
+                  <span class="text-sm font-semibold tabular">{{ peso(p.amount, 2) }}</span>
                 </li>
               </ul>
-            </div>
-            <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
-              <ArrowUpRight
-                class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
-                aria-hidden="true"
-              />
-            </router-link>
+              <p v-if="pendingCount > pendingPreview.length" class="mt-2 text-xs text-on-night-soft">
+                {{ pendingCount - pendingPreview.length }} more in Monthly Income.
+              </p>
+            </template>
+          </div>
+
+          <div v-if="repairsWaiting" :class="['min-w-0', attentionBoth && 'md:pl-6']">
+            <UnavailableNote
+              v-if="maintenanceTicketsFetchFailed"
+              dark
+              message="Repairs could not be loaded. Some may be urgent."
+              @retry="refreshAllData"
+            />
+            <template v-else>
+              <div class="flex items-start gap-1">
+                <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span class="text-5xl leading-none font-semibold tracking-tight lg:text-6xl">{{ urgentTickets.length }}</span>
+                  <span class="text-sm text-on-night-soft">
+                    urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
+                  </span>
+                </p>
+                <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
+                  <ArrowUpRight
+                    class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+                    aria-hidden="true"
+                  />
+                </router-link>
+              </div>
+              <!-- The rows of Open repair requests below: what it is, where and how far along, and
+                   how urgent (Lloyd, 3 Nov 2026), rather than the title and unit alone. -->
+              <ul class="mt-4 divide-y divide-white/10">
+                <li
+                  v-for="(t, i) in urgentPreview"
+                  :key="t.id"
+                  class="list-reveal-item flex items-center justify-between gap-3 py-2.5"
+                  :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+                >
+                  <span class="min-w-0">
+                    <span class="block break-words text-sm font-medium">{{ t.title }}</span>
+                    <span class="block text-xs text-on-night-soft">
+                      {{ t.unit }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician === 'Unassigned' ? 'no one assigned yet' : t.technician }}</template>
+                    </span>
+                  </span>
+                  <StatusPill :tone="t.priority === 'Emergency' ? 'overdue' : 'verify'">{{ t.priority }}</StatusPill>
+                </li>
+              </ul>
+              <p v-if="urgentTickets.length > urgentPreview.length" class="mt-2 text-xs text-on-night-soft">
+                {{ urgentTickets.length - urgentPreview.length }} more in Repairs.
+              </p>
+            </template>
           </div>
         </div>
       </OverviewTile>
@@ -924,8 +980,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               the size of Monthly Income's and Monthly Expenses' month figures,
               `text-4xl` on a tablet and `text-5xl` from 1024px. The counts beside
               it in "Needs your attention" used the same steps: Loyd (2026-10-03)
-              saw a 0 there larger than the rent figure next to it, and a 0 is
-              small there now (paymentCountSize). Below 360px the
+              saw a 0 there larger than the rent figure next to it; a part with
+              nothing waiting is not drawn there now (3 Nov 2026). Below 360px the
               tile's text is 106px wide, which "₱141,000" fills at `text-2xl`, so
               all three step down together there.
             -->
@@ -939,7 +995,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" class="col-span-2 max-md:order-2 max-md:gap-2 xl:col-span-5">
+      <OverviewTile key="occupancy" title="Occupancy" to="/admin/directory#rooms-list" to-label="Open rooms and rates" :class="['col-span-2 max-md:order-2 max-md:gap-2', tileSpans.occupancy]">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -991,7 +1047,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         :title="`Income by month, ${CURRENT_YEAR}`"
         to="/admin/income#income-by-month"
         to-label="Open the income ledger"
-        class="col-span-2 max-md:order-3 max-md:gap-3 xl:col-span-7"
+        :class="['col-span-2 max-md:order-3 max-md:gap-3', tileSpans.byMonth]"
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
@@ -1147,7 +1203,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         title="Open repair requests"
         to="/admin/tickets#repairs-board"
         to-label="Open repairs"
-        class="col-span-2 max-md:order-5 xl:col-span-6"
+        :class="['col-span-2 max-md:order-5', tileSpans.repairs]"
       >
         <UnavailableNote
           v-if="maintenanceTicketsFetchFailed"
@@ -1224,7 +1280,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile boxed :title="`Where it came from, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-8">
+      <OverviewTile boxed :title="`Income by cluster, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-8">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalClusterSplit.length === 0" class="text-sm text-ink-soft">Not entered</p>
         <template v-else>

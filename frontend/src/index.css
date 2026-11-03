@@ -113,6 +113,8 @@
   --color-night-raised: var(--night-raised);
   --color-on-night: var(--on-night);
   --color-on-night-soft: var(--on-night-soft);
+  --color-on-night-alert: var(--on-night-alert);
+  --color-on-night-wait: var(--on-night-wait);
   --color-hatch: var(--hatch);
   --color-verify: var(--verify);
   --color-verify-soft: var(--verify-soft);
@@ -246,6 +248,9 @@
   --night-raised: #1b2a22;
   --on-night: #eef5f0;
   --on-night-soft: #a9baaf;
+  /* The dark theme's alert and wait, for a status on the night tile, which is dark in both themes. */
+  --on-night-alert: #e3a08c;
+  --on-night-wait: #d8b878;
   --hatch: #7a8c81;
   --verify: #8a5300;
   --verify-soft: #fcefd6;
@@ -402,6 +407,8 @@
   --night-raised: #2e3f36;
   --on-night: #eef5f0;
   --on-night-soft: #aebfb4;
+  --on-night-alert: #e3a08c;
+  --on-night-wait: #d8b878;
   --hatch: #66766c;
   --verify: #e9b35a;
   --verify-soft: #3a2d15;
