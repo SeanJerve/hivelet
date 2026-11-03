@@ -96,16 +96,18 @@ let previouslyFocused: HTMLElement | null = null;
  * The sheet (Sean, 20 Oct 2026)
  *
  * Every dialog that is not a decision rises from the bottom edge, at every width, and rests at
- * one of two heights with nothing in between: half the screen when its content fits there, the
- * full screen (less a strip of the page behind) when it does not. It grows to full on its own
- * when its content outgrows half, or when a field is focused and the keyboard needs the room; it
- * never shrinks by itself, so nothing jumps while someone is reading it. The handle at the top
+ * one of two heights with nothing in between: the full screen (less a strip of the page behind),
+ * which is where it opens, or half. It used to open at half when its content fit there, and on a
+ * desktop most sheets stopped partway up the screen (Lloyd, 3 Nov 2026: "everything should open
+ * by default to the top"). Half is still there for someone who drags it down; from half it grows
+ * back to full on its own when its content outgrows half, or when a field is focused and the
+ * keyboard needs the room. It never shrinks by itself, so nothing jumps while someone is reading it. The handle at the top
  * drags it between the two, follows the finger 1:1, carries the flick's speed into where it
  * lands, and a drag down from half closes it when the dialog may be closed. The handle is also a
  * button, so the keyboard and a screen reader can switch the height too.
  * -------------------------------------------------------------------------- */
 const viewportH = ref(typeof window === 'undefined' ? 800 : window.innerHeight);
-const snap = ref<'half' | 'full'>('half');
+const snap = ref<'half' | 'full'>('full');
 let userSnapped = false;
 const dragHeight = ref<number | null>(null);
 const halfPx = computed(() => Math.round(viewportH.value * 0.5));
@@ -145,15 +147,13 @@ function naturalHeight(): number {
 // A short timer, not requestAnimationFrame: a page that is not being painted (a background tab) never
 // runs a frame callback, and the sheet would stay at half over content that needs the full height.
 let fitFrame: ReturnType<typeof setTimeout> | undefined;
-function fit(initial = false) {
+function fit() {
   if (props.decision || userSnapped) return;
   clearTimeout(fitFrame);
   fitFrame = setTimeout(() => {
     viewportH.value = window.innerHeight;
     if (!viewportH.value) return; // nothing to measure against (a hidden page)
-    const needsFull = naturalHeight() > halfPx.value;
-    if (needsFull) snap.value = 'full';
-    else if (initial) snap.value = 'half';
+    if (naturalHeight() > halfPx.value) snap.value = 'full';
   }, 16);
 }
 
@@ -379,7 +379,7 @@ onMounted(async () => {
   panel.value?.focus({ preventScroll: true });
   if (!props.decision) {
     window.addEventListener('resize', onResize);
-    fit(true);
+    fit();
     // Content that arrives or grows later (a step, a loaded list, an error) may need the full height.
     if (body.value) {
       contentWatch = new MutationObserver(() => fit());
