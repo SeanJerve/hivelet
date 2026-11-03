@@ -657,9 +657,6 @@ const monthRent = computed(() => monthRows.value.reduce((s, r) => s + r.rent, 0)
 /** Nothing to show (not a failed load): sent to the end on a phone. */
 const receivedIsEmpty = computed(() => !incomeRecordsFetchFailed.value && monthRent.value + monthWater.value === 0);
 const monthWater = computed(() => monthRows.value.reduce((s, r) => s + r.water, 0));
-// BR-035: a system-computed figure, half of each Boarding House row's Rent Amount.
-// Shown only here, as the month's total on the Received tile (Loyd, 2026-10-03).
-const monthShare = computed(() => monthRows.value.reduce((s, r) => s + (r.cluster === 'Boarding House' ? r.rent / 2 : 0), 0));
 
 /** Where the period's rent and water came from, by cluster: a true part-to-whole, like Expenses by area. */
 const splitIsEmpty = computed(() => !incomeRecordsFetchFailed.value && clusterSplit.value.length === 0);
@@ -1260,37 +1257,14 @@ const isDownloadOpen = ref(false);
             <p class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Nothing for {{ focus.waitingFor.split(' ')[0] }} yet</p>
             <p class="mt-1 text-sm font-semibold text-ink-soft">{{ focus.label }}</p>
           </template>
-          <!-- Rent plus water, the Remitted column's figure, for the one month. -->
+          <!-- Rent plus water, the Remitted column's figure, for the one month. The total alone: the
+               count of payments and the Rent, Water and 50% Share lines under it are in the ledger
+               below (Lloyd, 3 Nov 2026: "just the recap of the overall number ... is fine"). -->
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(monthRent + monthWater, 2) }}</p>
-          <p class="text-sm leading-6 text-ink-soft">
-            {{ `From ${monthRows.length} ${monthRows.length === 1 ? 'payment' : 'payments'}` }}
-          </p>
-          <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
-               cards there, so the graphs below are on the first screen). -->
-          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
-            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-ink-soft">Rent</dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRent, 2) }}</dd>
-            </div>
-            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-ink-soft">Water</dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthWater, 2) }}</dd>
-            </div>
-            <!-- BR-035: the label only; a system-computed figure, half of each row's Rent Amount. Boarding
-                 House rows only, as her workbook has the column, so the section is named (21 Oct 2026). -->
-            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <!-- The section name sits under the label beside it from 768px, and under the figure on a
-                   phone, so the three figures in a row stay level. -->
-              <!-- Lighter than Rent and Water: those two make the total; this is inside Rent (22 Oct 2026). -->
-              <dt class="text-sm text-ink-soft">50% Share <span class="hidden text-xs md:block">Half of Boarding House rent</span></dt>
-              <dd class="tabular text-base text-ink-soft md:text-lg">{{ peso(monthShare, 2) }}</dd>
-              <span class="text-xs text-ink-soft md:hidden">Half of Boarding House rent</span>
-            </div>
-          </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile boxed :title="`Where it came from, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <OverviewTile boxed :title="`Income by cluster, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.

@@ -171,8 +171,9 @@ as good as that.
 
 ### 2. Overview
 
-The first screen: **Needs your attention** (how many payments wait to be verified, and how many
-urgent repairs are open), **Rent and water** for this month, **Occupancy** (32 of 33 today), **Rent
+The first screen: **Needs your attention** (the payments waiting to be verified on the left, the
+urgent repairs on the right, three of each with a count of the rest; a side with nothing waiting is
+not shown), **Rent and water** for this month, **Occupancy** (32 of 33 today), **Rent
 and water by month**, **Units by cluster**, **Net income** and **Open repair requests**.
 Personal spending is shown beside operating costs and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
@@ -227,10 +228,10 @@ arrived, then verify it, or reject it. A payment is only counted once you verify
 payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
 
 **The month and the year.** The dark card at the top is **one month**: what was received this
-month (for example "Received, October 2026"), with its rent, water and 50% Share. Beside it, **Where
-it came from** is the **year**: the year's total and how it divides across the clusters, and below
-that the year month by month. Monthly Expenses is laid out the same way ("Spent, October 2026" with
-utilities and repairs; **Where it went** is the year by area). **Filters** > **Month** shows
+month (for example "Received, October 2026"), its total alone. Beside it, **Income by cluster**
+is the **year**: the year's total and how it divides across the clusters, and below that the year
+month by month. Monthly Expenses is laid out the same way ("Spent, October 2026"; **Spending by
+area** is the year by area). **Filters** > **Month** shows
 another month in the dark card. The year beside the page name (for example **2026 ⌄**) picks
 another year, or **All years** for everything since the records began; a past year can be read but
 not added to, so **Record payment** is not shown there. **Filters** > **Group by** gathers the payments by **Cluster**

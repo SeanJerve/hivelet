@@ -491,14 +491,10 @@ const monthEntries = computed(() =>
   })
 );
 const sumOf = (list: ExpenseRecord[]) => list.reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0);
-const isUtility = (e: ExpenseRecord) => /water|light|util/i.test(e.category);
-const isRepairOrCleaning = (e: ExpenseRecord) => /repair|janitorial|suppl/i.test(e.category);
 const monthTotal = computed(() => sumOf(monthEntries.value));
 /** Nothing to show (not a failed load): sent to the end on a phone. */
 const spentIsEmpty = computed(() => !expenseRecordsFetchFailed.value && monthTotal.value === 0);
 const splitIsEmpty = computed(() => !expenseRecordsFetchFailed.value && areaSplit.value.length === 0);
-const monthUtilities = computed(() => sumOf(monthEntries.value.filter(isUtility)));
-const monthRepairs = computed(() => sumOf(monthEntries.value.filter(isRepairOrCleaning)));
 
 /**
  * Where the filtered money actually went. Every entry is allocated across the
@@ -1062,26 +1058,13 @@ async function handleEditExpense() {
             <p class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Nothing for {{ focus.waitingFor.split(' ')[0] }} yet</p>
             <p class="mt-1 text-sm font-semibold text-ink-soft">{{ focus.label }}</p>
           </template>
+          <!-- The total alone, as on Monthly Income: the entries and the Utilities and Repairs lines
+               are in the ledger below (Lloyd, 3 Nov 2026). -->
           <p class="tabular text-3xl md:text-4xl leading-none font-semibold tracking-tight">{{ peso(monthTotal, 2) }}</p>
-          <p class="text-sm leading-6 text-ink-soft">
-            {{ `Across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}` }}
-          </p>
-          <!-- Side by side on a phone, rows from 768px (Loyd, 2026-10-03: smaller
-               cards there, so the graphs below are on the first screen). -->
-          <dl class="mt-auto grid auto-cols-fr grid-flow-col gap-3 border-t border-line pt-3 md:flex md:flex-col md:gap-0 md:divide-y md:divide-line md:pt-1">
-            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-ink-soft">Utilities</dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthUtilities, 2) }}</dd>
-            </div>
-            <div class="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-baseline md:justify-between md:gap-3 md:py-2.5">
-              <dt class="text-sm text-ink-soft">Repairs and cleaning</dt>
-              <dd class="tabular text-base font-semibold md:text-lg">{{ peso(monthRepairs, 2) }}</dd>
-            </div>
-          </dl>
         </template>
       </OverviewTile>
 
-      <OverviewTile boxed :title="`Where it went, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <OverviewTile boxed :title="`Spending by area, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.

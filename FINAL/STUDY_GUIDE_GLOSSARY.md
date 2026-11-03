@@ -543,7 +543,7 @@ Part 1, §3.
 **Pull down to reload.** In the installed app, pulling a page down reloads it. **Where:** App. K,
 Part 1, §6.
 
-**Received / Where it came from; Spent / Where it went.** The month card and the year beside it, on
+**Received / Income by cluster; Spent / Spending by area.** The month card and the year beside it, on
 Monthly Income and Monthly Expenses. **Where:** App. K, Part 2, §3.
 
 **Recently (Your recent actions).** The last three things you did, in the side menu or under the
