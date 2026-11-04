@@ -299,7 +299,7 @@ watch(() => route.hash, syncWithAddress);
           <RotateCw :class="['size-4', loading && 'animate-spin']" aria-hidden="true" />
           Check for a reply
         </button>
-        <button v-if="conversationToken" type="button" class="pill-btn" @click="copyConversationLink">
+        <button v-if="conversationToken" type="button" class="pill-btn-quiet" @click="copyConversationLink">
           <Check v-if="linkCopied" class="size-4" aria-hidden="true" />
           <Copy v-else class="size-4" aria-hidden="true" />
           {{ linkCopied ? 'Link copied' : 'Copy conversation link' }}
@@ -401,7 +401,7 @@ watch(() => route.hash, syncWithAddress);
           <button type="submit" class="pill-btn-brand" :disabled="loading">
             {{ loading ? 'Opening' : 'Open inquiry' }}
           </button>
-          <RouterLink to="/inquire" class="pill-btn">Send another inquiry</RouterLink>
+          <RouterLink to="/inquire" class="pill-btn-quiet">Send another inquiry</RouterLink>
         </div>
       </form>
 
