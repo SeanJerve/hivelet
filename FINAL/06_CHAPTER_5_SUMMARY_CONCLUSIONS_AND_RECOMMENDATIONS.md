@@ -103,8 +103,9 @@ Based on the summary and conclusions of the study, the following are recommended
 5. Make the pages appear faster on phones, where the public page's largest element was drawn at 3.4
    to 3.6 seconds and the owner's Overview moved as its figures arrived (a layout shift of 0.22), by
    pre-rendering the public page, serving the typefaces from the site itself and reserving the space
-   each figure takes (Section 4.3.5). Keep the figures already loaded on the Overview, Monthly
-   Income and the tenant's dashboard, so that returning to a page does not wait for them again.
+   each figure takes (Section 4.3.5). The other part of this recommendation was done in Iteration 3:
+   since 4 November 2026 each screen keeps the figures it has loaded for the visit, so returning to
+   it no longer waits for them.
 6. Strengthen the two characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.32)
    by moving the database work now written inside the request handlers, three calls in four, into
    service modules, one per kind of record, with the result reviewed by more than one developer, and

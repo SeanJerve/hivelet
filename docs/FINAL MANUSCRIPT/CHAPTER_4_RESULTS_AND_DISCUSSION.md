@@ -135,8 +135,8 @@ transferred into it. It was then developed in three Agile iterations (Section 3.
 and added automated checks. The second (15 September to 31 October) took the owner's answers, put the
 system in her and her tenants' hands, and refined it from their feedback, the testing and the
 evaluation. The third (from 1 November) redesigned the look of the screens and joined the sign-in and
-inquiry pages into one screen. The functions tested and evaluated were not changed, so the results
-of the second iteration stand. Appendix M, Table M-19, sets out what each iteration did in each phase
+inquiry pages into one screen. It added no module and removed none, and the functions tested and
+evaluated work as they did, so the results of the second iteration stand. Appendix M, Table M-19, sets out what each iteration did in each phase
 of Section 3.2. Each was tested and reviewed by the means available to it; the formal evaluation
 against ISO/IEC 25010 was carried out once, in the second, because Section 3.3 places it in actual
 use. Table 7 lists the technology used.
@@ -248,7 +248,11 @@ Figure 11 presents the public unit catalogue and the inquiry form. A visitor see
 rate, read live from the database, and sends an inquiry about a specific unit without an account. On
 sending, the visitor receives a private link and a short reference code; either one (the code with the
 phone number given) opens the conversation, where the owner's answer appears and the visitor can write
-back. The link's secret is stored only in hashed form. An accepted inquiry becomes a tenancy linked to
+back. The screen that confirms the inquiry has a button that copies the code, and the conversation
+has one that copies its link. If the owner deletes an inquiry, its page tells the sender that it was
+closed and removed. Signing in, sending an inquiry and reading its replies share one screen, and a
+signed-in tenant or owner who opens the inquiry pages is taken to their own portal. The link's
+secret is stored only in hashed form. An accepted inquiry becomes a tenancy linked to
 it, a reserved unit accepts no new inquiries, and the public site never shows a tenant's name, which
 is checked on every verification run against all 33 units.
 
@@ -260,21 +264,22 @@ is checked on every verification run against all 33 units.
 
 ### 4.2.4 Financial Tracking and Payment Recording Module
 
-Figure 12 presents the Monthly Income ledger. The owner records a cash payment with the number of the
+Figure 12 presents the Monthly Income records. The owner records a cash payment with the number of the
 invoice she issued, or with none, since not every payment has one; the system never makes up an
 invoice number, and it warns her if the same tenant already has a payment for that month. The receipt
-is filed under the month the rent is for, not the day it was paid, and both ledgers keep her
-workbook's layout and download as Excel files in it. Online payments go through Adyen with GCash: a
+is filed under the month the rent is for, not the day it was paid, and both the income and the
+expense records keep her workbook's layout and download as Excel files in it. Online payments go through Adyen with GCash: a
 payment made this way enters **Pending Verification** and changes nothing on the tenant's bill until
-the owner verifies it. Tenants see the same record from their side, month by month, where only
+the owner verifies it. Such payments wait on the **To verify** tab beside **Records**, and while any
+are waiting the page opens on that tab. Tenants see the same record from their side, month by month, where only
 receipts the owner has verified count as paid and a month with no receipt is shown as "Not entered",
 never as owed, because the records alone cannot tell an unpaid month from one not yet entered.
 Electricity is outside the system: each unit has its own meter and the tenant pays the electric
 company directly.
 
-*Figure 12. The monthly income ledger.*
+*Figure 12. The monthly income records.*
 
-![The Monthly Income Ledger](figures/figure-12-monthly-income.png)
+![The Monthly Income Records](figures/figure-12-monthly-income.png)
 
 These results agree with Encarnacion et al. (2025) and Setty (2022), who found that one structured
 ledger improves oversight and reduces administrative errors, and add one observation: the
@@ -324,7 +329,7 @@ for every table. Table 7C sets out which role may use which function.
 | Function | Visitor | Tenant | Administrator |
 | :--- | :---: | :---: | :---: |
 | View the public site, units and rates | Yes | Yes | Yes |
-| Send an inquiry and read the reply (private link or reference code) | Yes | Yes | Yes |
+| Send an inquiry and read the reply (private link or reference code) | Yes | No | No |
 | View and update their own details and password | No | Own | Own |
 | View a unit, its bills, payments and receipts | No | Own | All |
 | Pay a bill online with GCash | No | Own | No |
@@ -333,7 +338,7 @@ for every table. Table 7C sets out which role may use which function.
 | Manage units and rates | No | No | Yes |
 | Manage tenants: move in, move out, reset a password | No | No | Yes |
 | Record, verify, correct and void payments | No | No | Yes |
-| Income and expense ledgers, overview figures and workbook downloads | No | No | Yes |
+| Income and expense records, overview figures and workbook downloads | No | No | Yes |
 | Answer, close and delete inquiries | No | No | Yes |
 
 Passwords are stored as bcrypt hashes with a per-password salt; a new one needs ten characters, a
@@ -353,7 +358,8 @@ window like an application, and the application files it keeps on the device com
 names and notifications the signed-in person last loaded on that person's device. The installed
 application can therefore show them without a connection, under one notice giving the time they were
 saved; paying and recording still need the connection, and the copy is removed at sign-out. This stays within the delimitation in Section 1.4.
-Screens adapt to the device, and tables on a computer become cards on a phone. As Biørn-Hansen et al. (2017) describe, one code base served every device: the owner's laptop, an Android phone in Chrome
+Screens adapt to the device, and a table on a computer becomes a list on a phone, one row to a
+record. As Biørn-Hansen et al. (2017) describe, one code base served every device: the owner's laptop, an Android phone in Chrome
 and an iPhone in Safari (Section 4.3.7).
 
 *Figure 14. The tenant portal on a mobile phone.*
