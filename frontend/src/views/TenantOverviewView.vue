@@ -135,6 +135,12 @@ const owedSummary = screenRef('tenant.overview.owed', '');
  */
 const fromLedgerOnly = screenRef('tenant.overview.ledgerOnly', false);
 const standingStatus = screenRef('tenant.overview.standing', '');
+/**
+ * How many months the amount in the tile adds up, when it comes from the ledger alone. The
+ * Current bill tile lists one month's rent and water; without this line, two months not entered
+ * read as ₱8,000 + ₱200 = ₱16,400 (unit 1c, 4 Nov 2026).
+ */
+const owedMonths = screenRef('tenant.overview.owedMonths', 1);
 const overviewLoaded = screenLoaded('tenant.overview');
 const loading = ref(!overviewLoaded.value);
 /**
@@ -450,6 +456,7 @@ async function applyTenantData() {
   tenantData.value.activeBillPaid = 0;
   owedSummary.value = '';
   fromLedgerOnly.value = false;
+  owedMonths.value = 1;
 
   if (unpaidBill) {
     // A bill that has actually been raised comes first: it is the debt as issued.
@@ -483,7 +490,11 @@ async function applyTenantData() {
     // A past period with no payment entered shows the period it is for, not a
     // "Due" date already gone by (Sean, 2026-10-01: less to read).
     tenantData.value.dueDate = standing.status === 'overdue' ? '' : formatDateOnly(first.dueDate, longDate);
-    tenantData.value.billPeriodDisplay = `${shortDate(first.start)} to ${shortDate(first.end, true)}`;
+    // The months the amount above counts, first to last: it said only the first month's dates
+    // over a total for two (unit 1c, 4 Nov 2026).
+    owedMonths.value = standing.totalDue > 0 ? Math.max(1, Math.min(standing.periodsDue, standing.owedPeriods.length)) : 1;
+    const last = standing.owedPeriods[owedMonths.value - 1] ?? first;
+    tenantData.value.billPeriodDisplay = `${shortDate(first.start)} to ${shortDate(last.end, true)}`;
     tenantData.value.dueDateRaw = first.dueDate;
     fromLedgerOnly.value = true;
     standingStatus.value = standing.status;
@@ -801,6 +812,10 @@ const statusTone = computed(() => {
             <div v-if="!isSettled && tenantData.activeBillPaid > 0" class="flex items-baseline justify-between gap-3 py-2.5">
               <dt>Already paid</dt>
               <dd class="font-semibold tabular">{{ peso(tenantData.activeBillPaid, 2) }}</dd>
+            </div>
+            <div v-if="!isSettled && fromLedgerOnly && owedMonths > 1" class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt>Months not entered</dt>
+              <dd class="font-semibold tabular">{{ owedMonths }}</dd>
             </div>
             <div v-if="!isSettled" class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="font-semibold">Still to pay</dt>

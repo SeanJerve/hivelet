@@ -407,7 +407,9 @@ function handleReset() {
               />
               <p v-if="phoneError" id="phone-error" class="ws-reveal text-sm text-overdue">{{ phoneError }}</p>
               <p v-else-if="phoneChanged && form.phone_number.trim()" id="phone-hint" class="ws-reveal text-sm font-medium text-verify">
-                Once saved, you sign in with this new number, not {{ savedSnapshot.phone_number }}.
+                <!-- With no number on file (31 of 33 tenants, 4 Nov 2026) this read "not ." -->
+                <template v-if="savedSnapshot.phone_number.trim()">Once saved, you sign in with this new number, not {{ savedSnapshot.phone_number }}.</template>
+                <template v-else>Once saved, you can sign in with this number.</template>
               </p>
             </div>
 
@@ -429,6 +431,9 @@ function handleReset() {
           <div class="pt-2">
             <h2 class="text-base font-semibold text-ink">If something happens to you</h2>
 
+            <!-- Both optional, as the server and emergencyPhoneProblem() treat them. They were
+                 `required`, so the browser refused every save until both were filled: 29 of the 33
+                 tenants had none on file, and could not save a new mobile number (4 Nov 2026). -->
             <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div class="ws-field">
                 <label for="ec-name">Their name</label>
@@ -438,7 +443,6 @@ function handleReset() {
                   type="text"
                   placeholder="A parent or guardian"
                   class="ws-input"
-                  required
                 />
               </div>
 
@@ -454,7 +458,6 @@ function handleReset() {
                   :class="['ws-input tabular', ecPhoneError && 'border-overdue']"
                   :aria-invalid="ecPhoneError ? 'true' : undefined"
                   :aria-describedby="ecPhoneError ? 'ec-phone-error' : undefined"
-                  required
                   @input="ecPhoneError = ''"
                   @blur="ecPhoneError = emergencyPhoneProblem(form.emergency_contact_phone)"
                 />

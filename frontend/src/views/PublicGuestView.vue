@@ -89,8 +89,8 @@ const FAQS = computed(() => [
     q: 'How does the monthly water fee work?',
     a:
       waterRatePerOccupant.value !== null
-        ? `The monthly water fee is \u20B1${waterRatePerOccupant.value} per registered person in the unit. The total monthly charge will automatically adjust to reflect any changes in the number of registered residents.`
-        : 'The monthly water fee is charged per registered person in the unit. The total monthly charge will automatically adjust to reflect any changes in the number of registered residents. Ask the landlady for the current rate.',
+        ? `The monthly water fee is \u20B1${waterRatePerOccupant.value} per registered person in the unit. The total monthly charge will automatically adjust to reflect any changes in the number of registered tenants.`
+        : 'The monthly water fee is charged per registered person in the unit. The total monthly charge will automatically adjust to reflect any changes in the number of registered tenants. Ask the landlady for the current rate.',
   },
   {
     q: 'How is electricity handled?',

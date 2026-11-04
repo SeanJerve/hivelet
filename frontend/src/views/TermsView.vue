@@ -97,7 +97,7 @@ const sections = Object.values(S);
         price with the landlady before you rely on either.
       </p>
       <p>
-        Viewings are by appointment. Registering your interest sends your details and your
+        Viewings are by appointment. An inquiry sends your details and your
         question to the landlady and nothing more. It does not reserve a unit or hold a price.
         She answers on your inquiry's own page, which you open with the link or reference code you
         are given when you send it; no text or email is sent, so leave a number she can call too.
@@ -210,7 +210,7 @@ const sections = Object.values(S);
       <ul>
         <li>try to reach another tenant's information, or any part of the site your account is not for;</li>
         <li>interfere with the site, probe its security, or overload it, including by sending the same inquiry repeatedly;</li>
-        <li>give false information, or register interest in someone else's name; or</li>
+        <li>give false information, or send an inquiry in someone else's name; or</li>
         <li>use the site for anything unlawful.</li>
       </ul>
       <p>The landlady may suspend an account that is misused.</p>
