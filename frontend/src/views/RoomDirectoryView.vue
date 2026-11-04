@@ -334,7 +334,6 @@ function applyRoomFilters(v: FilterDraft) {
         v-for="(clusterName, clusterIndex) in activeClusters"
         :key="clusterName"
         v-show="getUnitsForCluster(clusterName).length > 0"
-        class="overflow-hidden rounded-tile bg-tile"
       >
         <!-- The strip is one mark per unit in this cluster: solid when someone
              lives there, hatched when it is free. It stays visible when the
@@ -342,7 +341,7 @@ function applyRoomFilters(v: FilterDraft) {
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full flex-col gap-2.5 px-5 py-4 text-left hover:bg-hover"
+            class="press-plate -mx-3 flex w-[calc(100%+1.5rem)] rounded-xl flex-col gap-2.5 px-3 py-4 text-left hover:bg-hover"
             :aria-expanded="isClusterOpen(clusterName, clusterIndex)"
             :aria-controls="`cluster-units-${domId(clusterName)}`"
             @click="toggleCluster(clusterName, clusterIndex)"
@@ -386,7 +385,7 @@ function applyRoomFilters(v: FilterDraft) {
         <div
           v-if="isClusterOpen(clusterName, clusterIndex)"
           :id="`cluster-units-${domId(clusterName)}`"
-          class="ws-reveal border-t border-line p-5 sm:p-6"
+          class="ws-reveal border-t border-line pb-2 pt-4"
         >
           <!-- Every card keeps its bottom rule and the grid clips the last row's, so each row's rule
                runs the full width. With last:border-b-0 the last card of a full row had none. -->

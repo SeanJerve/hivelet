@@ -1159,7 +1159,6 @@ async function handleOnboard() {
       <section
         v-for="(group, groupIndex) in groupedRows"
         :key="group.key"
-        class="overflow-hidden rounded-tile bg-tile"
       >
         <!--
           Collapsible, like the room directory and the income register. This
@@ -1171,7 +1170,7 @@ async function handleOnboard() {
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full items-baseline justify-between gap-3 px-5 py-4 text-left hover:bg-hover"
+            class="press-plate -mx-3 flex w-[calc(100%+1.5rem)] rounded-xl items-baseline justify-between gap-3 px-3 py-4 text-left hover:bg-hover"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`residents-cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -1192,20 +1191,12 @@ async function handleOnboard() {
           </button>
         </h2>
 
-        <!--
-          The table sits INSIDE the padding now, which is what squares the
-          corner off under the heading.
-          `.ws-table-wrap` carries its own `border-radius: 1rem` (index.css), and
-          this was flush against the tile's edges directly beneath the header -
-          so its rounded top corners cut into the straight line under the title.
-          Every other register puts the table inside `border-t border-line` plus
-          padding, which is what makes the radius read as a deliberate inset
-          rather than a notch. Same structure here now.
-        -->
+        <!-- The cluster's table, on the page under its heading's rule, as every register's is
+             (Sean, 5 Nov 2026: no card, one table style). -->
         <div
           v-if="isClusterOpen(group.key, groupIndex)"
           :id="`residents-cluster-${domId(group.key)}`"
-          class="ws-reveal border-t border-line p-5 sm:p-6"
+          class="ws-reveal border-t border-line pb-2 pt-4"
         >
         <!--
           THE TABLE IS FOR A SCREEN WIDE ENOUGH TO READ ONE, and below `lg`

@@ -1555,12 +1555,11 @@ const isDownloadOpen = ref(false);
       <section
         v-for="(group, groupIndex) in displayGroups"
         :key="group.key"
-        class="overflow-hidden rounded-tile bg-tile"
       >
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full flex-col items-start gap-3 p-5 text-left hover:bg-hover sm:flex-row sm:flex-wrap sm:justify-between sm:p-6"
+            class="press-plate -mx-3 flex w-[calc(100%+1.5rem)] rounded-xl flex-col items-start gap-3 px-3 py-5 text-left hover:bg-hover sm:flex-row sm:flex-wrap sm:justify-between"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`cluster-${domId(group.key)}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -1602,10 +1601,9 @@ const isDownloadOpen = ref(false);
         <div
           v-if="isClusterOpen(group.key, groupIndex)"
           :id="`cluster-${domId(group.key)}`"
-          class="ws-reveal border-t border-line p-5 sm:p-6"
+          class="ws-reveal border-t border-line pb-2 pt-4"
         >
           <RecordTable
-            flat
             :rows="group.records"
             :caption="`${group.label}, by unit`"
             noun="entry"

@@ -800,6 +800,24 @@ select,
   border-bottom: 0;
 }
 
+/*
+ * One table on every screen, on the page, not in a card or a bordered box (Sean, 5 Nov 2026: "at
+ * most 2 different tables across all website"; the other is the list of rows, as on Inquiries).
+ * The cells' own inset runs 12px past the text either side, as the list rows' fill does, so the
+ * first column lines up with the page's headings. Inside a tile the tile's padding has the room.
+ */
+.ws-table-wrap {
+  border: 0;
+  border-radius: 0;
+  margin-inline: -0.75rem;
+}
+.ws-table tr > :first-child {
+  padding-left: 0.75rem;
+}
+.ws-table tr > :last-child {
+  padding-right: 0.75rem;
+}
+
 /* Table labels are bold on the glass rather than a white band. The sticky head and first column
    stay clear, and blur what scrolls under them. */
 .ws-table thead th {

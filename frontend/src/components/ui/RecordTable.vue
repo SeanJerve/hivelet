@@ -36,8 +36,6 @@ const props = withDefaults(
     emptyNote?: string;
     /** Singular noun for the counts, e.g. "payment". */
     noun?: string;
-    /** Drops the tile chrome, for a table already sitting inside a tile. */
-    flat?: boolean;
     /**
      * Column widths, one per column ('' leaves one to take the rest). Set it
      * where several tables of one shape are stacked, clusters for instance:
@@ -53,7 +51,7 @@ const props = withDefaults(
      */
     tableFrom?: 'lg' | 'xl';
   }>(),
-  { pageSize: 10, emptyTitle: 'Nothing here', emptyNote: '', noun: 'row', flat: false }
+  { pageSize: 10, emptyTitle: 'Nothing here', emptyNote: '', noun: 'row' }
 );
 
 const { visible, remaining, nextStep, showMore, showEverything, showFewer } = usePaged(
@@ -109,7 +107,7 @@ onUnmounted(() => {
 
     <template v-else>
       <!-- The register, on a screen wide enough to read one -->
-      <div :class="['hidden overflow-hidden', tableFrom === 'xl' ? 'xl:block' : 'lg:block', flat ? '' : 'rounded-tile bg-tile']">
+      <div :class="['hidden overflow-hidden', tableFrom === 'xl' ? 'xl:block' : 'lg:block', '']">
         <div class="ws-table-wrap" :class="{ 'is-first-load': revealFirstLoad }">
           <table
             class="ws-table"
@@ -134,8 +132,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- One block per row on a phone, in the one card, with a rule between. -->
-      <div :class="['divide-y divide-line', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden', !flat && 'rounded-tile bg-tile px-5']">
+      <!-- One block per row on a phone, on the page, with a rule between. -->
+      <div :class="['divide-y divide-line', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden']">
         <div
           v-for="(row, i) in visible"
           :key="i"
