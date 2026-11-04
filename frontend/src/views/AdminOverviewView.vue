@@ -537,7 +537,6 @@ const liveClusterPerformance = computed(() => {
       name: clusterName,
       total: clusterRooms.length,
       occupied,
-      revenue: clusterRooms.reduce((s, r) => s + (r.tenant ? Number(r.price || 0) : 0), 0),
     };
   })
     .sort((a, b) => b.occupied - a.occupied)
@@ -1006,12 +1005,13 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           </div>
           <SegmentBar :segments="clusterUnitSplit" :label="`${occupiedCount}/${rooms.length} units occupied, by cluster`" />
           <table class="w-full text-sm">
-            <caption class="sr-only">Occupied units and monthly rent by cluster</caption>
-            <thead class="text-left text-xs text-ink-faint">
+            <!-- Each cluster and its count only, no column names (Sean, 5 Nov 2026): the rent is on
+                 Rooms and rates. The names stay for a screen reader. -->
+            <caption class="sr-only">Occupied units by cluster</caption>
+            <thead class="sr-only">
               <tr>
-                <th scope="col" class="pb-1 font-normal"><span class="sr-only">Cluster</span></th>
-                <th scope="col" class="pb-1 pl-3 text-right font-normal">Occupied</th>
-                <th scope="col" class="pb-1 pl-3 text-right font-normal">Rent</th>
+                <th scope="col">Cluster</th>
+                <th scope="col">Occupied</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-line">
@@ -1022,8 +1022,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     <span class="min-w-0 break-words leading-snug">{{ c.name }}</span>
                   </span>
                 </th>
-                <td class="py-1.5 pl-3 text-right tabular text-ink-soft whitespace-nowrap">{{ c.occupied }}/{{ c.total }}</td>
-                <td class="py-1.5 pl-3 text-right tabular whitespace-nowrap">{{ peso(c.revenue) }}</td>
+                <td class="py-1.5 pl-3 text-right text-base font-semibold tabular whitespace-nowrap">{{ c.occupied }}/{{ c.total }}</td>
               </tr>
             </tbody>
           </table>
