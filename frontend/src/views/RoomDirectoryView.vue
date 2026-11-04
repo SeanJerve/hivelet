@@ -388,11 +388,13 @@ function applyRoomFilters(v: FilterDraft) {
           :id="`cluster-units-${domId(clusterName)}`"
           class="ws-reveal border-t border-line p-5 sm:p-6"
         >
-          <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <!-- Every card keeps its bottom rule and the grid clips the last row's, so each row's rule
+               runs the full width. With last:border-b-0 the last card of a full row had none. -->
+          <div class="grid overflow-hidden sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="group flex flex-col justify-between border-b border-line py-5 first:pt-0 last:border-b-0 sm:pr-8 sm:first:pt-5"
+              class="group -mb-px flex flex-col justify-between border-b border-line py-5 first:pt-0 sm:pr-8 sm:first:pt-5"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
