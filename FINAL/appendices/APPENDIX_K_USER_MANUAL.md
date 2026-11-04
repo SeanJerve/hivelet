@@ -1,8 +1,8 @@
 # APPENDIX K: USER'S MANUAL
 
 **For the owner and the tenants of the Fe Galang Da Silva Boarding House.** Written 2026-09-29
-against the system as deployed that night; every button and screen name below is the one the
-system shows. Chapter 4, §4.5 (Table 4-22, stage 4) names this manual as the hand-over document.
+against the system as deployed that night, and brought up to date on 4 November 2026 for the
+redesign of Iteration 3. Every button and screen name below is the one the system shows. Chapter 4, §4.5 (Table 4-22, stage 4) names this manual as the hand-over document.
 
 Hivelet is at **https://hivelet.vercel.app**. It works in any current browser on a phone or a
 computer, and it can be installed on a phone's home screen (Part 1, step 6).
@@ -138,12 +138,16 @@ has the same bar at the top:
 - **Show 8 more** (or however many are next) and **Show all** under a long list open more of it; **Show fewer** closes it again.
 
 **Also on every screen:** a short ping means something was saved, or someone else's change has
-arrived. Tap a message at the top of the screen to close it. The phone's **Back** button goes back a
+arrived. Messages appear at the top centre of the screen; tap one to close it. A window that slides
+up from the bottom closes when you tap the dimmed page outside it or swipe it down. Two never close
+that way, so nothing is lost: the one showing a new tenant's login ID and password, and the GCash
+payment. The phone's **Back** button goes back a
 page and closes any window that was open on it. In the installed app, **pull down from the top** of a
 page to reload it: the green hexagon turns until the figures are back, and grey outlines stand in
 for them meanwhile; the page does not go blank. **Light or dark:** your initials > **Appearance** > **System**, **Light** or
 **Dark** (System follows the phone or computer). On the public pages it is the sun/moon button at
-the top of the page. **The green hexagon** turns in the middle of the screen the first time the site opens on a phone
+the top of the page. The band at the foot of the public pages gives your number under **Contact** and
+the privacy policy and terms under **Policies**. **The green hexagon** turns in the middle of the screen the first time the site opens on a phone
 or computer, when it is opened again after half an hour or more away, and when the public pages or
 the sign-in page are reloaded. Reloading one of your own screens during a visit shows grey outlines
 of the page instead while the figures load.
@@ -167,8 +171,11 @@ as good as that.
 
 The first screen: **Needs your attention** (the payments waiting to be verified on the left, the
 urgent repairs on the right, three of each with a count of the rest; a side with nothing waiting is
-not shown), **Rent and water** for this month, **Occupancy** (32 of 33 today), **Rent
-and water by month**, **Units by cluster**, **Net income** and **Open repair requests**.
+not shown), **Received** for this month once anything is recorded in it, **Occupancy** (32 of 33
+today, with each cluster's count, such as 22/22), **Income** month by month, and **Net income**.
+Tap a month on the Income chart to see its **Income**, **Spent** and **Net income** under it.
+**Net income** draws each month from a centre line: a gain to the right, a loss to the left in
+red. Urgent repairs are listed only in Needs your attention.
 Personal spending is shown beside operating costs and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
 
@@ -214,25 +221,28 @@ The system never makes up an invoice number: it records yours, or none. The same
 cannot be recorded twice for the same unit and month.
 
 **To correct a payment:** open it with **Edit** > change > **Save changes**. **To remove one**
-recorded by mistake: **Edit** > **Delete payment**. It leaves the ledger and totals at once; the
+recorded by mistake: **Edit** > **Delete payment**. It leaves the records and totals at once; the
 system's own record (section 9) keeps that it existed and who removed it.
 
-**Online (GCash) payments** appear under **To verify** / **Payments to verify**. Check the money
-arrived, then verify it, or reject it. A payment is only counted once you verify it. **Until online
+**Online (GCash) payments** appear under **To verify**, beside **Records** (every payment recorded).
+When any are waiting, Monthly Income opens on **To verify**. Check the money arrived, then verify
+it, or reject it. A payment is only counted once you verify it. **Until online
 payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
 
-**The month and the year.** The dark card at the top is **one month**: what was received this
-month (for example "Received, October 2026"), its total alone. Beside it, **Income by cluster**
+**The month and the year.** **Received** at the top is **one month**, its total alone (for example
+"Received from October 2026"). Until something is recorded for this month it says so first, for
+example **"Nothing for November yet"**, and gives the last month recorded under it ("From the
+previous month, October 2026"). Beside it, **Income by cluster**
 is the **year**: the year's total and how it divides across the clusters, and below that the year
 month by month. Monthly Expenses is laid out the same way ("Spent, October 2026"; **Spending by
 area** is the year by area). **Filters** > **Month** shows
-another month in the dark card. The year beside the page name (for example **2026 ⌄**) picks
+another month in Received. The year beside the page name (for example **2026 ⌄**) picks
 another year, or **All years** for everything since the records began; a past year can be read but
 not added to, so **Record payment** is not shown there. **Filters** > **Group by** gathers the payments by **Cluster**
 (the usual view), by **Unit**, or by **Tenant (A to Z)**.
 
-**Download** asks what the file should cover: **Month** (pick the month and year), **Year** (pick
-the year) or **All**. It opens on what the screen is showing, so pressing **Download** again gets
+**Download** opens a small window that asks what the file should cover: **Month**, **Year** or
+**All**, then the year from a row of years and, for a month, the month from a grid of twelve. It opens on what the screen is showing, so pressing **Download** again gets
 that. The workbook is in your own layout (month blocks, cluster subtotals, Linda separate) and is
 named for what it holds: "Monthly Income March 2026" for one month, "Monthly Income 2025" for a
 year (this year's too), and for **All** the years it covers, such as "Monthly Income 2024-2026". In the workbook each cluster's subtotal is on a light-blue row
@@ -260,8 +270,8 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
 
 ### 5. Tenants
 
-- **Move someone in**: name, unit, move-in date, occupants, emergency contact. No phone or email:
-  the tenant gives their own. Press **Move them in**. Their **login ID** and a **one-time password**
+- **Move someone in**: full name, unit, deposit, move-in date, whether the unit is shared and by
+  how many, and an emergency contact with their phone. The tenant adds their own phone number. Press **Move them in**. Their **login ID** and a **one-time password**
   are shown: write both down and give them to the tenant in person (the password is shown only
   once). At first sign-in they choose their own password and add their own phone number.
 - **Edit** (pencil on a tenant): change their details, unit or number of occupants, then **Save
@@ -291,11 +301,11 @@ raises a rate by itself.
 
 ### 7. Repairs
 
-New requests from tenants appear here, marked by urgency. Open one (**Manage this repair**) to reply,
+New requests from tenants appear here, marked by urgency. Open one with the pencil on its card
+(**Manage this repair**) to reply,
 **Send technician**, move it to **In Progress**, or **Mark resolved** (the tenant is notified). **Log
 a repair** records one you were told about in person, or one for an empty unit. **Delete repair**
-(in **Manage this repair**, or the bin icon beside **Manage** on each card) removes a request for
-good after you confirm it. **Status** in the filters shows one stage only. A request the tenant
+(in **Manage this repair**) removes a request for good after you confirm it. **Status** in the filters shows one stage only. A request the tenant
 cancelled (they can, until work starts) is marked **Cancelled by the tenant**, with their reason as a
 note if they gave one.
 
@@ -304,13 +314,17 @@ note if they gave one.
 Messages from people asking about a unit. Type a reply and press the arrow (**Send reply**), **Close inquiry** when settled, or
 **Move them in** to start a tenancy with the details already filled in. **Delete** (on any inquiry)
 asks **"Delete this inquiry?"** and then removes it and its conversation for good; it cannot be
-undone. **Filters** > **Status**
+undone. If the person who sent it opens its page again, it tells them the inquiry was closed and
+removed. **Filters** > **Status**
 shows only those **Waiting for an answer**, **Answered**, **Moved in** or **Closed**.
 
 The person who asked reads your reply on their inquiry's own page, and can write back there: when
-they send an inquiry they are given a link and a reference code for it (the code is shown beside your
-reply box). Their answers appear in the same conversation, and a notification tells you.
-No text or email is sent, so call them if it is urgent. Inquiries from before 30 September 2026 have
+they send an inquiry they are given a link and a reference code for it, with **Copy the code**
+(the code is shown beside your reply box), and their conversation has **Copy conversation link**.
+They reach it from **Your inquiries**, which shares one screen with **Sign in** and **Inquire**.
+Those pages are for visitors: anyone signed in is taken to their own portal instead. Their answers
+appear in the same conversation, and a notification tells you. No text message is sent, so call
+them if it is urgent. Inquiries from before 30 September 2026 have
 no such page: call or text those people as before.
 
 ### 9. The record of who did what
@@ -323,7 +337,7 @@ app**. Ask the team if you need to know who changed something.
 ### 10. When the connection is weak or gone
 
 The system opens without a connection, with a thin bar at the top (**"No connection · Transactions
-unavailable"**), and shows what each screen last loaded on this device: the Overview's figures, the tenants, both ledgers, repairs,
+unavailable"**), and shows what each screen last loaded on this device: the Overview's figures, the tenants, the income and expense records, repairs,
 inquiries and the notifications. Nothing can be recorded, moved or marked read until the connection
 returns, so **Record payment**, **Record expense**, **Move someone in**, the buttons in **Manage
 this repair** and **Log a repair**, and **Send reply** and **Close inquiry** are greyed out ("Needs
