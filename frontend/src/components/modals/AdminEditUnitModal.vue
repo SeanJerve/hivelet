@@ -510,7 +510,7 @@ async function handleSave() {
 
         <!-- "Description", the word the unit's own details dialog uses for
              the same text. -->
-        <label class="ws-field">
+        <label class="ws-field mb-4">
           Description
           <textarea
             v-model="amenitiesText"

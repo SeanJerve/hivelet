@@ -35,6 +35,18 @@ export interface FocusMonth {
 }
 
 /**
+ * Names the month shown when it is not this one: the month before it, or one further back.
+ * "From the previous month, October 2026" (review of 4 Nov 2026).
+ */
+export function earlierMonthNote(f: FocusMonth): string {
+  if (!f.waitingFor) return f.label;
+  const [name, year] = f.waitingFor.split(' ');
+  const now = Number(year) * 12 + MONTH_LONG.indexOf(name as (typeof MONTH_LONG)[number]);
+  const shown = Number(f.year) * 12 + f.month - 1;
+  return `From ${now - shown === 1 ? 'the previous month' : 'an earlier month'}, ${f.label}`;
+}
+
+/**
  * @param filterYear  the Year filter: "2026" or "All"
  * @param filterMonth the Month filter: "Oct" or "All"
  * @param monthsWithEntries the months (1-12) that hold entries in a given year

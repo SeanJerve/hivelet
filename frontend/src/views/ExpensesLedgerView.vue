@@ -20,7 +20,7 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
-import { focusMonth, MONTH_SHORT } from '@/lib/focusMonth';
+import { earlierMonthNote, focusMonth, MONTH_SHORT } from '@/lib/focusMonth';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import NewExpenseKindDialog from '@/components/modals/NewExpenseKindDialog.vue';
 import type { ExpenseKind } from '@/components/modals/NewExpenseKindDialog.vue';
@@ -599,8 +599,8 @@ function submitAddExpense() {
               ? `${failed.length} of ${results.length} could not be confirmed: ${failed.join(', ')}. ` +
                 'This took too long to answer, so ' +
                 (failed.length === 1
-                  ? 'it may already be saved. It is still in the form: check the ledger before saving it again.'
-                  : 'they may already be saved. They are still in the form: check the ledger before saving them again.')
+                  ? 'it may already be saved. It is still in the form: check the records before saving it again.'
+                  : 'they may already be saved. They are still in the form: check the records before saving them again.')
               : `${failed.length} of ${results.length} could not be recorded: ${failed.join(', ')}. ` +
                 (count > 0
                   ? 'Only those are left in the form. The others are saved, so Save again sends just these.'
@@ -683,7 +683,7 @@ function submitAddExpense() {
         // writing a second entry.
         await fetchExpenseRecords();
 
-        showToast('success', 'Expenses recorded', `${count} ${count === 1 ? 'entry' : 'entries'} saved to the ledger.`);
+        showToast('success', 'Expenses recorded', `${count} ${count === 1 ? 'entry' : 'entries'} saved to the records.`);
       } catch (err: any) {
         showToast('error', failureTitle(err, 'Not saved'), err.message || 'The expenses could not be saved. Please try again.');
       } finally {
@@ -865,7 +865,7 @@ function handleDeleteFromEditModal() {
 function handleDeleteExpense(id: string, description: string) {
   showConfirm(
     'Delete this expense?',
-    `"${description}" is removed from the ledger and cannot be brought back.`,
+    `"${description}" is removed from the records and cannot be brought back.`,
     async () => {
       try {
         await api.delete(`/admin/expense-entries/${id}`);
@@ -874,9 +874,9 @@ function handleDeleteExpense(id: string, description: string) {
           expenseRecords.splice(index, 1);
         }
         isEditOpen.value = false;
-        showToast('success', 'Expense deleted', `"${description}" is no longer in the ledger.`);
+        showToast('success', 'Expense deleted', `"${description}" is no longer in the records.`);
       } catch (err: any) {
-        showToast('error', failureTitle(err, 'Not deleted'), err.message || 'The expense is still in the ledger. Please try again.');
+        showToast('error', failureTitle(err, 'Not deleted'), err.message || 'The expense is still in the records. Please try again.');
       }
     }
   );
@@ -959,18 +959,6 @@ async function handleEditExpense() {
           <!-- The year this page shows, in place of "Admin" (Sean, 19 Oct 2026), the same menu as the
                Overview; it moved here from Filters, so there is one control for the year. -->
           <YearMenu v-model="filterYear" :options="yearMenuOptions" />
-          <!-- The phone's Download. `-my-1` keeps its py-1 hit area from pushing the title down. -->
-          <button
-            type="button"
-            class="press icon-bump relative -my-1 inline-flex sm:hidden shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
-            aria-haspopup="dialog"
-            :aria-label="`Download ${exportYear} for Excel`"
-            :title="`Download ${exportYear} for Excel`"
-            @click="isDownloadOpen = true"
-          >
-            <span>Download</span>
-            <FileSpreadsheet class="size-4" aria-hidden="true" />
-          </button>
         </div>
         <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <h1 class="text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
@@ -980,7 +968,7 @@ async function handleEditExpense() {
           <div class="flex items-center gap-5 sm:justify-end">
             <button
               type="button"
-              class="press icon-bump relative hidden sm:inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+              class="press icon-bump relative inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
               aria-haspopup="dialog"
               :aria-label="`Download ${exportYear} for Excel`"
               :title="`Download ${exportYear} for Excel`"
@@ -1056,7 +1044,7 @@ async function handleEditExpense() {
           <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
           <template v-if="focus.waitingFor">
             <p class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Nothing for {{ focus.waitingFor.split(' ')[0] }} yet</p>
-            <p class="mt-1 text-sm font-semibold text-ink-soft">{{ focus.label }}</p>
+            <p class="mt-1 text-sm font-semibold text-ink-soft">{{ earlierMonthNote(focus) }}</p>
           </template>
           <!-- The total alone, as on Monthly Income: the entries and the Utilities and Repairs lines
                are in the ledger below (Lloyd, 3 Nov 2026). -->
@@ -1118,7 +1106,7 @@ async function handleEditExpense() {
       id="expense-records"
       class="scroll-mt-24"
       v-model:search="q"
-      search-label="Search the ledger"
+      search-label="Search the records"
       :filters="expenseFilters"
       @apply="applyExpenseFilters"
     />
@@ -1128,7 +1116,7 @@ async function handleEditExpense() {
          ledger loaded - not even that a load was in progress. The overview and
          income ledger already pair their loading state with an announced
          `role="status"`; this register's table skeleton had none. -->
-    <span v-if="isLoading" class="sr-only" role="status">Loading the expense ledger</span>
+    <span v-if="isLoading" class="sr-only" role="status">Loading the expense records</span>
     <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
 
     <div v-else-if="groupedExpenses.length === 0" class="ws-reveal py-16 text-center">
@@ -1562,7 +1550,7 @@ async function handleEditExpense() {
             Modal Actions Footer: Delete on the left, Cancel/Save on the right.
 
             The same unwrapped three-button row that was clipping "Update
-            Collection" on the income ledger. Measured here at 375 before this
+            Collection" on the income records. Measured here at 375 before this
             change: 414px of content in a 303px box, 111px of overflow, with
             "Update Entry"'s right edge at x=450 against a column ending at 339
             and `overflow-x: hidden` on `body` cutting it off.

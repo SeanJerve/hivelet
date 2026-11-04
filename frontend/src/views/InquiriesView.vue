@@ -483,10 +483,6 @@ async function handleSendReply() {
             :filters="inquiryFilters"
             @apply="(v) => { statusFilter = String(v.status); inquiryOrder = v.order as RowOrder; }"
           />
-          <p class="text-sm text-ink-soft">
-            {{ filteredInquiries.length }}
-            {{ filteredInquiries.length === 1 ? 'inquiry' : 'inquiries' }}
-          </p>
         </div>
 
         <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">

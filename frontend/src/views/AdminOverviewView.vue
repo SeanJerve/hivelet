@@ -476,6 +476,23 @@ const liveRecordedAverage = computed(() =>
 );
 
 const liveLatestCashMonth = computed(() => liveRecordedMonths.value.at(-1) ?? null);
+
+/** The month picked on the Income chart, by its index in the year. */
+const pickedMonthIndex = ref<number | null>(null);
+const pickedMonth = computed(() =>
+  pickedMonthIndex.value === null ? null : live12MonthsData.value[pickedMonthIndex.value] ?? null
+);
+const notEnteredWord = (d: MonthIncomeData) => (d.monthNum > CURRENT_MONTH ? 'Not yet' : 'Not entered');
+
+/**
+ * Net income per month with both sides entered, as bars from a centre line: a gain runs right in
+ * green, a loss left in red, each as long as its share of the largest month either way.
+ */
+const netBars = computed(() => {
+  const months = liveRecordedMonths.value.filter((d) => d.hasExpenses);
+  const largest = Math.max(1, ...months.map((d) => Math.abs(d.noi)));
+  return months.map((d) => ({ month: d.month, noi: d.noi, width: `${(Math.abs(d.noi) / largest) * 50}%` }));
+});
 const livePersonalTotal = computed(() =>
   liveExpenseRecords.value.reduce((s, e) => s + Number(e.personalAmount ?? 0), 0)
 );
@@ -964,7 +981,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         :title="`Received, ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
         phone-title="Received"
         to="/admin/income#income-records"
-        to-label="Open the income ledger"
+        to-label="Open the income records"
         :class="['max-md:order-1 max-md:gap-3', tileSpans.month, phoneSpan]"
       >
         <UnavailableNote
@@ -1015,7 +1032,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
             </p>
           </div>
-          <SegmentBar :segments="clusterUnitSplit" :label="`${occupiedCount} of ${rooms.length} units occupied, by cluster`" />
+          <SegmentBar :segments="clusterUnitSplit" :label="`${occupiedCount}/${rooms.length} units occupied, by cluster`" />
           <table class="w-full text-sm">
             <caption class="sr-only">Occupied units and monthly rent by cluster</caption>
             <thead class="text-left text-xs text-ink-faint">
@@ -1033,7 +1050,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     <span class="min-w-0 break-words leading-snug">{{ c.name }}</span>
                   </span>
                 </th>
-                <td class="py-1.5 pl-3 text-right tabular text-ink-soft whitespace-nowrap">{{ c.occupied }} of {{ c.total }}</td>
+                <td class="py-1.5 pl-3 text-right tabular text-ink-soft whitespace-nowrap">{{ c.occupied }}/{{ c.total }}</td>
                 <td class="py-1.5 pl-3 text-right tabular whitespace-nowrap">{{ peso(c.revenue) }}</td>
               </tr>
             </tbody>
@@ -1044,9 +1061,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <OverviewTile
         key="by-month"
         boxed
-        :title="`Income by month, ${CURRENT_YEAR}`"
+        title="Income"
         to="/admin/income#income-by-month"
-        to-label="Open the income ledger"
+        to-label="Open the income records"
         :class="['col-span-2 max-md:order-3 max-md:gap-3', tileSpans.byMonth]"
       >
         <UnavailableNote
@@ -1055,38 +1072,37 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           @retry="refreshAllData"
         />
         <template v-else>
-          <MonthCapsules :months="liveCapsules" :label="`Collections by month in ${CURRENT_YEAR}`" short />
-          <PhoneMore everywhere title="Year to date" :summary="`${peso(monthlyRevenue)} entered`">
-            <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div>
-                <dt class="text-xs text-ink-faint">Rent</dt>
-                <dd class="text-lg font-semibold tabular">{{ peso(entered.rent) }}</dd>
-                <dd class="text-xs text-ink-soft">
-                  Across {{ liveRecordedMonths.length }} {{ liveRecordedMonths.length === 1 ? 'month' : 'months' }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs text-ink-faint">Water</dt>
-                <dd class="text-lg font-semibold tabular">{{ peso(entered.water) }}</dd>
-              </div>
-              <div>
-                <dt class="text-xs text-ink-faint">Monthly average</dt>
-                <dd class="text-lg font-semibold tabular">{{ peso(liveRecordedAverage) }}</dd>
-              </div>
-              <div>
-                <dt class="text-xs text-ink-faint">Expected each month</dt>
-                <dd class="text-lg font-semibold tabular">
-                  {{ roomsFetchFailed ? 'Unavailable' : peso(baseMonthlyRunRate) }}
-                </dd>
-              </div>
-            </dl>
-          </PhoneMore>
+          <MonthCapsules
+            :months="liveCapsules"
+            :label="`Collections by month in ${CURRENT_YEAR}`"
+            short
+            :decimals="2"
+            @select="(i) => (pickedMonthIndex = i)"
+          />
+          <!-- The month picked on the chart, income against spending (review of 4 Nov 2026). A
+               month not entered says so rather than showing a confident zero. -->
+          <dl v-if="pickedMonth" class="grid grid-cols-3 gap-4 border-t border-line pt-3">
+            <div>
+              <dt class="text-xs text-ink-faint">Income</dt>
+              <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Spent</dt>
+              <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Net income</dt>
+              <dd :class="['text-lg font-semibold tabular', pickedMonth.hasIncome && pickedMonth.hasExpenses && pickedMonth.noi < 0 && 'text-overdue']">
+                {{ pickedMonth.hasIncome && pickedMonth.hasExpenses ? peso(pickedMonth.noi) : notEnteredWord(pickedMonth) }}
+              </dd>
+            </div>
+          </dl>
         </template>
       </OverviewTile>
 
       <!-- The full row until xl: at half width its table needed 321px of a 287px
            wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile key="net" :title="`Net income, ${CURRENT_YEAR}`" to="/admin/expenses#expense-records" to-label="Open the expense ledger" :class="['col-span-2 max-md:order-5', tileSpans.net]">
+      <OverviewTile key="net" title="Net income" to="/admin/expenses#expense-records" to-label="Open the expense records" :class="['col-span-2 max-md:order-5', tileSpans.net]">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded."
@@ -1109,27 +1125,23 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               {{ peso(liveLatestCashMonth.noi) }}
             </p>
           </div>
-          <template v-if="liveLatestCashMonth.noi >= 0">
-            <SegmentBar
-              :segments="[
-                { label: 'Expenses', value: liveLatestCashMonth.expenses, tone: 'night' },
-                { label: 'Net', value: liveLatestCashMonth.noi, tone: 'bright' },
-              ]"
-              :label="`Of ${peso(liveLatestCashMonth.grossIncome)} in rent and water, ${peso(liveLatestCashMonth.expenses)} went to operating expenses and ${peso(liveLatestCashMonth.noi)} remained.`"
-            />
-            <!-- A key, not a second set of figures: the heading above already
-                 gives Net, and the table the expenses (Sean, 2026-10-01). -->
-            <ul class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-soft">
-              <li class="flex items-center gap-1.5">
-                <span aria-hidden="true" class="size-2.5 rounded-full bg-series-night" />
-                Expenses
-              </li>
-              <li class="flex items-center gap-1.5">
-                <span aria-hidden="true" class="size-2.5 rounded-full bg-brand-bright" />
-                Net
-              </li>
-            </ul>
-          </template>
+          <ul v-if="netBars.length" class="space-y-1.5" aria-label="Net income by month">
+            <li
+              v-for="b in netBars"
+              :key="b.month"
+              class="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3 text-xs"
+            >
+              <span class="text-ink-soft">{{ b.month }}</span>
+              <span class="relative h-2.5" aria-hidden="true">
+                <span class="absolute inset-y-[-3px] left-1/2 w-px bg-line" />
+                <span
+                  :class="['absolute inset-y-0 rounded-full', b.noi < 0 ? 'bg-overdue' : 'bg-brand']"
+                  :style="b.noi < 0 ? { right: '50%', width: b.width } : { left: '50%', width: b.width }"
+                />
+              </span>
+              <span :class="['min-w-[5.5rem] text-right tabular font-semibold', b.noi < 0 ? 'text-overdue' : 'text-ink']">{{ peso(b.noi) }}</span>
+            </li>
+          </ul>
 
           <!--
             Wrapped, like the five other `ws-table`s on this screen. This was
@@ -1248,7 +1260,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
      * Archive year
      * ================================================================== -->
     <!--
-      A past year in the ledgers' own cards (Sean, 20 Oct 2026): a figure, then its parts on ruled
+      A past year in the recordss' own cards (Sean, 20 Oct 2026): a figure, then its parts on ruled
       lines, no sentences. Each money card's arrow opens that year's ledger.
     -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
@@ -1323,7 +1335,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Net income, ${selectedArchiveYear}`" class="xl:col-span-4">
+      <OverviewTile title="Net income" class="xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" @retry="refreshAllData" />
         <template v-else>
           <p :class="['tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight', historicalAnnualNOI < 0 && 'text-overdue']">
@@ -1358,7 +1370,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </dl>
       </OverviewTile>
 
-      <OverviewTile boxed :title="`Income by month, ${selectedArchiveYear}`" :to="archiveIncomeByMonthLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-6">
+      <OverviewTile boxed title="Income" :to="archiveIncomeByMonthLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-6">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <MonthCapsules v-else :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
       </OverviewTile>

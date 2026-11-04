@@ -357,8 +357,7 @@ function applyRoomFilters(v: FilterDraft) {
                 <span class="text-[0.9375rem] font-semibold text-ink">{{ clusterName }}</span>
               </span>
               <span class="tabular shrink-0 whitespace-nowrap pl-6 text-xs text-ink-soft @[16rem]:pl-0">
-                {{ clusterOccupancy(clusterName).occupied }} of
-                {{ clusterOccupancy(clusterName).total }} occupied
+                {{ clusterOccupancy(clusterName).occupied }}/{{ clusterOccupancy(clusterName).total }} occupied
               </span>
             </span>
             </span>

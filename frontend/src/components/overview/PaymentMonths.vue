@@ -207,7 +207,7 @@ const rows = computed(() => [...months.value].reverse());
     <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
       <div>
         <dt class="text-xs text-ink-faint">Months paid</dt>
-        <dd class="text-lg font-semibold tabular">{{ paidMonths.length }} of {{ countedMonths.length }}</dd>
+        <dd class="text-lg font-semibold tabular">{{ paidMonths.length }}/{{ countedMonths.length }}</dd>
       </div>
       <div>
         <dt class="text-xs text-ink-faint">Paid in these months</dt>

@@ -735,7 +735,7 @@ function triggerRecord() {
         const serverRecordId = response?.data?.id ?? response?.id;
 
         if (!serverRecordId) {
-          showToast('error', 'Not recorded', 'The ledger did not confirm this entry. Nothing was posted.');
+          showToast('error', 'Not recorded', 'The records did not confirm this entry. Nothing was posted.');
           return;
         }
 
@@ -783,7 +783,7 @@ function triggerRecord() {
           month: Number(serverRow.month) || null,
           occupantsUpdated: serverRow.occupantsUpdated ?? null,
         };
-        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()}, ${peso(totalAmountReceived.value, 2)}, is in the ledger.`);
+        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()}, ${peso(totalAmountReceived.value, 2)}, is in the records.`);
         // One payment, one set of figures: the next one starts clean. The unit and
         // the date received stay, for a run of payments from one day.
         invoiceNum.value = '';
@@ -803,8 +803,8 @@ function triggerRecord() {
           'error',
           'Payment not recorded',
           err instanceof Error
-            ? `${err.message} Nothing was written to the ledger. Please try again.`
-            : 'Nothing was written to the ledger. Please try again.'
+            ? `${err.message} Nothing was written to the records. Please try again.`
+            : 'Nothing was written to the records. Please try again.'
         );
       } finally {
         isSubmitting.value = false;
@@ -833,7 +833,7 @@ function triggerRecord() {
       <p class="flex items-start gap-2 text-sm leading-6 text-ink">
         <CheckCircle2 class="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
         <span>
-          Unit <strong>{{ recorded.unit }}</strong> is in the ledger<template v-if="recorded.invoice && isAcknowledgementReceipt(recorded.invoice)">, with an acknowledgement receipt</template><template v-else-if="recorded.invoice">, invoice
+          Unit <strong>{{ recorded.unit }}</strong> is in the records<template v-if="recorded.invoice && isAcknowledgementReceipt(recorded.invoice)">, with an acknowledgement receipt</template><template v-else-if="recorded.invoice">, invoice
           <strong class="font-mono">{{ recorded.invoice }}</strong></template><template v-else>, with no invoice</template>.
         </span>
       </p>
@@ -1064,7 +1064,7 @@ function triggerRecord() {
       v-if="isConfirmOpen"
       title="Record this payment?"
       decision
-      subtitle="Check the figures against what you were handed. This writes to the ledger."
+      subtitle="Check the figures against what you were handed. This writes to the records."
       size="sm"
       @close="isConfirmOpen = false"
     >

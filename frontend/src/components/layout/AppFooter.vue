@@ -13,26 +13,20 @@
  * `check:design-tokens` ratchets down, and the marks went with the icons when
  * the rows became text.
  */
-import { computed } from 'vue';
 import { LANDLADY } from '@/lib/systemState';
-import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
 
 // The year on the copyright line follows the calendar rather than being typed
 // in, so it does not go stale every January.
 const year = new Date().getFullYear();
-
-const portalRoute = computed(() => {
-  if (isAdmin.value) return '/admin/overview';
-  if (isTenant.value) return '/tenant';
-  return '/login';
-});
 </script>
 
 <template>
+  <!--
+    One band of dark glass across the page, not a card on it (review of 4 Nov 2026). The page
+    links that were here are all in the top bar, so the footer holds what it is for: who to call,
+    where it is, and the policies.
+  -->
   <footer class="ws-focus on-dark w-full bg-night text-on-night font-editorial mt-auto">
-    <!-- Tighter than a page band (technical evaluators, 3 Oct 2026: "the footer is big,
-         too much blank space"): 32/40px of padding instead of 48/64, the columns
-         side by side from a phone up, and the policy row 32px under them, not 80. -->
     <div class="ws-page py-8 sm:py-10">
 
       <div class="grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-4 lg:gap-10">
@@ -50,76 +44,7 @@ const portalRoute = computed(() => {
         </div>
 
         <div>
-          <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Property</h2>
-          <!--
-            `py-3` on each link and no `space-y` between them, rather than
-            `py-1` with a 10px gap.
-
-            Every row here measured 28px tall on an emulated handset - a
-            stacked column (five then; four since the privacy policy moved
-            to the strip at the bottom), which is the whole of the public
-            navigation once a visitor is past the fold on a phone. The
-            padding sits on an `inline-block`, so it grows the box a thumb
-            lands on to 44 without moving the text or the underline by a
-            pixel; the gap comes out to keep the column the same length it
-            was. `mt-3` rather than `mt-5` for the same reason - the first
-            link now brings 12px of its own.
-          -->
-          <ul class="mt-1 text-sm">
-            <li>
-              <RouterLink to="/public" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
-                Overview
-              </RouterLink>
-            </li>
-            <!--
-              Was `/category/1-bedroom`: a slug that no longer exists, kept
-              working only by the legacy alias in `resolveSlug`, and a label
-              reading "Rentable units" over a page showing the EIGHT
-              one-bedrooms out of thirty-three. The category page carries links
-              to all four kinds at its head, so any of them is a way in to all
-              of them - this is the one with twenty units behind it, and it is
-              also what `resolveSlug` falls back to.
-            -->
-            <li>
-              <RouterLink to="/category/studio" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
-                Rentable units
-              </RouterLink>
-            </li>
-            <li v-if="!isAuthenticated">
-              <!-- Was a second link to /public, which went nowhere in particular.
-                   "Inquire now", the header's own word for this link. -->
-              <RouterLink to="/inquire" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
-                Inquire now
-              </RouterLink>
-            </li>
-            <li v-if="!isAuthenticated">
-              <!-- 065: where someone who already asked reads Michelle's reply. -->
-              <RouterLink to="/inquiry" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
-                Your inquiries
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink
-                v-if="!isAuthenticated"
-                to="/login"
-                class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
-              >
-                Sign in
-              </RouterLink>
-              <RouterLink
-                v-else
-                :to="portalRoute"
-                class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
-              >
-                Dashboard
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
-
-        <div>
           <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Contact</h2>
-          <!-- Same 28 -> 44 as the Property column above. -->
           <ul class="mt-1 text-sm">
             <li>
               <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
@@ -127,54 +52,43 @@ const portalRoute = computed(() => {
               </a>
             </li>
           </ul>
-
-          <!-- `mt-7`, not `mt-9`: the link above it now carries 12px of its own. -->
           <h2 class="mt-4 text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Address</h2>
           <p class="mt-2 max-w-xs text-sm leading-relaxed text-on-night-soft">
             {{ LANDLADY.address }}
           </p>
         </div>
 
-      </div>
-
-      <!--
-        The two documents, in the strip where a visitor looks for them, as a
-        pair. "Privacy policy" used to be the last of the Property links, and
-        the terms had nowhere to go. They replace "Legazpi City, Albay", which
-        repeated the last line of the full address directly above it.
-
-        `min-h-11` gives each link the 44px tap height the columns above get
-        from `py-3`; `pt-4` rather than `pt-7`, because the links now bring
-        14px of their own above the text.
-      -->
-      <div class="mt-8 flex flex-col gap-1 border-t border-on-night/15 pt-4 text-xs text-on-night-soft sm:flex-row sm:items-center sm:justify-between">
-        <p>© {{ year }} Hivelet. Fe Galang Da Silva Boarding House.</p>
         <nav aria-label="Policies">
-          <ul class="flex flex-wrap gap-x-6">
+          <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Policies</h2>
+          <ul class="mt-1 text-sm">
             <li>
-              <RouterLink to="/privacy" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/privacy" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Privacy policy
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/terms" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/terms" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Terms of use
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/terms#refunds" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/terms#refunds" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Refunds
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/privacy#browser" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/privacy#browser" class="press inline-block py-2.5 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Cookies
               </RouterLink>
             </li>
           </ul>
         </nav>
+
       </div>
 
+      <div class="mt-8 border-t border-on-night/15 pt-4 text-xs text-on-night-soft">
+        <p>© {{ year }} Hivelet. Fe Galang Da Silva Boarding House.</p>
+      </div>
     </div>
   </footer>
 </template>

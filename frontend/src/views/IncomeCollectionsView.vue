@@ -30,14 +30,14 @@ import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
 import YearMenu from '@/components/ui/YearMenu.vue';
 import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
-import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown, ArrowRight } from 'lucide-vue-next';
 import { sortRows, orderOptions, compareUnits, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
-import { focusMonth, MONTH_SHORT as FOCUS_MONTH_SHORT } from '@/lib/focusMonth';
+import { earlierMonthNote, focusMonth, MONTH_SHORT as FOCUS_MONTH_SHORT } from '@/lib/focusMonth';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import type { CapsuleMonth } from '@/components/overview/types';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -195,6 +195,14 @@ const pendingPayments = ref<ApiPendingPayment[]>([]);
  * Empty and unknown are different things, and the screen has to say which.
  */
 const pendingPaymentsError = ref<string | null>(null);
+const pendingTotal = computed(() => pendingPayments.value.reduce((s, p) => s + (Number(p.amount) || 0), 0));
+
+/** From the box at the top: the queue, opened and in view. */
+async function openVerifyQueue() {
+  activeTab.value = 'verify';
+  await nextTick();
+  document.getElementById('income-records')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 // The "to verify" queue stays current too; the ledger itself is refreshed by lib/live.ts.
 useLiveRefresh(() => fetchPayments());
@@ -251,7 +259,7 @@ const rejectMessage = computed(() => {
   if (!p) return '';
   const unit = p.rooms?.room_number ? `, unit ${String(p.rooms.room_number).toUpperCase()}` : '';
   return `${peso(Number(p.amount) || 0, 2)} from ${p.profiles?.full_name || 'this tenant'}${unit}. ` +
-    'Nothing is added to the ledger and their bill stays due.';
+    'Nothing is added to the records and their bill stays due.';
 });
 
 function confirmReject() {
@@ -321,7 +329,7 @@ async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected')
     if (status === 'Verified') {
       // BR-035: the toast once named a purpose for the 50% column. It now says
       // nothing about that column at all; the ledger shows it.
-      showToast('success', 'Payment verified', 'It is in the ledger and the bill is marked paid.');
+      showToast('success', 'Payment verified', 'It is in the records and the bill is marked paid.');
     } else {
       showToast('warning', 'Payment rejected', 'The bill is still due.');
     }
@@ -958,7 +966,7 @@ function startEditIncome(r: IncomeRecord) {
 function handleDeleteIncome(id: string, invoice: string | null, unit: string) {
   showConfirm(
     'Delete this payment?',
-    `Unit ${unit.toUpperCase()}${invoice ? `, invoice ${invoice}` : ''}. It is removed from the ledger and cannot be brought back.`,
+    `Unit ${unit.toUpperCase()}${invoice ? `, invoice ${invoice}` : ''}. It is removed from the records and cannot be brought back.`,
     async () => {
       try {
         await api.delete(`/admin/income-records/${id}`);
@@ -967,7 +975,7 @@ function handleDeleteIncome(id: string, invoice: string | null, unit: string) {
           incomeRecords.splice(idx, 1);
         }
         isEditOpen.value = false;
-        showToast('success', 'Payment deleted', invoice ? `Invoice ${invoice} is no longer in the ledger.` : 'The payment is no longer in the ledger.');
+        showToast('success', 'Payment deleted', invoice ? `Invoice ${invoice} is no longer in the records.` : 'The payment is no longer in the records.');
       } catch (err: any) {
         showToast('error', failureTitle(err, 'Delete failed'), err.message || 'Server error occurred');
       }
@@ -1100,7 +1108,7 @@ async function handleEditIncome() {
 
     await fetchIncomeRecords();
 
-    showToast('success', 'Payment updated', `Unit ${editUnit.value.toUpperCase()} is saved in the ledger.`);
+    showToast('success', 'Payment updated', `Unit ${editUnit.value.toUpperCase()} is saved in the records.`);
     isEditOpen.value = false;
     editingIncome.value = null;
   } catch (err: any) {
@@ -1161,18 +1169,6 @@ const isDownloadOpen = ref(false);
           <!-- The year this page shows, in place of "Admin" (Sean, 19 Oct 2026), the same menu as the
                Overview; it moved here from Filters, so there is one control for the year. -->
           <YearMenu v-model="filterYear" :options="yearMenuOptions" />
-          <!-- The phone's Download. `-my-1` keeps its py-1 hit area from pushing the title down. -->
-          <button
-            type="button"
-            class="press icon-bump relative -my-1 inline-flex sm:hidden shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
-            aria-haspopup="dialog"
-            :aria-label="`Download ${exportYear} for Excel`"
-            :title="`Download ${exportYear} for Excel`"
-            @click="isDownloadOpen = true"
-          >
-            <span>Download</span>
-            <FileSpreadsheet class="size-4" aria-hidden="true" />
-          </button>
         </div>
         <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <h1 class="text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
@@ -1182,7 +1178,7 @@ const isDownloadOpen = ref(false);
           <div class="flex items-center gap-5 sm:justify-end">
             <button
               type="button"
-              class="press icon-bump relative hidden sm:inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+              class="press icon-bump relative inline-flex shrink-0 items-center gap-1.5 py-1 text-sm font-bold text-brand whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
               aria-haspopup="dialog"
               :aria-label="`Download ${exportYear} for Excel`"
               :title="`Download ${exportYear} for Excel`"
@@ -1220,6 +1216,26 @@ const isDownloadOpen = ref(false);
       />
     </div>
 
+    <!-- Waiting payments come first when there are any (review of 4 Nov 2026): on a phone the
+         queue was several screens down. -->
+    <button
+      v-if="pendingPayments.length && activeTab !== 'verify'"
+      type="button"
+      class="press on-dark relative isolate flex w-full items-center justify-between gap-4 rounded-tile bg-night px-5 py-4 text-left text-on-night"
+      @click="openVerifyQueue"
+    >
+      <span class="min-w-0">
+        <span class="block text-base font-semibold">
+          {{ pendingPayments.length }} {{ pendingPayments.length === 1 ? 'payment' : 'payments' }} to verify
+        </span>
+        <span class="tabular text-sm text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
+      </span>
+      <span class="inline-flex shrink-0 items-center gap-1 text-sm font-semibold">
+        Review
+        <ArrowRight class="size-4" aria-hidden="true" />
+      </span>
+    </button>
+
     <!--
       The four figures.
 
@@ -1242,7 +1258,7 @@ const isDownloadOpen = ref(false);
       zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not entered yet" opened the page).
     -->
     <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${focus.waitingFor ?? focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Received from ${focus.waitingFor ?? focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           message="The collections could not be loaded."
@@ -1255,7 +1271,7 @@ const isDownloadOpen = ref(false);
           <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
           <template v-if="focus.waitingFor">
             <p class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Nothing for {{ focus.waitingFor.split(' ')[0] }} yet</p>
-            <p class="mt-1 text-sm font-semibold text-ink-soft">{{ focus.label }}</p>
+            <p class="mt-1 text-sm font-semibold text-ink-soft">{{ earlierMonthNote(focus) }}</p>
           </template>
           <!-- Rent plus water, the Remitted column's figure, for the one month. The total alone: the
                count of payments and the Rent, Water and 50% Share lines under it are in the ledger
@@ -1352,7 +1368,7 @@ const isDownloadOpen = ref(false);
           @click="activeTab = 'ledger'"
           @keydown.right.prevent="activeTab = 'verify'"
         >
-          Ledger
+          Records
         </button>
         <button
           id="income-tab-verify"
@@ -1383,8 +1399,8 @@ const isDownloadOpen = ref(false);
         v-model:view="viewMode"
         v-model:search="q"
         :views="incomeViews"
-        view-label="How to show the ledger"
-        search-label="Search the ledger"
+        view-label="How to show the records"
+        search-label="Search the records"
         :filters="incomeFilters"
         @apply="applyIncomeFilters"
       />
@@ -1508,7 +1524,7 @@ const isDownloadOpen = ref(false);
          table loaded. The "To verify" tab beside this one already pairs its
          own skeleton with a `role="status"` announcement; this tab's table
          skeleton had none. -->
-    <span v-if="isLoading" class="sr-only" role="status">Loading the income ledger</span>
+    <span v-if="isLoading" class="sr-only" role="status">Loading the income records</span>
     <SkeletonTable v-if="isLoading" :columns="7" :rows="8" />
 
     <!--

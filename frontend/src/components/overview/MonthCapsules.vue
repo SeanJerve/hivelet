@@ -54,11 +54,15 @@ function defaultIndex(list: CapsuleMonth[]) {
   return first >= 0 ? first : 0;
 }
 
+const emit = defineEmits<{ select: [index: number] }>();
+
 const selected = ref(defaultIndex(props.months));
 watch(
   () => props.months.map((m) => m.kind + m.value).join('|'),
   () => (selected.value = defaultIndex(props.months))
 );
+// The screen around the chart can show more about the month picked (Overview: income, spent, net).
+watch(selected, (i) => emit('select', i), { immediate: true });
 
 /** A round top for the scale, the first step at or above the largest value. */
 const scaleMax = computed(() => {
