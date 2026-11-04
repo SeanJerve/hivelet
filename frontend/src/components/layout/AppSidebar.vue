@@ -419,23 +419,37 @@ onBeforeUnmount(() => {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            class="fixed inset-y-0 left-0 z-50 w-72 max-w-[calc(100vw-3rem)] bg-tile shadow-2xl p-5 flex flex-col justify-between overflow-y-auto overscroll-contain lg:hidden"
+            class="fixed inset-y-0 left-0 z-50 w-72 max-w-[calc(100vw-3rem)] bg-tile shadow-2xl pb-5 flex flex-col justify-between overflow-y-auto overscroll-contain lg:hidden"
           >
-            <div class="space-y-6">
-              <div class="flex items-center justify-between pb-4 border-b border-line">
-                <!-- text-xl, the header's mark (AppHeader): at text-base the menu's
-                     "Hivelet" read as a different, smaller wordmark (audit 2026-10-09). -->
-                <div>
-                  <span class="font-display text-xl font-semibold tracking-tight text-ink">Hivelet</span>
-                </div>
-                <button 
-                  @click="closeMobileNav" 
-                  class="icon-btn"
+            <div class="space-y-5">
+              <!--
+                The top bar's own row (AppHeader), copied rather than approximated: `relative flex
+                min-h-16 items-center`, `ws-page`'s 16px / 24px gutters, the hamburger's
+                `-ml-1` 44px box and `gap-3` before the wordmark, and the divider as the same
+                absolutely placed `inset-x-4 sm:inset-x-6 border-b`. The drawer opens over the
+                bar, so the close button lands where the hamburger was and "Hivelet" where
+                it was, and nothing shifts but the icon (Sean, 4 Nov 2026: the drawer's
+                header was taller than the bar's).
+              -->
+              <div class="relative flex min-h-16 items-center gap-3 px-4 sm:px-6">
+                <button
+                  @click="closeMobileNav"
+                  class="icon-btn -ml-1"
                   aria-label="Close menu"
                 >
                   <X class="size-5" aria-hidden="true" />
                 </button>
+                <!-- The header's mark: `min-h-11 items-center`, text-xl (audit 2026-10-09). -->
+                <div class="flex min-h-11 items-center">
+                  <span class="font-display text-xl font-semibold tracking-tight text-ink">Hivelet</span>
+                </div>
+                <div
+                  class="pointer-events-none absolute inset-x-4 bottom-0 border-b border-line sm:inset-x-6"
+                  aria-hidden="true"
+                />
               </div>
+
+              <div class="space-y-6 px-5">
 
               <!-- Section Specific Navigation -->
               <div>
@@ -491,6 +505,7 @@ onBeforeUnmount(() => {
                    changes the route, which closes this drawer (the route watch above). -->
               <div class="border-t border-line pt-5">
                 <RecentActions variant="rail" />
+              </div>
               </div>
             </div>
           </div>

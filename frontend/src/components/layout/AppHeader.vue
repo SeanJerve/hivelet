@@ -545,22 +545,9 @@ onUnmounted(() => {
                   </div>
                 </div>
 
-                <!-- System, Light or Dark (Sean, 2026-10-01). -->
-                <div class="border-b border-line px-5 py-4">
-                  <ThemeChoice name="account-theme" />
-                </div>
-
+                <!-- Dashboard (or Website), Change number / password, Sign out, and
+                     the appearance switch last (Sean, 4 Nov 2026). -->
                 <div class="space-y-1 p-3">
-                  <router-link
-                    v-if="isTenant"
-                    to="/tenant/profile"
-                    @click="isProfilePopoverOpen = false"
-                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-hover"
-                  >
-                    <User class="size-4 text-ink-soft" aria-hidden="true" />
-                    <span>My details</span>
-                  </router-link>
-
                   <!-- Between the website and the portal, one word each way
                        (Loyd, 2026-10-03): "Dashboard" from the public site,
                        "Website" from inside the portal. "Website" used to be
@@ -585,6 +572,16 @@ onUnmounted(() => {
                     <span>Website</span>
                   </router-link>
 
+                  <router-link
+                    v-if="isTenant"
+                    to="/tenant/profile"
+                    @click="isProfilePopoverOpen = false"
+                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-hover"
+                  >
+                    <User class="size-4 text-ink-soft" aria-hidden="true" />
+                    <span>My details</span>
+                  </router-link>
+
                   <!--
                     Not `v-if="isTenant"`. The administrator was onboarded on a
                     literal too, and until this existed nobody - her included -
@@ -605,6 +602,11 @@ onUnmounted(() => {
                     <LogOut class="size-4" aria-hidden="true" />
                     <span>Sign out</span>
                   </button>
+                </div>
+
+                <!-- System, Light or Dark (Sean, 2026-10-01), at the bottom since 4 Nov 2026. -->
+                <div class="border-t border-line px-5 py-4">
+                  <ThemeChoice name="account-theme" />
                 </div>
 
               </div>

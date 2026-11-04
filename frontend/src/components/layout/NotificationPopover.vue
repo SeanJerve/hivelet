@@ -323,6 +323,12 @@ onUnmounted(() => {
       are the same line: 12px under the 44px bell, which sits centred in the
       64px header row (10 + 44 + 12 = 66px). The account menu hangs from the
       same 12px, so both menus start at the same height (Sean, 2026-10-01).
+
+      `z-50!`, important (4 Nov 2026). glass.css has `.bg-tile:has([aria-expanded='true'])
+      { z-index: 20 }`, unlayered, so it beats the layered `z-50`. The filter button inside
+      this panel is `aria-expanded` while its list is open, so opening the list dropped the
+      panel to 20, UNDER the phone backdrop above (z-40): the backdrop then covered the panel
+      and the whole screen read as darkened. The list itself has no overlay of its own.
     -->
     <Transition name="ws-pop">
     <div
@@ -331,7 +337,7 @@ onUnmounted(() => {
       tabindex="-1"
       role="dialog"
       aria-label="Notifications"
-      class="ws-focus fixed inset-x-2 top-[4.125rem] z-50 flex max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-[calc(100%+0.75rem)] sm:w-[420px]"
+      class="ws-focus fixed inset-x-2 top-[4.125rem] z-50! flex max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-[calc(100%+0.75rem)] sm:w-[420px]"
     >
       <!--
         Header: title, filter, close, on one line.
