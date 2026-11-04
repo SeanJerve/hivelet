@@ -814,6 +814,16 @@ select,
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
+/* The blur stops the pinned first cell painting its top border, so its rule is drawn as a line
+   on top of it instead, and each row's rule runs the full width (Sean, 4 Nov 2026). */
+.ws-table tbody tr + tr > :first-child::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background-color: var(--line);
+  pointer-events: none;
+}
 
 /* A phone has less to spare for blur. */
 @media (max-width: 767px) {
