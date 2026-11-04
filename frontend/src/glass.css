@@ -141,7 +141,6 @@ body::before {
 .bg-night,
 .ws-brand-tile,
 .ws-modal-panel,
-.ws-workspace aside.sticky,
 header.ws-glass {
   isolation: isolate;
   --surface-blur: var(--glass-blur);
@@ -161,7 +160,6 @@ header.ws-glass {
 .bg-night::before,
 .ws-brand-tile::before,
 .ws-modal-panel::before,
-.ws-workspace aside.sticky::before,
 header.ws-glass::before {
   content: '';
   position: absolute;
@@ -174,8 +172,7 @@ header.ws-glass::before {
   box-shadow: var(--glass-sheen);
 }
 .bg-tile:not(.shadow-lift, .shadow-2xl, [role='combobox']),
-.bg-tile:is(.rounded-tile, .rounded-2xl):not(.border, [class*='shadow-']),
-.ws-workspace aside.sticky {
+.bg-tile:is(.rounded-tile, .rounded-2xl):not(.border, [class*='shadow-']) {
   box-shadow: var(--glass-drop);
 }
 .bg-tile,
@@ -183,7 +180,6 @@ header.ws-glass::before {
 .ws-brand-tile,
 .ws-modal-panel,
 dialog.ws-dialog,
-.ws-workspace aside.sticky,
 .pill-btn-brand,
 .pill-btn-night {
   border-color: transparent;
@@ -191,8 +187,7 @@ dialog.ws-dialog,
 
 /* The rim of light, drawn so it can fade around the curve as a border cannot. */
 .bg-tile:not([role='combobox'])::after,
-.ws-modal-panel::after,
-.ws-workspace aside.sticky::after {
+.ws-modal-panel::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -464,13 +459,16 @@ header.ws-glass {
   backdrop-filter: none;
   box-shadow: inset 0 -1px 0 var(--line);
 }
+/*
+ * The sidebar sits on the page, not in a card, and never moves (Sean, 5 Nov 2026). It starts where
+ * it sticks, level with the page's first line (main's 1.5rem under the 4rem bar), so scrolling
+ * does not carry it the 8px it used to travel before it stuck. No footer on these pages pushes it.
+ */
 .ws-workspace aside.sticky {
-  top: 5rem;
+  top: 5.5rem;
   height: calc(100dvh - 6.5rem);
   margin-top: 1.5rem;
-  padding: 0.75rem;
-  border-radius: 1.75rem;
-  background-color: var(--tile);
+  padding: 0 0.5rem 0 0;
 }
 
 /*
