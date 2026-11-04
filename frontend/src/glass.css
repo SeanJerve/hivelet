@@ -656,15 +656,40 @@ button[role='combobox']::before {
   }
 }
 
-/* Neutral buttons: an outline and nothing behind it. */
+/*
+ * Neutral buttons, Cancel included, are the search field's light pane, so every button reads as
+ * one in light mode, not as loose text (Sean, 4 Nov 2026). The main action stays mirror glass.
+ */
 .pill-btn,
+.pill-btn-quiet,
+.pill-btn-danger-quiet,
 .chip:not([aria-pressed='true']) {
-  background-color: transparent;
-  border-color: rgb(23 96 63 / 0.26);
+  background-color: rgb(255 255 255 / 0.4);
+  border-color: rgb(255 255 255 / 0.75);
+  box-shadow:
+    inset 0 1px 2px rgb(16 60 40 / 0.1),
+    0 0 0 1px rgb(23 96 63 / 0.09);
 }
-[data-theme='dark'] .pill-btn,
-[data-theme='dark'] .chip:not([aria-pressed='true']) {
-  border-color: rgb(255 255 255 / 0.22);
+@media (hover: hover) {
+  :is(.pill-btn, .pill-btn-quiet, .pill-btn-danger-quiet, .chip:not([aria-pressed='true'])):hover:not(:disabled) {
+    background-color: rgb(255 255 255 / 0.72);
+  }
+}
+[data-theme='dark'] :is(.pill-btn, .pill-btn-quiet, .pill-btn-danger-quiet, .chip:not([aria-pressed='true'])) {
+  background-color: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.16);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
+}
+@media (hover: hover) {
+  [data-theme='dark'] :is(.pill-btn, .pill-btn-quiet, .pill-btn-danger-quiet, .chip:not([aria-pressed='true'])):hover:not(:disabled) {
+    background-color: rgb(255 255 255 / 0.1);
+  }
+}
+/* On a dark or green tile, a light pane would glare: a faint one instead. */
+.on-dark :is(.pill-btn, .pill-btn-quiet, .pill-btn-danger-quiet) {
+  background-color: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.18);
+  box-shadow: none;
 }
 [data-theme='dark'] button[role='combobox'] {
   --mirror-tint: rgb(255 255 255 / 0.08);

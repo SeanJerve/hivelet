@@ -143,7 +143,12 @@ onBeforeUnmount(() => controller?.abort());
       </div>
     </fieldset>
 
-    <fieldset v-if="scopeKind !== 'all'" class="min-w-0" :disabled="busy">
+    <!-- Year, month and the note share one space the height of the tallest, so the dialog keeps
+         its size as Month, Year and All are chosen (Sean, 4 Nov 2026). What does not apply is
+         hidden and inert, not removed. -->
+    <div class="grid">
+    <div :class="['flex flex-col gap-4 [grid-area:1/1] sm:gap-5', scopeKind === 'all' && 'invisible']" :inert="scopeKind === 'all'">
+    <fieldset class="min-w-0" :disabled="busy">
       <legend class="text-xs text-ink-faint">Year</legend>
       <div class="mt-2 flex flex-wrap gap-1 rounded-3xl bg-well p-1">
         <label v-for="y in yearList" :key="y" :class="['flex-1 basis-16', chip(pickedYear === y)]">
@@ -153,7 +158,7 @@ onBeforeUnmount(() => controller?.abort());
       </div>
     </fieldset>
 
-    <fieldset v-if="scopeKind === 'month'" class="min-w-0" :disabled="busy">
+    <fieldset :class="['min-w-0', scopeKind !== 'month' && 'invisible']" :inert="scopeKind !== 'month'" :disabled="busy">
       <legend class="text-xs text-ink-faint">Month</legend>
       <div class="mt-2 grid grid-cols-4 gap-1 rounded-3xl bg-well p-1">
         <label v-for="(m, i) in MONTHS" :key="m" :class="chip(pickedMonth === i + 1)">
@@ -163,9 +168,12 @@ onBeforeUnmount(() => controller?.abort());
       </div>
     </fieldset>
 
-    <p v-if="scopeKind === 'all'" class="text-sm leading-6 text-ink-soft">{{ allNote }}</p>
+    </div>
+    <p v-if="scopeKind === 'all'" class="text-sm leading-6 text-ink-soft [grid-area:1/1]">{{ allNote }}</p>
+    </div>
 
-    <p class="flex items-start gap-2 text-sm leading-6 text-ink-soft">
+    <!-- Two lines held, so a longer file name does not grow the dialog. -->
+    <p class="flex min-h-12 items-start gap-2 text-sm leading-6 text-ink-soft">
       <FileSpreadsheet class="mt-1 size-4 shrink-0" aria-hidden="true" />
       <span class="min-w-0 break-words">Saves as <span class="text-ink">{{ fileName }}</span></span>
     </p>
