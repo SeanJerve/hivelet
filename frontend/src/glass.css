@@ -424,15 +424,15 @@ dialog.ws-dialog .bg-tile:not(.shadow-card, .shadow-lift, [role='combobox'])::af
 }
 
 /*
- * The footer is a floating pane of dark glass rather than a band across the page. Its links lose
- * the underline: the whole footer is links, so the underline only adds noise.
+ * The footer is one band of dark glass across the page, with a hairline of light along its top
+ * edge (review of 4 Nov 2026: the floating card read as a container). Its links lose the
+ * underline: the whole footer is links, so the underline only adds noise.
  */
 footer.bg-night {
-  width: auto;
-  margin: auto 0.75rem 0.75rem;
-  border-radius: 1.75rem;
-  overflow: hidden;
-  box-shadow: var(--glass-drop);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+footer.bg-night::after {
+  display: none;
 }
 footer.bg-night::before {
   background-color: rgb(7 13 10 / 0.92);
@@ -447,12 +447,6 @@ footer.bg-night a {
 @media (hover: hover) {
   footer.bg-night a:hover {
     color: #ffffff;
-  }
-}
-@media (min-width: 768px) {
-  footer.bg-night {
-    margin: auto 1.25rem 1.25rem;
-    border-radius: 2rem;
   }
 }
 
@@ -618,6 +612,48 @@ button[role='combobox']::before {
 }
 [data-theme='dark'] .chip[aria-pressed='true'] {
   border-color: rgb(255 255 255 / 0.22);
+}
+
+/*
+ * The light control: the search field's own white pane and edge, for Filters and Show all
+ * (review of 4 Nov 2026). Lighter than mirror glass, stronger than a bare outline.
+ */
+.pill-btn-soft {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.75);
+  background-color: rgb(255 255 255 / 0.4);
+  box-shadow:
+    inset 0 1px 2px rgb(16 60 40 / 0.1),
+    0 0 0 1px rgb(23 96 63 / 0.09);
+  padding: 0.5rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease-out), transform 0.12s var(--ease-out);
+}
+.pill-btn-soft:active:not(:disabled) {
+  transform: scale(0.97);
+}
+@media (hover: hover) {
+  .pill-btn-soft:hover:not(:disabled) {
+    background-color: rgb(255 255 255 / 0.78);
+  }
+}
+[data-theme='dark'] .pill-btn-soft {
+  border-color: rgb(255 255 255 / 0.16);
+  background-color: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
+}
+@media (hover: hover) {
+  [data-theme='dark'] .pill-btn-soft:hover:not(:disabled) {
+    background-color: rgb(255 255 255 / 0.1);
+  }
 }
 
 /* Neutral buttons: an outline and nothing behind it. */

@@ -41,11 +41,17 @@ function plural(n: number) {
 
 <template>
   <div v-if="remaining > 0" class="ws-reveal mt-3 flex flex-wrap items-center justify-center gap-3">
-    <button type="button" class="pill-btn" @click="emit('more')">
+    <!-- Show more is plain brand text (owner's review, 4 Nov 2026, 5.1): no border,
+         no fill, a 44px tap height. Show all is the white pane, so the two differ. -->
+    <button
+      type="button"
+      class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-transparent px-3 text-sm font-semibold text-brand hover:underline focus-visible:underline"
+      @click="emit('more')"
+    >
       <ChevronDown class="size-4" aria-hidden="true" />
       <span>Show {{ nextStep }} more</span>
     </button>
-    <button type="button" class="pill-btn-quiet" @click="emit('all')">
+    <button type="button" class="pill-btn-soft" @click="emit('all')">
       Show all {{ total }}
     </button>
     <!-- Back to the first page, so what was opened can be closed again

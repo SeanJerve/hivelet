@@ -186,6 +186,194 @@ function onDocumentPointerDown(e: PointerEvent) {
   }
 }
 
+/**
+ * Touch and drag (owner's review, 4 Nov 2026, 14.1): press and hold the trigger
+ * or the open list, slide a finger across the options and lift on one to choose
+ * it, as in a native iOS menu. Lifting outside the root chooses nothing.
+ *
+ * Why press-and-hold and not "any move": the list scrolls (`max-h-64`) and the
+ * page scrolls under the trigger, and a finger that starts moving at once is
+ * asking for that scroll. So a press only turns into a drag when the finger has
+ * stayed put for HOLD_MS; one that moves more than MOVE_SLOP first is handed back
+ * to the browser, and a tap (up before HOLD_MS) never leaves the plain `click`
+ * path, so a tap behaves exactly as it always did. Once the hold has fired no
+ * scroll has begun, so a non-passive `touchmove` listener can still cancel it.
+ *
+ * Mouse is left alone (it has hover and click). Focus stays on the trigger and
+ * the highlight is `activeIndex`, the same state the arrow keys drive, so
+ * `aria-activedescendant` follows the finger.
+ *
+ * The click the browser may synthesise after the finger lifts is swallowed in
+ * the capture phase (`onClickCapture`): the drag's own pointerup already chose,
+ * and a second click would toggle the list shut again or select twice.
+ */
+const HOLD_MS = 200;
+const MOVE_SLOP = 10;
+const EDGE_ZONE = 28;
+const dragging = ref(false);
+const dragNoMotion = ref(false);
+let press: { id: number; x: number; y: number } | null = null;
+let holdTimer: ReturnType<typeof setTimeout> | undefined;
+let suppressClick = false;
+let suppressTimer: ReturnType<typeof setTimeout> | undefined;
+let dragX = 0;
+let dragY = 0;
+let dragRaf = 0;
+const scrollRef = ref<HTMLElement | null>(null);
+
+function optionIndexAt(x: number, y: number): number {
+  const el = document.elementFromPoint(x, y);
+  const optEl = el?.closest<HTMLElement>('[role="option"]');
+  if (!optEl || !listRef.value?.contains(optEl)) return -1;
+  const n = Number(optEl.dataset.index);
+  return Number.isInteger(n) ? n : -1;
+}
+
+function pointIsInsideRoot(x: number, y: number): boolean {
+  const el = document.elementFromPoint(x, y);
+  return !!el && !!rootRef.value?.contains(el);
+}
+
+function haptic() {
+  try {
+    if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') navigator.vibrate(5);
+  } catch {
+    /* a haptic is a nicety; never let it break a selection */
+  }
+}
+
+function updateFromPoint(x: number, y: number) {
+  if (!isOpen.value) return;
+  const idx = optionIndexAt(x, y);
+  let next = idx;
+  if (idx < 0) {
+    const el = document.elementFromPoint(x, y);
+    // Back over the trigger: show where the value currently is, like opening it.
+    next = el && triggerRef.value?.contains(el) ? clampIndex(selectedIndex.value >= 0 ? selectedIndex.value : 0) : -1;
+  }
+  if (next !== activeIndex.value) {
+    activeIndex.value = next;
+    if (next >= 0) haptic();
+  }
+}
+
+/** While the finger rests near the top or bottom of a scrolling list, keep it moving. */
+function autoScrollTick() {
+  dragRaf = 0;
+  if (!dragging.value) return;
+  const sc = scrollRef.value;
+  if (sc && sc.scrollHeight > sc.clientHeight) {
+    const r = sc.getBoundingClientRect();
+    let step = 0;
+    if (dragY < r.top + EDGE_ZONE) step = -Math.min(10, (r.top + EDGE_ZONE - dragY) / 3 + 1);
+    else if (dragY > r.bottom - EDGE_ZONE) step = Math.min(10, (dragY - (r.bottom - EDGE_ZONE)) / 3 + 1);
+    if (step !== 0 && dragX >= r.left && dragX <= r.right) {
+      const before = sc.scrollTop;
+      sc.scrollTop += step;
+      if (sc.scrollTop !== before) updateFromPoint(dragX, dragY);
+    }
+  }
+  dragRaf = requestAnimationFrame(autoScrollTick);
+}
+
+function onDragTouchMove(e: TouchEvent) {
+  if (dragging.value && e.cancelable) e.preventDefault();
+}
+function onDragContextMenu(e: Event) {
+  if (dragging.value || press) e.preventDefault();
+}
+
+function endTracking() {
+  if (holdTimer) clearTimeout(holdTimer);
+  holdTimer = undefined;
+  if (dragRaf) cancelAnimationFrame(dragRaf);
+  dragRaf = 0;
+  document.removeEventListener('pointermove', onPressMove);
+  document.removeEventListener('pointerup', onPressEnd);
+  document.removeEventListener('pointercancel', onPressEnd);
+  document.removeEventListener('touchmove', onDragTouchMove);
+  document.removeEventListener('contextmenu', onDragContextMenu);
+  dragging.value = false;
+  dragNoMotion.value = false;
+  press = null;
+}
+
+function beginDrag() {
+  holdTimer = undefined;
+  if (!press || props.disabled) return;
+  dragging.value = true;
+  dragNoMotion.value =
+    typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (!isOpen.value) open(selectedIndex.value >= 0 ? selectedIndex.value : 0);
+  updateFromPoint(dragX, dragY);
+  haptic();
+  dragRaf = requestAnimationFrame(autoScrollTick);
+}
+
+function onPressStart(e: PointerEvent) {
+  // A new press: forget any click still being swallowed from the last drag.
+  suppressClick = false;
+  if (props.disabled || e.pointerType === 'mouse' || !e.isPrimary || press) return;
+  const target = e.target as Node;
+  if (!triggerRef.value?.contains(target) && !listRef.value?.contains(target)) return;
+  press = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  dragX = e.clientX;
+  dragY = e.clientY;
+  document.addEventListener('pointermove', onPressMove);
+  document.addEventListener('pointerup', onPressEnd);
+  document.addEventListener('pointercancel', onPressEnd);
+  document.addEventListener('touchmove', onDragTouchMove, { passive: false });
+  document.addEventListener('contextmenu', onDragContextMenu);
+  holdTimer = setTimeout(beginDrag, HOLD_MS);
+}
+
+function onPressMove(e: PointerEvent) {
+  if (!press || e.pointerId !== press.id) return;
+  dragX = e.clientX;
+  dragY = e.clientY;
+  if (!dragging.value) {
+    // Moved before the hold: this is a scroll, not a drag. Leave it to the browser.
+    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > MOVE_SLOP) endTracking();
+    return;
+  }
+  updateFromPoint(e.clientX, e.clientY);
+}
+
+function onPressEnd(e: PointerEvent) {
+  if (!press || e.pointerId !== press.id) return;
+  const wasDragging = dragging.value;
+  endTracking();
+  if (!wasDragging) return; // a tap: the ordinary click does the work
+
+  suppressClick = true;
+  if (suppressTimer) clearTimeout(suppressTimer);
+  suppressTimer = setTimeout(() => {
+    suppressClick = false;
+  }, 500);
+
+  if (e.type === 'pointercancel') {
+    if (isOpen.value) activeIndex.value = clampIndex(selectedIndex.value >= 0 ? selectedIndex.value : 0);
+    return;
+  }
+  const idx = optionIndexAt(e.clientX, e.clientY);
+  const opt = idx >= 0 ? normalizedOptions.value[idx] : undefined;
+  if (opt) {
+    selectOption(opt.value);
+  } else if (pointIsInsideRoot(e.clientX, e.clientY)) {
+    // Lifted on the trigger or the list's padding: nothing chosen, menu stays.
+    if (isOpen.value) activeIndex.value = clampIndex(selectedIndex.value >= 0 ? selectedIndex.value : 0);
+  } else {
+    close();
+  }
+}
+
+function onClickCapture(e: MouseEvent) {
+  if (!suppressClick) return;
+  suppressClick = false;
+  e.preventDefault();
+  e.stopPropagation();
+}
+
 function onKeyDown(e: KeyboardEvent) {
   if (props.disabled) return;
   const key = e.key;
@@ -261,7 +449,8 @@ function onKeyDown(e: KeyboardEvent) {
  * highlight nobody can see.
  */
 watch(activeIndex, async (index) => {
-  if (index < 0 || !isOpen.value) return;
+  // While a finger is dragging, the edge auto-scroll owns the scroll position.
+  if (index < 0 || !isOpen.value || dragging.value) return;
   await nextTick();
   const el = listRef.value?.querySelectorAll<HTMLElement>('[role="option"]')[index];
   el?.scrollIntoView({ block: 'nearest' });
@@ -281,7 +470,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onDocumentPointerDown);
+  endTracking();
   if (typeaheadTimer) clearTimeout(typeaheadTimer);
+  if (suppressTimer) clearTimeout(suppressTimer);
 });
 </script>
 
@@ -290,7 +481,10 @@ onBeforeUnmount(() => {
     ref="rootRef"
     class="relative text-left"
     :class="[widthClass || 'w-52', widthClass === 'w-full' ? 'block' : 'inline-block']"
+    style="-webkit-touch-callout: none"
     @keydown="onKeyDown"
+    @pointerdown="onPressStart"
+    @click.capture="onClickCapture"
   >
     <!--
       Trigger Button.
@@ -396,7 +590,7 @@ onBeforeUnmount(() => {
         @click.prevent
         :class="align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'"
       >
-        <div class="max-h-64 overflow-y-auto space-y-0.5">
+        <div ref="scrollRef" class="max-h-64 overflow-y-auto space-y-0.5">
           <!--
             Three states that must not collapse into each other: SELECTED (the
             filter currently in force), HOVERED (where the mouse happens to be),
@@ -419,6 +613,7 @@ onBeforeUnmount(() => {
             v-for="(opt, index) in normalizedOptions"
             :key="opt.value"
             :id="optionId(index)"
+            :data-index="index"
             type="button"
             role="option"
             tabindex="-1"
@@ -434,6 +629,7 @@ onBeforeUnmount(() => {
               // and the `overflow-y-auto` list around it cut the ring's sides
               // off - the active option read as a broken outline (2026-09-26).
               index === activeIndex && 'ring-2 ring-inset ring-brand',
+              dragNoMotion && 'transition-none',
             ]"
             @click="selectOption(opt.value)"
           >

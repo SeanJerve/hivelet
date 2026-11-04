@@ -168,7 +168,7 @@ function spanClass(index: number) {
       <button
         v-if="controlCount > 0"
         type="button"
-        :class="['pill-btn relative shrink-0 sm:hidden', !searchLabel && 'ml-auto', active.length && 'border-brand text-brand']"
+        :class="['pill-btn-soft relative shrink-0 sm:hidden', !searchLabel && 'ml-auto', active.length && 'border-brand text-brand']"
         :aria-label="filterButtonLabel"
         :aria-expanded="panelOpen"
         :aria-controls="panelId"
