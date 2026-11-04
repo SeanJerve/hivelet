@@ -1481,18 +1481,8 @@ const isDownloadOpen = ref(false);
               </div>
             </dl>
 
-            <div class="mt-auto flex flex-wrap gap-2">
-              <button
-                type="button"
-                class="pill-btn-brand disabled:opacity-50"
-                :disabled="verifying !== null"
-                :aria-busy="verifying?.id === p.id && verifying.status === 'Verified'"
-                @click="verifyPayment(p.id, 'Verified')"
-              >
-                <Loader2 v-if="verifying?.id === p.id && verifying.status === 'Verified'" class="size-4 animate-spin" aria-hidden="true" />
-                <Check v-else class="size-4" aria-hidden="true" />
-                {{ verifying?.id === p.id && verifying.status === 'Verified' ? 'Verifying…' : 'Verify payment' }}
-              </button>
+            <!-- Reject, then Verify payment on the right, as in the payment dialog (Sean, 4 Nov 2026). -->
+            <div class="mt-auto flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
                 class="pill-btn-danger-quiet disabled:opacity-50"
@@ -1503,6 +1493,17 @@ const isDownloadOpen = ref(false);
                 <Loader2 v-if="verifying?.id === p.id && verifying.status === 'Rejected'" class="size-4 animate-spin" aria-hidden="true" />
                 <X v-else class="size-4" aria-hidden="true" />
                 {{ verifying?.id === p.id && verifying.status === 'Rejected' ? 'Rejecting…' : 'Reject' }}
+              </button>
+              <button
+                type="button"
+                class="pill-btn-brand disabled:opacity-50"
+                :disabled="verifying !== null"
+                :aria-busy="verifying?.id === p.id && verifying.status === 'Verified'"
+                @click="verifyPayment(p.id, 'Verified')"
+              >
+                <Loader2 v-if="verifying?.id === p.id && verifying.status === 'Verified'" class="size-4 animate-spin" aria-hidden="true" />
+                <Check v-else class="size-4" aria-hidden="true" />
+                {{ verifying?.id === p.id && verifying.status === 'Verified' ? 'Verifying…' : 'Verify payment' }}
               </button>
             </div>
           </li>
