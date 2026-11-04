@@ -67,7 +67,9 @@ watch(
           </p>
         </div>
 
-        <nav aria-label="Sign in and inquiries" class="mt-8 flex flex-wrap items-center gap-x-5 text-xs sm:mt-10 lg:mt-6">
+        <!-- Home and the page you are on (Sean, 4 Nov 2026). The other two are linked from the pages
+             themselves: Inquire now under Sign in, Your inquiries under the form. -->
+        <nav aria-label="Breadcrumb" class="mt-8 flex flex-wrap items-center gap-x-5 text-xs sm:mt-10 lg:mt-6">
           <RouterLink
             to="/public"
             class="press inline-flex min-h-11 items-center gap-1.5 text-ink-soft hover:text-ink transition-colors font-semibold"
@@ -77,7 +79,7 @@ watch(
           </RouterLink>
           <span aria-hidden="true" class="text-ink-faint">/</span>
           <RouterLink
-            v-for="s in SECTIONS"
+            v-for="s in SECTIONS.filter((x) => x.name === route.name)"
             :key="s.name"
             :to="s.to"
             :class="[

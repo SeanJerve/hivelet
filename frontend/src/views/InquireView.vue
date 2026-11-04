@@ -373,7 +373,9 @@ async function submitInquiry() {
 
       <p class="mt-4 max-w-xl text-xs leading-relaxed text-ink-soft">
         Already sent one?
-        <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center hover:text-ink font-semibold">Read the reply</RouterLink>
+        <RouterLink to="/inquiry" class="press inline-flex min-h-11 items-center font-bold text-brand hover:text-brand-strong">Your inquiries</RouterLink>.
+        A tenant?
+        <RouterLink to="/login" class="press inline-flex min-h-11 items-center font-bold text-brand hover:text-brand-strong">Sign in</RouterLink>
       </p>
     </form>
   </div>
