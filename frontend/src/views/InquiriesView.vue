@@ -480,8 +480,10 @@ async function handleSendReply() {
       <!-- The enquiries. Five twelfths on a laptop, four from 2xl (audit 2026-10-09):
            at a third of 1280 the list was 287px and its two dropdowns, two to a
            row since the toolbar fix, still read "All i..." and "Newest ...". -->
-      <div :class="['flex min-h-0 flex-col overflow-hidden rounded-tile bg-tile max-xl:h-[max(26rem,calc(100dvh-12.5rem))] xl:col-span-5 2xl:col-span-4', conversationOpen && 'max-xl:hidden']">
-        <div class="space-y-3 border-b border-line p-4">
+      <!-- On the page, not in a card (Sean, 5 Nov 2026), on a phone too: the conversation is the
+           one in a card. On a laptop the column keeps the inbox's height and scrolls inside it. -->
+      <div :class="['flex min-h-0 flex-col xl:col-span-5 2xl:col-span-4', conversationOpen && 'max-xl:hidden']">
+        <div class="space-y-3 border-b border-line pb-4">
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it. -->
           <ListToolbar
@@ -492,16 +494,15 @@ async function handleSendReply() {
           />
         </div>
 
-        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <!-- Room for the rows' fill, which runs 12px past the text either side, so it never scrolls sideways. -->
+        <div class="-mx-3 min-h-0 flex-1 overflow-y-auto overscroll-contain px-3">
           <!-- The first read. Without this the list fell straight through to its
                empty state - "Nothing matches what you have typed" - while the
                request that would have filled it was still in flight. Built from
-               the same row shape as the real list, not the generic tile card -
-               this panel is already on --tile, so a card-shaped placeholder
-               would have drawn no edge against it. -->
+               the same row shape as the real list, not the generic tile card. -->
           <div v-if="showSkeleton" class="divide-y divide-line" aria-busy="true">
             <span class="sr-only" role="status">Loading inquiries</span>
-            <div v-for="i in 3" :key="i" class="space-y-2.5 p-4">
+            <div v-for="i in 3" :key="i" class="space-y-2.5 py-4">
               <div class="flex items-start justify-between gap-2">
                 <Skeleton class-name="h-4 w-32 rounded-full" />
                 <Skeleton class-name="h-3 w-12 shrink-0 rounded-full" />
@@ -518,7 +519,7 @@ async function handleSendReply() {
             you have typed" - which is a statement about the SEARCH, on a screen
             that had not managed to read anything at all.
           -->
-          <div v-else-if="inquiriesFetchFailed" class="ws-reveal p-4">
+          <div v-else-if="inquiriesFetchFailed" class="ws-reveal py-4">
             <UnavailableNote
               message="The inquiries could not be loaded. New ones may be waiting."
               @retry="fetchInquiries"
@@ -552,7 +553,7 @@ async function handleSendReply() {
                 type="button"
                 :aria-current="activeInquiry?.id === inq.id ? 'true' : undefined"
                 :class="[
-                  'press-plate w-full p-4 text-left',
+                  'press-plate -mx-3 w-[calc(100%+1.5rem)] rounded-xl px-3 py-4 text-left',
                   activeInquiry?.id === inq.id
                     ? 'xl:bg-brand-soft max-xl:hover:bg-hover'
                     : 'hover:bg-hover',
