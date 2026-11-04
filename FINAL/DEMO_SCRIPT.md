@@ -56,7 +56,8 @@ Its passwords are with Sean; never type them where the projector shows them.
 
 ### 3. The owner verifies (laptop, 1 minute). Objective 2: financial tracking
 - Sign in as the owner. Go to **Monthly Income**. With a payment waiting it opens on **To verify**.
-- Show the loydtest payment, then press **Reject payment**, not **Verify payment**. (Verifying would
+- Show the loydtest payment, then press **Reject** (to the left of **Verify payment**) and confirm with
+  **Reject payment**. Do not press **Verify payment**. (Verifying would
   write a receipt into her ledger.) Say: "Verifying settles the bill and writes the receipt in one
   step; we reject this one because it was a demonstration."
 - On the phone, the payment now says **Not accepted**, within about 2 seconds. (Touch the phone first
@@ -70,8 +71,9 @@ Its passwords are with Sean; never type them where the projector shows them.
   the phone alone.
 
 ### 5. Offline (phone, 1 minute). Objective 2: PWA support
-- Turn on airplane mode and reopen the app. It opens, shows what was last loaded with the time it
-  was saved, and says nothing can be saved or paid until the connection returns.
+- Turn on airplane mode and reopen the app. It opens, shows what was last loaded under the bar
+  "No connection · Transactions unavailable", and nothing can be saved or paid until the connection
+  returns.
 - Turn the connection back on: "Back online".
 
 ### 6. Security in one sentence (laptop, 30 seconds). Objective 2: role-based access

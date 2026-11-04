@@ -265,9 +265,10 @@ header records that a hard-coded list once made 927 entries impossible to filter
 can add her own kind of expense (`NewExpenseKindDialog.vue`).
 
 **`views/MaintenanceDispatchView.vue`** (`/admin/tickets`, "Repairs")
-The owner's repair board: list, assign, reply, resolve, delete, and log a repair herself. It calls
-`POST /admin/tickets`, `PATCH /admin/tickets/:id`, `DELETE /admin/tickets/:id` and
-`GET`/`POST /admin/tickets/:id/messages`. "Log a repair" was added because a repair the owner
+The owner's repair board: list, assign, resolve, delete, and log a repair herself. It calls
+`POST /admin/tickets`, `PATCH /admin/tickets/:id` and `DELETE /admin/tickets/:id`. Since 4 November
+2026 Manage this repair shows no tenant messages (a tenant's note reaches the owner as a
+notification), and Mark resolved is on the card of a repair in progress. "Log a repair" was added because a repair the owner
 noticed herself had nowhere to go; a repair to an empty unit is filed with no tenant. A delete is
 removed from the screen only after the server confirms it.
 
@@ -581,7 +582,7 @@ to exactly 100), and `publicStatusLabel` (what a visitor reads for a unit's stat
 record that it once held invented tenant names, which were removed.
 
 **`unitCategories.ts`**
-The four kinds of unit (20 Studio, 8 One-bedroom, 4 Two-bedroom, 1 Three-bedroom), their address
+The four kinds of unit (10 Studio, 5 One-bedroom, 16 Two-bedroom, 2 Three-bedroom since migration 088 of 2 November 2026), their address
 slug and icon. One copy, read by the landing and category pages, because two copies once
 disagreed.
 

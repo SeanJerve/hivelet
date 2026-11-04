@@ -165,7 +165,7 @@ without her permission**: it shows real names and money. For practice, the demo 
 1. **Sign in** with the **login ID** (for example HV-48213) and the starting password from the
    landlady; choose a new password and give their mobile number on first sign-in. After that they
    sign in with the login ID or that number.
-2. **Overview**: the amount due and when it is due, **Pay with GCash**, their unit, recent payments, and **Request a repair** at the top right
+2. **Overview**: the amount due and when it is due, **Pay with GCash**, their unit with its own floor plan, recent payments, and **Request a repair** at the top right
    (the round button on a phone).
 3. **Payments and billing**: the rent, the deposit held, and rent month by month. Only receipts the landlady verified count as paid;
    a month with no receipt says **"Not entered"**, never "owed".
@@ -180,12 +180,12 @@ without her permission**: it shows real names and money. For practice, the demo 
 
 | Screen (side menu) | What it is for |
 | :--- | :--- |
-| **Overview** | Needs your attention (payments to verify, urgent repairs), Received for this month once anything is recorded, Occupancy (32 of 33, each cluster's count), Income month by month (tap a month for its Income, Spent and Net income), Net income from a centre line (a loss in red, to the left), and the three green buttons: **Move someone in/out**, **Record expense**, **Record payment** |
+| **Overview** | Needs your attention (payments to verify, urgent repairs), Received for this month once anything is recorded, Occupancy (32 of 33, each cluster's count), Income month by month (tap a month for its Income, Spent and Net income), Net income from a centre line (a loss in red, to the left) with **Monthly summary** under it (every month's income, expenses and net), and the three green buttons: **Move someone in/out**, **Record expense**, **Record payment** |
 | **Monthly Income** | Her income records, by cluster, in her workbook's layout, on the **Records** tab beside **To verify** (it opens on To verify when GCash payments are waiting); **Record payment**; verify or reject GCash payments; void a receipt; **Download** for Excel |
 | **Monthly Expenses** | Expenses split across property areas; her thirteen categories plus her own; Download |
 | **Tenants** | Move in, move out, edit, reset a password, see the login ID |
 | **Rooms and rates** | Every unit's rate and status; every rate change is recorded |
-| **Repairs** | The board (to dispatch, in progress, done); **Log a repair** she was told about in person, even for an empty unit |
+| **Repairs** | The board (to dispatch, in progress, done). The pencil on a card opens **Manage this repair** (send a technician, change the status), and a repair in progress has **Mark resolved** on its card. **Log a repair** she was told about in person, even for an empty unit |
 | **Inquiries** | Read and answer inquiries; move a person in from one; close or delete |
 
 Also: the **bell** (notifications, with a dot when unread), **Recently** (her last three actions),

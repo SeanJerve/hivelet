@@ -745,8 +745,8 @@ technical evaluators so no outsider saw the owner's records. **Where:** Section 
 **Deploy (deployment).** Putting a new version on the live site. Every approved change deploys
 automatically from the main code branch. **Where:** Section 3.2.5; Section 4.5.
 
-**Endpoint (route).** One address on the API, such as POST /admin/income-records. 55 administrator
-and tenant routes are checked against the permission matrix. **Where:** Section 4.2.6; Table 4-8.
+**Endpoint (route).** One address on the API, such as POST /admin/income-records. 58 administrator
+and tenant routes (4 November 2026) are checked against the permission matrix. **Where:** Section 4.2.6; Table 4-8.
 
 **Entity-relationship diagram (ERD).** A diagram of the database tables and how they link: 21 tables
 and 37 foreign keys. **Where:** Figure 4-6; App. H.

@@ -1,6 +1,6 @@
 # APPENDIX N: DATA DICTIONARY
 
-> **TEAM NOTE (delete before pasting).** Generated 2026-10-20 by `node scripts/manuscript/build-data-dictionary.mjs`
+> **TEAM NOTE (delete before pasting).** Generated 2026-11-04 by `node scripts/manuscript/build-data-dictionary.mjs`
 > from the live database's own schema; rerun it after any migration. Letter N follows Appendix M; confirm the
 > letters with the adviser. Chapter 4's Table 7A is the extract of this dictionary for the Monthly Income table.
 

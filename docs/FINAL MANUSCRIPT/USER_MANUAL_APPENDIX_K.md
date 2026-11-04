@@ -36,7 +36,7 @@ screen. *Nakalimutan ang password? Lumapit sa landlady; bibigyan niya kayo ng ba
 
 ### 2. Overview / Pangunahing pahina
 
-Your unit, your rent, and **Amount due**. The amount due counts only the payments the landlady has
+Your unit with its floor plan, your rent, and **Amount due**. The amount due counts only the payments the landlady has
 recorded, up to the date it shows ("Your recorded payments cover rent up to…"). If you have paid
 and it is not there yet, it appears once she records your receipt.
 *Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.*
@@ -179,11 +179,12 @@ as good as that.
 
 The first screen: **Needs your attention** (the payments waiting to be verified on the left, the
 urgent repairs on the right, three of each with a count of the rest; a side with nothing waiting is
-not shown), **Received** for this month once anything is recorded in it, **Occupancy** (32 of 33
-today, with each cluster's count, such as 22/22), **Income** month by month, and **Net income**.
-Tap a month on the Income chart to see its **Income**, **Spent** and **Net income** under it.
-**Net income** draws each month from a centre line: a gain to the right, a loss to the left in
-red. Urgent repairs are listed only in Needs your attention.
+not shown), **Received** for this month once anything is recorded in it, **Occupancy** (the units
+occupied out of 33, with each cluster's count, such as 22/22), **Income** month by month, and **Net
+income**. Tap a month on the Income chart to see its **Income**, **Spent** and **Net income** under
+the chart. **Net income** draws each month from a centre line: a gain to the right, a loss to the
+left in red. Under it, tap **Monthly summary** to open a table of every month recorded this year,
+with its income, expenses and net. Urgent repairs are listed only in Needs your attention.
 Personal spending is shown beside operating costs and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
 
@@ -233,8 +234,8 @@ recorded by mistake: **Edit** > **Delete payment**. It leaves the records and to
 system's own record (section 9) keeps that it existed and who removed it.
 
 **Online (GCash) payments** appear under **To verify**, beside **Records** (every payment recorded).
-When any are waiting, Monthly Income opens on **To verify**. Check the money arrived, then verify
-it, or reject it. A payment is only counted once you verify it. **Until online
+When any are waiting, Monthly Income opens on **To verify**. Check the money arrived, then press
+**Verify payment**, or **Reject** to its left and then **Reject payment** to confirm. A payment is only counted once you verify it. **Until online
 payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
 
 **The month and the year.** **Received** at the top is **one month**, its total alone (for example

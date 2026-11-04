@@ -1073,7 +1073,8 @@ The section then has four labelled parts.
 - The client is a PWA with a **service worker** and a **manifest**, so it installs without an app store
   (Add to Home Screen in Safari; Install app or Add to Home screen in Chrome).
 - It keeps a **read-only copy** of what the signed-in person last loaded, so the installed app can show
-  it offline under a notice with the time it was saved. Paying and recording still need a connection;
+  it offline under the notice "No connection · Transactions unavailable" (with the time it was saved
+  when only the server is out of reach). Paying and recording still need a connection;
   the copy is removed at sign-out.
 - Screens adapt to the device; tables on a computer become cards on a phone. One code base served the
   laptop, an Android phone in Chrome and an iPhone in Safari.

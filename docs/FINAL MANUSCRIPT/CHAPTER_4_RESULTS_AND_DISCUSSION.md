@@ -323,8 +323,8 @@ to closing, where before it left no record (Figure 4).
 
 The system has the three kinds of user designed in Section 3.2.2, the public, tenants and the
 administrator, plus a record of each visitor who sends an inquiry (a *prospect*), who holds the
-public's rights. Every role's rights come from one permission matrix, against which each of the 55
-administrator and tenant routes is checked on every verification run, and row-level security is on
+public's rights. Every role's rights come from one permission matrix, against which each of the 58
+administrator and tenant routes (4 November 2026) is checked on every verification run, and row-level security is on
 for every table. Table 7C sets out which role may use which function.
 
 **Table 7C.** Role and privilege matrix
@@ -359,8 +359,10 @@ app** or **Add to Home screen** in Chrome). Nothing is downloaded from a store, 
 window like an application, and the application files it keeps on the device come to about 1.2 MB
 (as built on 13 October 2026). Since 1 and 2 October 2026 it keeps a read-only copy of the figures,
 names and notifications the signed-in person last loaded on that person's device. The installed
-application can therefore show them without a connection, under one notice giving the time they were
-saved; paying and recording still need the connection, and the copy is removed at sign-out. This stays within the delimitation in Section 1.4.
+application can therefore show them without a connection, under one notice, "No connection ·
+Transactions unavailable". When the device is online but the server cannot be reached, the notice
+gives the time the copy was saved instead. Paying and recording still need the connection, and the
+copy is removed at sign-out. This stays within the delimitation in Section 1.4.
 Screens adapt to the device, and a table on a computer becomes a list on a phone, one row to a
 record. As Biørn-Hansen et al. (2017) describe, one code base served every device: the owner's laptop, an Android phone in Chrome
 and an iPhone in Safari (Section 4.3.7).
@@ -384,7 +386,8 @@ measures are brought together by characteristic in Section 4.4.
 
 ### 4.3.1 Automated Verification
 
-Twenty automated check suites were written during development. They run against the live system and
+Twenty automated check suites were written during development, and a twenty-first was added on 12
+October 2026 (Section 4.3.6). They run against the live system and
 perform no writes, which is what makes them safe to run against the owner's real records. On 29
 September 2026, the evening before the first test with real users, all 20 passed; Table 8 shows the
 principal results.

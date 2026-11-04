@@ -173,7 +173,8 @@ ISO/IEC/IEEE 29119-1 (International Organization for Standardization, Internatio
 Institute of Electrical and Electronics Engineers [ISO/IEC/IEEE], 2022), and each test was planned as a measure of the ISO/IEC 25010
 sub-characteristics listed in Table 4B.
 
-**Automated verification.** Twenty check suites were written alongside the system. They verify every
+**Automated verification.** Twenty check suites were written alongside the system, and a twenty-first
+on 12 October 2026. They verify every
 endpoint and the separation of roles, re-derive the owner's ledger and exported reports from the
 database, check the payment gateway's message signatures, and confirm that no screen presents stored
 or empty data as a live figure. They run against the live system without writing to it, and were run

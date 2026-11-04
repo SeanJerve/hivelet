@@ -14,7 +14,7 @@ feature is in the code), and `STUDY_GUIDE_REFERENCES.md` (every source, and what
 ## How to answer any question
 
 1. **Answer first, in one sentence.** "Yes, a tenant sees only their own records."
-2. **Then the evidence, with one number.** "The server checks every one of the 55 routes against one
+2. **Then the evidence, with one number.** "The server checks every one of the 58 administrator and tenant routes against one
    permission matrix, and the database itself refuses other rows."
 3. **Then where it is.** "Chapter 4, Section 4.2.6, Table 4-7."
 
@@ -187,7 +187,8 @@ Open hivelet.vercel.app and choose **Add to Home Screen** (Safari) or **Install 
 screen** (Chrome). It opens in its own window like an app. *Section 4.2.7.*
 
 **Does it work offline?**
-It opens offline and shows a read-only copy of what the person last loaded, with the time it was saved.
+It opens offline and shows a read-only copy of what the person last loaded, under the bar "No connection · Transactions
+unavailable" (when the server alone is out of reach, the bar gives the time the copy was saved).
 Paying and recording need a connection, and the copy is deleted at sign-out. *Sections 1.4 and 4.2.7.*
 
 **What are the six features?**
@@ -269,7 +270,7 @@ checks matched the export to the database. *Sections 4.2.4 and 4.3.1.*
 ## 6. Security and privacy
 
 **Can a tenant see another tenant's records?**
-No. Every role's rights come from one permission matrix checked against all 55 administrator and tenant
+No. Every role's rights come from one permission matrix checked against all 58 administrator and tenant
 routes on every verification run, and row-level security is on for every table. In testing, another
 tenant's repair answered "not found". *Sections 4.2.6 and 4.4.4; Table 4-7.*
 
