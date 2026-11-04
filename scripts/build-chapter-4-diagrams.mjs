@@ -711,6 +711,7 @@ const CHILD = {
     ['5.2', 'Withdraw a request', [['Tenant', 'Withdrawal, reason', 'in']], [['D6', 'Repair requests', 'out']]],
     ['5.3', 'Raise a ticket', [['Owner (administrator)', 'Ticket for a unit', 'in']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
     ['5.4', 'Update a ticket\'s status', [['Owner (administrator)', 'New status', 'in'], ['Tenant', 'Status, notification', 'out']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
+    ['5.5', 'Add a note to a request', [['Tenant', 'Note', 'in'], ['Owner (administrator)', 'Note, as a notification', 'out']], [['D6', 'Repair requests', 'out']]],
   ]],
   '6': ['6.0 Record expenses', [
     ['6.1', 'Add an expense', [['Owner (administrator)', 'Expense, areas', 'in']], [['D4', 'Expenses', 'out']]],

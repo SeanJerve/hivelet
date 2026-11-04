@@ -304,8 +304,9 @@ raises a rate by itself.
 ### 7. Repairs
 
 New requests from tenants appear here, marked by urgency. Open one with the pencil on its card
-(**Manage this repair**) to reply,
-**Send technician**, move it to **In Progress**, or **Mark resolved** (the tenant is notified). **Log
+(**Manage this repair**) to **Send technician** or change its status. A repair in progress has
+**Mark resolved** on its card, to the right of the pencil, and the tenant is notified when you press
+it. When a tenant adds a note to a request, it reaches you as a notification that quotes it. **Log
 a repair** records one you were told about in person, or one for an empty unit. **Delete repair**
 (in **Manage this repair**) removes a request for good after you confirm it. **Status** in the filters shows one stage only. A request the tenant
 cancelled (they can, until work starts) is marked **Cancelled by the tenant**, with their reason as a
