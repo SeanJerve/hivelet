@@ -477,7 +477,7 @@ header.ws-glass {
 .pill-btn-night,
 .pill-btn-light,
 .pill-btn-danger,
-button[role='combobox'] {
+:is(button[role='combobox'], .ws-filters-btn) {
   --mirror-tint: rgb(255 255 255 / 0.34);
   --mirror-sheen: 0.34;
   isolation: isolate;
@@ -487,10 +487,10 @@ button[role='combobox'] {
   backdrop-filter: none;
   box-shadow: none;
 }
-:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, button[role='combobox']):not(.absolute) {
+:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, button[role='combobox'], .ws-filters-btn):not(.absolute) {
   position: relative;
 }
-:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, button[role='combobox'])::before {
+:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, button[role='combobox'], .ws-filters-btn)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -509,7 +509,7 @@ button[role='combobox'] {
   backdrop-filter: blur(3px) saturate(190%) brightness(1.05);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
 }
-:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, button[role='combobox'])::after {
+:is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, button[role='combobox'], .ws-filters-btn)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -569,12 +569,12 @@ button[role='combobox'] {
   }
 }
 
-button[role='combobox']::before {
+:is(button[role='combobox'], .ws-filters-btn)::before {
   box-shadow:
     inset 0 0 0 1px rgb(23 96 63 / 0.18),
     inset 0 1px 1px rgb(255 255 255 / 0.7);
 }
-[data-theme='dark'] button[role='combobox']::before {
+[data-theme='dark'] :is(button[role='combobox'], .ws-filters-btn)::before {
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 0.1),
     inset 0 1.5px 1px rgb(255 255 255 / 0.22);
@@ -657,12 +657,11 @@ button[role='combobox']::before {
 }
 
 /*
- * Neutral buttons, Cancel included, are the search field's light pane, so every button reads as
- * one in light mode, not as loose text (Sean, 4 Nov 2026). The main action stays mirror glass.
+ * Neutral buttons that stand alone are the search field's light pane, so they read as buttons in
+ * light mode. Cancel, Delete and the quieter of two buttons side by side (.pill-btn-quiet,
+ * .pill-btn-danger-quiet) stay words, so the pane marks the one to press (Sean, 4 Nov 2026).
  */
 .pill-btn,
-.pill-btn-quiet,
-.pill-btn-danger-quiet,
 .chip:not([aria-pressed='true']) {
   background-color: rgb(255 255 255 / 0.4);
   border-color: rgb(255 255 255 / 0.75);
@@ -671,27 +670,27 @@ button[role='combobox']::before {
     0 0 0 1px rgb(23 96 63 / 0.09);
 }
 @media (hover: hover) {
-  :is(.pill-btn, .pill-btn-quiet, .pill-btn-danger-quiet, .chip:not([aria-pressed='true'])):hover:not(:disabled) {
+  :is(.pill-btn, .chip:not([aria-pressed='true'])):hover:not(:disabled) {
     background-color: rgb(255 255 255 / 0.72);
   }
 }
-[data-theme='dark'] :is(.pill-btn, .pill-btn-quiet, .pill-btn-danger-quiet, .chip:not([aria-pressed='true'])) {
+[data-theme='dark'] :is(.pill-btn, .chip:not([aria-pressed='true'])) {
   background-color: rgb(255 255 255 / 0.06);
   border-color: rgb(255 255 255 / 0.16);
   box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
 }
 @media (hover: hover) {
-  [data-theme='dark'] :is(.pill-btn, .pill-btn-quiet, .pill-btn-danger-quiet, .chip:not([aria-pressed='true'])):hover:not(:disabled) {
+  [data-theme='dark'] :is(.pill-btn, .chip:not([aria-pressed='true'])):hover:not(:disabled) {
     background-color: rgb(255 255 255 / 0.1);
   }
 }
 /* On a dark or green tile, a light pane would glare: a faint one instead. */
-.on-dark :is(.pill-btn, .pill-btn-quiet, .pill-btn-danger-quiet) {
+.on-dark .pill-btn {
   background-color: rgb(255 255 255 / 0.08);
   border-color: rgb(255 255 255 / 0.18);
   box-shadow: none;
 }
-[data-theme='dark'] button[role='combobox'] {
+[data-theme='dark'] :is(button[role='combobox'], .ws-filters-btn) {
   --mirror-tint: rgb(255 255 255 / 0.08);
   --mirror-sheen: 0.14;
 }
@@ -844,7 +843,7 @@ select,
   body::before {
     background: none;
   }
-  :is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, button[role='combobox'])::before,
+  :is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger, button[role='combobox'], .ws-filters-btn)::before,
   :is(.pill-btn-brand, .pill-btn-night, .pill-btn-light, .pill-btn-danger)::after {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

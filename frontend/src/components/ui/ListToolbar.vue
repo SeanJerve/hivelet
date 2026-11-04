@@ -168,7 +168,7 @@ function spanClass(index: number) {
       <button
         v-if="controlCount > 0"
         type="button"
-        :class="['pill-btn-soft relative shrink-0 sm:hidden', !searchLabel && 'ml-auto', active.length && 'border-brand text-brand']"
+        :class="['ws-filters-btn press relative inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium text-ink sm:hidden', !searchLabel && 'ml-auto']"
         :aria-label="filterButtonLabel"
         :aria-expanded="panelOpen"
         :aria-controls="panelId"
@@ -176,13 +176,8 @@ function spanClass(index: number) {
       >
         <SlidersHorizontal class="size-4" aria-hidden="true" />
         <span>{{ filterTitle }}</span>
-        <!-- On the corner rather than inline, so the button keeps its width when
-             a filter is applied: inline it took 28px from the search box. -->
-        <span
-          v-if="active.length"
-          class="tabular absolute -right-1 -top-1 inline-flex size-5 items-center justify-center rounded-full bg-brand text-xs font-semibold text-on-brand ring-2 ring-tile"
-          aria-hidden="true"
-        >{{ active.length }}</span>
+        <!-- No count on the corner (Sean, 4 Nov 2026): the line under the toolbar already names
+             each filter that is on. -->
       </button>
 
       <!-- The dropdowns: in the row on a wide screen, in a dropped-down panel
