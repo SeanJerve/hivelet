@@ -144,7 +144,7 @@ has the same bar at the top:
 - **Show 8 more** (or however many are next) and **Show all** under a long list open more of it; **Show fewer** closes it again.
 
 **Also on every screen:** a short ping means something was saved, or someone else's change has
-arrived. Messages appear at the top centre of the screen; tap one to close it. A window that slides
+arrived. Messages appear at the top centre of the screen. Tap one to close it. A window that slides
 up from the bottom closes when you tap the dimmed page outside it or swipe it down. Two never close
 that way, so nothing is lost: the one showing a new tenant's login ID and password, and the GCash
 payment. The phone's **Back** button goes back a

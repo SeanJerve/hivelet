@@ -26,6 +26,8 @@ Section 1.**
 
 | P16 | **New screenshots for the paper**: Figures 10 to 14 and every other figure of a screen show the design before Iteration 3 (the glass redesign of 1 to 2 November) | Retake once the design is final, with sample tenants only, then replace the images in the manuscript |
 | P17 | **The last batch of tenants and prospects** (Sean, 2 Nov 2026): their results go into Sections 4.3 and 4.4, and Iteration 3's Review row in Table M-19 | Waiting for the batch. The tests and evaluators already reported stay as they are |
+| P18 | **Adyen on the context diagram** (4 Nov 2026): the SAD Laboratory Activity 3 the professor approved draws no Adyen, though its text names it as the fourth entity. Did the professor say to remove it? | Figure 6 keeps it for now, since the gateway sends each payment result into the system. If the professor wants it off, Claude removes it from Figures 6 and 7 and Appendix F and says why in Section 4.2.1. See `FINAL/DEFENSE_CHECKLIST_STATUS.md` |
+| P19 | **The Form 2 and Proponent's Checklist items only the team can do** (4 Nov 2026): consultation records, Forms 3A and 3B, the similarity report, the acceptance form or MOA, the mock defense, the copies | Item by item in `FINAL/DEFENSE_CHECKLIST_STATUS.md`. Claude can draft the Literature Map, the revision log and the Deployment Report |
 
 ## 2. The answers, and what each changed
 
