@@ -6,14 +6,14 @@
  * @requirements FR-005, FR-007, FR-009, FR-014, FR-016, FR-017, FR-025, FR-029, FR-043
  */
 
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import {
   CANONICAL_UNITS,
   type Cluster,
   type UnitStatus,
 } from './canonicalUnits';
 import { api } from './api';
-import { isAdmin, isAuthenticated } from './authStore';
+import { currentUser, isAdmin, isAuthenticated } from './authStore';
 import { useToast, type ToastOptions } from './useToast';
 import { formatDateOnly } from './propertyDate';
 import { isPhMobile, phoneDigits, realEmail } from './contactDetails';
@@ -527,6 +527,27 @@ export const inquiriesFetchFailed = ref(false);
  * Same pattern as [roomsFetchFailed] and the four flags above it.
  */
 export const tenantsFetchFailed = ref(false);
+
+/**
+ * Signing out, or someone else signing in on the same device, empties the administrator's lists,
+ * as lib/screenCache.ts and lib/offlineCache.ts already do for theirs. Without this the names,
+ * receipts and repairs stayed in memory until the page was reloaded. The units keep their shape
+ * and lose only the tenant's name, so the public pages still have a grid to draw.
+ */
+watch(
+  () => currentUser.value?.profileId ?? null,
+  (now, before) => {
+    if (before === null || now === before) return;
+    for (const list of [tenants, incomeRecords, expenseRecords, maintenanceTickets, inquiries] as unknown[][]) {
+      list.splice(0, list.length);
+    }
+    for (const r of rooms) {
+      r.tenant = '';
+      r.tenantId = null;
+      r.balance = 0;
+    }
+  }
+);
 
 export const EXPENSE_CATEGORIES = [
   "1 — Supplies",
