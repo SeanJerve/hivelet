@@ -28,9 +28,10 @@ import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 import YearMenu from '@/components/ui/YearMenu.vue';
 import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
-import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown, ArrowRight } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown } from 'lucide-vue-next';
 import { sortRows, orderOptions, compareUnits, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -70,6 +71,10 @@ interface ApiPendingPayment {
 const q = ref('');
 const selectedCluster = ref('All');
 const isLoading = ref(false);
+// The skeletons are for the first read only; a revisit draws what it held and reads again
+// quietly behind it (lib/screenCache.ts).
+const incomeLoaded = screenLoaded('income');
+const showSkeleton = computed(() => isLoading.value && !incomeLoaded.value);
 const isSubmitting = ref(false);
 
 // Month and Year Filters
@@ -182,7 +187,7 @@ function headsLabel(n: number): string {
   return `${n} ${n === 1 ? 'head' : 'heads'}`;
 }
 
-const pendingPayments = ref<ApiPendingPayment[]>([]);
+const pendingPayments = screenRef<ApiPendingPayment[]>('income.pending', []);
 
 /**
  * Whether the last attempt to load the verification queue failed.
@@ -197,7 +202,10 @@ const pendingPayments = ref<ApiPendingPayment[]>([]);
 const pendingPaymentsError = ref<string | null>(null);
 const pendingTotal = computed(() => pendingPayments.value.reduce((s, p) => s + (Number(p.amount) || 0), 0));
 
-/** From the box at the top: the queue, opened and in view. */
+/**
+ * Payments waiting come first: when any are waiting, the page opens on the queue and scrolls to it
+ * (Sean, 4 Nov 2026), unless it was opened for something else (a highlight or the payment form).
+ */
 async function openVerifyQueue() {
   activeTab.value = 'verify';
   await nextTick();
@@ -233,6 +241,8 @@ async function fetchIncome() {
     console.warn('Fetch income failed, using local state:', err);
   } finally {
     isLoading.value = false;
+    // A failed read goes behind the skeleton again next time, not onto an empty ledger.
+    incomeLoaded.value = !incomeRecordsFetchFailed.value && !pendingPaymentsError.value;
   }
 }
 
@@ -427,6 +437,12 @@ onMounted(() => {
   }
   const loading = fetchIncome();
   loadWaterRates();
+  const openedForSomethingElse = typeof route.query.highlight === 'string' || route.query.openPayment === '1';
+  if (!openedForSomethingElse) {
+    afterArrival(loading).then(() => {
+      if (pendingPayments.value.length > 0) openVerifyQueue();
+    });
+  }
   if (route.query.openPayment === '1') {
     const nextQuery = { ...route.query };
     delete nextQuery.openPayment;
@@ -1216,26 +1232,6 @@ const isDownloadOpen = ref(false);
       />
     </div>
 
-    <!-- Waiting payments come first when there are any (review of 4 Nov 2026): on a phone the
-         queue was several screens down. -->
-    <button
-      v-if="pendingPayments.length && activeTab !== 'verify'"
-      type="button"
-      class="press on-dark relative isolate flex w-full items-center justify-between gap-4 rounded-tile bg-night px-5 py-4 text-left text-on-night"
-      @click="openVerifyQueue"
-    >
-      <span class="min-w-0">
-        <span class="block text-base font-semibold">
-          {{ pendingPayments.length }} {{ pendingPayments.length === 1 ? 'payment' : 'payments' }} to verify
-        </span>
-        <span class="tabular text-sm text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
-      </span>
-      <span class="inline-flex shrink-0 items-center gap-1 text-sm font-semibold">
-        Review
-        <ArrowRight class="size-4" aria-hidden="true" />
-      </span>
-    </button>
-
     <!--
       The four figures.
 
@@ -1416,7 +1412,7 @@ const isDownloadOpen = ref(false);
       that would make the motion feel like it is in the way.
     -->
     <div v-if="activeTab === 'verify'" id="income-panel" role="tabpanel" aria-labelledby="income-tab-verify" class="ws-reveal flex flex-col gap-4">
-      <div v-if="isLoading" class="rounded-tile bg-tile p-6 flex flex-col gap-3" aria-busy="true">
+      <div v-if="showSkeleton" class="rounded-tile bg-tile p-6 flex flex-col gap-3" aria-busy="true">
         <span class="sr-only" role="status">Loading the verification queue</span>
         <Skeleton class-name="h-4 w-40 rounded-full" />
         <Skeleton class-name="h-20 w-full rounded-2xl" />
@@ -1524,8 +1520,8 @@ const isDownloadOpen = ref(false);
          table loaded. The "To verify" tab beside this one already pairs its
          own skeleton with a `role="status"` announcement; this tab's table
          skeleton had none. -->
-    <span v-if="isLoading" class="sr-only" role="status">Loading the income records</span>
-    <SkeletonTable v-if="isLoading" :columns="7" :rows="8" />
+    <span v-if="showSkeleton" class="sr-only" role="status">Loading the income records</span>
+    <SkeletonTable v-if="showSkeleton" :columns="7" :rows="8" />
 
     <!--
       By cluster: her spreadsheet's own five sections, each with its subtotal.
