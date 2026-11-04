@@ -142,6 +142,8 @@ has the same bar at the top:
   **On a phone**, tap **Filters** to open them under the bar, and tap it again to close them. The
   filters in use are named under the bar; **Clear** removes them.
 - **Show 8 more** (or however many are next) and **Show all** under a long list open more of it; **Show fewer** closes it again.
+- **The pencil** on a row or card opens it to edit. On a computer it shows when you point at the row
+  or card. On a phone it is always there.
 
 **Also on every screen:** a short ping means something was saved, or someone else's change has
 arrived. Messages appear at the top centre of the screen. Tap one to close it. A window that slides
