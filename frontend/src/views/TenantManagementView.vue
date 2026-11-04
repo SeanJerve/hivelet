@@ -1705,6 +1705,7 @@ async function handleOnboard() {
       :title="onboardedCredentials.reason === 'reset' ? 'Password reset' : 'Moved in'"
       size="sm"
       :dismissible="false"
+      persistent
       @close="closeCredentialsReveal"
     >
       <p class="text-sm leading-6 text-ink-soft">

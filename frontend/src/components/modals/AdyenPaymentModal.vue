@@ -350,6 +350,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     title="Pay with GCash"
     size="md"
     :dismissible="false"
+    persistent
     @close="emit('close')"
   >
     <!-- The fields used to cap their own height here so the footer stayed on a phone screen. WsModal's body scrolls and keeps its footer on screen itself now (2026-10-03), so nothing here does. -->

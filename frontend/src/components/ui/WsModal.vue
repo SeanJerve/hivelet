@@ -56,6 +56,16 @@ const props = withDefaults(
      * Disabled rather than hidden, so the header does not jump while it waits.
      */
     closeDisabled?: boolean;
+    /**
+     * A sheet that must not be left by a tap on the dimmed area or a swipe down (4 Nov 2026).
+     *
+     * On a sheet those two exits follow `mandatory` and `closeDisabled`, NOT `dismissible`: the
+     * owner expects a form with typed input to close when she taps outside it, so
+     * `:dismissible="false"` on a form now stops Escape only. What must still refuse a stray tap
+     * or a swipe - the credential reveal, a payment in flight - says so here. The header X is
+     * unchanged and stays available.
+     */
+    persistent?: boolean;
     tone?: 'plain' | 'danger';
     /**
      * A decision that needs a full stop ("Record this payment?", ConfirmDialog): the one kind
@@ -64,7 +74,7 @@ const props = withDefaults(
      */
     decision?: boolean;
   }>(),
-  { size: 'md', dismissible: true, mandatory: false, closeDisabled: false, tone: 'plain', decision: false }
+  { size: 'md', dismissible: true, mandatory: false, closeDisabled: false, persistent: false, tone: 'plain', decision: false }
 );
 
 const emit = defineEmits<{ close: [] }>();
@@ -93,76 +103,84 @@ const body = ref<HTMLElement | null>(null);
 let previouslyFocused: HTMLElement | null = null;
 
 /* -------------------------------------------------------------------------- *
- * The sheet (Sean, 20 Oct 2026)
+ * The sheet (Sean, 20 Oct 2026; one set of snap points, 4 Nov 2026)
  *
  * Every dialog that is not a decision rises from the bottom edge, at every width, and rests at
- * one of two heights with nothing in between: the full screen (less a strip of the page behind),
- * which is where it opens, or half. It used to open at half when its content fit there, and on a
- * desktop most sheets stopped partway up the screen (Lloyd, 3 Nov 2026: "everything should open
- * by default to the top"). Half is still there for someone who drags it down; from half it grows
- * back to full on its own when its content outgrows half, or when a field is focused and the
- * keyboard needs the room. It never shrinks by itself, so nothing jumps while someone is reading it. The handle at the top
- * drags it between the two, follows the finger 1:1, carries the flick's speed into where it
- * lands, and a drag down from half closes it when the dialog may be closed. The handle is also a
- * button, so the keyboard and a screen reader can switch the height too.
+ * one of three places and nothing in between: FULL (the screen less a strip of the page behind,
+ * where it opens - Lloyd, 3 Nov 2026: "everything should open by default to the top"), HALF, or
+ * CLOSED. Every sheet has exactly these, so a drag does the same thing everywhere.
+ *
+ * The handle and the title row drag it, 1:1 under the finger:
+ *   - between half and full the height follows the finger;
+ *   - below half the sheet keeps its half height and slides down as a transform, so its content
+ *     does not reflow while it leaves;
+ *   - on release the flick's speed is projected to where it would come to rest (Apple's
+ *     projection). If that is below CLOSE_BELOW of half the sheet slides the rest of the way out
+ *     and closes; otherwise it settles on the nearer of half or full.
+ * From half it grows to full by itself when a field is focused (the keyboard needs the room); it
+ * never shrinks by itself. The handle is also a button, so the keyboard and a screen reader can
+ * switch the height too. A tap on the dimmed area outside the sheet closes it, at any height.
+ * Tap-outside and swipe-away follow `mandatory`, `closeDisabled` and `persistent`; see
+ * `canDismiss`.
  * -------------------------------------------------------------------------- */
 const viewportH = ref(typeof window === 'undefined' ? 800 : window.innerHeight);
 const snap = ref<'half' | 'full'>('full');
-let userSnapped = false;
 const dragHeight = ref<number | null>(null);
+const dragOffset = ref(0);
+const dragging = ref(false);
+/** The sheet is sliding out after a swipe; it is already on its way and takes no more input. */
+const leaving = ref(false);
 const halfPx = computed(() => Math.round(viewportH.value * 0.5));
 const fullPx = computed(() => viewportH.value - 24);
-const sheetHeight = computed(() => dragHeight.value ?? (snap.value === 'full' ? fullPx.value : halfPx.value));
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Where a release is judged: a projected resting height under this share of half closes. */
+const CLOSE_BELOW = 0.6;
+const SLIDE_OUT_MS = 240;
+const VELOCITY_WINDOW_MS = 100;
+// The two curves the sheet uses; `--ease-drawer` is the iOS drawer curve, spelled out here so it
+// works wherever the token is not defined.
+const EASE_DRAWER = 'var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1))';
+const EASE_OUT = 'var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))';
+
 /**
  * At rest the two heights are CSS, in dynamic viewport units, not pixels measured when the
  * dialog opened: a phone's visible height changes as its address bar slides, and a page measured
  * at the wrong moment (a hidden preview reported 0) would otherwise leave the sheet at that size.
- * Pixels only while a finger holds it.
+ * Pixels only while a finger holds it. Movement is a height between half and full and a
+ * transform below half; under reduced motion nothing animates, it just lands.
  */
-const panelStyle = computed(() =>
-  props.decision
-    ? undefined
-    : {
-        height: dragHeight.value !== null ? `${dragHeight.value}px` : snap.value === 'full' ? 'calc(100dvh - 1.5rem)' : '50dvh',
-        // The iOS drawer curve; none while the finger holds it, and none under reduced motion.
-        transition: dragHeight.value !== null || prefersReducedMotion() ? 'none' : 'height 320ms cubic-bezier(0.32, 0.72, 0, 1)',
-      }
+const panelStyle = computed(() => {
+  if (props.decision) return undefined;
+  const reduce = prefersReducedMotion();
+  const held = dragHeight.value !== null;
+  const transform = leaving.value
+    ? 'translateY(calc(100% + 2rem))'
+    : dragOffset.value > 0
+      ? `translateY(${dragOffset.value}px)`
+      : undefined;
+  return {
+    height: held ? `${dragHeight.value}px` : snap.value === 'full' ? 'calc(100dvh - 1.5rem)' : '50dvh',
+    transform,
+    transition:
+      dragging.value || reduce
+        ? 'none'
+        : leaving.value
+          ? `transform ${SLIDE_OUT_MS}ms ${EASE_DRAWER}`
+          : `height 320ms ${EASE_DRAWER}, transform 320ms ${EASE_DRAWER}`,
+  };
+});
+// The scrim goes with the sheet while it slides out.
+const overlayStyle = computed(() =>
+  leaving.value && !prefersReducedMotion() ? { opacity: 0, transition: `opacity ${SLIDE_OUT_MS}ms ${EASE_OUT}` } : undefined
 );
-
-/** The height the dialog would need to show everything without scrolling. */
-function naturalHeight(): number {
-  const p = panel.value;
-  const b = body.value;
-  if (!p || !b) return 0;
-  const kids = [...b.children] as HTMLElement[];
-  if (!kids.length) return p.offsetHeight - b.clientHeight;
-  const top = Math.min(...kids.map((k) => k.getBoundingClientRect().top));
-  const bottom = Math.max(...kids.map((k) => k.getBoundingClientRect().bottom));
-  const cs = getComputedStyle(b);
-  const content = bottom - top + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-  return p.offsetHeight - b.clientHeight + content;
-}
-
-// A short timer, not requestAnimationFrame: a page that is not being painted (a background tab) never
-// runs a frame callback, and the sheet would stay at half over content that needs the full height.
-let fitFrame: ReturnType<typeof setTimeout> | undefined;
-function fit() {
-  if (props.decision || userSnapped) return;
-  clearTimeout(fitFrame);
-  fitFrame = setTimeout(() => {
-    viewportH.value = window.innerHeight;
-    if (!viewportH.value) return; // nothing to measure against (a hidden page)
-    if (naturalHeight() > halfPx.value) snap.value = 'full';
-  }, 16);
-}
 
 function toggleSnap() {
   if (suppressHandleClick) {
     suppressHandleClick = false;
     return;
   }
-  userSnapped = true;
+  if (leaving.value) return;
   snap.value = snap.value === 'full' ? 'half' : 'full';
 }
 
@@ -174,22 +192,45 @@ function onFocusIn(e: FocusEvent) {
   }
 }
 
-const canDragClose = computed(() => props.dismissible && !props.mandatory && !props.closeDisabled);
+/**
+ * Whether a sheet may be left by a tap on the dimmed area or a swipe down. NOT gated by
+ * `dismissible`: that prop guards Escape on a form holding typed input, and the owner's review
+ * (4 Nov 2026) wants a tap outside to close those too. `mandatory`, a request in flight
+ * (`closeDisabled`) and an explicit `persistent` still refuse.
+ */
+const canDismiss = computed(() => !props.mandatory && !props.closeDisabled && !props.persistent);
+/** A decision (the centred card) keeps what it always had: the backdrop follows `dismissible`. */
+const canBackdropClose = computed(() => (props.decision ? props.dismissible && !props.mandatory : canDismiss.value));
+
 // Apple's projection of where a flick comes to rest (WWDC 2018, "Designing Fluid Interfaces").
 const project = (velocityPxPerSec: number, rate = 0.998) => ((velocityPxPerSec / 1000) * rate) / (1 - rate);
-// Resistance past the top, so the sheet slows before it stops rather than hitting a wall.
+// Resistance past an edge that does not give, so the sheet slows before it stops.
 const rubber = (over: number, dim: number) => (over * dim * 0.55) / (dim + 0.55 * Math.abs(over));
-let drag: { startY: number; startH: number; moved: boolean; samples: { y: number; t: number }[] } | null = null;
+let drag: {
+  startY: number;
+  startH: number;
+  /** The height the finger asks for, before it is clamped: below half it is the slide-out distance. */
+  h: number;
+  moved: boolean;
+  samples: { y: number; t: number }[];
+} | null = null;
 let suppressHandleClick = false;
+/** When the last drag ended; a click this soon after is the drag's own, not a tap outside. */
+let lastDragEnd = 0;
+let unmounted = false;
+let closeTimer: ReturnType<typeof setTimeout> | undefined;
+let restoreTimer: ReturnType<typeof setTimeout> | undefined;
 
 function onDragStart(e: PointerEvent) {
-  if (props.decision || e.button !== 0) return;
+  if (props.decision || leaving.value || e.button !== 0) return;
   // Only the handle and the title row grab; the X and anything else interactive keep their taps.
   const target = e.target as HTMLElement;
   if (target.closest('a, input, select, textarea, button:not(.ws-sheet-handle)')) return;
   viewportH.value = window.innerHeight;
-  const startH = panel.value?.getBoundingClientRect().height ?? sheetHeight.value;
-  drag = { startY: e.clientY, startH, moved: false, samples: [{ y: e.clientY, t: e.timeStamp }] };
+  const startH = panel.value?.getBoundingClientRect().height ?? (snap.value === 'full' ? fullPx.value : halfPx.value);
+  drag = { startY: e.clientY, startH, h: startH, moved: false, samples: [{ y: e.clientY, t: e.timeStamp }] };
+  // Capture, so the move and the release arrive here even when the finger leaves the handle, and
+  // the click that follows is not aimed at whatever is under the finger.
   (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
 }
 function onDragMove(e: PointerEvent) {
@@ -197,41 +238,94 @@ function onDragMove(e: PointerEvent) {
   const dy = e.clientY - drag.startY;
   if (!drag.moved && Math.abs(dy) < 6) return; // a tap stays a tap
   drag.moved = true;
+  dragging.value = true;
   let h = drag.startH - dy;
   if (h > fullPx.value) h = fullPx.value + rubber(h - fullPx.value, viewportH.value);
-  dragHeight.value = Math.max(0, h);
+  // A sheet that cannot be dismissed resists being pulled below half instead of following.
+  else if (h < halfPx.value && !canDismiss.value) h = halfPx.value - rubber(halfPx.value - h, viewportH.value);
+  drag.h = h;
+  dragHeight.value = Math.max(h, halfPx.value);
+  dragOffset.value = Math.max(0, halfPx.value - h);
   drag.samples.push({ y: e.clientY, t: e.timeStamp });
-  if (drag.samples.length > 5) drag.samples.shift();
+  if (drag.samples.length > 8) drag.samples.shift();
 }
-function onDragEnd() {
+function onDragEnd(e: PointerEvent) {
   if (!drag) return;
   const d = drag;
   drag = null;
+  dragging.value = false;
   if (!d.moved) return;
+  // The click the browser sends after this release belongs to the drag: not a handle toggle, and
+  // not a tap on the backdrop even where it is aimed at the overlay.
+  lastDragEnd = Date.now();
   suppressHandleClick = true;
   window.setTimeout(() => (suppressHandleClick = false), 0);
-  const first = d.samples[0];
-  const last = d.samples[d.samples.length - 1];
-  const dt = Math.max(1, last.t - first.t);
-  const downwardPxPerSec = ((last.y - first.y) / dt) * 1000;
-  const h = dragHeight.value ?? d.startH;
-  const projected = h - project(downwardPxPerSec);
-  const stops = canDragClose.value ? [0, halfPx.value, fullPx.value] : [halfPx.value, fullPx.value];
-  const target = stops.reduce((best, s) => (Math.abs(s - projected) < Math.abs(best - projected) ? s : best), stops[0]);
-  userSnapped = true;
-  if (target === 0) {
-    emit('close');
+  // Speed over the last 100ms before release; a finger that stopped before lifting is not a flick.
+  const endT = e.timeStamp;
+  const recent = d.samples.filter((s) => endT - s.t <= VELOCITY_WINDOW_MS);
+  const first = recent[0];
+  const last = recent[recent.length - 1];
+  const dt = first && last ? Math.max(1, last.t - first.t) : 0;
+  const downwardPxPerSec = dt ? ((last.y - first.y) / dt) * 1000 : 0;
+  const projected = d.h - project(downwardPxPerSec);
+  if (canDismiss.value && e.type !== 'pointercancel' && projected < halfPx.value * CLOSE_BELOW) {
+    slideOutAndClose();
     return;
   }
-  snap.value = target === fullPx.value ? 'full' : 'half';
+  snap.value = Math.abs(projected - halfPx.value) < Math.abs(projected - fullPx.value) ? 'half' : 'full';
   dragHeight.value = null;
+  dragOffset.value = 0;
+}
+
+/**
+ * Finish a swipe: carry the sheet the rest of the way off the bottom, then close. The parent
+ * removes this component on `close`; a parent that declines (it is busy, it asks first) leaves it
+ * mounted, and then it slides back rather than being left invisible.
+ */
+function slideOutAndClose() {
+  if (leaving.value) return;
+  if (prefersReducedMotion()) {
+    // No movement under reduced motion: close from where it was released, and the ghost fades.
+    emit('close');
+    restoreTimer = setTimeout(restoreAfterRefusal, 150);
+    return;
+  }
+  leaving.value = true;
+  closeTimer = setTimeout(() => {
+    emit('close');
+    restoreTimer = setTimeout(restoreAfterRefusal, 150);
+  }, SLIDE_OUT_MS + 20);
+}
+function restoreAfterRefusal() {
+  if (unmounted) return;
+  leaving.value = false;
+  dragHeight.value = null;
+  dragOffset.value = 0;
+}
+
+/**
+ * A tap on the dimmed area. It has to have both started and ended there: a press inside the
+ * panel (selecting text in a field) released outside is a click on the overlay too, since the
+ * overlay is the two elements' common ancestor, and must not close anything. A click within a
+ * beat of a drag's release is the drag's. `detail` 0 is a click made without a pointer (a
+ * script, an assistive tool) and is taken as a deliberate tap.
+ */
+let pressedOnBackdrop = false;
+function onOverlayPointerDown(e: PointerEvent) {
+  pressedOnBackdrop = e.target === e.currentTarget;
+}
+function onOverlayClick(e: MouseEvent) {
+  if (e.target !== e.currentTarget) return;
+  const startedThere = pressedOnBackdrop || e.detail === 0;
+  pressedOnBackdrop = false;
+  if (!startedThere || Date.now() - lastDragEnd < 300) return;
+  if (leaving.value || !canBackdropClose.value) return;
+  emit('close');
 }
 
 function onResize() {
   viewportH.value = window.innerHeight;
 }
-let contentWatch: MutationObserver | null = null;
-let sizeWatch: ResizeObserver | null = null;
 
 const widths = {
   sm: 'max-w-md',
@@ -379,14 +473,6 @@ onMounted(async () => {
   panel.value?.focus({ preventScroll: true });
   if (!props.decision) {
     window.addEventListener('resize', onResize);
-    fit();
-    // Content that arrives or grows later (a step, a loaded list, an error) may need the full height.
-    if (body.value) {
-      contentWatch = new MutationObserver(() => fit());
-      contentWatch.observe(body.value, { childList: true, subtree: true });
-      sizeWatch = new ResizeObserver(() => fit());
-      [...body.value.children].forEach((c) => sizeWatch!.observe(c));
-    }
   }
 });
 
@@ -460,6 +546,8 @@ function enterMotion(): void {
 function leaveGhost(): void {
   const el = overlay.value;
   if (!el || typeof el.animate !== 'function') return;
+  // A sheet that slid itself out is already off the screen; a snapshot would pop it back.
+  if (leaving.value) return;
   try {
     const ghost = el.cloneNode(true) as HTMLElement;
     const liveFields = el.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea');
@@ -485,7 +573,7 @@ function leaveGhost(): void {
     const timing = { duration: 160, easing: 'cubic-bezier(0.33, 1, 0.68, 1)', fill: 'forwards' as const };
     ghost.animate([{ opacity: 1 }, { opacity: 0 }], timing);
     if (ghostPanel && !reduce) {
-      ghostPanel.animate([{ transform: 'none' }, { transform: offscreen() }], timing);
+      ghostPanel.animate([{ transform: ghostPanel.style.transform || 'none' }, { transform: offscreen() }], timing);
     }
     // A timer, not `finished`: a hidden tab can pause the animation and the
     // copy must never outlive it.
@@ -496,10 +584,10 @@ function leaveGhost(): void {
 }
 
 onBeforeUnmount(() => {
+  unmounted = true;
   leaveGhost();
-  contentWatch?.disconnect();
-  sizeWatch?.disconnect();
-  clearTimeout(fitFrame);
+  clearTimeout(closeTimer);
+  clearTimeout(restoreTimer);
   window.removeEventListener('resize', onResize);
   parkedFor?.disconnect();
   unregisterDialog(dialogId);
@@ -532,10 +620,14 @@ onBeforeUnmount(() => {
   <div
     ref="overlay"
     :class="[
-      'ws-modal-overlay ws-focus fixed inset-0 z-50 flex justify-center overflow-y-auto overscroll-contain bg-scrim',
-      decision ? 'items-center p-4 sm:p-6' : 'items-end',
+      'ws-modal-overlay ws-focus fixed inset-0 z-50 flex justify-center overscroll-contain bg-scrim',
+      // A sheet has a fixed height, so the overlay never scrolls; and a sheet dragged down by a
+      // transform must not lengthen it into a scrollbar.
+      decision ? 'items-center overflow-y-auto p-4 sm:p-6' : 'items-end overflow-hidden',
     ]"
-    @click.self="dismissible && !mandatory && emit('close')"
+    :style="overlayStyle"
+    @pointerdown="onOverlayPointerDown"
+    @click="onOverlayClick"
     @keydown="onKeydown"
     @focusout="onFocusOut"
     @focusin="onFocusIn"
@@ -574,12 +666,14 @@ onBeforeUnmount(() => {
       >
         <span class="block h-1.5 w-10 rounded-full bg-line" aria-hidden="true" />
       </button>
-      <header :class="['flex flex-none items-center justify-between gap-4 border-b border-line pl-5 pr-3 sm:pl-6 sm:pr-4', decision ? 'py-3 sm:py-4' : 'pt-1 pb-3 sm:pb-4']">
-        <div class="min-w-0 py-1">
-          <h2 :id="titleId" :class="['text-lg font-semibold leading-snug tracking-tight', tone === 'danger' && 'text-overdue']">
+      <header :class="['flex flex-none items-start justify-between gap-4 border-b border-line pl-5 pr-3 sm:pl-6 sm:pr-4', decision ? 'py-3 sm:py-4' : 'pt-1 pb-3 sm:pb-4']">
+        <!-- The text takes the room the X leaves and wraps inside it (7.4, 4 Nov 2026): a long subtitle
+             breaks onto the next line before the X rather than running up to it or under it. -->
+        <div class="min-w-0 flex-1 py-1 pr-2 sm:pr-4">
+          <h2 :id="titleId" :class="['break-words text-lg font-semibold leading-snug tracking-tight', tone === 'danger' && 'text-overdue']">
             {{ title }}
           </h2>
-          <p v-if="subtitle" :id="subtitleId" class="mt-0.5 text-sm text-ink-soft">{{ subtitle }}</p>
+          <p v-if="subtitle" :id="subtitleId" class="mt-0.5 break-words text-sm text-ink-soft">{{ subtitle }}</p>
         </div>
         <!--
           Shown unless the dialog is genuinely mandatory. It used to be gated
@@ -591,7 +685,7 @@ onBeforeUnmount(() => {
         <button
           v-if="!mandatory"
           type="button"
-          class="icon-btn shrink-0"
+          class="icon-btn -mt-1.5 shrink-0"
           aria-label="Close this dialog"
           :disabled="closeDisabled"
           @click="emit('close')"
