@@ -11,7 +11,7 @@ Chapter 4 cites K, M, N and O by letter, so those letters must not change.
 | C | Gantt Chart | The schedule as it ran: the first build, the three iterations, the Module 01 gap, and the dated events | `FINAL/appendices/APPENDIX_C_GANTT_CHART.md` |
 | D | Context Diagram | The as-built context diagram, the same image as Figure 6 | `docs/FINAL MANUSCRIPT/figures/figure-6-context-diagram.png` |
 | E | Data Flow Diagram (Level 1) | The as-built level 1 diagram, the same image as Figure 7 | `docs/FINAL MANUSCRIPT/figures/figure-7-data-flow-level-1.png` |
-| F | Data Flow Diagram (Child Diagrams) | Processes 1.0, 3.0, 4.0 and 5.0 opened into their steps | `FINAL/appendices/APPENDIX_F_CHILD_DATA_FLOW_DIAGRAMS.md` |
+| F | Data Flow Diagrams (Level 2) | All eight level 1 processes opened into their steps, in Gane and Sarson notation | `FINAL/appendices/APPENDIX_F_CHILD_DATA_FLOW_DIAGRAMS.md` |
 | G | Use Case Diagram | The as-built use case diagram, the same image as Figure 8 | `docs/FINAL MANUSCRIPT/figures/figure-8-use-case-diagram.png` |
 | H | Entity-Relationship Diagram | The as-built diagram, the same image as Figure 9 | `docs/FINAL MANUSCRIPT/figures/figure-9-entity-relationship.png` |
 | I | Initial Design | Four screens of the first working version, 28 August 2026 (the interface was prototyped in code, Section 3.1.1) | `FINAL/appendices/APPENDIX_I_INITIAL_DESIGN.md` |

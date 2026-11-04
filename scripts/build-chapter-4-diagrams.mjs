@@ -114,6 +114,22 @@ const DEFS = `<defs>
     <path d="M0,0.5 L10,5 L0,9.5 Z" fill="${INK}"/></marker>
 </defs>`;
 
+/**
+ * Gane and Sarson symbols (Form 2 item 13 asks for this notation). A process is a rounded
+ * rectangle centred on (cx, cy) with its number in a band across the top; an external entity is a
+ * square with a shaded edge. Lines meet a process at its flat sides, hw and hh from the centre.
+ */
+function gsProc(cx, cy, hw, hh, n, name, o = {}) {
+  const top = cy - hh, band = o.band ?? 26;
+  return rect(cx - hw, top, 2 * hw, 2 * hh, { rx: 12, sw: 1.7 }) +
+    line([[cx - hw, top + band], [cx + hw, top + band]], { head: 'none', sw: 1.2 }) +
+    T(cx, top + band / 2, n, { size: o.nsize ?? 14, weight: 'bold' }) +
+    T(cx, cy + band / 2, name, { w: 2 * hw - 16, size: o.size ?? 13.5, weight: o.weight });
+}
+function gsEnt(x, y, w, h, o = {}) {
+  return `<rect x="${x + 5}" y="${y + 5}" width="${w}" height="${h}" fill="${INK}"/>` + rect(x, y, w, h, { sw: o.sw ?? 1.8 });
+}
+
 const svg = (w, h, body) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
   `<rect width="${w}" height="${h}" fill="#fff"/>${DEFS}${body}</svg>`;
@@ -246,44 +262,43 @@ function architecture() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Figure 6. Context diagram (Level 0)
+// Figure 6. Context diagram (Level 0, Gane and Sarson notation)
 // ---------------------------------------------------------------------------------------------
 function context() {
   const W = 900, H = 780, cx = 450, cy = 390, r = 108;
   let s = '';
-  s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="${INK}" stroke-width="1.8"/>`;
-  s += T(cx, cy - 64, '0', { size: 16, weight: 'bold' });
-  s += line([[cx - 76, cy - 48], [cx + 76, cy - 48]], { head: 'none', sw: 1.2 });
-  s += T(cx, cy + 8, 'Hivelet apartment management system', { w: 150, size: 16, weight: 'bold' });
-  const edgeY = (dx) => Math.sqrt(r * r - dx * dx);
+  const hw = 100;
+  s += gsProc(cx, cy, hw, r, '0', 'Hivelet apartment management system', { band: 34, nsize: 16, size: 16, weight: 'bold' });
+  const edgeY = () => r; // the process's flat top and bottom
+  const edgeX = () => hw; // and its sides
 
   // Visitor (top)
-  s += box(cx, 46, 230, 54, 'Visitor or prospect', { weight: 'bold' });
+  s += gsEnt(cx - 115, 19, 230, 54) + T(cx, 46, 'Visitor or prospect', { weight: 'bold' });
   s += line([[cx - 44, 73], [cx - 44, cy - edgeY(44)]]);
   s += line([[cx + 44, cy - edgeY(44)], [cx + 44, 73]]);
   s += T(cx - 56, 178, 'Inquiry about a unit; follow-up messages', { w: 190, size: 14, anchor: 'end' });
   s += T(cx + 56, 178, 'Units, rates and availability; the inquiry\'s reference and replies', { w: 190, size: 14, anchor: 'start' });
 
   // Adyen (bottom)
-  s += box(cx, H - 46, 260, 54, 'Adyen payment gateway (GCash)', { weight: 'bold' });
+  s += gsEnt(cx - 130, H - 73, 260, 54) + T(cx, H - 46, 'Adyen payment gateway (GCash)', { weight: 'bold' });
   s += line([[cx - 44, cy + edgeY(44)], [cx - 44, H - 73]]);
   s += line([[cx + 44, H - 73], [cx + 44, cy + edgeY(44)]]);
   s += T(cx - 56, 602, 'Payment session: amount and reference', { w: 190, size: 14, anchor: 'end' });
   s += T(cx + 56, 602, 'Payment result notification', { w: 190, size: 14, anchor: 'start' });
 
   // Owner (left)
-  s += box(84, cy, 140, 120, 'Owner (administrator)', { weight: 'bold' });
-  s += line([[154, cy - 34], [cx - edgeY(34), cy - 34]]);
-  s += line([[cx - edgeY(34), cy + 34], [154, cy + 34]]);
+  s += gsEnt(14, cy - 60, 140, 120) + T(84, cy, 'Owner (administrator)', { w: 124, weight: 'bold' });
+  s += line([[154, cy - 34], [cx - edgeX(34), cy - 34]]);
+  s += line([[cx - edgeX(34), cy + 34], [154, cy + 34]]);
   s += T(162, cy - 46, 'Sign-in; units and rates; move-ins and move-outs; payments with invoice numbers, verifications and voids; expenses; repair dispatch; inquiry replies',
     { w: 176, size: 14, anchor: 'start', bottom: cy - 44 });
   s += T(162, cy + 46, 'Overview figures; income and expense ledgers; workbook downloads; notifications; recent actions',
     { w: 176, size: 14, anchor: 'start', top: cy + 44 });
 
   // Tenant (right)
-  s += box(W - 84, cy, 140, 120, 'Tenant', { weight: 'bold' });
-  s += line([[W - 154, cy + 34], [cx + edgeY(34), cy + 34]]);
-  s += line([[cx + edgeY(34), cy - 34], [W - 154, cy - 34]]);
+  s += gsEnt(W - 154, cy - 60, 140, 120) + T(W - 84, cy, 'Tenant', { weight: 'bold' });
+  s += line([[W - 154, cy + 34], [cx + edgeX(34), cy + 34]]);
+  s += line([[cx + edgeX(34), cy - 34], [W - 154, cy - 34]]);
   s += T(W - 162, cy - 46, 'Bills and amounts owed; payment history and receipts; repair status; notifications; recent actions',
     { w: 176, size: 14, anchor: 'end', bottom: cy - 44 });
   s += T(W - 162, cy + 46, 'Sign-in; profile and password changes; repair requests with photos; cancellations; online payments',
@@ -292,26 +307,22 @@ function context() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Figure 7. Level 1 data flow diagram (Yourdon-DeMarco notation)
+// Figure 7. Level 1 data flow diagram (Gane and Sarson notation)
 // ---------------------------------------------------------------------------------------------
 function dfd() {
   const W = 900, H = 960;
   let s = '';
   const R = 54;
-  const proc = (x, y, n, name) =>
-    `<circle cx="${x}" cy="${y}" r="${R}" fill="#fff" stroke="${INK}" stroke-width="1.7"/>` +
-    T(x, y - 30, n, { size: 14, weight: 'bold' }) +
-    line([[x - 40, y - 18], [x + 40, y - 18]], { head: 'none', sw: 1 }) +
-    T(x, y + 12, name, { w: 86, size: 13.5 });
+  const proc = (x, y, n, name) => gsProc(x, y, R, R, n, name);
   // An open-ended store; a duplicate (drawn twice to avoid crossings) carries a second bar.
   const store = (x, y, w, id, name, dup) =>
     `<path d="M${x + w},${y} H${x} V${y + 32} H${x + w}" fill="#fff" stroke="${INK}" stroke-width="1.6"/>` +
     line([[x + 34, y], [x + 34, y + 32]], { head: 'none', sw: 1.3 }) +
     (dup ? line([[x + 7, y], [x + 7, y + 32]], { head: 'none', sw: 1.3 }) : '') +
     T(x + 20 + (dup ? 3 : 0), y + 16, id, { size: 13.5, weight: 'bold' }) + T(x + 42, y + 16, name, { size: 13.5, anchor: 'start' });
-  const ent = (x, y, w, h, name) => rect(x, y, w, h, { sw: 1.8 }) + T(x + w / 2, y + h / 2, name, { size: 15, weight: 'bold', w: w - 12 });
+  const ent = (x, y, w, h, name) => gsEnt(x, y, w, h) + T(x + w / 2, y + h / 2, name, { size: 15, weight: 'bold', w: w - 12 });
   const lab = (x, y, t, o = {}) => T(x, y, t, { size: 12.5, fill: MUTED, ...o });
-  const at = (dx) => Math.sqrt(R * R - dx * dx); // half-chord: where a line dx from the centre meets the circle
+  const at = () => R; // a line meets a process at its flat side, R from the centre
 
   const P = {
     p2: [104, 214], p3: [300, 214], p7: [496, 214], p6: [692, 214],
@@ -674,12 +685,12 @@ function gantt() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Appendix F. Child data flow diagrams: the four processes of Figure 4-4 that do more than one
-// thing, each opened into its steps. The steps and flows are the endpoints the screens call
-// (docs/SCREEN_CONTRACT.md, generated from the code); stores and entities keep Figure 4-4's
-// names. Entities and stores are repeated on each row rather than crossed; a repeated store
-// carries a second bar, as in Figure 4-4. The audit trail is left out, as there.
-// Processes 2.0, 6.0, 7.0 and 8.0 are a single operation each and are not opened.
+// Appendix F. Level 2 data flow diagrams (Gane and Sarson): each of the eight processes of
+// Figure 7 opened into its steps, as Form 2 item 13 asks ("down to Level 2"). The steps and flows
+// are the endpoints the screens call (docs/SCREEN_CONTRACT.md, generated from the code); stores and
+// entities keep Figure 7's names, and each diagram touches only the stores its parent touches there.
+// Entities and stores are repeated on each row rather than crossed; a repeated store carries a
+// second bar, as in Figure 7. The audit trail is left out, as there.
 // ---------------------------------------------------------------------------------------------
 const CHILD = {
   '1': ['1.0 Handle inquiries', [
@@ -687,6 +698,10 @@ const CHILD = {
     ['1.2', 'Record an inquiry', [['Visitor or prospect', 'Inquiry about a unit', 'in']], [['D5', 'Inquiries', 'out']]],
     ['1.3', 'Exchange messages', [['Visitor or prospect', 'Link or code; messages', 'both'], ['Owner (administrator)', 'Replies', 'both']], [['D5', 'Inquiries', 'both']]],
     ['1.4', 'Advance, close or delete', [['Owner (administrator)', 'Status, deletion', 'in']], [['D5', 'Inquiries', 'out']]],
+  ]],
+  '2': ['2.0 Manage units and rates', [
+    ['2.1', 'Show the unit directory', [['Owner (administrator)', 'Units, status, rates', 'out']], [['D1', 'Units and rates', 'in']]],
+    ['2.2', 'Edit a unit and its rate', [['Owner (administrator)', 'Unit details, new rate', 'in']], [['D1', 'Units and rates', 'both']]],
   ]],
   '3': ['3.0 Manage tenants and tenancies', [
     ['3.1', 'Onboard a tenant', [['Owner (administrator)', 'Tenant details, unit', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
@@ -707,15 +722,31 @@ const CHILD = {
     ['5.3', 'Raise a ticket', [['Owner (administrator)', 'Ticket for a unit', 'in']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
     ['5.4', 'Update a ticket\'s status', [['Owner (administrator)', 'New status', 'in'], ['Tenant', 'Status, notification', 'out']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
   ]],
+  '6': ['6.0 Record expenses', [
+    ['6.1', 'Add an expense', [['Owner (administrator)', 'Expense, areas', 'in']], [['D4', 'Expenses', 'out']]],
+    ['6.2', 'Edit or delete an expense', [['Owner (administrator)', 'Correction, deletion', 'in']], [['D4', 'Expenses', 'both']]],
+    ['6.3', 'Add a kind of expense', [['Owner (administrator)', 'New kind', 'in']], [['D4', 'Expenses', 'out']]],
+    ['6.4', 'Show the expense records', [['Owner (administrator)', 'Expense records', 'out']], [['D4', 'Expenses', 'in']]],
+  ]],
+  '7': ['7.0 Produce reports', [
+    ['7.1', 'Compute the Overview', [['Owner (administrator)', 'Overview figures', 'out']], [['D3', 'Bills and receipts', 'in'], ['D4', 'Expenses', 'in']]],
+    ['7.2', 'Build the workbooks', [['Owner (administrator)', 'Income, expense, tenant workbooks', 'out']], [['D3', 'Bills and receipts', 'in'], ['D4', 'Expenses', 'in']]],
+  ]],
+  '8': ['8.0 Sign in, manage own account', [
+    ['8.1', 'Sign in and out', [['Owner (administrator)', 'Login ID or phone, password', 'in'], ['Tenant', 'Login ID or phone, password', 'in']], [['D2', 'Tenants, tenancies', 'in']]],
+    ['8.2', 'Change own password', [['Owner (administrator)', 'Current, new password', 'in'], ['Tenant', 'Current, new password', 'in']], [['D2', 'Tenants, tenancies', 'out']]],
+    ['8.3', 'Change sign-in number', [['Owner (administrator)', 'Current and new number', 'in']], [['D2', 'Tenants, tenancies', 'out']]],
+    ['8.4', 'Edit own profile', [['Tenant', 'Own details', 'both']], [['D2', 'Tenants, tenancies', 'both']]],
+  ]],
 };
 function childDfd(key) {
   return () => {
     const [title, rows] = CHILD[key];
     const W = 940, R = 50, cx = 470, gap = 46;
     const head = { in: 'end', out: 'start', both: 'both' };
-    const at = (dy) => Math.sqrt(Math.max(0, R * R - dy * dy));
+    const at = () => R + 14; // a process's flat side
     const seen = new Set();
-    let s = T(W / 2, 26, `Diagram ${title}`, { size: 18, weight: 'bold' });
+    let s = T(W / 2, 26, `Level 2 diagram, ${title}`, { size: 18, weight: 'bold' });
     let y = 64;
     for (const [n, name, left, right] of rows) {
       const k = Math.max(left.length, right.length);
@@ -724,7 +755,7 @@ function childDfd(key) {
       const ys = (m, i) => cy + (i - (m - 1) / 2) * gap;
       left.forEach(([ent, lab, dir], i) => {
         const ey = ys(left.length, i);
-        s += rect(16, ey - 20, 170, 40, { sw: 1.8 }) + T(101, ey, ent, { size: 13.5, weight: 'bold', w: 160 });
+        s += gsEnt(16, ey - 20, 170, 40) + T(101, ey, ent, { size: 13.5, weight: 'bold', w: 160 });
         s += line([[186, ey], [cx - at(ey - cy), ey]], { head: head[dir] });
         s += T((186 + cx - R) / 2 + 6, ey - 9, lab, { size: 12, fill: MUTED, halo: true });
       });
@@ -739,10 +770,7 @@ function childDfd(key) {
         // A flow toward the process is "in": the store is read.
         s += line([[x, sy], [cx + at(sy - cy), sy]], { head: head[dir] });
       });
-      s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#fff" stroke="${INK}" stroke-width="1.7"/>` +
-        T(cx, cy - 28, n, { size: 14, weight: 'bold' }) +
-        line([[cx - 38, cy - 16], [cx + 38, cy - 16]], { head: 'none', sw: 1 }) +
-        T(cx, cy + 12, name, { w: 82, size: 12.5 });
+      s += gsProc(cx, cy, R + 14, R, n, name, { size: 12.5 });
       y += h + 14;
     }
     s += T(16, y + 10, 'Arrows show the direction data moves. A store drawn again has a second bar. The audit trail is left out, as in Figure 4-4.',
@@ -798,9 +826,13 @@ const DIAGRAMS = {
   agile: { file: 'figure-3-1-agile-cycle.png', make: agile },
   gantt: { file: 'appendix-c-gantt-chart.png', make: gantt },
   'dfd-1': { file: 'appendix-f-dfd-1-inquiries.png', make: childDfd('1') },
+  'dfd-2': { file: 'appendix-f-dfd-2-units-and-rates.png', make: childDfd('2') },
   'dfd-3': { file: 'appendix-f-dfd-3-tenancies.png', make: childDfd('3') },
   'dfd-4': { file: 'appendix-f-dfd-4-billing-and-payments.png', make: childDfd('4') },
   'dfd-5': { file: 'appendix-f-dfd-5-repair-requests.png', make: childDfd('5') },
+  'dfd-6': { file: 'appendix-f-dfd-6-expenses.png', make: childDfd('6') },
+  'dfd-7': { file: 'appendix-f-dfd-7-reports.png', make: childDfd('7') },
+  'dfd-8': { file: 'appendix-f-dfd-8-account.png', make: childDfd('8') },
 };
 
 // ---------------------------------------------------------------------------------------------

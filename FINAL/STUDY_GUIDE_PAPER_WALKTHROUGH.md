@@ -896,8 +896,8 @@ The section then has four labelled parts.
 
 **Figure 4-4. Level 1 data flow diagram.**
 - *What it shows*: the system opened into **eight processes** and **six data stores**, in the
-  **Yourdon-DeMarco notation** (circles are processes; open rectangles are stores; boxes are outside
-  parties).
+  **Gane and Sarson notation** (rounded rectangles are processes, rectangles open on the right are
+  stores, shaded squares are outside parties).
 - *How to read it*: processes 1.0 Handle inquiries, 2.0 Manage units and rates, 3.0 Manage tenants and
   tenancies, 4.0 Bill and record payments, 5.0 Manage repair requests, 6.0 Record expenses, 7.0 Produce
   reports, 8.0 Sign in, manage own account. Stores D1 Units and rates, D2 Tenants and tenancies, D3
@@ -1733,10 +1733,9 @@ Agile schedule as it really ran.
 
 **Appendix E. Data Flow Diagram (Level 1).** The same image as Figure 4-4.
 
-**Appendix F. Data Flow Diagrams (Child Diagrams).** Figures F-1 to F-4 open four of the eight level 1
-processes into their steps: **1.0 handle inquiries, 3.0 manage tenants and tenancies, 4.0 bill and
-record payments, 5.0 manage repair requests**. Processes 2.0, 6.0, 7.0 and 8.0 each do one operation, so
-they are not opened. A **child diagram** is a more detailed drawing of one process. It is there to show
+**Appendix F. Data Flow Diagrams (Level 2).** Figures F-1 to F-8 open each of the eight level 1
+processes into its steps, so the diagrams go down to Level 2 as Form 2 item 13 asks. A **Level 2
+diagram** is a more detailed drawing of one process. It is there to show
 the design one level deeper.
 
 **Appendix G. Use Case Diagram.** The same image as Figure 4-5.

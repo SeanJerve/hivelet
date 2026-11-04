@@ -724,7 +724,7 @@ never written in any document; a check for them runs before every commit. **Wher
 meaning. **Where:** Table 4-5; App. N.
 
 **Data flow diagram (DFD).** A diagram of processes, data stores and outside parties, and the data
-moving between them. Level 1 has eight processes; child diagrams open four of them. **Where:**
+moving between them. Level 1 has eight processes, and the Level 2 diagrams open all eight. **Where:**
 Figure 4-4; App. E; App. F.
 
 **Data store.** In a DFD, a place data is kept, such as D3, Bills and receipts. **Where:**
@@ -949,8 +949,9 @@ the PWA. **Where:** Table 3-1; Table 4-4.
 **Webhook.** Adyen calling Hivelet's server to report a payment. See Section 4. **Where:**
 `STUDY_GUIDE_CODE.md`, §5.
 
-**Yourdon-DeMarco notation.** The drawing style of the data flow diagrams: circles for processes,
-open boxes for stores. **Where:** Section 4.2.1.
+**Gane and Sarson notation.** The drawing style of the data flow diagrams, the one Form 2 asks for:
+rounded rectangles for processes, rectangles open on the right for stores, shaded squares for outside
+parties. **Where:** Section 4.2.1.
 
 ---
 

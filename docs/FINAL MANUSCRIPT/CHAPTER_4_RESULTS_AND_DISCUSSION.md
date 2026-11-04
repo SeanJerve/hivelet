@@ -167,7 +167,8 @@ equipment beyond the owner's own laptop and phone.
 
 Figure 6 is the context diagram: the system as one process, with the four parties outside it and the
 data that passes between them. Figure 7 opens it into eight processes and the stores each reads and
-writes, in the Yourdon-DeMarco notation. To trace one path: the owner records a cash receipt through
+writes, in the Gane and Sarson notation: a rounded rectangle is a process, a rectangle open on
+the right is a data store, and a shaded square is a party outside the system. To trace one path: the owner records a cash receipt through
 process 4.0, Bill and record payments, which writes it to store D3, Bills and receipts, and process
 7.0, Produce reports, reads it from there for the Overview and the Excel workbooks. The notifications
 and the audit record are written by nearly every process and are left out of Figure 7 for
