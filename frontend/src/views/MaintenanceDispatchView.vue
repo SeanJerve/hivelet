@@ -14,7 +14,6 @@ import {
   fetchRooms, 
   roomsLoaded,
   roomsFetchFailed,
-  TECHNICIANS,
   TICKET_CATEGORIES,
   showToast,
   type MaintenanceTicket
@@ -39,6 +38,31 @@ import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { ToolbarFilter, FilterDraft } from '@/components/ui/listToolbar';
 
 const TODAY_LONG = todayLong();
+
+/**
+ * The people who actually work for the property, supplied by Lloyd on
+ * 2026-11-04, grouped by trade.
+ *
+ * Kept in this file on purpose: this screen is its own lazy admin chunk, while
+ * `lib/systemState.ts` lands in the bundle every public visitor downloads, and
+ * these are private individuals' full names.
+ *
+ * The chosen string is written to `maintenance_tickets.assigned_technician` on
+ * a real record when a ticket is dispatched, so it stands as the history of who
+ * attended. A ticket saved with a name no longer listed keeps showing that name
+ * (PillSelect falls back to its value). The dispatch flow still requires the
+ * administrator to pick one deliberately, so nothing is attributed by accident.
+ */
+const TECHNICIANS = [
+  'Unassigned',
+  'Randy Millete (Plumbing)',
+  'Jonard Granadillos (Plumbing)',
+  'Lando Millete (Electrical)',
+  'Christian Leron (Electrical)',
+  'Angeles Millete (Carpentry)',
+  'Guillermo Millete (Carpentry)',
+  'Bernardo Millete (Carpentry)',
+];
 
 const q = ref('');
 const statusFilter = ref('All');
@@ -425,8 +449,8 @@ async function handleQuickDispatch() {
   if (!editingTicket.value) return;
 
   /**
-   * This used to auto-assign `TECHNICIANS[1]` - "Mang Ruel (Plumbing)" - to any
-   * unassigned ticket it dispatched, whatever the ticket was about. An
+   * This used to auto-assign `TECHNICIANS[1]`, the first plumber on the list, to
+   * any unassigned ticket it dispatched, whatever the ticket was about. An
    * electrical fault got the plumber, and the name was written to
    * `maintenance_tickets.assigned_technician`, which is a real column on a real
    * record.

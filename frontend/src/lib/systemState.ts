@@ -542,26 +542,6 @@ export const EXPENSE_CATEGORIES = [
 ];
 
 /**
- * PLACEHOLDER NAMES. The owner has not supplied her tradespeople.
- *
- * These are written to `maintenance_tickets.assigned_technician` on a real
- * record when a ticket is dispatched, so they are not cosmetic - a ticket
- * history will say "Mang Ruel (Plumbing)" attended, and no such person is known
- * to this project. "Aircon Pro Tanauan" is not even in the right province.
- *
- * Replace with the real list before the system is used in earnest. Until then
- * the dispatch flow requires the administrator to pick one deliberately rather
- * than defaulting to any of them, so nothing is attributed by accident.
- */
-export const TECHNICIANS = [
-  "Unassigned",
-  "Mang Ruel (Plumbing)",
-  "Kuya Dante (Electrical)",
-  "Jerome Mercado (Carpentry)",
-  "Aircon Pro Tanauan",
-];
-
-/**
  * DEMO_TENANT and PAYMENT_HISTORY were removed on 2026-09-14.
  *
  * Both were fabricated data with no remaining reader. DEMO_TENANT described an
