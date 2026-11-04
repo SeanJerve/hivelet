@@ -45,7 +45,6 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
-import PhoneMore from '@/components/overview/PhoneMore.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import YearMenu from '@/components/ui/YearMenu.vue';
 import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
@@ -284,15 +283,6 @@ const anyLoadFailed = computed(
 const liveIncomeRecords = computed(() => incomeRecords.filter((r) => r.year === CURRENT_YEAR));
 const liveExpenseRecords = computed(() => expenseRecords.filter((e) => e.year === CURRENT_YEAR));
 
-/** Year to date: every collection entered for the current year. */
-/** The year's income in its two parts, summed from the same receipts (Sean, 1 Nov 2026). */
-const entered = computed(() => ({
-  rent: liveIncomeRecords.value.reduce((sum, r) => sum + Number(r.rent || 0), 0),
-  water: liveIncomeRecords.value.reduce((sum, r) => sum + Number(r.water || 0), 0),
-}));
-const monthlyRevenue = computed(() =>
-  liveIncomeRecords.value.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0)
-);
 
 function isOccupied(r: RoomItem) {
   return r.status === 'settled' || r.status === 'pending' || r.tenant !== null;
@@ -476,18 +466,6 @@ const liveCapsules = computed<CapsuleMonth[]>(() =>
   })
 );
 
-const liveRecordedMonths = computed(() => live12MonthsData.value.filter((d) => d.hasIncome));
-const liveRecordedAverage = computed(() =>
-  liveRecordedMonths.value.length ? Math.round(monthlyRevenue.value / liveRecordedMonths.value.length) : 0
-);
-
-const liveLatestCashMonth = computed(() => liveRecordedMonths.value.at(-1) ?? null);
-/**
- * The Net income headline: the latest month with both sides entered, the last of the bars below
- * it. The latest month with income alone showed November's takings as its net while Spent beside
- * the chart said Not entered (audit, 4 Nov 2026).
- */
-const liveLatestNetMonth = computed(() => liveRecordedMonths.value.filter((d) => d.hasExpenses).at(-1) ?? null);
 
 /** The month picked on the Income chart, by its index in the year. */
 const pickedMonthIndex = ref<number | null>(null);
@@ -495,19 +473,6 @@ const pickedMonth = computed(() =>
   pickedMonthIndex.value === null ? null : live12MonthsData.value[pickedMonthIndex.value] ?? null
 );
 const notEnteredWord = (d: MonthIncomeData) => (d.monthNum > CURRENT_MONTH ? 'Not yet' : 'Not entered');
-
-/**
- * Net income per month with both sides entered, as bars from a centre line: a gain runs right in
- * green, a loss left in red, each as long as its share of the largest month either way.
- */
-const netBars = computed(() => {
-  const months = liveRecordedMonths.value.filter((d) => d.hasExpenses);
-  const largest = Math.max(1, ...months.map((d) => Math.abs(d.noi)));
-  return months.map((d) => ({ month: d.month, noi: d.noi, width: `${(Math.abs(d.noi) / largest) * 50}%` }));
-});
-const livePersonalTotal = computed(() =>
-  liveExpenseRecords.value.reduce((s, e) => s + Number(e.personalAmount ?? 0), 0)
-);
 
 /**
  * The Overview shows what has something to say (Sean, 1 Nov 2026). A tile with nothing in it is
@@ -541,8 +506,6 @@ const tileSpans = computed(() => {
     ...(monthShown.value ? [{ key: 'month', full: false }] : []),
     { key: 'occupancy', full: false },
     { key: 'byMonth', full: false },
-    // The whole row since Open repair requests went: urgent repairs are in Needs your attention (Sean, 4 Nov 2026).
-    { key: 'net', full: true },
   ];
   const spans: Record<string, string> = {};
   let alone: string | null = null; // a half with nothing yet beside it
@@ -836,9 +799,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     <!--
       On a phone (Loyd, 2026-10-03): the first screen shows what needs her, this
       month's rent and water, occupancy and the month chart together. The first
-      two are half-width tiles side by side, the arc and the chart are smaller,
-      and the figures each tile adds after its headline fold under "More"
-      (PhoneMore). Which come first follows CSS `order`, so
+      two are half-width tiles side by side, and the arc and the chart are
+      smaller. Which come first follows CSS `order`, so
       the reading order on a phone follows what is drawn, not the source. From
       768px nothing changes.
     -->
@@ -1089,15 +1051,27 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             :decimals="2"
             @select="(i) => (pickedMonthIndex = i)"
           />
-          <!-- The month picked on the chart, income against spending (review of 4 Nov 2026). A
-               month not entered says so rather than showing a confident zero. -->
+          <!-- The month picked on the chart, income against expenses (review of 4 Nov 2026). A
+               month not entered says so rather than showing a confident zero. Net income lives
+               here alone now: its own section went (Sean, 5 Nov 2026), and Income and Expenses
+               each open their own page. -->
           <dl v-if="pickedMonth" class="grid grid-cols-3 gap-4 border-t border-line pt-3">
             <div>
-              <dt class="text-xs text-ink-faint">Income</dt>
+              <dt class="text-xs text-ink-faint">
+                <RouterLink to="/admin/income#income-records" class="group/goto inline-flex items-center gap-1 hover:text-ink" aria-label="Income, open Monthly Income">
+                  Income
+                  <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+                </RouterLink>
+              </dt>
               <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
             </div>
             <div>
-              <dt class="text-xs text-ink-faint">Spent</dt>
+              <dt class="text-xs text-ink-faint">
+                <RouterLink to="/admin/expenses#expense-records" class="group/goto inline-flex items-center gap-1 hover:text-ink" aria-label="Expenses, open Monthly Expenses">
+                  Expenses
+                  <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+                </RouterLink>
+              </dt>
               <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
             </div>
             <div>
@@ -1107,116 +1081,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               </dd>
             </div>
           </dl>
-        </template>
-      </OverviewTile>
-
-      <!-- The full row until xl: at half width its table needed 321px of a 287px
-           wrapper, so the Net column sat behind a sideways scroll. -->
-      <OverviewTile key="net" title="Net income" to="/admin/expenses#expense-records" to-label="Open the expense records" :class="['col-span-2 max-md:order-5', tileSpans.net]">
-        <UnavailableNote
-          v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
-          message="Income or expenses could not be loaded."
-          @retry="refreshAllData"
-        />
-        <p v-else-if="!liveLatestCashMonth" class="text-sm text-ink-soft">
-          No collections are entered for {{ CURRENT_YEAR }} yet.
-        </p>
-        <template v-else>
-          <div v-if="liveLatestNetMonth">
-            <p class="text-xs text-ink-faint">
-              {{ MONTH_LONG[liveLatestNetMonth.monthNum - 1] }}
-            </p>
-            <p
-              :class="[
-                'text-3xl leading-tight font-semibold tabular',
-                liveLatestNetMonth.noi < 0 && 'text-overdue',
-              ]"
-            >
-              {{ peso(liveLatestNetMonth.noi) }}
-            </p>
-          </div>
-          <p v-else class="text-sm text-ink-soft">No spending is entered for {{ CURRENT_YEAR }} yet.</p>
-          <ul v-if="netBars.length" class="space-y-1.5" aria-label="Net income by month">
-            <li
-              v-for="b in netBars"
-              :key="b.month"
-              class="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3 text-xs"
-            >
-              <span class="text-ink-soft">{{ b.month }}</span>
-              <span class="relative h-2.5" aria-hidden="true">
-                <span class="absolute inset-y-[-3px] left-1/2 w-px bg-line" />
-                <span
-                  :class="['absolute inset-y-0 rounded-full', b.noi < 0 ? 'bg-overdue' : 'bg-brand']"
-                  :style="b.noi < 0 ? { right: '50%', width: b.width } : { left: '50%', width: b.width }"
-                />
-              </span>
-              <span :class="['min-w-[5.5rem] text-right tabular font-semibold', b.noi < 0 ? 'text-overdue' : 'text-ink']">{{ peso(b.noi) }}</span>
-            </li>
-          </ul>
-
-          <!--
-            Wrapped, like the five other `ws-table`s on this screen. This was
-            the one bare one: `.ws-table` is `width: 100%`, which compresses a
-            table but does not stop it overflowing once the columns cannot get
-            any narrower - a month name and three peso figures on a 375px
-            screen. Without `.ws-table-wrap` there is nothing to scroll inside,
-            so the overflow becomes the PAGE's, and the dashboard scrolls
-            sideways. Its sibling at "Month by month" has had the wrapper all
-            along; this one was simply missed.
-          -->
-          <!-- @container (audit 2026-10-09): the switch to the three-column shape
-               follows the tile's width, not the screen's. At 1280 this tile is half
-               a row (389px) and the four columns needed 407, so Net - the figure she
-               reads it for - was cut off behind a sideways scroll on a laptop. -->
-          <PhoneMore
-            everywhere
-            title="Monthly summary"
-            :summary="`${liveRecordedMonths.length} ${liveRecordedMonths.length === 1 ? 'month' : 'months'}`"
-          >
-          <div class="ws-table-wrap @container">
-          <table class="ws-table">
-            <caption class="sr-only">Collections, operating expenses and net operating income by month</caption>
-            <thead>
-              <tr>
-                <th scope="col">Month</th>
-                <th scope="col" class="num">Income</th>
-                <!-- On a phone the four columns did not fit 303px and Net, the figure
-                     she reads this for, sat off-screen behind a sideways scroll. There
-                     the spending moves under Rent and water as a second line. -->
-                <th scope="col" class="num hidden @[26rem]:table-cell">Expenses</th>
-                <th scope="col" class="num">Net</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(d, i) in liveRecordedMonths"
-                :key="d.month"
-                class="list-reveal-item"
-                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-              >
-                <th scope="row">{{ d.month }}</th>
-                <td class="num">
-                  {{ peso(d.grossIncome) }}
-                  <span class="block text-xs font-normal text-ink-faint @[26rem]:hidden">
-                    {{ d.hasExpenses ? `spent ${peso(d.expenses)}` : 'spending not entered' }}
-                  </span>
-                </td>
-                <!-- A month with no expense entries is not entered, the same as a
-                     month with no collections: "P0" read as a month that cost
-                     nothing, and its Net as pure profit. -->
-                <td class="num text-ink-soft hidden @[26rem]:table-cell">
-                  <StatusPill v-if="!d.hasExpenses" tone="unentered">Not entered</StatusPill>
-                  <template v-else>{{ peso(d.expenses) }}</template>
-                </td>
-                <td :class="['num font-semibold', d.noi < 0 && 'text-overdue']">{{ d.hasExpenses ? peso(d.noi) : '' }}</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-          <p class="text-xs leading-5 text-ink-faint">
-            Personal, not deducted: {{ peso(livePersonalTotal) }}
-          </p>
-          </PhoneMore>
         </template>
       </OverviewTile>
 
@@ -1281,7 +1145,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Spent, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-4">
+      <OverviewTile :title="`Expenses, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-4">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalExpenseRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>

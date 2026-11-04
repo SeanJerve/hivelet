@@ -28,7 +28,6 @@
  * Excel export that read those refs before still reads them.
  */
 import { computed, ref, useId } from 'vue';
-import { useStuck } from '@/lib/useStuck';
 import { Search, SlidersHorizontal, X } from 'lucide-vue-next';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import {
@@ -59,12 +58,6 @@ const props = withDefaults(
     filterTitle?: string;
     /** The short "2025 · BH" line under the toolbar. Off where a screen already says it. */
     summary?: boolean;
-    /**
-     * Stays under the top bar down a long list (Sean, 5 Nov 2026). Off where the toolbar sits in
-     * a short wrapper: that wrapper takes `ws-sticky-tools` and useStuck itself (Inquiries,
-     * the tenant's Repairs).
-     */
-    sticky?: boolean;
   }>(),
   {
     views: () => [],
@@ -76,7 +69,6 @@ const props = withDefaults(
     filters: () => [],
     filterTitle: 'Filters',
     summary: true,
-    sticky: true,
   }
 );
 
@@ -85,9 +77,6 @@ const emit = defineEmits<{
   'update:search': [value: string];
   apply: [values: FilterDraft];
 }>();
-
-const root = ref<HTMLElement | null>(null);
-const stuck = useStuck(root);
 
 const panelId = useId();
 const panelOpen = ref(false);
@@ -149,10 +138,7 @@ function spanClass(index: number) {
   <!-- @container: in a narrow column (Inquiries' list beside the thread on a laptop) the toolbar
        lays out by its own width, not the screen's - full-width search, the dropdowns two to a row
        under it - instead of wrapping each dropdown onto its own line (Sean, 2026-10-09). -->
-  <div
-    ref="root"
-    :class="['@container flex flex-col gap-2', sticky && 'ws-sticky-tools', sticky && stuck && 'is-stuck']"
-  >
+  <div class="@container flex flex-col gap-2">
     <div class="flex flex-wrap items-center gap-2 sm:items-end sm:gap-3">
       <!-- `min-w-0 flex-1` on the search so it takes what the Filters button
            leaves on a phone, down to 320px; `sm:max-w-80` keeps it the 20rem
@@ -208,10 +194,9 @@ function spanClass(index: number) {
           panelOpen ? 'ws-reveal grid grid-cols-2 gap-2' : 'hidden',
         ]"
       >
-        <!-- Each with its name above it: "Cluster" alone could be the filter or the
-             grouping, and the landlady should not have to open one to find out. -->
-        <div v-if="showViews" :class="['flex flex-col gap-1', spanClass(0)]">
-          <span :id="`${panelId}-view`" class="px-1 text-xs text-ink-faint">Show as</span>
+        <!-- No name above each (Sean, 5 Nov 2026): every choice says what it is on its own ("By
+             cluster", "All months", "Group by unit"), and the name stays as its accessible name. -->
+        <div v-if="showViews" :class="['flex flex-col', spanClass(0)]">
           <PillSelect
             :model-value="(view as string)"
             :options="viewOptions"
@@ -223,9 +208,8 @@ function spanClass(index: number) {
         <div
           v-for="({ filter, options }, i) in offered"
           :key="filter.key"
-          :class="['flex flex-col gap-1', spanClass(i + (showViews ? 1 : 0))]"
+          :class="['flex flex-col', spanClass(i + (showViews ? 1 : 0))]"
         >
-          <span class="px-1 text-xs text-ink-faint">{{ filter.label }}</span>
           <PillSelect
             :model-value="filter.value"
             :options="options"

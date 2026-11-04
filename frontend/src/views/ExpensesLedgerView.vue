@@ -206,7 +206,7 @@ const exportYears = computed(() => yearsList.value.filter((y) => y !== 'All').ma
 const isDownloadOpen = ref(false);
 
 const monthsList = [
-  { val: 'All', label: 'All' }, // 'All', not 'All months': the filter's own label says Month (Sean, 20 Oct 2026)
+  { val: 'All', label: 'All months' }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
   { val: 'Jan', label: 'January' },
   { val: 'Feb', label: 'February' },
   { val: 'Mar', label: 'March' },
@@ -238,7 +238,7 @@ const yearsList = computed(() => {
 });
 
 const expenseCategoryOptions = computed(() => [
-  { value: 'All', label: 'All' },
+  { value: 'All', label: 'All kinds' }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
   ...categoryOptions.value.map((c) => ({ value: c, label: c })),
 ]);
 
@@ -1040,7 +1040,7 @@ async function handleEditExpense() {
         to do on its own, and the pair reads as one product. It also stops a
         seven-figure peso amount from running out of a third-width tile.
       -->
-      <OverviewTile :title="`Spent, ${focus.waitingFor ?? focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Expenses, ${focus.waitingFor ?? focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           message="Expenses could not be loaded."

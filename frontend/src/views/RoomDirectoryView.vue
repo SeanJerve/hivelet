@@ -41,7 +41,7 @@ const selectedStatus = ref<string>('All');
 const viewMode = ref<ViewMode>('matrix');
 
 const clusterOptions = computed(() => [
-  { value: 'All', label: 'All' },
+  { value: 'All', label: 'All clusters' }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
   ...CLUSTERS.map((c) => ({ value: c, label: c })),
 ]);
 
@@ -230,7 +230,7 @@ function editUnit(u: RoomItem) {
  * the same control rather than two that can disagree.
  */
 const statusChips = computed(() => [
-  { key: 'All', label: 'All', count: rooms.length },
+  { key: 'All', label: 'All units', count: rooms.length }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
   // Matches `getStatusLabel` below exactly. This read 'Paid up' and 'Owing' -
   // the same payment framing that comment documents removing from the result
   // badges - so the filter menu offered words the results themselves no

@@ -135,9 +135,9 @@ House. The greeting at the top follows the time of day.
 has the same bar at the top:
 
 - **Search** narrows the list as you type.
-- **The filters** are dropdowns beside the search, each named above it: cluster, month, year, status,
-  kind, whichever that list has. Where a list can be drawn two ways, **Show as** picks **By cluster**
-  or **As a list**. **Order** arranges the list: **By unit**, **By name (A to Z)**, **Newest first**
+- **The filters** are dropdowns beside the search, each saying what it shows, such as **All clusters**,
+  **All months** or **All repairs**: cluster, month, year, status, kind, whichever that list has. Where
+  a list can be drawn two ways, one picks **By cluster** or **As a list**. **Order** arranges the list: **By unit**, **By name (A to Z)**, **Newest first**
   or **Oldest first** (Repairs also has **Most urgent first**). The list changes the moment you pick.
   **On a phone**, tap **Filters** to open them under the bar, and tap it again to close them. The
   filters in use are named under the bar; **Clear** removes them.
@@ -180,12 +180,10 @@ as good as that.
 The first screen: **Needs your attention** (the payments waiting to be verified on the left, the
 urgent repairs on the right, three of each with a count of the rest; a side with nothing waiting is
 not shown), **Received** for this month once anything is recorded in it, **Occupancy** (the units
-occupied out of 33, with each cluster's count, such as 22/22), **Income** month by month, and **Net
-income**. Tap a month on the Income chart to see its **Income**, **Spent** and **Net income** under
-the chart. **Net income** draws each month from a centre line: a gain to the right, a loss to the
-left in red. Under it, tap **Monthly summary** to open a table of every month recorded this year,
-with its income, expenses and net. Urgent repairs are listed only in Needs your attention.
-Personal spending is shown beside operating costs and is not deducted from rental income. If a
+occupied out of 33, with each cluster's count, such as 22/22), and **Income** month by month. Tap a
+month on the Income chart to see its **Income**, **Expenses** and **Net income** under the chart;
+the arrows beside **Income** and **Expenses** open Monthly Income and Monthly Expenses. Urgent repairs are listed only in Needs your attention.
+Net income deducts the operating costs only: personal spending is listed on Monthly Expenses beside them, and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
 
 **Your recent actions** lists the last three things you did (a payment recorded, a GCash payment
@@ -301,7 +299,7 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
 
 ### 6. Rooms and rates
 
-Every unit, by cluster or as one list (**Filters** > **Show as**); **Filters** also narrows them by
+Every unit, by cluster or as one list (**By cluster** or **As a list**, under **Filters** on a phone); **Filters** also narrows them by
 status or cluster. **Edit** (the pencil) a unit to change its rate, status, description
 or picture. A unit with no photograph shows its **Floor plan**, the same one visitors see on the
 public pages; **Replace photo** uploads one, and once saved the public page shows that

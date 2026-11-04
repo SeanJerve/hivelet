@@ -378,12 +378,12 @@ const showingHistory = computed(() => historyYear.value !== 'now');
 const historyYearOptions = computed(() => {
   const years = new Set<number>(incomeRecords.map((r) => Number(r.year)).filter(Boolean));
   return [
-    { value: 'now', label: 'Now' },
+    { value: 'now', label: 'Today' }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
     ...[...years].sort((a, b) => b - a).map((y) => ({ value: String(y), label: String(y) })),
   ];
 });
 const historyMonthOptions = [
-  { value: 'all', label: 'All' },
+  { value: 'all', label: 'All months' }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
   ...MONTH_NAMES.map((m, i) => ({ value: String(i + 1), label: m })),
 ];
 

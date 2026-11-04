@@ -180,7 +180,7 @@ without her permission**: it shows real names and money. For practice, the demo 
 
 | Screen (side menu) | What it is for |
 | :--- | :--- |
-| **Overview** | Needs your attention (payments to verify, urgent repairs), Received for this month once anything is recorded, Occupancy (32 of 33, each cluster's count), Income month by month (tap a month for its Income, Spent and Net income), Net income from a centre line (a loss in red, to the left) with **Monthly summary** under it (every month's income, expenses and net), and the three green buttons: **Move someone in/out**, **Record expense**, **Record payment** |
+| **Overview** | Needs your attention (payments to verify, urgent repairs), Received for this month once anything is recorded, Occupancy (32 of 33, each cluster's count), Income month by month (tap a month for its Income, Expenses and Net income, with arrows on Income and Expenses to their pages), and the three green buttons: **Move someone in/out**, **Record expense**, **Record payment** |
 | **Monthly Income** | Her income records, by cluster, in her workbook's layout, on the **Records** tab beside **To verify** (it opens on To verify when GCash payments are waiting); **Record payment**; verify or reject GCash payments; void a receipt; **Download** for Excel |
 | **Monthly Expenses** | Expenses split across property areas; her thirteen categories plus her own; Download |
 | **Tenants** | Move in, move out, edit, reset a password, see the login ID |

@@ -8,7 +8,6 @@ import { periodEnd, propertyToday, formatDateOnly, PROPERTY_TIMEZONE } from '@/l
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import InvoiceField from '@/components/ui/InvoiceField.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { useStuck } from '@/lib/useStuck';
 import { useLiveRefresh } from '@/lib/live';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -114,7 +113,7 @@ function toggleCluster(key: string, index: number) {
 }
 
 const monthsList = [
-  { val: 'All', label: 'All' }, // 'All', not 'All months': the filter's own label says Month (Sean, 20 Oct 2026)
+  { val: 'All', label: 'All months' }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
   { val: 'Jan', label: 'January' },
   { val: 'Feb', label: 'February' },
   { val: 'Mar', label: 'March' },
@@ -516,7 +515,7 @@ const rows = computed(() =>
 function clusterChipsFor(year: string, month: string) {
   const inScope = incomeRecords.filter((r) => matchesExceptCluster(r, year, month));
   return [
-    { key: 'All', label: 'All', count: inScope.length },
+    { key: 'All', label: 'All clusters', count: inScope.length }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
     ...CLUSTERS.map((c) => ({
       key: c as string,
       label: c as string,
@@ -548,9 +547,10 @@ const incomeFilters = computed<ToolbarFilter[]>(() => [
     value: incomeGroupBy.value,
     defaultValue: 'cluster',
     options: [
-      { value: 'cluster', label: 'Cluster' },
-      { value: 'unit', label: 'Unit' },
-      { value: 'name', label: 'Tenant (A to Z)' },
+      // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
+      { value: 'cluster', label: 'Group by cluster' },
+      { value: 'unit', label: 'Group by unit' },
+      { value: 'name', label: 'Group by tenant (A to Z)' },
     ],
   },
   { key: 'order', label: 'Order', value: incomeOrder.value, defaultValue: 'newest', options: orderOptions(['newest', 'oldest', 'unit', 'name']) },
@@ -1160,9 +1160,6 @@ const exportMonth = computed(() => {
 });
 const exportYears = computed(() => yearsList.value.filter((y) => y !== 'All').map(Number));
 const isDownloadOpen = ref(false);
-/** The tabs, search and filters stay under the top bar down the records (Sean, 5 Nov 2026). */
-const toolsBar = ref<HTMLElement | null>(null);
-const toolsStuck = useStuck(toolsBar);
 
 </script>
 
@@ -1352,7 +1349,7 @@ const toolsStuck = useStuck(toolsBar);
       ledger. Ledger / To verify stay tabs: they are two different lists, not
       two drawings of one.
     -->
-    <div id="income-records" ref="toolsBar" :class="['ws-sticky-tools flex scroll-mt-24 flex-col gap-3', toolsStuck && 'is-stuck']">
+    <div id="income-records" class="flex scroll-mt-24 flex-col gap-3">
       <!-- Tabs: Ledger or To verify -->
       <div role="tablist" aria-label="Income view" class="flex items-center gap-5 shrink-0">
         <button
@@ -1397,7 +1394,6 @@ const toolsStuck = useStuck(toolsBar);
 
       <ListToolbar
         v-if="activeTab === 'ledger'"
-        :sticky="false"
         v-model:view="viewMode"
         v-model:search="q"
         :views="incomeViews"

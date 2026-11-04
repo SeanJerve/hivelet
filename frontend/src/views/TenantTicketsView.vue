@@ -14,7 +14,6 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { currentUser } from '@/lib/authStore';
 import { rememberFilters } from '@/lib/savedFilters';
 import { ref, computed, onMounted, nextTick } from 'vue';
-import { useStuck } from '@/lib/useStuck';
 import { useLiveRefresh } from '@/lib/live';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
@@ -48,7 +47,7 @@ import { screenRef, screenLoaded } from '@/lib/screenCache';
 const { showToast } = useToast();
 
 const ticketFilterOptions = [
-  { value: 'All', label: 'All' },
+  { value: 'All', label: 'All requests' }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
   { value: 'Open', label: 'Open' },
   { value: 'Resolved', label: 'Done' },
 ];
@@ -90,9 +89,6 @@ function isCancelled(t: TicketRow): boolean {
 function canCancel(t: TicketRow): boolean {
   return t.status === 'Submitted';
 }
-/** The search and filter stay under the top bar down a long list on a phone (Sean, 5 Nov 2026). */
-const toolsBar = ref<HTMLElement | null>(null);
-const toolsStuck = useStuck(toolsBar);
 const cancelTarget = ref<TicketRow | null>(null);
 const cancelReason = ref('');
 const cancelling = ref(false);
@@ -981,9 +977,8 @@ function formatDateTime(iso: string) {
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it
                holding which requests to show. -->
-          <div ref="toolsBar" :class="['ws-sticky-tools pb-4', toolsStuck && 'is-stuck']">
+          <div class="pb-4">
             <ListToolbar
-              :sticky="false"
               v-model:search="searchQuery"
               search-label="Search your requests"
               :filters="ticketFilters"

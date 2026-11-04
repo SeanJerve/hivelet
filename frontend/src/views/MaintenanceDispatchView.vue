@@ -73,7 +73,7 @@ const showSkeleton = computed(() => isLoading.value && !repairsLoaded.value);
 const isSubmitting = ref(false);
 
 const statusFilterOptions = [
-  { value: 'All', label: 'All' },
+  { value: 'All', label: 'All repairs' }, // Says what it is on its own: the dropdowns carry no label above them (Sean, 5 Nov 2026).
   { value: 'Open', label: 'To dispatch' },
   { value: 'In Progress', label: 'In progress' },
   { value: 'Resolved', label: 'Resolved' },
