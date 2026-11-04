@@ -321,9 +321,6 @@ const urgentTickets = computed(() =>
   openTickets.value.filter((t) => t.priority === 'Emergency' || t.priority === 'High')
 );
 const PRIORITY_RANK: Record<MaintenanceTicket['priority'], number> = { Emergency: 0, High: 1, Medium: 2, Low: 3 };
-const openTicketsPreview = computed(() =>
-  [...openTickets.value].sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]).slice(0, 5)
-);
 
 /**
  * BR-029: the dashboard defaults to the current month. The year figure is kept
@@ -514,9 +511,6 @@ const attentionShown = computed(() => tilesSettled.value && (paymentsWaiting.val
 const monthShown = computed(
   () => tilesSettled.value && (incomeRecordsFetchFailed.value || currentMonthRecordCount.value > 0)
 );
-const repairsShown = computed(
-  () => tilesSettled.value && (maintenanceTicketsFetchFailed.value || openTickets.value.length > 0)
-);
 
 /**
  * The width of each tile on the twelve-column grid, by which of the others are showing. Halves,
@@ -531,8 +525,8 @@ const tileSpans = computed(() => {
     ...(monthShown.value ? [{ key: 'month', full: false }] : []),
     { key: 'occupancy', full: false },
     { key: 'byMonth', full: false },
-    { key: 'net', full: false },
-    ...(repairsShown.value ? [{ key: 'repairs', full: false }] : []),
+    // The whole row since Open repair requests went: urgent repairs are in Needs your attention (Sean, 4 Nov 2026).
+    { key: 'net', full: true },
   ];
   const spans: Record<string, string> = {};
   let alone: string | null = null; // a half with nothing yet beside it
@@ -1209,51 +1203,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile
-        v-if="repairsShown"
-        key="repairs"
-        title="Open repair requests"
-        to="/admin/tickets#repairs-board"
-        to-label="Open repairs"
-        :class="['col-span-2 max-md:order-5', tileSpans.repairs]"
-      >
-        <UnavailableNote
-          v-if="maintenanceTicketsFetchFailed"
-          message="Repairs could not be loaded."
-          @retry="refreshAllData"
-        />
-        <p v-else-if="openTickets.length === 0" class="text-sm text-ink-soft">No repair requests are open.</p>
-        <template v-else>
-          <ul class="divide-y divide-line">
-            <li
-              v-for="(t, i) in openTicketsPreview"
-              :key="t.id"
-              class="list-reveal-item flex items-center justify-between gap-3 py-3"
-              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-            >
-              <span class="min-w-0">
-                <!-- break-words: the resident's own free text from the ticket
-                     form, same overflow risk MaintenanceDispatchView's board
-                     card had (measured 495px hidden at the ordinary desktop
-                     width, silently, by body's overflow-x: hidden). -->
-                <span class="block break-words text-sm font-medium">{{ t.title }}</span>
-                <span class="block text-xs text-ink-faint">
-                  {{ t.unit }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician === 'Unassigned' ? 'no one assigned yet' : t.technician }}</template>
-                </span>
-              </span>
-              <!-- High is amber, as on Repairs, the bell and the tenant's own list; it was
-                   red here alone, so one ticket changed colour between two screens
-                   (audit 2026-10-09). Both still count as urgent above. -->
-              <StatusPill :tone="t.priority === 'Emergency' ? 'overdue' : t.priority === 'High' ? 'verify' : 'neutral'">
-                {{ t.priority }}
-              </StatusPill>
-            </li>
-          </ul>
-          <p v-if="openTickets.length > openTicketsPreview.length" class="text-xs text-ink-faint">
-            {{ openTickets.length - openTicketsPreview.length }} more open in Repairs.
-          </p>
-        </template>
-      </OverviewTile>
     </TransitionGroup>
 
     <!-- ================================================================== *
