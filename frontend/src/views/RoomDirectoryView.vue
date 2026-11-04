@@ -20,6 +20,7 @@ import {
   type RoomItem,
 } from '@/lib/systemState';
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
+import { screenLoaded } from '@/lib/screenCache';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -99,6 +100,9 @@ function toggleCluster(name: string, index: number) {
   openClusters.value[name] = !isClusterOpen(name, index);
 }
 const isLoading = ref(true);
+// The skeleton is for the first read only; a revisit shows the units at once (lib/screenCache.ts).
+const roomsScreenLoaded = screenLoaded('rooms');
+const showSkeleton = computed(() => isLoading.value && !roomsScreenLoaded.value);
 
 async function fetchRooms() {
   isLoading.value = true;
@@ -111,6 +115,8 @@ async function fetchRooms() {
     console.error('fetchRooms failed:', err);
   } finally {
     isLoading.value = false;
+    // A failed read goes behind the skeleton again next time, not onto the seeded units.
+    if (!roomsFetchFailed.value) roomsScreenLoaded.value = true;
   }
 }
 
@@ -309,7 +315,7 @@ function applyRoomFilters(v: FilterDraft) {
     />
 
     <!-- SKELETON LOADING STATE -->
-    <div v-if="isLoading" class="space-y-6">
+    <div v-if="showSkeleton" class="space-y-6">
       <div v-if="viewMode === 'matrix'" class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <SkeletonCard variant="room" :count="8" />
       </div>

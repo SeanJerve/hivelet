@@ -6,6 +6,7 @@ import { computed, reactive, readonly, ref } from 'vue';
 import { api, setStoredToken, getStoredToken, ApiRequestError } from './api';
 import { claimOfflineCopy, clearOfflineCopy } from './offlineCache';
 import { forgetSavedFilters } from './savedFilters';
+import { forgetScreenCache } from './screenCache';
 import { forgetAllInquiries } from './myInquiries';
 
 export type Role = 'guest' | 'prospect' | 'tenant' | 'admin';
@@ -148,6 +149,8 @@ function applySession(payload: { user: SessionUser; permissions: string[] }): vo
   // person alone: anyone else signing in on this device wipes them first
   // (Sean, 2026-10-02).
   claimOfflineCopy(payload.user);
+  // And the figures each screen kept between visits (lib/screenCache.ts).
+  forgetScreenCache();
   forgetAllInquiries();
   state.user = payload.user;
   state.permissions = payload.permissions ?? [];
@@ -166,6 +169,7 @@ function clearSession(): void {
   void clearOfflineCopy();
   // Each list's remembered filters too (lib/savedFilters.ts).
   forgetSavedFilters();
+  forgetScreenCache();
   forgetAllInquiries();
   try {
     localStorage.removeItem(CACHED_SESSION_KEY);

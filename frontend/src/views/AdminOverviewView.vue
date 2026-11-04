@@ -39,6 +39,7 @@ import { CLUSTERS, peso as pesoFixed, pesoExact, wholePercents } from '@/lib/can
 const peso = (value: number, decimals?: number) => (decimals === undefined ? pesoExact(value) : pesoFixed(value, decimals));
 import { propertyToday } from '@/lib/propertyDate';
 import { pickedYear } from '@/lib/yearScope';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -61,11 +62,14 @@ import {
 const router = useRouter();
 const route = useRoute();
 
-const pendingPayments = ref<any[]>([]);
+// Kept between visits (lib/screenCache.ts): the skeleton is for the first load only, and coming
+// back to the page shows what it held while the figures are read again.
+const pendingPayments = screenRef<any[]>('overview.pending', []);
 /** True when the verification queue could not be read, so 0 is not reported as fact. */
 const pendingPaymentsFailed = ref(false);
 const isRefreshing = ref(false);
-const isInitialLoading = ref(true);
+const overviewLoaded = screenLoaded('overview');
+const isInitialLoading = ref(!overviewLoaded.value);
 
 /**
  * Read from the clock, not pinned to a literal. Every "live" figure filters on
@@ -233,6 +237,7 @@ async function refreshAllData() {
    * collected, ₱0 net (B-61). Zero is a claim; loading is not.
    */
   if (anyLoadFailed.value) isInitialLoading.value = true;
+  const wasLoading = isInitialLoading.value;
   isRefreshing.value = true;
   try {
     await Promise.allSettled([
@@ -246,6 +251,10 @@ async function refreshAllData() {
   } finally {
     isRefreshing.value = false;
     isInitialLoading.value = false;
+    // A failed first read is shown again behind the skeleton on the next visit, not as zeros.
+    overviewLoaded.value = !anyLoadFailed.value;
+    // The watch below only runs on the first load; a revisit settles the year here.
+    if (!wasLoading) followPickedYear();
   }
 }
 
@@ -503,7 +512,8 @@ const livePersonalTotal = computed(() =>
  * makes its entrance, the others moving aside for it. `tile-*` in index.css.
  */
 const TILE_ENTRANCE_DELAY_MS = 450;
-const tilesSettled = ref(false);
+// Already settled on a revisit: the tiles are drawn at once, not after the first-load pause.
+const tilesSettled = ref(!isInitialLoading.value);
 watch(isInitialLoading, (loading) => {
   if (!loading) setTimeout(() => (tilesSettled.value = true), TILE_ENTRANCE_DELAY_MS);
 });

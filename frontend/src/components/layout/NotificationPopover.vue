@@ -26,6 +26,7 @@ import { useRouter } from 'vue-router';
 import {
   unreadCount,
   isLoading,
+  notificationsLoaded,
   isPopoverOpen,
   activeFilter,
   filteredNotifications,
@@ -79,8 +80,10 @@ function settleRevealSoon() {
     revealTimer = null;
   }, 500);
 }
+// The skeleton is for the first load only; a refresh behind rows already shown is quiet.
+const showSkeleton = computed(() => isLoading.value && !notificationsLoaded.value);
 watch(
-  isLoading,
+  showSkeleton,
   (loading) => {
     if (!loading && revealRows.value) settleRevealSoon();
   },
@@ -205,7 +208,7 @@ watch(isPopoverOpen, async (open) => {
   isFilterOpen.value = false;
   if (open) {
     revealRows.value = true;
-    if (!isLoading.value) settleRevealSoon();
+    if (!showSkeleton.value) settleRevealSoon();
     openedFrom = document.activeElement as HTMLElement | null;
     await nextTick();
     panel.value?.focus();
@@ -452,7 +455,7 @@ onUnmounted(() => {
 
       <!-- The stream -->
       <div class="max-h-[440px] flex-1 overflow-y-auto overscroll-contain">
-        <div v-if="isLoading" class="divide-y divide-line">
+        <div v-if="showSkeleton" class="divide-y divide-line">
           <div v-for="i in 3" :key="'sk-' + i" class="flex items-start gap-3 p-4">
             <Skeleton class-name="size-9 shrink-0 rounded-xl" />
             <div class="min-w-0 flex-1 space-y-2">

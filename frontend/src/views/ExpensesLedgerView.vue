@@ -12,6 +12,7 @@ import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
 import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 import YearMenu from '@/components/ui/YearMenu.vue';
 import { Plus, Loader2, FileSpreadsheet, Pencil, Trash2 } from 'lucide-vue-next';
 import { orderOptions, type RowOrder } from '@/lib/rowOrder';
@@ -51,8 +52,11 @@ const isAddOpen = ref(false);
 const route = useRoute();
 const router = useRouter();
 const isLoading = ref(false);
+// The skeleton is for the first read only; a revisit draws the ledger at once (lib/screenCache.ts).
+const expensesLoaded = screenLoaded('expenses');
+const showSkeleton = computed(() => isLoading.value && !expensesLoaded.value);
 const isSubmitting = ref(false);
-const dbCategories = ref<ApiCat[]>([]);
+const dbCategories = screenRef<ApiCat[]>('expenses.categories', []);
 
 /**
  * The categories the LEDGER actually uses, from `/admin/expense-categories`.
@@ -385,6 +389,8 @@ async function fetchExpenses() {
     console.error('fetchExpenses failed:', err);
   } finally {
     isLoading.value = false;
+    // A failed read is shown behind the skeleton again next time, not as an empty ledger.
+    if (!expenseRecordsFetchFailed.value) expensesLoaded.value = true;
   }
 }
 
@@ -1116,8 +1122,8 @@ async function handleEditExpense() {
          ledger loaded - not even that a load was in progress. The overview and
          income ledger already pair their loading state with an announced
          `role="status"`; this register's table skeleton had none. -->
-    <span v-if="isLoading" class="sr-only" role="status">Loading the expense records</span>
-    <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
+    <span v-if="showSkeleton" class="sr-only" role="status">Loading the expense records</span>
+    <SkeletonTable v-if="showSkeleton" :columns="6" :rows="6" />
 
     <div v-else-if="groupedExpenses.length === 0" class="ws-reveal py-16 text-center">
       <p class="text-base font-semibold text-ink">

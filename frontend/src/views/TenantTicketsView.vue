@@ -42,6 +42,7 @@ import PillSelect from '@/components/ui/PillSelect.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { ToolbarFilter } from '@/components/ui/listToolbar';
 import { useToast } from '@/lib/useToast';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 
 const { showToast } = useToast();
 
@@ -162,13 +163,15 @@ async function showTicketError(message: string, field: 'ticket-title' | 'ticket-
 }
 
 // ---- Ticket list state ----------------------------------------------------
-const tickets = ref<TicketRow[]>([]);
+// Kept between visits (lib/screenCache.ts): the skeleton is for the first read only.
+const tickets = screenRef<TicketRow[]>('tenant.tickets', []);
+const ticketsLoaded = screenLoaded('tenant.tickets');
 /**
- * Starts true: `onMounted` asks at once, and until it answers the header's
+ * Starts true on a first visit: `onMounted` asks at once, and until it answers the header's
  * counts have nothing to count. They read "0 open · 0 resolved" on every
- * visit while the request was in flight.
+ * visit while the request was in flight. A revisit has the list already.
  */
-const loadingTickets = ref(true);
+const loadingTickets = ref(!ticketsLoaded.value);
 /**
  * Set when `/tenant/my-tickets` could not be read.
  *
@@ -281,6 +284,18 @@ const resolvedCount = computed(
 const isTimelineOpen = ref(false);
 const activeTimelineTicket = ref<TicketRow | null>(null);
 const timelineNotes = ref<TicketNote[]>([]);
+// Each request's replies, kept between openings: one opened before shows them at once and reads
+// them again behind it, keyed by ticket so one request's thread is never another's.
+const notesByTicket = screenRef<Record<string, TicketNote[]>>('tenant.tickets.notes', {});
+
+function noteRows(msgs: any[]): TicketNote[] {
+  return msgs.map((m) => ({
+    id: m.id,
+    author: m.profiles?.role === 'admin' ? 'Landlady' : 'You',
+    text: m.message_body,
+    timestamp: m.created_at,
+  }));
+}
 
 /** Set when the conversation could not be loaded, so an empty thread is not mistaken for a quiet one. */
 const timelineError = ref<string | null>(null);
@@ -369,7 +384,9 @@ let timelineRequestToken = 0;
 
 async function openTimeline(ticket: TicketRow) {
   activeTimelineTicket.value = ticket;
-  timelineNotes.value = seedNotesForTicket(ticket);
+  timelineNotes.value = notesByTicket.value[ticket.id]
+    ? [...notesByTicket.value[ticket.id]!]
+    : seedNotesForTicket(ticket);
   newNoteText.value = '';
   noteError.value = '';
   isTimelineOpen.value = true;
@@ -382,12 +399,8 @@ async function openTimeline(ticket: TicketRow) {
     const msgs = await api.get<any[]>(`/tenant/tickets/${ticket.id}/messages`);
     if (token !== timelineRequestToken) return;
     if (msgs && Array.isArray(msgs) && msgs.length > 0) {
-      timelineNotes.value = msgs.map((m) => ({
-        id: m.id,
-        author: m.profiles?.role === 'admin' ? 'Landlady' : 'You',
-        text: m.message_body,
-        timestamp: m.created_at,
-      }));
+      timelineNotes.value = noteRows(msgs);
+      notesByTicket.value[ticket.id] = timelineNotes.value;
     }
   } catch (err: any) {
     if (token !== timelineRequestToken) return;
@@ -461,8 +474,9 @@ async function postNote() {
   if (!text || !activeTimelineTicket.value || savingNote.value) return;
   savingNote.value = true;
   noteError.value = '';
+  const ticketId = activeTimelineTicket.value.id;
   try {
-    const res = await api.post<any>(`/tenant/tickets/${activeTimelineTicket.value.id}/messages`, {
+    const res = await api.post<any>(`/tenant/tickets/${ticketId}/messages`, {
       message: text,
     });
     timelineNotes.value.push({
@@ -471,6 +485,7 @@ async function postNote() {
       text: text,
       timestamp: new Date().toISOString(),
     });
+    notesByTicket.value[ticketId] = [...timelineNotes.value];
     newNoteText.value = '';
     // Confirmed in the thread, not by a toast, so the ping is played here
     // (Sean, 2026-10-01: major actions ping).
@@ -564,12 +579,8 @@ useLiveRefresh(async () => {
   try {
     const msgs = await api.get<any[]>(`/tenant/tickets/${open.id}/messages`);
     if (Array.isArray(msgs) && msgs.length > 0) {
-      timelineNotes.value = msgs.map((m) => ({
-        id: m.id,
-        author: m.profiles?.role === 'admin' ? 'Landlady' : 'You',
-        text: m.message_body,
-        timestamp: m.created_at,
-      }));
+      timelineNotes.value = noteRows(msgs);
+      notesByTicket.value[open.id] = timelineNotes.value;
     }
   } catch {
     /* the next check tries again */
@@ -577,17 +588,20 @@ useLiveRefresh(async () => {
 });
 
 async function fetchTickets(opts: { quiet?: boolean } = {}) {
+  // A page that has loaded once keeps its list on screen, and a read that fails behind it leaves it as it was.
+  const keepShown = ticketsLoaded.value;
   if (!opts.quiet) {
-    loadingTickets.value = true;
+    loadingTickets.value = !keepShown;
     ticketsLoadFailed.value = false;
   }
   try {
     tickets.value = (await api.get<TicketRow[]>('/tenant/my-tickets')) ?? [];
     ticketsLoadFailed.value = false;
+    ticketsLoaded.value = true;
   } catch (err: any) {
     console.error('Failed to load tickets:', err?.message || err);
     // A quiet refresh that fails leaves the page as it was (lib/live.ts).
-    if (!opts.quiet) ticketsLoadFailed.value = true;
+    if (!opts.quiet && !keepShown) ticketsLoadFailed.value = true;
   } finally {
     loadingTickets.value = false;
   }

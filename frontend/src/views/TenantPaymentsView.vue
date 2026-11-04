@@ -28,6 +28,7 @@ import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter } from '@/components/ui/listToolbar';
 import PaymentMonths from '@/components/overview/PaymentMonths.vue';
 import type { ReceiptInput } from '@/lib/tenantPaymentMonths';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 
 const sortOrderOptions = [
   { value: 'latest', label: 'Newest first' },
@@ -143,8 +144,13 @@ function gatewayStatusWords(status: string | undefined): string {
   }
 }
 
+// What the page shows is kept between visits (lib/screenCache.ts): the skeletons are for the first
+// read only, and coming back draws these at once while they are read again.
+const billsLoaded = screenLoaded('tenant.payments.bills');
+const historyLoaded = screenLoaded('tenant.payments.history');
+
 // Outstanding bills from the database
-const outstandingBills = ref<any[]>([]);
+const outstandingBills = screenRef<any[]>('tenant.payments.outstanding', []);
 
 /**
  * `GET /tenant/my-standing` - which periods her recorded receipts do not cover
@@ -163,10 +169,10 @@ interface ResidentStanding {
   totalDue: number;
   totalPayable: number;
 }
-const standing = ref<ResidentStanding | null>(null);
+const standing = screenRef<ResidentStanding | null>('tenant.payments.standing', null);
 
 /** The configured water rate (BR-014), for the "Your rent" tile. Null if it could not be read. */
-const waterRatePerOccupant = ref<number | null>(null);
+const waterRatePerOccupant = screenRef<number | null>('tenant.payments.waterRate', null);
 async function loadWaterRate() {
   try {
     const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
@@ -205,14 +211,14 @@ const showRentTile = computed(() => !loadingBills.value && !billsLoadFailed.valu
  * unit tile. `null` until read, or when the read failed, and then the row is not drawn; 0 means none
  * on record and says so rather than printing ₱0.00.
  */
-const depositHeld = ref<number | null>(null);
+const depositHeld = screenRef<number | null>('tenant.payments.deposit', null);
 async function loadDeposit() {
   try {
     const data = await api.get<any[]>('/tenant/my-rooms');
     const room = data?.find((r) => r.is_active) ?? data?.[0];
     depositHeld.value = room ? Number(room.deposit_amount) || 0 : null;
   } catch {
-    depositHeld.value = null;
+    // Left as it was: null on a first read, and a figure already on screen stays.
   }
 }
 
@@ -285,7 +291,7 @@ const billsLoadFailed = ref(false);
  * looking, told in green that they owe nothing, out of a list that had not been
  * requested yet. Same defect as `billsLoadFailed` above, from a different cause.
  */
-const loadingBills = ref(true);
+const loadingBills = ref(!billsLoaded.value);
 /**
  * Loaded, and nothing owed: the bills tile says "Nothing is due", so on a phone
  * it follows the month chart instead of opening the page (Loyd, 2026-10-03).
@@ -299,7 +305,7 @@ const chartLeads = computed(() => nothingDue.value && rawReceipts.value.length >
 const searchQuery = ref('');
 
 // Payment history records
-const paymentHistory = ref<Array<{
+const paymentHistory = screenRef<Array<{
   id: string | number;
   invoiceRef: string;
   datePaid: string;
@@ -311,7 +317,7 @@ const paymentHistory = ref<Array<{
   amountPaid: number;
   paymentMethod: string;
   status: string;
-}>>([]);
+}>>('tenant.payments.rows', []);
 
 // Year filter for payment history. BR-015 prevents excessively long lists.
 // The property's year, not the viewer's - lib/propertyDate.ts exists so both
@@ -340,14 +346,14 @@ const historyLoadFailed = ref(false);
  * that sentence is on screen for seconds. Starts true for the same reason
  * `loadingBills` does: nothing is requested until `onMounted` gets that far.
  */
-const loadingHistory = ref(true);
+const loadingHistory = ref(!historyLoaded.value);
 
 /**
  * The same two reads, kept as they came, for "Your rent, month by month".
  * Receipts as the record; payments only for what is sent and not yet verified.
  */
-const rawReceipts = ref<ReceiptInput[]>([]);
-const waitingPayments = ref<{ amount: number }[]>([]);
+const rawReceipts = screenRef<ReceiptInput[]>('tenant.payments.receipts', []);
+const waitingPayments = screenRef<{ amount: number }[]>('tenant.payments.waiting', []);
 const today = propertyToday();
 
 const availableYears = computed(() => {
@@ -646,8 +652,11 @@ function billTileTitle(bill: any): string {
  * about to return to; see `payTrigger`.
  */
 async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
+  // A page that has loaded once keeps its bills on screen, and a read that fails behind them
+  // leaves them as they were, like a quiet one.
+  const keepShown = billsLoaded.value;
   if (!opts.quiet) {
-    loadingBills.value = true;
+    loadingBills.value = !keepShown;
     billsLoadFailed.value = false;
   }
   try {
@@ -662,12 +671,13 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
     outstandingBills.value = (data ?? []).filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid');
     standing.value = st ?? null;
     billsLoadFailed.value = false;
+    billsLoaded.value = true;
   } catch (err: any) {
     console.error('Failed to load bills:', err?.message || err);
     // "No bills" and "we could not read your bills" are different sentences, and
     // only one of them is safe to say to someone who may owe rent.
     // A quiet refresh that fails leaves the page as it was (lib/live.ts).
-    if (!opts.quiet) billsLoadFailed.value = true;
+    if (!opts.quiet && !keepShown) billsLoadFailed.value = true;
   } finally {
     loadingBills.value = false;
   }
@@ -697,8 +707,9 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
 useLiveRefresh(() => Promise.all([fetchOutstandingBills({ quiet: true }), fetchPaymentHistory({ quiet: true })]));
 
 async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
+  const keepShown = historyLoaded.value;
   if (!opts.quiet) {
-    loadingHistory.value = true;
+    loadingHistory.value = !keepShown;
     historyLoadFailed.value = false;
   }
   try {
@@ -755,10 +766,11 @@ async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
       .filter((p) => p.verification_status === 'Pending Verification')
       .map((p) => ({ amount: Number(p.amount) || 0 }));
     historyLoadFailed.value = false;
+    historyLoaded.value = true;
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
     // A quiet refresh that fails leaves the page as it was (lib/live.ts).
-    if (!opts.quiet) historyLoadFailed.value = true;
+    if (!opts.quiet && !keepShown) historyLoadFailed.value = true;
   } finally {
     loadingHistory.value = false;
   }

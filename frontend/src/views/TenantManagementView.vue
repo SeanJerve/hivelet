@@ -14,6 +14,7 @@ import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { copyText } from '@/lib/copyText';
+import { screenLoaded } from '@/lib/screenCache';
 import { emergencyPhoneProblem } from '@/lib/contactDetails';
 import { UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
@@ -310,9 +311,11 @@ function checkInquiryConversion() {
  * Every save calls `fetchTenants()`, and swapping the register for a skeleton each
  * time unmounted the rows under her: focus fell to the page and the scroll jumped
  * back up (B-61). A refresh now leaves the rows where they are until the new ones land.
- * Starts true if `tenants` already holds a list from an earlier visit.
+ * Starts true if `tenants` already holds a list from an earlier visit, or this page has loaded once
+ * this session (lib/screenCache.ts, emptied on sign-out).
  */
-const hasLoadedOnce = ref(tenants.length > 0);
+const hasLoadedOnce = screenLoaded('tenants');
+if (tenants.length > 0) hasLoadedOnce.value = true;
 const showSkeleton = computed(() => isLoading.value && !hasLoadedOnce.value);
 
 async function fetchTenants() {

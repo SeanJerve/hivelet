@@ -25,6 +25,7 @@ import { phoneDigits, phoneProblem, emergencyPhoneProblem } from '@/lib/contactD
 import { formatPhone } from '@/lib/phoneFormat';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { showToast } from '@/lib/systemState';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 import { RouterLink } from 'vue-router';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -39,22 +40,26 @@ interface EditableProfile {
 }
 
 /** Administrator-owned identity fields — displayed for confirmation. */
-const identity = ref({
+// The last read is kept between visits (lib/screenCache.ts), so the form opens filled and the skeleton
+// is for the first read only. The form itself is not kept: unsaved typing never carries over.
+const identity = screenRef('tenant.profile.identity', {
   role: '',
   account_status: '',
 });
 
-const form = ref<EditableProfile>({
+/** Snapshot of the last saved server state, used for dirty tracking and reset. */
+const savedSnapshot = screenRef<EditableProfile>('tenant.profile.saved', {
   full_name: currentUser.value?.fullName || '',
   phone_number: '',
   emergency_contact_name: '',
   emergency_contact_phone: '',
 });
 
-/** Snapshot of the last saved server state, used for dirty tracking and reset. */
-const savedSnapshot = ref<EditableProfile>({ ...form.value });
+const form = ref<EditableProfile>({ ...savedSnapshot.value });
 
+const profileLoaded = screenLoaded('tenant.profile');
 const loading = ref(false);
+const showSkeleton = computed(() => loading.value && !profileLoaded.value);
 const saving = ref(false);
 /**
  * Set when the profile could not be read.
@@ -97,6 +102,8 @@ watch(showingSavedCopy, (now, was) => {
 });
 
 async function fetchProfile() {
+  // A profile that has loaded once stays on screen, and a read that fails behind it leaves it as it was.
+  const keepShown = profileLoaded.value;
   loading.value = true;
   loadFailed.value = false;
   errorNotice.value = '';
@@ -134,7 +141,7 @@ async function fetchProfile() {
     // pressed Save wrote all six fabrications into their own record as fact,
     // including an emergency contact who does not exist. Guidance belongs in the
     // input placeholder, which is never submitted.
-    form.value = {
+    const fresh = {
       full_name: data?.full_name || currentUser.value?.fullName || '',
       // Spaced as the field shows them (lib/phoneFormat.ts), so the field's own
       // formatting is not mistaken for a change she made.
@@ -142,7 +149,10 @@ async function fetchProfile() {
       emergency_contact_name: data?.emergency_contact_name || '',
       emergency_contact_phone: formatPhone(data?.emergency_contact_phone || ''),
     };
-    savedSnapshot.value = { ...form.value };
+    // Typing begun while the page was already showing is hers, and is not written over.
+    if (!(keepShown && isDirty.value)) form.value = { ...fresh };
+    savedSnapshot.value = { ...fresh };
+    profileLoaded.value = true;
   } catch (err: any) {
     // The template swaps the whole page for an error with a retry. A notice
     // above the form was not enough: the form still rendered blank beneath it,
@@ -150,7 +160,7 @@ async function fetchProfile() {
     // file", each a claim made out of a request that failed (B-61, reproduced
     // in the mocked-API harness).
     console.error('Failed to load profile:', err?.message || err);
-    loadFailed.value = true;
+    if (!keepShown) loadFailed.value = true;
   } finally {
     loading.value = false;
   }
@@ -288,7 +298,7 @@ function handleReset() {
       </p>
     </div>
 
-    <SkeletonCard v-if="loading" variant="list" :count="2" />
+    <SkeletonCard v-if="showSkeleton" variant="list" :count="2" />
 
     <!-- No form at all on a failed read: see the catch in `fetchProfile`. -->
     <div v-else-if="loadFailed" class="ws-reveal">

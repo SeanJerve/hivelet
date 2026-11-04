@@ -4,6 +4,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 import { rememberFilters } from '@/lib/savedFilters';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { 
@@ -43,6 +44,9 @@ const TODAY_LONG = todayLong();
 const q = ref('');
 const statusFilter = ref('All');
 const isLoading = ref(false);
+// The skeleton is for the first read only; a revisit shows the board at once (lib/screenCache.ts).
+const repairsLoaded = screenLoaded('repairs');
+const showSkeleton = computed(() => isLoading.value && !repairsLoaded.value);
 const isSubmitting = ref(false);
 
 const statusFilterOptions = [
@@ -203,6 +207,8 @@ async function fetchTickets() {
     console.error('fetchTickets failed:', err);
   } finally {
     isLoading.value = false;
+    // A failed read goes behind the skeleton again next time, not onto an empty board.
+    if (!maintenanceTicketsFetchFailed.value) repairsLoaded.value = true;
   }
 }
 
@@ -303,6 +309,9 @@ function messageTime(iso: string): string {
 }
 
 const ticketMessages = ref<any[]>([]);
+// Each repair's messages, kept between openings (lib/screenCache.ts): a repair opened before
+// shows its thread at once and reads it again behind it; only a first opening says "Loading".
+const messagesByTicket = screenRef<Record<string, any[]>>('repairs.messages', {});
 const loadingMessages = ref(false);
 const newAdminMessage = ref('');
 const sendingAdminMessage = ref(false);
@@ -333,19 +342,24 @@ useLiveRefresh(async () => {
   if (!isEditModalOpen.value || !t) return;
   try {
     const res = await api.get<any[]>(`/admin/tickets/${t.id}/messages`);
-    if (Array.isArray(res)) ticketMessages.value = res;
+    if (Array.isArray(res)) {
+      ticketMessages.value = res;
+      messagesByTicket.value[t.id] = res;
+    }
   } catch {
     /* the next check tries again */
   }
 });
 
 async function loadTicketMessages(ticketId: string) {
-  loadingMessages.value = true;
-  ticketMessages.value = [];
+  const seen = messagesByTicket.value[ticketId];
+  loadingMessages.value = !seen;
+  ticketMessages.value = seen ? [...seen] : [];
   try {
     const res = await api.get<any[]>(`/admin/tickets/${ticketId}/messages`);
     if (res && Array.isArray(res)) {
       ticketMessages.value = res;
+      messagesByTicket.value[ticketId] = res;
     }
   } catch {
     // Non-blocking
@@ -361,13 +375,15 @@ async function handleSendAdminComment() {
   // the same message twice, and the resident was notified twice (B-61).
   if (!text || !editingTicket.value || sendingAdminMessage.value) return;
 
+  const ticketId = editingTicket.value.id;
   sendingAdminMessage.value = true;
   try {
-    const res = await api.post<any>(`/admin/tickets/${editingTicket.value.id}/messages`, {
+    const res = await api.post<any>(`/admin/tickets/${ticketId}/messages`, {
       message: text,
     });
     if (res) {
       ticketMessages.value.push(res);
+      messagesByTicket.value[ticketId] = [...ticketMessages.value];
       newAdminMessage.value = '';
       showToast('success', 'Message sent', 'The tenant has been notified.');
     }
@@ -586,7 +602,7 @@ function handleDeleteTicketPrompt() {
       @apply="applyRepairFilters"
     />
 
-    <div v-if="isLoading" class="grid gap-4 xl:grid-cols-3" aria-busy="true">
+    <div v-if="showSkeleton" class="grid gap-4 xl:grid-cols-3" aria-busy="true">
       <span class="sr-only" role="status">Loading repair requests</span>
       <div v-for="i in 3" :key="i" class="flex flex-col gap-3 py-2">
         <Skeleton class-name="h-4 w-28 rounded-full" />

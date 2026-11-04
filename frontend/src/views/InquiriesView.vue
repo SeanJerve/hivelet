@@ -14,6 +14,7 @@ import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { ArrowLeft, Inbox, Phone, Send, Loader2, UserPlus, XCircle, Trash2 } from 'lucide-vue-next';
 import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
@@ -36,10 +37,14 @@ const activeInquiryId = ref<string | null>(null);
 const replyMessage = ref('');
 const searchQuery = ref('');
 const isLoading = ref(false);
+// The skeleton is for the first read only; a revisit shows the inbox at once (lib/screenCache.ts).
+const inquiriesLoaded = screenLoaded('inquiries');
+const showSkeleton = computed(() => isLoading.value && !inquiriesLoaded.value);
 const isSubmitting = ref(false);
 
-// Local conversation store mapped by inquiry id
-const inquiryThreads = ref<Record<string, MessageBubble[]>>({});
+// Conversation store mapped by inquiry id, kept between visits so an open thread does not
+// start from the first message again.
+const inquiryThreads = screenRef<Record<string, MessageBubble[]>>('inquiries.threads', {});
 
 /**
  * `inquiry_status_type` is (Pending | Contacted | Converted | Closed), and this page showed
@@ -182,6 +187,8 @@ async function fetchInquiries() {
     console.error('fetchInquiries failed:', err);
   } finally {
     isLoading.value = false;
+    // A failed read goes behind the skeleton again next time, not onto an empty inbox.
+    if (!inquiriesFetchFailed.value) inquiriesLoaded.value = true;
   }
 }
 
@@ -371,8 +378,8 @@ async function loadThread(inquiryId: string) {
     }));
   } catch (err: unknown) {
     // Said plainly rather than shown as an empty thread, which would read as
-    // "nothing was ever sent".
-    inquiryThreads.value[inquiryId] = [];
+    // "nothing was ever sent". A thread already on screen stays as it was.
+    if (!inquiryThreads.value[inquiryId]) inquiryThreads.value[inquiryId] = [];
     threadError.value =
       err instanceof Error ? err.message : 'The replies on record could not be loaded.';
   }
@@ -492,7 +499,7 @@ async function handleSendReply() {
                the same row shape as the real list, not the generic tile card -
                this panel is already on --tile, so a card-shaped placeholder
                would have drawn no edge against it. -->
-          <div v-if="isLoading" class="divide-y divide-line" aria-busy="true">
+          <div v-if="showSkeleton" class="divide-y divide-line" aria-busy="true">
             <span class="sr-only" role="status">Loading inquiries</span>
             <div v-for="i in 3" :key="i" class="space-y-2.5 p-4">
               <div class="flex items-start justify-between gap-2">

@@ -16,6 +16,7 @@ import { floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
+import { screenRef, screenLoaded } from '@/lib/screenCache';
 import QuickActionsFab from '@/components/overview/QuickActionsFab.vue';
 import type { QuickAction } from '@/components/overview/types';
 import { methodInWords as methodLabel } from '@/lib/paymentMethod';
@@ -30,7 +31,9 @@ import { CreditCard, Home, Wrench } from 'lucide-vue-next';
 const { showToast } = useToast();
 const router = useRouter();
 
-const activeBillId = ref<string | null>(null);
+// What the page shows is kept between visits (lib/screenCache.ts): the skeleton is for the first
+// read only, and coming back draws these at once while they are read again.
+const activeBillId = screenRef<string | null>('tenant.overview.bill', null);
 
 const payingOnline = ref(false);
 
@@ -48,7 +51,7 @@ const payingOnline = ref(false);
  * are open questions for the owner (CLIENT_MEETING_QUESTIONS.md 2a and 3b). They
  * are gone until there is something true to print.
  */
-const tenantData = ref({
+const tenantData = screenRef('tenant.overview.data', {
   name: currentUser.value?.fullName || '',
   room: '',
   roomDetails: '',
@@ -123,15 +126,16 @@ interface ResidentStanding {
   totalPayable: number;
 }
 /** One sentence under the amount: how far her records reach, and what paying now covers. */
-const owedSummary = ref('');
+const owedSummary = screenRef('tenant.overview.owed', '');
 /**
  * The amount tile is showing periods worked out from the ledger alone - no bill was raised. A
  * past one of those is "not entered yet", never "overdue": the landlady may simply not have
  * entered a payment (Sean, 2026-10-01). A real bill keeps its own Due / Overdue status.
  */
-const fromLedgerOnly = ref(false);
-const standingStatus = ref('');
-const loading = ref(true);
+const fromLedgerOnly = screenRef('tenant.overview.ledgerOnly', false);
+const standingStatus = screenRef('tenant.overview.standing', '');
+const overviewLoaded = screenLoaded('tenant.overview');
+const loading = ref(!overviewLoaded.value);
 /**
  * Whether the unit photo has actually painted, so it can fade in rather than
  * pop in whenever it lands after the network. `false` on every fresh load and
@@ -152,7 +156,7 @@ interface ReceiptRow extends PaymentRow {
   verified: boolean;
 }
 
-const pendingOnlinePayments = ref<PaymentRow[]>([]);
+const pendingOnlinePayments = screenRef<PaymentRow[]>('tenant.overview.pending', []);
 /**
  * A REJECTED PAYMENT USED TO DISAPPEAR OFF THIS SCREEN ENTIRELY.
  *
@@ -163,8 +167,8 @@ const pendingOnlinePayments = ref<PaymentRow[]>([]);
  * payment reopens its bill to 'Due' (`admin.ts`), so the debt came back with
  * nothing on the page to explain why.
  */
-const rejectedPayments = ref<PaymentRow[]>([]);
-const recordedReceipts = ref<ReceiptRow[]>([]);
+const rejectedPayments = screenRef<PaymentRow[]>('tenant.overview.rejected', []);
+const recordedReceipts = screenRef<ReceiptRow[]>('tenant.overview.receipts', []);
 
 /**
  * The Payments tile shows the newest three rows, whatever their kind, so the
@@ -270,7 +274,7 @@ const settledOnPhone = computed(() => !tenantDataLoadFailed.value && isSettled.v
  * The configured per-occupant water rate (BR-014). The rate is the owner's to set,
  * so it is read, not written into the page.
  */
-const waterRatePerOccupant = ref<number | null>(null);
+const waterRatePerOccupant = screenRef<number | null>('tenant.overview.waterRate', null);
 
 async function loadWaterRate() {
   try {
@@ -303,7 +307,10 @@ onMounted(async () => {
 useLiveRefresh(() => fetchTenantData({ quiet: true }));
 
 async function fetchTenantData(opts: { quiet?: boolean } = {}) {
-  if (!opts.quiet) {
+  // Read before this load runs: a page that has loaded once keeps its figures on screen, and a
+  // read that fails behind them leaves them as they were, like a quiet one.
+  const keepShown = overviewLoaded.value;
+  if (!opts.quiet && !keepShown) {
     loading.value = true;
     unitPhotoLoaded.value = false;
   }
@@ -312,10 +319,11 @@ async function fetchTenantData(opts: { quiet?: boolean } = {}) {
     // (lib/offlineCache.ts), so this draws a saved answer exactly as it draws a live one.
     await applyTenantData();
     tenantDataLoadFailed.value = false;
+    overviewLoaded.value = true;
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
     // A quiet refresh that fails leaves the page as it was (lib/live.ts).
-    if (!opts.quiet) tenantDataLoadFailed.value = true;
+    if (!opts.quiet && !keepShown) tenantDataLoadFailed.value = true;
   } finally {
     loading.value = false;
   }

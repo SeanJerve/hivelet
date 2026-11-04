@@ -28,6 +28,12 @@ export type NotificationFilter = 'all' | 'unread' | 'payments' | 'maintenance' |
 export const notifications = ref<NotificationItem[]>([]);
 export const unreadCount = ref<number>(0);
 export const isLoading = ref<boolean>(false);
+/**
+ * True once the list has come back for the account signed in. The panel's skeleton is for the
+ * first load only: every later fetch, including the live refresh, replaces the rows quietly
+ * (the owner, 4 Nov 2026). Emptied with the rest when the account changes, below.
+ */
+export const notificationsLoaded = ref<boolean>(false);
 export const isPopoverOpen = ref<boolean>(false);
 export const activeFilter = ref<NotificationFilter>('all');
 /**
@@ -74,6 +80,7 @@ watch(
     unreadCount.value = 0;
     lastKnownUnreadCount = 0;
     loadedOnce = false;
+    notificationsLoaded.value = false;
     notificationsFetchFailed.value = false;
     isPopoverOpen.value = false;
   }
@@ -180,6 +187,7 @@ export async function fetchNotifications() {
       }
       loadedOnce = true;
       lastKnownUnreadCount = unreadCount.value;
+      notificationsLoaded.value = true;
       notificationsFetchFailed.value = false;
     } else {
       // A reply with no list in it is not an empty inbox either.
