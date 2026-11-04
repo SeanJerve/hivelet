@@ -248,12 +248,18 @@ dialog.ws-dialog,
   }
 }
 /* `isolation` makes a stacking context, so an open menu in a tile would sit under the next tile. */
-/* An open dropdown stays above the tile after it, including while its filter panel fades in. */
-.ws-focus div:has(button[role='combobox'][aria-expanded='true']) {
+/*
+ * An open dropdown stays above the tile after it, including while its filter panel fades in. Only
+ * for what sits in the page's flow: a sheet's backdrop, a sheet, a menu or anything else placed
+ * fixed, absolute or sticky keeps its own position and layer. Without the exclusions, opening a
+ * dropdown in a sheet turned the backdrop from fixed to relative, so the dimmed layer shrank to
+ * the sheet's box and moved, and dropped it under the top bar (Sean, 4 Nov 2026).
+ */
+.ws-focus div:not(.fixed, .absolute, .sticky, .ws-modal-overlay, .ws-modal-panel):has(button[role='combobox'][aria-expanded='true']) {
   position: relative;
   z-index: 30;
 }
-.bg-tile:has([aria-expanded='true']) {
+.bg-tile:not(.fixed, .absolute, .sticky, .shadow-lift, .shadow-2xl, .ws-modal-panel):has([aria-expanded='true']) {
   z-index: 20;
 }
 
@@ -807,6 +813,16 @@ select,
 .ws-table tbody tr > :first-child {
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
+}
+/* The blur stops the pinned first cell painting its top border, so its rule is drawn as a line
+   on top of it instead, and each row's rule runs the full width (Sean, 4 Nov 2026). */
+.ws-table tbody tr + tr > :first-child::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background-color: var(--line);
+  pointer-events: none;
 }
 
 /* A phone has less to spare for blur. */

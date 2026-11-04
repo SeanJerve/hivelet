@@ -1163,7 +1163,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                reads it for - was cut off behind a sideways scroll on a laptop. -->
           <PhoneMore
             everywhere
-            title="Month by month"
+            title="Monthly summary"
             :summary="`${liveRecordedMonths.length} ${liveRecordedMonths.length === 1 ? 'month' : 'months'}`"
           >
           <div class="ws-table-wrap @container">

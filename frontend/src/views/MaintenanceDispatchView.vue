@@ -3,8 +3,7 @@ import { todayLong } from '@/lib/propertyDate';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted } from 'vue';
-import { useLiveRefresh } from '@/lib/live';
-import { screenRef, screenLoaded } from '@/lib/screenCache';
+import { screenLoaded } from '@/lib/screenCache';
 import { rememberFilters } from '@/lib/savedFilters';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { 
@@ -301,20 +300,6 @@ const columns = computed(() => [
  */
 const priorityTone = (p: string) => (p === 'Emergency' ? 'overdue' : p === 'High' ? 'verify' : 'neutral');
 
-/** The date as well as the time: a message from last week read as if it were today's. */
-function messageTime(iso: string): string {
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return '';
-  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-}
-
-const ticketMessages = ref<any[]>([]);
-// Each repair's messages, kept between openings (lib/screenCache.ts): a repair opened before
-// shows its thread at once and reads it again behind it; only a first opening says "Loading".
-const messagesByTicket = screenRef<Record<string, any[]>>('repairs.messages', {});
-const loadingMessages = ref(false);
-const newAdminMessage = ref('');
-const sendingAdminMessage = ref(false);
 /**
  * Whether the resident's attached photo has finished loading, so it can fade
  * in rather than popping into the modal the instant the network delivers it -
@@ -333,68 +318,6 @@ const sendingAdminMessage = ref(false);
 const photoLoadedSrc = ref<string | null>(null);
 
 /**
- * The open repair's messages stay current (lib/live.ts refreshes the list): a
- * tenant's new note appears while she is looking at it. Quiet - no spinner, and
- * the list is replaced only when the answer arrives.
- */
-useLiveRefresh(async () => {
-  const t = editingTicket.value;
-  if (!isEditModalOpen.value || !t) return;
-  try {
-    const res = await api.get<any[]>(`/admin/tickets/${t.id}/messages`);
-    if (Array.isArray(res)) {
-      ticketMessages.value = res;
-      messagesByTicket.value[t.id] = res;
-    }
-  } catch {
-    /* the next check tries again */
-  }
-});
-
-async function loadTicketMessages(ticketId: string) {
-  const seen = messagesByTicket.value[ticketId];
-  loadingMessages.value = !seen;
-  ticketMessages.value = seen ? [...seen] : [];
-  try {
-    const res = await api.get<any[]>(`/admin/tickets/${ticketId}/messages`);
-    if (res && Array.isArray(res)) {
-      ticketMessages.value = res;
-      messagesByTicket.value[ticketId] = res;
-    }
-  } catch {
-    // Non-blocking
-  } finally {
-    loadingMessages.value = false;
-  }
-}
-
-async function handleSendAdminComment() {
-  const text = newAdminMessage.value.trim();
-  // The Send button is disabled while a message is in flight, but Enter in the box
-  // calls this directly and was not: a second Enter before the reply landed posted
-  // the same message twice, and the resident was notified twice (B-61).
-  if (!text || !editingTicket.value || sendingAdminMessage.value) return;
-
-  const ticketId = editingTicket.value.id;
-  sendingAdminMessage.value = true;
-  try {
-    const res = await api.post<any>(`/admin/tickets/${ticketId}/messages`, {
-      message: text,
-    });
-    if (res) {
-      ticketMessages.value.push(res);
-      messagesByTicket.value[ticketId] = [...ticketMessages.value];
-      newAdminMessage.value = '';
-      showToast('success', 'Message sent', 'The tenant has been notified.');
-    }
-  } catch (err: any) {
-    showToast('error', failureTitle(err, 'Message not sent'), err?.message || 'Please try again.');
-  } finally {
-    sendingAdminMessage.value = false;
-  }
-}
-
-/**
  * The status the database holds for the open ticket, as distinct from `editStatus`,
  * which is the form's and changes before anything is saved. The quick-actions bar
  * reads this one: it said "Ticket Resolved" off `editStatus`, so a Mark Resolved
@@ -402,7 +325,8 @@ async function handleSendAdminComment() {
  */
 const savedStatus = ref<MaintenanceTicket['status']>('Open');
 
-function openEditModal(t: MaintenanceTicket) {
+/** The form's fields, from a ticket: for the dialog, and for Mark resolved on its card. */
+function fillEditFields(t: MaintenanceTicket) {
   editingTicket.value = t;
   savedStatus.value = t.status;
   editTitle.value = t.title;
@@ -412,9 +336,22 @@ function openEditModal(t: MaintenanceTicket) {
   editStatus.value = t.status;
   editTech.value = t.technician || 'Unassigned';
   editDesc.value = t.description;
-  newAdminMessage.value = '';
+}
+
+function openEditModal(t: MaintenanceTicket) {
+  fillEditFields(t);
   isEditModalOpen.value = true;
-  loadTicketMessages(t.id);
+}
+
+/**
+ * Mark resolved, from the card of a repair in progress (Sean, 4 Nov 2026): the same save as the
+ * dialog's, with every other field as recorded.
+ */
+async function resolveFromCard(t: MaintenanceTicket) {
+  if (isSubmitting.value) return;
+  fillEditFields(t);
+  editStatus.value = 'Resolved';
+  await handleSaveEditTicket();
 }
 
 /** True only when the PATCH succeeded, so a quick action can undo its own change. */
@@ -509,17 +446,12 @@ async function handleQuickDispatch() {
   await quickSetStatus('In Progress');
 }
 
-async function handleQuickResolve() {
-  if (!editingTicket.value) return;
-  await quickSetStatus('Resolved');
-}
-
 /**
  * A quick action is one click that sets the status AND saves. If the save fails,
  * the status it set goes back, so the form does not keep an unsaved "Resolved"
  * that the next Save changes would then write without her choosing it.
  */
-async function quickSetStatus(status: 'In Progress' | 'Resolved') {
+async function quickSetStatus(status: 'In Progress') {
   if (isSubmitting.value) return;
   const before = editStatus.value;
   editStatus.value = status;
@@ -682,17 +614,29 @@ function handleDeleteTicketPrompt() {
               </div>
             </div>
 
-            <!-- One action, the pencil at the bottom right as on Rooms and rates and Tenants (review of
-                 4 Nov 2026). Delete repair is inside Manage, so a card has no destructive button. -->
-            <div class="-mt-2 flex justify-end">
+            <!-- The pencil at the bottom right as on Rooms and rates and Tenants, and for a repair in
+                 progress Mark resolved beside it, the pencil on its left (Sean, 4 Nov 2026). Delete
+                 repair is inside Manage, so a card has no destructive button. -->
+            <div class="-mt-2 flex items-center justify-end gap-1">
               <button
                 type="button"
-                class="press-plate icon-btn-plain row-action -mr-3 -mb-1"
+                :class="['press-plate icon-btn-plain row-action -mb-1', t.status !== 'In Progress' && '-mr-3']"
                 :aria-label="`Manage ${t.title}`"
                 title="Manage"
                 @click="openEditModal(t)"
               >
                 <Pencil class="size-4" aria-hidden="true" />
+              </button>
+              <button
+                v-if="t.status === 'In Progress'"
+                type="button"
+                class="pill-btn-brand pill-btn-compact"
+                :disabled="isSubmitting || writesUnavailable"
+                :title="writesUnavailable ? 'Needs a connection' : undefined"
+                @click="resolveFromCard(t)"
+              >
+                <CheckCircle2 class="size-3.5" aria-hidden="true" />
+                <span>Mark resolved</span>
               </button>
             </div>
           </li>
@@ -776,12 +720,14 @@ function handleDeleteTicketPrompt() {
           the body column is 303px, the pair ran to x=339 - "Mark Resolved" 36px
           past the edge of the panel.
         -->
-        <div class="p-3 bg-well border border-line rounded-xl flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div
+          v-if="savedStatus !== 'In Progress' && savedStatus !== 'Resolved' && savedStatus !== 'Closed'"
+          class="p-3 bg-well border border-line rounded-xl flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+        >
           <span class="font-semibold text-ink-soft text-xs">Quick actions</span>
           <div class="flex flex-wrap items-center gap-2">
             <!-- `savedStatus`, not `editStatus`: this bar reports the ticket as saved. -->
             <button
-              v-if="savedStatus !== 'In Progress' && savedStatus !== 'Resolved' && savedStatus !== 'Closed'"
               type="button"
               :disabled="isSubmitting || writesUnavailable"
               :title="writesUnavailable ? 'Needs a connection' : undefined"
@@ -791,26 +737,6 @@ function handleDeleteTicketPrompt() {
               <UserCheck class="size-3.5 text-brand" aria-hidden="true" />
               <span>Send technician</span>
             </button>
-            <!--
-              This button said "Close / Resolve" and its companion "Ticket Resolved &
-              Closed", while the only status either ever wrote was 'Resolved'. Closed is a
-              separate value in `ticket_status_type` and is now available in the Status
-              dropdown above, so these say what they actually do.
-            -->
-            <button
-              v-if="savedStatus !== 'Resolved' && savedStatus !== 'Closed'"
-              type="button"
-              :disabled="isSubmitting || writesUnavailable"
-              :title="writesUnavailable ? 'Needs a connection' : undefined"
-              @click="handleQuickResolve"
-              class="pill-btn-brand pill-btn-compact"
-            >
-              <CheckCircle2 class="size-3.5" aria-hidden="true" />
-              <span>Mark resolved</span>
-            </button>
-            <span v-else class="text-xs font-semibold text-brand inline-flex items-center gap-1">
-              <Check class="size-4" aria-hidden="true" /> {{ savedStatus }}
-            </span>
           </div>
         </div>
 
@@ -858,7 +784,7 @@ function handleDeleteTicketPrompt() {
 
           <!-- Description -->
           <label class="ws-field">
-              What was reported, and what was done
+              Message
             <textarea v-model="editDesc" rows="3" maxlength="4000" class="ws-textarea w-full" placeholder="Leak under the sink. Plumber replaced the washer."></textarea>
           </label>
 
@@ -893,63 +819,7 @@ function handleDeleteTicketPrompt() {
             </div>
           </div>
 
-          <!-- Resident Communication Dialogue Stream -->
-          <div class="pt-3 border-t border-line space-y-2">
-            <p class="font-semibold text-xs text-ink-soft">
-              Messages with the tenant
-            </p>
-
-            <!-- Message Stream Box -->
-            <div class="max-h-48 space-y-3 overflow-y-auto py-1">
-              <div v-if="loadingMessages" class="py-2 text-center text-ink-faint text-xs">
-                Loading messages…
-              </div>
-              <div v-else-if="ticketMessages.length === 0" class="py-2 text-center text-ink-faint text-xs">
-                No messages yet.
-              </div>
-              <div
-                v-for="(msg, i) in ticketMessages"
-                :key="msg.id"
-                class="list-reveal-item"
-                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-                :class="['flex flex-col', msg.profiles?.role === 'admin' ? 'items-end' : 'items-start']"
-              >
-                <p class="mb-1 px-1 text-xs text-ink-faint">
-                  <span class="font-semibold text-ink-soft">{{ msg.profiles?.role === 'admin' ? 'You' : (msg.profiles?.full_name || 'Tenant') }}</span>
-                  · {{ messageTime(msg.created_at) }}
-                </p>
-                <!-- The tenant's own words: a pasted link or a long run with no spaces must wrap
-                     inside the bubble, not run out of it. -->
-                <p
-                  :class="[
-                    'max-w-md whitespace-pre-line break-words rounded-2xl px-4 py-3 text-sm leading-6',
-                    msg.profiles?.role === 'admin' ? 'bg-brand text-on-brand' : 'bg-tile text-ink shadow-card ring-1 ring-line',
-                  ]"
-                >{{ msg.message_body }}</p>
-              </div>
-            </div>
-
-            <!-- Quick Comment Box -->
-            <div class="flex gap-2">
-              <label for="dispatch-reply" class="sr-only">Write back to the tenant</label>
-              <input
-                id="dispatch-reply"
-                v-model="newAdminMessage"
-                @keydown.enter.prevent="handleSendAdminComment"
-                placeholder="Write back to the tenant"
-                class="ws-input flex-1"
-              />
-              <button
-                type="button"
-                @click="handleSendAdminComment"
-                :disabled="sendingAdminMessage || writesUnavailable || !newAdminMessage.trim()"
-                :title="writesUnavailable ? 'Needs a connection' : undefined"
-                class="pill-btn-brand shrink-0"
-              >
-                Send
-              </button>
-            </div>
-          </div>
+          <!-- No messages with the tenant here (Sean, 4 Nov 2026): the repair is managed from its fields. -->
 
           <!--
             Modal Action Footer. `flex-col-reverse` until `sm`, the shape the
