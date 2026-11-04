@@ -13,6 +13,7 @@ import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { floorLabelFor } from '@/lib/systemState';
+import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
@@ -305,6 +306,13 @@ onMounted(async () => {
 // Kept current while the page is open, without a skeleton (lib/live.ts). The same reload runs
 // when the connection comes back, replacing the saved copy shown meanwhile.
 useLiveRefresh(() => fetchTenantData({ quiet: true }));
+
+/** The floor plan of this resident's own unit, the same drawing the public unit page shows. */
+const unitPlan = computed(() => {
+  const plan = planFor(tenantData.value.room.replace(/^Unit /, ''));
+  if (!plan) return null;
+  return { ...plan, src: `/floorplans/${plan.plan}.webp`, size: PLAN_SIZE[plan.plan] };
+});
 
 async function fetchTenantData(opts: { quiet?: boolean } = {}) {
   // Read before this load runs: a page that has loaded once keeps its figures on screen, and a
@@ -828,6 +836,31 @@ const statusTone = computed(() => {
               @load="unitPhotoLoaded = true"
               @error="unitPhotoLoaded = true"
             />
+          </div>
+          <!-- Same plan and same marker as the public unit page. The marker is placed as a percentage
+               of the drawing, so this box must be exactly as large as the image. A unit that is a
+               whole level (the penthouse) has no marker: the plan is all of it. On this glass tile
+               the drawing's own ground stays visible in dark, so it is rounded into a panel. -->
+          <div v-else-if="unitPlan" class="relative mx-auto w-full max-w-64 overflow-hidden rounded-2xl">
+            <img
+              :src="unitPlan.src"
+              :alt="unitPlan.x !== null ? `Floor plan with ${tenantData.room} marked` : `Floor plan of ${tenantData.room}`"
+              :width="unitPlan.size?.w"
+              :height="unitPlan.size?.h"
+              :class="[
+                'block h-auto w-full transition-opacity duration-300 ease-[var(--ease-out)]',
+                unitPhotoLoaded ? 'opacity-100' : 'opacity-0',
+              ]"
+              decoding="async"
+              @load="unitPhotoLoaded = true"
+              @error="unitPhotoLoaded = true"
+            />
+            <span
+              v-if="unitPlan.x !== null"
+              class="absolute rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-on-brand shadow-lift"
+              :style="{ left: `${unitPlan.x}%`, top: `${unitPlan.y}%`, transform: 'translate(-30%, -100%)' }"
+              aria-hidden="true"
+            >{{ tenantData.room.replace(/^Unit /, '') }}</span>
           </div>
           <div v-else class="grid h-28 place-items-center rounded-2xl bg-brand-soft">
             <Home class="size-14 text-brand" stroke-width="1.5" aria-hidden="true" />
