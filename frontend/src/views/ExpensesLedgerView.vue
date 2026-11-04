@@ -548,9 +548,11 @@ function submitAddExpense() {
   }
 
   const n = formEntries.value.length;
+  // The amount, as the income confirmation shows its total (audit, 4 Nov 2026).
+  const total = formEntries.value.reduce((s, e) => s + e.allocations.reduce((t, a) => t + (Number(a.amount) || 0), 0), 0);
   const confirmMsg = n === 1
-    ? `Record this expense entry for ${formatDateForDisplay(date.value)}?`
-    : `Record these ${n} expense entries for ${formatDateForDisplay(date.value)}?`;
+    ? `Record this expense entry of ${peso(total, 2)} for ${formatDateForDisplay(date.value)}?`
+    : `Record these ${n} expense entries, ${peso(total, 2)} in all, for ${formatDateForDisplay(date.value)}?`;
   showConfirm(
     n === 1 ? 'Record expense entry' : 'Record expense entries',
     confirmMsg,
@@ -1070,7 +1072,7 @@ async function handleEditExpense() {
           </p>
           <SegmentBar
             :segments="areaSplit"
-            :label="`How ${peso(totalJuly)} divides across the property areas`"
+            :label="`How ${peso(totalJuly, 2)} divides across the property areas`"
           />
           <!-- The legend in two columns on a phone, name and share; the amounts
                from 768px (Loyd, 2026-10-03). -->

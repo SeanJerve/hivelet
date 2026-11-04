@@ -1335,7 +1335,8 @@ const isDownloadOpen = ref(false);
         :title="`Income by month, ${periodWord}`"
         class="scroll-mt-24 max-md:gap-3 xl:col-span-12"
       >
-        <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short />
+        <!-- Centavos kept, as on the Overview's chart: the caption rounded ₱21,100.50 to ₱21,101 beside a tile that said ₱21,100.50. -->
+        <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short :decimals="2" />
       </OverviewTile>
     </div>
 

@@ -324,8 +324,18 @@ function fillFiguresForUnit(newUnit: string) {
   rentAmount.value = !roomsFetchFailed.value && room && room.price ? room.price : 0;
 }
 
+/**
+ * The unit's price is read by the body too, so it is in the list. Without it, opening this form on
+ * a fresh load (Record payment links to /admin/income?openPayment=1) filled the SEED rent - 4,500
+ * for 1a, which rents at 8,000 - whenever the tenant list arrived before the rooms did, and the
+ * live price never replaced it (audit, 4 Nov 2026). A number, so it fires only when it changes.
+ */
+const selectedRoomPrice = computed(
+  () => rooms.find((r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase())?.price ?? 0
+);
+
 watch(
-  [selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary],
+  [selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary, selectedRoomPrice],
   ([newUnit], old) => {
     // A different unit starts from its own registered count again.
     if (old && newUnit !== old[0]) occupantsTyped.value = false;
@@ -783,7 +793,7 @@ function triggerRecord() {
           month: Number(serverRow.month) || null,
           occupantsUpdated: serverRow.occupantsUpdated ?? null,
         };
-        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()}, ${peso(totalAmountReceived.value, 2)}, is in the records.`);
+        // No toast: the sheet itself says it is recorded, with the figures (audit, 4 Nov 2026).
         // One payment, one set of figures: the next one starts clean. The unit and
         // the date received stay, for a run of payments from one day.
         invoiceNum.value = '';

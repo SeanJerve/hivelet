@@ -482,6 +482,12 @@ const liveRecordedAverage = computed(() =>
 );
 
 const liveLatestCashMonth = computed(() => liveRecordedMonths.value.at(-1) ?? null);
+/**
+ * The Net income headline: the latest month with both sides entered, the last of the bars below
+ * it. The latest month with income alone showed November's takings as its net while Spent beside
+ * the chart said Not entered (audit, 4 Nov 2026).
+ */
+const liveLatestNetMonth = computed(() => liveRecordedMonths.value.filter((d) => d.hasExpenses).at(-1) ?? null);
 
 /** The month picked on the Income chart, by its index in the year. */
 const pickedMonthIndex = ref<number | null>(null);
@@ -1116,19 +1122,20 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           No collections are entered for {{ CURRENT_YEAR }} yet.
         </p>
         <template v-else>
-          <div>
+          <div v-if="liveLatestNetMonth">
             <p class="text-xs text-ink-faint">
-              {{ MONTH_LONG[liveLatestCashMonth.monthNum - 1] }}
+              {{ MONTH_LONG[liveLatestNetMonth.monthNum - 1] }}
             </p>
             <p
               :class="[
                 'text-3xl leading-tight font-semibold tabular',
-                liveLatestCashMonth.noi < 0 && 'text-overdue',
+                liveLatestNetMonth.noi < 0 && 'text-overdue',
               ]"
             >
-              {{ peso(liveLatestCashMonth.noi) }}
+              {{ peso(liveLatestNetMonth.noi) }}
             </p>
           </div>
+          <p v-else class="text-sm text-ink-soft">No spending is entered for {{ CURRENT_YEAR }} yet.</p>
           <ul v-if="netBars.length" class="space-y-1.5" aria-label="Net income by month">
             <li
               v-for="b in netBars"

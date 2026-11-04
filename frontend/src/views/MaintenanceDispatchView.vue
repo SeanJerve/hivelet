@@ -703,7 +703,7 @@ function handleDeleteTicketPrompt() {
             <PillSelect v-model="logTech" :options="[...TECHNICIANS]" aria-label="Who is going" widthClass="w-full" />
           </label>
           <label class="ws-field">
-            What was reported
+            Message
             <textarea v-model="logDesc" rows="3" maxlength="4000" class="ws-textarea w-full" required placeholder="The tenant says water drips from under the sink."></textarea>
           </label>
           <p v-if="logPriority === 'Emergency'" class="text-sm leading-6 text-ink-soft">
