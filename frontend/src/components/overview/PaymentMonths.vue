@@ -22,7 +22,6 @@ import MonthCapsules from './MonthCapsules.vue';
 import StatusPill from './StatusPill.vue';
 import UnavailableNote from './UnavailableNote.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
-import RecordTable from '@/components/ui/RecordTable.vue';
 
 const props = defineProps<{
   receipts: ReceiptInput[];
@@ -90,7 +89,6 @@ const paidMonths = computed(() => months.value.filter((m) => m.paid > 0));
 const countedMonths = computed(() => months.value.filter((m) => m.state !== 'ahead' || m.paid > 0));
 const nothingMonths = computed(() => months.value.filter((m) => m.state === 'nothing'));
 const paidTotal = computed(() => Math.round(paidMonths.value.reduce((s, m) => s + m.paid, 0) * 100) / 100);
-const waitingTotal = computed(() => props.waiting.reduce((s, p) => s + (Number(p.amount) || 0), 0));
 
 /** The one sentence a tenant opens this for. */
 const headline = computed(() => {
@@ -132,48 +130,6 @@ function nameList(list: PaymentMonth[]) {
   return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 }
 
-function periodText(start: string | null, end: string | null) {
-  if (!start || !end) return '';
-  return `${formatDateOnly(start, shortDate)} to ${formatDateOnly(end, shortDate)}`;
-}
-
-function stateLabel(m: PaymentMonth): { tone: 'paid' | 'overdue' | 'expected' | 'unentered' | 'neutral'; text: string } {
-  switch (m.state) {
-    case 'paid':
-      return { tone: 'paid', text: 'Paid' };
-    case 'overdue':
-      return { tone: 'unentered', text: 'Not entered' };
-    case 'due-today':
-      return { tone: 'overdue', text: 'Due today' };
-    case 'due-soon':
-      return { tone: 'expected', text: 'Due soon' };
-    case 'ahead':
-      return { tone: 'neutral', text: 'Not due yet' };
-    default:
-      return { tone: 'unentered', text: 'Not entered' };
-  }
-}
-
-/** What the month's period was, in the tenant's words. */
-function monthDetail(m: PaymentMonth): string {
-  if (m.duePeriod) return `Rent, ${periodText(m.duePeriod.start, m.duePeriod.end)}`;
-  const r = m.receipts[0];
-  if (!r) return '';
-  const period = periodText(r.periodStart, r.periodEnd);
-  if (r.monthsCovered > 1) return `One payment of ${peso(r.amount, 2)} for ${period}, ${r.monthsCovered} months`;
-  if (period) return `Rent, ${period}`;
-  return r.datePaid ? `Paid ${formatDateOnly(r.datePaid, shortDate)}` : '';
-}
-
-function monthAmount(m: PaymentMonth): string {
-  if (m.duePeriod && m.state === 'overdue') return '';
-  if (m.duePeriod) return `${peso(m.due, 2)} due`;
-  if (m.paid > 0) return peso(m.paid, 2);
-  return '';
-}
-
-/** Newest first in the list; the chart reads left to right, oldest first. */
-const rows = computed(() => [...months.value].reverse());
 </script>
 
 <template>
@@ -224,55 +180,11 @@ const rows = computed(() => [...months.value].reverse());
       </div>
     </dl>
 
-    <p v-if="waitingTotal > 0" class="text-sm leading-6 text-ink-soft">
-      {{ peso(waitingTotal, 2) }} you sent is waiting for the landlady to verify it.
-    </p>
     <p v-if="nothingMonths.length > 0" class="text-sm leading-6 text-ink-soft">
       No payment is entered for {{ nameList(nothingMonths) }}. If you paid for
       {{ nothingMonths.length === 1 ? 'it' : 'them' }}, ask the landlady to check her records.
     </p>
 
-    <details class="group border-t border-line pt-3">
-      <summary
-        class="press inline-flex min-h-11 cursor-pointer items-center text-sm text-ink-soft hover:text-ink transition-colors font-semibold"
-      >
-        <span class="group-open:hidden">Show each month as a list</span>
-        <span class="hidden group-open:inline">Hide the list</span>
-      </summary>
-      <RecordTable
-        class="mt-3"
-        :rows="rows"
-        caption="Your rent by month"
-        noun="month"
-        :page-size="12"
-      >
-        <template #head>
-          <tr>
-            <th scope="col">Month</th>
-            <th scope="col">For</th>
-            <th scope="col" class="num">Amount</th>
-            <th scope="col">Status</th>
-          </tr>
-        </template>
-        <template #row="{ row }">
-          <tr>
-            <th scope="row" class="whitespace-nowrap font-medium">{{ monthName(row) }}</th>
-            <td class="text-ink-soft">{{ monthDetail(row) }}</td>
-            <td class="num font-semibold whitespace-nowrap">{{ monthAmount(row) }}</td>
-            <td><StatusPill :tone="stateLabel(row).tone">{{ stateLabel(row).text }}</StatusPill></td>
-          </tr>
-        </template>
-        <template #card="{ row }">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="font-semibold text-ink">{{ monthName(row) }}</p>
-              <p v-if="monthAmount(row)" class="mt-1 tabular text-sm text-ink">{{ monthAmount(row) }}</p>
-            </div>
-            <StatusPill :tone="stateLabel(row).tone">{{ stateLabel(row).text }}</StatusPill>
-          </div>
-          <p v-if="monthDetail(row)" class="mt-2 break-words text-sm text-ink-soft">{{ monthDetail(row) }}</p>
-        </template>
-      </RecordTable>
-    </details>
+    <!-- Each month as a row is in the Payment record below (Sean, 5 Nov 2026). -->
   </div>
 </template>

@@ -171,82 +171,6 @@ interface ResidentStanding {
 }
 const standing = screenRef<ResidentStanding | null>('tenant.payments.standing', null);
 
-/** The configured water rate (BR-014), for the "Your rent" tile. Null if it could not be read. */
-const waterRatePerOccupant = screenRef<number | null>('tenant.payments.waterRate', null);
-async function loadWaterRate() {
-  try {
-    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
-    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
-  } catch {
-    // Left null: the tile then states the water figure without the rate behind it.
-  }
-}
-
-function ordinal(n: number): string {
-  const tens = n % 100;
-  if (tens >= 11 && tens <= 13) return `${n}th`;
-  return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'}`;
-}
-
-/**
- * "YOUR RENT": the rules she is billed under, with her own figures.
- *
- * BR-010 (the due day follows the move-in day), BR-014 (water per registered
- * occupant), BR-011/BR-012 (overdue from the day after, no grace period), and
- * how far her recorded payments reach. All of it comes from `my-standing`,
- * already loaded for the bill above; nothing here is a new claim.
- *
- * The due day is read off the next period's start. Periods are clamped to the
- * month's length (billingService `clampToMonth`), so a start on the 29th or
- * later, or on a month's last day, may be a clamped one: those are worded as
- * the move-in day rather than as a number that could be wrong.
- */
-/** Beside a loaded bill state only: not while loading, and not over a failed read. */
-const showRentTile = computed(() => !loadingBills.value && !billsLoadFailed.value && standing.value !== null);
-
-/**
- * The deposit held for this tenancy (`room_assignments.deposit_amount`): one month, held while the
- * tenant lives here and set against repairs at move-out (the owner, 19 Sep; B-31). A tenant asked to
- * see it in the survey (Chapter 4, Table 4-19). Beside the rent since 1 Nov 2026, off the Overview's
- * unit tile. `null` until read, or when the read failed, and then the row is not drawn; 0 means none
- * on record and says so rather than printing ₱0.00.
- */
-const depositHeld = screenRef<number | null>('tenant.payments.deposit', null);
-async function loadDeposit() {
-  try {
-    const data = await api.get<any[]>('/tenant/my-rooms');
-    const room = data?.find((r) => r.is_active) ?? data?.[0];
-    depositHeld.value = room ? Number(room.deposit_amount) || 0 : null;
-  } catch {
-    // Left as it was: null on a first read, and a figure already on screen stays.
-  }
-}
-
-const rentFacts = computed(() => {
-  const st = standing.value;
-  if (!st) return null;
-  const start = st.owedPeriods[0]?.start ?? st.nextPeriodStart;
-  let dueDay = 'each month on the day you moved in';
-  if (/^\d{4}-\d{2}-\d{2}/.test(start)) {
-    const [y, m, d] = start.split('-').map(Number) as [number, number, number];
-    const lastOfMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
-    if (d <= 28 && d !== lastOfMonth) dueDay = `on the ${ordinal(d)} of each month`;
-    // A clamped day (29th-31st, or a month's last day) keeps the move-in wording.
-  }
-  const rate = waterRatePerOccupant.value;
-  const occupants = rate && rate > 0 ? Math.round(st.perPeriod.waterAmount / rate) : null;
-  return {
-    rent: st.perPeriod.rentAmount,
-    water: st.perPeriod.waterAmount,
-    total: st.perPeriod.totalAmount,
-    waterNote:
-      rate !== null && occupants !== null && occupants * rate === st.perPeriod.waterAmount
-        ? `${occupants} registered ${occupants === 1 ? 'occupant' : 'occupants'} at ${peso(rate)} each`
-        : '',
-    paidThrough: st.paidThrough,
-    dueDay,
-  };
-});
 const standingOwes = computed(() => (standing.value?.owedPeriods.length ?? 0) > 0);
 const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
 
@@ -379,9 +303,31 @@ function applyPaymentFilters(v: FilterDraft) {
   sortOrder.value = v.sort === 'oldest' ? 'oldest' : 'latest';
 }
 
+/**
+ * The months with no payment entered, as rows of the record (Sean, 5 Nov 2026): the chart's
+ * "Show each month as a list" went, and this is what only that list showed. One row per period
+ * the standing counts as owed, at this month's rate, never as money received.
+ */
+const NOT_ENTERED = 'NOT_ENTERED';
+const notEnteredRows = computed(() => {
+  const st = standing.value;
+  if (!st) return [];
+  return st.owedPeriods.map((p) => ({
+    id: `not-entered-${p.start}`,
+    invoiceRef: '',
+    datePaid: 'Not entered',
+    datePaidRaw: p.start,
+    year: Number(p.start.slice(0, 4)),
+    forLabel: `Rent for ${formatDateOnly(p.start, shortDay)} to ${formatDateOnly(p.end, shortDayYear)}`,
+    amountPaid: st.perPeriod.totalAmount,
+    paymentMethod: '',
+    status: NOT_ENTERED,
+  }));
+});
+
 const filteredPayments = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
-  const filtered = paymentHistory.value.filter((p) => {
+  const filtered = [...paymentHistory.value, ...notEnteredRows.value].filter((p) => {
     if (p.year !== selectedYear.value) return false;
     if (!q) return true;
     return (
@@ -419,14 +365,19 @@ const isVerified = (status: string) => status === 'VERIFIED & SETTLED' || status
  */
 const isRejected = (status: string) => status === 'REJECTED';
 
-const statusTone = (status: string): 'paid' | 'overdue' | 'verify' =>
+const shortDay: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+const shortDayYear: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+const isNotEntered = (status: string) => status === NOT_ENTERED;
+
+const statusTone = (status: string): 'paid' | 'overdue' | 'verify' | 'unentered' =>
+  isNotEntered(status) ? 'unentered' :
   isVerified(status) ? 'paid' : isRejected(status) ? 'overdue' : 'verify';
 
 const statusLabel = (status: string): string =>
-  isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting for verification';
+  isNotEntered(status) ? 'Not entered' : isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting for verification';
 
 const statusLabelShort = (status: string): string =>
-  isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting';
+  isNotEntered(status) ? 'Not entered' : isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting';
 
 /**
  * THE RETURN LEG FROM GCASH, WHICH NOTHING HANDLED.
@@ -524,7 +475,6 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
 }
 
 onMounted(async () => {
-  loadWaterRate();
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get('status');
   const refParam = params.get('ref');
@@ -548,7 +498,6 @@ onMounted(async () => {
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  void loadDeposit();
   const loading = Promise.all([fetchOutstandingBills(), fetchPaymentHistory()]);
   // `?pay=` below opens the checkout, and it waits for the page to arrive first
   // (lib/afterArrival.ts); without it, loading finishes as before.
@@ -834,13 +783,13 @@ function refreshAll() {
 
     <!-- `tabindex="-1"`: where focus lands when the dialog closes and its Pay
          button is gone. See `payTrigger`. -->
-    <!-- The bill on the left, "Your rent" beside it from md up. The bill tile
-         alone left the right half of the row empty (2026-09-26). -->
+    <!-- The bill on the left and the rent chart beside it from md up (Sean, 5 Nov 2026: the
+         "Your rent" card went, the chart took its place, and the Payment record moved up). -->
     <section
       ref="billsRegion"
       tabindex="-1"
       aria-label="Your bills"
-      :class="['outline-none grid gap-4', showRentTile && 'md:grid-cols-2', chartLeads && 'max-md:order-2']"
+      class="outline-none grid gap-4 md:grid-cols-2"
     >
 
     <!-- Bills -->
@@ -968,59 +917,18 @@ function refreshAll() {
             Pay with GCash
           </button>
         </template>
-        <p v-else class="mt-auto text-sm text-on-brand-soft">
-          {{ peso(billPending(bill), 2) }} you sent is waiting for the landlady to check it.
-          <template v-if="billRemainderAfterPending(bill) > 0">
-            The other {{ peso(billRemainderAfterPending(bill), 2) }} can be paid once she has.
-          </template>
-          <template v-else>
-            Nothing more to pay until she has.
-          </template>
+        <!-- The line above already says it is sent and waiting (Sean, 5 Nov 2026); only a
+             remainder still to pay needs a sentence. -->
+        <p v-else-if="billRemainderAfterPending(bill) > 0" class="mt-auto text-sm text-on-brand-soft">
+          The other {{ peso(billRemainderAfterPending(bill), 2) }} can be paid once she has checked it.
         </p>
       </OverviewTile>
     </template>
 
-    <!-- The rules she is billed under, with her own figures. See `rentFacts`. -->
-    <OverviewTile v-if="showRentTile && rentFacts" title="Your rent" class="ws-reveal">
-      <dl class="flex flex-col divide-y divide-line text-sm">
-        <div class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
-          <dt>Rent</dt>
-          <dd class="font-semibold tabular">{{ peso(rentFacts.rent, 2) }}</dd>
-        </div>
-        <div class="flex items-baseline justify-between gap-3 py-2.5">
-          <dt>
-            Water
-            <span v-if="rentFacts.waterNote" class="block text-xs text-ink-faint">{{ rentFacts.waterNote }}</span>
-          </dt>
-          <dd class="font-semibold tabular">{{ peso(rentFacts.water, 2) }}</dd>
-        </div>
-        <div class="flex items-baseline justify-between gap-3 py-2.5">
-          <dt class="font-semibold">Each month</dt>
-          <dd class="text-lg font-semibold tabular">{{ peso(rentFacts.total, 2) }}</dd>
-        </div>
-        <!-- Only beside a raised bill: the other two states say it in their own sentence. -->
-        <div v-if="outstandingBills.length > 0" class="flex items-baseline justify-between gap-3 py-2.5">
-          <dt>Paid up to</dt>
-          <dd class="font-medium">
-            {{ rentFacts.paidThrough ? formatDateOnly(rentFacts.paidThrough, longDate) : 'No payment on record yet' }}
-          </dd>
-        </div>
-        <div v-if="depositHeld !== null" class="flex items-baseline justify-between gap-3 py-2.5">
-          <dt>Deposit held</dt>
-          <dd class="font-medium tabular">{{ depositHeld > 0 ? peso(depositHeld, 2) : 'Not on file' }}</dd>
-        </div>
-      </dl>
-      <p class="text-sm leading-6 text-ink-soft">
-        Rent is due {{ rentFacts.dueDay }}.
-      </p>
-    </OverviewTile>
-    </section>
-
-    <!-- The tenant's own months, drawn like the landlady's collections chart.
-         Needs both the receipts and the standing, so it waits for, and fails
-         with, either. On a phone it comes before the bills when nothing is due
-         (Loyd, 2026-10-03: what has something to show goes first). -->
-    <OverviewTile boxed title="Your rent, month by month" class="max-md:order-1">
+    <!-- The tenant's own months, drawn like the landlady's collections chart. Needs both the
+         receipts and the standing, so it waits for, and fails with, either. On a phone it comes
+         before the bills when nothing is due (Loyd, 2026-10-03). -->
+    <OverviewTile boxed title="Rent paid" :class="chartLeads && 'max-md:order-first'">
       <PaymentMonths
         :receipts="rawReceipts"
         :waiting="waitingPayments"
@@ -1031,9 +939,10 @@ function refreshAll() {
         @retry="refreshAll"
       />
     </OverviewTile>
+    </section>
 
     <!-- Payment record -->
-    <OverviewTile id="payment-record" title="Payment record" class="scroll-mt-24 max-md:order-3">
+    <OverviewTile id="payment-record" title="Payment record" class="scroll-mt-24">
       <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
            Sean, 2026-10-01): search, and the filter button beside it holding
            the year and the order. -->

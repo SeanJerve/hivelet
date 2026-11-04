@@ -639,10 +639,7 @@ const statusTone = computed(() => {
       <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight break-words">
         Good {{ partOfDay }}<template v-if="firstName">, {{ firstName }}</template>
       </h1>
-      <!-- Held open while loading so the tiles do not drop when the unit arrives. -->
-      <p v-if="tenantData.room || loading" class="mt-1 min-h-5 text-sm text-ink-soft">
-        {{ tenantData.room }}<template v-if="tenantData.floor">, {{ floorLabelFor(tenantData.floor) }}</template>
-      </p>
+      <!-- No unit line under the greeting: the unit's own card names it (Sean, 5 Nov 2026). -->
       <!-- What they did last is in the sidebar on every width, the phone's menu included (Sean, 17 Oct 2026). -->
       </div>
       <router-link v-if="!writesUnavailable" to="/tenant/tickets" class="pill-btn-brand shrink-0 max-md:hidden">

@@ -17,7 +17,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
-import { Save, AlertTriangle, RotateCcw, KeyRound } from 'lucide-vue-next';
+import { Save, AlertTriangle, KeyRound } from 'lucide-vue-next';
 import { currentUser } from '@/lib/authStore';
 import { api, ApiRequestError } from '@/lib/api';
 import { showingSavedCopy, writesUnavailable } from '@/lib/offlineCache';
@@ -26,7 +26,6 @@ import { formatPhone } from '@/lib/phoneFormat';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { showToast } from '@/lib/systemState';
 import { screenRef, screenLoaded } from '@/lib/screenCache';
-import { RouterLink } from 'vue-router';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -270,13 +269,6 @@ async function focusFirstInvalid() {
   await nextTick();
   document.getElementById(phoneError.value ? 'phone' : 'ec-phone')?.focus();
 }
-
-function handleReset() {
-  form.value = { ...savedSnapshot.value };
-  errorNotice.value = '';
-  phoneError.value = '';
-  ecPhoneError.value = '';
-}
 </script>
 
 <template>
@@ -286,16 +278,7 @@ function handleReset() {
       <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
         My details
       </h1>
-      <!-- Only the privacy link: "Keep these right so the landlady can reach you"
-           went (Sean, 2026-10-01, fewer words). -->
-      <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-        <RouterLink
-          to="/privacy"
-          class="press hover:text-ink transition-colors font-semibold"
-        >
-          How your details are kept and used
-        </RouterLink>
-      </p>
+      <!-- The page name alone (Sean, 5 Nov 2026): the privacy page is in the footer. -->
     </div>
 
     <SkeletonCard v-if="showSkeleton" variant="list" :count="2" />
@@ -384,9 +367,6 @@ function handleReset() {
                    mobile field beside it, so it still looked typeable; a tap put a
                    caret in a box that took no typing. Recessed and quieter, it reads as a
                    fact on file, which the hint under it then explains. -->
-              <p class="ws-hint">
-                Ask the landlady if it needs changing.
-              </p>
             </div>
 
             <div class="ws-field">
@@ -429,7 +409,7 @@ function handleReset() {
           </div>
 
           <div class="pt-2">
-            <h2 class="text-base font-semibold text-ink">If something happens to you</h2>
+            <h2 class="text-base font-semibold text-ink">Emergency contact</h2>
 
             <!-- Both optional, as the server and emergencyPhoneProblem() treat them. They were
                  `required`, so the browser refused every save until both were filled: 29 of the 33
@@ -467,15 +447,11 @@ function handleReset() {
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-3 pt-6">
-          <p class="text-sm text-ink-soft">
-            {{ writesUnavailable ? 'Saving needs a connection.' : isDirty ? 'Not saved yet.' : 'All saved.' }}
-          </p>
+        <!-- Save alone (Sean, 5 Nov 2026): no "All saved." and no Undo changes. Offline still says
+             why it is greyed out. -->
+        <div class="flex flex-wrap items-center justify-end gap-3 pt-6">
+          <p v-if="writesUnavailable" class="mr-auto text-sm text-ink-soft">Saving needs a connection.</p>
           <div class="flex items-center gap-2">
-            <button type="button" :disabled="!isDirty || saving || loadFailed" class="pill-btn-quiet" @click="handleReset">
-              <RotateCcw class="size-3.5" aria-hidden="true" />
-              <span>Undo changes</span>
-            </button>
             <button type="submit" :disabled="!isDirty || saving || loadFailed || writesUnavailable" class="pill-btn-brand">
               <Save class="size-4" aria-hidden="true" />
               <span>{{ saving ? 'Saving…' : 'Save' }}</span>
