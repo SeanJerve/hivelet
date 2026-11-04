@@ -641,9 +641,22 @@ function billRemainderAfterPending(bill: any): number {
   return Math.max(0, billBalance(bill) - billPending(bill));
 }
 
+/**
+ * The month each bill is for, in its title: with two open (October and November) both cards read
+ * "Bill to pay" and looked like one bill shown twice (Sean, 5 Nov 2026).
+ */
+const BILL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function billMonth(bill: any): string {
+  const m = Number(String(bill.billing_period_start ?? '').slice(5, 7));
+  return m >= 1 && m <= 12 ? BILL_MONTHS[m - 1] : '';
+}
+
 function billTileTitle(bill: any): string {
-  if (billPending(bill) > 0) return 'Payment sent';
-  return billBalance(bill) < Number(bill.total_amount) ? 'Partly paid bill' : 'Bill to pay';
+  const base = billPending(bill) > 0
+    ? 'Payment sent'
+    : billBalance(bill) < Number(bill.total_amount) ? 'Partly paid bill' : 'Bill to pay';
+  const month = billMonth(bill);
+  return month ? `${base}, ${month}` : base;
 }
 
 /**
@@ -668,7 +681,10 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
       api.get<any[]>('/tenant/my-bills'),
       api.get<ResidentStanding | null>('/tenant/my-standing'),
     ]);
-    outstandingBills.value = (data ?? []).filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid');
+    // Oldest first, the one to settle first.
+    outstandingBills.value = (data ?? [])
+      .filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid')
+      .sort((a: any, b: any) => String(a.billing_period_start ?? '').localeCompare(String(b.billing_period_start ?? '')));
     standing.value = st ?? null;
     billsLoadFailed.value = false;
     billsLoaded.value = true;

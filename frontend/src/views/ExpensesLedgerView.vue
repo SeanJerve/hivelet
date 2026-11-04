@@ -21,7 +21,9 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
-import { earlierMonthNote, focusMonth, MONTH_SHORT } from '@/lib/focusMonth';
+import { earlierMonthNote, focusMonth, MONTH_LONG, MONTH_SHORT } from '@/lib/focusMonth';
+import MonthCapsules from '@/components/overview/MonthCapsules.vue';
+import type { CapsuleMonth } from '@/components/overview/types';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import NewExpenseKindDialog from '@/components/modals/NewExpenseKindDialog.vue';
 import type { ExpenseKind } from '@/components/modals/NewExpenseKindDialog.vue';
@@ -466,11 +468,34 @@ const totalJuly = computed(() =>
   filtered.value.reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0)
 );
 
-/** The period in the year card's title, "2026" / "September 2026" / "all years" - Monthly Income's `periodWord`. */
-const periodWord = computed(() => {
-  const m = filterMonth.value === 'All' ? '' : (monthsList.find((x) => x.val === filterMonth.value)?.label ?? '');
-  if (filterYear.value === 'All') return m ? `${m}, all years` : 'all years';
-  return m ? `${m} ${filterYear.value}` : filterYear.value;
+/**
+ * One card, Expense by area or by month, picked in its heading as Monthly Income's is (Sean,
+ * 5 Nov 2026), the bars red for money going out. By month needs one year with every month in view.
+ */
+const expenseShape = ref<'area' | 'month'>('area');
+const expenseShapeOptions = [
+  { value: 'area', label: 'area' },
+  { value: 'month', label: 'month' },
+];
+const showMonthChart = computed(
+  () => filterMonth.value === 'All' && filterYear.value !== 'All' && filtered.value.length > 0
+);
+const shownShape = computed(() => (showMonthChart.value ? expenseShape.value : 'area'));
+const expensesByMonth = computed<CapsuleMonth[]>(() => {
+  const totals = new Array(12).fill(0);
+  const seen = new Array(12).fill(false);
+  for (const e of filtered.value) {
+    const i = MONTH_SHORT.indexOf(e.date.split(' ')[0] as (typeof MONTH_SHORT)[number]);
+    if (i < 0) continue;
+    seen[i] = true;
+    totals[i] += e.splits.reduce((acc, x) => acc + x.amount, 0);
+  }
+  return MONTH_SHORT.map((short, i) => ({
+    short,
+    long: MONTH_LONG[i],
+    kind: seen[i] ? ('recorded' as const) : ('unentered' as const),
+    value: seen[i] ? totals[i] : null,
+  }));
 });
 
 /**
@@ -1040,7 +1065,7 @@ async function handleEditExpense() {
         to do on its own, and the pair reads as one product. It also stops a
         seven-figure peso amount from running out of a third-width tile.
       -->
-      <OverviewTile :title="`Expenses, ${focus.waitingFor ?? focus.label}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Expenses, ${(focus.waitingFor ?? focus.label).split(' ')[0]}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           message="Expenses could not be loaded."
@@ -1060,15 +1085,35 @@ async function handleEditExpense() {
         </template>
       </OverviewTile>
 
-      <OverviewTile boxed :title="`Spending by area, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <!-- No year in the heading: it is at the top of the page (Sean, 5 Nov 2026). -->
+      <OverviewTile boxed :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+        <template #heading>
+          Expense by
+          <YearMenu
+            v-if="showMonthChart"
+            v-model="expenseShape"
+            :options="expenseShapeOptions"
+            inline
+            hint="show it by area or by month"
+          />
+          <template v-else>area</template>
+        </template>
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
+        <MonthCapsules
+          v-else-if="shownShape === 'month'"
+          :months="expensesByMonth"
+          label="Expenses by month"
+          short
+          :decimals="2"
+          tone="expense"
+        />
         <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
           No expenses match the filters above.
         </p>
         <template v-else>
           <p class="flex flex-wrap items-baseline gap-x-2">
             <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(totalJuly, 2) }}</span>
-            <span class="text-sm text-ink-soft">spent across {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</span>
+            <span class="text-sm text-ink-soft">in {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</span>
           </p>
           <SegmentBar
             :segments="areaSplit"

@@ -16,6 +16,13 @@ const props = defineProps<{
   modelValue: string;
   /** In order; `label` is what the list shows ("2026, this year", "All years"). */
   options: { value: string; label: string }[];
+  /**
+   * A word inside a heading rather than the year (Monthly Income's "Income by cluster", Sean,
+   * 5 Nov 2026): shows the chosen option's label at the heading's own size, and `hint` is read
+   * to a screen reader in place of "change the year shown".
+   */
+  inline?: boolean;
+  hint?: string;
 }>();
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>();
 
@@ -26,7 +33,11 @@ const menuId = `year-menu-${useId()}`;
 const alignEnd = ref(false);
 
 // The word shows the year itself; "All years" for All.
-const shown = computed(() => (props.modelValue === 'All' ? 'All years' : props.modelValue));
+const shown = computed(() =>
+  props.inline
+    ? (props.options.find((o) => o.value === props.modelValue)?.label ?? props.modelValue)
+    : props.modelValue === 'All' ? 'All years' : props.modelValue
+);
 
 watch(
   open,
@@ -61,18 +72,18 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onPointerDown)
   <!-- `-my-1` keeps the py-1 hit area from pushing the heading down; the `before:` box widens the
        target for a finger without moving anything. The menu is `w-max` so "2026, this year" does
        not wrap inside an anchor only as wide as the word. -->
-  <div ref="root" class="relative -my-1 shrink-0" @keydown.escape="close(true)">
+  <div ref="root" :class="['relative shrink-0', inline ? 'inline-block' : '-my-1']" @keydown.escape="close(true)">
     <button
       ref="button"
       type="button"
-      class="press relative inline-flex items-center gap-1 py-1 text-sm font-bold text-brand cursor-pointer whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2"
+      :class="['press relative inline-flex items-center gap-1 font-bold text-brand cursor-pointer whitespace-nowrap before:absolute before:-inset-x-2 before:-inset-y-2', !inline && 'py-1 text-sm']"
       aria-haspopup="true"
       :aria-expanded="open"
       :aria-controls="menuId"
       @click="open = !open"
     >
       <span class="tabular">{{ shown }}</span>
-      <span class="sr-only">, change the year shown</span>
+      <span class="sr-only">, {{ hint ?? 'change the year shown' }}</span>
       <ChevronDown
         :class="['size-4 transition-transform duration-200 ease-[var(--ease-out)]', open && 'rotate-180']"
         aria-hidden="true"

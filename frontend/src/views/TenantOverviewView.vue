@@ -196,9 +196,25 @@ const shownPaymentIds = computed(() => {
       .map((r) => r.id),
   );
 });
-const shownRejected = computed(() => rejectedPayments.value.filter((p) => shownPaymentIds.value.has(p.id)));
-const shownPending = computed(() => pendingOnlinePayments.value.filter((p) => shownPaymentIds.value.has(p.id)));
-const shownReceipts = computed(() => recordedReceipts.value.filter((r) => shownPaymentIds.value.has(r.id)));
+const rowTime = (r: PaymentRow) => Date.parse(r.at) || 0;
+const newestFirst = <T extends PaymentRow>(rows: T[]): T[] =>
+  rows.filter((r) => shownPaymentIds.value.has(r.id)).sort((a, b) => rowTime(b) - rowTime(a));
+const shownRejected = computed(() => newestFirst(rejectedPayments.value));
+const shownPending = computed(() => newestFirst(pendingOnlinePayments.value));
+const shownReceipts = computed(() => newestFirst(recordedReceipts.value));
+/**
+ * The latest at the top (Sean, 5 Nov 2026): each kind's group is placed by its newest row, so a
+ * payment sent today sits above one refused two days ago. CSS order on the groups.
+ */
+const groupOrder = computed(() => {
+  const newest = (rows: PaymentRow[]) => (rows.length ? -rowTime(rows[0]) : Infinity);
+  const ranked = [
+    ['rejected', newest(shownRejected.value)],
+    ['pending', newest(shownPending.value)],
+    ['receipts', newest(shownReceipts.value)],
+  ].sort((a, b) => (a[1] as number) - (b[1] as number));
+  return Object.fromEntries(ranked.map(([k], i) => [k, i])) as Record<'rejected' | 'pending' | 'receipts', number>;
+});
 
 
 // Morning, noon, afternoon or evening by the property's clock, kept current
@@ -917,13 +933,14 @@ const statusTone = computed(() => {
         >
           No payments are on file yet.
         </p>
-        <!-- One divided list, so the sections read as rows of the same list. -->
-        <div v-else class="flex flex-col divide-y divide-line">
+        <!-- One divided list, so the sections read as rows of the same list. The rule sits on each
+             group after the first as drawn, since the groups are placed by CSS order. -->
+        <div v-else class="flex flex-col">
           <!-- First, because it is the only one that needs the resident to do
                something. Rejecting a payment reopens its bill to 'Due'. -->
           <!-- The first two headings are for screen readers only: each row's
                pill already says "Not accepted" or "Waiting for verification". -->
-          <section v-if="shownRejected.length" aria-labelledby="rejected-payments-heading">
+          <section v-if="shownRejected.length" :style="{ order: groupOrder.rejected }" :class="groupOrder.rejected > 0 && 'border-t border-line'" aria-labelledby="rejected-payments-heading">
             <h3 id="rejected-payments-heading" class="sr-only">Not accepted</h3>
             <ul class="divide-y divide-line">
               <li
@@ -945,7 +962,7 @@ const statusTone = computed(() => {
               </li>
             </ul>
           </section>
-          <section v-if="shownPending.length" aria-labelledby="pending-payments-heading">
+          <section v-if="shownPending.length" :style="{ order: groupOrder.pending }" :class="groupOrder.pending > 0 && 'border-t border-line'" aria-labelledby="pending-payments-heading">
             <h3 id="pending-payments-heading" class="sr-only">Waiting for verification</h3>
             <ul class="divide-y divide-line">
               <li
@@ -965,7 +982,7 @@ const statusTone = computed(() => {
               </li>
             </ul>
           </section>
-          <section v-if="shownReceipts.length" aria-labelledby="recorded-receipts-heading" class="pt-4 first:pt-0">
+          <section v-if="shownReceipts.length" :style="{ order: groupOrder.receipts }" aria-labelledby="recorded-receipts-heading" :class="groupOrder.receipts > 0 && 'border-t border-line pt-4'">
             <h3 id="recorded-receipts-heading" class="pb-1 text-xs font-medium text-ink-faint">Recorded by the landlady</h3>
             <ul class="divide-y divide-line">
               <li

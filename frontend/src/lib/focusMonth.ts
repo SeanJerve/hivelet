@@ -43,7 +43,9 @@ export function earlierMonthNote(f: FocusMonth): string {
   const [name, year] = f.waitingFor.split(' ');
   const now = Number(year) * 12 + MONTH_LONG.indexOf(name as (typeof MONTH_LONG)[number]);
   const shown = Number(f.year) * 12 + f.month - 1;
-  return `From ${now - shown === 1 ? 'the previous month' : 'an earlier month'}, ${f.label}`;
+  // The year only when it is not the one waited for: it is at the top of the page (Sean, 5 Nov 2026).
+  const named = Number(f.year) === Number(year) ? MONTH_LONG[f.month - 1] : f.label;
+  return `From ${now - shown === 1 ? 'the previous month' : 'an earlier month'}, ${named}`;
 }
 
 /**

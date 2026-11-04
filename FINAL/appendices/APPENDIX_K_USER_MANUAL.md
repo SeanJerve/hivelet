@@ -231,12 +231,12 @@ When any are waiting, Monthly Income opens on **To verify**. Check the money arr
 payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
 
 **The month and the year.** **Received** at the top is **one month**, its total alone (for example
-"Received from October 2026"). Until something is recorded for this month it says so first, for
+"Received from October"). Until something is recorded for this month it says so first, for
 example **"Nothing for November yet"**, and gives the last month recorded under it ("From the
-previous month, October 2026"). Beside it, **Income by cluster**
-is the **year**: the year's total and how it divides across the clusters, and below that the year
-month by month. Monthly Expenses is laid out the same way ("Spent, October 2026"; **Spending by
-area** is the year by area). **Filters** > **Month** shows
+previous month, October"; the year is named only when it is not the one at the top). Beside it, **Income by cluster**
+is the **year**: the year's total and how it divides across the clusters. Tap the green **cluster**
+to change it to **month**, the year month by month. Monthly Expenses is laid out the same way
+("Expenses, October"; **Expense by area**, or by **month** in red bars). **Filters** > **Month** shows
 another month in Received. The year beside the page name (for example **2026 ⌄**) picks
 another year, or **All years** for everything since the records began; a past year can be read but
 not added to, so **Record payment** is not shown there. **Filters** > **Group by** gathers the payments by **Cluster**

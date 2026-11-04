@@ -634,7 +634,20 @@ const collectionsByMonth = computed<CapsuleMonth[]>(() => {
   }));
 });
 
-const showMonthChart = computed(() => filterMonth.value === 'All' && rows.value.length > 0);
+const showMonthChart = computed(() => filterMonth.value === 'All' && filterYear.value !== 'All' && rows.value.length > 0);
+
+/**
+ * One card, Income by cluster or by month, picked in its heading (Sean, 5 Nov 2026). It replaces
+ * the separate Income by month card. By month is offered while every month is in view; with one
+ * month picked there is nothing to chart across, so the card shows the clusters. Opened from the
+ * Overview's Income chart (#income-by-month), it starts on months.
+ */
+const incomeShape = ref<'cluster' | 'month'>(route.hash === '#income-by-month' ? 'month' : 'cluster');
+const incomeShapeOptions = [
+  { value: 'cluster', label: 'cluster' },
+  { value: 'month', label: 'month' },
+];
+const shownShape = computed(() => (showMonthChart.value ? incomeShape.value : 'cluster'));
 
 // Rent plus water: the same figure as the Remitted column's total, so the page
 // shows one "collected" number, not two that differ (Sean, 2026-09-30).
@@ -653,11 +666,6 @@ const collectedAltogether = computed(() => totalRent.value + totalWater.value);
  * labelled next to the figure, so this year's total is never read as all-time,
  * or the other way round).
  */
-const periodWord = computed(() => {
-  const m = filterMonth.value === 'All' ? '' : (monthsList.find((x) => x.val === filterMonth.value)?.label ?? '');
-  if (filterYear.value === 'All') return m ? `${m}, all years` : 'all years';
-  return m ? `${m} ${filterYear.value}` : filterYear.value;
-});
 
 /**
  * The headline card is one month (Sean, 2026-10-02: the screen is MONTHLY
@@ -1255,7 +1263,7 @@ const isDownloadOpen = ref(false);
       zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not entered yet" opened the page).
     -->
     <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received from ${focus.waitingFor ?? focus.label}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Received from ${(focus.waitingFor ?? focus.label).split(' ')[0]}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           message="The collections could not be loaded."
@@ -1277,8 +1285,28 @@ const isDownloadOpen = ref(false);
         </template>
       </OverviewTile>
 
-      <OverviewTile boxed :title="`Income by cluster, ${periodWord}`" :class="['max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+      <!-- No year in the heading: it is at the top of the page (Sean, 5 Nov 2026). -->
+      <OverviewTile id="income-by-month" boxed :class="['scroll-mt-24 max-md:gap-3 xl:col-span-8', splitIsEmpty && 'max-xl:order-last']">
+        <template #heading>
+          Income by
+          <YearMenu
+            v-if="showMonthChart"
+            v-model="incomeShape"
+            :options="incomeShapeOptions"
+            inline
+            hint="show it by cluster or by month"
+          />
+          <template v-else>cluster</template>
+        </template>
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
+        <!-- Centavos kept, as on the Overview's chart. -->
+        <MonthCapsules
+          v-else-if="shownShape === 'month'"
+          :months="collectionsByMonth"
+          label="Rent and water by month"
+          short
+          :decimals="2"
+        />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.
         </p>
@@ -1322,23 +1350,6 @@ const isDownloadOpen = ref(false);
         </template>
       </OverviewTile>
 
-      <!--
-        What came in, month by month - the same capsules the overview and the
-        expenses ledger draw. "What it was made of" (a rent/water bar and the two
-        figures) stood beside it and repeated the Rent and Water tiles above word
-        for word; removed for less on screen (Sean, 2026-10-01). In the same grid
-        as the two tiles above since 2026-10-03, so an empty one can drop below it.
-      -->
-      <OverviewTile
-        v-if="rows.length > 0 && showMonthChart"
-        id="income-by-month"
-        boxed
-        :title="`Income by month, ${periodWord}`"
-        class="scroll-mt-24 max-md:gap-3 xl:col-span-12"
-      >
-        <!-- Centavos kept, as on the Overview's chart: the caption rounded ₱21,100.50 to ₱21,101 beside a tile that said ₱21,100.50. -->
-        <MonthCapsules :months="collectionsByMonth" label="Rent and water by month" short :decimals="2" />
-      </OverviewTile>
     </div>
 
     <!--
@@ -1592,7 +1603,6 @@ const isDownloadOpen = ref(false);
                  pesos like it, and the entries count is gone (Loyd, 2026-10-03):
                  the figure is what she opens a cluster for. -->
             <span class="sm:text-right">
-              <span class="block text-xs text-ink-faint">Remitted</span>
               <span class="tabular mt-1 block text-3xl font-semibold leading-none tracking-tight text-brand md:text-4xl">{{
                 peso(group.totalRemitted)
               }}</span>
@@ -1635,7 +1645,7 @@ const isDownloadOpen = ref(false);
                      ("Water, 2 heads"); a column of its own made the ledger
                      scroll sideways at 1280. -->
                 <th scope="col" class="num">Water</th>
-                <th scope="col" class="num">Remitted<span class="block text-xs font-normal text-ink-faint">rent + water</span></th>
+                <th scope="col" class="num">Remitted</th>
                 <th scope="col"><span class="sr-only">Actions</span></th>
               </tr>
             </template>
@@ -1714,10 +1724,9 @@ const isDownloadOpen = ref(false);
                     {{ group.label }}, all {{ group.records.length }}
                   </p>
                 </div>
-                <!-- Labelled, as the desktop column header labels it; on a phone the
-                     figure sat there with no name, beside a rent twice its size. -->
+                <!-- The total, with no label: it is the figure the cluster adds up to (Sean,
+                     5 Nov 2026). Each row's own figure keeps its name on a phone. -->
                 <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
-                  <span class="block text-xs font-normal text-ink-faint">Remitted</span>
                   {{ peso(group.totalRemitted, 2) }}
                 </p>
               </div>
@@ -1808,7 +1817,7 @@ const isDownloadOpen = ref(false);
           <th scope="col" class="num">Rent</th>
           <th scope="col" class="num">Heads</th>
           <th scope="col" class="num">Water</th>
-          <th scope="col" class="num">Remitted<span class="block text-xs font-normal text-ink-faint">rent + water</span></th>
+          <th scope="col" class="num">Remitted</th>
           <th scope="col"><span class="sr-only">Actions</span></th>
         </tr>
       </template>
@@ -1877,7 +1886,6 @@ const isDownloadOpen = ref(false);
             <p class="text-sm font-semibold text-ink">All {{ rows.length }} on screen</p>
           </div>
           <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
-            <span class="block text-xs font-normal text-ink-faint">Remitted</span>
             {{ peso(totalRemitted, 2) }}
           </p>
         </div>

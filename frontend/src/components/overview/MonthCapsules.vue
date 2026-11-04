@@ -34,6 +34,11 @@ const props = withDefaults(
      * alone read "₱8,400 paid" (audit 2026-10-09).
      */
     decimals?: number;
+    /**
+     * 'expense' draws the bars red, as money going out (Monthly Expenses, Sean, 5 Nov 2026);
+     * the green stays for money coming in. Yellow already means waiting on this site.
+     */
+    tone?: 'income' | 'expense';
   }>(),
   { terms: () => ({}), short: false, decimals: 0 }
 );
@@ -167,9 +172,13 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
                   'capsule-fill w-full origin-bottom rounded-full transition-colors',
                   m.kind === 'expected'
                     ? 'border-2 border-dashed border-ink-faint bg-tile'
-                    : i === selected
-                      ? 'bg-brand'
-                      : 'bg-brand-bright group-hover:bg-brand-strong/80',
+                    : tone === 'expense'
+                      ? i === selected
+                        ? 'bg-overdue'
+                        : 'bg-overdue/60 group-hover:bg-overdue/80'
+                      : i === selected
+                        ? 'bg-brand'
+                        : 'bg-brand-bright group-hover:bg-brand-strong/80',
                 ]"
                 :style="{
                   height: `max(1.75rem, ${((m.value ?? 0) / scaleMax) * 100}%)`,
@@ -215,7 +224,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
       <div class="flex flex-col gap-2 max-sm:contents sm:items-end">
       <p v-if="current?.detail" class="text-sm tabular text-ink-soft" aria-live="polite">{{ current.detail }}</p>
       <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft -order-1">
-        <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />{{ term('recorded') }}</li>
+        <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" :class="['size-3 rounded-full', tone === 'expense' ? 'bg-overdue/60' : 'bg-brand-bright']" />{{ term('recorded') }}</li>
         <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />{{ term('unentered') }}</li>
         <li v-if="kindsShown.has('expected')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />{{ term('expected') }}</li>
         <li v-if="kindsShown.has('none')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-well border border-line" />{{ term('none') }}</li>

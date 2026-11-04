@@ -38,12 +38,14 @@ const toneClass = computed(
 
 <template>
   <section
-    :aria-labelledby="title ? titleId : undefined"
+    :aria-labelledby="title || $slots.heading ? titleId : undefined"
     :class="['flex flex-col gap-4 min-w-0', isDark || boxed ? 'rounded-tile p-5 sm:p-6' : 'py-2', boxed && 'bg-tile', toneClass]"
   >
-    <header v-if="title || to || $slots.actions" class="flex items-start">
-      <h2 v-if="title" :id="titleId" class="text-[0.9375rem] leading-5 font-semibold pt-2.5">
-        <template v-if="phoneTitle">
+    <header v-if="title || $slots.heading || to || $slots.actions" class="flex items-start">
+      <h2 v-if="title || $slots.heading" :id="titleId" class="text-[0.9375rem] leading-5 font-semibold pt-2.5">
+        <!-- A heading with a control in it (Monthly Income's "Income by cluster"). -->
+        <slot v-if="$slots.heading" name="heading" />
+        <template v-else-if="phoneTitle">
           <span class="md:hidden">{{ phoneTitle }}</span><span class="max-md:hidden">{{ title }}</span>
         </template>
         <template v-else>{{ title }}</template>
