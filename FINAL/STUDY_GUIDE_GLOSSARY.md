@@ -201,7 +201,8 @@ system's only administrator. **Where:** Section 2.4; Section 3.3.
 BR-012.
 
 **Ledger.** A record book of money. Hivelet has two, kept in the owner's own layout: **Monthly
-Income** and **Monthly Expenses**. **Where:** Section 4.2.4.
+Income** and **Monthly Expenses**. The screens call them records: Monthly Income's list is the
+**Records** tab. **Where:** Section 4.2.4.
 
 **Ledger parity.** Parity means being the same. The system's ledger keeps the same columns as the
 owner's historical spreadsheet, so the two can be laid side by side. **Where:** Section 2.4 (50%
@@ -221,8 +222,9 @@ reproduce it: expenses by date, area and category. **Where:** Section 4.1.1; Sec
 **Monthly Income Report.** The first sheet of her workbook, and the screen and Excel workbook that
 reproduce it: receipts by month and cluster. **Where:** Section 4.1.1; Section 4.2.4; Figure 4-9.
 
-**Move in (onboarding).** Starting a tenancy: name, unit, move-in date, anniversary date, occupants,
-deposit and emergency contact. The system then shows a login ID and a one-time password. **Where:**
+**Move in (onboarding).** Starting a tenancy: full name, unit, deposit, move-in date, whether the
+unit is shared and by how many, and an emergency contact. The anniversary date is set to the
+move-in date by the server, so the form does not ask for it. The system then shows a login ID and a one-time password. **Where:**
 Section 4.2.2; App. K, Part 2, §5.
 
 **Move-in date.** The first day of a tenancy. Her workbook never recorded it for the current
@@ -616,8 +618,9 @@ shown in the app. **Where:** App. K, Part 2, §9; Table 4-9 ("Activity").
 
 **To dispatch.** A repair waiting for someone to be sent. **Where:** Repairs screen.
 
-**To verify (Payments to verify).** The list of GCash payments waiting for the owner's check.
-**Where:** App. K, Part 2, §3; Monthly Income screen.
+**To verify.** The tab on Monthly Income, beside Records, that lists the GCash payments waiting for
+the owner's check. While any are waiting, Monthly Income opens on it. **Where:** App. K, Part 2, §3;
+Monthly Income screen.
 
 **Total handed over.** In Record payment, the total the tenant gave: rent plus water for the months
 covered. **Where:** Record payment form.

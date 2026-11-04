@@ -14,8 +14,8 @@ they print in mono.
 | :--- | :--- | :--- | :--- |
 | `figure-4-current-process.png` | 4 | The owner's process before the system (swimlanes) | Section 4.1.1 and Table 5; the booking channel is left general until the owner answers Table 5's question |
 | `figure-5-system-architecture.png` | 5 | System architecture | `vercel.json`, the two `package.json` files, Table 7 |
-| `figure-6-context-diagram.png` | 6 | Context diagram (level 0) | The API routes and `backend/src/config/rbac.ts` |
-| `figure-7-data-flow-level-1.png` | 7 | Level 1 data flow diagram, Yourdon-DeMarco notation | As above; stores named for the tables behind them |
+| `figure-6-context-diagram.png` | 6 | Context diagram (level 0), Gane and Sarson notation, three outside parties (Adyen is part of process 4.0, as the SAD professor approved) | The API routes and `backend/src/config/rbac.ts` |
+| `figure-7-data-flow-level-1.png` | 7 | Level 1 data flow diagram, Gane and Sarson notation (redrawn 4 November 2026. Level 2 for all eight processes is `appendix-f-dfd-1` to `-8`) | As above; stores named for the tables behind them |
 | `figure-8-use-case-diagram.png` | 8 | Use case diagram (UML) | `rbac.ts` and Table 7C |
 | `figure-9-entity-relationship.png` | 9 | Entity-relationship diagram, Crow's Foot | **The live database catalogue** (`pg_attribute`, `pg_constraint`, `pg_index`) on 5 October 2026: 21 tables, 37 foreign keys, nullability as enforced |
 

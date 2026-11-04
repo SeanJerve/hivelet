@@ -55,7 +55,7 @@ Its passwords are with Sean; never type them where the projector shows them.
   must verify it."
 
 ### 3. The owner verifies (laptop, 1 minute). Objective 2: financial tracking
-- Sign in as the owner. Go to **Monthly Income**, the payments awaiting verification.
+- Sign in as the owner. Go to **Monthly Income**. With a payment waiting it opens on **To verify**.
 - Show the loydtest payment, then press **Reject payment**, not **Verify payment**. (Verifying would
   write a receipt into her ledger.) Say: "Verifying settles the bill and writes the receipt in one
   step; we reject this one because it was a demonstration."

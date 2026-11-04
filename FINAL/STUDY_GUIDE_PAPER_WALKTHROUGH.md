@@ -894,7 +894,7 @@ The section then has four labelled parts.
   approved, it is part of the payment process, not an entity, and appears as step 4.3 in Appendix F.
   If asked, the diagrams balance because no level adds an outside party the context diagram lacks.
 - *How to read it*: each arrow is data going in or out. For example, the owner sends payments with
-  invoice numbers, and gets overview figures, ledgers and workbook downloads back.
+  invoice numbers, and gets overview figures, the income and expense records and workbook downloads back.
 
 **Figure 4-4. Level 1 data flow diagram.**
 - *What it shows*: the system opened into **eight processes** and **six data stores**, in the
