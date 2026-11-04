@@ -329,7 +329,8 @@ function applyRoomFilters(v: FilterDraft) {
       a routine re-render, so the branch that appears fades in rather than
       snapping into place the way both used to.
     -->
-    <div v-else-if="viewMode === 'matrix'" class="ws-reveal space-y-6">
+    <!-- A rule between clusters, open or closed (Sean, 5 Nov 2026). -->
+    <div v-else-if="viewMode === 'matrix'" class="ws-reveal divide-y divide-line">
       <div
         v-for="(clusterName, clusterIndex) in activeClusters"
         :key="clusterName"

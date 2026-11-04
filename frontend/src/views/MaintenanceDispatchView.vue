@@ -607,9 +607,8 @@ function handleDeleteTicketPrompt() {
           </span>
         </header>
 
-        <p v-if="col.tickets.length === 0" class="py-4 text-sm text-ink-soft">Nothing here.</p>
-
-        <ul v-else class="flex flex-col divide-y divide-line">
+        <!-- An empty column says nothing: its count already reads 0 (Sean, 5 Nov 2026). -->
+        <ul v-if="col.tickets.length" class="flex flex-col divide-y divide-line">
           <li
             v-for="t in col.tickets"
             :key="t.id"

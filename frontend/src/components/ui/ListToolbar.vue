@@ -28,6 +28,7 @@
  * Excel export that read those refs before still reads them.
  */
 import { computed, ref, useId } from 'vue';
+import { useStuck } from '@/lib/useStuck';
 import { Search, SlidersHorizontal, X } from 'lucide-vue-next';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import {
@@ -58,6 +59,12 @@ const props = withDefaults(
     filterTitle?: string;
     /** The short "2025 · BH" line under the toolbar. Off where a screen already says it. */
     summary?: boolean;
+    /**
+     * Stays under the top bar down a long list (Sean, 5 Nov 2026). Off where the toolbar sits in
+     * a short wrapper: that wrapper takes `ws-sticky-tools` and useStuck itself (Inquiries,
+     * the tenant's Repairs).
+     */
+    sticky?: boolean;
   }>(),
   {
     views: () => [],
@@ -69,6 +76,7 @@ const props = withDefaults(
     filters: () => [],
     filterTitle: 'Filters',
     summary: true,
+    sticky: true,
   }
 );
 
@@ -77,6 +85,9 @@ const emit = defineEmits<{
   'update:search': [value: string];
   apply: [values: FilterDraft];
 }>();
+
+const root = ref<HTMLElement | null>(null);
+const stuck = useStuck(root);
 
 const panelId = useId();
 const panelOpen = ref(false);
@@ -138,7 +149,10 @@ function spanClass(index: number) {
   <!-- @container: in a narrow column (Inquiries' list beside the thread on a laptop) the toolbar
        lays out by its own width, not the screen's - full-width search, the dropdowns two to a row
        under it - instead of wrapping each dropdown onto its own line (Sean, 2026-10-09). -->
-  <div class="@container flex flex-col gap-2">
+  <div
+    ref="root"
+    :class="['@container flex flex-col gap-2', sticky && 'ws-sticky-tools', sticky && stuck && 'is-stuck']"
+  >
     <div class="flex flex-wrap items-center gap-2 sm:items-end sm:gap-3">
       <!-- `min-w-0 flex-1` on the search so it takes what the Filters button
            leaves on a phone, down to 320px; `sm:max-w-80` keeps it the 20rem

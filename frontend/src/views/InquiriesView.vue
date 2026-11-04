@@ -4,6 +4,7 @@ import { showPhone } from '@/lib/phoneFormat';
 import { rememberFilters } from '@/lib/savedFilters';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useStuck } from '@/lib/useStuck';
 import { useLiveRefresh } from '@/lib/live';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { useRoute, useRouter } from 'vue-router';
@@ -271,6 +272,9 @@ const activeInquiry = computed(() => {
  * list on its own.
  */
 const detailPanel = ref<HTMLElement | null>(null);
+/** The search and filters stay under the top bar down a long list on a phone (Sean, 5 Nov 2026). */
+const toolsBar = ref<HTMLElement | null>(null);
+const toolsStuck = useStuck(toolsBar);
 const heading = ref<HTMLElement | null>(null);
 const threadScroller = ref<HTMLElement | null>(null);
 
@@ -483,12 +487,13 @@ async function handleSendReply() {
       <!-- On the page, not in a card (Sean, 5 Nov 2026), on a phone too: the conversation is the
            one in a card. On a laptop the column keeps the inbox's height and scrolls inside it. -->
       <div :class="['flex min-h-0 flex-col xl:col-span-5 2xl:col-span-4', conversationOpen && 'max-xl:hidden']">
-        <div class="space-y-3 border-b border-line pb-4">
+        <div ref="toolsBar" :class="['ws-sticky-tools space-y-3 border-b border-line pb-4', toolsStuck && 'is-stuck']">
           <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
                Sean, 2026-10-01): search, and the filter button beside it. -->
           <ListToolbar
             v-model:search="searchQuery"
             search-label="Search inquiries"
+            :sticky="false"
             :filters="inquiryFilters"
             @apply="(v) => { statusFilter = String(v.status); inquiryOrder = v.order as RowOrder; }"
           />

@@ -8,6 +8,7 @@ import { periodEnd, propertyToday, formatDateOnly, PROPERTY_TIMEZONE } from '@/l
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import InvoiceField from '@/components/ui/InvoiceField.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useStuck } from '@/lib/useStuck';
 import { useLiveRefresh } from '@/lib/live';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -1159,6 +1160,9 @@ const exportMonth = computed(() => {
 });
 const exportYears = computed(() => yearsList.value.filter((y) => y !== 'All').map(Number));
 const isDownloadOpen = ref(false);
+/** The tabs, search and filters stay under the top bar down the records (Sean, 5 Nov 2026). */
+const toolsBar = ref<HTMLElement | null>(null);
+const toolsStuck = useStuck(toolsBar);
 
 </script>
 
@@ -1348,7 +1352,7 @@ const isDownloadOpen = ref(false);
       ledger. Ledger / To verify stay tabs: they are two different lists, not
       two drawings of one.
     -->
-    <div id="income-records" class="flex scroll-mt-24 flex-col gap-3">
+    <div id="income-records" ref="toolsBar" :class="['ws-sticky-tools flex scroll-mt-24 flex-col gap-3', toolsStuck && 'is-stuck']">
       <!-- Tabs: Ledger or To verify -->
       <div role="tablist" aria-label="Income view" class="flex items-center gap-5 shrink-0">
         <button
@@ -1393,6 +1397,7 @@ const isDownloadOpen = ref(false);
 
       <ListToolbar
         v-if="activeTab === 'ledger'"
+        :sticky="false"
         v-model:view="viewMode"
         v-model:search="q"
         :views="incomeViews"
@@ -1533,7 +1538,8 @@ const isDownloadOpen = ref(false);
       that appears gets a fade-in rather than snapping into place the way it
       did before.
     -->
-    <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
+    <!-- A rule between clusters, open or closed (Sean, 5 Nov 2026). -->
+    <div v-else-if="viewMode === 'grouped'" class="ws-reveal divide-y divide-line">
       <!--
         The same empty state the "As a list" half of this screen renders, in
         the same shape - a title and a sentence under it, not one grey line.

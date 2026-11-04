@@ -1138,7 +1138,8 @@ async function handleOnboard() {
       edit control off screen. Each cluster now carries the same `lg:hidden`
       card stack RecordTable renders, written out below rather than shared.
     -->
-    <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
+    <!-- A rule between clusters, open or closed (Sean, 5 Nov 2026). -->
+    <div v-else-if="viewMode === 'grouped'" class="ws-reveal divide-y divide-line">
       <!--
         The same empty state "As a list" renders through RecordTable, in the
         same shape and with the same words. It was a single grey line with
