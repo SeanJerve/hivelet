@@ -856,7 +856,7 @@ function triggerRecord() {
           </dd>
         </div>
         <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
-          <dt class="font-semibold">Total handed over</dt>
+          <dt class="font-semibold">Total</dt>
           <dd class="tabular text-lg font-semibold text-brand">{{ peso(recorded.total, 2) }}</dd>
         </div>
       </dl>
@@ -1029,8 +1029,9 @@ function triggerRecord() {
             Date received
             <input v-model="date" type="date" class="ws-input w-full" required @input="dateReceivedTyped = true" />
           </label>
-          <div class="rounded-2xl bg-well px-4 py-3">
-            <p class="text-xs text-ink-faint">Total handed over</p>
+          <!-- On the sheet, not in a box (Sean, 4 Nov 2026). -->
+          <div class="py-1">
+            <p class="text-xs text-ink-faint">Total</p>
             <p class="tabular mt-0.5 text-2xl font-semibold leading-none text-brand">
               {{ peso(totalAmountReceived, 2) }}
             </p>
@@ -1043,7 +1044,7 @@ function triggerRecord() {
     </form>
 
     <template v-if="recorded" #actions>
-      <button type="button" class="pill-btn" @click="recordAnother">Record another</button>
+      <button type="button" class="pill-btn-quiet" @click="recordAnother">Record another</button>
       <button type="button" class="pill-btn-quiet" @click="closeModal">Done</button>
       <button type="button" class="pill-btn-brand" @click="seeInLedger">
         See it in Monthly Income
@@ -1148,11 +1149,11 @@ function triggerRecord() {
           <dd class="font-mono">{{ invoicePreview ?? 'None' }}</dd>
         </div>
         <div v-if="monthsOnThisReceipt > 1" class="flex items-baseline justify-between gap-3">
-          <dt class="text-ink-soft">Ledger entries</dt>
+          <dt class="text-ink-soft">Records</dt>
           <dd class="font-semibold">{{ monthsOnThisReceipt }}, one per month</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
-          <dt class="font-semibold">Total handed over</dt>
+          <dt class="font-semibold">Total</dt>
           <dd class="tabular text-lg font-semibold">{{ peso(totalAmountReceived, 2) }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">

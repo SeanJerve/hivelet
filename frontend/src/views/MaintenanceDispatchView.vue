@@ -657,7 +657,7 @@ function handleDeleteTicketPrompt() {
           <li
             v-for="t in col.tickets"
             :key="t.id"
-            class="flex flex-col gap-2.5 py-4 first:pt-0 last:pb-0"
+            class="group flex flex-col gap-2.5 py-4 first:pt-0 last:pb-0"
           >
             <div class="flex items-start justify-between gap-3">
               <p class="text-base font-bold uppercase tracking-tight text-ink">

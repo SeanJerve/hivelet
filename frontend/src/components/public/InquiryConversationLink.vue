@@ -35,7 +35,7 @@ async function copyCode() {
         <MessageSquare class="size-4" aria-hidden="true" />
         Open your conversation
       </RouterLink>
-      <button type="button" class="pill-btn" @click="copyCode">
+      <button type="button" class="pill-btn-quiet" @click="copyCode">
         <Check v-if="copied" class="size-4" aria-hidden="true" />
         <Copy v-else class="size-4" aria-hidden="true" />
         {{ copied ? 'Code copied' : 'Copy the code' }}

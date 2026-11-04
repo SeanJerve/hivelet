@@ -84,7 +84,7 @@ function reload() {
           Call {{ LANDLADY.phoneShown }}
         </a>
 
-        <RouterLink v-if="!isAuthenticated" to="/inquire" class="pill-btn">
+        <RouterLink v-if="!isAuthenticated" to="/inquire" class="pill-btn-quiet">
           <MessageSquare class="size-4" aria-hidden="true" />
           Inquire now
         </RouterLink>
