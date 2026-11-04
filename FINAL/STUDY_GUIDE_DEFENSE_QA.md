@@ -249,8 +249,9 @@ No, it can be voided: it is kept, marked with when, by whom and why, and drops o
 
 **What does a tenant see?**
 Their own unit, rent and amount due, their payments month by month (only receipts the owner verified
-count as paid; a month with no receipt says "Not entered", never "owed"), their deposit, their repair
-requests, notifications and details. *Sections 4.2.2, 4.2.4, 4.2.7; Figure 4-11.*
+count as paid, and a month with no receipt says "Not entered", never "owed"), their repair requests,
+notifications and details. Since 5 November 2026 the deposit is not shown to the tenant. It showed
+from 13 October, after a survey answer asked for it, until the card that held it was removed. *Sections 4.2.2, 4.2.4, 4.2.7; Figure 4-11.*
 
 **Why "Not entered" instead of "Unpaid"?**
 Because the records alone cannot tell an unpaid month from one the owner has not entered yet. Saying

@@ -48,8 +48,9 @@ Its passwords are with Sean; never type them where the projector shows them.
 ### 2. The tenant (phone, 2 minutes). Objective 2: tenant management, payments
 - Open the installed app from the home screen. Say: "It installed from the browser; nothing came
   from an app store, and it takes about 1.2 MB."
-- **Overview**: the unit, the rent and the standing.
-- **Payments and billing**: month by month, receipts.
+- **Overview**: the amount due, the current bill and the unit.
+- **Payments and billing**: the bill named by its month, **Rent paid** beside it, and the
+  **Payment record** (a month with no payment entered shows as **Not entered**).
 - Press **Pay with GCash**. Adyen's payment window opens. On Adyen's GCash test page choose a
   successful payment. The phone returns to "Payment received". Say: "Nothing counts yet. The owner
   must verify it."

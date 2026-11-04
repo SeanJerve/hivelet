@@ -104,7 +104,7 @@ separate files and chats. **Where:** Section 2.4.
 
 **Cluster.** A group of units that the owner's workbook books together. There are five: Boarding
 House (22), Back Apartment (5), Front Apartment (3), Penthouse (1) and Linda (2). **Where:**
-Section 4.1; BR-032; Monthly Income screen ("Group by: Cluster").
+Section 4.1; BR-032; Monthly Income screen ("Group by cluster").
 
 **Collections.** The money received and entered as receipts. The Overview shows "Collections by
 month". **Where:** Table 4-9; Overview screen.
@@ -128,7 +128,7 @@ company directly. Old electricity figures for the Linda units are kept, read-onl
 Section 4.2.4; BR-015; BR-040.
 
 **Emergency contact.** The person to call if something happens to a tenant. On the tenant's My
-details screen it is headed "If something happens to you". **Where:** Section 4.2.2; App. K,
+details screen it is headed "Emergency contact". **Where:** Section 4.2.2; App. K,
 Part 1, §5.
 
 **Expense allocation.** One part of an expense, booked to one property area. Her workbook gave
@@ -234,8 +234,9 @@ Section 4.2.2.
 **Move out (vacate).** Ending a tenancy. The tenant loses access at once, the unit becomes free, and
 every record stays. **Where:** BR-025; App. K, Part 2, §5.
 
-**Net income.** An Overview figure: rent and water collected, less operating costs. Personal spending
-is shown beside it and not deducted. **Where:** Overview screen; App. K, Part 2, §2.
+**Net income.** An Overview figure: rent and water collected, less operating costs, shown under the
+Income chart for the month picked on it, beside Income and Expenses. Personal spending is listed on
+Monthly Expenses and not deducted. **Where:** Overview screen; App. K, Part 2, §2.
 
 **Occupancy.** How many units are occupied: **32 of 33**. **Where:** Section 4.1; Overview screen.
 
@@ -288,7 +289,7 @@ Section 4.1.1; Table 4-8; Section 4.5.
 
 **Remitted amount.** Rent Amount plus Water Payment, worked out by the system. Example: ₱8,500 +
 ₱400 = ₱8,900. It leaves out the deposit and Linda's water. **Where:** Table 4-5; Table 4-6
-(BR-038); Monthly Income screen ("Remitted, rent + water").
+(BR-038); Monthly Income screen (the "Remitted" column and total).
 
 **Rent amount.** The rent received on one income row. **Where:** Table 4-5.
 
@@ -435,8 +436,9 @@ or today; Due now is the total due. **Where:** App. K, Part 1, §3.
 **Edit / Save changes.** Opens a record to correct it and saves the correction. Every correction is
 written to the audit trail. **Where:** App. K, Part 2.
 
-**Filters.** Dropdowns beside the search (cluster, month, year, status, kind). On a phone, tap
-Filters to show them. **Where:** App. K, Part 2.
+**Filters.** Dropdowns beside the search (cluster, month, year, status, kind). They carry no label
+above them: each option says what it shows, such as **All clusters**, **All months**, **Group by
+cluster**, or **Today** on Tenants. On a phone, tap Filters to show them. **Where:** App. K, Part 2.
 
 **Green hexagon.** The turning logo shown while the app first loads or reloads. **Where:** App. K,
 Part 2.
@@ -444,7 +446,8 @@ Part 2.
 **Grey outlines.** Placeholder shapes shown while a screen's figures load, so the page never goes
 blank. **Where:** App. K, Part 2.
 
-**Group by (Cluster, Unit, Tenant).** In Monthly Income, how the payments are gathered. **Where:**
+**Group by (cluster, unit, tenant).** In Monthly Income, how the payments are gathered: **Group by
+cluster**, **Group by unit** or **Group by tenant (A to Z)**. **Where:**
 App. K, Part 2, §3.
 
 **Heads.** A Monthly Income column: the number of occupants. **Where:** Monthly Income screen.
@@ -545,11 +548,13 @@ Part 1, §3.
 **Pull down to reload.** In the installed app, pulling a page down reloads it. **Where:** App. K,
 Part 1, §6.
 
-**Received / Income by cluster; Spent / Spending by area.** The month card and the year beside it, on
-Monthly Income and Monthly Expenses. **Where:** App. K, Part 2, §3.
+**Received and Income by cluster, Expenses and Expense by area.** The month card ("Received from
+November", "Expenses, November") and the year beside it, on Monthly Income and Monthly Expenses. The
+green word in "Income by cluster" or "Expense by area" switches the card to **month**, the year as
+bars. **Where:** App. K, Part 2, §3.
 
-**Recently (Your recent actions).** The last three things you did, in the side menu or under the
-greeting. Only you see your own. **Where:** App. K, Part 1, §2.
+**Recently (Your recent actions).** The last three things you did, in the side menu (on a phone,
+the menu that opens from the top left). Only you see your own. **Where:** App. K, Part 1, §2.
 
 **Record expense.** Opens the form for a new expense. **Where:** App. K, Part 2, §4.
 
@@ -565,7 +570,7 @@ opens their conversation. **Where:** Section 4.2.3; App. K, Part 2, §8.
 **Reject.** The owner refuses a GCash payment; it never reaches the ledger. **Where:** Section 4.2.4;
 App. K, Part 2, §3.
 
-**Remitted (rent + water).** The Monthly Income column and total for rent plus water. **Where:**
+**Remitted.** The Monthly Income column and total for rent plus water. **Where:**
 Monthly Income screen; BR-038.
 
 **Repairs (board).** The owner's board of repair requests in three columns: To dispatch, In
@@ -593,7 +598,8 @@ roommates and how many. **Where:** Tenants screen.
 
 **Show 8 more / Show all / Show fewer.** Open or close more of a long list. **Where:** App. K, Part 2.
 
-**Show each month as a list.** Shows the tenant's months as a table with the receipt for each.
+**Rent paid.** The tenant's chart of their months, beside the bill on Payments and billing. A month
+with no payment entered also appears as a **Not entered** row in the Payment record below it.
 **Where:** App. K, Part 1, §3.
 
 **Sign in / Sign out.** Start and end a session. Signing out also removes the offline copy.

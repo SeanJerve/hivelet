@@ -397,13 +397,9 @@ The standard tile used on both Overviews and the ledgers. Its tone shows importa
 dark tones are kept for the one or two things that need action.
 
 **`PaymentMonths.vue`** (tenant)
-The tenant's rent month by month, drawn from their own receipts and standing
+The tenant's **Rent paid** chart, month by month, drawn from their own receipts and standing
 (`lib/tenantPaymentMonths.ts`). It keeps "still loading", "could not load" and "nothing recorded"
 apart, so a tenant is never told the house has no record of their money by accident.
-
-**`PhoneMore.vue`**
-On a phone, folds the second half of an Overview tile under "More", so the first screen shows what
-matters. From 768 px wide nothing folds.
 
 **`QuickActionsFab.vue`** (owner, phone)
 The floating green button on the phone Overview that opens Record payment, Record expense and Move
@@ -470,8 +466,9 @@ The invoice field on Record payment and Edit payment: type a number, or tap "ACK
 acknowledgement receipt, which has no number. What is saved is decided by `lib/invoiceNumber.ts`.
 
 **`ListToolbar.vue`**
-The one search-and-filter bar every list uses. Each filter is a dropdown that applies at once; on a
-phone they sit behind a Filters button. A line under the toolbar says what is narrowing the list.
+The one search-and-filter bar every list uses. Each filter is a dropdown that applies at once, with
+no label above it, since its options name themselves ("All clusters"). It scrolls with the page
+rather than sticking under the top bar. On a phone the dropdowns sit behind a Filters button. A line under the toolbar says what is narrowing the list.
 
 **`listToolbar.ts`**
 The type definitions `ListToolbar.vue` uses to describe a filter. The screen keeps its own filter

@@ -36,23 +36,22 @@ screen. *Nakalimutan ang password? Lumapit sa landlady; bibigyan niya kayo ng ba
 
 ### 2. Overview / Pangunahing pahina
 
-Your unit with its floor plan, your rent, and **Amount due**. The amount due counts only the payments the landlady has
+The greeting, then **Amount due**, your current bill, and your unit with its floor plan. The amount due counts only the payments the landlady has
 recorded, up to the date it shows ("Your recorded payments cover rent up to…"). If you have paid
 and it is not there yet, it appears once she records your receipt.
 *Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.*
 
 **Your recent actions** lists the last three things you did here (a repair request sent, a GCash
 payment started, your details updated), newest first. On a computer it is in the menu on the left,
-under the sections, on every page, headed **Recently**. On a phone the latest one is under the
-greeting: **Recently**, with the date and time you did it at the right, and what you did on the line
-below. It is there to be read, not clicked. Only you see your own actions.
+under the sections, on every page, headed **Recently**. On a phone it is in the same place, in the
+menu that opens from the top left. It is there to be read, not clicked. Only you see your own actions.
 *Ang huling tatlong ginawa ninyo dito.*
 
 ### 3. Payments and billing / Bayad at singil
 
-- **Your rent**: the monthly rent, plus water at **₱200 per occupant per month**. *Tubig: ₱200 bawat
-  nakatira bawat buwan.*
-- **Your rent, month by month**: your bills over time, at least 12 months at a time.
+- **The bill** to pay, named by its month (for example **"Bill to pay, November"**): the rent, plus
+  water at **₱200 per occupant per month**. *Tubig: ₱200 bawat nakatira bawat buwan.*
+- **Rent paid**, beside the bill on a wide screen: your months over time, at least 12 at a time.
   *Ang inyong upa, buwan-buwan: hindi bababa sa 12 buwan.*
   - One sentence says where you stand, for example **"Paid up to August 12, 2026."** marked **Up
     to date**, or how many months are due and how much in all. *Isang pangungusap ang nagsasabi kung
@@ -62,15 +61,16 @@ below. It is there to be read, not clicked. Only you see your own actions.
     you moved in. *Bawat buwan: Paid (bayad), Due (dapat bayaran), Not entered (wala pang naitalang
     bayad), Not due yet (hindi pa dapat bayaran), Nothing yet (bago kayo lumipat).*
   - **Months paid**, **Paid in these months** and **Due now**. Only receipts the landlady has
-    **verified** count; a cancelled (voided) receipt never counts. A GCash payment you sent shows as
+    **verified** count, and a cancelled (voided) receipt never counts. A GCash payment you sent shows as
     **waiting** until she verifies it. *Ang mga resibong na-verify lang ng landlady ang binibilang.*
   - **"Not entered"** does not mean you owe that month: the landlady may not have entered your
     payment yet. If you paid, it appears once she enters it, or ask her to check her records.
     *Kung "Not entered" pero nagbayad kayo, lalabas ito kapag naitala na ng landlady.*
-  - **Show each month as a list** gives the same months as a table, with the receipt for each.
-- **Payment record**: every payment recorded for your unit, newest first. Search it, or pick another
-  **Year** or **Order** in the dropdowns above it (on a phone, tap **Filters** first). The list
-  changes as soon as you pick.
+- **Payment record**: every payment recorded for your unit, newest first, with a **Not entered** row
+  for each month that has no payment entered yet. Search it, or pick another year or order in the
+  dropdowns above it (on a phone, tap **Filters** first). The list changes as soon as you pick.
+- **The deposit** is not shown on these pages. Ask the landlady if you need to know it.
+  *Hindi ipinapakita dito ang deposit. Itanong sa landlady.*
 - **Pay with GCash**: online payment. **Until the landlady announces it, online payments do not
   charge real money; pay her in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
 
@@ -91,7 +91,7 @@ below. It is there to be read, not clicked. Only you see your own actions.
 
 ### 5. My details / Aking detalye
 
-Keep your phone number and the person to call **If something happens to you** up to date, then
+Keep your phone number and your **Emergency contact** (the person to call) up to date, then
 press **Save**. After your first sign-in you can sign in with your login ID or your phone number.
 Your name can only be changed by the landlady. A phone number is spaced as you type it
 (0917 123 4567). Both your number and the
@@ -188,9 +188,9 @@ figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when t
 
 **Your recent actions** lists the last three things you did (a payment recorded, a GCash payment
 approved, a repair marked done), newest first. On a computer it is in the menu on the left, under
-the sections, on every page, headed **Recently**. On a phone the latest one is under the
-greeting: **Recently**, with the date and time you did it at the right, and what you did on the line
-below. It is there to be read, not clicked. It shows only your own actions, never anyone else's.
+the sections, on every page, headed **Recently**. On a phone it is in the same place, in the menu
+that opens from the top left. It is there to be read, not clicked. It shows only your own actions,
+never anyone else's.
 
 - **Record payment**, **Record expense** and **Move someone in/out** are the green buttons at the top. **On a phone**,
   tap the green **+** at the bottom right to show them; tap it again to hide them.
@@ -242,11 +242,11 @@ example **"Nothing for November yet"**, and gives the last month recorded under 
 previous month, October"; the year is named only when it is not the one at the top). Beside it, **Income by cluster**
 is the **year**: the year's total and how it divides across the clusters. Tap the green **cluster**
 to change it to **month**, the year month by month. Monthly Expenses is laid out the same way
-("Expenses, October"; **Expense by area**, or by **month** in red bars). **Filters** > **Month** shows
-another month in Received. The year beside the page name (for example **2026 ⌄**) picks
+("Expenses, October"; **Expense by area**, or by **month** in red bars). The **All months** dropdown
+(under **Filters** on a phone) shows one month in Received. The year beside the page name (for example **2026 ⌄**) picks
 another year, or **All years** for everything since the records began; a past year can be read but
-not added to, so **Record payment** is not shown there. **Filters** > **Group by** gathers the payments by **Cluster**
-(the usual view), by **Unit**, or by **Tenant (A to Z)**.
+not added to, so **Record payment** is not shown there. The **Group by cluster** dropdown (the usual view) can
+instead read **Group by unit** or **Group by tenant (A to Z)**.
 
 **Download** opens a small window that asks what the file should cover: **Month**, **Year** or
 **All**, then the year from a row of years and, for a month, the month from a grid of twelve. It opens on what the screen is showing, so pressing **Download** again gets
@@ -267,7 +267,7 @@ TOTAL**.
 4. **Add another expense** records the next one without closing the form.
 5. A kind of expense that is not in the list: open **Kind of expense**, choose **Add a new kind…**
    at the bottom, type its name and press **Add kind**. It is added after your 13, numbered 11,
-   12 and so on, and chosen for that expense; it is also in **Filters** > **Kind of expense** and
+   12 and so on, and chosen for that expense; it is also in the **All kinds** dropdown and
    in the workbook's category summary. Your 13 stay as they are. A kind you add cannot be renamed
    or removed, so check the spelling.
 
@@ -289,7 +289,8 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
 - **Move them out**: type the unit code to confirm, and add a **reason** if you like (kept with the
   move-out; the tenant does not see it). The tenant loses access at once, the unit becomes free to
   let, and **their records stay**.
-- **Who lived where before**: choose a **Year** (and a **Month** if you like) in the filters. The list
+- **Who lived where before**: change the dropdown that reads **Today** to a year (and pick a month
+  in the **All months** dropdown if you like). The list
   then shows who paid for each unit then, read from your receipts: the months they paid,
   or for one month what the receipt covered, when it was paid and its number. A name you wrote two
   ways in the same unit is shown once, with the other spelling under it; a tenant who moved units

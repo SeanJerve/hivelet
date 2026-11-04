@@ -167,22 +167,25 @@ without her permission**: it shows real names and money. For practice, the demo 
    sign in with the login ID or that number.
 2. **Overview**: the amount due and when it is due, **Pay with GCash**, their unit with its own floor plan, recent payments, and **Request a repair** at the top right
    (the round button on a phone).
-3. **Payments and billing**: the rent, the deposit held, and rent month by month. Only receipts the landlady verified count as paid;
-   a month with no receipt says **"Not entered"**, never "owed".
+3. **Payments and billing**: the bill to pay, named by its month, with **Rent paid** (their months as
+   a chart) beside it, and the **Payment record** under them. Only receipts the landlady verified count
+   as paid, and a month with no receipt says **"Not entered"**, never "owed", in the chart and as a
+   row in the record. The deposit is not shown to the tenant.
 4. **Pay with GCash**: Adyen's own payment window takes the payment. It shows as **waiting for the
    landlady** until she verifies it; then the bill is settled.
 5. **Repairs**: a title, details, how urgent, an optional photo, **Send request**; it moves across
    the board as the landlady works on it, and they are notified when it is done. They can cancel it
    before work starts.
-6. **My details**, notifications (the bell), and **Install** (Add to Home Screen).
+6. **My details** (their phone and **Emergency contact**, then **Save**), notifications (the bell),
+   and **Install** (Add to Home Screen).
 
 ### The landlady (laptop or phone)
 
 | Screen (side menu) | What it is for |
 | :--- | :--- |
 | **Overview** | Needs your attention (payments to verify, urgent repairs), Received for this month once anything is recorded, Occupancy (32 of 33, each cluster's count), Income month by month (tap a month for its Income, Expenses and Net income, with arrows on Income and Expenses to their pages), and the three green buttons: **Move someone in/out**, **Record expense**, **Record payment** |
-| **Monthly Income** | Her income records, by cluster, in her workbook's layout, on the **Records** tab beside **To verify** (it opens on To verify when GCash payments are waiting); **Record payment**; verify or reject GCash payments; void a receipt; **Download** for Excel |
-| **Monthly Expenses** | Expenses split across property areas; her thirteen categories plus her own; Download |
+| **Monthly Income** | The month's **Received** figure and **Income by cluster** (its green word switches it to **month**, as bars). Her income records, by cluster, in her workbook's layout, on the **Records** tab beside **To verify** (it opens on To verify when GCash payments are waiting); **Record payment**; verify or reject GCash payments; void a receipt; **Download** for Excel |
+| **Monthly Expenses** | **Expenses** for the month, and **Expense by area** (switchable to **month**, red bars). Expenses split across property areas; her thirteen categories plus her own; Download |
 | **Tenants** | Move in, move out, edit, reset a password, see the login ID |
 | **Rooms and rates** | Every unit's rate and status; every rate change is recorded |
 | **Repairs** | The board (to dispatch, in progress, done). The pencil on a card opens **Manage this repair** (send a technician, change the status), and a repair in progress has **Mark resolved** on its card. **Log a repair** she was told about in person, even for an empty unit |

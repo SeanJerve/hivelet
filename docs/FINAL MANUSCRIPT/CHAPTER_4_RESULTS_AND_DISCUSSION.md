@@ -238,8 +238,10 @@ status, and each tenancy the number of occupants, the move-in date and emergency
 owner changes a rate, a database trigger records the old rate, the new rate, the date and who made the
 change, so no path can change a rate without leaving that record. The owner's workbook did not record
 move-in dates, so for the transferred tenancies the screen says the date is not recorded rather than
-showing a guessed one. Since 13 October 2026 a tenant also sees the deposit held for their tenancy on
-their own Payments and billing page, as one tenant asked in the survey (Table 23).
+showing a guessed one. From 13 October 2026 a tenant could also see the deposit held for their
+tenancy on their own Payments and billing page, as one tenant asked in the survey (Table 23). On
+5 November 2026 the card that held it was removed when that page was simplified, so the deposit is
+now shown on the owner's screens only, and a tenant who wants to know it asks her.
 
 *Figure 10. Room and rate directory.*
 
@@ -800,7 +802,7 @@ the live system by 5 October.
 | Testing day, 30 Sep 2026 (owner's use, walkthrough, Android phone) | 3 | Reliability, Usability | Changes not reaching the other person until a refresh; ₱0 shown with no connection |
 | Evaluation account and security reviews, 2 and 7 Oct 2026 | 3 | Security, Functional Suitability, Reliability | A request from another website answered with a server error; breached passwords accepted |
 | Technical evaluators' review, 3 Oct 2026 (all addressed by 5 Oct) | 14 | Usability, Functional Suitability, Security, Reliability | Filters in a pop-up with an Apply button; no way for a tenant to withdraw a request |
-| The survey, 30 Sep to 4 Oct 2026 | 4 | Usability, Reliability, Functional Suitability | Usability items rated 3 before the evaluators' changes; a tenant asking to see the deposit |
+| The survey, 30 Sep to 4 Oct 2026 | 4 | Usability, Reliability, Functional Suitability | Usability items rated 3 before the evaluators' changes; a tenant asking to see the deposit (shown to tenants from 13 October to 5 November 2026) |
 | **All** | **51** | | |
 
 Table 23A counts the defects found by each activity in Sections 4.3 and 4.4, by their highest

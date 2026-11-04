@@ -948,8 +948,9 @@ The section then has four labelled parts.
 - Transferred tenancies show the move-in date as **not recorded**, not a guessed date.
 
 **Key facts and numbers**
-- Since **13 October 2026** a tenant sees the deposit held for their tenancy on their own Overview, as
-  one tenant asked in the survey.
+- From **13 October to 5 November 2026** a tenant could see the deposit held for their tenancy on
+  their own Payments and billing page, as one tenant asked in the survey. The card that held it was
+  removed on 5 November, so the deposit now shows on the owner's screens only.
 
 **Figure 4-7. Room and rate directory.**
 - *What it shows*: the owner's Rooms and rates screen, with the property's real units, rates and

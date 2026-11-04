@@ -158,4 +158,6 @@ Based on the summary and conclusions of the study, the following are recommended
    time on record-keeping, and the two sub-characteristics no instrument here covered, user interface
    aesthetics and reusability. Build the instrument on ISO/IEC 25010:2023 (Chapter 4, Appendix M,
    Table M-21), and ask tenants what they find missing, as the survey did when one asked to see the
-   deposit, which the system now shows (Sections 4.2.2, 4.3.6 and 4.4.5).
+   deposit. The system showed it to tenants from 13 October to 5 November 2026, when the card that
+   held it was removed, and showing it again is left to this further work (Sections 4.2.2, 4.3.6
+   and 4.4.5).

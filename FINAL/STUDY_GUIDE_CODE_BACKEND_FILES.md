@@ -612,6 +612,11 @@ is not recorded in every file, so this list says what each file **does**, not wh
 | 083 | Named the administrator as verifier on 082's two payments, so the "every Verified payment names its verifier" check holds. |
 | 084 | Put the property's public number on the administrator's account, so her sign-in number and the site's contact number are one number. |
 | 085 | Made an inquiry's email optional: the site no longer asks for one. |
+| 086 | Added indexes for the audit trail, read newest first, and for a tenant's receipts. |
+| 087 | Made the test tenant loydtest's stay in PH begin on 1 October, when it really began, so no bill shows for a September never lived in. |
+| 088 | Moved sixteen units into the unit category they really are. Price and every other detail stay as they were. |
+| 089 | Took password hashes out of sixteen old audit trail rows from August 2026. |
+| 090 | Removed the moved-out "REHERSAL TEST" tenant the testing day's case A-12 created (PH, one day, 30 September 2026), as 053 removed the two before it. Its audit rows stay with an empty actor. loydtest is a different account and remains in PH. |
 
 **The other files in `database/migrations/`** (no number, not part of the sequence)
 
