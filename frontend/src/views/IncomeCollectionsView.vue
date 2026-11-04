@@ -22,7 +22,7 @@ import {
   asListedUnitCode,
   type IncomeRecord,
 } from '@/lib/systemState';
-import { peso, CLUSTERS, wholePercents } from '@/lib/canonicalUnits';
+import { peso, pesoExact, CLUSTERS, wholePercents } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { afterArrival } from '@/lib/afterArrival';
@@ -1599,12 +1599,13 @@ const isDownloadOpen = ref(false);
             <!-- A closed section still says what it holds. Stacked under the title on
                  a phone for every cluster alike; it used to sit beside short titles
                  and wrap under long ones, so sibling headers disagreed at 375.
-                 The remitted figure is the size of the Received tile's, whole
-                 pesos like it, and the entries count is gone (Loyd, 2026-10-03):
-                 the figure is what she opens a cluster for. -->
+                 The remitted figure is the size of the Received tile's, and the
+                 entries count is gone (Loyd, 2026-10-03): the figure is what she
+                 opens a cluster for. Centavos only when there are some, so it
+                 never reads 5,201 over a total row of 5,200.50 (5 Nov 2026). -->
             <span class="sm:text-right">
               <span class="tabular mt-1 block text-3xl font-semibold leading-none tracking-tight text-brand md:text-4xl">{{
-                peso(group.totalRemitted)
+                pesoExact(group.totalRemitted)
               }}</span>
             </span>
           </button>

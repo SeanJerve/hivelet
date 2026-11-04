@@ -1057,7 +1057,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <dl v-if="pickedMonth" class="grid grid-cols-3 gap-4 border-t border-line pt-3">
             <div>
               <dt class="text-xs text-ink-faint">
-                <RouterLink to="/admin/income#income-records" class="group/goto inline-flex items-center gap-1 hover:text-ink" aria-label="Income, open Monthly Income">
+                <RouterLink to="/admin/income#income-records" class="group/goto relative inline-flex items-center gap-1 hover:text-ink before:absolute before:-inset-x-1 before:-inset-y-1.5" aria-label="Income, open Monthly Income">
                   Income
                   <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                 </RouterLink>
@@ -1066,7 +1066,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             </div>
             <div>
               <dt class="text-xs text-ink-faint">
-                <RouterLink to="/admin/expenses#expense-records" class="group/goto inline-flex items-center gap-1 hover:text-ink" aria-label="Expenses, open Monthly Expenses">
+                <RouterLink to="/admin/expenses#expense-records" class="group/goto relative inline-flex items-center gap-1 hover:text-ink before:absolute before:-inset-x-1 before:-inset-y-1.5" aria-label="Expenses, open Monthly Expenses">
                   Expenses
                   <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                 </RouterLink>
