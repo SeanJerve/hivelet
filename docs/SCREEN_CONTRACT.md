@@ -94,15 +94,13 @@ before the redesign started.
 
 ### `views/MaintenanceDispatchView.vue`
 
-5 call(s), **4 of them write**.
+3 call(s), **3 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | **writes** | `DELETE /admin/tickets/:id` | delete a ticket |
-| reads | `GET /admin/tickets/:id/messages` | read a ticket thread |
 | **writes** | `PATCH /admin/tickets/:id` | move a ticket, and the unit status with it |
 | **writes** | `POST /admin/tickets` | raise a ticket — also sets the unit Under Maintenance |
-| **writes** | `POST /admin/tickets/:id/messages` | reply on a ticket |
 
 ### `views/TenantManagementView.vue`
 
@@ -275,4 +273,4 @@ before the redesign started.
 
 ---
 
-**24 files make 82 distinct calls, 39 of which write.** Generated 2026-11-04.
+**24 files make 80 distinct calls, 38 of which write.** Generated 2026-11-04.
