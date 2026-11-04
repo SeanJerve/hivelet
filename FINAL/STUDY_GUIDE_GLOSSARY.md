@@ -708,7 +708,7 @@ App. M, Table M-19; App. Q.
 **Content Security Policy (CSP).** A rule the site sends to browsers listing where scripts may come
 from, so an injected script is blocked. Hivelet's is enforced. **Where:** Section 4.4.4.
 
-**Context diagram.** A data flow diagram showing the whole system as one process, with the four
+**Context diagram.** A data flow diagram showing the whole system as one process, with the three
 outside parties and the data between them. **Where:** Figure 4-3; App. D.
 
 **Cookie.** A small value a website keeps in the browser. Ch. 5 recommends keeping the sign-in token

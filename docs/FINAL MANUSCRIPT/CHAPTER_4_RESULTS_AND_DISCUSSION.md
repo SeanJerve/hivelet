@@ -165,14 +165,17 @@ equipment beyond the owner's own laptop and phone.
 
 ![System architecture](figures/figure-5-system-architecture.png)
 
-Figure 6 is the context diagram: the system as one process, with the four parties outside it and the
+Figure 6 is the context diagram: the system as one process, with the three parties outside it and the
 data that passes between them. Figure 7 opens it into eight processes and the stores each reads and
 writes, in the Gane and Sarson notation: a rounded rectangle is a process, a rectangle open on
 the right is a data store, and a shaded square is a party outside the system. To trace one path: the owner records a cash receipt through
 process 4.0, Bill and record payments, which writes it to store D3, Bills and receipts, and process
 7.0, Produce reports, reads it from there for the Overview and the Excel workbooks. The notifications
 and the audit record are written by nearly every process and are left out of Figure 7 for
-readability.
+readability. Adyen, the payment gateway, is drawn as part of the payment process rather than as a
+party outside the system, as in the data flow diagrams the team's Systems Analysis and Design
+professor approved. Taking a GCash payment through Adyen is step 4.3 of process 4.0 (Appendix F),
+and Figure 5 shows where the gateway sits.
 
 *Figure 6. Context diagram.*
 

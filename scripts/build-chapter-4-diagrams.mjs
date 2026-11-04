@@ -262,10 +262,13 @@ function architecture() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Figure 6. Context diagram (Level 0, Gane and Sarson notation)
+// Figure 6. Context diagram (Level 0, Gane and Sarson notation). Three parties, as in the diagrams the
+// team's SAD professor approved (Sean, 4 Nov 2026): Adyen is part of the payment process, not an
+// external entity, so it is not drawn here or in Figure 7, and step 4.3 in Appendix F names it.
+// Online payments still go through it (Figure 5).
 // ---------------------------------------------------------------------------------------------
 function context() {
-  const W = 900, H = 780, cx = 450, cy = 390, r = 108;
+  const W = 900, H = 556, cx = 450, cy = 390, r = 108;
   let s = '';
   const hw = 100;
   s += gsProc(cx, cy, hw, r, '0', 'Hivelet apartment management system', { band: 34, nsize: 16, size: 16, weight: 'bold' });
@@ -279,20 +282,13 @@ function context() {
   s += T(cx - 56, 178, 'Inquiry about a unit; follow-up messages', { w: 190, size: 14, anchor: 'end' });
   s += T(cx + 56, 178, 'Units, rates and availability; the inquiry\'s reference and replies', { w: 190, size: 14, anchor: 'start' });
 
-  // Adyen (bottom)
-  s += gsEnt(cx - 130, H - 73, 260, 54) + T(cx, H - 46, 'Adyen payment gateway (GCash)', { weight: 'bold' });
-  s += line([[cx - 44, cy + edgeY(44)], [cx - 44, H - 73]]);
-  s += line([[cx + 44, H - 73], [cx + 44, cy + edgeY(44)]]);
-  s += T(cx - 56, 602, 'Payment session: amount and reference', { w: 190, size: 14, anchor: 'end' });
-  s += T(cx + 56, 602, 'Payment result notification', { w: 190, size: 14, anchor: 'start' });
-
   // Owner (left)
   s += gsEnt(14, cy - 60, 140, 120) + T(84, cy, 'Owner (administrator)', { w: 124, weight: 'bold' });
   s += line([[154, cy - 34], [cx - edgeX(34), cy - 34]]);
   s += line([[cx - edgeX(34), cy + 34], [154, cy + 34]]);
   s += T(162, cy - 46, 'Sign-in; units and rates; move-ins and move-outs; payments with invoice numbers, verifications and voids; expenses; repair dispatch; inquiry replies',
     { w: 176, size: 14, anchor: 'start', bottom: cy - 44 });
-  s += T(162, cy + 46, 'Overview figures; income and expense ledgers; workbook downloads; notifications; recent actions',
+  s += T(162, cy + 46, 'Overview figures; income and expense records; workbook downloads; notifications; recent actions',
     { w: 176, size: 14, anchor: 'start', top: cy + 44 });
 
   // Tenant (right)
@@ -301,7 +297,7 @@ function context() {
   s += line([[cx + edgeX(34), cy - 34], [W - 154, cy - 34]]);
   s += T(W - 162, cy - 46, 'Bills and amounts owed; payment history and receipts; repair status; notifications; recent actions',
     { w: 176, size: 14, anchor: 'end', bottom: cy - 44 });
-  s += T(W - 162, cy + 46, 'Sign-in; profile and password changes; repair requests with photos; cancellations; online payments',
+  s += T(W - 162, cy + 46, 'Sign-in; profile and password changes; repair requests with photos; cancellations; GCash payments',
     { w: 176, size: 14, anchor: 'end', top: cy + 44 });
   return { W, H, body: s };
 }
@@ -331,8 +327,7 @@ function dfd() {
   const rowA = 350, rowB = 510;
 
   // External entities.
-  s += ent(16, 16, 744, 44, 'Owner (administrator)');
-  s += ent(784, 16, 100, 66, 'Adyen (GCash)');
+  s += ent(16, 16, 862, 44, 'Owner (administrator)');
   s += ent(16, H - 64, 150, 48, 'Visitor or prospect');
   s += ent(196, H - 64, 688, 48, 'Tenant');
 
@@ -359,16 +354,11 @@ function dfd() {
   }
   s += lab(600, 576, 'Record, verify, void', { anchor: 'start' });
 
-  // Adyen and 4.0: the session goes out, the signed result comes back.
-  s += line([[P.p4[0] + at(16), P.p4[1] - 16], [860, P.p4[1] - 16], [860, 82]]);
-  s += line([[876, 82], [876, P.p4[1] + 16], [P.p4[0] + at(16), P.p4[1] + 16]]);
-  s += lab(806, P.p4[1] - 28, 'Session');
-  s += lab(806, P.p4[1] + 30, 'Result');
 
   // Visitor and tenant, from below.
   s += line([[P.p1[0], H - 64], [P.p1[0], P.p1[1] + R]], { head: 'both' });
   s += lab(P.p1[0] + 8, 808, 'Inquiry, messages; units, replies', { anchor: 'start', w: 76 });
-  for (const [k, t] of [['p8', 'Sign-in, profile, password'], ['p5', 'Requests, photos, cancellations; status'], ['p4', 'Online payment; bills, receipts']]) {
+  for (const [k, t] of [['p8', 'Sign-in, profile, password'], ['p5', 'Requests, photos, cancellations; status'], ['p4', 'GCash payment; bills, receipts']]) {
     const [x, y] = P[k];
     s += line([[x, H - 64], [x, y + R]], { head: 'both' });
     s += lab(x + 8, 808, t, { anchor: 'start', w: 100 });
@@ -712,7 +702,7 @@ const CHILD = {
   '4': ['4.0 Bill and record payments', [
     ['4.1', 'Raise a bill on demand', [['Tenant', 'Bills shown', 'out']], [['D1', 'Units and rates', 'in'], ['D3', 'Bills and receipts', 'out']]],
     ['4.2', 'Record an on-site payment', [['Owner (administrator)', 'Cash received, invoice no.', 'in']], [['D3', 'Bills and receipts', 'out']]],
-    ['4.3', 'Take an online payment', [['Tenant', 'Pay with GCash', 'in'], ['Adyen (GCash)', 'Session; signed result', 'both']], [['D3', 'Bills and receipts', 'out']]],
+    ['4.3', 'Take a GCash payment through Adyen', [['Tenant', 'GCash payment, receipt', 'both']], [['D3', 'Bills and receipts', 'out']]],
     ['4.4', 'Verify or decline a payment', [['Owner (administrator)', 'Verify, decline', 'in'], ['Tenant', 'Outcome', 'out']], [['D3', 'Bills and receipts', 'both']]],
     ['4.5', 'Correct or void a receipt', [['Owner (administrator)', 'Correction, void', 'in']], [['D3', 'Bills and receipts', 'both']]],
   ]],

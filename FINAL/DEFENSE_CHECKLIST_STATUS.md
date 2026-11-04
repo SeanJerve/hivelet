@@ -21,7 +21,7 @@ needs a person, a signature or a paper.
 | 9 | UAT signed by the client | Appendix O is ready to print. The owner has not signed (P1) | Waiting on the signature | Team |
 | 10 | Deployed or pilot-tested, with a Deployment Report and a Client or End-User Acceptance Form or MOA | Deployed at hivelet.vercel.app since 24 September 2026, in use beside the owner's records (Table 25). **No Deployment Report document. No MOA or acceptance form found** (the UAT sign-off of item 9 may or may not be the same form as Module 06's) | **Missing** | Claude can draft the Deployment Report. Team: the acceptance form or MOA |
 | 11 | User manual complete, and the source code in version control and open to the Programming Adviser | Appendix K, brought up to date for the redesign on 4 November. The code is on GitHub | Done, with one catch | P9 makes the repository private before the defense. If it goes private, **add the Programming Adviser as a collaborator** or item 11 fails |
-| 12 | Context Diagram in the standard model | Figure 6 and Appendix D, in Gane and Sarson since 4 November | Done | See the Adyen question below |
+| 12 | Context Diagram in the standard model | Figure 6 and Appendix D, in Gane and Sarson since 4 November | Done | Adyen taken off on 4 November, as the professor approved |
 | 13 | Data Flow Diagram in **Gane and Sarson** notation, **down to Level 2** | Redrawn on 4 November: Figure 7 (Level 1) and Appendix F, now Level 2 diagrams for all eight processes. They were Yourdon-DeMarco circles, with four of eight processes opened | Done | See the level naming question below |
 | 14 | Use Case Diagram | Figure 8 and Appendix G | Done | |
 | 15 | ERD or database diagram | Figure 9 and Appendix H, drawn from the live database catalogue | Done | |
@@ -52,7 +52,10 @@ three ways the team should settle before the defense:
 1. **Adyen.** Its context diagram (Figure 1) draws three entities, Tenant, Administrator and Public
    User, and no Adyen, though its own text says "four external entities" and names Adyen. The
    paper's Figure 6 keeps Adyen, because the gateway really does send each payment's result into the
-   system. **Waiting on Sean**: did the professor say to take Adyen off, or was it never drawn?
+   system. **Settled 4 November**: the professor took it off because Adyen is part of a process,
+   not an entity. So it is no external entity on any level, which keeps the diagrams balanced, and
+   step 4.3 of Appendix F is "Take a GCash payment through Adyen". Section 4.2.1 says why. Figure 5 (the architecture) and the use
+   case diagram still show Adyen, since those are not data flow diagrams.
 2. **Processes.** It has five (manage tenant and room records, booking and reservation, financial
    transactions, maintenance tickets, sign-in and access). The paper's Figure 7 has eight, drawn
    from what was built, and the system has no booking approval: a visitor sends an inquiry and the
