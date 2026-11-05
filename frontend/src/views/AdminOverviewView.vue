@@ -25,6 +25,9 @@ import {
   fetchExpenseRecords,
   fetchMaintenanceTickets,
   fetchTenants,
+  fetchInquiries,
+  inquiries,
+  inquiriesFetchFailed,
   waterChargeFor,
   type RoomItem,
   type MaintenanceTicket,
@@ -245,6 +248,7 @@ async function refreshAllData() {
       fetchExpenseRecords(),
       fetchMaintenanceTickets(),
       fetchTenants(),
+      fetchInquiries(),
       loadPayments(),
     ]);
   } finally {
@@ -506,6 +510,10 @@ const tileSpans = computed(() => {
     ...(monthShown.value ? [{ key: 'month', full: false }] : []),
     { key: 'occupancy', full: false },
     { key: 'byMonth', full: false },
+    // Under them, from the paper's Objective 2: booking (inquiries) and the spending side of
+    // financial tracking, the two it names that the Overview did not show (Sean, 5 Nov 2026).
+    { key: 'inquiries', full: false },
+    { key: 'spending', full: false },
   ];
   const spans: Record<string, string> = {};
   let alone: string | null = null; // a half with nothing yet beside it
@@ -516,12 +524,37 @@ const tileSpans = computed(() => {
       spans[t.key] = 'xl:col-span-12';
     } else {
       spans[t.key] = 'xl:col-span-6';
+      // Occupancy beside Income takes a third and the chart two (Sean, 5 Nov 2026).
+      if (alone === 'occupancy' && t.key === 'byMonth') {
+        spans.occupancy = 'xl:col-span-4';
+        spans.byMonth = 'xl:col-span-8';
+      }
       alone = alone ? null : t.key;
     }
   }
   if (alone) spans[alone] = 'xl:col-span-12';
   return spans;
 });
+/** The inquiries waiting for an answer, newest first, three of them. */
+const waitingInquiries = computed(() =>
+  inquiries.filter((i) => i.status === 'Pending').slice(0, 3)
+);
+const waitingInquiryCount = computed(() => inquiries.filter((i) => i.status === 'Pending').length);
+
+/** This year's spending by area, every area including personal, as Monthly Expenses splits it. */
+const yearAreaSplit = computed<Segment[]>(() => {
+  const totals = new Map<string, number>();
+  for (const e of liveExpenseRecords.value) {
+    for (const sp of e.splits) totals.set(sp.area, (totals.get(sp.area) ?? 0) + sp.amount);
+  }
+  const tones = ['brand', 'bright', 'night', 'soft', 'hatch', 'faint'] as const;
+  return [...totals.entries()]
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({ label, value, tone: tones[i % tones.length] }));
+});
+const yearSpent = computed(() => yearAreaSplit.value.reduce((t, x) => t + x.value, 0));
+
 const phoneSpan = computed(() => (attentionShown.value && monthShown.value ? '' : 'max-md:col-span-2'));
 
 /**
@@ -1080,6 +1113,50 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               </dd>
             </div>
           </dl>
+        </template>
+      </OverviewTile>
+
+      <OverviewTile key="inquiries" title="Inquiries" to="/admin/inquiries" to-label="Open inquiries" :class="['col-span-2 max-md:order-5', tileSpans.inquiries]">
+        <UnavailableNote v-if="inquiriesFetchFailed" message="The inquiries could not be loaded." @retry="refreshAllData" />
+        <p v-else-if="waitingInquiryCount === 0" class="text-sm text-ink-soft">No inquiry is waiting for an answer.</p>
+        <template v-else>
+          <p class="flex items-baseline gap-2">
+            <span class="text-3xl font-semibold leading-none tabular">{{ waitingInquiryCount }}</span>
+            <span class="text-sm text-ink-soft">waiting for an answer</span>
+          </p>
+          <ul class="divide-y divide-line text-sm">
+            <li v-for="q in waitingInquiries" :key="q.id" class="flex items-baseline justify-between gap-3 py-2.5">
+              <span class="min-w-0">
+                <span class="block truncate font-medium text-ink">{{ q.name }}</span>
+                <span class="block truncate text-xs text-ink-soft">{{ q.message }}</span>
+              </span>
+              <span class="shrink-0 text-right text-xs text-ink-faint">
+                <span class="block font-semibold text-brand">Unit {{ q.unit.toUpperCase() }}</span>
+                {{ q.date }}
+              </span>
+            </li>
+          </ul>
+        </template>
+      </OverviewTile>
+
+      <OverviewTile key="spending" title="Expenses by area" to="/admin/expenses" to-label="Open Monthly Expenses" :class="['col-span-2 max-md:order-6', tileSpans.spending]">
+        <UnavailableNote v-if="expenseRecordsFetchFailed" message="The expenses could not be loaded." @retry="refreshAllData" />
+        <p v-else-if="yearAreaSplit.length === 0" class="text-sm text-ink-soft">No expenses are entered for {{ CURRENT_YEAR }} yet.</p>
+        <template v-else>
+          <p class="tabular text-3xl font-semibold leading-none">{{ peso(yearSpent, 2) }}</p>
+          <SegmentBar :segments="yearAreaSplit" :label="`How ${peso(yearSpent, 2)} divides across the property areas`" />
+          <ul class="flex flex-col gap-2 text-sm">
+            <li v-for="(c, i) in yearAreaSplit" :key="c.label" class="flex items-center justify-between gap-3">
+              <span class="flex min-w-0 items-center gap-2">
+                <span aria-hidden="true" :class="['size-3 shrink-0 rounded-full', c.tone === 'brand' && 'bg-brand', c.tone === 'bright' && 'bg-brand-bright', c.tone === 'night' && 'bg-series-night', c.tone === 'soft' && 'bg-series-soft', c.tone === 'hatch' && 'hatch border border-line', c.tone === 'faint' && 'bg-ink-faint']" />
+                <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
+              </span>
+              <span class="flex shrink-0 items-baseline gap-3">
+                <span class="text-xs text-ink-faint tabular">{{ wholePercents(yearAreaSplit.map((x) => x.value))[i] }}%</span>
+                <span class="tabular font-semibold">{{ peso(c.value, 2) }}</span>
+              </span>
+            </li>
+          </ul>
         </template>
       </OverviewTile>
 
