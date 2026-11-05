@@ -598,8 +598,8 @@ roommates and how many. **Where:** Tenants screen.
 
 **Show 8 more / Show all / Show fewer.** Open or close more of a long list. **Where:** App. K, Part 2.
 
-**Rent paid.** The tenant's chart of their months, beside the bill on Payments and billing. A month
-with no payment entered also appears as a **Not entered** row in the Payment record below it.
+**Paying your rent.** Beside the bill on Payments and billing: when rent is due, how much, Paid up to, how to pay, and the landlady's number. A month
+with no payment entered appears as a **Not entered** row in the Payment record below it.
 **Where:** App. K, Part 1, §3.
 
 **Sign in / Sign out.** Start and end a session. Signing out also removes the offline copy.

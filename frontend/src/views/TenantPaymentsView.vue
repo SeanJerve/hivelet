@@ -25,7 +25,7 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter } from '@/components/ui/listToolbar';
-import PaymentMonths from '@/components/overview/PaymentMonths.vue';
+import { fetchLandladyContact, LANDLADY } from '@/lib/systemState';
 import type { ReceiptInput } from '@/lib/tenantPaymentMonths';
 import { screenRef, screenLoaded } from '@/lib/screenCache';
 
@@ -169,6 +169,21 @@ interface ResidentStanding {
   totalPayable: number;
 }
 const standing = screenRef<ResidentStanding | null>('tenant.payments.standing', null);
+
+/** "On the 1st of each month", from her next period's start. A clamped day (29th to 31st, or a month's last day) reads as the move-in day. */
+const dueDayWords = computed(() => {
+  const st = standing.value;
+  if (!st) return '';
+  const start = st.owedPeriods[0]?.start ?? st.nextPeriodStart;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(start ?? '');
+  if (!m) return '';
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const last = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+  if (d > 28 || d === last) return 'Each month on the day you moved in';
+  const tens = d % 100;
+  const suffix = tens >= 11 && tens <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[d % 10] ?? 'th';
+  return `On the ${d}${suffix} of each month`;
+});
 
 const standingOwes = computed(() => (standing.value?.owedPeriods.length ?? 0) > 0);
 const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
@@ -475,6 +490,7 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
 }
 
 onMounted(async () => {
+  void fetchLandladyContact();
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get('status');
   const refParam = params.get('ref');
@@ -930,19 +946,37 @@ function refreshAll() {
     </template>
     </div>
 
-    <!-- The tenant's own months, drawn like the landlady's collections chart. Needs both the
-         receipts and the standing, so it waits for, and fails with, either. On a phone it comes
-         before the bills when nothing is due (Loyd, 2026-10-03). -->
-    <OverviewTile boxed title="Rent paid" :class="chartLeads && 'max-xl:order-first'">
-      <PaymentMonths
-        :receipts="rawReceipts"
-        :waiting="waitingPayments"
-        :standing="standing"
-        :today="today"
-        :loading="loadingHistory || loadingBills"
-        :failed="historyLoadFailed || billsLoadFailed"
-        @retry="refreshAll"
-      />
+    <!--
+      What a tenant needs beside the bill, in place of the rent chart (Sean, 5 Nov 2026: a chart is
+      not needed when the rent is the same every month). From the paper: not missing the due date
+      and reaching the landlady (Chapter 1, the problems and the communication objective). Each
+      month's own state is in the Payment record below, Not entered rows included.
+    -->
+    <OverviewTile title="Paying your rent">
+      <dl class="flex flex-col divide-y divide-line text-sm">
+        <div v-if="dueDayWords" class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
+          <dt class="text-ink-soft">Due</dt>
+          <dd class="text-right font-medium">{{ dueDayWords }}</dd>
+        </div>
+        <div v-if="standing" class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
+          <dt class="text-ink-soft">Each month</dt>
+          <dd class="text-right font-semibold tabular">{{ peso(standing.perPeriod.totalAmount, 2) }}</dd>
+        </div>
+        <div v-if="standing" class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
+          <dt class="text-ink-soft">Paid up to</dt>
+          <dd class="text-right font-medium">{{ standing.paidThrough ? formatDateOnly(standing.paidThrough, longDate) : 'Nothing recorded yet' }}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
+          <dt class="text-ink-soft">How to pay</dt>
+          <dd class="text-right font-medium">Pay with GCash here, or cash to the landlady</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
+          <dt class="text-ink-soft">The landlady</dt>
+          <dd class="text-right font-medium">
+            <a :href="`tel:${LANDLADY.phone}`" class="press tabular font-semibold text-brand hover:text-brand-strong">{{ LANDLADY.phoneShown }}</a>
+          </dd>
+        </div>
+      </dl>
     </OverviewTile>
     </section>
 

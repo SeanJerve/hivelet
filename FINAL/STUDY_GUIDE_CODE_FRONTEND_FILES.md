@@ -397,7 +397,7 @@ The standard tile used on both Overviews and the ledgers. Its tone shows importa
 dark tones are kept for the one or two things that need action.
 
 **`PaymentMonths.vue`** (tenant)
-The tenant's **Rent paid** chart, month by month, drawn from their own receipts and standing
+Removed 5 Nov 2026 (PaymentMonths.vue): the tenant's Rent paid chart, replaced by Paying your rent on Payments and billing. It drew from their own receipts and standing
 (`lib/tenantPaymentMonths.ts`). It keeps "still loading", "could not load" and "nothing recorded"
 apart, so a tenant is never told the house has no record of their money by accident.
 

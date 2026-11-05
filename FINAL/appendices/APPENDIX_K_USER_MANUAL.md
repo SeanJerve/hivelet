@@ -45,26 +45,16 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
 
 - **The bill** to pay, named by its month (for example **"Bill to pay, November"**): the rent, plus
   water at **₱200 per occupant per month**. *Tubig: ₱200 bawat nakatira bawat buwan.*
-- **Rent paid**, beside the bill on a wide screen: your months over time, at least 12 at a time.
-  *Ang inyong upa, buwan-buwan: hindi bababa sa 12 buwan.*
-  - One sentence says where you stand, for example **"Paid up to August 12, 2026."** marked **Up
-    to date**, or how many months are due and how much in all. *Isang pangungusap ang nagsasabi kung
-    hanggang kailan kayo bayad at kung may dapat pang bayaran.*
-  - A bar for each month: **Paid**, **Due** (Due soon or Due today), **Not entered** (no payment
-    entered for that month yet), **Not due yet**, or a pale, empty **Nothing yet** for a month before
-    you moved in. *Bawat buwan: Paid (bayad), Due (dapat bayaran), Not entered (wala pang naitalang
-    bayad), Not due yet (hindi pa dapat bayaran), Nothing yet (bago kayo lumipat).*
-  - **Months paid**, **Paid in these months** and **Due now**. Only receipts the landlady has
-    **verified** count, and a cancelled (voided) receipt never counts. A GCash payment you sent shows as
-    **waiting** until she verifies it. *Ang mga resibong na-verify lang ng landlady ang binibilang.*
-  - **"Not entered"** does not mean you owe that month: the landlady may not have entered your
-    payment yet. If you paid, it appears once she enters it, or ask her to check her records.
-    *Kung "Not entered" pero nagbayad kayo, lalabas ito kapag naitala na ng landlady.*
+- **Paying your rent**, beside the bill: when rent is due each month, how much, how far your
+  recorded payments reach (**Paid up to**), how to pay (GCash here, or cash to the landlady) and the
+  landlady's number, which you can tap to call. *Kailan dapat magbayad, magkano, at ang numero ng landlady.*
+  - Only receipts the landlady has **verified** count, and a cancelled (voided) receipt never counts. A
+    GCash payment you sent shows as **waiting** until she verifies it.
 - **Payment record**: every payment recorded for your unit, newest first, with a **Not entered** row
-  for each month that has no payment entered yet. Search it, or pick another year or order in the
+  for each month that has no payment entered yet. **"Not entered"** does not mean you owe that month: the landlady may not have entered your payment yet. Search it, or pick another year or order in the
   dropdowns above it (on a phone, tap **Filters** first). The list changes as soon as you pick.
 - **The deposit** held for your tenancy is on your Overview, in the card for your unit.
-  *Hindi ipinapakita dito ang deposit. Itanong sa landlady.*
+  *Nasa Overview ang deposit, sa card ng inyong unit.*
 - **Pay with GCash**: online payment. **Until the landlady announces it, online payments do not
   charge real money; pay her in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
 

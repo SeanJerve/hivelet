@@ -849,7 +849,7 @@ const statusTone = computed(() => {
         style="animation-delay: 60ms"
       >
         <template #heading>
-          <span class="text-2xl font-semibold tracking-tight">{{ tenantData.room || 'Your unit' }}</span>
+          <span class="block text-4xl font-semibold leading-none tracking-tight sm:text-5xl">{{ tenantData.room || 'Your unit' }}</span>
         </template>
         <UnavailableNote
           v-if="tenantDataLoadFailed && !tenantData.room"
@@ -875,7 +875,7 @@ const statusTone = computed(() => {
                of the drawing, so this box must be exactly as large as the image. A unit that is a
                whole level (the penthouse) has no marker: the plan is all of it. The drawing's own
                ground stays visible in dark, so it is rounded into a panel. -->
-          <div v-else-if="unitPlan" class="relative mx-auto w-full max-w-64 overflow-hidden rounded-2xl">
+          <div v-else-if="unitPlan" class="relative w-full max-w-64 overflow-hidden rounded-2xl">
             <img
               :src="unitPlan.src"
               :alt="unitPlan.x !== null ? `Floor plan with ${tenantData.room} marked` : `Floor plan of ${tenantData.room}`"
