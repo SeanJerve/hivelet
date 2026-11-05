@@ -137,7 +137,7 @@ onUnmounted(() => {
         <div
           v-for="(row, i) in visible"
           :key="i"
-          :class="['group py-4', revealFirstLoad ? 'list-reveal-item' : '']"
+          :class="['group relative py-4', revealFirstLoad ? 'list-reveal-item' : '']"
           :style="revealFirstLoad ? { animationDelay: `${Math.min(i, 9) * 30}ms` } : undefined"
         >
           <slot name="card" :row="row" :index="i" />

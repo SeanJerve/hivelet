@@ -24,7 +24,6 @@ import {
   Plus,
   CheckCircle2,
   UserCheck,
-  Pencil,
   Trash2,
   Loader2,
   Check,
@@ -612,7 +611,7 @@ function handleDeleteTicketPrompt() {
           <li
             v-for="t in col.tickets"
             :key="t.id"
-            class="group flex flex-col gap-2.5 py-4 first:pt-0 last:pb-0"
+            class="group relative flex flex-col gap-2.5 py-4 first:pt-0 last:pb-0"
           >
             <div class="flex items-start justify-between gap-3">
               <p class="text-base font-bold uppercase tracking-tight text-ink">
@@ -643,17 +642,16 @@ function handleDeleteTicketPrompt() {
             <div class="-mt-2 flex items-center justify-end gap-1">
               <button
                 type="button"
-                :class="['press-plate icon-btn-plain row-action -mb-1', t.status !== 'In Progress' && '-mr-3']"
+                class="row-open"
                 :aria-label="`Manage ${t.title}`"
                 title="Manage"
                 @click="openEditModal(t)"
               >
-                <Pencil class="size-4" aria-hidden="true" />
               </button>
               <button
                 v-if="t.status === 'In Progress'"
                 type="button"
-                class="pill-btn-brand pill-btn-compact"
+                class="pill-btn-brand pill-btn-compact relative z-[2]"
                 :disabled="isSubmitting || writesUnavailable"
                 :title="writesUnavailable ? 'Needs a connection' : undefined"
                 @click="resolveFromCard(t)"

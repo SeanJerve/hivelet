@@ -451,6 +451,42 @@ footer.bg-night a {
   }
 }
 
+/*
+ * A row or card that opens its record when clicked, with no pencil (Sean, 5 Nov 2026). Its edit
+ * button stays, invisible and stretched over the whole row, so a click anywhere opens it and the
+ * keyboard still reaches it. Hover tints the row as a table row's hover does; keyboard focus rings
+ * the row. On a card the tint runs 12px past the text either side. Any other control in the row
+ * takes `relative z-[2]` to sit above it.
+ */
+.row-open {
+  position: absolute;
+  inset: 0 -0.75rem;
+  z-index: 1;
+  border-radius: 0.75rem;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease-out);
+}
+.row-open:hover {
+  background-color: var(--hover);
+}
+.row-open:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+.ws-table tbody tr:has(.row-open) {
+  position: relative;
+  cursor: pointer;
+}
+.ws-table .row-open {
+  inset: 0;
+  z-index: 3;
+  border-radius: 0;
+}
+.ws-table .row-open:hover {
+  background-color: transparent;
+}
+
 /* The top bar and the sidebar. */
 header.ws-glass {
   --surface-blur: var(--glass-blur-float);

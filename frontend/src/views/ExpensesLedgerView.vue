@@ -14,7 +14,7 @@ import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
 import { screenRef, screenLoaded } from '@/lib/screenCache';
 import YearMenu from '@/components/ui/YearMenu.vue';
-import { Plus, Loader2, FileSpreadsheet, Pencil, Trash2 } from 'lucide-vue-next';
+import { Plus, Loader2, FileSpreadsheet, Trash2 } from 'lucide-vue-next';
 import { orderOptions, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -1247,12 +1247,11 @@ async function handleEditExpense() {
           <td class="num">
             <button
               type="button"
-              class="press-plate icon-btn-plain row-action"
+              class="row-open"
               :aria-label="`Edit ${e.description}`"
               title="Edit"
               @click="startEditExpense(e)"
             >
-              <Pencil class="size-4" aria-hidden="true" />
             </button>
           </td>
         </tr>
@@ -1299,12 +1298,11 @@ async function handleEditExpense() {
               </ul>
               <button
                 type="button"
-                class="press-plate icon-btn-plain row-action -my-2 -mr-2.5"
+                class="row-open"
                 :aria-label="`Edit ${e.description}`"
                 title="Edit"
                 @click="startEditExpense(e)"
               >
-                <Pencil class="size-4" aria-hidden="true" />
               </button>
             </div>
           </li>

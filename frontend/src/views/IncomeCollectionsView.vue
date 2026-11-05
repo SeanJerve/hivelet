@@ -31,7 +31,7 @@ import { pickedYear } from '@/lib/yearScope';
 import { screenRef, screenLoaded } from '@/lib/screenCache';
 import YearMenu from '@/components/ui/YearMenu.vue';
 import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
-import { Plus, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown } from 'lucide-vue-next';
+import { Plus, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, LayoutGrid, ChevronDown } from 'lucide-vue-next';
 import { sortRows, orderOptions, compareUnits, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -1684,12 +1684,11 @@ const isDownloadOpen = ref(false);
                 <td class="num">
                   <button
                     type="button"
-                    class="press-plate icon-btn-plain row-action"
+                    class="row-open"
                     :aria-label="`Edit ${r.contact}'s record`"
                     title="Edit"
                     @click="startEditIncome(r)"
                   >
-                    <Pencil class="size-4" aria-hidden="true" />
                   </button>
                 </td>
               </tr>
@@ -1789,12 +1788,11 @@ const isDownloadOpen = ref(false);
               <div class="mt-2.5 flex justify-end">
                 <button
                   type="button"
-                  class="press-plate icon-btn-plain row-action -mr-3 -mb-1"
+                  class="row-open"
                   :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
                   title="Edit"
                   @click="startEditIncome(r)"
                 >
-                  <Pencil class="size-4" aria-hidden="true" />
                 </button>
               </div>
             </template>
@@ -1853,12 +1851,11 @@ const isDownloadOpen = ref(false);
           <td class="num">
             <button
               type="button"
-              class="press-plate icon-btn-plain row-action"
+              class="row-open"
               :aria-label="`Edit ${r.contact}'s record`"
                     title="Edit"
               @click="startEditIncome(r)"
             >
-              <Pencil class="size-4" aria-hidden="true" />
             </button>
           </td>
         </tr>
@@ -1944,12 +1941,11 @@ const isDownloadOpen = ref(false);
         <div class="mt-2.5 flex justify-end">
           <button
             type="button"
-            class="press-plate icon-btn-plain row-action -mr-3 -mb-1"
+            class="row-open"
             :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
             title="Edit"
             @click="startEditIncome(r)"
           >
-            <Pencil class="size-4" aria-hidden="true" />
           </button>
         </div>
       </template>

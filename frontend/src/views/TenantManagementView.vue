@@ -16,7 +16,7 @@ import { writesUnavailable } from '@/lib/offlineCache';
 import { copyText } from '@/lib/copyText';
 import { screenLoaded } from '@/lib/screenCache';
 import { emergencyPhoneProblem } from '@/lib/contactDetails';
-import { UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
+import { UserPlus, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -1068,23 +1068,13 @@ async function handleOnboard() {
           <td>{{ t.moveInDate }}</td>
           <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
           <td class="num">
-            <!--
-              A quiet icon, not a bordered chip. `.icon-btn` draws a ring
-              around itself always, which is right for an action that stands
-              alone (the notification bell) but reads as an odd floating
-              circle in a dense row of plain text. `press-plate` is the same
-              treatment the password-reveal toggle already uses: no border,
-              no fill until hovered or pressed. It also stays fully
-              transparent until that row is hovered or focused, so a page of
-              residents does not read as a column of pencils.
-            -->
+            <!-- The whole row opens the tenant, no pencil (Sean, 5 Nov 2026): `.row-open` (glass.css). -->
             <button
               type="button"
-              class="press-plate icon-btn-plain row-action ml-auto"
+              class="row-open"
               :aria-label="`Edit ${t.name}`"
               @click="openEdit(t)"
             >
-              <Pencil class="size-4" aria-hidden="true" />
             </button>
           </td>
         </tr>
@@ -1113,8 +1103,7 @@ async function handleOnboard() {
             <dt class="text-xs text-ink-faint">Deposit</dt>
             <dd class="mt-0.5 tabular text-lg font-bold text-brand">{{ peso(t.depositAmount) }}</dd>
           </dl>
-          <button type="button" class="press-plate icon-btn-plain row-action -mr-3 -mb-1" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
-            <Pencil class="size-4" aria-hidden="true" />
+          <button type="button" class="row-open" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
           </button>
         </div>
       </template>
@@ -1252,11 +1241,10 @@ async function handleOnboard() {
                 <td class="num">
                   <button
                     type="button"
-                    class="press-plate icon-btn-plain row-action ml-auto"
+                    class="row-open"
                     :aria-label="`Edit ${t.name}`"
                     @click="openEdit(t)"
                   >
-                    <Pencil class="size-4" aria-hidden="true" />
                   </button>
                 </td>
               </tr>
@@ -1270,7 +1258,7 @@ async function handleOnboard() {
           <div
             v-for="t in visibleResidents(group.key, group.residents)"
             :key="t.id"
-            class="group py-4 first:pt-0"
+            class="group relative py-4 first:pt-0"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
@@ -1294,8 +1282,7 @@ async function handleOnboard() {
                 <dt class="text-xs text-ink-faint">Deposit</dt>
                 <dd class="mt-0.5 tabular text-lg font-bold text-brand">{{ peso(t.depositAmount) }}</dd>
               </dl>
-              <button type="button" class="press-plate icon-btn-plain row-action -mr-3 -mb-1" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
-                <Pencil class="size-4" aria-hidden="true" />
+              <button type="button" class="row-open" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
               </button>
             </div>
           </div>

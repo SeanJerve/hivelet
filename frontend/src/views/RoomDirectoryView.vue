@@ -25,7 +25,7 @@ import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import ShowMore from '@/components/ui/ShowMore.vue';
-import { Search, Pencil, LayoutGrid, Table as TableIcon, ChevronDown } from 'lucide-vue-next';
+import { Search, LayoutGrid, Table as TableIcon, ChevronDown } from 'lucide-vue-next';
 import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
@@ -394,7 +394,7 @@ function applyRoomFilters(v: FilterDraft) {
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="group -mb-px flex flex-col justify-between border-b border-line py-5 first:pt-0 sm:pr-8 sm:first:pt-5"
+              class="group relative -mb-px flex flex-col justify-between border-b border-line py-5 first:pt-0 sm:pr-8 sm:first:pt-5"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
@@ -420,21 +420,14 @@ function applyRoomFilters(v: FilterDraft) {
                 </dl>
               </div>
 
-              <!--
-                Hover-reveal, no border - back to this after a detour through
-                two full-width labelled buttons that doubled every card's
-                height across 33 cards. `.row-action` fades them in on
-                `:hover`/`:focus-within` of the `group` card and stays opaque
-                on touch, where hover does not exist (owner's call, 2026-09-26).
-              -->
+              <!-- The whole card opens the unit, no pencil (Sean, 5 Nov 2026): `.row-open` (glass.css). -->
               <div class="mt-3 flex items-end justify-between gap-2">
                 <dl class="text-sm">
                   <dt class="text-xs text-ink-faint">Monthly rent</dt>
                   <dd class="mt-0.5 tabular text-base font-bold text-brand">{{ peso(u.price) }}</dd>
                 </dl>
                 <div class="flex shrink-0 gap-1.5">
-                  <button type="button" class="press-plate icon-btn-plain row-action -mr-3 -mb-1" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
-                    <Pencil class="size-4" aria-hidden="true" />
+                  <button type="button" class="row-open" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
                   </button>
                 </div>
               </div>
@@ -523,8 +516,7 @@ function applyRoomFilters(v: FilterDraft) {
           </td>
           <td class="num">
             <div class="inline-flex items-center justify-end gap-2">
-              <button type="button" class="press-plate icon-btn-plain row-action" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
-                <Pencil class="size-4" aria-hidden="true" />
+              <button type="button" class="row-open" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
               </button>
             </div>
           </td>
@@ -557,8 +549,7 @@ function applyRoomFilters(v: FilterDraft) {
             <dd class="mt-0.5 tabular text-base font-bold text-brand">{{ peso(u.price) }}</dd>
           </dl>
           <div class="flex shrink-0 gap-1.5">
-            <button type="button" class="press-plate icon-btn-plain row-action -mr-3 -mb-1" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
-              <Pencil class="size-4" aria-hidden="true" />
+            <button type="button" class="row-open" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
             </button>
           </div>
         </div>
