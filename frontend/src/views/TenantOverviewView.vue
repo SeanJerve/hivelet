@@ -706,9 +706,6 @@ const statusTone = computed(() => {
       <!-- With the current bill in it (Sean, 5 Nov 2026): Amount due and its rent and water are one
            card, right of the unit, and there is no Still to pay line to repeat the figure. -->
       <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" to="/tenant/payments" to-label="Open payments and billing" :class="['list-reveal-item md:order-2 md:col-span-1 xl:col-span-8', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
-        <template v-if="!tenantDataLoadFailed && !isSettled && !(fromLedgerOnly && standingStatus === 'overdue')" #actions>
-          <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
-        </template>
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           dark
@@ -731,6 +728,14 @@ const statusTone = computed(() => {
               Measured 2026-09-24 at 320, 375 and 428px, at 100% and 200%:
               0px of overflow in every case, one line at 100%.
             -->
+            <!-- Above the figure (Sean, 5 Nov 2026): "Overdue" alone, no count of days, in the theme's
+                 bright red (dark mode's --overdue, #ff8f80) so it reads on the green card. -->
+            <p
+              v-if="!(fromLedgerOnly && standingStatus === 'overdue')"
+              :class="['mb-2 text-sm font-semibold', statusTone === 'overdue' ? 'text-[#ff8f80]' : 'text-on-brand-soft']"
+            >
+              {{ statusTone === 'overdue' ? 'Overdue' : dueDateCountdown.label }}
+            </p>
             <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl break-all">{{ peso(tenantData.totalAmountDue, 2) }}</p>
             <p v-if="tenantData.dueDate" class="mt-3 text-sm text-on-brand-soft">Due {{ tenantData.dueDate }}</p>
             <!-- Which dates this pays for, in the words the Payments list uses. -->
@@ -842,9 +847,8 @@ const statusTone = computed(() => {
            sheet (Sean, 5 Nov 2026). Two rows of two: Amount due and Current bill, then Payments
            and this. -->
       <!-- On the page, as the admin's Occupancy is (Sean, 5 Nov 2026), the unit's name larger. -->
+      <!-- No arrow on the name: the repair line below carries it, when there is one (Sean, 5 Nov 2026). -->
       <OverviewTile
-        to="/tenant/tickets"
-        to-label="Open your repairs"
         class="list-reveal-item order-2 md:order-1 xl:col-span-4"
         style="animation-delay: 60ms"
       >
