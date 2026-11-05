@@ -164,11 +164,11 @@ as good as that.
 
 ### 2. Overview
 
-The first screen: **Needs your attention** (the payments waiting to be verified on the left, the
-urgent repairs on the right, three of each with a count of the rest; a side with nothing waiting is
-not shown), **Received** for this month once anything is recorded in it, **Occupancy** (the units
-occupied out of 33, with each cluster's count, such as 22/22), **Income** month by month, and under them **Inquiries** (how many are waiting for an answer, with the latest three) and **Expenses by area** (this year's spending and how it divides across the areas). Tap a
-month on the Income chart to see its **Income**, **Operating expenses** and **Net income** under the chart;
+The first screen: **Needs your attention**, in up to three parts: the payments waiting to be verified, the urgent
+repairs, and the inquiries waiting for an answer, three of each with a count of the rest. A part with
+nothing waiting is not shown, and with nothing waiting at all the card is not shown, **Received** for this month once anything is recorded in it, **Occupancy** (the units
+occupied out of 33, with each cluster's count, such as 22/22), and **Income and expenses**, the year month by month. Tap a
+month on the chart to see its **Income**, **Operating expenses** and **Net income** under the chart;
 the arrows beside **Income** and **Operating expenses** open Monthly Income and Monthly Expenses. Urgent repairs are listed only in Needs your attention.
 Net income deducts the operating costs only: personal spending is listed on Monthly Expenses beside them, and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.

@@ -348,7 +348,11 @@ const currentMonthRecordCount = computed(
  */
 const paymentsWaiting = computed(() => pendingPaymentsFailed.value || pendingCount.value > 0);
 const repairsWaiting = computed(() => maintenanceTicketsFetchFailed.value || urgentTickets.value.length > 0);
-const attentionBoth = computed(() => paymentsWaiting.value && repairsWaiting.value);
+/** The third part (Sean, 5 Nov 2026): inquiries waiting for an answer. */
+const inquiriesWaiting = computed(() => inquiriesFetchFailed.value || inquiries.some((i) => i.status === 'Pending'));
+/** How many parts are showing, one to three; two or more take the whole row. */
+const attentionParts = computed(() => [paymentsWaiting.value, repairsWaiting.value, inquiriesWaiting.value].filter(Boolean).length);
+const attentionBoth = computed(() => attentionParts.value >= 2);
 const urgentPreview = computed(() =>
   [...urgentTickets.value].sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]).slice(0, ATTENTION_ROWS)
 );
@@ -492,7 +496,7 @@ const tilesSettled = ref(!isInitialLoading.value);
 watch(isInitialLoading, (loading) => {
   if (!loading) setTimeout(() => (tilesSettled.value = true), TILE_ENTRANCE_DELAY_MS);
 });
-const attentionShown = computed(() => tilesSettled.value && (paymentsWaiting.value || repairsWaiting.value));
+const attentionShown = computed(() => tilesSettled.value && attentionParts.value > 0);
 const monthShown = computed(
   () => tilesSettled.value && (incomeRecordsFetchFailed.value || currentMonthRecordCount.value > 0)
 );
@@ -510,10 +514,6 @@ const tileSpans = computed(() => {
     ...(monthShown.value ? [{ key: 'month', full: false }] : []),
     { key: 'occupancy', full: false },
     { key: 'byMonth', full: false },
-    // Under them, from the paper's Objective 2: booking (inquiries) and the spending side of
-    // financial tracking, the two it names that the Overview did not show (Sean, 5 Nov 2026).
-    { key: 'inquiries', full: false },
-    { key: 'spending', full: false },
   ];
   const spans: Record<string, string> = {};
   let alone: string | null = null; // a half with nothing yet beside it
@@ -540,20 +540,6 @@ const waitingInquiries = computed(() =>
   inquiries.filter((i) => i.status === 'Pending').slice(0, 3)
 );
 const waitingInquiryCount = computed(() => inquiries.filter((i) => i.status === 'Pending').length);
-
-/** This year's spending by area, every area including personal, as Monthly Expenses splits it. */
-const yearAreaSplit = computed<Segment[]>(() => {
-  const totals = new Map<string, number>();
-  for (const e of liveExpenseRecords.value) {
-    for (const sp of e.splits) totals.set(sp.area, (totals.get(sp.area) ?? 0) + sp.amount);
-  }
-  const tones = ['brand', 'bright', 'night', 'soft', 'hatch', 'faint'] as const;
-  return [...totals.entries()]
-    .filter(([, value]) => value > 0)
-    .sort((a, b) => b[1] - a[1])
-    .map(([label, value], i) => ({ label, value, tone: tones[i % tones.length] }));
-});
-const yearSpent = computed(() => yearAreaSplit.value.reduce((t, x) => t + x.value, 0));
 
 const phoneSpan = computed(() => (attentionShown.value && monthShown.value ? '' : 'max-md:col-span-2'));
 
@@ -882,11 +868,31 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
             </router-link>
           </template>
+          <template v-if="inquiriesWaiting">
+            <UnavailableNote
+              v-if="inquiriesFetchFailed"
+              dark
+              message="Inquiries could not be loaded."
+              @retry="refreshAllData"
+            />
+            <router-link
+              v-else
+              to="/admin/inquiries"
+              :class="['press flex flex-col gap-1', (paymentsWaiting || repairsWaiting) && 'border-t border-white/10 pt-3']"
+            >
+              <span class="flex items-start gap-2">
+                <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ waitingInquiryCount }}</span>
+                <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
+              </span>
+              <span class="text-sm text-on-night-soft">{{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer</span>
+            </router-link>
+          </template>
         </div>
 
         <!-- From 768px: the two parts side by side, each a count, its link and three rows at most. -->
-        <div :class="['grid gap-6 max-md:hidden', attentionBoth && 'md:grid-cols-2 md:gap-0 md:divide-x md:divide-white/10']">
-          <div v-if="paymentsWaiting" :class="['min-w-0', attentionBoth && 'md:pr-6']">
+        <!-- One, two or three parts, each a column with a rule between (Sean, 5 Nov 2026). -->
+        <div :class="['grid gap-6 max-md:hidden', attentionParts === 2 && 'md:grid-cols-2', attentionParts === 3 && 'md:grid-cols-3', attentionBoth && 'md:gap-0 md:divide-x md:divide-white/10']">
+          <div v-if="paymentsWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
             <UnavailableNote
               v-if="pendingPaymentsFailed"
               dark
@@ -931,7 +937,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             </template>
           </div>
 
-          <div v-if="repairsWaiting" :class="['min-w-0', attentionBoth && 'md:pl-6']">
+          <div v-if="repairsWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
             <UnavailableNote
               v-if="maintenanceTicketsFetchFailed"
               dark
@@ -973,6 +979,47 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               </ul>
               <p v-if="urgentTickets.length > urgentPreview.length" class="mt-2 text-xs text-on-night-soft">
                 {{ urgentTickets.length - urgentPreview.length }} more in Repairs.
+              </p>
+            </template>
+          </div>
+          <div v-if="inquiriesWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
+            <UnavailableNote
+              v-if="inquiriesFetchFailed"
+              dark
+              message="Inquiries could not be loaded. Some may be waiting."
+              @retry="refreshAllData"
+            />
+            <template v-else>
+              <div class="flex items-start gap-1">
+                <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span class="text-5xl leading-none font-semibold tracking-tight lg:text-6xl">{{ waitingInquiryCount }}</span>
+                  <span class="text-sm text-on-night-soft">
+                    {{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer
+                  </span>
+                </p>
+                <router-link to="/admin/inquiries" aria-label="Open inquiries" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
+                  <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+                </router-link>
+              </div>
+              <ul class="mt-4 divide-y divide-white/10">
+                <li
+                  v-for="(q, i) in waitingInquiries"
+                  :key="q.id"
+                  class="list-reveal-item flex items-center justify-between gap-3 py-2.5"
+                  :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+                >
+                  <span class="min-w-0">
+                    <span class="block break-words text-sm font-medium">{{ q.name }}</span>
+                    <span class="block truncate text-xs text-on-night-soft">{{ q.message }}</span>
+                  </span>
+                  <span class="shrink-0 text-right text-xs text-on-night-soft">
+                    <span class="block font-semibold text-on-night">Unit {{ q.unit.toUpperCase() }}</span>
+                    {{ q.date }}
+                  </span>
+                </li>
+              </ul>
+              <p v-if="waitingInquiryCount > waitingInquiries.length" class="mt-2 text-xs text-on-night-soft">
+                {{ waitingInquiryCount - waitingInquiries.length }} more in Inquiries.
               </p>
             </template>
           </div>
@@ -1065,7 +1112,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <OverviewTile
         key="by-month"
         boxed
-        title="Income"
+        title="Income and expenses"
         to="/admin/income#income-by-month"
         to-label="Open the income records"
         :class="['col-span-2 max-md:order-3 max-md:gap-3', tileSpans.byMonth]"
@@ -1113,50 +1160,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               </dd>
             </div>
           </dl>
-        </template>
-      </OverviewTile>
-
-      <OverviewTile key="inquiries" title="Inquiries" to="/admin/inquiries" to-label="Open inquiries" :class="['col-span-2 max-md:order-5', tileSpans.inquiries]">
-        <UnavailableNote v-if="inquiriesFetchFailed" message="The inquiries could not be loaded." @retry="refreshAllData" />
-        <p v-else-if="waitingInquiryCount === 0" class="text-sm text-ink-soft">No inquiry is waiting for an answer.</p>
-        <template v-else>
-          <p class="flex items-baseline gap-2">
-            <span class="text-3xl font-semibold leading-none tabular">{{ waitingInquiryCount }}</span>
-            <span class="text-sm text-ink-soft">waiting for an answer</span>
-          </p>
-          <ul class="divide-y divide-line text-sm">
-            <li v-for="q in waitingInquiries" :key="q.id" class="flex items-baseline justify-between gap-3 py-2.5">
-              <span class="min-w-0">
-                <span class="block truncate font-medium text-ink">{{ q.name }}</span>
-                <span class="block truncate text-xs text-ink-soft">{{ q.message }}</span>
-              </span>
-              <span class="shrink-0 text-right text-xs text-ink-faint">
-                <span class="block font-semibold text-brand">Unit {{ q.unit.toUpperCase() }}</span>
-                {{ q.date }}
-              </span>
-            </li>
-          </ul>
-        </template>
-      </OverviewTile>
-
-      <OverviewTile key="spending" title="Expenses by area" to="/admin/expenses" to-label="Open Monthly Expenses" :class="['col-span-2 max-md:order-6', tileSpans.spending]">
-        <UnavailableNote v-if="expenseRecordsFetchFailed" message="The expenses could not be loaded." @retry="refreshAllData" />
-        <p v-else-if="yearAreaSplit.length === 0" class="text-sm text-ink-soft">No expenses are entered for {{ CURRENT_YEAR }} yet.</p>
-        <template v-else>
-          <p class="tabular text-3xl font-semibold leading-none">{{ peso(yearSpent, 2) }}</p>
-          <SegmentBar :segments="yearAreaSplit" :label="`How ${peso(yearSpent, 2)} divides across the property areas`" />
-          <ul class="flex flex-col gap-2 text-sm">
-            <li v-for="(c, i) in yearAreaSplit" :key="c.label" class="flex items-center justify-between gap-3">
-              <span class="flex min-w-0 items-center gap-2">
-                <span aria-hidden="true" :class="['size-3 shrink-0 rounded-full', c.tone === 'brand' && 'bg-brand', c.tone === 'bright' && 'bg-brand-bright', c.tone === 'night' && 'bg-series-night', c.tone === 'soft' && 'bg-series-soft', c.tone === 'hatch' && 'hatch border border-line', c.tone === 'faint' && 'bg-ink-faint']" />
-                <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
-              </span>
-              <span class="flex shrink-0 items-baseline gap-3">
-                <span class="text-xs text-ink-faint tabular">{{ wholePercents(yearAreaSplit.map((x) => x.value))[i] }}%</span>
-                <span class="tabular font-semibold">{{ peso(c.value, 2) }}</span>
-              </span>
-            </li>
-          </ul>
         </template>
       </OverviewTile>
 
