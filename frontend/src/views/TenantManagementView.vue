@@ -677,10 +677,10 @@ function onFile(value: string | null | undefined) {
  * people is the fact worth reading, not a yes/no badge.
  */
 /** Tenant (takes the rest), Unit, Household, Moved in, Deposit, edit. */
-// The edit column is a fixed 4.75rem (the 44px pencil plus the cell's 12px and
-// 20px padding), not 6%: at 1280 6% was 51px, the pencil spilled out of its cell
-// and the cluster table scrolled 5px sideways (audit 2026-10-09).
-const RESIDENT_TABLE_COLS = ['', '9%', '19%', '15%', '13%', '4.75rem'];
+// The edit column is only the cell's 12px and 20px padding (2rem): the row opens
+// the tenant now (`.row-open`, stretched over the row), so the 44px pencil it was
+// sized for is gone (Sean, 5 Nov 2026). At 4.75rem, 76px stood empty.
+const RESIDENT_TABLE_COLS = ['', '9%', '19%', '15%', '13%', '2rem'];
 
 function householdLabel(t: TenantRecord) {
   const mates = t.roommateQty ?? Math.max(0, (t.occupants || 1) - 1);
@@ -1053,7 +1053,7 @@ async function handleOnboard() {
           <th scope="col">Household</th>
           <th scope="col">Moved in</th>
           <th scope="col" class="num">Deposit</th>
-          <th scope="col" class="w-14"><span class="sr-only">Actions</span></th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
         </tr>
       </template>
 
@@ -1221,7 +1221,7 @@ async function handleOnboard() {
                 <th scope="col">Household</th>
                 <th scope="col">Moved in</th>
                 <th scope="col" class="num">Deposit</th>
-                <th scope="col" class="w-14"><span class="sr-only">Actions</span></th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody>

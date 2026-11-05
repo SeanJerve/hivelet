@@ -439,12 +439,15 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
           Each row is a real RouterLink, so middle-click, open-in-new-tab and
           the native Enter handling all work. The whole row is the target.
+
+          On the page, not in a box, with the one table spacing (12px, as .ws-table):
+          boxes are for what needs action and for charts (Sean, 5 Nov 2026).
         -->
-        <div v-else class="mt-8 sm:mt-10 overflow-hidden rounded-tile bg-tile border border-line">
+        <div v-else class="mt-8 sm:mt-10 -mx-3">
           <p class="sr-only">Four kinds of unit. Each row opens that kind.</p>
 
           <div
-            class="hidden border-b border-line px-5 py-3 text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft sm:grid sm:grid-cols-[1fr_4rem_4.5rem] sm:gap-5 lg:grid-cols-[1fr_9rem_9rem] lg:gap-6"
+            class="hidden border-b border-line px-3 py-3 text-xs font-semibold text-ink sm:grid sm:grid-cols-[1fr_4rem_4.5rem] sm:gap-5 lg:grid-cols-[1fr_9rem_9rem] lg:gap-6"
           >
             <span>Kind</span>
             <!-- The header follows the rows: no count columns while they have no counts. -->
@@ -459,10 +462,10 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             v-for="(c, i) in CATEGORIES"
             :key="c.key"
             :to="'/category/' + c.slug"
-            class="list-reveal-item press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-hover sm:grid sm:grid-cols-[1fr_4rem_4.5rem] sm:items-baseline sm:gap-5 lg:grid-cols-[1fr_9rem_9rem] lg:gap-6"
+            class="list-reveal-item press-plate group block border-b border-line px-3 py-3 transition-colors hover:bg-hover sm:grid sm:grid-cols-[1fr_4rem_4.5rem] sm:items-baseline sm:gap-5 lg:grid-cols-[1fr_9rem_9rem] lg:gap-6"
             :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
           >
-            <span class="flex items-baseline gap-2 text-base font-medium text-ink">
+            <span class="flex items-baseline gap-2 text-sm font-medium text-ink">
               {{ c.title }}
               <ArrowUpRight
                 class="size-4 shrink-0 text-ink-faint transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 group-hover:text-brand"

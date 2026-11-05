@@ -597,7 +597,9 @@ const totalRemitted = computed(() => rows.value.reduce((s, r) => s + r.rent + r.
  * the edit pencils behind the scroll on the commonest laptop width. 840px
  * leaves Who 196px for a name and an invoice number (audit 2026-10-09).
  */
-const CLUSTER_TABLE_COLS = ['3.5rem', '6.5rem', '', '7rem', '6.25rem', '6.25rem', '7rem', '4rem'];
+// The edit column is only the cell's padding (2rem): the row opens the record now
+// (`.row-open`), so the pencil it was sized for is gone (Sean, 5 Nov 2026).
+const CLUSTER_TABLE_COLS = ['3.5rem', '6.5rem', '', '7rem', '6.25rem', '6.25rem', '7rem', '2rem'];
 
 /**
  * Collections by month, for the same capsule chart the overview uses.

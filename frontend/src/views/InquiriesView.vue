@@ -546,17 +546,27 @@ async function handleSendReply() {
             That side-tab is the most recognisable tell of a generated
             interface, and the fill says the same thing without the bar - the
             unit picker on the public category page already selects this way.
+
+            The fill is the sliding pane of glass (v-glide, Sean, 5 Nov 2026),
+            shown only where the list sits beside the conversation (xl). It
+            sizes to each <li>, so the <li> carries the row's full width and
+            rounding, and the rule between rows is drawn 12px in from each
+            side, where `divide-y` drew it (divide-y would also have ruled
+            the pane itself).
           -->
-          <ul v-else class="ws-reveal divide-y divide-line">
-            <li v-for="inq in filteredInquiries" :key="inq.id">
+          <ul v-else v-glide class="ws-reveal relative max-xl:[&>.ws-glide]:hidden">
+            <li
+              v-for="inq in filteredInquiries"
+              :key="inq.id"
+              :data-chosen="activeInquiry?.id === inq.id ? '' : undefined"
+              class="-mx-3 rounded-xl [li+&]:before:absolute [li+&]:before:inset-x-3 [li+&]:before:top-0 [li+&]:before:h-px [li+&]:before:bg-line"
+            >
               <button
                 type="button"
                 :aria-current="activeInquiry?.id === inq.id ? 'true' : undefined"
                 :class="[
-                  'press-plate -mx-3 w-[calc(100%+1.5rem)] rounded-xl px-3 py-4 text-left',
-                  activeInquiry?.id === inq.id
-                    ? 'xl:bg-brand-soft max-xl:hover:bg-hover'
-                    : 'hover:bg-hover',
+                  'press-plate w-full rounded-xl px-3 py-4 text-left',
+                  activeInquiry?.id === inq.id ? 'max-xl:hover:bg-hover' : 'hover:bg-hover',
                 ]"
                 @click="selectInquiry(inq.id)"
               >

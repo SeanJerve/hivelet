@@ -894,7 +894,8 @@ const statusTone = computed(() => {
               aria-hidden="true"
             >{{ tenantData.room.replace(/^Unit /, '') }}</span>
           </div>
-          <div v-else class="grid h-28 place-items-center rounded-2xl bg-brand-soft">
+          <!-- On the page, not in a tinted box: nothing here asks for action (Sean, 5 Nov 2026). -->
+          <div v-else class="flex h-28 items-center">
             <Home class="size-14 text-brand" stroke-width="1.5" aria-hidden="true" />
           </div>
           <!-- No "Building" row: it showed the cluster code ("Boarding House"), which means

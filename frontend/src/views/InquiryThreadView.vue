@@ -345,9 +345,7 @@ watch(() => route.hash, syncWithAddress);
       <h1 id="find-heading" class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
         Your inquiries
       </h1>
-      <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-        Enter your reference code and phone number to read the reply.
-      </p>
+      <!-- No line under the heading (Sean, 5 Nov 2026: no subtitles under page headings). -->
 
       <p v-if="loadError && !lookupError" class="mt-6 text-sm text-overdue" role="alert">{{ loadError }}</p>
 

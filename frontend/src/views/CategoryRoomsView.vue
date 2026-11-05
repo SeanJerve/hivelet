@@ -837,9 +837,11 @@ async function submitInquiry() {
             marker for 1A (measured at 375px: plan 286px tall in a 257px box).
             The plan now sits in the flow and the panel is as tall as it is.
           -->
+          <!-- No `plan-panel` class: glass.css paints it white in light mode, and the plan sits on
+               the page now (Sean, 5 Nov 2026: no white box behind a plan). -->
           <div
             :class="[
-              'plan-panel relative flex flex-col justify-center border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden lg:min-h-[30rem]',
+              'relative flex flex-col justify-center border-b border-line lg:border-b-0 lg:border-r overflow-hidden lg:min-h-[30rem]',
               photoOf(activeUnit) && 'aspect-[4/3] lg:aspect-auto',
             ]"
           >
@@ -905,6 +907,12 @@ async function submitInquiry() {
                 is here to read. Confirmed by toggling it off on the live
                 page: the walls went from barely legible to sharp, with the
                 white background unchanged either way. Removed.
+
+                That reasoning held while the panel was a white tile. The panel is
+                the page now (Sean, 5 Nov 2026: no white box behind a plan), so the
+                plan's white sheet is a mismatched box again and `plan-on-page`
+                (glass.css) multiplies it into the page in light mode, as the
+                tenant's own unit does. Dark mode keeps index.css's lighten.
               -->
               <div v-if="planFor(activeUnit.room_number)" class="relative mx-auto w-full max-w-md">
                 <img
@@ -913,7 +921,7 @@ async function submitInquiry() {
                   :width="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.w"
                   :height="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.h"
                   :class="[
-                    'block w-full transition-opacity duration-300 ease-[var(--ease-out)]',
+                    'plan-on-page block w-full transition-opacity duration-300 ease-[var(--ease-out)]',
                     unitVisualLoaded ? 'opacity-100' : 'opacity-0',
                   ]"
                   loading="eager"
@@ -1082,8 +1090,11 @@ async function submitInquiry() {
                 </p>
               </div>
 
+              <!-- The chosen plate is marked by the sliding pane of glass (v-glide, Sean, 5 Nov
+                   2026), not a fill of its own. One pane per floor. -->
               <div
-                class="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                v-glide
+                class="relative grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
               >
                 <button
                   v-for="(u, i) in group.units"
@@ -1091,6 +1102,7 @@ async function submitInquiry() {
                   type="button"
                   :aria-label="`Unit ${u.room_number.toUpperCase()}, ${peso(u.current_price)}, ${isAvailable(u) ? 'Vacant' : 'Occupied'}`"
                   :aria-pressed="u.room_number === activeUnit.room_number"
+                  :data-chosen="u.room_number === activeUnit.room_number ? '' : undefined"
                   :class="[
                     'list-reveal-item press-plate group block w-full text-left cursor-pointer transition-opacity duration-200 ease-[var(--ease-out)]',
                     isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
@@ -1105,7 +1117,7 @@ async function submitInquiry() {
                     :class="[
                       'relative overflow-hidden border-t pt-5 pb-6 px-4 transition-colors duration-500',
                       u.room_number === activeUnit.room_number
-                        ? 'border-brand bg-brand-soft'
+                        ? 'border-brand'
                         : 'border-line group-hover:border-ink/60',
                     ]"
                   >

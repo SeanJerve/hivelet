@@ -191,7 +191,7 @@ async function submitInquiry() {
     <h1 class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
       Send an inquiry
     </h1>
-    <p class="mt-3 text-sm text-ink-soft">Viewings are by appointment.</p>
+    <!-- No line under the heading (Sean, 5 Nov 2026: no subtitles under page headings). -->
 
     <!--
       The labels are visible, and were placeholders.
