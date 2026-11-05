@@ -313,8 +313,8 @@ const notEnteredRows = computed(() => {
   return st.owedPeriods.map((p) => ({
     id: `not-entered-${p.start}`,
     invoiceRef: '',
-    // Its due date, not a second "Not entered" beside the pill; the label matches a receipt's.
-    datePaid: `Due ${formatDateOnly(p.dueDate, shortDayYear)}`,
+    // Nothing in Date paid: nothing was paid. Its month is in For (Sean, 5 Nov 2026).
+    datePaid: '',
     datePaidRaw: p.start,
     year: Number(p.start.slice(0, 4)),
     forLabel: `Rent, ${formatDateOnly(p.start, shortDay)} to ${formatDateOnly(p.end, shortDay)}`,
@@ -365,7 +365,6 @@ const isVerified = (status: string) => status === 'VERIFIED & SETTLED' || status
 const isRejected = (status: string) => status === 'REJECTED';
 
 const shortDay: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-const shortDayYear: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
 const isNotEntered = (status: string) => status === NOT_ENTERED;
 
 const statusTone = (status: string): 'paid' | 'overdue' | 'verify' | 'unentered' =>
@@ -993,7 +992,7 @@ function refreshAll() {
               >
                 {{ peso(record.amountPaid, 2) }}
               </p>
-              <p class="mt-1.5 text-sm text-ink-soft">{{ record.datePaid }}</p>
+              <p v-if="record.datePaid" class="mt-1.5 text-sm text-ink-soft">{{ record.datePaid }}</p>
             </div>
             <StatusPill :tone="statusTone(record.status)">
               {{ statusLabelShort(record.status) }}
