@@ -1303,18 +1303,19 @@ const isDownloadOpen = ref(false);
           No payments match the filters above.
         </p>
         <!-- Both views in one cell, the hidden one invisible but still taking its room, so the card is
-             as tall as the taller view and switching moves nothing (Sean, 5 Nov 2026). -->
+             as tall as the taller view and switching moves nothing; they crossfade (Sean, 5 Nov 2026). -->
         <div v-else class="grid">
-          <div v-if="showMonthChart" :class="['min-w-0 [grid-area:1/1]', shownShape !== 'month' && 'invisible']" :inert="shownShape !== 'month'">
+          <div v-if="showMonthChart" :class="['min-w-0 [grid-area:1/1] motion-safe:transition-[opacity,visibility] motion-safe:duration-200 motion-safe:ease-[var(--ease-out)]', shownShape !== 'month' && 'invisible opacity-0']" :inert="shownShape !== 'month'">
             <!-- Centavos kept, as on the Overview's chart. -->
             <MonthCapsules
+              :key="shownShape"
               :months="collectionsByMonth"
               label="Rent and water by month"
               short
               :decimals="2"
             />
           </div>
-          <div :class="['flex min-w-0 flex-col gap-4 [grid-area:1/1]', shownShape === 'month' && 'invisible']" :inert="shownShape === 'month'">
+          <div :class="['flex min-w-0 flex-col gap-4 [grid-area:1/1] motion-safe:transition-[opacity,visibility] motion-safe:duration-200 motion-safe:ease-[var(--ease-out)]', shownShape === 'month' && 'invisible opacity-0']" :inert="shownShape === 'month'">
             <p class="flex flex-wrap items-baseline gap-x-2">
               <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(collectedAltogether, 2) }}</span>
               <span class="text-sm text-ink-soft">received from {{ rows.length }} {{ rows.length === 1 ? 'payment' : 'payments' }}</span>
