@@ -702,9 +702,11 @@ const statusTone = computed(() => {
            cascade - 30ms apart, same rhythm as any other first-load list in
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
+      <!-- Only while something is to pay, a sent payment not yet verified included; settled, it goes
+           and the unit and Payments share the row (Sean, 5 Nov 2026). -->
       <!-- With the current bill in it (Sean, 5 Nov 2026): Amount due and its rent and water are one
            card, right of the unit, and there is no Still to pay line to repeat the figure. -->
-      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" to="/tenant/payments" to-label="Open payments and billing" :class="['list-reveal-item md:order-2 md:col-span-1 xl:col-span-8', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
+      <OverviewTile v-if="tenantDataLoadFailed || !isSettled" tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" to="/tenant/payments" to-label="Open payments and billing" :class="['list-reveal-item md:order-2 md:col-span-1 xl:col-span-8', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           dark
@@ -934,7 +936,7 @@ const statusTone = computed(() => {
         title="Payments"
         to="/tenant/payments#payment-record"
         to-label="Open payments and billing"
-        class="list-reveal-item order-4 md:order-3 md:col-span-2 xl:col-span-12"
+        :class="['list-reveal-item order-4 md:order-3', !tenantDataLoadFailed && isSettled ? 'xl:col-span-8' : 'md:col-span-2 xl:col-span-12']"
         style="animation-delay: 90ms"
       >
         <UnavailableNote
