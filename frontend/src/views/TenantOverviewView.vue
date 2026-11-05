@@ -656,7 +656,7 @@ const statusTone = computed(() => {
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>
       <div
-        v-for="(span, i) in ['xl:col-span-6', 'xl:col-span-6', 'xl:col-span-8', 'xl:col-span-4']"
+        v-for="(span, i) in ['xl:col-span-4', 'xl:col-span-8', 'md:col-span-2 xl:col-span-12']"
         :key="i"
         :class="['flex flex-col gap-4 min-h-64 py-2', span]"
       >
@@ -672,7 +672,9 @@ const statusTone = computed(() => {
            cascade - 30ms apart, same rhythm as any other first-load list in
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
-      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" :class="['list-reveal-item md:order-none xl:col-span-6', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
+      <!-- With the current bill in it (Sean, 5 Nov 2026): Amount due and its rent and water are one
+           card, right of the unit, and there is no Still to pay line to repeat the figure. -->
+      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" to="/tenant/payments" to-label="Open payments and billing" :class="['list-reveal-item md:order-2 md:col-span-1 xl:col-span-8', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
         <template v-if="!tenantDataLoadFailed && !isSettled && !(fromLedgerOnly && standingStatus === 'overdue')" #actions>
           <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
         </template>
@@ -704,6 +706,40 @@ const statusTone = computed(() => {
             <p v-if="tenantData.billPeriodDisplay" class="mt-1 text-sm text-on-brand-soft">Rent for {{ tenantData.billPeriodDisplay }}</p>
             <p v-if="owedSummary" class="mt-3 text-sm leading-6 text-on-brand-soft">{{ owedSummary }}</p>
           </div>
+          <!-- The bill's parts, from the Current bill card that went (Sean, 5 Nov 2026). Light and dark
+               segments, since green ones vanish on the green card. -->
+          <template v-if="tenantData.hasBill">
+            <SegmentBar
+              :segments="[
+                { label: 'Rent', value: tenantData.baseRent, tone: 'soft' },
+                { label: 'Water', value: tenantData.waterFee, tone: 'night' },
+              ]"
+              :label="`Rent ${peso(tenantData.baseRent, 2)} and water ${peso(tenantData.waterFee, 2)}`"
+            />
+            <dl class="flex flex-col divide-y divide-white/15 text-sm">
+              <div class="flex items-baseline justify-between gap-3 py-2">
+                <dt class="flex items-center gap-2"><span aria-hidden="true" class="size-2.5 rounded-full bg-series-soft" />Rent</dt>
+                <dd class="font-semibold tabular">{{ peso(tenantData.baseRent, 2) }}</dd>
+              </div>
+              <div class="flex items-baseline justify-between gap-3 py-2">
+                <dt>
+                  <span class="flex items-center gap-2"><span aria-hidden="true" class="size-2.5 rounded-full bg-series-night ring-1 ring-white/40" />Water</span>
+                  <span v-if="tenantData.occupants && waterRatePerOccupant !== null" class="block pl-4.5 text-xs text-on-brand-soft">
+                    {{ tenantData.occupants }} {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }} at {{ peso(waterRatePerOccupant) }} each
+                  </span>
+                </dt>
+                <dd class="font-semibold tabular">{{ peso(tenantData.waterFee, 2) }}</dd>
+              </div>
+              <div v-if="tenantData.activeBillPaid > 0" class="flex items-baseline justify-between gap-3 py-2">
+                <dt>Already paid</dt>
+                <dd class="font-semibold tabular">{{ peso(tenantData.activeBillPaid, 2) }}</dd>
+              </div>
+              <div v-if="fromLedgerOnly && owedMonths > 1" class="flex items-baseline justify-between gap-3 py-2">
+                <dt>Months not entered</dt>
+                <dd class="font-semibold tabular">{{ owedMonths }}</dd>
+              </div>
+            </dl>
+          </template>
           <!-- `mt-auto`: at the foot of the tile, level with Request a repair
                beside it. The row is as tall as the Current bill tile, and the
                button used to sit under the figure with a band of empty green
@@ -768,78 +804,6 @@ const statusTone = computed(() => {
         </div>
       </OverviewTile>
 
-      <OverviewTile
-        :title="isSettled ? 'Latest bill' : 'Current bill'"
-        to="/tenant/payments"
-        to-label="Open payments and billing"
-        :class="['list-reveal-item md:order-none xl:col-span-6', !tenantDataLoadFailed && !tenantData.hasBill ? 'order-5' : 'order-3']"
-        style="animation-delay: 30ms"
-      >
-        <UnavailableNote
-          v-if="tenantDataLoadFailed"
-          message="Your bill could not be loaded."
-          @retry="fetchTenantData"
-        />
-        <div v-else-if="!tenantData.hasBill" class="flex flex-col gap-2">
-          <p class="text-sm leading-6 text-ink-soft">No bill is on file yet.</p>
-          <!-- The unit's rate is a fact worth having. It is labelled as the
-               rate, not printed in the shape of a bill. -->
-          <p v-if="tenantData.unitRent" class="text-sm leading-6 text-ink-soft">
-            <template v-if="tenantData.waterFee > 0">
-              Rent {{ peso(tenantData.unitRent, 2) }} and water {{ peso(tenantData.waterFee, 2) }}:
-              <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent + tenantData.waterFee, 2) }}</strong> a month.
-            </template>
-            <template v-else>
-              Your rent is <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent, 2) }}</strong> a month.
-            </template>
-          </p>
-        </div>
-        <template v-else>
-          <SegmentBar
-            :segments="[
-              { label: 'Rent', value: tenantData.baseRent, tone: 'brand' },
-              { label: 'Water', value: tenantData.waterFee, tone: 'bright' },
-            ]"
-            :label="`Rent ${peso(tenantData.baseRent, 2)} and water ${peso(tenantData.waterFee, 2)}`"
-          />
-          <dl class="flex flex-col divide-y divide-line text-sm">
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="flex items-center gap-2">
-                <span aria-hidden="true" class="size-2.5 rounded-full bg-brand" />
-                Rent
-              </dt>
-              <dd class="font-semibold tabular">{{ peso(tenantData.baseRent, 2) }}</dd>
-            </div>
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt>
-                <span class="flex items-center gap-2">
-                  <span aria-hidden="true" class="size-2.5 rounded-full bg-brand-bright" />
-                  Water
-                </span>
-                <!-- The rate rides on this line rather than in a two-line note
-                     under the list, so the dashboard fits a desktop screen. -->
-                <span v-if="tenantData.occupants" class="block pl-4.5 text-xs text-ink-faint">
-                  <template v-if="waterRatePerOccupant !== null">{{ tenantData.occupants }} {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }} at {{ peso(waterRatePerOccupant) }} each</template>
-                  <template v-else>{{ tenantData.occupants }} registered {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }}</template>
-                </span>
-              </dt>
-              <dd class="font-semibold tabular">{{ peso(tenantData.waterFee, 2) }}</dd>
-            </div>
-            <div v-if="!isSettled && tenantData.activeBillPaid > 0" class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt>Already paid</dt>
-              <dd class="font-semibold tabular">{{ peso(tenantData.activeBillPaid, 2) }}</dd>
-            </div>
-            <div v-if="!isSettled && fromLedgerOnly && owedMonths > 1" class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt>Months not entered</dt>
-              <dd class="font-semibold tabular">{{ owedMonths }}</dd>
-            </div>
-            <div v-if="!isSettled" class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="font-semibold">Still to pay</dt>
-              <dd class="text-lg font-semibold tabular">{{ peso(tenantData.totalAmountDue, 2) }}</dd>
-            </div>
-          </dl>
-        </template>
-      </OverviewTile>
 
 
       <!-- A card, light or dark with the theme, so the floor plan sits on it as on the public unit
@@ -849,7 +813,9 @@ const statusTone = computed(() => {
       <OverviewTile
         boxed
         :title="tenantData.room || 'Your unit'"
-        class="list-reveal-item order-5 md:order-4 xl:col-span-4"
+        to="/tenant/tickets"
+        to-label="Open your repairs"
+        class="list-reveal-item order-2 md:order-1 xl:col-span-4"
         style="animation-delay: 60ms"
       >
         <UnavailableNote
@@ -902,22 +868,16 @@ const statusTone = computed(() => {
           </div>
           <!-- No "Building" row: it showed the cluster code ("Boarding House"), which means
                nothing to a resident, about a place they already live in. -->
+          <!-- Few facts (Sean, 5 Nov 2026): the kind and floor on one line, and the deposit. The arrow
+               opens Repairs, to see how a request is going. -->
           <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <div>
-              <dt class="text-xs text-ink-faint">Type</dt>
-              <dd class="font-medium">{{ tenantData.roomDetails || 'Not on file' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Floor</dt>
-              <dd class="font-medium">{{ tenantData.floor ? floorLabelFor(tenantData.floor) : 'Not on file' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Occupants</dt>
-              <dd class="font-medium">{{ tenantData.occupants || 'Not on file' }}</dd>
+            <div v-if="tenantData.roomDetails || tenantData.floor">
+              <dt class="sr-only">Kind and floor</dt>
+              <dd class="font-medium">{{ [tenantData.roomDetails, tenantData.floor ? floorLabelFor(tenantData.floor) : ''].filter(Boolean).join(', ') }}</dd>
             </div>
             <!-- The deposit, back beside the unit it is held for (Sean, 5 Nov 2026: a tenant asked to
                  see it in the survey, Chapter 4). It fills the fourth place of the facts. -->
-            <div v-if="tenantData.deposit !== null">
+            <div v-if="tenantData.deposit !== null" class="col-span-2">
               <dt class="text-xs text-ink-faint">Deposit held</dt>
               <dd class="font-medium tabular">{{ tenantData.deposit > 0 ? peso(tenantData.deposit, 2) : 'Not on file' }}</dd>
             </div>
@@ -929,7 +889,7 @@ const statusTone = computed(() => {
         title="Payments"
         to="/tenant/payments#payment-record"
         to-label="Open payments and billing"
-        class="list-reveal-item order-4 md:order-3 xl:col-span-8"
+        class="list-reveal-item order-4 md:order-3 md:col-span-2 xl:col-span-12"
         style="animation-delay: 90ms"
       >
         <UnavailableNote
