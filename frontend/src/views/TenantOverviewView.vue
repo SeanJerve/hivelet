@@ -59,6 +59,8 @@ const tenantData = screenRef('tenant.overview.data', {
   roomType: '',
   floor: 0,
   occupants: 0,
+  /** room_assignments.deposit_amount; null until read. */
+  deposit: null as number | null,
   photoUrl: '',
   /**
   /**
@@ -370,6 +372,7 @@ async function applyTenantData() {
       tenantData.value.roomType = activeRoom.rooms?.cluster_code || '';
       tenantData.value.floor = activeRoom.rooms?.floor || 0;
       tenantData.value.occupants = activeRoom.occupant_count || 0;
+      tenantData.value.deposit = Number(activeRoom.deposit_amount) || 0;
 
       // `rooms` has no photo of its own; photos live in `room_photos`, with
       // `is_primary` picking the one to lead with.
@@ -653,7 +656,7 @@ const statusTone = computed(() => {
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>
       <div
-        v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-12']"
+        v-for="(span, i) in ['xl:col-span-6', 'xl:col-span-6', 'xl:col-span-8', 'xl:col-span-4']"
         :key="i"
         :class="['flex flex-col gap-4 min-h-64 py-2', span]"
       >
@@ -669,7 +672,7 @@ const statusTone = computed(() => {
            cascade - 30ms apart, same rhythm as any other first-load list in
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
-      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" :class="['list-reveal-item md:order-none md:col-span-2 xl:col-span-5', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
+      <OverviewTile tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" :class="['list-reveal-item md:order-none xl:col-span-6', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
         <template v-if="!tenantDataLoadFailed && !isSettled && !(fromLedgerOnly && standingStatus === 'overdue')" #actions>
           <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
         </template>
@@ -769,7 +772,7 @@ const statusTone = computed(() => {
         :title="isSettled ? 'Latest bill' : 'Current bill'"
         to="/tenant/payments"
         to-label="Open payments and billing"
-        :class="['list-reveal-item md:order-none xl:col-span-4', !tenantDataLoadFailed && !tenantData.hasBill ? 'order-5' : 'order-3']"
+        :class="['list-reveal-item md:order-none xl:col-span-6', !tenantDataLoadFailed && !tenantData.hasBill ? 'order-5' : 'order-3']"
         style="animation-delay: 30ms"
       >
         <UnavailableNote
@@ -839,10 +842,14 @@ const statusTone = computed(() => {
       </OverviewTile>
 
 
-      <!-- On the page, not boxed: only what asks for action and charts are boxes (Sean, 5 Nov 2026). -->
+      <!-- A card, light or dark with the theme, so the floor plan sits on it as on the public unit
+           page; in dark the plan is drawn light on the card (index.css) rather than as a white
+           sheet (Sean, 5 Nov 2026). Two rows of two: Amount due and Current bill, then Payments
+           and this. -->
       <OverviewTile
+        boxed
         :title="tenantData.room || 'Your unit'"
-        class="list-reveal-item order-5 md:order-none xl:col-span-3"
+        class="list-reveal-item order-5 md:order-4 xl:col-span-4"
         style="animation-delay: 60ms"
       >
         <UnavailableNote
@@ -908,6 +915,12 @@ const statusTone = computed(() => {
               <dt class="text-xs text-ink-faint">Occupants</dt>
               <dd class="font-medium">{{ tenantData.occupants || 'Not on file' }}</dd>
             </div>
+            <!-- The deposit, back beside the unit it is held for (Sean, 5 Nov 2026: a tenant asked to
+                 see it in the survey, Chapter 4). It fills the fourth place of the facts. -->
+            <div v-if="tenantData.deposit !== null">
+              <dt class="text-xs text-ink-faint">Deposit held</dt>
+              <dd class="font-medium tabular">{{ tenantData.deposit > 0 ? peso(tenantData.deposit, 2) : 'Not on file' }}</dd>
+            </div>
           </dl>
         </template>
       </OverviewTile>
@@ -916,7 +929,7 @@ const statusTone = computed(() => {
         title="Payments"
         to="/tenant/payments#payment-record"
         to-label="Open payments and billing"
-        class="list-reveal-item order-4 md:order-none md:col-span-2 xl:col-span-12"
+        class="list-reveal-item order-4 md:order-3 xl:col-span-8"
         style="animation-delay: 90ms"
       >
         <UnavailableNote

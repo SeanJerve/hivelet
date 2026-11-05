@@ -17,7 +17,6 @@ import { useToast } from '@/lib/useToast';
 import { methodInWords as methodLabel } from '@/lib/paymentMethod';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
-import { RouterLink } from 'vue-router';
 import { CreditCard } from 'lucide-vue-next';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -779,14 +778,7 @@ function refreshAll() {
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Payments and billing
         </h1>
-        <!-- Here, not inside the payment dialog: leaving the page from there
-             drops the checkout session. -->
-        <RouterLink
-          to="/terms#payments"
-          class="press inline-flex min-h-11 items-center text-sm text-ink-soft hover:text-ink transition-colors font-semibold"
-        >
-          How paying online works
-        </RouterLink>
+        <!-- No line under the page name (Sean, 5 Nov 2026); the payment terms are in the footer. -->
       </div>
     </header>
 

@@ -170,7 +170,7 @@ without her permission**: it shows real names and money. For practice, the demo 
 3. **Payments and billing**: the bill to pay, named by its month, with **Rent paid** (their months as
    a chart) beside it, and the **Payment record** under them. Only receipts the landlady verified count
    as paid, and a month with no receipt says **"Not entered"**, never "owed", in the chart and as a
-   row in the record. The deposit is not shown to the tenant.
+   row in the record. The deposit is on the tenant's Overview, in the unit card.
 4. **Pay with GCash**: Adyen's own payment window takes the payment. It shows as **waiting for the
    landlady** until she verifies it; then the bill is settled.
 5. **Repairs**: a title, details, how urgent, an optional photo, **Send request**; it moves across

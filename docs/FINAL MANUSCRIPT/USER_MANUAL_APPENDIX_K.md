@@ -36,7 +36,7 @@ screen. *Nakalimutan ang password? Lumapit sa landlady; bibigyan niya kayo ng ba
 
 ### 2. Overview / Pangunahing pahina
 
-The greeting, then **Amount due**, your current bill, and your unit with its floor plan. The amount due counts only the payments the landlady has
+The greeting, then **Amount due** and your current bill, and under them your payments and your unit with its floor plan and the deposit held. The amount due counts only the payments the landlady has
 recorded, up to the date it shows ("Your recorded payments cover rent up to…"). If you have paid
 and it is not there yet, it appears once she records your receipt.
 *Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.*
@@ -69,7 +69,7 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
 - **Payment record**: every payment recorded for your unit, newest first, with a **Not entered** row
   for each month that has no payment entered yet. Search it, or pick another year or order in the
   dropdowns above it (on a phone, tap **Filters** first). The list changes as soon as you pick.
-- **The deposit** is not shown on these pages. Ask the landlady if you need to know it.
+- **The deposit** held for your tenancy is on your Overview, in the card for your unit.
   *Hindi ipinapakita dito ang deposit. Itanong sa landlady.*
 - **Pay with GCash**: online payment. **Until the landlady announces it, online payments do not
   charge real money; pay her in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
@@ -181,8 +181,8 @@ The first screen: **Needs your attention** (the payments waiting to be verified 
 urgent repairs on the right, three of each with a count of the rest; a side with nothing waiting is
 not shown), **Received** for this month once anything is recorded in it, **Occupancy** (the units
 occupied out of 33, with each cluster's count, such as 22/22), and **Income** month by month. Tap a
-month on the Income chart to see its **Income**, **Expenses** and **Net income** under the chart;
-the arrows beside **Income** and **Expenses** open Monthly Income and Monthly Expenses. Urgent repairs are listed only in Needs your attention.
+month on the Income chart to see its **Income**, **Operating expenses** and **Net income** under the chart;
+the arrows beside **Income** and **Operating expenses** open Monthly Income and Monthly Expenses. Urgent repairs are listed only in Needs your attention.
 Net income deducts the operating costs only: personal spending is listed on Monthly Expenses beside them, and is not deducted from rental income. If a
 figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
 

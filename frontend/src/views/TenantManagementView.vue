@@ -943,10 +943,7 @@ async function handleOnboard() {
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Tenants
         </h1>
-        <!-- Blank, not "0 residents", until the list has loaded; min-h keeps the header still. -->
-        <p class="mt-1 min-h-6 max-w-2xl text-sm leading-6 text-ink-soft">
-          <template v-if="hasLoadedOnce && !tenantsFetchFailed">{{ activeCount }} living here<span v-if="prospectCount">, {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span></span></template>
-        </p>
+        <!-- No line under the page name (Sean, 5 Nov 2026): the Standing filter carries the count. -->
       </div>
 
       <!-- `.ws-page-actions` (index.css): the header action row every admin
