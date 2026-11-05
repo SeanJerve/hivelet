@@ -435,7 +435,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           room photography exists. Sean asked for the pictures to come off:
           the drawings that matter are the floor plans, and those belong in the
           unit rows below, where a reader has already chosen a unit. A category
-          is a row with a count and a sentence, which is what this is now.
+          is a row with its name and counts (Sean, 5 Nov 2026: no sentence).
 
           Each row is a real RouterLink, so middle-click, open-in-new-tab and
           the native Enter handling all work. The whole row is the target.
@@ -444,10 +444,9 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           <p class="sr-only">Four kinds of unit. Each row opens that kind.</p>
 
           <div
-            class="hidden border-b border-line px-5 py-3 text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft sm:grid sm:grid-cols-[10.5rem_1fr_4rem_4.5rem] sm:gap-5 lg:grid-cols-[14rem_1fr_9rem_9rem] lg:gap-6"
+            class="hidden border-b border-line px-5 py-3 text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft sm:grid sm:grid-cols-[1fr_4rem_4.5rem] sm:gap-5 lg:grid-cols-[1fr_9rem_9rem] lg:gap-6"
           >
             <span>Kind</span>
-            <span>What it is</span>
             <!-- The header follows the rows: no count columns while they have no counts. -->
             <template v-if="unitsReady">
               <span class="text-right">Units</span>
@@ -460,7 +459,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             v-for="(c, i) in CATEGORIES"
             :key="c.key"
             :to="'/category/' + c.slug"
-            class="list-reveal-item press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-hover sm:grid sm:grid-cols-[10.5rem_1fr_4rem_4.5rem] sm:items-baseline sm:gap-5 lg:grid-cols-[14rem_1fr_9rem_9rem] lg:gap-6"
+            class="list-reveal-item press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-hover sm:grid sm:grid-cols-[1fr_4rem_4.5rem] sm:items-baseline sm:gap-5 lg:grid-cols-[1fr_9rem_9rem] lg:gap-6"
             :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
           >
             <span class="flex items-baseline gap-2 text-base font-medium text-ink">
@@ -469,10 +468,6 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 class="size-4 shrink-0 text-ink-faint transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 group-hover:text-brand"
                 aria-hidden="true"
               />
-            </span>
-
-            <span class="mt-2 block max-w-xl text-xs leading-relaxed text-ink-soft sm:mt-0 sm:text-sm">
-              {{ c.blurb }}
             </span>
 
             <!--

@@ -686,8 +686,8 @@ async function submitInquiry() {
           {{ currentCat.title }}
         </h1>
 
-        <div class="mt-10 sm:mt-14 grid gap-8 sm:grid-cols-2 max-w-3xl text-xs sm:text-[0.82rem] leading-relaxed text-ink-soft">
-          <p>{{ currentCat.blurb }}</p>
+        <!-- The count and the price range only; the kind's one-line description went (Sean, 5 Nov 2026). -->
+        <div class="mt-10 sm:mt-14 max-w-3xl text-xs sm:text-[0.82rem] leading-relaxed text-ink-soft">
           <p v-if="!isLoading && !loadFailed && categoryUnits.length">
             {{ categoryUnits.length }} {{ categoryUnits.length === 1 ? 'unit' : 'units' }},
             <strong class="font-semibold text-ink">{{ availableHere }} vacant</strong>.
