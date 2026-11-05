@@ -382,7 +382,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       It carried two paragraphs of standfirst under the headline. They are gone
       on request, and the facts they held are not lost with them: every unit's
       rate is in the table below, and the water rule and the electricity
-      arrangement are both answered in Policies and guidelines. The earlier
+      arrangement are both answered in Frequently asked questions. The earlier
       comment here claimed those facts appeared nowhere else on the page, which
       was true when the metric strip was removed and has not been true since
       the availability table and the FAQ were rebuilt.
@@ -517,7 +517,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
         <!-- No standfirst: it listed the questions below in stiffer words, and "utilities submetering" is not how water is billed. -->
         <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
-          Policies &amp; guidelines
+          Frequently asked questions
         </h2>
 
         <!--
