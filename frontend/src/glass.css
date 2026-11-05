@@ -487,6 +487,15 @@ footer.bg-night a {
   background-color: transparent;
 }
 
+/*
+ * A floor plan drawn straight on the page, not on a white panel (the tenant's unit, Sean, 5 Nov
+ * 2026): in light mode its white sheet multiplies into the page so only the walls show, as dark
+ * mode's lighten already does (index.css). Black lines stay black under multiply.
+ */
+:root:not([data-theme='dark']) img.plan-on-page {
+  mix-blend-mode: multiply;
+}
+
 /* The top bar and the sidebar. */
 header.ws-glass {
   --surface-blur: var(--glass-blur-float);

@@ -886,7 +886,7 @@ const statusTone = computed(() => {
               :width="unitPlan.size?.w"
               :height="unitPlan.size?.h"
               :class="[
-                'block h-auto w-full transition-opacity duration-300 ease-[var(--ease-out)]',
+                'plan-on-page block h-auto w-full transition-opacity duration-300 ease-[var(--ease-out)]',
                 unitPhotoLoaded ? 'opacity-100' : 'opacity-0',
               ]"
               decoding="async"
