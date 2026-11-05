@@ -1186,7 +1186,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>
           <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
-          <p class="text-sm text-ink-soft">From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}</p>
+          <p class="text-sm text-ink-soft">
+            From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}
+            by {{ historicalTenantCount }} {{ historicalTenantCount === 1 ? 'tenant' : 'tenants' }}
+            in {{ historicalUnitCount }} {{ historicalUnitCount === 1 ? 'unit' : 'units' }}
+          </p>
           <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="text-sm text-ink-soft">Rent</dt>
@@ -1235,22 +1239,13 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <p :class="['tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight', historicalAnnualNOI < 0 && 'text-overdue']">
             {{ peso(historicalAnnualNOI) }}
           </p>
-          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Income</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualGrossTotal) }}</dd>
-            </div>
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Operating expenses</dt>
-              <dd class="tabular text-lg font-semibold">&minus;{{ peso(historicalAnnualExpenseTotal) }}</dd>
-            </div>
-          </dl>
+          <p class="text-sm text-ink-soft">Income less operating expenses</p>
         </template>
       </OverviewTile>
 
       <!-- One chart, its green word switching income and expenses, as Monthly Income's does (Sean,
            5 Nov 2026); both views share one cell so the card keeps its height. -->
-      <OverviewTile boxed :to="archiveShape === 'income' ? archiveIncomeByMonthLink : archiveExpensesLink" :to-label="archiveShape === 'income' ? 'Open Monthly Income for this year' : 'Open Monthly Expenses for this year'" class="md:col-span-2 xl:col-span-12">
+      <OverviewTile boxed :to="archiveShape === 'income' ? archiveIncomeByMonthLink : archiveExpensesLink" :to-label="archiveShape === 'income' ? 'Open Monthly Income for this year' : 'Open Monthly Expenses for this year'" class="md:col-span-2 xl:col-span-7">
         <template #heading>
           <YearMenu v-model="archiveShape" :options="archiveShapeOptions" inline hint="show income or expenses" /> by month
         </template>
@@ -1265,7 +1260,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </div>
       </OverviewTile>
 
-      <OverviewTile boxed title="Income by cluster" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-8">
+      <OverviewTile boxed title="Income by cluster" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-5">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalClusterSplit.length === 0" class="text-sm text-ink-soft">Not entered</p>
         <template v-else>
@@ -1288,21 +1283,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Tenants and units" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-        <dl v-else class="grid grid-cols-2 gap-4">
-          <div>
-            <dt class="text-xs text-ink-faint">Tenants who paid</dt>
-            <dd class="text-4xl leading-none font-semibold tabular tracking-tight">{{ historicalTenantCount }}</dd>
-          </div>
-          <div>
-            <dt class="text-xs text-ink-faint">Units with entries</dt>
-            <dd class="text-4xl leading-none font-semibold tabular tracking-tight">
-              {{ historicalUnitCount }}<span class="text-lg text-ink-faint">/{{ rooms.length || 33 }}</span>
-            </dd>
-          </div>
-        </dl>
-      </OverviewTile>
     </div>
   </div>
 </template>
