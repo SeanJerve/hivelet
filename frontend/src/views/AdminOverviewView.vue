@@ -699,6 +699,12 @@ const historicalUnitCount = computed(
 );
 const archiveIncomeLink = computed(() => `/admin/income?year=${selectedArchiveYear.value}#income-records`);
 const archiveIncomeByMonthLink = computed(() => `/admin/income?year=${selectedArchiveYear.value}#income-by-month`);
+/** The past year's chart: income or operating expenses, picked in its heading. */
+const archiveShape = ref<'income' | 'expenses'>('income');
+const archiveShapeOptions = [
+  { value: 'income', label: 'Income' },
+  { value: 'expenses', label: 'Expenses' },
+];
 const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchiveYear.value}#expense-records`);
 
 </script>
@@ -1173,7 +1179,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       lines, no sentences. Each money card's arrow opens that year's ledger.
     -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <OverviewTile :title="`Received, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
+      <!-- The year in three numbers, each with its parts: income, expenses, net (Sean, 5 Nov 2026:
+           organised and easy to understand). No year in the titles: it is at the top. -->
+      <OverviewTile title="Income" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>
@@ -1201,30 +1209,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile boxed :title="`Income by cluster, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-8">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-        <p v-else-if="historicalClusterSplit.length === 0" class="text-sm text-ink-soft">Not entered</p>
-        <template v-else>
-          <SegmentBar :segments="historicalClusterSplit" :label="`How ${peso(historicalAnnualGrossTotal)} divides across the clusters`" />
-          <ul class="flex flex-col gap-2.5">
-            <li v-for="(c, i) in historicalClusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-3 text-sm">
-              <span class="flex min-w-0 items-center gap-2">
-                <span
-                  aria-hidden="true"
-                  :class="['size-3 shrink-0 rounded-full', toneDot[c.tone]]"
-                />
-                <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
-              </span>
-              <span class="flex shrink-0 items-baseline gap-3">
-                <span class="text-xs text-ink-faint tabular">{{ wholePercents(historicalClusterSplit.map((s) => s.value))[i] }}%</span>
-                <span class="tabular font-semibold">{{ peso(c.value) }}</span>
-              </span>
-            </li>
-          </ul>
-        </template>
-      </OverviewTile>
-
-      <OverviewTile :title="`Expenses, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-4">
+      <OverviewTile title="Expenses" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-4">
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
         <p v-else-if="historicalExpenseRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
         <template v-else>
@@ -1252,7 +1237,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           </p>
           <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Received</dt>
+              <dt class="text-sm text-ink-soft">Income</dt>
               <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualGrossTotal) }}</dd>
             </div>
             <div class="flex items-baseline justify-between gap-3 py-2.5">
@@ -1263,7 +1248,47 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="`Tenants and units, ${selectedArchiveYear}`" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-4">
+      <!-- One chart, its green word switching income and expenses, as Monthly Income's does (Sean,
+           5 Nov 2026); both views share one cell so the card keeps its height. -->
+      <OverviewTile boxed :to="archiveShape === 'income' ? archiveIncomeByMonthLink : archiveExpensesLink" :to-label="archiveShape === 'income' ? 'Open Monthly Income for this year' : 'Open Monthly Expenses for this year'" class="md:col-span-2 xl:col-span-12">
+        <template #heading>
+          <YearMenu v-model="archiveShape" :options="archiveShapeOptions" inline hint="show income or expenses" /> by month
+        </template>
+        <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" @retry="refreshAllData" />
+        <div v-else class="grid">
+          <div :class="['min-w-0 [grid-area:1/1] motion-safe:transition-[opacity,visibility] motion-safe:duration-200', archiveShape !== 'income' && 'invisible opacity-0']" :inert="archiveShape !== 'income'">
+            <MonthCapsules :key="'i' + archiveShape" :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
+          </div>
+          <div :class="['min-w-0 [grid-area:1/1] motion-safe:transition-[opacity,visibility] motion-safe:duration-200', archiveShape !== 'expenses' && 'invisible opacity-0']" :inert="archiveShape !== 'expenses'">
+            <MonthCapsules :key="'e' + archiveShape" :months="historicalExpenseCapsules" tone="expense" :label="`Operating expenses by month in ${selectedArchiveYear}`" />
+          </div>
+        </div>
+      </OverviewTile>
+
+      <OverviewTile boxed title="Income by cluster" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-8">
+        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
+        <p v-else-if="historicalClusterSplit.length === 0" class="text-sm text-ink-soft">Not entered</p>
+        <template v-else>
+          <SegmentBar :segments="historicalClusterSplit" :label="`How ${peso(historicalAnnualGrossTotal)} divides across the clusters`" />
+          <ul class="flex flex-col gap-2.5">
+            <li v-for="(c, i) in historicalClusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-3 text-sm">
+              <span class="flex min-w-0 items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  :class="['size-3 shrink-0 rounded-full', toneDot[c.tone]]"
+                />
+                <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
+              </span>
+              <span class="flex shrink-0 items-baseline gap-3">
+                <span class="text-xs text-ink-faint tabular">{{ wholePercents(historicalClusterSplit.map((s) => s.value))[i] }}%</span>
+                <span class="tabular font-semibold">{{ peso(c.value) }}</span>
+              </span>
+            </li>
+          </ul>
+        </template>
+      </OverviewTile>
+
+      <OverviewTile title="Tenants and units" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <dl v-else class="grid grid-cols-2 gap-4">
           <div>
@@ -1277,16 +1302,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             </dd>
           </div>
         </dl>
-      </OverviewTile>
-
-      <OverviewTile boxed title="Income" :to="archiveIncomeByMonthLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-6">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-        <MonthCapsules v-else :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
-      </OverviewTile>
-
-      <OverviewTile boxed :title="`Operating expenses by month, ${selectedArchiveYear}`" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="md:col-span-2 xl:col-span-6">
-        <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
-        <MonthCapsules v-else :months="historicalExpenseCapsules" :label="`Operating expenses by month in ${selectedArchiveYear}`" />
       </OverviewTile>
     </div>
   </div>
