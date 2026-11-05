@@ -1323,7 +1323,7 @@ async function handleEditExpense() {
           <div class="space-y-4 text-xs text-ink">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
-              Date it was spent
+              Date of the expense
               <input v-model="date" type="date" class="ws-input w-full" required />
             </label>
 
@@ -1509,7 +1509,7 @@ async function handleEditExpense() {
           <div class="space-y-4 text-xs text-ink">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
-              Date it was spent
+              Date of the expense
               <input 
                 v-model="editDate" 
                 type="date" 

@@ -932,10 +932,10 @@ async function submitInquiry() {
                 >{{ activeUnit.room_number.toUpperCase() }}</span>
                 <p class="sr-only">
                   <template v-if="isWholeLevel(activeUnit)">
-                    Unit {{ activeUnit.room_number }} is the whole {{ buildingNameFor(activeUnit.cluster_code) }}.
+                    Unit {{ activeUnit.room_number.toUpperCase() }} is the whole {{ buildingNameFor(activeUnit.cluster_code) }}.
                   </template>
                   <template v-else>
-                    Unit {{ activeUnit.room_number }} is on the
+                    Unit {{ activeUnit.room_number.toUpperCase() }} is on the
                     {{ floorLabelFor(activeUnit.floor) }} of the
                     {{ buildingNameFor(activeUnit.cluster_code) }}.
                   </template>
