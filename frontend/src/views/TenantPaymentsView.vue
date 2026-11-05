@@ -315,10 +315,11 @@ const notEnteredRows = computed(() => {
   return st.owedPeriods.map((p) => ({
     id: `not-entered-${p.start}`,
     invoiceRef: '',
-    datePaid: 'Not entered',
+    // Its due date, not a second "Not entered" beside the pill; the label matches a receipt's.
+    datePaid: `Due ${formatDateOnly(p.dueDate, shortDayYear)}`,
     datePaidRaw: p.start,
     year: Number(p.start.slice(0, 4)),
-    forLabel: `Rent for ${formatDateOnly(p.start, shortDay)} to ${formatDateOnly(p.end, shortDayYear)}`,
+    forLabel: `Rent, ${formatDateOnly(p.start, shortDay)} to ${formatDateOnly(p.end, shortDay)}`,
     amountPaid: st.perPeriod.totalAmount,
     paymentMethod: '',
     status: NOT_ENTERED,
@@ -591,6 +592,14 @@ function billRemainderAfterPending(bill: any): number {
 }
 
 /**
+ * A bill with a payment waiting has nothing to press, so it sits on the page like the admin's
+ * Received figure; only a bill still to pay is the green box (Sean, 5 Nov 2026).
+ */
+const billSent = (bill: any) => billPending(bill) > 0;
+const softText = (bill: any) => (billSent(bill) ? 'text-ink-soft' : 'text-on-brand-soft');
+const strongText = (bill: any) => (billSent(bill) ? 'text-ink' : 'text-on-brand');
+
+/**
  * The month each bill is for, in its title: with two open (October and November) both cards read
  * "Bill to pay" and looked like one bill shown twice (Sean, 5 Nov 2026).
  */
@@ -789,10 +798,13 @@ function refreshAll() {
       ref="billsRegion"
       tabindex="-1"
       aria-label="Your bills"
-      class="outline-none grid gap-4 md:grid-cols-2"
+      class="outline-none grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
     >
 
-    <!-- Bills -->
+    <!-- Bills, in one column: with two open, the second took the chart's place beside the first
+         and pushed the chart under it. Side by side from xl only, and the chart gets the wider
+         share: below about 1,400px its months scrolled inside a half-width column. -->
+    <div class="flex min-w-0 flex-col gap-4 [&>*]:flex-1">
     <div v-if="loadingBills" class="rounded-tile bg-tile p-6 flex flex-col gap-4" aria-busy="true">
       <span class="sr-only" role="status">Loading your bills</span>
       <Skeleton class-name="h-4 w-32 rounded-full" />
@@ -868,7 +880,7 @@ function refreshAll() {
       <OverviewTile
         v-for="(bill, i) in outstandingBills"
         :key="bill.id"
-        tone="brand"
+        :tone="billSent(bill) ? 'plain' : 'brand'"
         :title="billTileTitle(bill)"
         class="list-reveal-item"
         :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
@@ -876,23 +888,23 @@ function refreshAll() {
         <div>
           <!-- The balance, not the debt as issued. BR-013. -->
           <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">{{ peso(billBalance(bill), 2) }}</p>
-          <p class="mt-2 text-sm text-on-brand-soft">
+          <p class="mt-2 text-sm" :class="softText(bill)">
             Due {{ new Date(bill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE }) }}
           </p>
         </div>
 
-        <dl class="flex flex-col gap-1.5 text-sm text-on-brand-soft">
+        <dl class="flex flex-col gap-1.5 text-sm" :class="softText(bill)">
           <div class="flex items-baseline justify-between gap-3">
             <dt>Rent</dt>
-            <dd class="tabular text-on-brand">{{ peso(bill.rent_amount, 2) }}</dd>
+            <dd class="tabular" :class="strongText(bill)">{{ peso(bill.rent_amount, 2) }}</dd>
           </div>
           <div class="flex items-baseline justify-between gap-3">
             <dt>Water</dt>
-            <dd class="tabular text-on-brand">{{ peso(bill.water_amount, 2) }}</dd>
+            <dd class="tabular" :class="strongText(bill)">{{ peso(bill.water_amount, 2) }}</dd>
           </div>
           <div v-if="Number(bill.amount_paid) > 0" class="flex items-baseline justify-between gap-3">
             <dt>Already paid</dt>
-            <dd class="tabular text-on-brand">
+            <dd class="tabular" :class="strongText(bill)">
               {{ peso(Number(bill.amount_paid), 2) }} of {{ peso(Number(bill.total_amount), 2) }}
             </dd>
           </div>
@@ -901,7 +913,7 @@ function refreshAll() {
                bill that never arrived. -->
           <div v-if="billPending(bill) > 0" class="flex items-baseline justify-between gap-3">
             <dt>Sent, waiting for verification</dt>
-            <dd class="tabular text-on-brand">{{ peso(billPending(bill), 2) }}</dd>
+            <dd class="tabular" :class="strongText(bill)">{{ peso(billPending(bill), 2) }}</dd>
           </div>
         </dl>
 
@@ -919,16 +931,17 @@ function refreshAll() {
         </template>
         <!-- The line above already says it is sent and waiting (Sean, 5 Nov 2026); only a
              remainder still to pay needs a sentence. -->
-        <p v-else-if="billRemainderAfterPending(bill) > 0" class="mt-auto text-sm text-on-brand-soft">
+        <p v-else-if="billRemainderAfterPending(bill) > 0" class="mt-auto text-sm" :class="softText(bill)">
           The other {{ peso(billRemainderAfterPending(bill), 2) }} can be paid once she has checked it.
         </p>
       </OverviewTile>
     </template>
+    </div>
 
     <!-- The tenant's own months, drawn like the landlady's collections chart. Needs both the
          receipts and the standing, so it waits for, and fails with, either. On a phone it comes
          before the bills when nothing is due (Loyd, 2026-10-03). -->
-    <OverviewTile boxed title="Rent paid" :class="chartLeads && 'max-md:order-first'">
+    <OverviewTile boxed title="Rent paid" :class="chartLeads && 'max-xl:order-first'">
       <PaymentMonths
         :receipts="rawReceipts"
         :waiting="waitingPayments"
@@ -965,7 +978,7 @@ function refreshAll() {
         v-else
         :rows="filteredPayments"
         :caption="`Your payments in ${selectedYear}`"
-        noun="payment"
+        :noun="notEnteredRows.length ? 'row' : 'payment'"
         :page-size="8"
         :empty-title="loadingHistory ? 'Loading your payments' : searchQuery.trim() ? 'Nothing to show' : 'Nothing recorded'"
         :empty-note="
@@ -1036,7 +1049,7 @@ function refreshAll() {
           </p>
 
           <dl class="mt-4 space-y-3 text-sm">
-            <div>
+            <div v-if="!isNotEntered(record.status)">
               <dt class="text-xs text-ink-faint">How you paid</dt>
               <dd class="text-ink">{{ record.paymentMethod }}</dd>
             </div>

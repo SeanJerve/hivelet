@@ -156,6 +156,7 @@ function nameList(list: PaymentMonth[]) {
     <MonthCapsules
       :months="capsules"
       :terms="capsuleTerms"
+      low
       :decimals="2"
       :label="`Your rent by month, ${capsules[0]!.long} to ${capsules.at(-1)!.long}`"
     />

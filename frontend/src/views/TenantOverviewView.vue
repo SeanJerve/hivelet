@@ -839,8 +839,8 @@ const statusTone = computed(() => {
       </OverviewTile>
 
 
+      <!-- On the page, not boxed: only what asks for action and charts are boxes (Sean, 5 Nov 2026). -->
       <OverviewTile
-        boxed
         :title="tenantData.room || 'Your unit'"
         class="list-reveal-item order-5 md:order-none xl:col-span-3"
         style="animation-delay: 60ms"
@@ -867,8 +867,8 @@ const statusTone = computed(() => {
           </div>
           <!-- Same plan and same marker as the public unit page. The marker is placed as a percentage
                of the drawing, so this box must be exactly as large as the image. A unit that is a
-               whole level (the penthouse) has no marker: the plan is all of it. On this glass tile
-               the drawing's own ground stays visible in dark, so it is rounded into a panel. -->
+               whole level (the penthouse) has no marker: the plan is all of it. The drawing's own
+               ground stays visible in dark, so it is rounded into a panel. -->
           <div v-else-if="unitPlan" class="relative mx-auto w-full max-w-64 overflow-hidden rounded-2xl">
             <img
               :src="unitPlan.src"

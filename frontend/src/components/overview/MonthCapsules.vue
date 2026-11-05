@@ -27,6 +27,8 @@ const props = withDefaults(
      * a phone's first screen with three tiles (Loyd, 2026-10-03).
      */
     short?: boolean;
+    /** Low at every width, beside a bill, so what is under it stays in view (Sean, 5 Nov 2026). */
+    low?: boolean;
     /**
      * Centavos in the selected month's figure. 0 for the landlady's ledgers,
      * which count whole pesos throughout; 2 on the tenant's payments page, where
@@ -121,7 +123,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
 <template>
   <div class="flex flex-col gap-4 min-w-0">
     <div class="flex gap-3 min-w-0">
-      <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 max-sm:pb-9 text-xs text-ink-faint tabular text-right shrink-0', short ? 'h-28 md:h-48' : 'h-48']">
+      <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 max-sm:pb-9 text-xs text-ink-faint tabular text-right shrink-0', low ? 'h-28' : short ? 'h-28 md:h-48' : 'h-48']">
         <span v-for="(t, i) in ticks" :key="i">{{ t }}</span>
       </div>
 
@@ -132,7 +134,7 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <div
           role="group"
           :aria-label="label"
-          :class="['grid gap-0.5 sm:gap-2 sm:min-w-[26rem]', short ? 'h-28 md:h-48' : 'h-48']"
+          :class="['grid gap-0.5 sm:gap-2 sm:min-w-[26rem]', low ? 'h-28' : short ? 'h-28 md:h-48' : 'h-48']"
           :style="{ gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))` }"
         >
           <button
