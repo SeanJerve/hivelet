@@ -25,7 +25,6 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import ListToolbar from '@/components/ui/ListToolbar.vue';
 import type { FilterDraft, ToolbarFilter } from '@/components/ui/listToolbar';
-import { fetchLandladyContact, LANDLADY } from '@/lib/systemState';
 import type { ReceiptInput } from '@/lib/tenantPaymentMonths';
 import { screenRef, screenLoaded } from '@/lib/screenCache';
 
@@ -169,21 +168,6 @@ interface ResidentStanding {
   totalPayable: number;
 }
 const standing = screenRef<ResidentStanding | null>('tenant.payments.standing', null);
-
-/** "On the 1st of each month", from her next period's start. A clamped day (29th to 31st, or a month's last day) reads as the move-in day. */
-const dueDayWords = computed(() => {
-  const st = standing.value;
-  if (!st) return '';
-  const start = st.owedPeriods[0]?.start ?? st.nextPeriodStart;
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(start ?? '');
-  if (!m) return '';
-  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-  const last = new Date(Date.UTC(y, mo, 0)).getUTCDate();
-  if (d > 28 || d === last) return 'Each month on the day you moved in';
-  const tens = d % 100;
-  const suffix = tens >= 11 && tens <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[d % 10] ?? 'th';
-  return `On the ${d}${suffix} of each month`;
-});
 
 const standingOwes = computed(() => (standing.value?.owedPeriods.length ?? 0) > 0);
 const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
@@ -490,7 +474,6 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
 }
 
 onMounted(async () => {
-  void fetchLandladyContact();
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get('status');
   const refParam = params.get('ref');
@@ -800,19 +783,17 @@ function refreshAll() {
 
     <!-- `tabindex="-1"`: where focus lands when the dialog closes and its Pay
          button is gone. See `payTrigger`. -->
-    <!-- The bill on the left and the rent chart beside it from md up (Sean, 5 Nov 2026: the
-         "Your rent" card went, the chart took its place, and the Payment record moved up). -->
+    <!-- The bill card and the Payment record are the page (Sean, 5 Nov 2026): a card only while
+         something is to pay, two side by side when two are open, and nothing above the record
+         once she is settled. -->
     <section
+      v-if="!nothingDue"
       ref="billsRegion"
       tabindex="-1"
       aria-label="Your bills"
-      class="outline-none grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
+      class="outline-none grid gap-4 md:grid-cols-2"
     >
-
-    <!-- Bills, in one column: with two open, the second took the chart's place beside the first
-         and pushed the chart under it. Side by side from xl only, and the chart gets the wider
-         share: below about 1,400px its months scrolled inside a half-width column. -->
-    <div class="flex min-w-0 flex-col gap-4 [&>*]:flex-1">
+    <div class="contents">
     <div v-if="loadingBills" class="rounded-tile bg-tile p-6 flex flex-col gap-4" aria-busy="true">
       <span class="sr-only" role="status">Loading your bills</span>
       <Skeleton class-name="h-4 w-32 rounded-full" />
@@ -861,26 +842,6 @@ function refreshAll() {
       </button>
       <p class="text-xs leading-5 text-on-brand-soft">
         Paid in person? It shows here once the landlady records it.
-      </p>
-    </OverviewTile>
-
-    <OverviewTile v-else-if="outstandingBills.length === 0" class="ws-reveal" title="Bills">
-      <p class="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Nothing is due</p>
-      <!-- This used to promise "your next monthly statement will be issued on the
-           5th". There is no scheduled bill generator and there is deliberately not
-           one: collection happens in person, so a nightly run would raise bills
-           against residents the owner has already been paid by (judgement log
-           section 3.6). The sentence promised a thing the system does not do.
-
-           Reached only when her records cover today (or there is no tenancy), so
-           there is no Pay button: nothing is owed, and the checkout refuses a
-           settled account. Payment opens a week before the next period. -->
-      <p class="text-sm leading-6 text-ink-soft">
-        <template v-if="standing?.paidThrough">
-          Payments recorded up to {{ formatDateOnly(standing.paidThrough, longDate) }}. The next period
-          starts {{ formatDateOnly(standing.nextPeriodStart, longDate) }}; you can pay from a week before.
-        </template>
-        <template v-else>You have no outstanding bills.</template>
       </p>
     </OverviewTile>
 
@@ -946,38 +907,6 @@ function refreshAll() {
     </template>
     </div>
 
-    <!--
-      What a tenant needs beside the bill, in place of the rent chart (Sean, 5 Nov 2026: a chart is
-      not needed when the rent is the same every month). From the paper: not missing the due date
-      and reaching the landlady (Chapter 1, the problems and the communication objective). Each
-      month's own state is in the Payment record below, Not entered rows included.
-    -->
-    <OverviewTile title="Paying your rent">
-      <dl class="flex flex-col divide-y divide-line text-sm">
-        <div v-if="dueDayWords" class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
-          <dt class="text-ink-soft">Due</dt>
-          <dd class="text-right font-medium">{{ dueDayWords }}</dd>
-        </div>
-        <div v-if="standing" class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
-          <dt class="text-ink-soft">Each month</dt>
-          <dd class="text-right font-semibold tabular">{{ peso(standing.perPeriod.totalAmount, 2) }}</dd>
-        </div>
-        <div v-if="standing" class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
-          <dt class="text-ink-soft">Paid up to</dt>
-          <dd class="text-right font-medium">{{ standing.paidThrough ? formatDateOnly(standing.paidThrough, longDate) : 'Nothing recorded yet' }}</dd>
-        </div>
-        <div class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
-          <dt class="text-ink-soft">How to pay</dt>
-          <dd class="text-right font-medium">Pay with GCash here, or cash to the landlady</dd>
-        </div>
-        <div class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
-          <dt class="text-ink-soft">The landlady</dt>
-          <dd class="text-right font-medium">
-            <a :href="`tel:${LANDLADY.phone}`" class="press tabular font-semibold text-brand hover:text-brand-strong">{{ LANDLADY.phoneShown }}</a>
-          </dd>
-        </div>
-      </dl>
-    </OverviewTile>
     </section>
 
     <!-- Payment record -->

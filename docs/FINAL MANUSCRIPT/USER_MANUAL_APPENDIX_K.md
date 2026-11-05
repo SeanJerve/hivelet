@@ -51,11 +51,7 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
 
 - **The bill** to pay, named by its month (for example **"Bill to pay, November"**): the rent, plus
   water at **₱200 per occupant per month**. *Tubig: ₱200 bawat nakatira bawat buwan.*
-- **Paying your rent**, beside the bill: when rent is due each month, how much, how far your
-  recorded payments reach (**Paid up to**), how to pay (GCash here, or cash to the landlady) and the
-  landlady's number, which you can tap to call. *Kailan dapat magbayad, magkano, at ang numero ng landlady.*
-  - Only receipts the landlady has **verified** count, and a cancelled (voided) receipt never counts. A
-    GCash payment you sent shows as **waiting** until she verifies it.
+- The bill card shows only while something is to pay. Once you are settled the page is the **Payment record** alone. Only receipts the landlady has **verified** count, and a GCash payment you sent shows as **waiting** until she verifies it.
 - **Payment record**: every payment recorded for your unit, newest first, with a **Not entered** row
   for each month that has no payment entered yet. **"Not entered"** does not mean you owe that month: the landlady may not have entered your payment yet. Search it, or pick another year or order in the
   dropdowns above it (on a phone, tap **Filters** first). The list changes as soon as you pick.
