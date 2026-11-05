@@ -25,7 +25,6 @@ import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
-import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
 import { ArrowUpRight, CreditCard, Home, Wrench } from 'lucide-vue-next';
 
@@ -742,25 +741,18 @@ const statusTone = computed(() => {
             <p v-if="tenantData.billPeriodDisplay" class="mt-1 text-sm text-on-brand-soft">Rent for {{ tenantData.billPeriodDisplay }}</p>
             <p v-if="owedSummary" class="mt-3 text-sm leading-6 text-on-brand-soft">{{ owedSummary }}</p>
           </div>
-          <!-- The bill's parts, from the Current bill card that went (Sean, 5 Nov 2026). Light and dark
-               segments, since green ones vanish on the green card. -->
+          <!-- The bill's parts, from the Current bill card that went (Sean, 5 Nov 2026). No bar: rent
+               and water split the same way every month, so it showed nothing. -->
           <template v-if="tenantData.hasBill">
-            <SegmentBar
-              :segments="[
-                { label: 'Rent', value: tenantData.baseRent, tone: 'soft' },
-                { label: 'Water', value: tenantData.waterFee, tone: 'night' },
-              ]"
-              :label="`Rent ${peso(tenantData.baseRent, 2)} and water ${peso(tenantData.waterFee, 2)}`"
-            />
             <dl class="flex flex-col divide-y divide-white/15 text-sm">
               <div class="flex items-baseline justify-between gap-3 py-2">
-                <dt class="flex items-center gap-2"><span aria-hidden="true" class="size-2.5 rounded-full bg-series-soft" />Rent</dt>
+                <dt>Rent</dt>
                 <dd class="font-semibold tabular">{{ peso(tenantData.baseRent, 2) }}</dd>
               </div>
               <div class="flex items-baseline justify-between gap-3 py-2">
                 <dt>
-                  <span class="flex items-center gap-2"><span aria-hidden="true" class="size-2.5 rounded-full bg-series-night ring-1 ring-white/40" />Water</span>
-                  <span v-if="tenantData.occupants && waterRatePerOccupant !== null" class="block pl-4.5 text-xs text-on-brand-soft">
+                  <span>Water</span>
+                  <span v-if="tenantData.occupants && waterRatePerOccupant !== null" class="block text-xs text-on-brand-soft">
                     {{ tenantData.occupants }} {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }} at {{ peso(waterRatePerOccupant) }} each
                   </span>
                 </dt>
