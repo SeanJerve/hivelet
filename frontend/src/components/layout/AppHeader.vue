@@ -597,7 +597,7 @@ onUnmounted(() => {
 
                   <button
                     @click="handleSignOut"
-                    class="press flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-overdue hover:bg-overdue-soft"
+                    class="press flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-overdue hover:bg-hover"
                   >
                     <LogOut class="size-4" aria-hidden="true" />
                     <span>Sign out</span>

@@ -1879,11 +1879,13 @@ html:has(> body[style*='overflow: hidden']) {
  * `ws-page` went full width on 2026-09-24 for the public site, and the
  * workspace, which shares it, went with it. At 1904px the residents table
  * then measured 1,468px wide with a 509px name column. Sean asked for the
- * dashboards to keep the 1600px cap they had before, so this restores it for
- * the workspace only. The 56px gutter from 1024px up stays.
+ * dashboards to keep the 1600px cap they had before, so this restored it for
+ * the workspace only. On 5 Nov 2026 Sean asked for the homepage's margins
+ * instead: the cap left wide side margins on a large screen, so the workspace
+ * runs full width with the same 56px gutter as the public pages.
  */
 .ws-workspace {
-  max-width: 100rem;
+  max-width: none;
 }
 
 /*
