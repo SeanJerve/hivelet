@@ -30,7 +30,7 @@ screen. *Nakalimutan ang password? Lumapit sa landlady; bibigyan niya kayo ng ba
 
 ### 2. Overview / Pangunahing pahina
 
-The greeting, then your unit (its floor plan, its kind and floor, and the deposit held; its arrow opens **Repairs**) beside **Amount due**, which shows the rent and water it is made of, and your payments under them. The amount due counts only the payments the landlady has
+The greeting, then your unit (its floor plan, its kind and floor, and the deposit; when the landlady has acted on one of your repairs, one line saying so, such as **In progress** or **Done**; its arrows open **Repairs**) beside **Amount due**, which shows the rent and water it is made of, and your payments under them. The amount due counts only the payments the landlady has
 recorded, up to the date it shows ("Your recorded payments cover rent up to…"). If you have paid
 and it is not there yet, it appears once she records your receipt.
 *Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.*

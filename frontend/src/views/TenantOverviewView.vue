@@ -27,7 +27,7 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { greetingName, usePartOfDay } from '@/lib/greeting';
-import { CreditCard, Home, Wrench } from 'lucide-vue-next';
+import { ArrowUpRight, CreditCard, Home, Wrench } from 'lucide-vue-next';
 
 const { showToast } = useToast();
 const router = useRouter();
@@ -310,8 +310,36 @@ async function loadWaterRate() {
   }
 }
 
+/**
+ * The latest thing the landlady did on one of this tenant's repairs, for one line under the unit
+ * (Sean, 5 Nov 2026): sent someone (In Progress), or marked it done. A request the tenant withdrew
+ * themselves is not her action. Done ones show for two weeks. A failed read shows nothing: the
+ * Repairs page is one tap away and says it properly.
+ */
+const repairUpdate = screenRef<{ title: string; word: string } | null>('tenant.overview.repair', null);
+async function loadRepairUpdate() {
+  try {
+    const rows = (await api.get<any[]>('/tenant/my-tickets')) ?? [];
+    const me = currentUser.value?.profileId;
+    const twoWeeks = Date.now() - 14 * 86400000;
+    const acted = rows
+      .map((t) => {
+        const at = Date.parse(t.closed_at ?? t.resolved_at ?? t.created_at) || 0;
+        if (t.status === 'In Progress') return { t, at, word: 'In progress' };
+        const done = t.status === 'Resolved' || (t.status === 'Closed' && t.closed_by && t.closed_by !== me);
+        return done && at >= twoWeeks ? { t, at, word: 'Done' } : null;
+      })
+      .filter((x): x is { t: any; at: number; word: string } => x !== null)
+      .sort((a, b) => b.at - a.at);
+    repairUpdate.value = acted[0] ? { title: String(acted[0].t.title ?? 'Repair'), word: acted[0].word } : null;
+  } catch {
+    // Left as it was.
+  }
+}
+
 onMounted(async () => {
   loadWaterRate();
+  void loadRepairUpdate();
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get('status');
   const refParam = params.get('ref');
@@ -329,7 +357,10 @@ onMounted(async () => {
 
 // Kept current while the page is open, without a skeleton (lib/live.ts). The same reload runs
 // when the connection comes back, replacing the saved copy shown meanwhile.
-useLiveRefresh(() => fetchTenantData({ quiet: true }));
+useLiveRefresh(() => {
+  void loadRepairUpdate();
+  return fetchTenantData({ quiet: true });
+});
 
 /** The floor plan of this resident's own unit, the same drawing the public unit page shows. */
 const unitPlan = computed(() => {
@@ -810,14 +841,16 @@ const statusTone = computed(() => {
            page; in dark the plan is drawn light on the card (index.css) rather than as a white
            sheet (Sean, 5 Nov 2026). Two rows of two: Amount due and Current bill, then Payments
            and this. -->
+      <!-- On the page, as the admin's Occupancy is (Sean, 5 Nov 2026), the unit's name larger. -->
       <OverviewTile
-        boxed
-        :title="tenantData.room || 'Your unit'"
         to="/tenant/tickets"
         to-label="Open your repairs"
         class="list-reveal-item order-2 md:order-1 xl:col-span-4"
         style="animation-delay: 60ms"
       >
+        <template #heading>
+          <span class="text-2xl font-semibold tracking-tight">{{ tenantData.room || 'Your unit' }}</span>
+        </template>
         <UnavailableNote
           v-if="tenantDataLoadFailed && !tenantData.room"
           message="Your unit details could not be loaded."
@@ -878,10 +911,26 @@ const statusTone = computed(() => {
             <!-- The deposit, back beside the unit it is held for (Sean, 5 Nov 2026: a tenant asked to
                  see it in the survey, Chapter 4). It fills the fourth place of the facts. -->
             <div v-if="tenantData.deposit !== null" class="col-span-2">
-              <dt class="text-xs text-ink-faint">Deposit held</dt>
+              <dt class="text-xs text-ink-faint">Deposit</dt>
               <dd class="font-medium tabular">{{ tenantData.deposit > 0 ? peso(tenantData.deposit, 2) : 'Not on file' }}</dd>
             </div>
           </dl>
+          <!-- What the landlady last did on a repair, one line, to the Repairs page. -->
+          <router-link
+            v-if="repairUpdate"
+            to="/tenant/tickets"
+            class="press group/goto flex items-center justify-between gap-3 border-t border-line pt-3 text-sm"
+            :aria-label="`Repair ${repairUpdate.title}: ${repairUpdate.word}. Open your repairs`"
+          >
+            <span class="min-w-0">
+              <span class="block text-xs text-ink-faint">Repair</span>
+              <span class="block truncate font-medium text-ink">{{ repairUpdate.title }}</span>
+            </span>
+            <span class="flex shrink-0 items-center gap-1 font-semibold text-brand">
+              {{ repairUpdate.word }}
+              <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+            </span>
+          </router-link>
         </template>
       </OverviewTile>
 
