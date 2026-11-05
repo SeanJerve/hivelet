@@ -116,7 +116,7 @@ before the redesign started.
 
 ### `views/TenantOverviewView.vue`
 
-6 call(s), **0 of them write**.
+7 call(s), **0 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
@@ -126,18 +126,17 @@ before the redesign started.
 | reads | `GET /tenant/my-payments` | my payments |
 | reads | `GET /tenant/my-rooms` | my unit |
 | reads | `GET /tenant/my-standing` | whether my records cover today, and which periods are owed |
+| reads | `GET /tenant/my-tickets` | my maintenance requests |
 
 ### `views/TenantPaymentsView.vue`
 
-7 call(s), **1 of them write**.
+5 call(s), **1 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
-| reads | `GET /public/rates` | the water rate per occupant (the Linda fields only mark which units have their money routed to Linda) |
 | reads | `GET /tenant/my-bills` | my bills |
 | reads | `GET /tenant/my-income-records` | my receipts |
 | reads | `GET /tenant/my-payments` | my payments |
-| reads | `GET /tenant/my-rooms` | my unit |
 | reads | `GET /tenant/my-standing` | whether my records cover today, and which periods are owed |
 | **writes** | `POST /tenant/payments/adyen/verify-session` | confirm the gateway session on return |
 
@@ -273,4 +272,4 @@ before the redesign started.
 
 ---
 
-**24 files make 80 distinct calls, 38 of which write.** Generated 2026-11-05.
+**24 files make 79 distinct calls, 38 of which write.** Generated 2026-11-05.

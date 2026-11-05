@@ -451,14 +451,22 @@ router.get(
        */
       .select(
         'id, title, description, category, priority, status, created_at, resolved_at, ' +
-          'closed_at, closed_by, rooms:room_id (id, room_number), ' +
+          'closed_at, closed_by, assigned_technician, rooms:room_id (id, room_number), ' +
           'ticket_attachments (id, file_url, file_type)'
       )
       .eq('tenant_profile_id', req.user!.profileId)
       .order('created_at', { ascending: false });
 
     if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+    /**
+     * Whether someone is assigned, not who: the names are the tradespeople's own (MaintenanceDispatchView),
+     * and the tenant needs only to know the landlady has acted, which ends cancelling (Sean, 5 Nov 2026).
+     */
+    const rows = (data ?? []).map(({ assigned_technician, ...t }: any) => ({
+      ...t,
+      technician_assigned: hasTechnician(assigned_technician),
+    }));
+    res.status(200).json({ success: true, data: rows });
   })
 );
 
@@ -745,6 +753,12 @@ router.post(
  * notes so the landlady reads it where she reads everything else.
  */
 const CANCEL_WINDOW_MS = 60 * 60 * 1000;
+/** A ticket with a tradesperson picked. 'Unassigned' is the dispatch list's own word for none. */
+function hasTechnician(name: string | null | undefined): boolean {
+  const n = String(name ?? '').trim();
+  return n !== '' && n !== 'Unassigned';
+}
+
 const cancelSchema = z.object({ reason: z.string().trim().max(500).optional() });
 
 router.post(
@@ -761,13 +775,14 @@ router.post(
 
     const { data: ticket, error: ticketError } = await db
       .from('maintenance_tickets')
-      .select('id, title, status, tenant_profile_id')
+      .select('id, title, status, tenant_profile_id, assigned_technician')
       .eq('id', req.params.ticketId)
-      .maybeSingle<{ id: string; title: string; status: string; tenant_profile_id: string }>();
+      .maybeSingle<{ id: string; title: string; status: string; tenant_profile_id: string; assigned_technician: string | null }>();
     if (ticketError) throw ApiError.internal(ticketError.message);
     // 404 rather than 403: another tenant's request does not exist for this one.
     if (!ticket || ticket.tenant_profile_id !== me) throw ApiError.notFound('Ticket not found.');
-    if (ticket.status === 'In Progress') {
+    // Someone picked to go is the landlady acting, even before the status moves (Sean, 5 Nov 2026).
+    if (ticket.status === 'In Progress' || hasTechnician(ticket.assigned_technician)) {
       throw ApiError.conflict(
         'The landlady has already started on this request, so it can no longer be cancelled. Send her a note on it instead.'
       );

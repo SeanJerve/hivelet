@@ -173,6 +173,7 @@ const API_COMPUTED = new Map([
   // payments only, because a bill is not settled by the gateway saying so
   // (BR-017). The screen needs both: what is still owed, and what is in flight.
   ['amount_pending', 'tenant.ts — payments against the bill awaiting verification'],
+  ['technician_assigned', 'tenant.ts /tenant/my-tickets — whether assigned_technician names someone, the name withheld'],
 ]);
 
 /**

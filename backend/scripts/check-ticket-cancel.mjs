@@ -73,8 +73,8 @@ db.from = (table) => {
 const handler = tenantRouter.stack
   .find((l) => l.route?.path === '/tenant/tickets/:ticketId/cancel' && l.route.methods.post).route.stack.at(-1).handle;
 
-function cancel({ status = 'Submitted', owner = ME, body = {}, recentRows = [], race = false } = {}) {
-  ticket = { id: TICKET, title: 'Kitchen faucet', status, tenant_profile_id: owner };
+function cancel({ status = 'Submitted', owner = ME, body = {}, recentRows = [], race = false, technician = null } = {}) {
+  ticket = { id: TICKET, title: 'Kitchen faucet', status, tenant_profile_id: owner, assigned_technician: technician };
   recent = recentRows;
   raceLost = race;
   writes = [];
@@ -109,6 +109,12 @@ check('a reason is kept as a note on the request, trimmed', inserts('ticket_mess
 r = await cancel({ status: 'In Progress' });
 check('In Progress is refused', [r.status, updates().length], [409, 0]);
 check('and says to send a note instead', /Send her a note/.test(r.error), true);
+
+// Someone picked to go is the landlady acting, before the status moves (Sean, 5 Nov 2026).
+r = await cancel({ technician: 'Randy (Plumbing)' });
+check('a Submitted request with someone picked to go is refused', [r.status, updates().length], [409, 0]);
+r = await cancel({ technician: 'Unassigned' });
+check('"Unassigned" is nobody, so it is still cancelled', r.status, 200);
 
 r = await cancel({ status: 'Resolved' });
 check('a finished request is refused', [r.status, updates().length], [409, 0]);

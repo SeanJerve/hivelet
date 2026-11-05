@@ -64,6 +64,8 @@ interface TicketRow {
   closed_at?: string | null;
   /** Who closed it. The tenant themselves when they cancelled it (POST .../cancel). */
   closed_by?: string | null;
+  /** Someone picked to go; the name itself is not sent to the tenant. */
+  technician_assigned?: boolean;
   rooms?: { id: string; room_number: string } | null;
   ticket_attachments?: { id: string; file_url: string; file_type: string | null }[] | null;
 }
@@ -77,9 +79,10 @@ interface TicketNote {
 
 // ---- Cancelling a request ---------------------------------------------------
 /**
- * A tenant may cancel their own request while it is still Submitted
- * (technical evaluators, 3 Oct 2026). Not once it is In Progress: someone may
- * already be on the way. At most one an hour; the server says how long is
+ * A tenant may cancel their own request while the landlady has not acted on it
+ * (technical evaluators, 3 Oct 2026; Sean, 5 Nov 2026): still Submitted, and
+ * nobody picked to go. Not once it is In Progress or has a tradesperson: someone
+ * may already be on the way. At most one an hour; the server says how long is
  * left. The reason is optional. A cancelled request is Closed with the tenant
  * as the one who closed it, which is how this page tells it apart.
  */
@@ -87,7 +90,7 @@ function isCancelled(t: TicketRow): boolean {
   return t.status === 'Closed' && !!t.closed_by && t.closed_by === currentUser.value?.profileId;
 }
 function canCancel(t: TicketRow): boolean {
-  return t.status === 'Submitted';
+  return t.status === 'Submitted' && !t.technician_assigned;
 }
 const cancelTarget = ref<TicketRow | null>(null);
 const cancelReason = ref('');
