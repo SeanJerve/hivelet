@@ -5,9 +5,9 @@ import type { Directive } from 'vue';
  * after the sidebar: "I would love to have that animation on everything").
  *
  * Put it on the element whose children are the options: the sidebar's links, a dropdown's list,
- * a segmented switch. A pane is added behind them. It rests on the chosen option and glides to the
- * one under the pointer, then back when the pointer leaves. The options draw no fill of their own
- * inside a glide (glass.css `[data-glide]`), so the pane is the only highlight.
+ * a segmented switch. A pane is added behind them and rests on the chosen option. When another is
+ * chosen it slides there; it does not follow the pointer (Sean, 5 Nov 2026). The options draw no
+ * fill of their own inside a glide (glass.css `[data-glide]`), so the pane is the only highlight.
  *
  * The chosen option is the child with `data-chosen`, `aria-selected="true"`, `aria-current` or a
  * checked radio inside it. Positions come from the options' own boxes, so it works across or down.
@@ -16,11 +16,9 @@ import type { Directive } from 'vue';
 
 interface GlideState {
   pane: HTMLSpanElement;
-  hovered: HTMLElement | null;
   observer: MutationObserver;
   resize: ResizeObserver;
-  onOver: (e: PointerEvent) => void;
-  onLeave: () => void;
+  onChange: () => void;
 }
 const states = new WeakMap<HTMLElement, GlideState>();
 
@@ -40,7 +38,7 @@ function isChosen(o: HTMLElement): boolean {
 function place(el: HTMLElement) {
   const st = states.get(el);
   if (!st) return;
-  const target = st.hovered ?? options(el).find(isChosen) ?? null;
+  const target = options(el).find(isChosen) ?? null;
   if (!target || target.offsetParent === null) {
     st.pane.style.opacity = '0';
     return;
@@ -50,7 +48,6 @@ function place(el: HTMLElement) {
   st.pane.style.height = `${target.offsetHeight}px`;
   st.pane.style.transform = `translate(${target.offsetLeft}px, ${target.offsetTop}px)`;
   st.pane.style.borderRadius = getComputedStyle(target).borderRadius;
-  st.pane.classList.toggle('is-hover', target !== null && !isChosen(target));
 }
 
 export const vGlide: Directive<HTMLElement> = {
@@ -63,31 +60,18 @@ export const vGlide: Directive<HTMLElement> = {
     el.prepend(pane);
     const st: GlideState = {
       pane,
-      hovered: null,
       observer: new MutationObserver(() => place(el)),
       resize: new ResizeObserver(() => place(el)),
-      onOver: (e) => {
-        const o = options(el).find((c) => c.contains(e.target as Node)) ?? null;
-        if (o && o !== st.hovered) {
-          st.hovered = o;
-          place(el);
-        }
-      },
-      onLeave: () => {
-        st.hovered = null;
-        place(el);
-      },
+      onChange: () => place(el),
     };
     states.set(el, st);
-    el.addEventListener('pointerover', st.onOver);
-    el.addEventListener('pointerleave', st.onLeave);
     st.observer.observe(el, {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ['aria-selected', 'aria-current', 'data-chosen', 'class'],
+      attributeFilter: ['aria-selected', 'aria-current', 'data-chosen'],
     });
-    el.addEventListener('change', () => place(el));
+    el.addEventListener('change', st.onChange);
     st.resize.observe(el);
     requestAnimationFrame(() => place(el));
   },
@@ -99,8 +83,7 @@ export const vGlide: Directive<HTMLElement> = {
     if (!st) return;
     st.observer.disconnect();
     st.resize.disconnect();
-    el.removeEventListener('pointerover', st.onOver);
-    el.removeEventListener('pointerleave', st.onLeave);
+    el.removeEventListener('change', st.onChange);
     states.delete(el);
   },
 };
