@@ -928,7 +928,7 @@ function refreshAll() {
       <template #heading>
         <span role="tablist" aria-label="Your payments" class="flex items-center gap-5">
           <button
-            v-for="t in [{ v: 'record', label: 'Payment record' }, { v: 'history', label: 'Payment history' }] as const"
+            v-for="t in [{ v: 'record', label: 'Record' }, { v: 'history', label: 'History' }] as const"
             :key="t.v"
             type="button"
             role="tab"
