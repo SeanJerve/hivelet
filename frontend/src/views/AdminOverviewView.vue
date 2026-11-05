@@ -1135,37 +1135,41 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             short
             :decimals="2"
             @select="(i) => (pickedMonthIndex = i)"
-          />
-          <!-- The month picked on the chart, income against expenses (review of 4 Nov 2026). A
-               month not entered says so rather than showing a confident zero. Net income lives
-               here alone now: its own section went (Sean, 5 Nov 2026), and Income and Expenses
-               each open their own page. -->
-          <dl v-if="pickedMonth" class="grid grid-cols-3 gap-4 border-t border-line pt-3">
-            <div>
-              <dt class="text-xs text-ink-faint">
-                <RouterLink to="/admin/income#income-records" class="group/goto relative inline-flex items-center gap-1 hover:text-ink before:absolute before:-inset-x-1 before:-inset-y-1.5" aria-label="Income, open Monthly Income">
-                  Income
-                  <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
-                </RouterLink>
-              </dt>
-              <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">
-                <RouterLink to="/admin/expenses#expense-records" class="group/goto relative inline-flex items-center gap-1 hover:text-ink before:absolute before:-inset-x-1 before:-inset-y-1.5" aria-label="Operating expenses, open Monthly Expenses">
-                  Operating expenses
-                  <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
-                </RouterLink>
-              </dt>
-              <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Net income</dt>
-              <dd :class="['text-lg font-semibold tabular', pickedMonth.hasIncome && pickedMonth.hasExpenses && pickedMonth.noi < 0 && 'text-overdue']">
-                {{ pickedMonth.hasIncome && pickedMonth.hasExpenses ? peso(pickedMonth.noi) : notEnteredWord(pickedMonth) }}
-              </dd>
-            </div>
-          </dl>
+          >
+            <!-- In the chart's right column on a wide card, under the month's figure (Sean, 5 Nov 2026). -->
+            <template #aside>
+            <!-- The month picked on the chart, income against expenses (review of 4 Nov 2026). A
+                 month not entered says so rather than showing a confident zero. Net income lives
+                 here alone now: its own section went (Sean, 5 Nov 2026), and Income and Expenses
+                 each open their own page. -->
+              <dl v-if="pickedMonth" class="grid grid-cols-3 gap-4 border-t border-line pt-3 @[54rem]:grid-cols-1 @[54rem]:gap-3">
+              <div>
+                <dt class="text-xs text-ink-faint">
+                  <RouterLink to="/admin/income#income-records" class="group/goto relative inline-flex items-center gap-1 hover:text-ink before:absolute before:-inset-x-1 before:-inset-y-1.5" aria-label="Income, open Monthly Income">
+                    Income
+                    <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+                  </RouterLink>
+                </dt>
+                <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-ink-faint">
+                  <RouterLink to="/admin/expenses#expense-records" class="group/goto relative inline-flex items-center gap-1 hover:text-ink before:absolute before:-inset-x-1 before:-inset-y-1.5" aria-label="Operating expenses, open Monthly Expenses">
+                    Operating expenses
+                    <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+                  </RouterLink>
+                </dt>
+                <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-ink-faint">Net income</dt>
+                <dd :class="['text-lg font-semibold tabular', pickedMonth.hasIncome && pickedMonth.hasExpenses && pickedMonth.noi < 0 && 'text-overdue']">
+                  {{ pickedMonth.hasIncome && pickedMonth.hasExpenses ? peso(pickedMonth.noi) : notEnteredWord(pickedMonth) }}
+                </dd>
+              </div>
+            </dl>
+              </template>
+          </MonthCapsules>
         </template>
       </OverviewTile>
 
@@ -1179,68 +1183,82 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       lines, no sentences. Each money card's arrow opens that year's ledger.
     -->
     <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <!-- The year in three numbers, each with its parts: income, expenses, net (Sean, 5 Nov 2026:
-           organised and easy to understand). No year in the titles: it is at the top. -->
-      <OverviewTile title="Income" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="xl:col-span-4">
-        <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-        <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
-        <template v-else>
-          <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
-          <p class="text-sm text-ink-soft">
-            From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}
-            by {{ historicalTenantCount }} {{ historicalTenantCount === 1 ? 'tenant' : 'tenants' }}
-            in {{ historicalUnitCount }} {{ historicalUnitCount === 1 ? 'unit' : 'units' }}
-          </p>
-          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Rent</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(historicalRent) }}</dd>
-            </div>
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Water</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(historicalWater) }}</dd>
-            </div>
-            <!-- BR-035: the label only. Its rows are named under it: only the Boarding House section of
-                 her workbook has the column, so the figure is half of that rent, not of the Rent line above
-                 (Sean, 21 Oct 2026: "why is 50% share 901..."). -->
-            <!-- Set apart and lighter than Rent and Water (Sean, 22 Oct 2026: "at first glance it doesn't add
-                 up"): Rent + Water is the total above; this line is inside Rent, never added to it. -->
-            <div class="mt-2 flex items-baseline justify-between gap-3 border-t border-dashed border-line py-2.5">
-              <dt class="text-sm text-ink-soft">50% Share <span class="block text-xs text-ink-soft">Half of Boarding House rent</span></dt>
-              <dd class="tabular text-lg text-ink-soft">{{ peso(historicalAnnualHalfOfRentShare) }}</dd>
-            </div>
-          </dl>
-        </template>
-      </OverviewTile>
+      <!-- The year as one table (Sean, 5 Nov 2026): what it is, its total, then its parts, so every
+           total sits in one column and every part in the next, one ruled row each. No year in the
+           title: it is at the top of the page. -->
+      <OverviewTile class="md:col-span-2 xl:col-span-12">
+        <div class="divide-y divide-line">
+          <div class="grid grid-cols-1 gap-x-8 gap-y-3 py-5 first:pt-0 last:pb-0 md:grid-cols-[11rem_minmax(0,16rem)_minmax(0,1fr)] md:items-start">
+            <h3 class="flex items-center gap-1 text-[0.9375rem] font-semibold">
+              Income
+              <router-link :to="archiveIncomeLink" :aria-label="'Open Monthly Income for this year'" class="icon-btn icon-btn-goto group/goto shrink-0"><ArrowUpRight class="size-4" aria-hidden="true" /></router-link>
+            </h3>
+            <UnavailableNote v-if="incomeRecordsFetchFailed" class="md:col-span-2" @retry="refreshAllData" />
+            <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl font-semibold tracking-tight md:col-span-2">Not entered</p>
+            <template v-else>
+              <div>
+                <p class="tabular text-3xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
+                <p class="mt-1 text-sm text-ink-soft">From {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'payment' : 'payments' }}
+                  by {{ historicalTenantCount }} {{ historicalTenantCount === 1 ? 'tenant' : 'tenants' }}
+                  in {{ historicalUnitCount }} {{ historicalUnitCount === 1 ? 'unit' : 'units' }}</p>
+              </div>
+              <dl class="flex flex-col divide-y divide-line text-sm">
+                <div class="flex items-baseline justify-between gap-3 py-2 first:pt-0 ">
+                  <dt class="text-ink-soft">Rent</dt>
+                  <dd class="tabular font-semibold">{{ peso(historicalRent) }}</dd>
+                </div>
+                <div class="flex items-baseline justify-between gap-3 py-2 first:pt-0 ">
+                  <dt class="text-ink-soft">Water</dt>
+                  <dd class="tabular font-semibold">{{ peso(historicalWater) }}</dd>
+                </div>
+                <!-- BR-035: the label only. Inside Rent, never added to it (Sean, 22 Oct 2026). -->
+                <div class="flex items-baseline justify-between gap-3 py-2">
+                  <dt class="text-ink-soft">50% Share <span class="block text-xs">Half of Boarding House rent</span></dt>
+                  <dd class="tabular text-ink-soft">{{ peso(historicalAnnualHalfOfRentShare) }}</dd>
+                </div>
+              </dl>
+            </template>
+          </div>
+          <div class="grid grid-cols-1 gap-x-8 gap-y-3 py-5 first:pt-0 last:pb-0 md:grid-cols-[11rem_minmax(0,16rem)_minmax(0,1fr)] md:items-start">
+            <h3 class="flex items-center gap-1 text-[0.9375rem] font-semibold">
+              Expenses
+              <router-link :to="archiveExpensesLink" :aria-label="'Open Monthly Expenses for this year'" class="icon-btn icon-btn-goto group/goto shrink-0"><ArrowUpRight class="size-4" aria-hidden="true" /></router-link>
+            </h3>
+            <UnavailableNote v-if="expenseRecordsFetchFailed" class="md:col-span-2" @retry="refreshAllData" />
+            <p v-else-if="historicalExpenseRecords.length === 0" class="text-2xl font-semibold tracking-tight md:col-span-2">Not entered</p>
+            <template v-else>
+              <div>
+                <p class="tabular text-3xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualExpenseTotal + historicalAnnualPersonalTotal) }}</p>
+                <p class="mt-1 text-sm text-ink-soft">From {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}</p>
+              </div>
+              <dl class="flex flex-col divide-y divide-line text-sm">
+                <div class="flex items-baseline justify-between gap-3 py-2 first:pt-0 ">
+                  <dt class="text-ink-soft">Operating</dt>
+                  <dd class="tabular font-semibold">{{ peso(historicalAnnualExpenseTotal) }}</dd>
+                </div>
+                <div class="flex items-baseline justify-between gap-3 py-2 first:pt-0 ">
+                  <dt class="text-ink-soft">Personal, not deducted</dt>
+                  <dd class="tabular font-semibold">{{ peso(historicalAnnualPersonalTotal) }}</dd>
+                </div>
+              </dl>
+            </template>
+          </div>
+          <div class="grid grid-cols-1 gap-x-8 gap-y-3 py-5 first:pt-0 last:pb-0 md:grid-cols-[11rem_minmax(0,16rem)_minmax(0,1fr)] md:items-start">
+            <h3 class="flex items-center gap-1 text-[0.9375rem] font-semibold">
+              Net income
+              
+            </h3>
+            <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" class="md:col-span-2" @retry="refreshAllData" />
+            <p v-else-if="false" class="text-2xl font-semibold tracking-tight md:col-span-2">Not entered</p>
+            <template v-else>
+              <div>
+                <p class="tabular text-3xl font-semibold leading-none tracking-tight" :class="historicalAnnualNOI < 0 && 'text-overdue'">{{ peso(historicalAnnualNOI) }}</p>
+                <p class="mt-1 text-sm text-ink-soft">Income less operating expenses</p>
+              </div>
 
-      <OverviewTile title="Expenses" :to="archiveExpensesLink" to-label="Open Monthly Expenses for this year" class="xl:col-span-4">
-        <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
-        <p v-else-if="historicalExpenseRecords.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered</p>
-        <template v-else>
-          <!-- Everything recorded, so the two lines under it add up to it, as Rent and Water do above. -->
-          <p class="tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualExpenseTotal + historicalAnnualPersonalTotal) }}</p>
-          <p class="text-sm text-ink-soft">From {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}</p>
-          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1">
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Operating</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualExpenseTotal) }}</dd>
-            </div>
-            <div class="flex items-baseline justify-between gap-3 py-2.5">
-              <dt class="text-sm text-ink-soft">Personal, not deducted</dt>
-              <dd class="tabular text-lg font-semibold">{{ peso(historicalAnnualPersonalTotal) }}</dd>
-            </div>
-          </dl>
-        </template>
-      </OverviewTile>
-
-      <OverviewTile title="Net income" class="xl:col-span-4">
-        <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" @retry="refreshAllData" />
-        <template v-else>
-          <p :class="['tabular text-3xl md:text-4xl font-semibold leading-none tracking-tight', historicalAnnualNOI < 0 && 'text-overdue']">
-            {{ peso(historicalAnnualNOI) }}
-          </p>
-          <p class="text-sm text-ink-soft">Income less operating expenses</p>
-        </template>
+            </template>
+          </div>
+        </div>
       </OverviewTile>
 
       <!-- One chart, its green word switching income and expenses, as Monthly Income's does (Sean,

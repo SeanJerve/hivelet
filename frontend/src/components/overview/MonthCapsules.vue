@@ -122,11 +122,13 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
 
 <template>
   <!-- A strict width (Sean, 5 Nov 2026): the bars never spread across a wide card, where they read
-       as stretched to fill it. Past 44rem the chart keeps its width, and in a card wider than
-       about 54rem the month's figure and the key move to its right rather than leave it empty. -->
+       as stretched to fill it. Past 44rem the chart keeps its width. The key is always right under
+       the bars; in a card wider than about 54rem the month's figures (and whatever the screen adds,
+       the #aside slot) are a column to the right, otherwise they follow below. -->
   <div class="@container min-w-0">
-  <div class="flex flex-col gap-4 min-w-0 @[54rem]:flex-row @[54rem]:items-end @[54rem]:gap-10">
-    <div class="flex w-full max-w-[44rem] gap-3 min-w-0">
+  <div class="flex flex-col gap-4 min-w-0 @[54rem]:flex-row @[54rem]:items-start @[54rem]:gap-10">
+    <div class="flex w-full max-w-[44rem] min-w-0 flex-col gap-3">
+    <div class="flex w-full gap-3 min-w-0">
       <div aria-hidden="true" :class="['flex flex-col justify-between pb-7 max-sm:pb-9 text-xs text-ink-faint tabular text-right shrink-0', low ? 'h-28' : short ? 'h-28 md:h-48' : 'h-48']">
         <span v-for="(t, i) in ticks" :key="i">{{ t }}</span>
       </div>
@@ -211,11 +213,21 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
             </span>
           </button>
         </div>
+        <!-- The key, right under the bars it explains and level with the first, before any figures
+             (Sean, 1 Nov 2026; 5 Nov 2026). -->
+        <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft mt-3">
+          <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" :class="['size-3 rounded-full', tone === 'expense' ? 'bg-overdue/60' : 'bg-brand-bright']" />{{ term('recorded') }}</li>
+          <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />{{ term('unentered') }}</li>
+          <li v-if="kindsShown.has('expected')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />{{ term('expected') }}</li>
+          <li v-if="kindsShown.has('none')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-well border border-line" />{{ term('none') }}</li>
+          <li v-if="kindsShown.has('future')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border border-dashed border-hatch" />{{ term('future') }}</li>
+        </ul>
       </div>
     </div>
+    </div>
 
-    <!-- The key sits directly under the bars it explains, before any figures (Sean, 1 Nov 2026). -->
-    <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 max-sm:flex-col max-sm:items-start @[54rem]:flex-1 @[54rem]:flex-col @[54rem]:items-start @[54rem]:justify-end @[54rem]:pb-8">
+    <div class="flex min-w-0 flex-col gap-3 @[54rem]:w-64 @[54rem]:shrink-0">
+    <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 max-sm:flex-col max-sm:items-start @[54rem]:flex-col @[54rem]:items-start">
       <!--
         `current` is `months[selected]`, which is `undefined` if `months` is
         ever passed empty - `defaultIndex` returns 0 for an empty list rather
@@ -227,16 +239,9 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
         <span class="block text-xs leading-4 text-ink-faint">{{ current.long }}</span>
         <span class="block text-xl leading-7 font-semibold tabular tracking-tight text-ink">{{ describe(current) }}</span>
       </p>
-      <div class="flex flex-col gap-2 max-sm:contents sm:items-end @[54rem]:items-start">
       <p v-if="current?.detail" class="text-sm tabular text-ink-soft" aria-live="polite">{{ current.detail }}</p>
-      <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft -order-1">
-        <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" :class="['size-3 rounded-full', tone === 'expense' ? 'bg-overdue/60' : 'bg-brand-bright']" />{{ term('recorded') }}</li>
-        <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />{{ term('unentered') }}</li>
-        <li v-if="kindsShown.has('expected')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />{{ term('expected') }}</li>
-        <li v-if="kindsShown.has('none')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-well border border-line" />{{ term('none') }}</li>
-        <li v-if="kindsShown.has('future')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border border-dashed border-hatch" />{{ term('future') }}</li>
-      </ul>
-      </div>
+    </div>
+    <slot name="aside" />
     </div>
   </div>
   </div>
