@@ -1689,7 +1689,6 @@ const isDownloadOpen = ref(false);
                     type="button"
                     class="row-open"
                     :aria-label="`Edit ${r.contact}'s record`"
-                    title="Edit"
                     @click="startEditIncome(r)"
                   >
                   </button>
@@ -1793,7 +1792,6 @@ const isDownloadOpen = ref(false);
                   type="button"
                   class="row-open"
                   :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
-                  title="Edit"
                   @click="startEditIncome(r)"
                 >
                 </button>
@@ -1856,7 +1854,6 @@ const isDownloadOpen = ref(false);
               type="button"
               class="row-open"
               :aria-label="`Edit ${r.contact}'s record`"
-                    title="Edit"
               @click="startEditIncome(r)"
             >
             </button>
@@ -1946,7 +1943,6 @@ const isDownloadOpen = ref(false);
             type="button"
             class="row-open"
             :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
-            title="Edit"
             @click="startEditIncome(r)"
           >
           </button>

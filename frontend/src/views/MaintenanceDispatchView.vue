@@ -644,7 +644,6 @@ function handleDeleteTicketPrompt() {
                 type="button"
                 class="row-open"
                 :aria-label="`Manage ${t.title}`"
-                title="Manage"
                 @click="openEditModal(t)"
               >
               </button>

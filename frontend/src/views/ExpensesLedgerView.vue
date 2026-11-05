@@ -1250,7 +1250,6 @@ async function handleEditExpense() {
               type="button"
               class="row-open"
               :aria-label="`Edit ${e.description}`"
-              title="Edit"
               @click="startEditExpense(e)"
             >
             </button>
@@ -1301,7 +1300,6 @@ async function handleEditExpense() {
                 type="button"
                 class="row-open"
                 :aria-label="`Edit ${e.description}`"
-                title="Edit"
                 @click="startEditExpense(e)"
               >
               </button>
