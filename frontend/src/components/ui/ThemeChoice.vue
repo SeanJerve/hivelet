@@ -24,14 +24,14 @@ const options: { value: ThemeChoice; label: string; icon: typeof Sun }[] = [
 <template>
   <fieldset class="min-w-0">
     <legend class="text-xs text-ink-faint">Appearance</legend>
-    <div class="mt-2 grid grid-cols-3 gap-1 rounded-full bg-well p-1">
+    <div v-glide class="relative mt-2 grid grid-cols-3 gap-1 rounded-full bg-well p-1">
       <label
         v-for="o in options"
         :key="o.value"
         :class="[
           'press flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 text-xs font-semibold outline-offset-2 pointer-coarse:min-h-11',
           'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-ink',
-          themeChoice === o.value ? 'bg-tile text-ink shadow-card' : 'text-ink-soft hover:text-ink',
+          themeChoice === o.value ? 'text-ink' : 'text-ink-soft hover:text-ink',
         ]"
       >
         <input

@@ -501,6 +501,34 @@ footer.bg-night a {
   mix-blend-mode: multiply;
 }
 
+/*
+ * The sliding pane of glass (lib/glide.ts, Sean, 5 Nov 2026). It sits behind the options and
+ * slides to the chosen one, or the one under the pointer; the options draw no fill of their own.
+ */
+.ws-glide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ws-glide {
+    transition:
+      transform 0.3s var(--ease-out),
+      width 0.3s var(--ease-out),
+      height 0.3s var(--ease-out),
+      opacity 0.2s var(--ease-out);
+  }
+}
+[data-glide] > :not(.ws-glide) {
+  position: relative;
+  z-index: 1;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
 /* The top bar and the sidebar. */
 header.ws-glass {
   --surface-blur: var(--glass-blur-float);
@@ -726,10 +754,12 @@ header.ws-glass {
   --mirror-tint: rgb(255 255 255 / 0.08);
   --mirror-sheen: 0.14;
 }
-/* The chosen line in a dropdown is a small pane of the same glass. */
-[role='option'][aria-selected='true'],
-.shadow-lift button[aria-current='true'],
-.shadow-lift button[aria-pressed='true'] {
+/* The chosen line in a dropdown is a small pane of the same glass. Inside a glide (lib/glide.ts) the
+   sliding pane is that glass instead. */
+[role='option'][aria-selected='true']:not([data-glide] > *),
+.shadow-lift button[aria-current='true']:not([data-glide] > *),
+.shadow-lift button[aria-pressed='true']:not([data-glide] > *),
+.ws-glide {
   background-color: rgb(255 255 255 / 0.5);
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.5), transparent 55%);
   box-shadow:
@@ -737,9 +767,10 @@ header.ws-glass {
     inset 0 1px 1px #ffffff,
     0 3px 8px -4px rgb(16 60 40 / 0.35);
 }
-[data-theme='dark'] [role='option'][aria-selected='true'],
-[data-theme='dark'] .shadow-lift button[aria-current='true'],
-[data-theme='dark'] .shadow-lift button[aria-pressed='true'] {
+[data-theme='dark'] [role='option'][aria-selected='true']:not([data-glide] > *),
+[data-theme='dark'] .shadow-lift button[aria-current='true']:not([data-glide] > *),
+[data-theme='dark'] .shadow-lift button[aria-pressed='true']:not([data-glide] > *),
+[data-theme='dark'] .ws-glide {
   background-color: rgb(255 255 255 / 0.1);
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 55%);
   box-shadow:

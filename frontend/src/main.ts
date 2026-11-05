@@ -1,4 +1,5 @@
 import { createApp, nextTick, watch } from 'vue'
+import { vGlide } from '@/lib/glide'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
@@ -203,6 +204,8 @@ watchOtherTabs(() => {
 const app = createApp(App)
 // Every phone field spaces its number as it is typed (lib/phoneFormat.ts).
 app.directive('phone', vPhone)
+// One sliding pane of glass on every switch and dropdown list (lib/glide.ts).
+app.directive('glide', vGlide)
 app.use(createPinia())
 app.use(router)
 app.mount('#app')

@@ -98,17 +98,19 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onPointerDown)
           alignEnd ? 'right-0 origin-top-right' : 'left-0 origin-top-left',
         ]"
       >
-        <button
-          v-for="o in options"
-          :key="o.value"
-          type="button"
-          :aria-current="o.value === modelValue ? 'true' : undefined"
-          class="press flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular text-ink hover:bg-hover cursor-pointer"
-          @click="choose(o.value)"
-        >
-          <span>{{ o.label }}</span>
-          <Check v-if="o.value === modelValue" class="size-4 text-brand" aria-hidden="true" />
-        </button>
+        <div v-glide class="relative flex flex-col">
+          <button
+            v-for="o in options"
+            :key="o.value"
+            type="button"
+            :aria-current="o.value === modelValue ? 'true' : undefined"
+            class="press flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular text-ink hover:bg-hover cursor-pointer"
+            @click="choose(o.value)"
+          >
+            <span>{{ o.label }}</span>
+            <Check v-if="o.value === modelValue" class="size-4 text-brand" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </Transition>
   </div>

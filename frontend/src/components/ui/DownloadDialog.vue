@@ -95,7 +95,7 @@ let controller: AbortController | null = null;
 const chip = (on: boolean) => [
   'press flex min-h-9 cursor-pointer items-center justify-center rounded-full px-2 text-sm font-semibold tabular outline-offset-2 pointer-coarse:min-h-11',
   'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-ink',
-  on ? 'bg-tile text-ink shadow-card' : 'text-ink-soft hover:text-ink',
+  on ? 'text-ink' : 'text-ink-soft hover:text-ink',
 ];
 
 function choose(kind: DownloadScope['kind']) {
@@ -128,7 +128,7 @@ onBeforeUnmount(() => controller?.abort());
   <WsModal :title="`Download ${title}`" size="sm" decision @close="emit('close')">
     <fieldset class="min-w-0" :disabled="busy">
       <legend class="text-xs text-ink-faint">What to download</legend>
-      <div class="mt-2 grid grid-cols-3 gap-1 rounded-full bg-well p-1">
+      <div v-glide class="relative mt-2 grid grid-cols-3 gap-1 rounded-full bg-well p-1">
         <label v-for="o in options" :key="o.value" :class="chip(scopeKind === o.value)">
           <input
             type="radio"
@@ -150,7 +150,7 @@ onBeforeUnmount(() => controller?.abort());
     <div :class="['flex flex-col gap-4 [grid-area:1/1] sm:gap-5', scopeKind === 'all' && 'invisible']" :inert="scopeKind === 'all'">
     <fieldset class="min-w-0" :disabled="busy">
       <legend class="text-xs text-ink-faint">Year</legend>
-      <div class="mt-2 flex flex-wrap gap-1 rounded-3xl bg-well p-1">
+      <div v-glide class="relative mt-2 flex flex-wrap gap-1 rounded-3xl bg-well p-1">
         <label v-for="y in yearList" :key="y" :class="['flex-1 basis-16', chip(pickedYear === y)]">
           <input type="radio" class="sr-only" :name="yearGroup" :value="y" :checked="pickedYear === y" @change="pickedYear = y; error = ''" />
           <span>{{ y }}</span>
@@ -160,7 +160,7 @@ onBeforeUnmount(() => controller?.abort());
 
     <fieldset :class="['min-w-0', scopeKind !== 'month' && 'invisible']" :inert="scopeKind !== 'month'" :disabled="busy">
       <legend class="text-xs text-ink-faint">Month</legend>
-      <div class="mt-2 grid grid-cols-4 gap-1 rounded-3xl bg-well p-1">
+      <div v-glide class="relative mt-2 grid grid-cols-4 gap-1 rounded-3xl bg-well p-1">
         <label v-for="(m, i) in MONTHS" :key="m" :class="chip(pickedMonth === i + 1)">
           <input type="radio" class="sr-only" :name="monthGroup" :value="i + 1" :checked="pickedMonth === i + 1" @change="pickedMonth = i + 1; error = ''" />
           <span>{{ m }}</span>

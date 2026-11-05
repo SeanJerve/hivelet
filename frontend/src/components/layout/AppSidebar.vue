@@ -6,7 +6,7 @@
  * @rationale Renders directly onto the canvas surface without an artificial white card container,
  *            preserving active brand-soft pills, legible typography, and smooth hover feedback.
  */
-import { computed, ref, watch, onBeforeUnmount, onMounted, nextTick } from 'vue';
+import { computed, ref, watch, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import {
   isMobileSidebarOpen,
@@ -203,32 +203,6 @@ function isItemActive(to: string, aliases: readonly string[]) {
   return false;
 }
 
-/**
- * One pill that slides (Sean, 5 Nov 2026): it rests on the current page in green, glides to the
- * link under the pointer or the keyboard in the hover tint, and slides back when the pointer
- * leaves. The links themselves draw no fill.
- */
-const navEl = ref<HTMLElement | null>(null);
-const hoverIndex = ref<number | null>(null);
-const pill = ref({ top: 0, height: 0, shown: false, hover: false });
-function placePill() {
-  const links = navEl.value ? [...navEl.value.querySelectorAll<HTMLElement>(':scope > a')] : [];
-  const activeIndex = activeNav.value.findIndex((i) => isItemActive(i.to, i.aliases));
-  const i = hoverIndex.value ?? activeIndex;
-  const el = i >= 0 ? links[i] : undefined;
-  if (!el) {
-    pill.value = { ...pill.value, shown: false };
-    return;
-  }
-  pill.value = { top: el.offsetTop, height: el.offsetHeight, shown: true, hover: i !== activeIndex };
-}
-watch([hoverIndex, () => route.path, activeNav], () => nextTick(placePill));
-onMounted(() => {
-  nextTick(placePill);
-  window.addEventListener('resize', placePill, { passive: true });
-});
-onBeforeUnmount(() => window.removeEventListener('resize', placePill));
-
 function closeMobileNav() {
   isMobileSidebarOpen.value = false;
 }
@@ -340,18 +314,11 @@ onBeforeUnmount(() => {
   <div>
     <!-- Desktop Sidebar (Borderless Canvas Navigation) -->
     <aside class="sticky top-16 hidden h-[calc(100dvh-5rem)] w-60 shrink-0 lg:flex lg:flex-col py-6 pr-2">
-      <nav ref="navEl" class="relative grid shrink-0 gap-1" @mouseleave="hoverIndex = null" @focusout="hoverIndex = null">
-        <span
-          aria-hidden="true"
-          :class="[
-            'pointer-events-none absolute inset-x-0 top-0 -z-0 rounded-full motion-safe:transition-[transform,height,background-color,opacity] motion-safe:duration-300 motion-safe:ease-[var(--ease-out)]',
-            pill.hover ? 'bg-hover' : 'bg-brand-soft',
-            pill.shown ? 'opacity-100' : 'opacity-0',
-          ]"
-          :style="{ transform: `translateY(${pill.top}px)`, height: `${pill.height}px` }"
-        />
+      <!-- One pane of glass slides to the link under the pointer and rests on the current page
+           (v-glide, Sean, 5 Nov 2026). -->
+      <nav v-glide class="relative grid shrink-0 gap-1">
         <router-link
-          v-for="(item, index) in activeNav"
+          v-for="item in activeNav"
           :key="item.to"
           :to="item.to"
           :class="[
@@ -360,8 +327,7 @@ onBeforeUnmount(() => {
               ? 'text-brand font-semibold'
               : 'text-ink-soft font-medium hover:text-ink'
           ]"
-          @mouseenter="hoverIndex = index"
-          @focus="hoverIndex = index"
+          :data-chosen="isItemActive(item.to, item.aliases) ? '' : undefined"
         >
           <div class="flex items-center gap-3">
             <component 

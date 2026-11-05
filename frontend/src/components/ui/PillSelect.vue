@@ -590,7 +590,7 @@ onBeforeUnmount(() => {
         @click.prevent
         :class="align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'"
       >
-        <div ref="scrollRef" class="max-h-64 overflow-y-auto space-y-0.5">
+        <div ref="scrollRef" v-glide class="relative max-h-64 overflow-y-auto space-y-0.5">
           <!--
             Three states that must not collapse into each other: SELECTED (the
             filter currently in force), HOVERED (where the mouse happens to be),
