@@ -239,7 +239,16 @@ const paymentHistory = screenRef<Array<{
   amountPaid: number;
   paymentMethod: string;
   status: string;
+  /** A receipt the landlady recorded, or an online attempt (any outcome). */
+  kind?: 'receipt' | 'attempt';
 }>>('tenant.payments.rows', []);
+
+/**
+ * Two lists, as Monthly Income's Records and To verify (Sean, 5 Nov 2026): the Payment record is
+ * clean, one row per month (a receipt she verified, or Not entered); the Payment history is every
+ * transaction, a GCash attempt that was not accepted or is waiting included.
+ */
+const recordTab = ref<'record' | 'history'>('record');
 
 // Year filter for payment history. BR-015 prevents excessively long lists.
 // The property's year, not the viewer's - lib/propertyDate.ts exists so both
@@ -326,7 +335,11 @@ const notEnteredRows = computed(() => {
 
 const filteredPayments = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
-  const filtered = [...paymentHistory.value, ...notEnteredRows.value].filter((p) => {
+  const source =
+    recordTab.value === 'record'
+      ? [...paymentHistory.value.filter((p) => p.kind === 'receipt' && isVerified(p.status)), ...notEnteredRows.value]
+      : paymentHistory.value;
+  const filtered = source.filter((p) => {
     if (p.year !== selectedYear.value) return false;
     if (!q) return true;
     return (
@@ -705,6 +718,7 @@ async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
         amountPaid: Number(r.remitted_amount) || 0,
         paymentMethod: methodLabel(r.payment_method),
         status: (r.verification_status || 'PENDING VERIFICATION').toUpperCase(),
+        kind: 'receipt' as const,
       };
     });
 
@@ -727,6 +741,7 @@ async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
           // settled, which is the single thing BR-017 exists to prevent.
           paymentMethod: methodLabel(p.payment_method),
           status: (p.verification_status || 'PENDING VERIFICATION').toUpperCase(),
+          kind: 'attempt' as const,
         };
       });
 
@@ -909,7 +924,25 @@ function refreshAll() {
     </section>
 
     <!-- Payment record -->
-    <OverviewTile id="payment-record" title="Payment record" class="scroll-mt-24">
+    <OverviewTile id="payment-record" class="scroll-mt-24">
+      <template #heading>
+        <span role="tablist" aria-label="Your payments" class="flex items-center gap-5">
+          <button
+            v-for="t in [{ v: 'record', label: 'Payment record' }, { v: 'history', label: 'Payment history' }] as const"
+            :key="t.v"
+            type="button"
+            role="tab"
+            :aria-selected="recordTab === t.v"
+            :tabindex="recordTab === t.v ? 0 : -1"
+            :class="['press cursor-pointer whitespace-nowrap', recordTab === t.v ? 'text-brand' : 'font-normal text-ink-soft hover:text-brand']"
+            @click="recordTab = t.v"
+            @keydown.right.prevent="recordTab = 'history'"
+            @keydown.left.prevent="recordTab = 'record'"
+          >
+            {{ t.label }}
+          </button>
+        </span>
+      </template>
       <!-- The list toolbar every screen shares (components/ui/ListToolbar.vue,
            Sean, 2026-10-01): search, and the filter button beside it holding
            the year and the order. -->
@@ -932,7 +965,7 @@ function refreshAll() {
         v-else
         :rows="filteredPayments"
         :caption="`Your payments in ${selectedYear}`"
-        :noun="notEnteredRows.length ? 'row' : 'payment'"
+        :noun="recordTab === 'record' ? 'month' : 'payment'"
         :page-size="8"
         :empty-title="loadingHistory ? 'Loading your payments' : searchQuery.trim() ? 'Nothing to show' : 'Nothing recorded'"
         :empty-note="
