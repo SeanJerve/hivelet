@@ -1299,55 +1299,60 @@ const isDownloadOpen = ref(false);
           <template v-else>cluster</template>
         </template>
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
-        <!-- Centavos kept, as on the Overview's chart. -->
-        <MonthCapsules
-          v-else-if="shownShape === 'month'"
-          :months="collectionsByMonth"
-          label="Rent and water by month"
-          short
-          :decimals="2"
-        />
         <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
           No payments match the filters above.
         </p>
-        <template v-else>
-          <p class="flex flex-wrap items-baseline gap-x-2">
-            <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(collectedAltogether, 2) }}</span>
-            <span class="text-sm text-ink-soft">received from {{ rows.length }} {{ rows.length === 1 ? 'payment' : 'payments' }}</span>
-          </p>
-          <SegmentBar
-            :segments="clusterSplit"
-            :label="`How ${peso(collectedAltogether, 2)} divides across the clusters`"
-          />
-          <!-- The legend in two columns on a phone, name and share; the amounts
-               from 768px (Loyd, 2026-10-03). -->
-          <ul class="grid grid-cols-2 gap-x-3 gap-y-2 max-md:text-xs md:flex md:flex-col md:gap-2.5">
-            <li v-for="(c, i) in clusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-2 md:gap-3 md:text-sm">
-              <span class="flex min-w-0 items-center gap-2">
-                <span
-                  aria-hidden="true"
-                  :class="[
-                    'size-3 shrink-0 rounded-full',
-                    c.tone === 'brand' && 'bg-brand',
-                    c.tone === 'bright' && 'bg-brand-bright',
-                    c.tone === 'night' && 'bg-series-night',
-                    c.tone === 'soft' && 'bg-series-soft',
-                    c.tone === 'hatch' && 'hatch border border-line',
-                    c.tone === 'faint' && 'bg-ink-faint',
-                  ]"
-                />
-                <!-- Wraps rather than truncates (audit 2026-10-09): at 320 the two-column key cut "Boarding House" to "Boarding ..." and "Other Expenses / Personal" even at 375, and nothing else on the tile names the cluster. -->
-                <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
-              </span>
-              <span class="flex shrink-0 items-baseline gap-3">
-                <span class="text-xs text-ink-faint tabular">
-                  {{ wholePercents(clusterSplit.map((s) => s.value))[i] }}%
+        <!-- Both views in one cell, the hidden one invisible but still taking its room, so the card is
+             as tall as the taller view and switching moves nothing (Sean, 5 Nov 2026). -->
+        <div v-else class="grid">
+          <div v-if="showMonthChart" :class="['min-w-0 [grid-area:1/1]', shownShape !== 'month' && 'invisible']" :inert="shownShape !== 'month'">
+            <!-- Centavos kept, as on the Overview's chart. -->
+            <MonthCapsules
+              :months="collectionsByMonth"
+              label="Rent and water by month"
+              short
+              :decimals="2"
+            />
+          </div>
+          <div :class="['flex min-w-0 flex-col gap-4 [grid-area:1/1]', shownShape === 'month' && 'invisible']" :inert="shownShape === 'month'">
+            <p class="flex flex-wrap items-baseline gap-x-2">
+              <span class="tabular text-xl md:text-2xl font-semibold leading-none text-ink">{{ peso(collectedAltogether, 2) }}</span>
+              <span class="text-sm text-ink-soft">received from {{ rows.length }} {{ rows.length === 1 ? 'payment' : 'payments' }}</span>
+            </p>
+            <SegmentBar
+              :segments="clusterSplit"
+              :label="`How ${peso(collectedAltogether, 2)} divides across the clusters`"
+            />
+            <!-- The legend in two columns on a phone, name and share; the amounts
+                 from 768px (Loyd, 2026-10-03). -->
+            <ul class="grid grid-cols-2 gap-x-3 gap-y-2 max-md:text-xs md:flex md:flex-col md:gap-2.5">
+              <li v-for="(c, i) in clusterSplit" :key="c.label" class="flex min-w-0 items-center justify-between gap-2 md:gap-3 md:text-sm">
+                <span class="flex min-w-0 items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    :class="[
+                      'size-3 shrink-0 rounded-full',
+                      c.tone === 'brand' && 'bg-brand',
+                      c.tone === 'bright' && 'bg-brand-bright',
+                      c.tone === 'night' && 'bg-series-night',
+                      c.tone === 'soft' && 'bg-series-soft',
+                      c.tone === 'hatch' && 'hatch border border-line',
+                      c.tone === 'faint' && 'bg-ink-faint',
+                    ]"
+                  />
+                  <!-- Wraps rather than truncates (audit 2026-10-09): at 320 the two-column key cut "Boarding House" to "Boarding ..." and "Other Expenses / Personal" even at 375, and nothing else on the tile names the cluster. -->
+                  <span class="min-w-0 break-words leading-snug">{{ c.label }}</span>
                 </span>
-                <span class="tabular font-semibold max-md:hidden">{{ peso(c.value, 2) }}</span>
-              </span>
-            </li>
-          </ul>
-        </template>
+                <span class="flex shrink-0 items-baseline gap-3">
+                  <span class="text-xs text-ink-faint tabular">
+                    {{ wholePercents(clusterSplit.map((s) => s.value))[i] }}%
+                  </span>
+                  <span class="tabular font-semibold max-md:hidden">{{ peso(c.value, 2) }}</span>
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </OverviewTile>
 
     </div>
