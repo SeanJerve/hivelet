@@ -934,7 +934,7 @@ async function handleOnboard() {
 </script>
 
 <template>
-  <div class="ws-focus ws-compact space-y-6">
+  <div class="ws-focus space-y-6">
     <!-- Page header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>

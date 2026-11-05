@@ -455,12 +455,17 @@ footer.bg-night a {
  * A row or card that opens its record when clicked, with no pencil (Sean, 5 Nov 2026). Its edit
  * button stays, invisible and stretched over the whole row, so a click anywhere opens it and the
  * keyboard still reaches it. Hover tints the row as a table row's hover does; keyboard focus rings
- * the row. On a card the tint runs 12px past the text either side. Any other control in the row
- * takes `relative z-[2]` to sit above it.
+ * the row. A clickable card has 12px of padding inside it and its tint stays 4px inside its own
+ * edges, so neighbouring cards never overlap and the rules between rows stay clear (Sean, 5 Nov
+ * 2026). Any other control in the row takes `relative z-[2]` to sit above it.
  */
+.group.relative:has(.row-open) {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
 .row-open {
   position: absolute;
-  inset: 0 -0.75rem;
+  inset: 0.25rem;
   z-index: 1;
   border-radius: 0.75rem;
   background-color: transparent;
@@ -629,29 +634,7 @@ header.ws-glass {
     inset 0 1.5px 1px rgb(255 255 255 / 0.22);
 }
 
-/* A long list (Tenants): one line to a record, so all of them can be scanned at once. */
-.ws-compact .ws-table tbody td,
-.ws-compact .ws-table tbody th {
-  padding-top: 0.3rem;
-  padding-bottom: 0.3rem;
-}
-.ws-compact .ws-table th[scope='row'] > span {
-  display: inline;
-}
-.ws-compact .ws-table th[scope='row'] > span + span {
-  margin-left: 0.5rem;
-}
-.ws-compact .group.py-4 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-.ws-compact .group.py-4 .mt-3 {
-  margin-top: 0.25rem;
-  padding-top: 0;
-}
-.ws-compact .group.py-4 :is(.text-lg, .text-xl) {
-  font-size: 1rem;
-}
+/* No compact mode: every table keeps Monthly Income's row spacing (Sean, 5 Nov 2026). */
 
 /* A filter that is on is a tint of green glass, not a black block. */
 .chip[aria-pressed='true'] {
