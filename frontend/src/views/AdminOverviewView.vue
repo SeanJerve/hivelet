@@ -542,10 +542,13 @@ const monthShown = computed(() => tilesSettled.value);
  * the row below, a third and two thirds. Whatever a row leaves over stays empty ("it is okay for us
  * to keep dead space").
  */
+// Received has the row to itself when Needs your attention is not shown, or takes two thirds or more.
+const receivedAlone = computed(() => !attentionShown.value || attentionParts.value >= 2);
 const tileSpans = computed(() => ({
   attention: attentionParts.value <= 1 ? 'xl:col-span-4' : attentionParts.value === 2 ? 'xl:col-span-8' : 'xl:col-span-12',
-  // Two thirds, its rent dues in two columns, so it is wide rather than tall (Sean, 6 Nov 2026).
-  month: 'xl:col-span-8',
+  // Two thirds beside a one-part Needs your attention, its rent dues two to a line; the full width
+  // and three to a line when it has the row to itself (Sean, 6 Nov 2026).
+  month: receivedAlone.value ? 'xl:col-span-12' : 'xl:col-span-8',
   // Always starts its own row, so it sits beside Income and expenses and never beside a tile above.
   occupancy: 'xl:col-span-4 xl:col-start-1',
   byMonth: 'xl:col-span-8',
@@ -1084,7 +1087,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
               </router-link>
             </p>
-            <ul class="grid gap-x-8 sm:grid-cols-2">
+            <ul :class="['grid gap-x-8 sm:grid-cols-2', receivedAlone && 'xl:grid-cols-3']">
               <li
                 v-for="(d, i) in dueSoon.slice(0, DUE_ROWS)"
                 :key="d.tenantProfileId"
