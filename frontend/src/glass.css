@@ -479,6 +479,14 @@ footer.bg-night a {
   outline: 2px solid var(--brand);
   outline-offset: -2px;
 }
+/*
+ * A card that is its own glass (a repair, Sean, 7 Nov 2026): the hover fills the whole card, edge
+ * to edge and corner to corner, rather than a tint 4px inside it.
+ */
+.row-open-fill .row-open {
+  inset: 0;
+  border-radius: var(--radius-tile);
+}
 .ws-table tbody tr:has(.row-open) {
   position: relative;
   cursor: pointer;
