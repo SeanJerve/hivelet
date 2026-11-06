@@ -899,9 +899,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <template v-else>
               <div class="flex items-start gap-1">
                 <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot. -->
+                  <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot.
+                       The words after each count are for a screen reader only here (Sean, 6 Nov 2026:
+                       the rows under it say what it counts); the phone, which has no rows, shows them. -->
                   <span class="text-3xl leading-none font-semibold tracking-tight">{{ pendingCount }}</span>
-                  <span class="text-base text-on-night-soft">
+                  <span class="sr-only">
                     {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify, {{ peso(pendingTotal, 2) }} in total
                   </span>
                 </p>
@@ -943,7 +945,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <div class="flex items-start gap-1">
                 <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span class="text-3xl leading-none font-semibold tracking-tight">{{ urgentTickets.length }}</span>
-                  <span class="text-base text-on-night-soft">
+                  <span class="sr-only">
                     urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
                   </span>
                 </p>
@@ -984,7 +986,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <div class="flex items-start gap-1">
                 <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span class="text-3xl leading-none font-semibold tracking-tight">{{ waitingInquiryCount }}</span>
-                  <span class="text-base text-on-night-soft">
+                  <span class="sr-only">
                     {{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer
                   </span>
                 </p>
