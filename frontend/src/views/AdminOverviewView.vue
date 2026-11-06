@@ -538,13 +538,14 @@ const monthShown = computed(() => tilesSettled.value);
  * The width of each tile on the twelve-column grid (Sean, 6 Nov 2026). The tiles that come and go,
  * Needs your attention and Received, sit on top, alone in their row if need be, and never stretched
  * to fill it: Needs your attention takes a third for one part (the width of Occupancy under it), two thirds for two, and the full width
- * only for all three side by side; Received a third. Occupancy and Income and expenses always share
+ * only for all three side by side; Received two thirds. Occupancy and Income and expenses always share
  * the row below, a third and two thirds. Whatever a row leaves over stays empty ("it is okay for us
  * to keep dead space").
  */
 const tileSpans = computed(() => ({
   attention: attentionParts.value <= 1 ? 'xl:col-span-4' : attentionParts.value === 2 ? 'xl:col-span-8' : 'xl:col-span-12',
-  month: 'xl:col-span-4',
+  // Two thirds, its rent dues in two columns, so it is wide rather than tall (Sean, 6 Nov 2026).
+  month: 'xl:col-span-8',
   // Always starts its own row, so it sits beside Income and expenses and never beside a tile above.
   occupancy: 'xl:col-span-4 xl:col-start-1',
   byMonth: 'xl:col-span-8',
@@ -1083,11 +1084,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
               </router-link>
             </p>
-            <ul class="divide-y divide-line">
+            <ul class="grid gap-x-8 sm:grid-cols-2">
               <li
                 v-for="(d, i) in dueSoon.slice(0, DUE_ROWS)"
                 :key="d.tenantProfileId"
-                class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
+                class="list-reveal-item flex min-w-0 flex-col gap-0.5 border-t border-line py-2.5"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
                 <span class="break-words text-base font-medium">{{ d.name ?? 'Name not recorded' }}</span>
