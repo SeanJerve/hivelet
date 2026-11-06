@@ -2397,7 +2397,7 @@ router.patch(
         await db.from('notifications').insert({
         recipient_profile_id: before.tenant_profile_id,
         title: 'Payment Verification Declined',
-        message: `Your online payment submission (Ref: ${before.transaction_reference || 'N/A'}) was declined. Please contact the administrator.`,
+        message: `Your online payment submission (Ref: ${before.transaction_reference || 'Not recorded'}) was declined. Please contact the administrator.`,
           type: 'Payment',
           priority: 'High',
           is_read: false,
@@ -2732,6 +2732,32 @@ const incomeRecordSchema = z.object({
 });
 
 /**
+ * Past years are closed (Sean, 6 Nov 2026: "When we change to a year everything should not be
+ * editable and deletable ... They can only edit on the current year, not on the past").
+ *
+ * The ledgers' year menus hide every edit, void and record button for a past year, and this is the
+ * same rule where it is kept: an income row whose `year` (the month the rent is FOR, the column the
+ * Income year menu filters by) or an expense whose `expense_date` year is before the property's
+ * current year cannot be created, changed or voided through the API. "Current" is Manila's year
+ * (`propertyToday()`), as the screens read it, so the first eight hours of 1 January do not still
+ * belong to the old year on a UTC server.
+ *
+ * Deliberately NOT applied to verifying a tenant's online payment (`/admin/payments/:id/verify`):
+ * that money arrived through Adyen and refusing to record it would strand a real payment. The
+ * screen only offers the queue in the current year.
+ *
+ * Judgement log SS 3.1 ("accept a different figure") is about values inside an open record, and
+ * does not argue for reopening a closed year; nothing in SS 3 does.
+ */
+const PAST_YEAR_REFUSAL = 'Records from past years cannot be changed.';
+function refusePastYear(year: unknown): void {
+  const y = Number(year);
+  if (Number.isInteger(y) && y > 0 && y < Number(propertyToday().slice(0, 4))) {
+    throw ApiError.conflict(PAST_YEAR_REFUSAL);
+  }
+}
+
+/**
  * POST /api/admin/income-records
  * Gated by admin. Adds a new payment ledger entry and logs audit trail.
  */
@@ -2892,6 +2918,9 @@ router.post(
     if (dateCoveredEnd) {
       spans[spans.length - 1].end = dateCoveredEnd;
     }
+
+    // No month this receipt files under may be in a past year (refusePastYear), checked before any write.
+    for (const span of spans) refusePastYear(span.year);
 
     // `periodStart`/`periodEnd` describe the whole stretch the receipt covers and
     // are used only for the divergence audit above. Each ROW carries its own
@@ -3437,6 +3466,8 @@ router.patch(
 
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Income record not found.');
+    // Before anything else, so a refused edit has read one row and written nothing.
+    refusePastYear(before.year);
 
     const parsedBody = incomeRecordPatchSchema.safeParse(req.body);
     if (!parsedBody.success) {
@@ -3450,6 +3481,8 @@ router.patch(
       occupants, paymentMethod, transactionReference, monthsCovered,
       dateCoveredStart, dateCoveredEnd
     } = parsedBody.data;
+    // Nor can this year's row be moved into a past one: `year` follows the period (below).
+    if (dateCoveredStart) refusePastYear(isoDateParts(dateCoveredStart).year);
 
     /**
      * REFUSED RATHER THAN SILENTLY DROPPED. Sean's call, 2026-09-22.
@@ -3691,6 +3724,7 @@ router.delete(
 
     if (checkError) throw ApiError.internal(checkError.message);
     if (!before) throw ApiError.notFound('Income record not found.');
+    refusePastYear(before.year);
 
     /**
      * VOIDING A ROW THAT IS ALREADY VOID OVERWROTE WHO VOIDED IT.
@@ -3927,6 +3961,7 @@ router.post(
     }
 
     const { expenseDate, invoiceSupplier, categoryCode, allocations } = parsed.data;
+    refusePastYear(expenseDate.slice(0, 4));
     oneAmountPerArea(allocations.map((a) => a.propertyArea));
 
     /**
@@ -3996,6 +4031,7 @@ router.patch(
 
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Expense entry not found.');
+    refusePastYear(String(before.expense_date ?? '').slice(0, 4));
 
     const parsedEntry = z.object({
       expenseDate: isoDate.optional(),
@@ -4017,6 +4053,7 @@ router.patch(
       );
     }
     const { expenseDate, invoiceSupplier, categoryCode, allocations } = parsedEntry.data;
+    if (expenseDate) refusePastYear(expenseDate.slice(0, 4));
 
     // Normalise and validate EVERY allocation before touching a single row. The replacement below
     // is atomic, but rejecting a bad payload up front gives the caller a 400 that names the problem
@@ -4131,6 +4168,7 @@ router.delete(
 
     if (checkError) throw ApiError.internal(checkError.message);
     if (!before) throw ApiError.notFound('Expense entry not found.');
+    refusePastYear(String(before.expense_date ?? '').slice(0, 4));
 
     // The same defect, in the same shape, as the income void above - see the
     // block there for why the guard is on the update and not only on the read.

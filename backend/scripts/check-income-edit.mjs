@@ -139,7 +139,9 @@ check('the row moves to 2B', updateSent?.room_id, ROOM_2B);
 check('and to the tenant of 2B who covered that period', updateSent?.tenant_profile_id, TENANT_Y);
 check('and to that tenancy', updateSent?.assignment_id, 'a-y');
 
-const movedBack = await patch({ roomNumber: '2B', occupants: 1, dateCoveredStart: '2025-06-01', monthsCovered: 1 });
+// January 2026: Z still held 2B (to 28 Feb). It was June 2025 until past years were closed
+// (Sean, 6 Nov 2026), and moving a row into a past year is now refused for that reason alone.
+const movedBack = await patch({ roomNumber: '2B', occupants: 1, dateCoveredStart: '2026-01-01', monthsCovered: 1 });
 check('a period from before the current tenancy goes to the tenant who held it then',
   updateSent?.tenant_profile_id, TENANT_Z);
 
