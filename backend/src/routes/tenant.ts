@@ -1016,12 +1016,16 @@ router.post(
         );
       }
     } else {
-      // Auto-resolve latest unpaid bill or create one for the occupied unit
+      // The OLDEST unpaid bill first, or a new one for the occupied unit (Sean, 6 Nov 2026). It was
+      // the latest: a tenant with August and September open who paid from a screen that names no
+      // bill settled September and left August overdue, while every screen leads with the oldest
+      // (TenantOverviewView, BR-013 allocateReceipt). Oldest first is the safe order: the debt
+      // that is already late is the one cleared.
       const { data: existingBills, error: existingBillsError } = await db
         .from('bills')
         .select('id, total_amount, status')
         .eq('tenant_profile_id', req.user!.profileId)
-        .order('due_date', { ascending: false });
+        .order('due_date', { ascending: true });
 
       // Read as "this resident has no bills", the else branch below raises a
       // fresh one - so a failed query bills someone who already owed for the
@@ -1029,7 +1033,7 @@ router.post(
       // the original stays outstanding.
       if (existingBillsError) throw ApiError.internal(existingBillsError.message);
 
-      // The latest bill not marked Paid that still has a balance. A bill whose
+      // The oldest bill not marked Paid that still has a balance. A bill whose
       // Verified payments already cover it is settled whatever its status says,
       // and used to end the search here: the checkout then answered "nothing to
       // pay" while the page showed a period as owed (loydtest, 2026-10-02). It

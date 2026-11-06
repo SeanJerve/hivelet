@@ -538,6 +538,12 @@ async function applyTenantData() {
     const perPeriodTotal = Number(standing?.perPeriod.totalAmount) || 0;
     tenantData.value.totalAmountDue = Math.round((billsOwed + unbilledDue.length * perPeriodTotal) * 100) / 100;
     owedMonths.value = unpaidBills.length + unbilledDue.length;
+    // The landlady still keeps her own book while the system is new, and arrangements are made in
+    // person, so a late month here may be one she has not entered yet (Sean, 6 Nov 2026). Said
+    // once the amount is late or covers more than one month, as the no-bill branch says it.
+    if (owedMonths.value > 1 || (unpaidBill.effective_status ?? unpaidBill.status) === 'Overdue') {
+      owedSummary.value = 'If you have paid, it shows here once the landlady records it.';
+    }
     tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
     tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
     tenantData.value.dueDaysRemaining = 'Awaiting payment';
