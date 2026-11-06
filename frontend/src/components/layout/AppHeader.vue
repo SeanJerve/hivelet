@@ -46,7 +46,9 @@ import {
   stopNotificationsHeartbeat
 } from '@/lib/notificationsStore';
 import NotificationPopover from './NotificationPopover.vue';
-import { Menu, LogOut, LogIn, UserCheck, Bell, KeyRound, Globe, LayoutDashboard } from 'lucide-vue-next';
+import { Menu, LogOut, LogIn, UserCheck, Bell, KeyRound, Globe, LayoutDashboard, SquarePlus, Share } from 'lucide-vue-next';
+import WsModal from '@/components/ui/WsModal.vue';
+import { canOfferInstall, installLabel, offerInstall } from '@/lib/installApp';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import ChangeSignInModal from '@/components/modals/ChangeSignInModal.vue';
 import { showPhone } from '@/lib/phoneFormat';
@@ -197,6 +199,13 @@ onMounted(() => {
  * every tenant was onboarded on the same shared literal.
  */
 const isChangePasswordOpen = ref(false);
+/** Add to home screen: the browser's own prompt where it has one, the two steps on an iPhone. */
+const isInstallStepsOpen = ref(false);
+async function handleInstall() {
+  isProfilePopoverOpen.value = false;
+  if ((await offerInstall()) === 'steps') isInstallStepsOpen.value = true;
+}
+
 /** The administrator's Change number / password (B-111). Tenants keep Change password. */
 const isChangeSignInOpen = ref(false);
 
@@ -583,6 +592,17 @@ onUnmounted(() => {
                     <span>My details</span>
                   </router-link>
 
+                  <!-- Only where it can be done: hidden once opened from the home screen (lib/installApp.ts). -->
+                  <button
+                    v-if="canOfferInstall"
+                    type="button"
+                    @click="handleInstall"
+                    class="press flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-ink hover:bg-hover"
+                  >
+                    <SquarePlus class="size-4 text-ink-soft" aria-hidden="true" />
+                    <span>{{ installLabel }}</span>
+                  </button>
+
                   <!--
                     Not `v-if="isTenant"`. The administrator was onboarded on a
                     literal too, and until this existed nobody - her included -
@@ -705,5 +725,21 @@ onUnmounted(() => {
   </header>
 
   <ChangePasswordModal :open="isChangePasswordOpen" @close="isChangePasswordOpen = false" />
+  <!-- iPhone and iPad: Apple lets only the person add it, so the two steps, nothing to press here. -->
+  <WsModal v-if="isInstallStepsOpen" title="Add to home screen" size="sm" @close="isInstallStepsOpen = false">
+    <ol class="flex flex-col gap-4 text-sm leading-6 text-ink">
+      <li class="flex items-start gap-3">
+        <span class="tabular font-semibold text-ink-soft">1</span>
+        <span>Tap <Share class="inline size-4 -mt-0.5 text-brand" aria-label="Share" /> Share, at the bottom of Safari (top right on an iPad).</span>
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="tabular font-semibold text-ink-soft">2</span>
+        <span>Choose <strong class="font-semibold">Add to Home Screen</strong>, then Add.</span>
+      </li>
+    </ol>
+    <template #actions>
+      <button type="button" class="pill-btn-brand ml-auto" @click="isInstallStepsOpen = false">Done</button>
+    </template>
+  </WsModal>
   <ChangeSignInModal :open="isChangeSignInOpen" @close="isChangeSignInOpen = false" />
 </template>

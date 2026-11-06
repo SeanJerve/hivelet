@@ -11,6 +11,7 @@ import { installStaleVersionRecovery } from './lib/staleVersion'
 import { installTheme } from './lib/theme'
 import { CATEGORIES } from './lib/unitCategories'
 import { vPhone } from './lib/phoneFormat'
+import { listenForInstall } from './lib/installApp'
 import './index.css'
 import './glass.css'
 
@@ -201,6 +202,8 @@ watchOtherTabs(() => {
   if (router.currentRoute.value.meta.roles) router.push('/login')
 })
 
+// Held before the browser can offer it, for the account menu's Add to home screen (lib/installApp.ts).
+listenForInstall()
 const app = createApp(App)
 // Every phone field spaces its number as it is typed (lib/phoneFormat.ts).
 app.directive('phone', vPhone)
