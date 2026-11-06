@@ -222,7 +222,7 @@ const newUnitOptions = computed(() =>
 );
 
 const newSharingOptions = [
-  { value: 'no', label: 'Living alone' },
+  { value: 'no', label: 'Lives alone' },
   { value: 'yes', label: 'With roommates' },
 ];
 
@@ -793,7 +793,7 @@ async function confirmVacate() {
     await fetchTenants();
     await fetchRooms();
     // Amber, but a completed move-out, so it pings like the rest (Sean, 2026-10-01).
-    showToast('warning', 'Moved out', `${vacateModalTenant.value.unitCode} is free to let again.`, { sound: true });
+    showToast('warning', 'Moved out', `${vacateModalTenant.value.unitCode.toUpperCase()} is free to let again.`, { sound: true });
     vacateModalTenant.value = null;
     editModalTenant.value = null;
   } catch (err: any) {
@@ -1033,9 +1033,9 @@ async function handleOnboard() {
       1,000px wide at every size rendering all 44 rows, so a laptop scrolled
       sideways and every phone scrolled both ways.
 
-      The email and the emergency contact are no longer columns. Both are in
-      the edit dialog, where the whole record is, and search still reads the
-      email.
+      The emergency contact is not a column; it is in the edit dialog, where the
+      whole record is. Search reads the name, the unit and the phone (no email
+      anywhere, Sean, 20 Oct 2026).
     -->
     <RecordTable
       v-else-if="viewMode === 'list'"
@@ -1508,14 +1508,15 @@ async function handleOnboard() {
       confirm-label="Move them out"
       destructive
       :busy="isSubmitting"
-      :confirm-phrase="vacateModalTenant.unitCode"
+      :confirm-phrase="vacateModalTenant.unitCode.toUpperCase()"
       confirm-phrase-label="the unit"
       @cancel="vacateModalTenant = null"
       @confirm="confirmVacate"
     >
       <p class="text-sm leading-6 text-ink-soft">
         <strong class="text-ink">{{ vacateModalTenant.name }}</strong> loses access to the portal now, and unit
-        <strong class="text-ink">{{ vacateModalTenant.unitCode }}</strong> becomes free to let.
+        <!-- Capitals, as on every screen (12 Oct 2026); the typed phrase is case-insensitive. -->
+        <strong class="text-ink">{{ vacateModalTenant.unitCode.toUpperCase() }}</strong> becomes free to let.
       </p>
       <p class="text-sm leading-6 text-ink-soft">
         Their receipts, payments and repair requests stay in the ledger.
@@ -1545,7 +1546,7 @@ async function handleOnboard() {
 
         <!--
           Laid out in pairs that belong together: the unit and the deposit filled
-          in from it, the two dates, the household, and the emergency contact's
+          in from it, the move-in date beside the household, and the emergency contact's
           name beside their number. Pairs on a phone too (Loyd, 2026-10-03: "it
           looks too long"), now that a date field fits half the width on iOS.
         -->
@@ -1619,7 +1620,10 @@ async function handleOnboard() {
               <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" aria-label="Sharing the unit" widthClass="w-full" />
             </div>
 
-            <div v-if="newHasRoommates === 'yes'" class="ws-reveal ws-field">
+            <!-- Under "Sharing the unit", in the right column, so the emergency contact's name and
+                 number below stay one row. A spacer here pushed the name into the right column and
+                 the number onto a row of its own (6 Nov 2026). -->
+            <div v-if="newHasRoommates === 'yes'" class="ws-reveal ws-field col-start-2">
               <label for="new-roommate-qty">How many roommates</label>
               <input
                 id="new-roommate-qty"
@@ -1631,8 +1635,7 @@ async function handleOnboard() {
                 required
               />
             </div>
-            <div v-else aria-hidden="true" />
-            <div class="ws-field">
+            <div class="ws-field col-start-1">
               <label for="new-emerg-name">Emergency contact</label>
               <input
                 id="new-emerg-name"

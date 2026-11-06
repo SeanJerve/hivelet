@@ -143,9 +143,24 @@ function getIconForType(type: string) {
 const OLD_REPAIR_TITLE = /^New Maintenance Ticket \((\w+)\)$/;
 const OLD_REPAIR_MESSAGE = /^Tenant submitted ticket "(.*)" \(Priority: \w+\)\.$/s;
 
+/**
+ * Titles the backend wrote in Title Case, with "Ticket" for a repair and "enquiry" for an
+ * inquiry, until 6 Nov 2026. New ones are written in sentence case (the same strings on the
+ * right); stored rows stay as written and read this way on screen.
+ */
+const OLD_TITLES: Record<string, string> = {
+  'New Prospective Booking Inquiry': 'New inquiry',
+  'Reply to an enquiry': 'Reply to an inquiry',
+  'Tenant Commented on Ticket': 'Tenant commented on a repair',
+  'New Maintenance Ticket Comment': 'New comment on your repair',
+  'New Online GCash Payment': 'New GCash payment',
+  'Online Payment Verified': 'Online payment verified',
+  'Payment Verification Declined': 'Payment verification declined',
+};
+
 function headline(item: NotificationItem) {
   const old = item.title.match(OLD_REPAIR_TITLE);
-  if (!old) return item.title;
+  if (!old) return OLD_TITLES[item.title] ?? item.title;
   if (old[1] === 'Emergency') return 'Emergency repair';
   return old[1] === 'High' ? 'Urgent repair' : 'New repair request';
 }

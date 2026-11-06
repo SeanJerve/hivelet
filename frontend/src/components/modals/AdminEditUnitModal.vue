@@ -38,12 +38,12 @@ const UNIT_TYPE_CHOICES = [
 /**
  * The values are `operational_status` exactly; the labels are the words the
  * directory's own pill uses for the same state, so "Vacant" on the card is not
- * "Available" one click later.
+ * "Available" one click later. In the directory's Status filter order too (6 Nov 2026).
  */
 const OPERATIONAL_STATUS_OPTIONS = [
-  { value: 'Available', label: 'Vacant' },
   { value: 'Occupied', label: 'Occupied' },
   { value: 'Reserved', label: 'Reserved' },
+  { value: 'Available', label: 'Vacant' },
   { value: 'Under Maintenance', label: 'Being repaired' },
 ] as const;
 
@@ -407,7 +407,7 @@ async function handleSave() {
               <img
                 v-if="unitPhoto"
                 :src="unitPhoto"
-                :alt="showingFloorPlan ? `Floor plan of unit ${unit.unitCode.toUpperCase()}` : `Unit ${unit.unitCode}`"
+                :alt="showingFloorPlan ? `Floor plan of unit ${unit.unitCode.toUpperCase()}` : `Unit ${unit.unitCode.toUpperCase()}`"
                 class="size-full transition-opacity duration-300 ease-[var(--ease-out)]"
                 :class="[isPhotoLoaded ? 'opacity-100' : 'opacity-0', showingFloorPlan ? 'bg-white object-contain p-2' : 'object-cover']"
                 @load="isPhotoLoaded = true"

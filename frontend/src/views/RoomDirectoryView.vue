@@ -210,10 +210,13 @@ function statusTone(status: UnitStatus): 'paid' | 'verify' | 'neutral' {
   return 'neutral';
 }
 
-/** Under the "Tenant" label: the name(s), or "None" when the pill already says Vacant. */
+/**
+ * Under the "Tenant" label: the name(s), or "Nobody", the word for an empty unit (lib/notRecorded.ts)
+ * and the one the unit's own dialog uses. This said "None" beside the dialog's "Nobody" (6 Nov 2026).
+ */
 function tenantLine(unitCode: string): string {
   const summary = formatUnitOccupantsSummary(unitCode);
-  return summary.count > 0 ? summary.text : 'None';
+  return summary.count > 0 ? summary.text : 'Nobody';
 }
 
 function editUnit(u: RoomItem) {

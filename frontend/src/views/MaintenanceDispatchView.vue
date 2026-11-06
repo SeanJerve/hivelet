@@ -147,11 +147,12 @@ const logDesc = ref('');
 
 // Only from a list that actually loaded: `rooms` starts as the 33 canonical
 // units with no tenants and keeps them if the read fails, which would label
-// every occupied flat "no tenant".
+// every occupied flat vacant. "Vacant", as the payment editor's unit list says it (audit,
+// 6 Nov 2026); this one said "no tenant".
 const logUnitOptions = computed(() =>
   !roomsLoaded.value || roomsFetchFailed.value ? [] : rooms.map((r) => ({
     value: r.unitCode.toLowerCase(),
-    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'no tenant'}`,
+    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'Vacant'}`,
   })),
 );
 

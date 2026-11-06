@@ -170,6 +170,8 @@ interface ResidentStanding {
 const standing = screenRef<ResidentStanding | null>('tenant.payments.standing', null);
 
 const standingOwes = computed(() => (standing.value?.owedPeriods.length ?? 0) > 0);
+/** The start of every bill raised for her, paid or not, so a billed month is never counted twice. */
+const billedStarts = ref<string[]>([]);
 const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
 
 /**
@@ -286,6 +288,20 @@ const loadingHistory = ref(!historyLoaded.value);
 const rawReceipts = screenRef<ReceiptInput[]>('tenant.payments.receipts', []);
 const waitingPayments = screenRef<{ amount: number }[]>('tenant.payments.waiting', []);
 const today = propertyToday();
+
+/**
+ * Months owed that have no bill, while a bill is open (tenant audit, 6 Nov 2026). The Overview's
+ * Amount due adds them to the open bills (1a: the September bill ₱8,200 plus October with no bill,
+ * ₱16,400), and this page showed the bill alone, ₱8,200. The same count as the Overview: periods her
+ * receipts do not cover, come due, with no bill raised for them, at one period's rate.
+ */
+const unbilledOwed = computed(() => {
+  const st = standing.value;
+  if (!st) return [];
+  return st.owedPeriods.filter((p) => p.dueDate <= today && !billedStarts.value.includes(p.start));
+});
+const unbilledTotal = computed(() =>
+  Math.round(unbilledOwed.value.length * (Number(standing.value?.perPeriod.totalAmount) || 0) * 100) / 100);
 
 const availableYears = computed(() => {
   const years = new Set<number>();
@@ -654,6 +670,7 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
       .filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid')
       .sort((a: any, b: any) => String(a.billing_period_start ?? '').localeCompare(String(b.billing_period_start ?? '')));
     standing.value = st ?? null;
+    billedStarts.value = (data ?? []).map((b: any) => String(b.billing_period_start ?? '').slice(0, 10));
     billsLoadFailed.value = false;
     billsLoaded.value = true;
   } catch (err: any) {
@@ -918,6 +935,24 @@ function refreshAll() {
           The other {{ peso(billRemainderAfterPending(bill), 2) }} can be paid once she has checked it.
         </p>
       </OverviewTile>
+      <!-- The months owed with no bill yet, so this page adds up to the Overview's Amount due. -->
+      <OverviewTile
+        v-if="unbilledOwed.length > 0"
+        tone="brand"
+        class="list-reveal-item"
+        title="Not recorded"
+      >
+        <div>
+          <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">{{ peso(unbilledTotal, 2) }}</p>
+          <p class="mt-2 text-sm leading-6 text-on-brand-soft">
+            {{ unbilledOwed.length === 1 ? '1 month' : `${unbilledOwed.length} months` }} with no bill yet,
+            {{ formatDateOnly(unbilledOwed[0]!.start, longDate) }} to {{ formatDateOnly(unbilledOwed[unbilledOwed.length - 1]!.end, longDate) }}.
+          </p>
+        </div>
+        <p class="mt-auto text-xs leading-5 text-on-brand-soft">
+          Paid in person? It shows here once the landlady records it.
+        </p>
+      </OverviewTile>
     </template>
     </div>
 
@@ -1037,7 +1072,8 @@ function refreshAll() {
 
           <dl class="mt-4 space-y-3 text-sm">
             <div v-if="!isNotEntered(record.status)">
-              <dt class="text-xs text-ink-faint">How you paid</dt>
+              <!-- The column's own name on a wide screen; one name per thing per page (audit, 6 Nov 2026). -->
+              <dt class="text-xs text-ink-faint">Method</dt>
               <dd class="text-ink">{{ record.paymentMethod }}</dd>
             </div>
             <div class="min-w-0">

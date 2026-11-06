@@ -2232,7 +2232,11 @@ html:has(> body[style*='overflow: hidden']) {
  */
 .ws-reveal {
   opacity: 1;
-  translate: 0 0;
+  /* `none` at rest, not `0 0` (6 Nov 2026). Any other value of `translate` makes the element the
+     containing block of every `position: fixed` inside it, so a dialog opened from inside a
+     revealed block (Tenants > 2025 > Download) drew its scrim and sheet inside that block's
+     164px instead of over the screen. `none` still eases from the starting -4px. */
+  translate: none;
   transition:
     opacity 0.18s var(--ease-out),
     translate 0.18s var(--ease-out);

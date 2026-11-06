@@ -215,8 +215,9 @@ export const IMPORT_PLACEHOLDER_START_DATE = '2026-07-01';
 export const PROPERTY_AREA_OPTIONS: readonly { value: PropertyArea; label: string }[] = [
   { value: 'Boarding House', label: 'Boarding House' },
   { value: 'Main House', label: 'Main House (personal)' },
-  { value: 'Front Apartment', label: 'Front Apt' },
-  { value: 'Back Apartment', label: 'Back Apt' },
+  // Spelled out, as the legend, Monthly Income and Rooms and rates name them (audit, 6 Nov 2026).
+  { value: 'Front Apartment', label: 'Front Apartment' },
+  { value: 'Back Apartment', label: 'Back Apartment' },
   { value: 'Penthouse', label: 'Penthouse' },
   { value: 'Other Expenses / Personal', label: 'Other (personal)' }
 ] as const;

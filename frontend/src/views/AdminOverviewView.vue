@@ -306,8 +306,9 @@ const pendingPreview = computed(() =>
     .map((p) => ({
       id: String(p.id),
       name: p.profiles?.full_name ?? 'Name not recorded',
-      // The code on the door, not an upper-cased version of it.
-      unit: p.rooms?.room_number ? String(p.rooms.room_number) : '',
+      // Shown in capitals, as on every screen (Lloyd for the owner, 12 Oct 2026; see fetchRooms in
+      // systemState.ts). This row printed "Unit 1a" beside the inquiry part's "Unit 3G" (6 Nov 2026).
+      unit: p.rooms?.room_number ? String(p.rooms.room_number).toUpperCase() : '',
       amount: Number(p.amount) || 0,
       date: p.paid_at
         ? new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
@@ -985,7 +986,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   <span class="min-w-0">
                     <span class="block break-words text-sm font-medium">{{ t.title }}</span>
                     <span class="block text-xs text-on-night-soft">
-                      {{ t.unit }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician === 'Unassigned' ? 'no one assigned yet' : t.technician }}</template>
+                      {{ t.unit.toUpperCase() }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician === 'Unassigned' ? 'no one assigned yet' : t.technician }}</template>
                     </span>
                   </span>
                   <StatusPill :tone="t.priority === 'Emergency' ? 'overdue' : 'verify'">{{ t.priority }}</StatusPill>
@@ -1270,7 +1271,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       </OverviewTile>
 
       <!-- One chart, its green word switching income and expenses, as Monthly Income's does (Sean,
-           5 Nov 2026); both views share one cell so the card keeps its height. -->
+           5 Nov 2026); both views share one cell so the card keeps its height. Centavos as in the
+           live year's chart: without them a ₱5,250.50 year read "₱5,251 recorded" under its own
+           ₱5,250.50 total (6 Nov 2026). -->
       <OverviewTile boxed :to="archiveShape === 'income' ? archiveIncomeByMonthLink : archiveExpensesLink" :to-label="archiveShape === 'income' ? 'Open Monthly Income for this year' : 'Open Monthly Expenses for this year'" class="md:col-span-2 xl:col-span-7">
         <template #heading>
           <YearMenu v-model="archiveShape" :options="archiveShapeOptions" inline hint="show income or expenses" /> by month
@@ -1278,10 +1281,10 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" @retry="refreshAllData" />
         <div v-else class="grid">
           <div :class="['min-w-0 [grid-area:1/1] motion-safe:transition-[opacity,visibility] motion-safe:duration-200', archiveShape !== 'income' && 'invisible opacity-0']" :inert="archiveShape !== 'income'">
-            <MonthCapsules :key="'i' + archiveShape" :months="historicalCapsules" :label="`Collections by month in ${selectedArchiveYear}`" />
+            <MonthCapsules :key="'i' + archiveShape" :months="historicalCapsules" :decimals="2" :label="`Collections by month in ${selectedArchiveYear}`" />
           </div>
           <div :class="['min-w-0 [grid-area:1/1] motion-safe:transition-[opacity,visibility] motion-safe:duration-200', archiveShape !== 'expenses' && 'invisible opacity-0']" :inert="archiveShape !== 'expenses'">
-            <MonthCapsules :key="'e' + archiveShape" :months="historicalExpenseCapsules" tone="expense" :label="`Operating expenses by month in ${selectedArchiveYear}`" />
+            <MonthCapsules :key="'e' + archiveShape" :months="historicalExpenseCapsules" tone="expense" :decimals="2" :label="`Operating expenses by month in ${selectedArchiveYear}`" />
           </div>
         </div>
       </OverviewTile>

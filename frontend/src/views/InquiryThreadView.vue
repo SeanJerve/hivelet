@@ -145,6 +145,8 @@ async function lookUp() {
   lookupError.value = null;
   if (!refInput.value.trim() || !phoneInput.value.trim()) {
     lookupError.value = 'Type the reference code and the phone number you gave.';
+    // To the first empty field, as the inquiry form does on a refused send (audit, 6 Nov 2026).
+    document.getElementById(refInput.value.trim() ? 'find-phone' : 'find-ref')?.focus();
     return;
   }
   await load({ reference: refInput.value.trim(), phone: phoneInput.value.trim() });

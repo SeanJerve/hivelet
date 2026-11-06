@@ -894,13 +894,16 @@ function formatDateTime(iso: string) {
 
                 <div
                   v-if="!ticketPhotoUrl"
-                  class="press-plate border-2 border-dashed border-line rounded-xl p-5 text-center bg-well hover:bg-brand-soft/40 hover:border-brand/40"
+                  class="press-plate border-2 border-dashed border-line rounded-xl p-5 text-center bg-well hover:bg-brand-soft/40 hover:border-brand/40 outline-offset-2 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-ink"
                 >
+                  <!-- `sr-only`, not `hidden`: a `display: none` input cannot take focus, so the photo
+                       could not be added from a keyboard. The ring goes on the box, as ThemeChoice
+                       does for its radios (audit, 6 Nov 2026). -->
                   <input
                     id="ticket-photo-input"
                     type="file"
                     :accept="PHOTO_ACCEPT"
-                    class="hidden"
+                    class="sr-only"
                     @change="handlePhotoSelect"
                   />
                   <label

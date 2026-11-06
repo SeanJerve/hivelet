@@ -98,6 +98,17 @@ const chip = (on: boolean) => [
   on ? 'text-ink' : 'text-ink-soft hover:text-ink',
 ];
 
+/**
+ * A year chosen here. Moving from a past year (opened on its December) to this year kept
+ * December, so Month offered a file for a month that has not happened (6 Nov 2026); a month
+ * still to come becomes this month.
+ */
+function pickYear(y: number) {
+  pickedYear.value = y;
+  if (y === todayYear && pickedMonth.value > todayMonth) pickedMonth.value = todayMonth;
+  error.value = '';
+}
+
 function choose(kind: DownloadScope['kind']) {
   scopeKind.value = kind;
   error.value = '';
@@ -152,7 +163,7 @@ onBeforeUnmount(() => controller?.abort());
       <legend class="text-xs text-ink-faint">Year</legend>
       <div v-glide class="relative mt-2 flex flex-wrap gap-1 rounded-3xl bg-well p-1">
         <label v-for="y in yearList" :key="y" :class="['flex-1 basis-16', chip(pickedYear === y)]">
-          <input type="radio" class="sr-only" :name="yearGroup" :value="y" :checked="pickedYear === y" @change="pickedYear = y; error = ''" />
+          <input type="radio" class="sr-only" :name="yearGroup" :value="y" :checked="pickedYear === y" @change="pickYear(y)" />
           <span>{{ y }}</span>
         </label>
       </div>

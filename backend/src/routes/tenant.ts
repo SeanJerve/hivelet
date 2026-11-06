@@ -715,7 +715,7 @@ router.post(
 
     // Notify Landlady about the tenant's reply
     await notificationService.notify({
-      title: 'Tenant Commented on Ticket',
+      title: 'Tenant commented on a repair',
       message: `Tenant commented on ticket "${ticket.title}": "${parsed.data.message.slice(0, 80)}${parsed.data.message.length > 80 ? '...' : ''}"`,
       type: 'Maintenance',
       priority: 'Medium',

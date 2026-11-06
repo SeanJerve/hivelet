@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { todayLong } from '@/lib/propertyDate';
+import { todayLong, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { showPhone } from '@/lib/phoneFormat';
 import { rememberFilters } from '@/lib/savedFilters';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
@@ -300,6 +300,14 @@ watch(chatId, (id) => {
   if (id && inquiries.some((i) => i.id === id)) activeInquiryId.value = id;
 }, { immediate: true });
 
+// Back from a conversation on a phone puts the keyboard where it left, on that inquiry's row
+// (audit, 6 Nov 2026): focus fell to the top of the document, before the skip link.
+watch(conversationOpen, async (open, wasOpen) => {
+  if (open || !wasOpen) return;
+  await nextTick();
+  document.querySelector<HTMLElement>(`[data-inquiry-row="${activeInquiryId.value}"]`)?.focus({ preventScroll: false });
+});
+
 const activeUnit = computed(() => {
   if (!activeInquiry.value) return null;
   return rooms.find(u => u.unitCode.toLowerCase() === activeInquiry.value?.unit.toLowerCase()) || null;
@@ -369,11 +377,14 @@ async function loadThread(inquiryId: string) {
         ? 'You'
         : (m.sender_name || inquiries.find((i) => i.id === inquiryId)?.name || 'The person asking'),
       text: m.message_body,
+      // The property's clock, as every other time in the workspace is read (audit, 6 Nov 2026):
+      // in the viewer's own zone a reply sent at 9 AM in Legazpi read differently off-site.
       time: m.sent_at ? new Date(m.sent_at).toLocaleString('en-US', {
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
+        timeZone: PROPERTY_TIMEZONE,
       }) : 'Time not recorded',
     }));
   } catch (err: unknown) {
@@ -570,6 +581,7 @@ async function handleSendReply() {
               <button
                 type="button"
                 :aria-current="activeInquiry?.id === inq.id ? 'true' : undefined"
+                :data-inquiry-row="inq.id"
                 :class="[
                   'press-plate w-full rounded-xl px-3 py-4 text-left',
                   activeInquiry?.id === inq.id ? 'max-xl:hover:bg-hover' : 'hover:bg-hover',

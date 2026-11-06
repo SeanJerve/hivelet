@@ -46,7 +46,7 @@ import {
   stopNotificationsHeartbeat
 } from '@/lib/notificationsStore';
 import NotificationPopover from './NotificationPopover.vue';
-import { Menu, LogOut, LogIn, User, Bell, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
+import { Menu, LogOut, LogIn, UserCheck, Bell, KeyRound, Globe, LayoutDashboard } from 'lucide-vue-next';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import ChangeSignInModal from '@/components/modals/ChangeSignInModal.vue';
 import { showPhone } from '@/lib/phoneFormat';
@@ -578,7 +578,8 @@ onUnmounted(() => {
                     @click="isProfilePopoverOpen = false"
                     class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-hover"
                   >
-                    <User class="size-4 text-ink-soft" aria-hidden="true" />
+                    <!-- The sidebar's icon for the same page (audit, 6 Nov 2026). -->
+                    <UserCheck class="size-4 text-ink-soft" aria-hidden="true" />
                     <span>My details</span>
                   </router-link>
 
@@ -591,7 +592,8 @@ onUnmounted(() => {
                     @click="openChangePassword"
                     class="press flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-ink hover:bg-hover"
                   >
-                    <Lock class="size-4 text-ink-soft" aria-hidden="true" />
+                    <!-- The key that My details and Reset password show for the same action (audit, 6 Nov 2026). -->
+                    <KeyRound class="size-4 text-ink-soft" aria-hidden="true" />
                     <span>{{ isAdmin ? 'Change number / password' : 'Change password' }}</span>
                   </button>
 

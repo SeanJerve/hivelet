@@ -300,7 +300,7 @@ router.post(
 
     // Notify Landlady about the new prospective inquiry
     await notificationService.notify({
-      title: 'New Prospective Booking Inquiry',
+      title: 'New inquiry',
       message: `${input.prospectName} submitted an inquiry for Room ${room.room_number}.`,
       type: 'Inquiry',
       priority: 'Medium',
@@ -427,7 +427,7 @@ router.post(
     });
 
     await notificationService.notify({
-      title: 'Reply to an enquiry',
+      title: 'Reply to an inquiry',
       message: `${inquiry.prospect_name} replied about unit ${(inquiry.room_number ?? '').toUpperCase()}.`,
       type: 'Inquiry',
       priority: 'Medium',

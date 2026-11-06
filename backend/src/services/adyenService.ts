@@ -535,7 +535,7 @@ export const adyenService = {
       warnIfWriteFailed(
         await db.from('notifications').insert({
         recipient_profile_id: admins[0].id,
-        title: 'New Online GCash Payment',
+        title: 'New GCash payment',
         message: `Tenant has submitted payment of ₱${session.amount.toLocaleString()} for verification (Ref: ${transactionReference}).`,
           type: 'Payment',
           priority: 'Medium',
