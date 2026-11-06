@@ -311,7 +311,7 @@ const pendingPreview = computed(() =>
       unit: p.rooms?.room_number ? String(p.rooms.room_number).toUpperCase() : '',
       amount: Number(p.amount) || 0,
       date: p.paid_at
-        ? new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
+        ? new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' })
         : '',
     }))
 );
@@ -912,20 +912,18 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   />
                 </router-link>
               </div>
+              <!-- One column per item, three lines: what it is, the figure that matters, the date (Sean,
+                   6 Nov 2026: only those, the figure below the name rather than in a column of its own). -->
               <ul class="mt-4 divide-y divide-white/10">
                 <li
                   v-for="(p, i) in pendingPreview"
                   :key="p.id"
-                  class="list-reveal-item flex items-center justify-between gap-3 py-2.5"
+                  class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
-                  <span class="min-w-0">
-                    <span class="block break-words text-base font-medium">{{ p.name }}</span>
-                    <span class="block text-sm text-on-night-soft">
-                      <template v-if="p.unit">Unit {{ p.unit }}</template><template v-if="p.unit && p.date">, </template>{{ p.date }}
-                    </span>
-                  </span>
+                  <span class="break-words text-base font-medium">{{ p.name }}</span>
                   <span class="text-base font-semibold tabular">{{ peso(p.amount, 2) }}</span>
+                  <span v-if="p.date" class="text-sm text-on-night-soft">{{ p.date }}</span>
                 </li>
               </ul>
               <p v-if="pendingCount > pendingPreview.length" class="mt-2 text-xs text-on-night-soft">
@@ -956,22 +954,18 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   />
                 </router-link>
               </div>
-              <!-- The rows of Open repair requests below: what it is, where and how far along, and
-                   how urgent (Lloyd, 3 Nov 2026), rather than the title and unit alone. -->
+              <!-- One column per item, three lines: what it is, the figure that matters, the date (Sean,
+                   6 Nov 2026: only those, the figure below the name rather than in a column of its own). -->
               <ul class="mt-4 divide-y divide-white/10">
                 <li
                   v-for="(t, i) in urgentPreview"
                   :key="t.id"
-                  class="list-reveal-item flex items-center justify-between gap-3 py-2.5"
+                  class="list-reveal-item flex min-w-0 flex-col items-start gap-0.5 py-2.5"
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
-                  <span class="min-w-0">
-                    <span class="block break-words text-base font-medium">{{ t.title }}</span>
-                    <span class="block text-sm text-on-night-soft">
-                      {{ t.unit.toUpperCase() }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician === 'Unassigned' ? 'no one assigned yet' : t.technician }}</template>
-                    </span>
-                  </span>
+                  <span class="break-words text-base font-medium">{{ t.title }}</span>
                   <StatusPill :tone="t.priority === 'Emergency' ? 'overdue' : 'verify'">{{ t.priority }}</StatusPill>
+                  <span class="text-sm text-on-night-soft">{{ t.reported }}</span>
                 </li>
               </ul>
               <p v-if="urgentTickets.length > urgentPreview.length" class="mt-2 text-xs text-on-night-soft">
@@ -1002,17 +996,12 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <li
                   v-for="(q, i) in waitingInquiries"
                   :key="q.id"
-                  class="list-reveal-item flex items-center justify-between gap-3 py-2.5"
+                  class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
-                  <span class="min-w-0">
-                    <span class="block break-words text-base font-medium">{{ q.name }}</span>
-                    <span class="block truncate text-sm text-on-night-soft">{{ q.message }}</span>
-                  </span>
-                  <span class="shrink-0 text-right text-sm text-on-night-soft">
-                    <span class="block font-semibold text-on-night">Unit {{ q.unit.toUpperCase() }}</span>
-                    {{ q.date }}
-                  </span>
+                  <span class="break-words text-base font-medium">{{ q.name }}</span>
+                  <span class="text-base font-semibold">Unit {{ q.unit.toUpperCase() }}</span>
+                  <span class="text-sm text-on-night-soft">{{ q.date }}</span>
                 </li>
               </ul>
               <p v-if="waitingInquiryCount > waitingInquiries.length" class="mt-2 text-xs text-on-night-soft">
