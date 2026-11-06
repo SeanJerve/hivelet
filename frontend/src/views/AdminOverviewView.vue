@@ -533,7 +533,6 @@ const attentionShown = computed(() => tilesSettled.value && attentionParts.value
 // Every month now, "Not recorded" until the first receipt is in (Sean, 6 Nov 2026): an empty month
 // is worth seeing at a glance, and it was the gap beside Needs your attention.
 const monthShown = computed(() => tilesSettled.value);
-const dueShown = computed(() => tilesSettled.value && (dueSoonFailed.value || dueSoon.value.length > 0));
 
 /**
  * The width of each tile on the twelve-column grid (Sean, 6 Nov 2026). The tiles that come and go,
@@ -546,7 +545,6 @@ const dueShown = computed(() => tilesSettled.value && (dueSoonFailed.value || du
 const tileSpans = computed(() => ({
   attention: attentionParts.value <= 1 ? 'xl:col-span-4' : attentionParts.value === 2 ? 'xl:col-span-8' : 'xl:col-span-12',
   month: 'xl:col-span-4',
-  due: 'xl:col-span-4',
   // Always starts its own row, so it sits beside Income and expenses and never beside a tile above.
   occupancy: 'xl:col-span-4 xl:col-start-1',
   byMonth: 'xl:col-span-8',
@@ -1040,49 +1038,6 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </div>
       </OverviewTile>
 
-      <!-- Who to ask for rent this week, before it is late. No bar (Sean, 6 Nov 2026): the names are
-           the point. Each row as Needs your attention's are: who, the figure, then where and when. -->
-      <OverviewTile
-        v-if="dueShown"
-        key="due"
-        tone="night"
-        title="Rent due this week"
-        :class="['col-span-2 max-md:order-1 max-md:gap-3 max-md:p-4', tileSpans.due]"
-      >
-        <UnavailableNote
-          v-if="dueSoonFailed"
-          dark
-          message="Rent due this week could not be loaded."
-          @retry="refreshAllData"
-        />
-        <template v-else>
-          <div class="flex items-start gap-1">
-            <p class="flex min-w-0 items-baseline">
-              <span class="text-3xl leading-none font-semibold tracking-tight">{{ dueSoon.length }}</span>
-              <span class="sr-only">{{ dueSoon.length === 1 ? 'tenant' : 'tenants' }} with rent due in the next seven days</span>
-            </p>
-            <router-link to="/admin/tenants" aria-label="Open tenants" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
-              <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
-            </router-link>
-          </div>
-          <ul class="mt-2 divide-y divide-white/10">
-            <li
-              v-for="(d, i) in dueSoon.slice(0, DUE_ROWS)"
-              :key="d.tenantProfileId"
-              class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
-              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-            >
-              <span class="break-words text-base font-medium">{{ d.name ?? 'Name not recorded' }}</span>
-              <span class="text-base font-semibold tabular">{{ peso(d.amount, 2) }}</span>
-              <span class="text-sm text-on-night-soft">Unit {{ d.roomNumber }}, due {{ dueDateWords(d.dueDate) }}</span>
-            </li>
-          </ul>
-          <p v-if="dueSoon.length > DUE_ROWS" class="mt-2 text-xs text-on-night-soft">
-            {{ dueSoon.length - DUE_ROWS }} more this week.
-          </p>
-        </template>
-      </OverviewTile>
-
       <OverviewTile
         v-if="monthShown"
         key="month"
@@ -1117,6 +1072,30 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <p v-if="currentMonthRecordCount > 0" class="mt-2 text-sm text-ink-soft">
               <span class="md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }}, </span>{{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }}<span class="max-md:hidden"> entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }}</span> so far
             </p>
+          </div>
+          <!-- Who to ask for rent this week, under what has come in, on the page and three at most
+               (Sean, 6 Nov 2026: it was its own card). Named, so the names are not read as paid. -->
+          <UnavailableNote v-if="dueSoonFailed" message="Rent due this week could not be loaded." @retry="refreshAllData" />
+          <div v-else-if="dueSoon.length > 0">
+            <p class="flex items-center gap-1 text-sm text-ink-soft">
+              Due this week
+              <router-link to="/admin/tenants" aria-label="Open tenants" class="icon-btn icon-btn-goto group/goto shrink-0">
+                <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+              </router-link>
+            </p>
+            <ul class="divide-y divide-line">
+              <li
+                v-for="(d, i) in dueSoon.slice(0, DUE_ROWS)"
+                :key="d.tenantProfileId"
+                class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              >
+                <span class="break-words text-base font-medium">{{ d.name ?? 'Name not recorded' }}</span>
+                <span class="text-base font-semibold tabular">{{ peso(d.amount, 2) }}</span>
+                <span class="text-sm text-ink-soft">Unit {{ d.roomNumber }}, due {{ dueDateWords(d.dueDate) }}</span>
+              </li>
+            </ul>
+            <p v-if="dueSoon.length > DUE_ROWS" class="mt-1 text-xs text-ink-soft">{{ dueSoon.length - DUE_ROWS }} more this week.</p>
           </div>
         </template>
       </OverviewTile>
