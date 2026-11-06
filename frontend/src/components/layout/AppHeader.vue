@@ -46,9 +46,9 @@ import {
   stopNotificationsHeartbeat
 } from '@/lib/notificationsStore';
 import NotificationPopover from './NotificationPopover.vue';
-import { Menu, LogOut, LogIn, UserCheck, Bell, KeyRound, Globe, LayoutDashboard, SquarePlus, Share } from 'lucide-vue-next';
+import { Menu, LogOut, LogIn, UserCheck, Bell, KeyRound, Globe, LayoutDashboard, SquarePlus } from 'lucide-vue-next';
 import WsModal from '@/components/ui/WsModal.vue';
-import { canOfferInstall, installLabel, offerInstall } from '@/lib/installApp';
+import { canOfferInstall, installLabel, installSteps, offerInstall } from '@/lib/installApp';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import ChangeSignInModal from '@/components/modals/ChangeSignInModal.vue';
 import { showPhone } from '@/lib/phoneFormat';
@@ -725,16 +725,12 @@ onUnmounted(() => {
   </header>
 
   <ChangePasswordModal :open="isChangePasswordOpen" @close="isChangePasswordOpen = false" />
-  <!-- iPhone and iPad: Apple lets only the person add it, so the two steps, nothing to press here. -->
+  <!-- A phone with no prompt to open (any iPhone browser): the steps for the browser in use. -->
   <WsModal v-if="isInstallStepsOpen" title="Add to home screen" size="sm" @close="isInstallStepsOpen = false">
     <ol class="flex flex-col gap-4 text-sm leading-6 text-ink">
-      <li class="flex items-start gap-3">
-        <span class="tabular font-semibold text-ink-soft">1</span>
-        <span>Tap <Share class="inline size-4 -mt-0.5 text-brand" aria-label="Share" /> Share, at the bottom of Safari (top right on an iPad).</span>
-      </li>
-      <li class="flex items-start gap-3">
-        <span class="tabular font-semibold text-ink-soft">2</span>
-        <span>Choose <strong class="font-semibold">Add to Home Screen</strong>, then Add.</span>
+      <li v-for="(step, i) in installSteps()" :key="i" class="flex items-start gap-3">
+        <span class="tabular font-semibold text-ink-soft">{{ i + 1 }}</span>
+        <span>{{ step }}</span>
       </li>
     </ol>
     <template #actions>
