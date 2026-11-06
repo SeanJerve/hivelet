@@ -988,7 +988,7 @@ The section then has four labelled parts.
 - A GCash payment through Adyen enters **Pending Verification** and changes nothing until the owner
   verifies it.
 - Tenants see their months; only verified receipts count as paid, and a month with no receipt shows
-  **"Not entered"**, never as owed, "because the records alone cannot tell an unpaid month from one not
+  **"Not recorded"**, never as owed, "because the records alone cannot tell an unpaid month from one not
   yet entered."
 - Electricity is outside the system: each unit has its own meter and the tenant pays the electric
   company directly.
@@ -1018,7 +1018,7 @@ The section then has four labelled parts.
 **If the panel asks**
 - *"Is GCash the main way to pay?"* No; cash is. A GCash payment counts only after the owner verifies
   it.
-- *"Why 'Not entered' instead of 'unpaid'?"* The records alone cannot tell an unpaid month from one not
+- *"Why 'Not recorded' instead of 'unpaid'?"* The records alone cannot tell an unpaid month from one not
   yet entered.
 
 ### 4.2.5 Maintenance Ticketing and Notification Module
@@ -1854,7 +1854,7 @@ Say each answer aloud, in your own words, with one number and where it is in the
 17. How were the tenants sampled, and why three?
 18. How many requirements and business rules, and how were they graded on 16 September?
 19. Work the water fee, remitted amount and 50% Share for a ₱8,500 rent with two occupants.
-20. When does a GCash payment count, and why does a tenant see "Not entered"?
+20. When does a GCash payment count, and why does a tenant see "Not recorded"?
 21. What does the role and privilege matrix (Table 4-7) let a tenant do?
 22. What did the screen-versus-database audit find, and what is its lesson?
 23. What was the one failed test, and when did it pass?

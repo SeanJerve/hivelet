@@ -53,8 +53,8 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
   water at **₱200 per occupant per month**. *Tubig: ₱200 bawat nakatira bawat buwan.*
 - The bill card shows only while something is to pay. Once you are settled the page is the **Payment record** alone. Only receipts the landlady has **verified** count, and a GCash payment you sent shows as **waiting** until she verifies it.
 - **Record** and **History**, two tabs. The record is one row per month: a receipt
-  the landlady verified, or **Not entered** for a month with no payment entered yet. The history is
-  every transaction, a GCash payment that was not accepted or is still waiting included. **"Not entered"** does not mean you owe that month: the landlady may not have entered your payment yet. Search it, or pick another year or order in the
+  the landlady verified, or **Not recorded** for a month with no payment recorded yet. The history is
+  every transaction, a GCash payment that was not accepted or is still waiting included. **"Not recorded"** does not mean you owe that month: the landlady may not have recorded your payment yet. Search it, or pick another year or order in the
   dropdowns above it (on a phone, tap **Filters** first). The list changes as soon as you pick.
 - **The deposit** held for your tenancy is on your Overview, in the card for your unit.
   *Nasa Overview ang deposit, sa card ng inyong unit.*

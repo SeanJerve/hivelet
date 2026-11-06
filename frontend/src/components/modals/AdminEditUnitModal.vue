@@ -418,7 +418,7 @@ async function handleSave() {
                 class="flex size-full flex-col items-center justify-center gap-2 text-on-night-soft"
               >
                 <ImageOff class="size-6" aria-hidden="true" />
-                <span class="text-sm">No photograph on file</span>
+                <span class="text-sm">Photograph not recorded</span>
               </div>
 
               <span

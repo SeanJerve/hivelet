@@ -44,7 +44,7 @@ const payingOnline = ref(false);
  * only overwrote the fields the API returned, so anything it did not return stayed
  * fictional. The loader's own fallbacks did the same thing on a smaller scale,
  * inventing room 1A, cluster BH and a first floor when a field was missing. A
- * missing fact now shows as not on file.
+ * missing fact now shows as "Not recorded".
  *
  * The template also printed a list of amenities and an electricity rate for
  * every unit. The system holds none of those facts; two
@@ -276,7 +276,7 @@ const dueDateCountdown = computed(() => {
   const today = new Date(`${propertyToday()}T00:00:00+08:00`);
   const diff = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   if (diff < 0 && fromLedgerOnly.value) {
-    return { daysLeft: diff, label: 'Not entered yet', severity: 'warning' as const };
+    return { daysLeft: diff, label: 'Not recorded', severity: 'warning' as const };
   }
   if (diff < 0) {
     return { daysLeft: diff, label: `Overdue by ${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'}`, severity: 'overdue' as const };
@@ -484,16 +484,26 @@ async function applyTenantData() {
   // Taken from the response itself, not inferred from the amounts afterwards.
   tenantData.value.hasBill = (billsData?.length ?? 0) > 0;
 
-  const unpaidBill = billsData?.find((b: any) => {
-    // `effective_status` is the API's derived value. Anything not settled counts,
-    // including 'Partially Paid' (BR-013).
-    if (b.status === 'Paid') return false;
-    if ((b.effective_status ?? b.status) === 'Paid') return false;
-    // BR-013: the balance the API derived from verified payments, not a date
-    // guessed from when a payment happened to be made.
-    if (Number(b.amount_outstanding ?? b.total_amount ?? 0) <= 0) return false;
-    return true;
-  });
+  /**
+   * Every unpaid bill, OLDEST first (figures audit, 6 Nov 2026). `/tenant/my-bills` answers newest
+   * first, and this took the first unpaid one: the newest. PH's tenant, with October and November
+   * both unpaid (₱30,400 each), was shown ₱30,400 due 1 November, "Overdue by 5 days", while October
+   * had been overdue since 2 October (BR-011 counts from the oldest unpaid due date). The checkout
+   * and `allocateReceipt` settle the oldest first, so the card leads with that one too.
+   */
+  const unpaidBills = (billsData ?? [])
+    .filter((b: any) => {
+      // `effective_status` is the API's derived value. Anything not settled counts,
+      // including 'Partially Paid' (BR-013).
+      if (b.status === 'Paid') return false;
+      if ((b.effective_status ?? b.status) === 'Paid') return false;
+      // BR-013: the balance the API derived from verified payments, not a date
+      // guessed from when a payment happened to be made.
+      if (Number(b.amount_outstanding ?? b.total_amount ?? 0) <= 0) return false;
+      return true;
+    })
+    .sort((a: any, b: any) => String(a.due_date).localeCompare(String(b.due_date)));
+  const unpaidBill = unpaidBills[0];
 
   const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
   tenantData.value.paidThroughDisplay = standing?.paidThrough
@@ -512,9 +522,22 @@ async function applyTenantData() {
     activeBillId.value = unpaidBill.id;
     tenantData.value.baseRent = unpaidBill.rent_amount;
     tenantData.value.waterFee = unpaidBill.water_amount;
-    // The balance, not the debt as issued: they differ once a bill is partly
-    // paid. `amount_outstanding` is derived by the API (BR-013).
-    tenantData.value.totalAmountDue = unpaidBill.amount_outstanding ?? unpaidBill.total_amount;
+    /**
+     * Everything owed today, not the one bill (figures audit, 6 Nov 2026): the balance of every
+     * unpaid bill (BR-013, `amount_outstanding`), plus each period her receipts do not cover that
+     * has come due and has no bill raised for it, at one period's rate, exactly as the no-bill
+     * branch below counts them (`standing.totalDue`). Unit 1a: the September bill (₱8,200) is
+     * unpaid and October 7 to November 6 has opened with no receipt and no bill, so ₱16,400 is
+     * owed, and the card said ₱8,200. A period any bill already covers, paid or not, is not
+     * counted again.
+     */
+    const today = propertyToday();
+    const billedStarts = new Set((billsData ?? []).map((b: any) => String(b.billing_period_start ?? '').slice(0, 10)));
+    const unbilledDue = (standing?.owedPeriods ?? []).filter((p) => p.dueDate <= today && !billedStarts.has(p.start));
+    const billsOwed = unpaidBills.reduce((s: number, b: any) => s + Number(b.amount_outstanding ?? b.total_amount ?? 0), 0);
+    const perPeriodTotal = Number(standing?.perPeriod.totalAmount) || 0;
+    tenantData.value.totalAmountDue = Math.round((billsOwed + unbilledDue.length * perPeriodTotal) * 100) / 100;
+    owedMonths.value = unpaidBills.length + unbilledDue.length;
     tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
     tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
     tenantData.value.dueDaysRemaining = 'Awaiting payment';
@@ -523,8 +546,13 @@ async function applyTenantData() {
     tenantData.value.activeBillPending = Number(unpaidBill.amount_pending) || 0;
     tenantData.value.activeBillPaid = Number(unpaidBill.amount_paid) || 0;
     if (unpaidBill.billing_period_start && unpaidBill.billing_period_end) {
+      // First to last of the months the amount counts, as the no-bill branch says it (1c, 4 Nov).
+      const ends = [
+        ...unpaidBills.map((b: any) => String(b.billing_period_end ?? '').slice(0, 10)),
+        ...unbilledDue.map((p) => p.end),
+      ].filter(Boolean).sort();
       tenantData.value.billPeriodDisplay =
-        `${shortDate(unpaidBill.billing_period_start)} to ${shortDate(unpaidBill.billing_period_end, true)}`;
+        `${shortDate(unpaidBill.billing_period_start)} to ${shortDate(ends[ends.length - 1] ?? unpaidBill.billing_period_end, true)}`;
     }
   } else if (standing && standing.owedPeriods.length > 0) {
     // Owed, but no bill raised yet. The checkout raises the OLDEST owed period.
@@ -547,19 +575,19 @@ async function applyTenantData() {
     tenantData.value.dueDateRaw = first.dueDate;
     fromLedgerOnly.value = true;
     standingStatus.value = standing.status;
-    tenantData.value.dueBadgeText = standing.status === 'overdue' ? 'NOT ENTERED' : 'DUE';
+    tenantData.value.dueBadgeText = standing.status === 'overdue' ? 'NOT RECORDED' : 'DUE';
     tenantData.value.dueDaysRemaining = 'Awaiting payment';
     tenantData.value.nextDueDateDisplay = '';
     const periods = standing.periodsDue;
     owedSummary.value =
       standing.status === 'overdue'
         ? (standing.paidThrough
-            ? `Payments entered up to ${tenantData.value.paidThroughDisplay}${periods > 1 ? ` (${periods} months since)` : ''}. `
-            : 'No payment entered yet. ') +
-          'If you have paid, it shows here once the landlady enters it.'
+            ? `Payments recorded up to ${tenantData.value.paidThroughDisplay}${periods > 1 ? ` (${periods} months since)` : ''}. `
+            : 'No payment recorded. ') +
+          'If you have paid, it shows here once the landlady records it.'
         : standing.paidThrough
-          ? `Payments entered up to ${tenantData.value.paidThroughDisplay}.`
-          : 'No payment entered yet.';
+          ? `Payments recorded up to ${tenantData.value.paidThroughDisplay}.`
+          : 'No payment recorded.';
   } else if (standing) {
     // Settled: her records reach past today and the next period is more than
     // a week off. Nothing to pay, so no Pay button.
@@ -706,7 +734,7 @@ const statusTone = computed(() => {
            and the unit and Payments share the row (Sean, 5 Nov 2026). -->
       <!-- With the current bill in it (Sean, 5 Nov 2026): Amount due and its rent and water are one
            card, right of the unit, and there is no Still to pay line to repeat the figure. -->
-      <OverviewTile v-if="tenantDataLoadFailed || !isSettled" tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not entered yet' : 'Amount due'" to="/tenant/payments" to-label="Open payments and billing" :class="['list-reveal-item md:order-2 md:col-span-1 xl:col-span-8', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
+      <OverviewTile v-if="tenantDataLoadFailed || !isSettled" tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not recorded' : 'Amount due'" to="/tenant/payments" to-label="Open payments and billing" :class="['list-reveal-item md:order-2 md:col-span-1 xl:col-span-8', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           dark
@@ -764,8 +792,10 @@ const statusTone = computed(() => {
                 <dt>Already paid</dt>
                 <dd class="font-semibold tabular">{{ peso(tenantData.activeBillPaid, 2) }}</dd>
               </div>
-              <div v-if="fromLedgerOnly && owedMonths > 1" class="flex items-baseline justify-between gap-3 py-2">
-                <dt>Months not entered</dt>
+              <!-- Both branches: with a bill raised the amount can count more than one month too
+                   (figures audit, 6 Nov 2026), and Rent and Water above are one month's. -->
+              <div v-if="owedMonths > 1" class="flex items-baseline justify-between gap-3 py-2">
+                <dt>Months not recorded</dt>
                 <dd class="font-semibold tabular">{{ owedMonths }}</dd>
               </div>
             </dl>
@@ -910,7 +940,8 @@ const statusTone = computed(() => {
                  see it in the survey, Chapter 4). It fills the fourth place of the facts. -->
             <div v-if="tenantData.deposit !== null" class="col-span-2">
               <dt class="text-xs text-ink-faint">Deposit</dt>
-              <dd class="font-medium tabular">{{ tenantData.deposit > 0 ? peso(tenantData.deposit, 2) : 'Not on file' }}</dd>
+              <dd v-if="tenantData.deposit > 0" class="font-medium tabular">{{ peso(tenantData.deposit, 2) }}</dd>
+              <dd v-else class="font-medium text-ink-soft">Not recorded</dd>
             </div>
           </dl>
           <!-- What the landlady last did on a repair, one line, to the Repairs page. -->
@@ -948,7 +979,7 @@ const statusTone = computed(() => {
           v-else-if="pendingOnlinePayments.length === 0 && rejectedPayments.length === 0 && recordedReceipts.length === 0"
           class="text-sm text-ink-soft"
         >
-          No payments are on file yet.
+          No payments recorded.
         </p>
         <!-- One divided list, so the sections read as rows of the same list. The rule sits on each
              group after the first as drawn, since the groups are placed by CSS order. -->

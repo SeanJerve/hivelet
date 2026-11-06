@@ -594,11 +594,11 @@ function handleDeleteTicketPrompt() {
         v-for="col in columns"
         :key="col.key"
         :aria-labelledby="`col-${col.key}`"
-        :class="[
-          'flex min-w-0 flex-col gap-4',
-          col.key === 'open' && col.tickets.length ? 'self-start rounded-tile bg-tile p-5 sm:p-6' : 'py-2',
-        ]"
+        class="flex min-w-0 flex-col gap-4 py-2"
       >
+        <!-- The group's name and count sit on the page as a heading, and each repair is its own
+             card (Sean, 6 Nov 2026: "only the individual cards of repairs should be each in a
+             card"). To dispatch was one box round its label and its repairs. -->
         <header class="flex items-start justify-between gap-3">
           <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>
           <span class="pt-0.5 text-sm font-semibold tabular text-ink-soft">
@@ -607,11 +607,11 @@ function handleDeleteTicketPrompt() {
         </header>
 
         <!-- An empty column says nothing: its count already reads 0 (Sean, 5 Nov 2026). -->
-        <ul v-if="col.tickets.length" class="flex flex-col divide-y divide-line">
+        <ul v-if="col.tickets.length" class="flex flex-col gap-3">
           <li
             v-for="t in col.tickets"
             :key="t.id"
-            class="group relative flex flex-col gap-2.5 py-4 first:pt-0 last:pb-0"
+            class="group relative flex flex-col gap-2.5 rounded-tile bg-tile py-4"
           >
             <div class="flex items-start justify-between gap-3">
               <p class="text-base font-bold uppercase tracking-tight text-ink">

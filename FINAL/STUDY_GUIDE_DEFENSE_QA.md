@@ -249,11 +249,11 @@ No, it can be voided: it is kept, marked with when, by whom and why, and drops o
 
 **What does a tenant see?**
 Their own unit, rent and amount due, their payments month by month (only receipts the owner verified
-count as paid, and a month with no receipt says "Not entered", never "owed"), their repair requests,
+count as paid, and a month with no receipt says "Not recorded", never "owed"), their repair requests,
 notifications and details, and the deposit held for them, shown since 13 October after a survey
 answer asked for it, on their Overview since 5 November. *Sections 4.2.2, 4.2.4, 4.2.7; Figure 4-11.*
 
-**Why "Not entered" instead of "Unpaid"?**
+**Why "Not recorded" instead of "Unpaid"?**
 Because the records alone cannot tell an unpaid month from one the owner has not entered yet. Saying
 "owed" when it might be paid would be wrong in front of the tenant. *Section 4.2.4.*
 

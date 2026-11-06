@@ -325,21 +325,6 @@ function selectUnit(unitCode: string) {
   });
 }
 
-/**
- * Which plate the cursor or the keyboard is on, so the rest can step back.
- *
- * The same treatment as the category plates on the landing page, which is where
- * the reader has just come from. What steps a plate back is opacity alone - no
- * blur and no filter - because the rate and the status on the plates that are
- * not under the cursor are exactly what someone choosing between units is
- * comparing. `focusin`/`focusout` are here so tabbing through the grid produces
- * the emphasis a mouse does, and everything that moves is behind `motion-safe:`.
- */
-const hoveredUnit = ref<string | null>(null);
-function isSubdued(unitCode: string): boolean {
-  return hoveredUnit.value !== null && hoveredUnit.value.toLowerCase() !== unitCode.toLowerCase();
-}
-
 function syncFromRoute() {
   const param = (route.params.categorySlug as string) || (route.query.category as string);
   selectedCategoryKey.value = resolveSlug(param);
@@ -1055,11 +1040,10 @@ async function submitInquiry() {
         grey placeholders. What a person choosing between units compares is the
         rate, the floor and whether it is free, so that is what a plate carries.
 
-        The plate under the cursor is the only one at full strength - the rest
-        step back to 40% - which is the same treatment as the category plates on
-        the landing page. On the selected plate the rule is drawn in
-        `border-ink` and the label says so in words, because a border
-        alone is not a state a screen reader can hear; `aria-pressed` carries it.
+        A plate looks and hovers as a unit card on Rooms and rates does (Sean,
+        6 Nov 2026). The chosen one carries the sliding pane, and
+        `aria-pressed` says so to a screen reader. The plates no longer step
+        back to 40% around the one under the cursor.
       -->
       <!--
         Not drawn for a kind with one unit (the penthouse): "Pick one" from a
@@ -1075,7 +1059,7 @@ async function submitInquiry() {
             </h2>
           </div>
 
-          <div class="mt-14 space-y-12" @mouseleave="hoveredUnit = null">
+          <div class="mt-14 space-y-12">
             <div
               v-for="group in unitsByFloor"
               :key="group.floor"
@@ -1090,11 +1074,15 @@ async function submitInquiry() {
                 </p>
               </div>
 
-              <!-- The chosen plate is marked by the sliding pane of glass (v-glide, Sean, 5 Nov
-                   2026), not a fill of its own. One pane per floor. -->
+              <!-- The plates are the unit cards of Rooms and rates (RoomDirectoryView, Sean, 6 Nov
+                   2026: "apply that design on the public individual category room viewer"): on the
+                   page, 12px of padding across and 20px down, and under the cursor the tint
+                   `.row-open` draws, 4px inside the plate and rounded 12px. The chosen one is marked by the
+                   sliding pane of glass (v-glide, Sean, 5 Nov 2026), not a rule or a label. One
+                   pane per floor. `-mx-3` lines the text up with the floor's name above it. -->
               <div
                 v-glide
-                class="relative grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                class="relative -mx-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
               >
                 <button
                   v-for="(u, i) in group.units"
@@ -1103,30 +1091,19 @@ async function submitInquiry() {
                   :aria-label="`Unit ${u.room_number.toUpperCase()}, ${peso(u.current_price)}, ${isAvailable(u) ? 'Vacant' : 'Occupied'}`"
                   :aria-pressed="u.room_number === activeUnit.room_number"
                   :data-chosen="u.room_number === activeUnit.room_number ? '' : undefined"
-                  :class="[
-                    'list-reveal-item press-plate group block w-full text-left cursor-pointer transition-opacity duration-200 ease-[var(--ease-out)]',
-                    isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
-                  ]"
+                  class="list-reveal-item press-plate group relative block w-full cursor-pointer rounded-xl px-3 py-5 text-left"
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                   @click="selectUnit(u.room_number)"
-                  @mouseenter="hoveredUnit = u.room_number"
-                  @focusin="hoveredUnit = u.room_number"
-                  @focusout="hoveredUnit = null"
                 >
-                  <div
+                  <!-- The hover tint, as `.row-open` draws it (glass.css). -->
+                  <span
+                    aria-hidden="true"
                     :class="[
-                      'relative overflow-hidden border-t pt-5 pb-6 px-4 transition-colors duration-500',
-                      u.room_number === activeUnit.room_number
-                        ? 'border-brand'
-                        : 'border-line group-hover:border-ink/60',
+                      'pointer-events-none absolute inset-1 rounded-lg transition-colors duration-150 ease-[var(--ease-out)]',
+                      u.room_number !== activeUnit.room_number && 'group-hover:bg-hover',
                     ]"
-                  >
-                    <!-- A hairline frame that draws itself in under the cursor. -->
-                    <span
-                      aria-hidden="true"
-                      class="pointer-events-none absolute inset-2 border border-ink/15 opacity-0 transition duration-500 ease-[var(--ease-out)] motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
-                    />
-
+                  />
+                  <div class="relative">
                     <span class="relative block text-lg font-medium uppercase leading-none tracking-[-0.02em] text-ink">
                       {{ u.room_number }}
                     </span>
@@ -1160,20 +1137,9 @@ async function submitInquiry() {
                     >
                       {{ isAvailable(u) ? 'Vacant' : 'Occupied' }}
                     </span>
-
-                    <span
-                      v-if="u.room_number === activeUnit.room_number"
-                      class="relative mt-3 block text-xs tracking-[0.16em] uppercase text-ink"
-                    >
-                      Shown above
-                    </span>
-                    <span
-                      v-else
-                      aria-hidden="true"
-                      class="row-action relative mt-3 flex items-center h-4 text-ink-soft"
-                    >
-                      <ArrowUpRight class="size-3.5 shrink-0 transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 group-hover:text-ink" />
-                    </span>
+                    <!-- No "Shown above" and no arrow (6 Nov 2026, matching Rooms and rates as Sean
+                         asked): the pane says which is chosen, `aria-pressed` says it to a screen
+                         reader, and a Rooms and rates card carries neither. -->
                   </div>
                 </button>
               </div>

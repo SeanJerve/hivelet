@@ -272,4 +272,4 @@ before the redesign started.
 
 ---
 
-**24 files make 79 distinct calls, 38 of which write.** Generated 2026-11-05.
+**24 files make 79 distinct calls, 38 of which write.** Generated 2026-11-06.

@@ -562,10 +562,10 @@ function findWaitingPayments(
 }
 
 function sentOn(paidAt: string | null): string {
-  if (!paidAt) return 'date not on file';
+  if (!paidAt) return 'date not recorded';
   const d = new Date(paidAt);
   return isNaN(d.getTime())
-    ? 'date not on file'
+    ? 'date not recorded'
     : d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
 }
 
@@ -983,8 +983,8 @@ function triggerRecord() {
         -->
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="ws-field">
-            How they paid
-            <PillSelect v-model="paymentMethod" :options="PAYMENT_METHOD_OPTIONS" aria-label="How they paid" widthClass="w-full" />
+            Mode of payment
+            <PillSelect v-model="paymentMethod" :options="PAYMENT_METHOD_OPTIONS" aria-label="Mode of payment" widthClass="w-full" />
           </label>
           <!-- Only when the method has one (GCash, bank transfer): a greyed-out box under Cash,
                  the usual case, was a field nobody could use. -->
@@ -1039,10 +1039,11 @@ function triggerRecord() {
             Date received
             <input v-model="date" type="date" class="ws-input w-full" required @input="dateReceivedTyped = true" />
           </label>
-          <!-- On the sheet, not in a box (Sean, 4 Nov 2026). -->
+          <!-- On the sheet, not in a box (Sean, 4 Nov 2026), and large, the size of the Overview's
+               figures, so it reads from across the desk (Sean, 6 Nov 2026). -->
           <div class="py-1">
             <p class="text-xs text-ink-faint">Total</p>
-            <p class="tabular mt-0.5 text-2xl font-semibold leading-none text-brand">
+            <p class="tabular mt-1 text-3xl font-semibold leading-none tracking-tight text-brand">
               {{ peso(totalAmountReceived, 2) }}
             </p>
             <p v-if="monthsOnThisReceipt > 1" class="mt-1 text-xs text-ink-faint">
@@ -1156,7 +1157,7 @@ function triggerRecord() {
         </div>
         <div class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Invoice</dt>
-          <dd class="font-mono">{{ invoicePreview ?? 'None' }}</dd>
+          <dd :class="invoicePreview ? 'font-mono' : 'text-ink-soft'">{{ invoicePreview ?? 'Not recorded' }}</dd>
         </div>
         <div v-if="monthsOnThisReceipt > 1" class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Records</dt>
@@ -1174,7 +1175,7 @@ function triggerRecord() {
           </dd>
         </div>
         <div class="flex items-baseline justify-between gap-3">
-          <dt class="text-ink-soft">Method</dt>
+          <dt class="text-ink-soft">Mode of payment</dt>
           <dd class="text-right">
             {{ paymentMethod }}<template v-if="methodHasReference">, reference {{ transactionReference }}</template>
           </dd>

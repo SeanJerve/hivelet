@@ -157,11 +157,22 @@ const yearMenuOptions = computed(() => [
   { value: 'All', label: 'All years' },
 ]);
 /**
- * A past year is read-only here, as on the Overview (Sean, 19 Oct 2026): no Record button. A
- * late receipt is still entered from this year, where the form takes any "Covering from" and "Date received",
- * and a past record can still be corrected from its own row. All years keeps the button.
+ * A past year is read-only, all of it (Sean, 6 Nov 2026: "They can only edit on the current year,
+ * not on the past"). With a past year chosen there is no Record payment, no To verify tab, and no
+ * row opens; the rows still show everything. This replaces 19 Oct 2026, when a past record could
+ * still be corrected from its own row. The server refuses the same changes
+ * (`refusePastYear` in backend/src/routes/admin.ts), so this is what it allows, not a guess.
  */
 const isPastYear = computed(() => filterYear.value !== 'All' && filterYear.value < THIS_YEAR);
+/** A row filed under a past year never opens, in All years too: the server would refuse its edit. */
+function isClosedYear(year: number | string | null | undefined): boolean {
+  const y = Number(year);
+  return y > 0 && y < Number(THIS_YEAR);
+}
+// The queue is this year's work: leaving it when a past year is chosen.
+watch(isPastYear, (past) => {
+  if (past && activeTab.value === 'verify') activeTab.value = 'ledger';
+});
 
 /**
  * Starts on the year picked on the Overview or the other ledger, when this
@@ -207,6 +218,7 @@ const pendingTotal = computed(() => pendingPayments.value.reduce((s, p) => s + (
  * (Sean, 4 Nov 2026), unless it was opened for something else (a highlight or the payment form).
  */
 async function openVerifyQueue() {
+  if (isPastYear.value) return; // she chose a past year; the queue waits on this one
   activeTab.value = 'verify';
   await nextTick();
   document.getElementById('income-records')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -286,6 +298,8 @@ function confirmReject() {
 const openedPayment = ref<ApiPendingPayment | null>(null);
 
 async function openPaymentFromNotification(id: string) {
+  // A payment to verify is this year's work, whatever year the page was on.
+  filterYear.value = THIS_YEAR;
   activeTab.value = 'verify';
   let p = pendingPayments.value.find((x) => x.id === id);
   if (!p) {
@@ -433,6 +447,7 @@ watch(isLoading, (loading) => {
 onMounted(() => {
   applyArrivalQuery();
   if (route.query.tab === 'verify') {
+    filterYear.value = THIS_YEAR;
     activeTab.value = 'verify';
   }
   const loading = fetchIncome();
@@ -449,6 +464,8 @@ onMounted(() => {
     router.replace({ query: nextQuery });
     // The ledger arrives first, then the dialog (lib/afterArrival.ts).
     afterArrival(loading).then(() => {
+      // Recording happens in this year (Sean, 6 Nov 2026), so the page comes back to it.
+      filterYear.value = THIS_YEAR;
       isOnsitePaymentModalOpen.value = true;
     });
   }
@@ -923,6 +940,7 @@ const editTotal = computed(() => {
 });
 
 function startEditIncome(r: IncomeRecord) {
+  if (isClosedYear(r.year)) return; // a past year stays as it is (Sean, 6 Nov 2026)
   editingIncome.value = r;
   // In the case `rooms` lists it, or the Unit dropdown matches no option and
   // shows the raw "3D" rather than the listed "3D — name (cluster)" (B-61).
@@ -1262,7 +1280,7 @@ const isDownloadOpen = ref(false);
       On a phone a tile with nothing in it goes to the end (Loyd, 2026-10-03,
       the same rule as the Overview): a month with nothing entered yet would
       otherwise open the page on ₱0 above the chart. A failed load is not a
-      zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not entered yet" opened the page).
+      zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not recorded" opened the page).
     -->
     <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
       <OverviewTile :title="`Received from ${(focus.waitingFor ?? focus.label).split(' ')[0]}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
@@ -1273,7 +1291,7 @@ const isDownloadOpen = ref(false);
         />
         <!-- A month with nothing entered says so instead of a ₱0 total and three ₱0 lines: the
              records cannot tell an empty month from one not typed in yet (Sean, honest states). -->
-        <p v-else-if="monthRows.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
+        <p v-else-if="monthRows.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-ink-soft">Not recorded</p>
         <template v-else>
           <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
           <template v-if="focus.waitingFor">
@@ -1383,11 +1401,13 @@ const isDownloadOpen = ref(false);
             activeTab === 'ledger' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
           ]"
           @click="activeTab = 'ledger'"
-          @keydown.right.prevent="activeTab = 'verify'"
+          @keydown.right.prevent="if (!isPastYear) activeTab = 'verify';"
         >
           Records
         </button>
+        <!-- Only in this year: verifying writes to this year's records (Sean, 6 Nov 2026). -->
         <button
+          v-if="!isPastYear"
           id="income-tab-verify"
           type="button"
           role="tab"
@@ -1472,10 +1492,10 @@ const isDownloadOpen = ref(false);
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-sm font-medium break-words">{{ p.profiles?.full_name || 'Name not on file' }}</p>
+                <p class="text-sm font-medium break-words">{{ p.profiles?.full_name || 'Name not recorded' }}</p>
                 <!-- Upper case, as the ledger below and the reject dialog print it. -->
                 <p class="mt-0.5 text-xs text-ink-faint">
-                  Unit {{ String(p.rooms?.room_number || '').toUpperCase() || 'not on file' }}<template v-if="p.profiles?.phone_number">, {{ showPhone(p.profiles.phone_number) }}</template>
+                  Unit {{ String(p.rooms?.room_number || '').toUpperCase() || 'not recorded' }}<template v-if="p.profiles?.phone_number">, {{ showPhone(p.profiles.phone_number) }}</template>
                 </p>
               </div>
               <StatusPill tone="verify">Waiting for you</StatusPill>
@@ -1687,6 +1707,7 @@ const isDownloadOpen = ref(false);
                 <td class="num">
                   <button
                     type="button"
+                    v-if="!isClosedYear(r.year)"
                     class="row-open"
                     :aria-label="`Edit ${r.contact}'s record`"
                     @click="startEditIncome(r)"
@@ -1787,7 +1808,7 @@ const isDownloadOpen = ref(false);
                 </div>
               </dl>
 
-              <div class="mt-2.5 flex justify-end">
+              <div v-if="!isClosedYear(r.year)" class="mt-2.5 flex justify-end">
                 <button
                   type="button"
                   class="row-open"
@@ -1852,6 +1873,7 @@ const isDownloadOpen = ref(false);
           <td class="num">
             <button
               type="button"
+              v-if="!isClosedYear(r.year)"
               class="row-open"
               :aria-label="`Edit ${r.contact}'s record`"
               @click="startEditIncome(r)"
@@ -1938,7 +1960,7 @@ const isDownloadOpen = ref(false);
           </div>
         </dl>
 
-        <div class="mt-2.5 flex justify-end">
+        <div v-if="!isClosedYear(r.year)" class="mt-2.5 flex justify-end">
           <button
             type="button"
             class="row-open"
@@ -2017,8 +2039,8 @@ const isDownloadOpen = ref(false);
                a reference is a long string typed off an invoice. -->
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
-              How they paid
-              <PillSelect v-model="editMethod" :options="editMethodOptions" aria-label="How they paid" widthClass="w-full" />
+              Mode of payment
+              <PillSelect v-model="editMethod" :options="editMethodOptions" aria-label="Mode of payment" widthClass="w-full" />
             </label>
             <!-- Only when the method has one (GCash, bank transfer): a greyed-out box under Cash,
                  the usual case, was a field nobody could use. -->
@@ -2069,10 +2091,11 @@ const isDownloadOpen = ref(false);
               Date received
               <input v-model="editDate" type="date" class="ws-input w-full" required />
             </label>
-            <!-- The same total box the payment form uses, so the twins read alike. -->
-            <div class="rounded-2xl bg-well px-4 py-3 sm:self-end">
+            <!-- The payment form's total, so the twins read alike: on the sheet, not in a box, and
+                 large (Sean, 6 Nov 2026). -->
+            <div class="py-1 sm:self-end">
               <p class="text-xs text-ink-faint">Total</p>
-              <p class="tabular mt-0.5 text-lg font-semibold leading-none text-brand">{{ peso(editTotal, 2) }}</p>
+              <p class="tabular mt-1 text-3xl font-semibold leading-none tracking-tight text-brand">{{ peso(editTotal, 2) }}</p>
             </div>
           </div>
 
@@ -2132,7 +2155,7 @@ const isDownloadOpen = ref(false);
     <WsModal
       v-if="openedPayment"
       title="Payment to verify"
-      :subtitle="`${openedPayment.profiles?.full_name || 'Name not on file'}, unit ${String(openedPayment.rooms?.room_number || '').toUpperCase() || 'not on file'}`"
+      :subtitle="`${openedPayment.profiles?.full_name || 'Name not recorded'}, unit ${String(openedPayment.rooms?.room_number || '').toUpperCase() || 'not recorded'}`"
       @close="openedPayment = null"
     >
       <div class="flex flex-col gap-5">

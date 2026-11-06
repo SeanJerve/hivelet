@@ -18,6 +18,7 @@ import { useToast, type ToastOptions } from './useToast';
 import { formatDateOnly } from './propertyDate';
 import { isPhMobile, phoneDigits, realEmail } from './contactDetails';
 import { showPhone } from './phoneFormat';
+import { NOT_RECORDED } from './notRecorded';
 
 const { showToast: triggerToast } = useToast();
 
@@ -59,7 +60,7 @@ export interface TenantRecord {
   name: string;
   unitCode: string;
   roomId?: string;
-  /** What they first sign in with (migration 073), e.g. HV-48213; '—' if none. */
+  /** What they first sign in with (migration 073), e.g. HV-48213; "Not recorded" if none. */
   loginId: string;
   phone: string;
   email: string;
@@ -900,28 +901,29 @@ export async function fetchTenants(opts: { quiet?: boolean } = {}): Promise<Tena
          */
         const startIso = String(activeAssignment?.start_date ?? '').slice(0, 10);
         const moveInDate = startIso === IMPORT_PLACEHOLDER_START_DATE
-          ? 'Not recorded'
-          : formatDateOnly(activeAssignment?.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) || '—';
-        const anniversary = formatDateOnly(activeAssignment?.anniversary_date, { month: 'short', day: 'numeric' }) || '—';
+          ? NOT_RECORDED
+          : formatDateOnly(activeAssignment?.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) || NOT_RECORDED;
+        const anniversary = formatDateOnly(activeAssignment?.anniversary_date, { month: 'short', day: 'numeric' }) || NOT_RECORDED;
 
         return {
           id: t.id,
           name: t.full_name || 'Tenant',
           unitCode,
           roomId: assignedRoom?.id,
-          loginId: t.login_id || '—',
+          // A value nobody entered reads "Not recorded", one wording on every screen (Sean, 6 Nov 2026).
+          loginId: t.login_id || NOT_RECORDED,
           // Since 073 the tenant gives their own phone at first sign-in.
-          phone: t.phone_number || 'Not given yet',
-          // A placeholder (migration 067) is not an address: shown as none yet.
-          email: realEmail(t.email) || '—',
+          phone: t.phone_number || NOT_RECORDED,
+          // A placeholder (migration 067) is not an address. Email is shown nowhere (Sean, 20 Oct 2026).
+          email: realEmail(t.email) || NOT_RECORDED,
           moveInDate,
           anniversary,
           depositAmount: Number(activeAssignment?.deposit_amount || 0),
           role: (t.role === 'prospect' ? 'prospect' : 'tenant') as 'tenant' | 'prospect',
           status: (t.account_status === 'active' ? 'active' : 'vacated') as 'active' | 'notice' | 'vacated',
           emergencyContact: {
-            name: t.emergency_contact_name || '—',
-            phone: t.emergency_contact_phone || '—'
+            name: t.emergency_contact_name || NOT_RECORDED,
+            phone: t.emergency_contact_phone || NOT_RECORDED
           },
           occupation: t.occupation || 'Tenant',
           facebook: t.facebook_url || '',
@@ -1081,7 +1083,7 @@ export async function fetchIncomeRecords(opts: { quiet?: boolean } = {}): Promis
          * fixed this for expense dates - this is the same defect in income's
          * three date fields, which stayed unfixed here.
          */
-        const datePaidFormatted = formatDateOnly(inc.date_paid, { month: 'short', day: 'numeric', year: 'numeric' }) || '—';
+        const datePaidFormatted = formatDateOnly(inc.date_paid, { month: 'short', day: 'numeric', year: 'numeric' }) || NOT_RECORDED;
         const rentStart = formatDateOnly(inc.rent_period_start, { month: 'short', day: 'numeric' });
         const rentEnd = formatDateOnly(inc.rent_period_end, { month: 'short', day: 'numeric' });
         const rentFor = rentStart && rentEnd ? `${rentStart} – ${rentEnd}` : 'Current Month';
@@ -1186,7 +1188,7 @@ export async function fetchExpenseRecords(opts: { quiet?: boolean } = {}): Promi
             )).toLocaleDateString('en-US', {
               month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC',
             })
-          : '—';
+          : NOT_RECORDED;
 
         const splits: ExpenseSplit[] = (exp.expense_property_allocations || []).map((a: any) => ({
           id: a.id,
@@ -1277,7 +1279,7 @@ export async function fetchMaintenanceTickets(opts: { quiet?: boolean } = {}): P
       const unit = t.rooms?.room_number || '—';
         const reportedFormatted = t.created_at 
           ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-          : '—';
+          : NOT_RECORDED;
 
         let statusMapped: 'Open' | 'In Progress' | 'Resolved' | 'Closed' = 'Open';
         if (t.status === 'In Progress' || t.status === 'Dispatched') statusMapped = 'In Progress';
@@ -1331,7 +1333,7 @@ export async function fetchInquiries(opts: { quiet?: boolean } = {}): Promise<In
         const unit = i.rooms?.room_number || '—';
         const dateFormatted = i.created_at 
           ? new Date(i.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-          : '—';
+          : NOT_RECORDED;
 
         return {
           id: i.id,

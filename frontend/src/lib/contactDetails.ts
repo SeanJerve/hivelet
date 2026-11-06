@@ -11,7 +11,7 @@
  * Migration 067 gave every active tenant an email that can never receive mail,
  * `tenant-...@hivelet.invalid`, and a move-in with no email gets one too.
  * NEVER SHOW ONE AS AN ADDRESS. `realEmail()` turns it into '' so every screen
- * says "Not set yet" instead.
+ * says "Not recorded" instead.
  *
  * THE SERVER'S COPY OF THIS RULE is `backend/src/services/contactDetails.ts`.
  * The reserved-domain pattern below is written identically there; change both

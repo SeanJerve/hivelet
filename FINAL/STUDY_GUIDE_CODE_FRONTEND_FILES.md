@@ -191,7 +191,7 @@ The tenant's home: what they owe and how to pay, the bill, a way to ask for a re
 payments, their unit and their deposit. It reads `GET /tenant/my-rooms`, `/tenant/my-bills`,
 `/tenant/my-payments`, `/tenant/my-income-records`, `/tenant/my-standing` and `GET /public/rates`.
 Everything starts empty: an older version was seeded with a made-up tenancy, and a missing fact now
-shows as "not on file". The Pay button does not open a payment session here; it takes the tenant to
+shows as "Not recorded". The Pay button does not open a payment session here; it takes the tenant to
 the Payments screen, which runs the real Adyen checkout.
 
 **`views/TenantPaymentsView.vue`** (`/tenant/payments`)

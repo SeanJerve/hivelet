@@ -126,7 +126,7 @@ background: 1.12 on hover, 1.18 on a press, easing back through a small overshoo
 sees it too. `.icon-btn`, `.icon-btn-plain`, or `.icon-bump` on anything else. None with reduced motion.
 
 **Colour is never the only cue.**
-- Status is always written in words: "Waiting for verification", "Not entered yet", "Overdue by 3
+- Status is always written in words: "Waiting for verification", "Not recorded", "Overdue by 3
   days".
 - Hatching and dashed outlines repeat the meaning in shape.
 
@@ -149,7 +149,7 @@ align.
 | Tile title (h2) | 15 px / 20 | 600 | Collected in September |
 | Body | 14 px / 20 to 24 | 400 | Operating expenses leave out personal costs |
 | Label, caption | 12 px / 16 | 400 to 500 | Rent and water of the units occupied now |
-| Pill | 12 px / 16 | 600 | Not entered yet |
+| Pill | 12 px / 16 | 600 | Not recorded |
 
 No text below 12 px.
 
@@ -261,7 +261,7 @@ Every figure on a tile is in exactly one of these states, and they never share a
 | State | Meaning | Drawn as | Words |
 | :--- | :--- | :--- | :--- |
 | Recorded | Entries exist | Solid mark, height is the value | "₱273,050 recorded" |
-| Not entered yet | The period has passed or begun and nothing is entered | Hatched across the whole track | "Not entered yet" |
+| Not recorded | The period has passed or begun and nothing is recorded | Hatched across the whole track | "Not recorded" |
 | Expected | A future period with a real basis for an estimate | Dashed outline at the estimated height | "₱176,300 expected" |
 | No basis | A future period with nothing to estimate from | Empty dashed track | "Nothing to estimate from" |
 | Could not load | The request failed | `UnavailableNote`: dashed box, plain sentence, Try again | "Collections could not be loaded. That is not the same as nothing being collected." |

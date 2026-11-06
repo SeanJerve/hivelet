@@ -2,6 +2,7 @@
 import { domId } from '@/lib/domId';
 import { rememberFilters } from '@/lib/savedFilters';
 import { showPhone } from '@/lib/phoneFormat';
+import { NOT_RECORDED, NOT_RECORDED_CLASS, isNotRecorded } from '@/lib/notRecorded';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
@@ -663,14 +664,15 @@ const groupedRows = computed(() => {
 });
 
 /**
- * `systemState` fills a missing emergency contact with an em dash rather than
- * leaving it blank, so a falsy test never fires and the dialog printed a dash
- * where it meant to say nobody is on file.
+ * `systemState` fills a missing emergency contact with "Not recorded" rather than
+ * leaving it blank, so a falsy test never fires; this reads it back as nothing.
  */
 function onFile(value: string | null | undefined) {
-  const v = (value ?? '').trim();
-  return v && v !== '—' && v !== '-' ? v : null;
+  return isNotRecorded(value) ? null : String(value).trim();
 }
+
+/** A value in the record, or the muted "Not recorded" in its place: one style for the gap (Sean, 6 Nov 2026). */
+const valueClass = (value: string | null | undefined) => (isNotRecorded(value) ? NOT_RECORDED_CLASS : 'text-ink');
 
 /**
  * The household in words. BR-014 bills water by headcount, so the number of
@@ -1065,8 +1067,8 @@ async function handleOnboard() {
           </th>
           <td class="font-semibold uppercase text-ink">{{ t.unitCode }}</td>
           <td>{{ householdLabel(t) }}</td>
-          <td>{{ t.moveInDate }}</td>
-          <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
+          <td :class="isNotRecorded(t.moveInDate) && NOT_RECORDED_CLASS">{{ t.moveInDate }}</td>
+          <td :class="['num', t.depositAmount > 0 ? 'font-semibold text-ink' : NOT_RECORDED_CLASS]">{{ t.depositAmount > 0 ? peso(t.depositAmount) : NOT_RECORDED }}</td>
           <td class="num">
             <!-- The whole row opens the tenant, no pencil (Sean, 5 Nov 2026): `.row-open` (glass.css). -->
             <button
@@ -1095,13 +1097,13 @@ async function handleOnboard() {
         <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-ink-soft">
           <span>{{ householdLabel(t) }}</span>
           <span class="text-line" aria-hidden="true">·</span>
-          <span>Moved in {{ t.moveInDate }}</span>
+          <span>{{ isNotRecorded(t.moveInDate) ? 'Move-in not recorded' : `Moved in ${t.moveInDate}` }}</span>
         </div>
 
         <div class="mt-3 flex items-end justify-between gap-2">
           <dl class="text-sm">
             <dt class="text-xs text-ink-faint">Deposit</dt>
-            <dd class="mt-0.5 tabular text-lg font-bold text-brand">{{ peso(t.depositAmount) }}</dd>
+            <dd :class="['mt-0.5', t.depositAmount > 0 ? 'tabular text-lg font-bold text-brand' : NOT_RECORDED_CLASS]">{{ t.depositAmount > 0 ? peso(t.depositAmount) : NOT_RECORDED }}</dd>
           </dl>
           <button type="button" class="row-open" :aria-label="`Edit ${t.name}`" @click="openEdit(t)">
           </button>
@@ -1236,8 +1238,8 @@ async function handleOnboard() {
                 </th>
                 <td class="font-semibold uppercase text-ink">{{ t.unitCode }}</td>
                 <td>{{ householdLabel(t) }}</td>
-                <td>{{ t.moveInDate }}</td>
-                <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
+                <td :class="isNotRecorded(t.moveInDate) && NOT_RECORDED_CLASS">{{ t.moveInDate }}</td>
+                <td :class="['num', t.depositAmount > 0 ? 'font-semibold text-ink' : NOT_RECORDED_CLASS]">{{ t.depositAmount > 0 ? peso(t.depositAmount) : NOT_RECORDED }}</td>
                 <td class="num">
                   <button
                     type="button"
@@ -1274,13 +1276,13 @@ async function handleOnboard() {
             <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-ink-soft">
               <span>{{ householdLabel(t) }}</span>
               <span class="text-line" aria-hidden="true">·</span>
-              <span>Moved in {{ t.moveInDate }}</span>
+              <span>{{ isNotRecorded(t.moveInDate) ? 'Move-in not recorded' : `Moved in ${t.moveInDate}` }}</span>
             </div>
 
             <div class="mt-3 flex items-end justify-between gap-2">
               <dl class="text-sm">
                 <dt class="text-xs text-ink-faint">Deposit</dt>
-                <dd class="mt-0.5 tabular text-lg font-bold text-brand">{{ peso(t.depositAmount) }}</dd>
+                <dd :class="['mt-0.5', t.depositAmount > 0 ? 'tabular text-lg font-bold text-brand' : NOT_RECORDED_CLASS]">{{ t.depositAmount > 0 ? peso(t.depositAmount) : NOT_RECORDED }}</dd>
               </dl>
               <button type="button" class="row-open" :aria-label="`Edit ${t.name}`" @click="openEdit(t)">
               </button>
@@ -1326,33 +1328,35 @@ async function handleOnboard() {
           <dl class="mt-4 grid grid-cols-2 gap-x-5 gap-y-4 text-sm sm:grid-cols-3">
             <div>
               <dt class="text-xs text-ink-faint">Login ID</dt>
-              <dd class="tabular mt-0.5 font-mono text-ink">{{ editModalTenant.loginId }}</dd>
+              <dd :class="['tabular mt-0.5', isNotRecorded(editModalTenant.loginId) ? NOT_RECORDED_CLASS : 'font-mono text-ink']">{{ editModalTenant.loginId }}</dd>
             </div>
             <div>
               <dt class="text-xs text-ink-faint">Phone</dt>
-              <dd class="tabular mt-0.5 text-ink">{{ showPhone(editModalTenant.phone) }}</dd>
+              <dd :class="['tabular mt-0.5', valueClass(editModalTenant.phone)]">{{ showPhone(editModalTenant.phone) }}</dd>
             </div>
             <!-- Deposit sits beside Phone: with Email between them, Phone and
                  Anniversary each had an empty column beside them at 375. -->
             <div>
               <dt class="text-xs text-ink-faint">Deposit</dt>
-              <dd class="tabular mt-0.5 font-semibold text-ink">
+              <!-- No deposit on the tenancy reads as the tenant's own Overview says it (Sean, 6 Nov 2026). -->
+              <dd v-if="editModalTenant.depositAmount > 0" class="tabular mt-0.5 font-semibold text-ink">
                 {{ peso(editModalTenant.depositAmount) }}
               </dd>
+              <dd v-else :class="['mt-0.5', NOT_RECORDED_CLASS]">{{ NOT_RECORDED }}</dd>
             </div>
             <!-- No email row: email is no part of the website (Sean, 20 Oct 2026). -->
             <div>
               <dt class="text-xs text-ink-faint">Moved in</dt>
-              <dd class="mt-0.5 text-ink">{{ editModalTenant.moveInDate }}</dd>
+              <dd :class="['mt-0.5', valueClass(editModalTenant.moveInDate)]">{{ editModalTenant.moveInDate }}</dd>
             </div>
             <div>
               <dt class="text-xs text-ink-faint">Anniversary</dt>
-              <dd class="mt-0.5 text-ink">{{ editModalTenant.anniversary }}</dd>
+              <dd :class="['mt-0.5', valueClass(editModalTenant.anniversary)]">{{ editModalTenant.anniversary }}</dd>
             </div>
             <div class="col-span-2 min-w-0 sm:col-span-1">
-              <dt class="text-xs text-ink-faint">In an emergency</dt>
-              <dd class="mt-0.5 truncate text-ink">
-                {{ onFile(editModalTenant.emergencyContact.name) ?? 'Nobody on file' }}
+              <dt class="text-xs text-ink-faint">Emergency contact</dt>
+              <dd :class="['mt-0.5 truncate', valueClass(editModalTenant.emergencyContact.name)]">
+                {{ onFile(editModalTenant.emergencyContact.name) ?? NOT_RECORDED }}
               </dd>
               <dd
                 v-if="onFile(editModalTenant.emergencyContact.phone)"

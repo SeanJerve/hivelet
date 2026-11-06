@@ -338,7 +338,7 @@ async function focusFirstInvalid() {
             <template v-if="savedSnapshot.phone_number">
               You sign in with <span class="whitespace-nowrap">{{ savedSnapshot.phone_number }}</span>.
             </template>
-            <template v-else>No phone number on file.</template>
+            <template v-else>Phone number: Not recorded.</template>
           </p>
         </div>
       </div>

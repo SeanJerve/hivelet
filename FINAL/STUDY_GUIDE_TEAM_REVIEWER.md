@@ -168,7 +168,7 @@ without her permission**: it shows real names and money. For practice, the demo 
 2. **Overview**: the amount due and when it is due, **Pay with GCash**, their unit with its own floor plan, recent payments, and **Request a repair** at the top right
    (the round button on a phone).
 3. **Payments and billing**: the bill to pay, named by its month, shown only while something is to pay, and the **Payment record** under them. Only receipts the landlady verified count
-   as paid, and a month with no receipt says **"Not entered"**, never "owed", as a
+   as paid, and a month with no receipt says **"Not recorded"**, never "owed", as a
    row in the record. The deposit is on the tenant's Overview, in the unit card.
 4. **Pay with GCash**: Adyen's own payment window takes the payment. It shows as **waiting for the
    landlady** until she verifies it; then the bill is settled.
@@ -265,7 +265,7 @@ anyway**.
 - **Rates are set by the owner by hand**, and every change is recorded. There is no automatic yearly
   increase.
 - **"Invoice"**, not "OR", for the owner's numbered slips (the screens say invoice).
-- **"Not entered"**, not "unpaid", for a month with no receipt.
+- **"Not recorded"**, not "unpaid", for a month with no receipt.
 - Say **"the landlady"** or **"the owner"** as the paper does; do not name the family.
 
 **The demo**

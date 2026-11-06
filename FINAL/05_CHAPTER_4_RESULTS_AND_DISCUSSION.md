@@ -264,7 +264,7 @@ expense records keep her workbook's layout and download as Excel files in it. On
 payment made this way enters **Pending Verification** and changes nothing on the tenant's bill until
 the owner verifies it. Such payments wait on the **To verify** tab beside **Records**, and while any
 are waiting the page opens on that tab. Tenants see the same record from their side, month by month, where only
-receipts the owner has verified count as paid and a month with no receipt is shown as "Not entered",
+receipts the owner has verified count as paid and a month with no receipt is shown as "Not recorded",
 never as owed, because the records alone cannot tell an unpaid month from one not yet entered.
 Electricity is outside the system: each unit has its own meter and the tenant pays the electric
 company directly.

@@ -755,10 +755,11 @@ header.ws-glass {
   --mirror-sheen: 0.14;
 }
 /* The chosen line in a dropdown is a small pane of the same glass. Inside a glide (lib/glide.ts) the
-   sliding pane is that glass instead. */
+   sliding pane is that glass instead. A pressed button that asks for the brand fill keeps it: ACK on
+   the payment forms turned white when switched on, so it looked off (Sean, 6 Nov 2026). */
 [role='option'][aria-selected='true']:not([data-glide] > *),
 .shadow-lift button[aria-current='true']:not([data-glide] > *),
-.shadow-lift button[aria-pressed='true']:not([data-glide] > *),
+.shadow-lift button[aria-pressed='true']:not([data-glide] > *):not(.ws-ack),
 .ws-glide {
   background-color: rgb(255 255 255 / 0.5);
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.5), transparent 55%);
@@ -769,13 +770,35 @@ header.ws-glass {
 }
 [data-theme='dark'] [role='option'][aria-selected='true']:not([data-glide] > *),
 [data-theme='dark'] .shadow-lift button[aria-current='true']:not([data-glide] > *),
-[data-theme='dark'] .shadow-lift button[aria-pressed='true']:not([data-glide] > *),
+[data-theme='dark'] .shadow-lift button[aria-pressed='true']:not([data-glide] > *):not(.ws-ack),
 [data-theme='dark'] .ws-glide {
   background-color: rgb(255 255 255 / 0.1);
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 55%);
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 0.2),
     inset 0 1px 1px rgb(255 255 255 / 0.3);
+}
+/* ACK switched on (components/ui/InvoiceField.vue): the main buttons' green (.pill-btn-brand's tint),
+   with white ACK, in both themes (Sean, 6 Nov 2026). */
+.ws-ack[aria-pressed='true'] {
+  background-color: rgb(14 72 46 / 0.88);
+  background-image: none;
+  border-color: transparent;
+  color: rgb(255 255 255);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.32);
+}
+[data-theme='dark'] .ws-ack[aria-pressed='true'] {
+  background-color: rgb(94 192 141 / 0.42);
+  box-shadow: inset 0 0 0 1px rgb(94 192 141 / 0.55);
+}
+/* A list that sits on the page marks its chosen row with a flat tint, the way Messenger marks the
+   open chat: the pane still slides, with no sheet of glass and no shadow (Inquiries, Sean, 6 Nov
+   2026). */
+.ws-glide-flat > .ws-glide,
+[data-theme='dark'] .ws-glide-flat > .ws-glide {
+  background-color: var(--hover);
+  background-image: none;
+  box-shadow: none;
 }
 
 /* A sent message in a conversation is tinted glass too. */

@@ -305,7 +305,7 @@ const pendingPreview = computed(() =>
     .slice(0, ATTENTION_ROWS)
     .map((p) => ({
       id: String(p.id),
-      name: p.profiles?.full_name ?? 'Name not on file',
+      name: p.profiles?.full_name ?? 'Name not recorded',
       // The code on the door, not an upper-cased version of it.
       unit: p.rooms?.room_number ? String(p.rooms.room_number) : '',
       amount: Number(p.amount) || 0,
@@ -365,17 +365,24 @@ const urgentPreview = computed(() =>
 // Base monthly run-rate from currently occupied rooms, at the configured water
 // rate (BR-014). Every unit is billed per head, Linda's included - see
 // `waterChargeFor` in systemState.ts for why the flat LF/LB figures went.
+//
+// Linda's water is left out (figures audit, 6 Nov 2026). The months this estimate stands beside
+// are rent plus `water_payment`, and Linda's water is never in `water_payment`: migration 041
+// routes it to `linda_water_charge`, remitted to Linda. Counting it put ₱600 a month (LF 2 heads,
+// LB 1) into the expected December that no recorded month could ever hold.
+const projectedWater = (r: RoomItem) => (r.cluster === 'Linda Units' ? 0 : waterChargeFor(r.unitCode, r.occupants || 1));
+
 const baseMonthlyRunRate = computed(() =>
   rooms.reduce((sum, r) => {
     if (!isOccupied(r)) return sum;
-    return sum + Number(r.price || 0) + waterChargeFor(r.unitCode, r.occupants || 1);
+    return sum + Number(r.price || 0) + projectedWater(r);
   }, 0)
 );
 
 const baseMonthlyWater = computed(() =>
   rooms.reduce((sum, r) => {
     if (!isOccupied(r)) return sum;
-    return sum + waterChargeFor(r.unitCode, r.occupants || 1);
+    return sum + projectedWater(r);
   }, 0)
 );
 
@@ -480,7 +487,8 @@ const pickedMonthIndex = ref<number | null>(null);
 const pickedMonth = computed(() =>
   pickedMonthIndex.value === null ? null : live12MonthsData.value[pickedMonthIndex.value] ?? null
 );
-const notEnteredWord = (d: MonthIncomeData) => (d.monthNum > CURRENT_MONTH ? 'Not yet' : 'Not entered');
+// "Not recorded" is the one wording for nothing entered (Sean, 6 Nov 2026); "Not yet" is a month still to come.
+const notEnteredWord = (d: MonthIncomeData) => (d.monthNum > CURRENT_MONTH ? 'Not yet' : 'Not recorded');
 
 /**
  * The Overview shows what has something to say (Sean, 1 Nov 2026). A tile with nothing in it is
@@ -1150,7 +1158,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                   </RouterLink>
                 </dt>
-                <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
+                <dd :class="['text-lg font-semibold tabular', !pickedMonth.hasIncome && 'text-ink-soft']">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
               </div>
               <div>
                 <dt class="text-xs text-ink-faint">
@@ -1159,11 +1167,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                   </RouterLink>
                 </dt>
-                <dd class="text-lg font-semibold tabular">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
+                <dd :class="['text-lg font-semibold tabular', !pickedMonth.hasExpenses && 'text-ink-soft']">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
               </div>
               <div>
                 <dt class="text-xs text-ink-faint">Net income</dt>
-                <dd :class="['text-lg font-semibold tabular', pickedMonth.hasIncome && pickedMonth.hasExpenses && pickedMonth.noi < 0 && 'text-overdue']">
+                <dd :class="['text-lg font-semibold tabular', !(pickedMonth.hasIncome && pickedMonth.hasExpenses) ? 'text-ink-soft' : pickedMonth.noi < 0 && 'text-overdue']">
                   {{ pickedMonth.hasIncome && pickedMonth.hasExpenses ? peso(pickedMonth.noi) : notEnteredWord(pickedMonth) }}
                 </dd>
               </div>
@@ -1194,7 +1202,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <router-link :to="archiveIncomeLink" :aria-label="'Open Monthly Income for this year'" class="icon-btn icon-btn-goto group/goto shrink-0"><ArrowUpRight class="size-4" aria-hidden="true" /></router-link>
             </h3>
             <UnavailableNote v-if="incomeRecordsFetchFailed" class="md:col-span-2" @retry="refreshAllData" />
-            <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl font-semibold tracking-tight md:col-span-2">Not entered</p>
+            <p v-else-if="historicalIncomeRecords.length === 0" class="text-2xl font-semibold tracking-tight text-ink-soft md:col-span-2">Not recorded</p>
             <template v-else>
               <div>
                 <p class="tabular text-3xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
@@ -1225,7 +1233,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <router-link :to="archiveExpensesLink" :aria-label="'Open Monthly Expenses for this year'" class="icon-btn icon-btn-goto group/goto shrink-0"><ArrowUpRight class="size-4" aria-hidden="true" /></router-link>
             </h3>
             <UnavailableNote v-if="expenseRecordsFetchFailed" class="md:col-span-2" @retry="refreshAllData" />
-            <p v-else-if="historicalExpenseRecords.length === 0" class="text-2xl font-semibold tracking-tight md:col-span-2">Not entered</p>
+            <p v-else-if="historicalExpenseRecords.length === 0" class="text-2xl font-semibold tracking-tight text-ink-soft md:col-span-2">Not recorded</p>
             <template v-else>
               <div>
                 <p class="tabular text-3xl font-semibold leading-none tracking-tight">{{ peso(historicalAnnualExpenseTotal + historicalAnnualPersonalTotal) }}</p>
@@ -1249,7 +1257,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               
             </h3>
             <UnavailableNote v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed" class="md:col-span-2" @retry="refreshAllData" />
-            <p v-else-if="false" class="text-2xl font-semibold tracking-tight md:col-span-2">Not entered</p>
+            <p v-else-if="false" class="text-2xl font-semibold tracking-tight text-ink-soft md:col-span-2">Not recorded</p>
             <template v-else>
               <div>
                 <p class="tabular text-3xl font-semibold leading-none tracking-tight" :class="historicalAnnualNOI < 0 && 'text-overdue'">{{ peso(historicalAnnualNOI) }}</p>
@@ -1280,7 +1288,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
 
       <OverviewTile boxed title="Income by cluster" :to="archiveIncomeLink" to-label="Open Monthly Income for this year" class="md:col-span-2 xl:col-span-5">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-        <p v-else-if="historicalClusterSplit.length === 0" class="text-sm text-ink-soft">Not entered</p>
+        <p v-else-if="historicalClusterSplit.length === 0" class="text-sm text-ink-soft">Not recorded</p>
         <template v-else>
           <SegmentBar :segments="historicalClusterSplit" :label="`How ${peso(historicalAnnualGrossTotal)} divides across the clusters`" />
           <ul class="flex flex-col gap-2.5">

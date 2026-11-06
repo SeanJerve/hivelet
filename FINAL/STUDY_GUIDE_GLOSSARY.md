@@ -515,8 +515,8 @@ Overview and Payments screens.
 
 **Not due yet.** A month whose rent is not yet due. **Where:** App. K, Part 1, §3.
 
-**Not entered.** A month with no receipt recorded yet. It does **not** mean owed: the records alone
-cannot tell an unpaid month from one not yet entered. Say "Not entered", never "unpaid". **Where:**
+**Not recorded.** A month with no receipt recorded yet. It does **not** mean owed: the records alone
+cannot tell an unpaid month from one not yet entered. Say "Not recorded", never "unpaid". **Where:**
 Section 4.2.4; App. K, Part 1, §3.
 
 **Not recorded.** Shown for a move-in date the owner's workbook never had. **Where:** Section 4.2.2.
@@ -599,7 +599,7 @@ roommates and how many. **Where:** Tenants screen.
 **Show 8 more / Show all / Show fewer.** Open or close more of a long list. **Where:** App. K, Part 2.
 
 **Payment record.** The tenant's list on Payments and billing, under the bill card (shown only while something is to pay). A month
-with no payment entered appears as a **Not entered** row in the Payment record below it.
+with no payment entered appears as a **Not recorded** row in the Payment record below it.
 **Where:** App. K, Part 1, §3.
 
 **Sign in / Sign out.** Start and end a session. Signing out also removes the offline copy.

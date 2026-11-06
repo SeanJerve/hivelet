@@ -553,8 +553,14 @@ async function handleSendReply() {
             rounding, and the rule between rows is drawn 12px in from each
             side, where `divide-y` drew it (divide-y would also have ruled
             the pane itself).
+
+            The pane is a flat tint here, not glass: no white sheet and no
+            shadow, so the list sits on the page as Messenger's and
+            Instagram's do and only the conversation is a card (Sean, 6 Nov
+            2026: "them being on the background is better"). glass.css
+            `.ws-glide-flat`.
           -->
-          <ul v-else v-glide class="ws-reveal relative max-xl:[&>.ws-glide]:hidden">
+          <ul v-else v-glide class="ws-glide-flat ws-reveal relative max-xl:[&>.ws-glide]:hidden">
             <li
               v-for="inq in filteredInquiries"
               :key="inq.id"

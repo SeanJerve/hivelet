@@ -131,7 +131,7 @@ const defaultCategory = () => categoryOptions.value[0] ?? EXPENSE_CATEGORIES[0];
  * Her own kinds of expense (owner, 2026-10-12: "Keep the 13, but she should
  * also have the ability to add her own").
  *
- * "Add a new kind..." is the last choice in the Kind of expense list of both
+ * "Add a new kind..." is the last choice in the What kind list of both
  * dialogs. Picking it does not change the expense's kind: it opens
  * NewExpenseKindDialog over the dialog, and the kind it adds is put in the list
  * and chosen for the expense it was opened from. Cancel leaves the kind as it was.
@@ -257,11 +257,18 @@ const yearMenuOptions = computed(() => [
   { value: 'All', label: 'All years' },
 ]);
 /**
- * A past year is read-only here, as on the Overview (Sean, 19 Oct 2026): no Record button. A
- * late expense is still entered from this year, where the form takes any date,
- * and a past record can still be corrected from its own row. All years keeps the button.
+ * A past year is read-only, all of it (Sean, 6 Nov 2026: "They can only edit on the current year,
+ * not on the past"). With a past year chosen there is no Record expense and no row opens; the rows
+ * still show everything. This replaces 19 Oct 2026, when a past record could still be corrected
+ * from its own row. The server refuses the same changes (`refusePastYear` in
+ * backend/src/routes/admin.ts), so this is what it allows, not a guess.
  */
 const isPastYear = computed(() => filterYear.value !== 'All' && filterYear.value < THIS_YEAR);
+/** An expense dated in a past year never opens, in All years too: the server would refuse its edit. */
+function isClosedYear(year: number | string | null | undefined): boolean {
+  const y = Number(year);
+  return y > 0 && y < Number(THIS_YEAR);
+}
 
 // The year picked on another money page, as on the income screen (`followPickedYear` there).
 function followPickedYear() {
@@ -280,7 +287,7 @@ watch(filterYear, (year) => {
 
 /** The toolbar's filters (components/ui/ListToolbar.vue); the refs above stay the state. */
 const expenseFilters = computed<ToolbarFilter[]>(() => [
-  { key: 'kind', label: 'Kind of expense', value: selectedCategory.value, defaultValue: 'All', options: expenseCategoryOptions.value },
+  { key: 'kind', label: 'What kind', value: selectedCategory.value, defaultValue: 'All', options: expenseCategoryOptions.value },
   { key: 'month', label: 'Month', value: filterMonth.value, defaultValue: 'All', options: monthsList },
   // Default this year (above): Reset and Clear come back to it.
   { key: 'order', label: 'Order', value: expenseOrder.value, defaultValue: 'newest', options: orderOptions(['newest', 'oldest']) },
@@ -404,6 +411,8 @@ onMounted(() => {
     router.replace({ query: nextQuery });
     // The ledger arrives first, then the dialog (lib/afterArrival.ts).
     afterArrival(loading).then(() => {
+      // Recording happens in this year (Sean, 6 Nov 2026), so the page comes back to it.
+      filterYear.value = THIS_YEAR;
       isAddOpen.value = true;
     });
   }
@@ -851,6 +860,7 @@ function removeEditAllocation(allocIndex: number) {
 }
 
 function startEditExpense(e: ExpenseRecord) {
+  if (isClosedYear(e.year)) return; // a past year stays as it is (Sean, 6 Nov 2026)
   editingExpense.value = e;
 
   /**
@@ -1072,7 +1082,7 @@ async function handleEditExpense() {
           @retry="fetchExpenses"
         />
         <!-- Nothing entered for the month: said, not shown as ₱0 (as on Monthly Income). -->
-        <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Not entered yet</p>
+        <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-ink-soft">Not recorded</p>
         <template v-else>
           <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
           <template v-if="focus.waitingFor">
@@ -1214,7 +1224,7 @@ async function handleEditExpense() {
     >
       <template #head>
         <tr>
-          <th scope="col">What it was for</th>
+          <th scope="col">What for</th>
           <th scope="col">Kind</th>
           <th scope="col" class="num">Boarding House</th>
           <th scope="col" class="num">Main House</th>
@@ -1248,6 +1258,7 @@ async function handleEditExpense() {
           <td class="num">
             <button
               type="button"
+              v-if="!isClosedYear(e.year)"
               class="row-open"
               :aria-label="`Edit ${e.description}`"
               @click="startEditExpense(e)"
@@ -1298,6 +1309,7 @@ async function handleEditExpense() {
               </ul>
               <button
                 type="button"
+                v-if="!isClosedYear(e.year)"
                 class="row-open"
                 :aria-label="`Edit ${e.description}`"
                 @click="startEditExpense(e)"
@@ -1370,7 +1382,7 @@ async function handleEditExpense() {
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <label class="ws-field">
-                    What it was for
+                    What for
                     <input
                       v-model="entry.desc"
                       placeholder="INV#88240, supplies"
@@ -1380,9 +1392,9 @@ async function handleEditExpense() {
                   </label>
 
                   <label class="ws-field">
-                    Kind of expense
+                    What kind
                     <!-- "Add a new kind…" at the foot of the list opens NewExpenseKindDialog (owner, 2026-10-12). -->
-                    <PillSelect :model-value="entry.category" :options="kindPickerOptions" aria-label="Kind of expense" widthClass="w-full" @update:model-value="pickRecordKind(index, $event)" />
+                    <PillSelect :model-value="entry.category" :options="kindPickerOptions" aria-label="What kind" widthClass="w-full" @update:model-value="pickRecordKind(index, $event)" />
                   </label>
                 </div>
 
@@ -1423,8 +1435,8 @@ async function handleEditExpense() {
                       class="flex flex-wrap items-end gap-3 bg-well p-3 rounded-2xl"
                     >
                       <label class="ws-field w-full sm:w-auto sm:flex-1">
-                        Which part of the property
-                        <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Which part of the property" placeholder="Choose an area" widthClass="w-full" />
+                        Where
+                        <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Where" placeholder="Choose an area" widthClass="w-full" />
                       </label>
 
                       <label class="ws-field flex-1 sm:flex-none sm:w-44">
@@ -1523,7 +1535,7 @@ async function handleEditExpense() {
             <!-- Description & Category Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="ws-field">
-                What it was for
+                What for
                 <input
                   v-model="editDesc"
                   placeholder="INV#88240, supplies"
@@ -1533,8 +1545,8 @@ async function handleEditExpense() {
               </label>
 
               <label class="ws-field">
-                Kind of expense
-                <PillSelect :model-value="editCategory" :options="kindPickerOptions" aria-label="Kind of expense" widthClass="w-full" @update:model-value="pickEditKind($event)" />
+                What kind
+                <PillSelect :model-value="editCategory" :options="kindPickerOptions" aria-label="What kind" widthClass="w-full" @update:model-value="pickEditKind($event)" />
               </label>
             </div>
 
@@ -1556,8 +1568,8 @@ async function handleEditExpense() {
                   class="flex flex-wrap items-end gap-3 bg-well p-3 rounded-2xl"
                 >
                   <label class="ws-field w-full sm:w-auto sm:flex-1">
-                    Which part of the property
-                    <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Which part of the property" placeholder="Choose an area" widthClass="w-full" />
+                    Where
+                    <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Where" placeholder="Choose an area" widthClass="w-full" />
                   </label>
 
                   <label class="ws-field flex-1 sm:flex-none sm:w-44">

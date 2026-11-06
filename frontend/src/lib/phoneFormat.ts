@@ -104,7 +104,7 @@ export const vPhoneIfNumber: Directive<HTMLInputElement> = {
 
 /**
  * A number on file, for display: spaced when it is a number, and anything else
- * ("—", "Not on file") left exactly as it is.
+ * ("Not recorded") left exactly as it is.
  */
 export function showPhone(raw: string | null | undefined): string {
   const value = String(raw ?? '');

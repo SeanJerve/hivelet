@@ -50,7 +50,7 @@ Its passwords are with Sean; never type them where the projector shows them.
   from an app store, and it takes about 1.2 MB."
 - **Overview**: the amount due, the current bill and the unit.
 - **Payments and billing**: the bill named by its month, shown only while something is to pay, and the
-  **Payment record** (a month with no payment entered shows as **Not entered**).
+  **Payment record** (a month with no payment entered shows as **Not recorded**).
 - Press **Pay with GCash**. Adyen's payment window opens. On Adyen's GCash test page choose a
   successful payment. The phone returns to "Payment received". Say: "Nothing counts yet. The owner
   must verify it."

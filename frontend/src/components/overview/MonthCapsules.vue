@@ -19,7 +19,7 @@ const props = withDefaults(
     /**
      * The words for each kind, where a screen needs its own. The tenant's
      * payments page says "Paid" and "Nothing recorded" where the landlady's
-     * ledger says "Recorded" and "Not entered yet"; the marks stay the same.
+     * ledger says "Recorded" and "Not recorded"; the marks stay the same.
      */
     terms?: Partial<Record<MonthKind, string>>;
     /**
@@ -47,7 +47,8 @@ const props = withDefaults(
 
 const DEFAULT_TERMS: Record<MonthKind, string> = {
   recorded: 'Recorded',
-  unentered: 'Not entered yet',
+  // The one wording for nothing entered (Sean, 6 Nov 2026).
+  unentered: 'Not recorded',
   expected: 'Expected',
   future: 'Nothing to estimate from',
   none: 'Nothing yet',
@@ -237,7 +238,8 @@ const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
       -->
       <p v-if="current" class="min-w-0" aria-live="polite">
         <span class="block text-xs leading-4 text-ink-faint">{{ current.long }}</span>
-        <span class="block text-xl leading-7 font-semibold tabular tracking-tight text-ink">{{ describe(current) }}</span>
+        <!-- A month with nothing recorded is muted, as every "Not recorded" is (Sean, 6 Nov 2026). -->
+        <span :class="['block text-xl leading-7 font-semibold tabular tracking-tight', current.kind === 'unentered' ? 'text-ink-soft' : 'text-ink']">{{ describe(current) }}</span>
       </p>
       <p v-if="current?.detail" class="text-sm tabular text-ink-soft" aria-live="polite">{{ current.detail }}</p>
     </div>

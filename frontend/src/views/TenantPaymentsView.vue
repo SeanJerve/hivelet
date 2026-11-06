@@ -182,13 +182,13 @@ const standingSentence = computed(() => {
   if (!st || st.owedPeriods.length === 0) return '';
   const parts = [st.paidThrough
     ? `Payments recorded up to ${formatDateOnly(st.paidThrough, longDate)}.`
-    : 'No payment is recorded yet.'];
+    : 'No payment recorded.'];
   if (st.status === 'overdue') {
-    // "After that" needs a payment to follow; with none recorded the months simply are not entered.
+    // "After that" needs a payment to follow; with none recorded the months simply are not recorded.
     const months = st.paidThrough
       ? (st.periodsDue > 1 ? `${st.periodsDue} months after that are` : 'The month after that is')
       : (st.periodsDue > 1 ? `${st.periodsDue} months are` : '1 month is');
-    parts.push(`${months} not entered yet.`);
+    parts.push(`${months} not recorded.`);
   }
   const next = st.owedPeriods[0]!;
   parts.push(`Paying now covers ${formatDateOnly(next.start, longDate)} to ${formatDateOnly(next.end, longDate)}.`);
@@ -245,7 +245,7 @@ const paymentHistory = screenRef<Array<{
 
 /**
  * Two lists, as Monthly Income's Records and To verify (Sean, 5 Nov 2026): the Payment record is
- * clean, one row per month (a receipt she verified, or Not entered); the Payment history is every
+ * clean, one row per month (a receipt she verified, or Not recorded); the Payment history is every
  * transaction, a GCash attempt that was not accepted or is waiting included.
  */
 const recordTab = ref<'record' | 'history'>('record');
@@ -385,10 +385,10 @@ const statusTone = (status: string): 'paid' | 'overdue' | 'verify' | 'unentered'
   isVerified(status) ? 'paid' : isRejected(status) ? 'overdue' : 'verify';
 
 const statusLabel = (status: string): string =>
-  isNotEntered(status) ? 'Not entered' : isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting for verification';
+  isNotEntered(status) ? 'Not recorded' : isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting for verification';
 
 const statusLabelShort = (status: string): string =>
-  isNotEntered(status) ? 'Not entered' : isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting';
+  isNotEntered(status) ? 'Not recorded' : isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting';
 
 /**
  * THE RETURN LEG FROM GCASH, WHICH NOTHING HANDLED.
@@ -530,7 +530,7 @@ onMounted(async () => {
   const payBillId = params.get('pay');
   /*
    * `?pay=current`: the overview's Pay button when no bill is raised - the
-   * "Not entered yet" tile, which is most residents most of the time, since
+   * "Not recorded" tile, which is most residents most of the time, since
    * bills are raised on demand. It sent no `pay` at all, so the tap landed
    * here with the checkout closed and the resident had to find and press
    * Pay with GCash a second time (audit 2026-10-09). Opened only when this
@@ -829,7 +829,7 @@ function refreshAll() {
       v-else-if="outstandingBills.length === 0 && standing && standingOwes"
       tone="brand"
       class="ws-reveal"
-      :title="standing.status === 'overdue' ? 'Not entered yet' : 'Due'"
+      :title="standing.status === 'overdue' ? 'Not recorded' : 'Due'"
     >
       <div>
         <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">
