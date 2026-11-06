@@ -129,7 +129,7 @@ availability, and a public-facing booking module that allows prospective renters
 reservation inquiries without requiring full system access. Furthermore, the application features a
 financial tracking component dedicated to monitoring cash flow, expenses, and tenant payments; while
 this primarily supports manual, cash-based transaction recording, it offers an optional online
-payment through GCash for added convenience. Operational communication is also streamlined through a
+payment through GCash, which runs in Adyen's test environment and takes no real money. Operational communication is also streamlined through a
 structured issue ticketing system, enabling tenants to log maintenance requests that administrators
 can systematically assign, track, and update until resolution.
 
@@ -139,7 +139,12 @@ offline access and responsive design for diverse devices, core functionalities, 
 encoding, real-time synchronization, and booking updates, strictly require an active internet
 connection to maintain data consistency. Additionally, the supplementary online payment feature lets
 a tenant pay a bill through GCash using the Adyen payment gateway; each such payment is recorded as
-pending and counts only after the administrator verifies it. The feature explicitly excludes
+pending and counts only after the administrator verifies it. The feature was built and works end
+to end, from the tenant's checkout to the gateway's signed notification and the owner's
+verification, but only in Adyen's test environment, so it is not live and takes no real money.
+Going live requires the owner to complete Adyen's merchant onboarding for GCash with her own
+business documents, which this study did not do; rent therefore continues to be paid in person and
+recorded by the owner. The feature also explicitly excludes
 refunds, which are made from the gateway's own dashboard, automated reconciliation against bank
 records, and direct banking integration. Ultimately, to ensure the system effectively resolves the
 boarding house's operational inefficiencies, Hivelet was evaluated against the ISO/IEC 25010

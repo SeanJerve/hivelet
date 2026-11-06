@@ -30,7 +30,8 @@ defense with it.
 >
 > **Hivelet** connects them. It is a web application that installs on a phone like an app, a
 > **Progressive Web App**. The landlady records payments in her own ledger layout; tenants see their
-> rent, pay by **GCash through Adyen** if they want to, and report repairs; and visitors ask about a
+> rent, can try the optional **GCash through Adyen** (it runs in Adyen's test environment and takes no
+> real money), and report repairs; and visitors ask about a
 > vacant unit without an account. We built it in **three Agile iterations** with Vue, Express and
 > PostgreSQL, and it runs on her real records.
 >
@@ -170,7 +171,8 @@ without her permission**: it shows real names and money. For practice, the demo 
 3. **Payments and billing**: the bill to pay, named by its month, shown only while something is to pay, and the **Payment record** under them. Only receipts the landlady verified count
    as paid, and a month with no receipt says **"Not recorded"**, never "owed", as a
    row in the record. The deposit is on the tenant's Overview, in the unit card.
-4. **Pay with GCash**: Adyen's own payment window takes the payment. It shows as **waiting for the
+4. **Pay with GCash** (optional): Adyen's own payment window takes the payment, in Adyen's test
+   environment, so no real money moves; the dialog says so. It shows as **waiting for the
    landlady** until she verifies it; then the bill is settled.
 5. **Repairs**: a title, details, how urgent, an optional photo, **Send request**; it moves across
    the board as the landlady works on it, and they are notified when it is done. They can cancel it
@@ -259,8 +261,10 @@ anyway**.
 
 **Words to use, and words never to use**
 - **33 units, 32 occupied.** Never "32 units".
-- **Adyen with GCash** is configured and working, on Adyen's **test account**. Never describe the
-  gateway with words that suggest it is not real.
+- **Adyen with GCash** is configured and working, on Adyen's **test account**: optional, not live,
+  takes no real money. Going live needs the owner's merchant onboarding documents, which the study
+  did not do. Never describe the gateway with words that suggest it is not real, and never say it
+  is "under development": it is built.
 - The **50% Share**: only the exact sentence in Section 6. Do not say who it is for.
 - **Rates are set by the owner by hand**, and every change is recorded. There is no automatic yearly
   increase.

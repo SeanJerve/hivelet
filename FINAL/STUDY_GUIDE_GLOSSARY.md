@@ -997,7 +997,9 @@ Section 2.4.
 **HMAC signature.** A code Adyen adds to each notification using a shared secret key, so a forged
 message is refused. 73 of 73 gateway checks passed. **Where:** Table 4-8; `STUDY_GUIDE_CODE.md`, §5.
 
-**Live account.** Adyen's real-money mode. Moving from test to live is Ch. 5, recommendation 3.
+**Live account.** Adyen's real-money mode. Hivelet is not on it: moving from test to live needs the
+owner to complete Adyen's merchant onboarding for GCash with her business documents, which the study
+did not do. Ch. 5, recommendation 3.
 **Where:** Ch. 5, recommendation 3.
 
 **Local cashier page.** A built-in checkout page used only in development. The server refuses it

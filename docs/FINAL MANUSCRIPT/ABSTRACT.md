@@ -13,7 +13,8 @@ property in Legazpi City. The owner's existing practices were analyzed, and her 
 937 income rows and 1,327 expense allocations, were transferred into the system, which exposed
 problems the spreadsheet had hidden. The system was developed in three Agile iterations with Vue,
 Express and PostgreSQL, and provides tenant and room management, inquiries about units, financial
-tracking with optional GCash payment through Adyen, maintenance requests with notifications,
+tracking with optional GCash payment through Adyen, working in Adyen's test environment and taking
+no real money, maintenance requests with notifications,
 role-based access control, and installation from the browser on a phone or computer, without an app
 store. It was pilot tested at the
 unit and integration, system, and acceptance levels, and 82 of the 83 tests executed passed (98.8

@@ -414,8 +414,9 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   context coverage). The **2023 revision** renamed usability as interaction capability and portability
   as flexibility, added safety as a ninth characteristic, and moved quality in use to a separate
   standard.
-- **Adyen**: the payment gateway; "In this study it runs on Adyen's test account".
-- **GCash**: a Philippine mobile wallet.
+- **Adyen**: the payment gateway; in this study it runs in Adyen's test environment, so it takes no
+  real money, and going live needs the owner's merchant onboarding documents.
+- **GCash**: a Philippine mobile wallet, the optional online way to pay; not live.
 - **Landlady**: runs the boarding house day to day on behalf of its owner; the system's only
   administrator. **Owner**: in Chapter 4, the landlady in her role as administrator.
 - **Tenant**, **Prospective Tenant**, **Technical Evaluator** (an IT professional from outside the
@@ -1648,7 +1649,9 @@ The section then has four labelled parts.
 2. Keep taking a backup before any change, and read the five flagged invoice numbers as history.
 
 *For continued development*
-3. Move the Adyen account from test to live and let the system refund a rejected GCash payment; keep
+3. Take GCash live if the owner wants it: she completes Adyen's merchant onboarding with her business
+   documents (the study did not), the account moves from test to live, and the system refunds a
+   rejected GCash payment; keep
    the sign-in token in a cookie no script can read; add a second sign-in factor for the administrator
    (Sections 1.4, 4.3.2, 4.4.4).
 4. Automated browser tests of all 26 walkthrough steps; extend the duplicate-receipt rule to receipts

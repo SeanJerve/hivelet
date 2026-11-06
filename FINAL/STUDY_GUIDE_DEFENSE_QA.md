@@ -96,6 +96,15 @@ electric company directly. *Section 1.4; Section 4.2.4.*
 No. Cash stays the main way; GCash through Adyen is optional. A GCash payment is recorded as Pending
 Verification and counts only after the owner verifies it. *Section 1.4; Section 4.2.4.*
 
+**Is the GCash payment real?**
+It is real software, but it takes no real money. The whole path is built and works end to end: the
+tenant's Pay with GCash opens Adyen's checkout, Adyen's signed notification (HMAC-verified) records
+the payment as Pending Verification, and the owner verifies or rejects it. It runs in Adyen's test
+environment only, so it is optional and not live. Going live needs the owner to complete Adyen's
+merchant onboarding for GCash with her own business documents, which this study did not do; it is
+stated as a limitation and as recommendation 3. Rent is paid in person and recorded by the owner.
+*Section 1.4; Section 4.3.2; Chapter 5, recommendation 3.*
+
 ---
 
 ## 3. Related literature and the gap
@@ -345,7 +354,8 @@ Table 4-9.*
 **Was the GCash payment really tested?**
 Yes, end to end on 26 September, from Adyen's authorization to the owner's verification queue, after
 Adyen support replaced a misconfigured acquirer account (Case 08657379). The Adyen account is still
-the test account, so no real money moves; going live is recommendation 3. *Section 4.3.2.*
+the test account, so no real money moves; going live needs the owner's merchant onboarding
+documents and is recommendation 3. *Section 4.3.2.*
 
 **How fast is it?**
 Every screen was usable within about three seconds on a phone and a little over two on a laptop. The
@@ -484,8 +494,8 @@ before it runs; credentials are never in the code or documents, and a check for 
 runs before every commit. *Section 4.5.*
 
 **What would you do next?**
-The eight recommendations: keep receipts up to date in the system; keep taking backups; move Adyen to
-live with refunds, a protected sign-in cookie and a second factor; automated browser tests of the 26
+The eight recommendations: keep receipts up to date in the system; keep taking backups; take GCash
+live once the owner completes Adyen's merchant onboarding, with refunds, a protected sign-in cookie and a second factor; automated browser tests of the 26
 walkthrough steps; faster pages on phones; strengthen Maintainability and Usability; and for future
 researchers, test against real data and evaluate over a longer period. *Chapter 5, Section 5.3.*
 
@@ -500,8 +510,10 @@ where Usability lost points. *Sections 4.3.3 and 4.4.3.*
 
 **"Is the GCash payment just for show?"**
 No. It works end to end: Adyen authorizes, its signed notification is checked, the payment lands as
-Pending Verification, and the owner verifies it. It runs on Adyen's test account so no real money
-moves yet; moving to live is a configuration change named in recommendation 3. *Section 4.3.2.*
+Pending Verification, and the owner verifies it. It runs in Adyen's test environment, so it takes no
+real money and is not live. Going live is not only a setting: the owner must first complete Adyen's
+merchant onboarding for GCash with her business documents, which this study did not do
+(recommendation 3). *Section 1.4; Section 4.3.2.*
 
 **"So you have no real users?"**
 The owner and three tenants used it on their own accounts on 30 September, the owner did the

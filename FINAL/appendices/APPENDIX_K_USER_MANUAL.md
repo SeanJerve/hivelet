@@ -52,8 +52,8 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
   dropdowns above it (on a phone, tap **Filters** first). The list changes as soon as you pick.
 - **The deposit** held for your tenancy is on your Overview, in the card for your unit.
   *Nasa Overview ang deposit, sa card ng inyong unit.*
-- **Pay with GCash**: online payment. **Until the landlady announces it, online payments do not
-  charge real money; pay her in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
+- **Pay with GCash**: optional online payment. **It runs in a test mode and takes no real money;
+  pay the landlady in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
 
 ### 4. Repairs / Pagpapaayos
 

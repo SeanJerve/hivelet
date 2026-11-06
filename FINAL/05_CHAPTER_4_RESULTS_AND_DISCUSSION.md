@@ -136,7 +136,7 @@ use. Table 4-4 lists the technology used.
 | Presentation | Vue 3.5 with TypeScript 5.7, built with Vite 5.4, styled with Tailwind CSS 4.0 | The screens used by the public, tenants and the owner |
 | Application | Node.js with Express 4.19 in TypeScript | Business rules, calculations and access checks |
 | Data | PostgreSQL 17.6, hosted on Supabase | Storage of all records, with row-level security |
-| Payment gateway | Adyen (Web Drop-in 6.44, API Library 32.0) with GCash | The optional online payment |
+| Payment gateway | Adyen (Web Drop-in 6.44, API Library 32.0) with GCash | The optional online payment, in Adyen's test environment, which takes no real money |
 | Client delivery | Progressive Web Application (vite-plugin-pwa) | Installation on a phone or computer without an app store |
 | Hosting | Vercel | Serves the application at a public web address |
 
@@ -260,8 +260,8 @@ Figure 4-9 presents the Monthly Income records. The owner records a cash payment
 invoice she issued, or with none, since not every payment has one; the system never makes up an
 invoice number, and it warns her if the same tenant already has a payment for that month. The receipt
 is filed under the month the rent is for, not the day it was paid, and both the income and the
-expense records keep her workbook's layout and download as Excel files in it. Online payments go through Adyen with GCash: a
-payment made this way enters **Pending Verification** and changes nothing on the tenant's bill until
+expense records keep her workbook's layout and download as Excel files in it. Online payments go through Adyen with GCash, in Adyen's test environment, where they take no
+real money: a payment made this way enters **Pending Verification** and changes nothing on the tenant's bill until
 the owner verifies it. Such payments wait on the **To verify** tab beside **Records**, and while any
 are waiting the page opens on that tab. Tenants see the same record from their side, month by month, where only
 receipts the owner has verified count as paid and a month with no receipt is shown as "Not recorded",
@@ -821,7 +821,9 @@ Table M-27, describes it, its cause and its correction.
 ## 4.5 Deployment Plan and Strategies
 
 The system is hosted on Vercel at a public web address, with the database on Supabase and the
-payment gateway on Adyen. Every approved change is deployed automatically from the project's main
+payment gateway in Adyen's test environment, which takes no real money; going live needs the owner
+to complete Adyen's merchant onboarding for GCash with her business documents, which this study did
+not do. Every approved change is deployed automatically from the project's main
 code branch. Table 4-21 lists what is needed to use the system, and Table 4-22 the deployment plan.
 
 **Table 4-21.** Software and hardware requirements for deployment
@@ -830,7 +832,7 @@ code branch. Table 4-21 lists what is needed to use the system, and Table 4-22 t
 | :--- | :--- | :--- |
 | Owner | A current web browser on a computer, and an internet connection | The administrator's laptop, an Acer Nitro V 15 with Chrome; the team's laptop, a Dell XPS 15 on Windows 11 with Chrome 154, Edge and Firefox 157 (Table 4-10, Section 4.4.3) |
 | Tenants and visitors | A current web browser (Chrome, Edge, Firefox or Safari) on a phone or computer, and an internet connection | Infinix GT20 with Android and Chrome 154; iPhone 15 and iPhone 13 with Safari; the three tenants' own phones, models not recorded |
-| Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen merchant account with GCash (optional online payment) | Vercel; PostgreSQL 17.6 on Supabase; Adyen Web Drop-in 6.44 and API Library 32.0 (Table 4-4) |
+| Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen test account with GCash (optional online payment; not live, takes no real money) | Vercel; PostgreSQL 17.6 on Supabase; Adyen Web Drop-in 6.44 and API Library 32.0 (Table 4-4) |
 | Administration | A computer that can run Node.js, used only for backups and verification runs | Node.js 22.16 on the team's Windows 11 computer |
 
 **Table 4-22.** Deployment plan and strategies

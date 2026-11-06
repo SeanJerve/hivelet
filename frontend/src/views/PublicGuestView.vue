@@ -97,8 +97,10 @@ const FAQS = computed(() => [
     a: 'Each unit is equipped with its own electric meter. Electricity usage is billed separately based on individual consumption and is not included in the monthly rent.',
   },
   {
+    // Sean, 6 Nov 2026: GCash is an option that runs in Adyen's test environment and
+    // takes no real money; going live needs the owner's merchant documents.
     q: 'What payment methods does the boarding house accept?',
-    a: 'The boarding house accepts payments either in person on-site or online via GCash through the tenant portal. All transactions are automatically recorded in your account ledger. Please note that the online GCash integration is currently under development. Until then, all payments must be submitted in person.',
+    a: 'Rent is paid in person, and the landlady records each payment in your account. The tenant portal also has an optional Pay with GCash, but it runs in a test mode and takes no real money yet, so please keep paying in person.',
   },
   {
     // Owner's wording, 2026-11-02. It no longer works the cheapest unit through

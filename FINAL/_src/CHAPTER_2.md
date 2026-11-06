@@ -326,10 +326,12 @@ characteristics: effectiveness, efficiency, satisfaction, freedom from risk and 
 safety as a ninth characteristic, and moved quality in use into a separate standard (ISO/IEC, 2023).
 
 **Adyen** – The payment gateway through which a tenant may pay a bill online with GCash. In this study
-it runs on Adyen's test account, and each payment it reports is recorded as pending until the owner
-verifies it.
+it runs in Adyen's test environment, so it takes no real money, and each payment it reports is
+recorded as pending until the owner verifies it. Going live needs the owner's merchant onboarding
+documents, which were outside the study.
 
 **GCash** – A Philippine mobile wallet, offered in Hivelet as the optional online way to pay a bill.
+It is not live: rent is paid in person and recorded by the owner.
 
 **Landlady** – The person who runs the Fe Galang Da Silva Boarding House day to day on behalf of its
 owner, and the system's only administrator.

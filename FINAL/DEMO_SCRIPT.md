@@ -53,7 +53,8 @@ Its passwords are with Sean; never type them where the projector shows them.
   **Payment record** (a month with no payment entered shows as **Not recorded**).
 - Press **Pay with GCash**. Adyen's payment window opens. On Adyen's GCash test page choose a
   successful payment. The phone returns to "Payment received". Say: "Nothing counts yet. The owner
-  must verify it."
+  must verify it. This runs in Adyen's test environment, so it takes no real money; going live needs
+  the owner's merchant documents, which we did not do. Rent is paid in person."
 
 ### 3. The owner verifies (laptop, 1 minute). Objective 2: financial tracking
 - Sign in as the owner. Go to **Monthly Income**. With a payment waiting it opens on **To verify**.

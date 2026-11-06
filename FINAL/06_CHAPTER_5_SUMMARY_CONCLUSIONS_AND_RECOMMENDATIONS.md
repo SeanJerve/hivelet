@@ -26,7 +26,8 @@ are summarized below in the order of the specific objectives.
 2. **The system was developed** with the six features the objective names: tenant and room
    management, booking and reservation management, financial tracking with optional online payment
    through Adyen with GCash, maintenance ticketing and notification, role-based access control, and
-   Progressive Web Application support. It holds the owner's real records.
+   Progressive Web Application support. It holds the owner's real records. The online payment works
+   end to end in Adyen's test environment and takes no real money; it is not live.
 
 3. **The system was pilot tested.** Twenty automated check suites, run against the live system on 29
    September 2026, all passed, including 490 report reconciliation checks, and a screen-by-screen
@@ -57,7 +58,9 @@ Based on the results of the study, the following conclusions were drawn:
 2. **The second objective was achieved.** All six features the objective names were developed and are
    in use on the owner's real records (Chapter 4, Sections 4.2.2 to 4.2.7). They keep her own report
    layout, invoice numbers and cash as the main way to pay, so using the system requires no change to
-   how she keeps her accounts.
+   how she keeps her accounts. The optional GCash payment is the one feature not in use with real
+   money: it works end to end in Adyen's test environment, and going live needs the owner's merchant
+   onboarding documents.
 
 3. **The third objective was achieved.** The system was pilot tested for functionality,
    responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8
@@ -86,9 +89,11 @@ Based on the summary and conclusions of the study, the following are recommended
 
 **For the continued development of the system**
 
-3. Before real money moves through the system, move the Adyen account from test to live and let the
-   system refund a GCash payment the owner rejects; refunds were excluded from this study by its
-   delimitation (Sections 1.4 and 4.3.2). Keep the sign-in token in a cookie that no script can read,
+3. Take the GCash payment live, if the owner wants it: she completes Adyen's merchant onboarding
+   for GCash with her own business documents, which this study did not do, and the account is then
+   moved from Adyen's test environment to live. Until then it takes no real money. At the same time,
+   let the system refund a GCash payment the owner rejects; refunds were excluded from this study by
+   its delimitation (Sections 1.4 and 4.3.2). Keep the sign-in token in a cookie that no script can read,
    and add a second sign-in factor for the administrator, the two weaknesses Chapter 4 names
    (Section 4.4.4).
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that

@@ -391,14 +391,13 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       the terms already say it; this dialog did not, so a tenant could finish a
       GCash payment, read "Payment received", and believe the rent was paid -
       and a verified test payment marks a real bill Paid with nothing collected.
-      The words are the FAQ's own, reworded calmer for the live demo (Sean, 6 Oct
-      2026: keep it, without "test"). True for as long as adyenService.ts talks only
-      to Adyen's test host (ADYEN_CHECKOUT_HOST); remove it in the same change
-      that wires the live account.
+      Sean, 6 Nov 2026, superseding 6 Oct ("without test"): say plainly that it is a
+      test mode and takes no real money, as the public FAQ does. True for as long as
+      adyenService.ts talks only to Adyen's test host (ADYEN_CHECKOUT_HOST); remove it
+      in the same change that wires the live account.
     -->
     <p class="rounded-2xl bg-verify-soft px-4 py-3 text-sm leading-6 text-ink">
-      Online GCash payment is not live yet, so no money is charged. Please pay your rent in
-      person for now.
+      GCash here runs in a test mode and takes no real money. Please pay your rent in person.
     </p>
 
     <!--

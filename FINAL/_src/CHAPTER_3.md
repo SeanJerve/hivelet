@@ -54,6 +54,20 @@ an AI coding assistant and reviewed by the researchers, so that the landlady and
 it on their own phones with real data. The design rules the screens follow, covering color, type,
 layout and wording, are recorded in the system's design guideline.
 
+The owner's past records were transferred from her own workbook rather than retyped. A transfer
+script written by the researchers read the workbook's two sheets, Monthly Income and Monthly
+Expenses, and loaded them into the database in one import on 28 August 2026; a verification script
+then counted the rows loaded. Her August 2026 records were added on 30 September by a second script
+that reads the workbook with the same rules, compares every row with the database and adds only the
+rows not yet there. That script and the later corrections were written with the help of the same
+AI coding assistant and reviewed by the researchers. Each correction was made as a numbered database
+migration, run after a backup, that states its evidence and the values before and after; the later
+ones also keep the old values in the system's audit log, and the largest, which re-dated 934
+receipts, refuses to complete if the ledger total changes. The corrections make the records match
+what she wrote, such as payment dates the import had read one day early and rent periods copied from
+the receipt before. Her rent, water and expense amounts were kept as she wrote them, and the five
+invoice numbers she had used twice were kept, not corrected.
+
 ### 3.1.2 Hardware
 
 To ensure efficient development, testing, and deployment of the Hivelet system, specific hardware
@@ -160,7 +174,9 @@ interface, ensuring responsiveness across devices. The back-end was developed us
 Express.js in TypeScript to manage core functionalities such as booking processing, financial
 computations, and maintenance ticket handling. An optional online payment feature was implemented
 through the Adyen payment gateway, allowing a tenant to settle a bill through GCash without replacing
-the primary cash-based financial workflow. PostgreSQL, hosted on Supabase, was used as the database
+the primary cash-based financial workflow. It was built and works end to end in Adyen's test
+environment, where it takes no real money; it was not taken live, because that needs the owner's
+merchant onboarding documents. PostgreSQL, hosted on Supabase, was used as the database
 management system to store tenant records, transaction data, and system logs. The system was developed
 incrementally, following Agile principles, allowing continuous refinement based on feedback and
 testing results.

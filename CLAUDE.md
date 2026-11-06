@@ -31,7 +31,10 @@ copy. She runs her business on this.
    historical spreadsheet. Never name a party, recipient, purpose or destination for it.
 
 5. **Adyen with GCash is committed, configured and working.** The words `"mock"`, `"simulator"`
-   and `"pending consultation"` must never be applied to the gateway.
+   and `"pending consultation"` must never be applied to the gateway. It works end to end in
+   **Adyen's test environment** and takes no real money; it is optional and not live, because going
+   live needs the owner's merchant onboarding documents, which the study does not do (Sean, 6 Nov
+   2026). Say exactly that, and never "under development".
 
 **Two standing facts** documents here have been wrong about: the property is **33 units, not
 32** (32 of them currently occupied), and no `"2% annual increase"` rule exists — the owner sets
