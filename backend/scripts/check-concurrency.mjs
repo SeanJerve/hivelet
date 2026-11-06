@@ -91,7 +91,7 @@ let receipts;          // the standing rows the stand-in holds
 let receiptIndex;      // false: as if migration 033 had never run
 function receiptAnswer(table, calls) {
   if (table === 'rooms') return { data: ROOM, error: null };
-  if (table === 'room_assignments') return { data: has(calls, 'maybeSingle') ? TENANCY : [TENANCY], error: null };
+  if (table === 'room_assignments') return { data: has(calls, 'maybeSingle') ? TENANCY : [{ ...TENANCY, room_id: ROOM.id }], error: null };
   if (table === 'system_settings') return { data: [{ key: 'water_rate_per_occupant', value: '200' }, { key: 'grace_period_days', value: '0' }], error: null };
   if (table === 'monthly_income_records') {
     if (has(calls, 'insert')) {
@@ -262,13 +262,20 @@ function send(path, method, { id, body = {} } = {}) {
 }
 let writes;            // every insert, update and rpc a handler asked for, but the audit row
 let storedRow;         // the row a PATCH or DELETE reads first
+// Last year stays open until its December is paid (Sean, 6 Nov 2026). The stand-in tenancy covers
+// last December, so whether last year is closed turns on this: a December receipt for its room.
+let decemberPaid = true;
+const isDecemberAsk = (calls) => calls.some((c) => c[0] === 'eq' && c[1][0] === 'month' && Number(c[1][1]) === 12);
 function closedAnswer(table, calls) {
   if (table !== 'audit_logs' && (has(calls, 'insert') || has(calls, 'update'))) writes.push(`${table}.${has(calls, 'insert') ? 'insert' : 'update'}`);
   if (table === 'rooms') return { data: ROOM, error: null };
-  if (table === 'room_assignments') return { data: has(calls, 'maybeSingle') ? TENANCY : [TENANCY], error: null };
+  if (table === 'room_assignments') return { data: has(calls, 'maybeSingle') ? TENANCY : [{ ...TENANCY, room_id: ROOM.id }], error: null };
   if (table === 'system_settings') return { data: [{ key: 'water_rate_per_occupant', value: '200' }], error: null };
   if ((table === 'monthly_income_records' || table === 'monthly_expense_entries') && has(calls, 'maybeSingle')) {
     return { data: storedRow, error: null };
+  }
+  if (table === 'monthly_income_records' && isDecemberAsk(calls)) {
+    return { data: decemberPaid ? [{ room_id: ROOM.id }] : [], error: null };
   }
   if (has(calls, 'update')) return { data: has(calls, 'single') ? { ...storedRow } : [{ id: storedRow?.id }], error: null };
   if (has(calls, 'insert')) return { data: { id: 'new' }, error: null };
@@ -311,6 +318,20 @@ check(`editing a ${THIS_YEAR} expense still works`, [r.status, writes], [200, ['
 writes = []; storedRow = null;
 r = await send('/admin/expense-entries', 'post', { body: expenseBody(THIS_YEAR) });
 check(`an expense dated ${THIS_YEAR} is still recorded`, [r.status, writes], [201, ['rpc.create_expense_entry_with_allocations']]);
+
+// Last December unpaid: last year still takes its records, the year before it does not.
+decemberPaid = false;
+writes = []; storedRow = expenseRow(PAST);
+r = await send('/admin/expense-entries/:id', 'patch', { id: ROW_ID, body: { invoiceSupplier: 'Changed' } });
+check(`with ${PAST}'s December unpaid, editing a ${PAST} expense still works`, [r.status, writes], [200, ['monthly_expense_entries.update']]);
+writes = []; storedRow = incomeRow(PAST);
+r = await send('/admin/income-records/:id', 'delete', { id: ROW_ID });
+check(`with ${PAST}'s December unpaid, voiding a ${PAST} receipt still works`, [r.status, writes.length > 0], [200, true]);
+writes = []; storedRow = expenseRow(PAST - 1);
+r = await send('/admin/expense-entries/:id', 'patch', { id: ROW_ID, body: { invoiceSupplier: 'Changed' } });
+check(`with ${PAST}'s December unpaid, ${PAST - 1} stays closed`,
+  [r.status, PAST_YEAR.test(r.error ?? ''), writes], [409, true, []]);
+decemberPaid = true;
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

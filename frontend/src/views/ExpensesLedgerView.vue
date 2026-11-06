@@ -2,6 +2,7 @@
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { propertyToday } from '@/lib/propertyDate';
+import { fetchOpenYears, isClosedYear } from '@/lib/openYears';
 import { rememberFilters } from '@/lib/savedFilters';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -14,7 +15,7 @@ import DownloadDialog from '@/components/ui/DownloadDialog.vue';
 import { pickedYear } from '@/lib/yearScope';
 import { screenRef, screenLoaded } from '@/lib/screenCache';
 import YearMenu from '@/components/ui/YearMenu.vue';
-import { Plus, Loader2, FileSpreadsheet, Trash2 } from 'lucide-vue-next';
+import { Plus, Loader2, FileSpreadsheet, Trash2, Check } from 'lucide-vue-next';
 import { orderOptions, type RowOrder } from '@/lib/rowOrder';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -263,12 +264,10 @@ const yearMenuOptions = computed(() => [
  * from its own row. The server refuses the same changes (`refusePastYear` in
  * backend/src/routes/admin.ts), so this is what it allows, not a guess.
  */
-const isPastYear = computed(() => filterYear.value !== 'All' && filterYear.value < THIS_YEAR);
-/** An expense dated in a past year never opens, in All years too: the server would refuse its edit. */
-function isClosedYear(year: number | string | null | undefined): boolean {
-  const y = Number(year);
-  return y > 0 && y < Number(THIS_YEAR);
-}
+// Last year stays open until its December is paid (Sean, 6 Nov 2026); the server says which
+// years are open (`lib/openYears.ts`), so the screen and the API never disagree.
+const isPastYear = computed(() => filterYear.value !== 'All' && isClosedYear(filterYear.value));
+/** An expense dated in a closed year never opens, in All years too: the server would refuse its edit. */
 
 // The year picked on another money page, as on the income screen (`followPickedYear` there).
 function followPickedYear() {
@@ -404,6 +403,7 @@ async function fetchExpenses() {
 }
 
 onMounted(() => {
+  void fetchOpenYears();
   const loading = fetchExpenses();
   if (route.query.openExpense === '1') {
     const nextQuery = { ...route.query };
@@ -557,7 +557,9 @@ const areaSplit = computed(() => {
   return [...totals.entries()]
     .filter(([, value]) => value > 0)
     .sort((a, b) => b[1] - a[1])
-    .map(([label, value], i) => ({ label, value, tone: tones[i % tones.length] }));
+    // The key said the stored "Other Expenses / Personal" beside a table column and a form that
+    // both say "Other (personal)": one name for the area on this page (audit, 6 Nov 2026).
+    .map(([label, value], i) => ({ label: label === 'Other Expenses / Personal' ? 'Other (personal)' : label, value, tone: tones[i % tones.length] }));
 });
 
 function getExpenseTotal(e: ExpenseRecord) {
@@ -1082,7 +1084,8 @@ async function handleEditExpense() {
           @retry="fetchExpenses"
         />
         <!-- Nothing entered for the month: said, not shown as ₱0 (as on Monthly Income). -->
-        <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-ink-soft">Not recorded</p>
+        <!-- A search that finds nothing is not an unrecorded month (audit, 6 Nov 2026), as on Monthly Income. -->
+        <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-ink-soft">{{ q.trim() ? 'Nothing matches' : 'Not recorded' }}</p>
         <template v-else>
           <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
           <template v-if="focus.waitingFor">
@@ -1473,7 +1476,7 @@ async function handleEditExpense() {
                       @click="addAllocation(index)"
                       class="pill-btn pill-btn-compact"
                     >
-                      <Plus class="size-3.5 text-brand" />
+                      <Plus class="size-3.5 text-brand" aria-hidden="true" />
                       <span>Split across another area</span>
                     </button>
                   </div>
@@ -1502,8 +1505,10 @@ async function handleEditExpense() {
           <div class="ws-actions mt-4 pt-4 border-t border-line">
             <button type="button" @click="isAddOpen = false" class="pill-btn-quiet">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand disabled:opacity-50">
+              <!-- The page button's name and the check, as Record payment's dialog has them (audit, 6 Nov 2026). -->
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
-              <span>{{ formEntries.length === 1 ? 'Save expense' : `Save ${formEntries.length} expenses` }}</span>
+              <Check v-else class="size-4" aria-hidden="true" />
+              <span>{{ formEntries.length === 1 ? 'Record expense' : `Record ${formEntries.length} expenses` }}</span>
             </button>
           </div>
         </form>
@@ -1606,7 +1611,7 @@ async function handleEditExpense() {
                   @click="addEditAllocation" 
                   class="pill-btn pill-btn-compact"
                 >
-                  <Plus class="size-3.5 text-brand" />
+                  <Plus class="size-3.5 text-brand" aria-hidden="true" />
                   <span>Split across another area</span>
                 </button>
               </div>
@@ -1640,6 +1645,7 @@ async function handleEditExpense() {
             <button type="button" @click="isEditOpen = false" class="pill-btn-quiet">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand disabled:opacity-50">
               <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+              <Check v-else class="size-4" aria-hidden="true" />
               <span>Save changes</span>
             </button>
           </div>

@@ -2,9 +2,11 @@
 import { domId } from '@/lib/domId';
 import { rememberFilters } from '@/lib/savedFilters';
 import { showPhone } from '@/lib/phoneFormat';
+import { NOT_RECORDED, NOT_RECORDED_CLASS } from '@/lib/notRecorded';
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { periodEnd, propertyToday, formatDateOnly, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
+import { fetchOpenYears, isClosedYear } from '@/lib/openYears';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import InvoiceField from '@/components/ui/InvoiceField.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
@@ -163,12 +165,10 @@ const yearMenuOptions = computed(() => [
  * still be corrected from its own row. The server refuses the same changes
  * (`refusePastYear` in backend/src/routes/admin.ts), so this is what it allows, not a guess.
  */
-const isPastYear = computed(() => filterYear.value !== 'All' && filterYear.value < THIS_YEAR);
-/** A row filed under a past year never opens, in All years too: the server would refuse its edit. */
-function isClosedYear(year: number | string | null | undefined): boolean {
-  const y = Number(year);
-  return y > 0 && y < Number(THIS_YEAR);
-}
+// Last year stays open until its December is paid (Sean, 6 Nov 2026); the server says which
+// years are open (`lib/openYears.ts`), so the screen and the API never disagree.
+const isPastYear = computed(() => filterYear.value !== 'All' && isClosedYear(filterYear.value));
+/** A row filed under a closed year never opens, in All years too: the server would refuse its edit. */
 // The queue is this year's work: leaving it when a past year is chosen.
 watch(isPastYear, (past) => {
   if (past && activeTab.value === 'verify') activeTab.value = 'ledger';
@@ -445,6 +445,7 @@ watch(isLoading, (loading) => {
 });
 
 onMounted(() => {
+  void fetchOpenYears();
   applyArrivalQuery();
   if (route.query.tab === 'verify') {
     filterYear.value = THIS_YEAR;
@@ -978,6 +979,10 @@ function startEditIncome(r: IncomeRecord) {
   // corrections need - the divergence is recorded in the audit log.
   editDateCoveredStart.value = '';
 
+  // The receipt's own headcount first, like its method and reference below (audit, 6 Nov 2026):
+  // it opened on the tenancy's count today, so a 2-head receipt in a unit that now has 3 opened
+  // as 3 with ₱400 water, refused its own figures, and on save the server re-derived the water
+  // from 3. BR-034's carry-forward is for a new payment; it stays the fallback for a row with none.
   // BR-034 - carried forward from the tenancy, and editable from here.
   const occSummary = formatUnitOccupantsSummary(editUnit.value);
   const occRoom = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
@@ -986,9 +991,11 @@ function startEditIncome(r: IncomeRecord) {
   // water line on the receipt about to be saved, so a seeded 3 overcharges a
   // resident by ₱400. Fall through to 1 rather than to a made-up figure; the
   // banner below tells the administrator to enter it herself.
-  editOccupants.value = occSummary.count > 0
-    ? occSummary.count
-    : (roomsFetchFailed.value ? 1 : (occRoom?.occupants || 1));
+  editOccupants.value = Number(r.occupants) > 0
+    ? Number(r.occupants)
+    : occSummary.count > 0
+      ? occSummary.count
+      : (roomsFetchFailed.value ? 1 : (occRoom?.occupants || 1));
   /**
    * Put back what the row actually held.
    *
@@ -1291,7 +1298,9 @@ const isDownloadOpen = ref(false);
         />
         <!-- A month with nothing entered says so instead of a ₱0 total and three ₱0 lines: the
              records cannot tell an empty month from one not typed in yet (Sean, honest states). -->
-        <p v-else-if="monthRows.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-ink-soft">Not recorded</p>
+        <!-- Under a search that finds nothing the month is not unrecorded, so it says what the ledger
+             below says (audit, 6 Nov 2026: "Not recorded" claimed a month with payments was empty). -->
+        <p v-else-if="monthRows.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-ink-soft">{{ q.trim() ? 'Nothing matches' : NOT_RECORDED }}</p>
         <template v-else>
           <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
           <template v-if="focus.waitingFor">
@@ -1514,7 +1523,7 @@ const isDownloadOpen = ref(false);
               </div>
               <div class="flex gap-1.5 min-w-0">
                 <dt class="text-ink-faint">Reference</dt>
-                <dd class="truncate">{{ p.transaction_reference || 'None recorded' }}</dd>
+                <dd :class="['truncate', !p.transaction_reference && NOT_RECORDED_CLASS]">{{ p.transaction_reference || NOT_RECORDED }}</dd>
               </div>
               <div v-if="p.paid_at" class="flex gap-1.5">
                 <dt class="text-ink-faint">Sent</dt>
@@ -2175,7 +2184,7 @@ const isDownloadOpen = ref(false);
           <dt class="text-ink-faint">Paid with</dt>
           <dd>{{ methodInWords(openedPayment.payment_method) }}</dd>
           <dt class="text-ink-faint">Reference</dt>
-          <dd class="break-all">{{ openedPayment.transaction_reference || 'None recorded' }}</dd>
+          <dd :class="['break-all', !openedPayment.transaction_reference && NOT_RECORDED_CLASS]">{{ openedPayment.transaction_reference || NOT_RECORDED }}</dd>
           <template v-if="openedPayment.paid_at">
             <dt class="text-ink-faint">Sent</dt>
             <dd>{{ sentAtText(openedPayment.paid_at) }}</dd>

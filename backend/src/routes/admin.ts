@@ -2377,7 +2377,7 @@ router.patch(
       warnIfWriteFailed(
         await db.from('notifications').insert({
         recipient_profile_id: before.tenant_profile_id,
-        title: 'Online Payment Verified',
+        title: 'Online payment verified',
         message: `Your online payment of ₱${before.amount.toLocaleString()} (Ref: ${before.transaction_reference}) has been verified and settled by the administrator.`,
           type: 'Payment',
           priority: 'Low',
@@ -2396,7 +2396,7 @@ router.patch(
       warnIfWriteFailed(
         await db.from('notifications').insert({
         recipient_profile_id: before.tenant_profile_id,
-        title: 'Payment Verification Declined',
+        title: 'Payment verification declined',
         message: `Your online payment submission (Ref: ${before.transaction_reference || 'Not recorded'}) was declined. Please contact the administrator.`,
           type: 'Payment',
           priority: 'High',
@@ -2750,12 +2750,66 @@ const incomeRecordSchema = z.object({
  * does not argue for reopening a closed year; nothing in SS 3 does.
  */
 const PAST_YEAR_REFUSAL = 'Records from past years cannot be changed.';
-function refusePastYear(year: unknown): void {
-  const y = Number(year);
-  if (Number.isInteger(y) && y > 0 && y < Number(propertyToday().slice(0, 4))) {
-    throw ApiError.conflict(PAST_YEAR_REFUSAL);
-  }
+
+/**
+ * Last year stays open until its December is paid (Sean, 6 Nov 2026: "keep the old year open until
+ * all payments for December are done, so until there's something left it shouldn't be closed").
+ *
+ * "Something left" is read from the records, not guessed: a unit whose tenancy covered any day of
+ * that December (room_assignments: started by 31 Dec, not ended before 1 Dec) with no live income
+ * row filed under that December. While one exists, the year before this one takes records, changes
+ * and voids like this year does, expenses included, since a year closes as a whole. Once the last
+ * December receipt is in, it closes and stays closed. Two years back is always closed.
+ *
+ * Tenancies are only kept from July 2026 (the imported workbook years have receipts but no
+ * room_assignments), so 2025 has one December tenancy, already paid, and is closed today.
+ */
+async function openYears(): Promise<number[]> {
+  const current = Number(propertyToday().slice(0, 4));
+  const last = current - 1;
+  const { data: tenancies, error: tErr } = await db
+    .from('room_assignments')
+    .select('room_id, start_date, end_date')
+    .lte('start_date', `${last}-12-31`);
+  if (tErr) throw ApiError.internal(tErr.message);
+  const decRooms = new Set(
+    (tenancies ?? [])
+      .filter((a: { end_date: string | null }) => !a.end_date || a.end_date >= `${last}-12-01`)
+      .map((a: { room_id: string }) => a.room_id)
+  );
+  if (decRooms.size === 0) return [current];
+  const { data: paid, error: pErr } = await db
+    .from('monthly_income_records')
+    .select('room_id')
+    .eq('year', last)
+    .eq('month', 12)
+    .is('voided_at', null);
+  if (pErr) throw ApiError.internal(pErr.message);
+  const paidRooms = new Set((paid ?? []).map((r: { room_id: string }) => r.room_id));
+  const decemberLeft = [...decRooms].some((id) => !paidRooms.has(id));
+  return decemberLeft ? [current, last] : [current];
 }
+
+async function refusePastYear(year: unknown): Promise<void> {
+  const y = Number(year);
+  if (!Number.isInteger(y) || y <= 0) return;
+  const current = Number(propertyToday().slice(0, 4));
+  if (y >= current) return;
+  if (!(await openYears()).includes(y)) throw ApiError.conflict(PAST_YEAR_REFUSAL);
+}
+
+/**
+ * GET /api/admin/open-years
+ * The years that still take records: this year, and last year while its December is unpaid
+ * (`openYears`). The ledgers show their record, edit and void controls for these years only.
+ */
+router.get(
+  '/admin/open-years',
+  requirePermission(PERMISSIONS.PAYMENT_VERIFY),
+  asyncHandler(async (_req, res) => {
+    res.status(200).json({ success: true, data: { years: await openYears() } });
+  })
+);
 
 /**
  * POST /api/admin/income-records
@@ -2920,7 +2974,7 @@ router.post(
     }
 
     // No month this receipt files under may be in a past year (refusePastYear), checked before any write.
-    for (const span of spans) refusePastYear(span.year);
+    for (const span of spans) await refusePastYear(span.year);
 
     // `periodStart`/`periodEnd` describe the whole stretch the receipt covers and
     // are used only for the divergence audit above. Each ROW carries its own
@@ -3467,7 +3521,7 @@ router.patch(
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Income record not found.');
     // Before anything else, so a refused edit has read one row and written nothing.
-    refusePastYear(before.year);
+    await refusePastYear(before.year);
 
     const parsedBody = incomeRecordPatchSchema.safeParse(req.body);
     if (!parsedBody.success) {
@@ -3482,7 +3536,7 @@ router.patch(
       dateCoveredStart, dateCoveredEnd
     } = parsedBody.data;
     // Nor can this year's row be moved into a past one: `year` follows the period (below).
-    if (dateCoveredStart) refusePastYear(isoDateParts(dateCoveredStart).year);
+    if (dateCoveredStart) await refusePastYear(isoDateParts(dateCoveredStart).year);
 
     /**
      * REFUSED RATHER THAN SILENTLY DROPPED. Sean's call, 2026-09-22.
@@ -3724,7 +3778,7 @@ router.delete(
 
     if (checkError) throw ApiError.internal(checkError.message);
     if (!before) throw ApiError.notFound('Income record not found.');
-    refusePastYear(before.year);
+    await refusePastYear(before.year);
 
     /**
      * VOIDING A ROW THAT IS ALREADY VOID OVERWROTE WHO VOIDED IT.
@@ -3961,7 +4015,7 @@ router.post(
     }
 
     const { expenseDate, invoiceSupplier, categoryCode, allocations } = parsed.data;
-    refusePastYear(expenseDate.slice(0, 4));
+    await refusePastYear(expenseDate.slice(0, 4));
     oneAmountPerArea(allocations.map((a) => a.propertyArea));
 
     /**
@@ -4031,7 +4085,7 @@ router.patch(
 
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Expense entry not found.');
-    refusePastYear(String(before.expense_date ?? '').slice(0, 4));
+    await refusePastYear(String(before.expense_date ?? '').slice(0, 4));
 
     const parsedEntry = z.object({
       expenseDate: isoDate.optional(),
@@ -4053,7 +4107,7 @@ router.patch(
       );
     }
     const { expenseDate, invoiceSupplier, categoryCode, allocations } = parsedEntry.data;
-    if (expenseDate) refusePastYear(expenseDate.slice(0, 4));
+    if (expenseDate) await refusePastYear(expenseDate.slice(0, 4));
 
     // Normalise and validate EVERY allocation before touching a single row. The replacement below
     // is atomic, but rejecting a bad payload up front gives the caller a 400 that names the problem
@@ -4168,7 +4222,7 @@ router.delete(
 
     if (checkError) throw ApiError.internal(checkError.message);
     if (!before) throw ApiError.notFound('Expense entry not found.');
-    refusePastYear(String(before.expense_date ?? '').slice(0, 4));
+    await refusePastYear(String(before.expense_date ?? '').slice(0, 4));
 
     // The same defect, in the same shape, as the income void above - see the
     // block there for why the guard is on the update and not only on the read.
@@ -5176,7 +5230,7 @@ router.post(
     // who has just written the comment herself.
     if (ticket.tenant_profile_id) await notificationService.notify({
       recipientProfileId: ticket.tenant_profile_id,
-      title: 'New Maintenance Ticket Comment',
+      title: 'New comment on your repair',
       message: `${senderName} commented on ticket "${ticket.title}": "${parsed.data.message.slice(0, 80)}${parsed.data.message.length > 80 ? '...' : ''}"`,
       type: 'Maintenance',
       priority: 'Medium',
