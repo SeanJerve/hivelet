@@ -910,9 +910,10 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </div>
 
         <!-- From 768px: the two parts side by side, each a count, its link and three rows at most. -->
-        <!-- One, two or three parts, each a column with a rule between (Sean, 5 Nov 2026). -->
-        <div :class="['grid gap-6 max-md:hidden', attentionParts === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 xl:grid-cols-3', attentionBoth && 'md:gap-0 md:divide-x md:divide-line']">
-          <div v-if="paymentsWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
+        <!-- One, two or three parts, a third of the row each and no rule between them, spaced as the
+             rent dues below so the columns line up (Sean, 7 Nov 2026). -->
+        <div :class="['grid gap-x-8 gap-y-6 max-md:hidden', attentionParts === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 xl:grid-cols-3']">
+          <div v-if="paymentsWaiting" class="min-w-0">
             <UnavailableNote
               v-if="pendingPaymentsFailed"
               message="Payments to verify could not be loaded. Some may be waiting."
@@ -957,7 +958,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             </template>
           </div>
 
-          <div v-if="repairsWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
+          <div v-if="repairsWaiting" class="min-w-0">
             <UnavailableNote
               v-if="maintenanceTicketsFetchFailed"
               message="Repairs could not be loaded. Some may be urgent."
@@ -998,7 +999,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               </p>
             </template>
           </div>
-          <div v-if="inquiriesWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
+          <div v-if="inquiriesWaiting" class="min-w-0">
             <UnavailableNote
               v-if="inquiriesFetchFailed"
               message="Inquiries could not be loaded. Some may be waiting."
@@ -1086,7 +1087,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <li
                 v-for="(d, i) in dueSoon.slice(0, DUE_ROWS)"
                 :key="d.tenantProfileId"
-                class="list-reveal-item flex min-w-0 flex-col gap-0.5 border-t border-line py-2.5"
+                class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
                 <span class="break-words text-base font-medium">{{ d.name ?? 'Name not recorded' }}</span>
