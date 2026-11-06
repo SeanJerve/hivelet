@@ -513,13 +513,13 @@ const monthShown = computed(
 /**
  * The width of each tile on the twelve-column grid (Sean, 6 Nov 2026). The tiles that come and go,
  * Needs your attention and Received, sit on top, alone in their row if need be, and never stretched
- * to fill it: Needs your attention takes half for one part, two thirds for two, and the full width
+ * to fill it: Needs your attention takes a third for one part (the width of Occupancy under it), two thirds for two, and the full width
  * only for all three side by side; Received a third. Occupancy and Income and expenses always share
  * the row below, a third and two thirds. Whatever a row leaves over stays empty ("it is okay for us
  * to keep dead space").
  */
 const tileSpans = computed(() => ({
-  attention: attentionParts.value <= 1 ? 'xl:col-span-6' : attentionParts.value === 2 ? 'xl:col-span-8' : 'xl:col-span-12',
+  attention: attentionParts.value <= 1 ? 'xl:col-span-4' : attentionParts.value === 2 ? 'xl:col-span-8' : 'xl:col-span-12',
   month: 'xl:col-span-4',
   // Always starts its own row, so it sits beside Income and expenses and never beside a tile above.
   occupancy: 'xl:col-span-4 xl:col-start-1',
@@ -916,7 +916,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               </div>
               <!-- One column per item, three lines: what it is, the figure that matters, the date (Sean,
                    6 Nov 2026: only those, the figure below the name rather than in a column of its own). -->
-              <ul class="mt-4 divide-y divide-white/10">
+              <ul class="mt-2 divide-y divide-white/10">
                 <li
                   v-for="(p, i) in pendingPreview"
                   :key="p.id"
@@ -958,7 +958,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               </div>
               <!-- One column per item, three lines: what it is, the figure that matters, the date (Sean,
                    6 Nov 2026: only those, the figure below the name rather than in a column of its own). -->
-              <ul class="mt-4 divide-y divide-white/10">
+              <ul class="mt-2 divide-y divide-white/10">
                 <li
                   v-for="(t, i) in urgentPreview"
                   :key="t.id"
@@ -994,7 +994,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                 </router-link>
               </div>
-              <ul class="mt-4 divide-y divide-white/10">
+              <ul class="mt-2 divide-y divide-white/10">
                 <li
                   v-for="(q, i) in waitingInquiries"
                   :key="q.id"
