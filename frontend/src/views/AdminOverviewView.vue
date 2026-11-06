@@ -511,39 +511,19 @@ const monthShown = computed(
 );
 
 /**
- * The width of each tile on the twelve-column grid, by which of the others are showing. Halves,
- * two to a row, rather than the 7 and 5 they were (Lloyd, 3 Nov 2026: "repositioning equally
- * instead of having asymmetric orientations"). Needs your attention takes the whole row when both
- * its parts are showing, and half, beside Occupancy, when one is. A half left alone at the end
- * takes the whole row.
+ * The width of each tile on the twelve-column grid. No tile runs the full width (Sean, 6 Nov 2026:
+ * "we shouldn't have a card there that is full width, it's absurd"; "it is okay for us to keep dead
+ * space instead of trying to fill those spaces"): each takes the columns its content needs and the
+ * row keeps whatever is left over, empty. Needs your attention a third for one part and two thirds
+ * for two or three side by side; Received and Occupancy a third each; Income and expenses two
+ * thirds. This replaces the halves that filled each row (3 and 5 Nov 2026).
  */
-const tileSpans = computed(() => {
-  const order: { key: string; full: boolean }[] = [
-    ...(attentionShown.value ? [{ key: 'attention', full: attentionBoth.value }] : []),
-    ...(monthShown.value ? [{ key: 'month', full: false }] : []),
-    { key: 'occupancy', full: false },
-    { key: 'byMonth', full: false },
-  ];
-  const spans: Record<string, string> = {};
-  let alone: string | null = null; // a half with nothing yet beside it
-  for (const t of order) {
-    if (t.full) {
-      if (alone) spans[alone] = 'xl:col-span-12';
-      alone = null;
-      spans[t.key] = 'xl:col-span-12';
-    } else {
-      spans[t.key] = 'xl:col-span-6';
-      // Occupancy beside Income takes a third and the chart two (Sean, 5 Nov 2026).
-      if (alone === 'occupancy' && t.key === 'byMonth') {
-        spans.occupancy = 'xl:col-span-4';
-        spans.byMonth = 'xl:col-span-8';
-      }
-      alone = alone ? null : t.key;
-    }
-  }
-  if (alone) spans[alone] = 'xl:col-span-12';
-  return spans;
-});
+const tileSpans = computed(() => ({
+  attention: attentionParts.value <= 1 ? 'xl:col-span-4' : 'xl:col-span-8',
+  month: 'xl:col-span-4',
+  occupancy: 'xl:col-span-4',
+  byMonth: 'xl:col-span-8',
+}) as Record<string, string>);
 /** The inquiries waiting for an answer, newest first, three of them. */
 const waitingInquiries = computed(() =>
   inquiries.filter((i) => i.status === 'Pending').slice(0, 3)
@@ -837,7 +817,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       the reading order on a phone follows what is drawn, not the source. From
       768px nothing changes.
     -->
-    <TransitionGroup v-else-if="!isHistoricalMode" tag="div" name="tile" class="ws-reveal grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-12">
+    <!-- Each tile as tall and as wide as what it holds (Sean, 6 Nov 2026: "it is okay for us to keep dead space instead of trying to fill those spaces"): no tile stretches to its neighbour's height, and the space left over stays empty. -->
+    <TransitionGroup v-else-if="!isHistoricalMode" tag="div" name="tile" class="ws-reveal grid grid-cols-2 items-start gap-3 md:gap-4 xl:grid-cols-12">
       <!-- What needs her action. The only dark tile on the screen. -->
       <OverviewTile v-if="attentionShown" key="attention" tone="night" title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 max-md:p-4 md:col-span-2', tileSpans.attention, phoneSpan]">
         <!--
@@ -1098,8 +1079,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
             </p>
           </div>
-          <SegmentBar :segments="clusterUnitSplit" :label="`${occupiedCount}/${rooms.length} units occupied, by cluster`" />
-          <table class="w-full text-sm">
+          <SegmentBar class="max-w-md" :segments="clusterUnitSplit" :label="`${occupiedCount}/${rooms.length} units occupied, by cluster`" />
+          <table class="w-full max-w-md text-sm">
             <!-- Each cluster and its count only, no column names (Sean, 5 Nov 2026): the rent is on
                  Rooms and rates. The names stay for a screen reader. -->
             <caption class="sr-only">Occupied units by cluster</caption>
