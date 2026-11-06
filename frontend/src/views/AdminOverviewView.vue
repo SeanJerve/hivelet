@@ -234,7 +234,7 @@ async function loadPayments() {
  * "so that the landlady knows who to ask for rent payment early"). The server reads each tenant's
  * standing the way their own portal does (GET /admin/rent-due-soon).
  */
-interface DueSoon { tenantProfileId: string; name: string | null; roomNumber: string; dueDate: string; amount: number }
+interface DueSoon { tenantProfileId: string; name: string | null; roomNumber: string; dueDate: string; periodEnd: string; amount: number }
 const dueSoon = ref<DueSoon[]>([]);
 const dueSoonFailed = ref(false);
 const DUE_ROWS = 3; // as many as Needs your attention shows (ATTENTION_ROWS)
@@ -248,8 +248,21 @@ async function loadDueSoon() {
     dueSoonFailed.value = true;
   }
 }
-function dueDateWords(iso: string) {
-  return new Date(`${iso}T00:00:00+08:00`).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' });
+/**
+ * The period the rent is for, "Nov 7 to Dec 6", not "due Nov 7, 2026": Sean read the due date under
+ * "Received, November" as October's rent (Sean, 7 Nov 2026). A period starts on its due day. Both
+ * dates take the year when either is not in this one: "Dec 7, 2026 to Jan 6, 2027".
+ */
+function periodWords(startIso: string, endIso: string) {
+  const thisYear = [startIso, endIso].every((iso) => Number(iso.slice(0, 4)) === CURRENT_YEAR);
+  const day = (iso: string) =>
+    new Date(`${iso}T00:00:00+08:00`).toLocaleDateString('en-PH', {
+      month: 'short',
+      day: 'numeric',
+      ...(thisYear ? {} : { year: 'numeric' }),
+      timeZone: 'Asia/Manila',
+    });
+  return `${day(startIso)} to ${day(endIso)}`;
 }
 
 async function refreshAllData() {
@@ -536,9 +549,9 @@ const monthShown = computed(() => tilesSettled.value);
 
 /**
  * The width of each tile on the twelve-column grid (Sean, 6 Nov 2026). The tiles that come and go,
- * Needs your attention and Received, sit on top, alone in their row if need be, and never stretched
+ * Needs your attention and Rent for the month, sit on top, alone in their row if need be, and never stretched
  * to fill it: Needs your attention takes a third for one part (the width of Occupancy under it), two thirds for two, and the full width
- * only for all three side by side; Received two thirds. Occupancy and Income and expenses always share
+ * only for all three side by side; Rent for the month two thirds. Occupancy and Income and expenses always share
  * the row below, a third and two thirds. Whatever a row leaves over stays empty ("it is okay for us
  * to keep dead space").
  */
@@ -949,7 +962,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 >
                   <span class="break-words text-base font-medium">{{ p.name }}</span>
                   <span class="text-base font-semibold tabular">{{ peso(p.amount, 2) }}</span>
-                  <span v-if="p.date" class="text-sm text-ink-soft">{{ p.date }}</span>
+                  <!-- "Sent", the To verify card's word for the day the tenant paid, so the day is not read as
+                       a due day or the month the rent is for (Sean, 7 Nov 2026). -->
+                  <span v-if="p.date" class="text-sm text-ink-soft">Sent {{ p.date }}</span>
                 </li>
               </ul>
               <p v-if="pendingCount > pendingPreview.length" class="mt-2 text-xs text-ink-soft">
@@ -991,7 +1006,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 >
                   <span class="break-words text-base font-medium">{{ t.title }}</span>
                   <StatusPill :tone="t.priority === 'Emergency' ? 'overdue' : 'verify'">{{ t.priority }}</StatusPill>
-                  <span class="text-sm text-ink-soft">{{ t.reported }}</span>
+                  <!-- "Reported", as Repairs says it, so a bare date is not read as a due day (Sean, 7 Nov 2026). -->
+                  <span class="text-sm text-ink-soft">Reported {{ t.reported }}</span>
                 </li>
               </ul>
               <p v-if="urgentTickets.length > urgentPreview.length" class="mt-2 text-xs text-ink-soft">
@@ -1041,8 +1057,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
       <OverviewTile
         v-if="monthShown"
         key="month"
-        :title="`Received, ${MONTH_LONG[CURRENT_MONTH - 1]}`"
-        phone-title="Received"
+        :title="`Rent for ${MONTH_LONG[CURRENT_MONTH - 1]}`"
         to="/admin/income#income-records"
         to-label="Open the income records"
         :class="['max-md:order-1 max-md:gap-3', tileSpans.month, phoneSpan]"
@@ -1068,9 +1083,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <p v-if="currentMonthRecordCount === 0" class="text-3xl leading-none font-semibold tracking-tight text-ink-soft max-[359px]:text-2xl">Not recorded</p>
             <p v-else class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl">{{ peso(currentMonthRevenue) }}</p>
             <!-- The count only; "usually entered a week or two after" was
-                 explanation she does not need on her own screen (Sean, 2026-10-01). -->
+                 explanation she does not need on her own screen (Sean, 2026-10-01). The month is in the
+                 title on a phone too now: the tile is full width there, and "Rent" alone over "Not
+                 recorded" named no month (7 Nov 2026). -->
             <p v-if="currentMonthRecordCount > 0" class="mt-2 text-sm text-ink-soft">
-              <span class="md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }}, </span>{{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }}<span class="max-md:hidden"> entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }}</span> so far
+              {{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }} entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }} so far
             </p>
           </div>
           <!-- Who to ask for rent this week, under what has come in, on the page and three at most
@@ -1092,7 +1109,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               >
                 <span class="break-words text-base font-medium">{{ d.name ?? 'Name not recorded' }}</span>
                 <span class="text-base font-semibold tabular">{{ peso(d.amount, 2) }}</span>
-                <span class="text-sm text-ink-soft">Unit {{ d.roomNumber }}, due {{ dueDateWords(d.dueDate) }}</span>
+                <span class="text-sm text-ink-soft">Unit {{ d.roomNumber }}, {{ periodWords(d.dueDate, d.periodEnd) }}</span>
               </li>
             </ul>
             <p v-if="dueSoon.length > DUE_ROWS" class="mt-1 text-xs text-ink-soft">{{ dueSoon.length - DUE_ROWS }} more this week.</p>

@@ -759,7 +759,7 @@ function triggerRecord() {
           // The name the server was sent (above); never an invented payer.
           contact: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || ''),
           invoice: inv,
-          rentFor: `${formattedStart} – ${formattedEnd}`,
+          rentFor: `${formattedStart} to ${formattedEnd}`,
           rent: Number(rentAmount.value) || 0,
           occupants: occCount,
           water: Number(waterAmount.value) || 0,
@@ -1036,7 +1036,7 @@ function triggerRecord() {
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-end">
           <label class="ws-field">
-            Date received
+            Date paid
             <input v-model="date" type="date" class="ws-input w-full" required @input="dateReceivedTyped = true" />
           </label>
           <!-- On the sheet, not in a box (Sean, 4 Nov 2026), and large, the size of the Overview's

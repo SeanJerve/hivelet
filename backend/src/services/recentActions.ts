@@ -28,7 +28,7 @@ export interface RecentAction {
   id: string;
   /** When it happened (ISO). */
   at: string;
-  /** What happened, in a sentence: "Recorded a payment for 2B, October 2026, ₱8,800." */
+  /** What happened, in a sentence: "Recorded a payment: 2B, rent for October 2026, ₱8,800." */
   text: string;
   /** Where to see it, or null. */
   link: string | null;
@@ -70,7 +70,8 @@ function peso(n: unknown): string | null {
 function period(month: unknown, year: unknown): string | null {
   const m = Number(month);
   const y = Number(year);
-  return m >= 1 && m <= 12 && y > 2000 ? `${MONTHS[m - 1]} ${y}` : null;
+  // "rent for", so the month is not read as the month it was paid (Sean, 7 Nov 2026).
+  return m >= 1 && m <= 12 && y > 2000 ? `rent for ${MONTHS[m - 1]} ${y}` : null;
 }
 
 const unitCode = (code: unknown) => (code ? String(code).toUpperCase() : null);

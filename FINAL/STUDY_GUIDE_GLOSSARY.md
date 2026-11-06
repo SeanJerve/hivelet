@@ -410,7 +410,7 @@ Inquiries and Repairs screens.
 **Covering from / Covering to / Months covered.** In Record payment, the period a payment covers.
 Covering from starts the day after the tenant's last recorded period. **Where:** App. K, Part 2, §3.
 
-**Date received.** In Record payment, the day the money was received. **Where:** App. K, Part 2, §3.
+**Date paid.** In Record payment and Edit payment, the day the tenant paid. The payment is filed under the month its rent period starts, not this day. **Where:** App. K, Part 2, §3.
 
 **Delete payment.** The button that removes a receipt recorded by mistake. It does not erase it: the
 receipt is **voided**, kept with who, when and why, and drops out of the totals. Ch. 5 recommends the
@@ -548,8 +548,8 @@ Part 1, §3.
 **Pull down to reload.** In the installed app, pulling a page down reloads it. **Where:** App. K,
 Part 1, §6.
 
-**Received and Income by cluster, Expenses and Expense by area.** The month card ("Received from
-November", "Expenses, November") and the year beside it, on Monthly Income and Monthly Expenses. The
+**Rent for and Income by cluster, Expenses for and Expense by area.** The month card ("Rent for
+November", "Expenses for November") and the year beside it, on Monthly Income and Monthly Expenses. The
 green word in "Income by cluster" or "Expense by area" switches the card to **month**, the year as
 bars. **Where:** App. K, Part 2, §3.
 

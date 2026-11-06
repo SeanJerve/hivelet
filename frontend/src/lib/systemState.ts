@@ -1087,7 +1087,9 @@ export async function fetchIncomeRecords(opts: { quiet?: boolean } = {}): Promis
         const datePaidFormatted = formatDateOnly(inc.date_paid, { month: 'short', day: 'numeric', year: 'numeric' }) || NOT_RECORDED;
         const rentStart = formatDateOnly(inc.rent_period_start, { month: 'short', day: 'numeric' });
         const rentEnd = formatDateOnly(inc.rent_period_end, { month: 'short', day: 'numeric' });
-        const rentFor = rentStart && rentEnd ? `${rentStart} – ${rentEnd}` : 'Current Month';
+        // "to", as every period is written, and "Not recorded" for a row with no period: it said "Current
+        // Month", which named a month nobody entered (Sean, 7 Nov 2026).
+        const rentFor = rentStart && rentEnd ? `${rentStart} to ${rentEnd}` : NOT_RECORDED;
 
         return {
           id: inc.id,

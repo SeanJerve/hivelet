@@ -1290,7 +1290,7 @@ const isDownloadOpen = ref(false);
       zero and keeps its place. CSS order wherever the two stack, below 1280px (it was 768px; at 1024 a full-width card saying only "Not recorded" opened the page).
     -->
     <div class="grid gap-3 md:gap-4 xl:grid-cols-12">
-      <OverviewTile :title="`Received from ${(focus.waitingFor ?? focus.label).split(' ')[0]}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Rent for ${(focus.waitingFor ?? focus.label).split(' ')[0]}`" :class="['max-md:gap-3 xl:col-span-4', receivedIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
           message="The collections could not be loaded."
@@ -1304,7 +1304,8 @@ const isDownloadOpen = ref(false);
         <template v-else>
           <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
           <template v-if="focus.waitingFor">
-            <p class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Nothing for {{ focus.waitingFor.split(' ')[0] }} yet</p>
+            <!-- The app's one wording for nothing entered, muted (Sean, 7 Nov 2026: it said "Nothing for November yet"). -->
+            <p :class="['text-2xl md:text-3xl font-semibold leading-tight tracking-tight', NOT_RECORDED_CLASS]">{{ NOT_RECORDED }}</p>
             <p class="mt-1 text-sm font-semibold text-ink-soft">{{ earlierMonthNote(focus) }}</p>
           </template>
           <!-- Rent plus water, the Remitted column's figure, for the one month. The total alone: the
@@ -1804,8 +1805,8 @@ const isDownloadOpen = ref(false);
                   <dd class="mt-0.5 font-medium text-ink">{{ r.datePaid }}</dd>
                 </div>
                 <div>
-                  <dt class="text-ink-faint">Covering</dt>
-                  <dd class="mt-0.5 font-medium text-ink">{{ r.rentFor }}</dd>
+                  <dt class="text-ink-faint">For</dt>
+                  <dd :class="['mt-0.5 font-medium', r.rentFor === NOT_RECORDED ? NOT_RECORDED_CLASS : 'text-ink']">{{ r.rentFor }}</dd>
                 </div>
                 <div>
                   <dt class="text-ink-faint">Rent</dt>
@@ -1956,8 +1957,8 @@ const isDownloadOpen = ref(false);
             <dd class="mt-0.5 font-medium text-ink">{{ r.datePaid }}</dd>
           </div>
           <div>
-            <dt class="text-ink-faint">Covering</dt>
-            <dd class="mt-0.5 font-medium text-ink">{{ r.rentFor }}</dd>
+            <dt class="text-ink-faint">For</dt>
+            <dd :class="['mt-0.5 font-medium', r.rentFor === NOT_RECORDED ? NOT_RECORDED_CLASS : 'text-ink']">{{ r.rentFor }}</dd>
           </div>
           <div>
             <dt class="text-ink-faint">Rent</dt>
@@ -2097,7 +2098,7 @@ const isDownloadOpen = ref(false);
                a full row to itself rather than a cramped half beside a date. -->
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label class="ws-field">
-              Date received
+              Date paid
               <input v-model="editDate" type="date" class="ws-input w-full" required />
             </label>
             <!-- The payment form's total, so the twins read alike: on the sheet, not in a box, and

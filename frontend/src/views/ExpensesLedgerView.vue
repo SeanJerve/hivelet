@@ -23,6 +23,7 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { earlierMonthNote, focusMonth, MONTH_LONG, MONTH_SHORT } from '@/lib/focusMonth';
+import { NOT_RECORDED, NOT_RECORDED_CLASS } from '@/lib/notRecorded';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
 import type { CapsuleMonth } from '@/components/overview/types';
 import PillSelect from '@/components/ui/PillSelect.vue';
@@ -1077,7 +1078,7 @@ async function handleEditExpense() {
         to do on its own, and the pair reads as one product. It also stops a
         seven-figure peso amount from running out of a third-width tile.
       -->
-      <OverviewTile :title="`Expenses, ${(focus.waitingFor ?? focus.label).split(' ')[0]}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
+      <OverviewTile :title="`Expenses for ${(focus.waitingFor ?? focus.label).split(' ')[0]}`" :class="['max-md:gap-3 xl:col-span-4', spentIsEmpty && 'max-xl:order-last']">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
           message="Expenses could not be loaded."
@@ -1085,11 +1086,12 @@ async function handleEditExpense() {
         />
         <!-- Nothing entered for the month: said, not shown as ₱0 (as on Monthly Income). -->
         <!-- A search that finds nothing is not an unrecorded month (audit, 6 Nov 2026), as on Monthly Income. -->
-        <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-ink-soft">{{ q.trim() ? 'Nothing matches' : 'Not recorded' }}</p>
+        <p v-else-if="monthEntries.length === 0" class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-ink-soft">{{ q.trim() ? 'Nothing matches' : NOT_RECORDED }}</p>
         <template v-else>
           <!-- This month first, even empty, then the last month on record under it (Sean, 2 Nov 2026). -->
           <template v-if="focus.waitingFor">
-            <p class="text-2xl md:text-3xl font-semibold leading-tight tracking-tight">Nothing for {{ focus.waitingFor.split(' ')[0] }} yet</p>
+            <!-- The app's one wording for nothing entered, muted, as on Monthly Income (Sean, 7 Nov 2026). -->
+            <p :class="['text-2xl md:text-3xl font-semibold leading-tight tracking-tight', NOT_RECORDED_CLASS]">{{ NOT_RECORDED }}</p>
             <p class="mt-1 text-sm font-semibold text-ink-soft">{{ earlierMonthNote(focus) }}</p>
           </template>
           <!-- The total alone, as on Monthly Income: the entries and the Utilities and Repairs lines

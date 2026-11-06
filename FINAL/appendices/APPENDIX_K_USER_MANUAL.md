@@ -43,7 +43,7 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
 
 ### 3. Payments and billing / Bayad at singil
 
-- **The bill** to pay, named by its month (for example **"Bill to pay, November"**): the rent, plus
+- **The bill** to pay, named by its month (for example **"Bill to pay, rent for November"**): the rent, plus
   water at **₱200 per occupant per month**. *Tubig: ₱200 bawat nakatira bawat buwan.*
 - The bill card shows only while something is to pay. Once you are settled the page is the **Payment record** alone. Only receipts the landlady has **verified** count, and a GCash payment you sent shows as **waiting** until she verifies it.
 - **Record** and **History**, two tabs. The record is one row per month: a receipt
@@ -160,7 +160,7 @@ as good as that.
 
 The first screen: **Needs your attention**, in up to three parts: the payments waiting to be verified, the urgent
 repairs, and the inquiries waiting for an answer, three of each with a count of the rest. A part with
-nothing waiting is not shown, and with nothing waiting at all the card is not shown, **Received** for this month once anything is recorded in it, **Occupancy** (the units
+nothing waiting is not shown, and with nothing waiting at all the card is not shown, **Rent for** this month (for example **"Rent for November"**, the rent filed under November, whenever it was paid) with **Due this week** under it (each tenant whose rent falls due in the next seven days, with the period it pays for, such as "Unit 1A, Nov 7 to Dec 6"), **Occupancy** (the units
 occupied out of 33, with each cluster's count, such as 22/22), and **Income and expenses**, the year month by month. Tap a
 month on the chart to see its **Income**, **Operating expenses** and **Net income** under the chart;
 the arrows beside **Income** and **Operating expenses** open Monthly Income and Monthly Expenses. Urgent repairs are listed only in Needs your attention.
@@ -191,7 +191,7 @@ only, so another phone or computer shows its own count.
 ### 3. Recording a payment (Monthly Income)
 
 1. **Monthly Income** > **Record payment**.
-2. Choose the **Unit**, the **Date received**, **How they paid**, and the period it covers
+2. Choose the **Unit**, the **Date paid**, **How they paid**, and the period it covers
    (**Covering from**, **Covering to**, or **Months covered** for more than one month at once).
    **Covering from** starts on the day after that tenant's last recorded period, so payments
    entered oldest first need no change. Change it if this payment is for a different period.
@@ -217,14 +217,15 @@ When any are waiting, Monthly Income opens on **To verify**. Check the money arr
 **Verify payment**, or **Reject** to its left and then **Reject payment** to confirm. A payment is only counted once you verify it. **Until online
 payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
 
-**The month and the year.** **Received** at the top is **one month**, its total alone (for example
-"Received from October"). Until something is recorded for this month it says so first, for
-example **"Nothing for November yet"**, and gives the last month recorded under it ("From the
-previous month, October"; the year is named only when it is not the one at the top). Beside it, **Income by cluster**
+**The month and the year.** **Rent for** at the top is **one month**, its total alone (for example
+"Rent for October": the rent filed under October, the month its period starts, not the month it
+was paid). Until something is recorded for this month it says so first, **Not recorded**, and
+gives the latest month recorded under it ("Latest recorded, October"; the year is named only when
+it is not the one at the top). Beside it, **Income by cluster**
 is the **year**: the year's total and how it divides across the clusters. Tap the green **cluster**
 to change it to **month**, the year month by month. Monthly Expenses is laid out the same way
-("Expenses, October"; **Expense by area**, or by **month** in red bars). The **All months** dropdown
-(under **Filters** on a phone) shows one month in Received. The year beside the page name (for example **2026 ⌄**) picks
+("Expenses for October"; **Expense by area**, or by **month** in red bars). The **All months** dropdown
+(under **Filters** on a phone) shows one month in Rent for. The year beside the page name (for example **2026 ⌄**) picks
 another year, or **All years** for everything since the records began; a past year can be read but
 not added to, so **Record payment** is not shown there. The **Group by cluster** dropdown (the usual view) can
 instead read **Group by unit** or **Group by tenant (A to Z)**.

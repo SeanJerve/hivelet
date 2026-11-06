@@ -624,7 +624,8 @@ function billTileTitle(bill: any): string {
     ? 'Payment sent'
     : billBalance(bill) < Number(bill.total_amount) ? 'Partly paid bill' : 'Bill to pay';
   const month = billMonth(bill);
-  return month ? `${base}, ${month}` : base;
+  // "rent for", so "Bill to pay, August" is not read as a bill to pay in August (Sean, 7 Nov 2026).
+  return month ? `${base}, rent for ${month}` : base;
 }
 
 /**
@@ -1025,7 +1026,9 @@ function refreshAll() {
               >
                 {{ peso(record.amountPaid, 2) }}
               </p>
-              <p v-if="record.datePaid" class="mt-1.5 text-sm text-ink-soft">{{ record.datePaid }}</p>
+              <!-- Named, as the Overview's rows are: a bare date under the amount read as a due day
+                   (Sean, 7 Nov 2026). An online attempt was sent, not yet paid. -->
+              <p v-if="record.datePaid" class="mt-1.5 text-sm text-ink-soft">{{ 'kind' in record && record.kind === 'attempt' ? 'Sent' : 'Paid' }} {{ record.datePaid }}</p>
             </div>
             <StatusPill :tone="statusTone(record.status)">
               {{ statusLabelShort(record.status) }}

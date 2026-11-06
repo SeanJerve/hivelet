@@ -35,17 +35,16 @@ export interface FocusMonth {
 }
 
 /**
- * Names the month shown when it is not this one: the month before it, or one further back.
- * "From the previous month, October 2026" (review of 4 Nov 2026).
+ * Names the month shown when it is not this one: the latest month with entries, "Latest recorded,
+ * October". It said "From the previous month, October" (review of 4 Nov 2026), which Sean read as
+ * money paid in that month (Sean, 7 Nov 2026: say plainly it is the latest month recorded).
  */
 export function earlierMonthNote(f: FocusMonth): string {
   if (!f.waitingFor) return f.label;
-  const [name, year] = f.waitingFor.split(' ');
-  const now = Number(year) * 12 + MONTH_LONG.indexOf(name as (typeof MONTH_LONG)[number]);
-  const shown = Number(f.year) * 12 + f.month - 1;
+  const year = f.waitingFor.split(' ')[1];
   // The year only when it is not the one waited for: it is at the top of the page (Sean, 5 Nov 2026).
   const named = Number(f.year) === Number(year) ? MONTH_LONG[f.month - 1] : f.label;
-  return `From ${now - shown === 1 ? 'the previous month' : 'an earlier month'}, ${named}`;
+  return `Latest recorded, ${named}`;
 }
 
 /**
