@@ -542,13 +542,11 @@ const monthShown = computed(() => tilesSettled.value);
  * the row below, a third and two thirds. Whatever a row leaves over stays empty ("it is okay for us
  * to keep dead space").
  */
-// Received has the row to itself when Needs your attention is not shown, or takes two thirds or more.
-const receivedAlone = computed(() => !attentionShown.value || attentionParts.value >= 2);
 const tileSpans = computed(() => ({
-  attention: attentionParts.value <= 1 ? 'xl:col-span-4' : attentionParts.value === 2 ? 'xl:col-span-8' : 'xl:col-span-12',
-  // Two thirds beside a one-part Needs your attention, its rent dues two to a line; the full width
-  // and three to a line when it has the row to itself (Sean, 6 Nov 2026).
-  month: receivedAlone.value ? 'xl:col-span-12' : 'xl:col-span-8',
+  // On the page, not a card, its own row with a rule under it; its parts a third each (Sean, 7 Nov 2026).
+  attention: 'xl:col-span-12',
+  // Its own row under Needs your attention, never beside it, its rent dues three to a line (Sean, 7 Nov 2026).
+  month: 'xl:col-span-12',
   // Always starts its own row, so it sits beside Income and expenses and never beside a tile above.
   occupancy: 'xl:col-span-4 xl:col-start-1',
   byMonth: 'xl:col-span-8',
@@ -559,7 +557,7 @@ const waitingInquiries = computed(() =>
 );
 const waitingInquiryCount = computed(() => inquiries.filter((i) => i.status === 'Pending').length);
 
-const phoneSpan = computed(() => (attentionShown.value && monthShown.value ? '' : 'max-md:col-span-2'));
+const phoneSpan = computed(() => 'max-md:col-span-2');
 
 /**
  * Most units first, each with its colour in the bar. No hatch among them: beside this tile's
@@ -849,7 +847,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
     <!-- Each tile as tall and as wide as what it holds (Sean, 6 Nov 2026: "it is okay for us to keep dead space instead of trying to fill those spaces"): no tile stretches to its neighbour's height, and the space left over stays empty. -->
     <TransitionGroup v-else-if="!isHistoricalMode" tag="div" name="tile" class="ws-reveal grid grid-cols-2 items-start gap-3 md:gap-4 xl:grid-cols-12">
       <!-- What needs her action. The only dark tile on the screen. -->
-      <OverviewTile v-if="attentionShown" key="attention" tone="night" title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 max-md:p-4 md:col-span-2', tileSpans.attention, phoneSpan]">
+      <OverviewTile v-if="attentionShown" key="attention" title="Needs your attention" :class="['max-md:order-1 max-md:gap-3 col-span-2 border-b border-line pb-6', tileSpans.attention]">
         <!--
           On a phone each part of this tile is one link, the count and its words
           together, instead of a count, a button and a link stacked: at half a
@@ -860,23 +858,21 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <template v-if="paymentsWaiting">
             <UnavailableNote
               v-if="pendingPaymentsFailed"
-              dark
               message="Payments to verify could not be loaded."
               @retry="refreshAllData"
             />
             <router-link v-else to="/admin/income?tab=verify#income-records" class="press group/att flex flex-col gap-1">
               <span class="flex items-start gap-2">
                 <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ pendingCount }}</span>
-                <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
+                <ArrowUpRight class="size-4 text-ink" aria-hidden="true" />
               </span>
-              <span class="text-base text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
-              <span class="text-xs tabular text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
+              <span class="text-base text-ink-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
+              <span class="text-xs tabular text-ink-soft">{{ peso(pendingTotal, 2) }} in total</span>
             </router-link>
           </template>
           <template v-if="repairsWaiting">
             <UnavailableNote
               v-if="maintenanceTicketsFetchFailed"
-              dark
               :class="attentionBoth && 'mt-auto'"
               message="Repairs could not be loaded."
               @retry="refreshAllData"
@@ -884,49 +880,55 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <router-link
               v-else
               to="/admin/tickets#repairs-board"
-              :class="['press flex flex-col gap-1', attentionBoth && 'mt-auto border-t border-white/10 pt-3']"
+              :class="['press flex flex-col gap-1', attentionBoth && 'mt-auto border-t border-line pt-3']"
             >
               <span class="flex items-start gap-2">
                 <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ urgentTickets.length }}</span>
-                <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
+                <ArrowUpRight class="size-4 text-ink" aria-hidden="true" />
               </span>
-              <span class="text-base text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
+              <span class="text-base text-ink-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
             </router-link>
           </template>
           <template v-if="inquiriesWaiting">
             <UnavailableNote
               v-if="inquiriesFetchFailed"
-              dark
               message="Inquiries could not be loaded."
               @retry="refreshAllData"
             />
             <router-link
               v-else
               to="/admin/inquiries"
-              :class="['press flex flex-col gap-1', (paymentsWaiting || repairsWaiting) && 'border-t border-white/10 pt-3']"
+              :class="['press flex flex-col gap-1', (paymentsWaiting || repairsWaiting) && 'border-t border-line pt-3']"
             >
               <span class="flex items-start gap-2">
                 <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ waitingInquiryCount }}</span>
-                <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
+                <ArrowUpRight class="size-4 text-ink" aria-hidden="true" />
               </span>
-              <span class="text-base text-on-night-soft">{{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer</span>
+              <span class="text-base text-ink-soft">{{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer</span>
             </router-link>
           </template>
         </div>
 
         <!-- From 768px: the two parts side by side, each a count, its link and three rows at most. -->
         <!-- One, two or three parts, each a column with a rule between (Sean, 5 Nov 2026). -->
-        <div :class="['grid gap-6 max-md:hidden', attentionParts === 2 && 'md:grid-cols-2', attentionParts === 3 && 'md:grid-cols-3', attentionBoth && 'md:gap-0 md:divide-x md:divide-white/10']">
+        <div :class="['grid gap-6 max-md:hidden', attentionParts === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 xl:grid-cols-3', attentionBoth && 'md:gap-0 md:divide-x md:divide-line']">
           <div v-if="paymentsWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
             <UnavailableNote
               v-if="pendingPaymentsFailed"
-              dark
               message="Payments to verify could not be loaded. Some may be waiting."
               @retry="refreshAllData"
             />
             <template v-else>
-              <div class="flex items-start gap-1">
-                <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p class="flex items-center gap-1 text-sm font-semibold">
+                  Payments to verify
+                  <router-link to="/admin/income?tab=verify#income-records" aria-label="Review payments" class="icon-btn icon-btn-goto group/goto shrink-0">
+                    <ArrowUpRight
+                      class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+                      aria-hidden="true"
+                    />
+                  </router-link>
+                </p>
+                <p class="mt-1 flex min-w-0 items-baseline">
                   <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot.
                        The words after each count are for a screen reader only here (Sean, 6 Nov 2026:
                        the rows under it say what it counts); the phone, which has no rows, shows them. -->
@@ -935,16 +937,9 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify, {{ peso(pendingTotal, 2) }} in total
                   </span>
                 </p>
-                <router-link to="/admin/income?tab=verify#income-records" aria-label="Review payments" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
-                  <ArrowUpRight
-                    class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
-                    aria-hidden="true"
-                  />
-                </router-link>
-              </div>
               <!-- One column per item, three lines: what it is, the figure that matters, the date (Sean,
                    6 Nov 2026: only those, the figure below the name rather than in a column of its own). -->
-              <ul class="mt-2 divide-y divide-white/10">
+              <ul class="mt-2 divide-y divide-line">
                 <li
                   v-for="(p, i) in pendingPreview"
                   :key="p.id"
@@ -953,10 +948,10 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 >
                   <span class="break-words text-base font-medium">{{ p.name }}</span>
                   <span class="text-base font-semibold tabular">{{ peso(p.amount, 2) }}</span>
-                  <span v-if="p.date" class="text-sm text-on-night-soft">{{ p.date }}</span>
+                  <span v-if="p.date" class="text-sm text-ink-soft">{{ p.date }}</span>
                 </li>
               </ul>
-              <p v-if="pendingCount > pendingPreview.length" class="mt-2 text-xs text-on-night-soft">
+              <p v-if="pendingCount > pendingPreview.length" class="mt-2 text-xs text-ink-soft">
                 {{ pendingCount - pendingPreview.length }} more in Monthly Income.
               </p>
             </template>
@@ -965,28 +960,28 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <div v-if="repairsWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
             <UnavailableNote
               v-if="maintenanceTicketsFetchFailed"
-              dark
               message="Repairs could not be loaded. Some may be urgent."
               @retry="refreshAllData"
             />
             <template v-else>
-              <div class="flex items-start gap-1">
-                <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p class="flex items-center gap-1 text-sm font-semibold">
+                  Urgent repairs
+                  <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto group/goto shrink-0">
+                    <ArrowUpRight
+                      class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+                      aria-hidden="true"
+                    />
+                  </router-link>
+                </p>
+                <p class="mt-1 flex min-w-0 items-baseline">
                   <span class="text-3xl leading-none font-semibold tracking-tight">{{ urgentTickets.length }}</span>
                   <span class="sr-only">
                     urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
                   </span>
                 </p>
-                <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
-                  <ArrowUpRight
-                    class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
-                    aria-hidden="true"
-                  />
-                </router-link>
-              </div>
               <!-- One column per item, three lines: what it is, the figure that matters, the date (Sean,
                    6 Nov 2026: only those, the figure below the name rather than in a column of its own). -->
-              <ul class="mt-2 divide-y divide-white/10">
+              <ul class="mt-2 divide-y divide-line">
                 <li
                   v-for="(t, i) in urgentPreview"
                   :key="t.id"
@@ -995,10 +990,10 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 >
                   <span class="break-words text-base font-medium">{{ t.title }}</span>
                   <StatusPill :tone="t.priority === 'Emergency' ? 'overdue' : 'verify'">{{ t.priority }}</StatusPill>
-                  <span class="text-sm text-on-night-soft">{{ t.reported }}</span>
+                  <span class="text-sm text-ink-soft">{{ t.reported }}</span>
                 </li>
               </ul>
-              <p v-if="urgentTickets.length > urgentPreview.length" class="mt-2 text-xs text-on-night-soft">
+              <p v-if="urgentTickets.length > urgentPreview.length" class="mt-2 text-xs text-ink-soft">
                 {{ urgentTickets.length - urgentPreview.length }} more in Repairs.
               </p>
             </template>
@@ -1006,23 +1001,23 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
           <div v-if="inquiriesWaiting" :class="['min-w-0', attentionBoth && 'md:px-6 md:first:pl-0 md:last:pr-0']">
             <UnavailableNote
               v-if="inquiriesFetchFailed"
-              dark
               message="Inquiries could not be loaded. Some may be waiting."
               @retry="refreshAllData"
             />
             <template v-else>
-              <div class="flex items-start gap-1">
-                <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p class="flex items-center gap-1 text-sm font-semibold">
+                  Inquiries
+                  <router-link to="/admin/inquiries" aria-label="Open inquiries" class="icon-btn icon-btn-goto group/goto shrink-0">
+                    <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+                  </router-link>
+                </p>
+                <p class="mt-1 flex min-w-0 items-baseline">
                   <span class="text-3xl leading-none font-semibold tracking-tight">{{ waitingInquiryCount }}</span>
                   <span class="sr-only">
                     {{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer
                   </span>
                 </p>
-                <router-link to="/admin/inquiries" aria-label="Open inquiries" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
-                  <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
-                </router-link>
-              </div>
-              <ul class="mt-2 divide-y divide-white/10">
+              <ul class="mt-2 divide-y divide-line">
                 <li
                   v-for="(q, i) in waitingInquiries"
                   :key="q.id"
@@ -1031,10 +1026,10 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 >
                   <span class="break-words text-base font-medium">{{ q.name }}</span>
                   <span class="text-base font-semibold">Unit {{ q.unit.toUpperCase() }}</span>
-                  <span class="text-sm text-on-night-soft">{{ q.date }}</span>
+                  <span class="text-sm text-ink-soft">{{ q.date }}</span>
                 </li>
               </ul>
-              <p v-if="waitingInquiryCount > waitingInquiries.length" class="mt-2 text-xs text-on-night-soft">
+              <p v-if="waitingInquiryCount > waitingInquiries.length" class="mt-2 text-xs text-ink-soft">
                 {{ waitingInquiryCount - waitingInquiries.length }} more in Inquiries.
               </p>
             </template>
@@ -1087,7 +1082,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
               </router-link>
             </p>
-            <ul :class="['grid gap-x-8 sm:grid-cols-2', receivedAlone && 'xl:grid-cols-3']">
+            <ul class="grid gap-x-8 sm:grid-cols-2 xl:grid-cols-3">
               <li
                 v-for="(d, i) in dueSoon.slice(0, DUE_ROWS)"
                 :key="d.tenantProfileId"
