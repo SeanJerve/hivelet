@@ -23,11 +23,12 @@ before the redesign started.
 
 ### `views/AdminOverviewView.vue`
 
-1 call(s), **0 of them write**.
+2 call(s), **0 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | reads | `GET /admin/payments` | payments awaiting verification |
+| reads | `GET /admin/rent-due-soon` | — |
 
 ### `views/CategoryRoomsView.vue`
 
@@ -272,4 +273,4 @@ before the redesign started.
 
 ---
 
-**24 files make 79 distinct calls, 38 of which write.** Generated 2026-11-06.
+**24 files make 80 distinct calls, 38 of which write.** Generated 2026-11-06.

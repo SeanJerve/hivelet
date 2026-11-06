@@ -229,6 +229,29 @@ async function loadPayments() {
   }
 }
 
+/**
+ * Who to ask for rent before it falls due, today to a week from now, soonest first (Sean, 6 Nov 2026:
+ * "so that the landlady knows who to ask for rent payment early"). The server reads each tenant's
+ * standing the way their own portal does (GET /admin/rent-due-soon).
+ */
+interface DueSoon { tenantProfileId: string; name: string | null; roomNumber: string; dueDate: string; amount: number }
+const dueSoon = ref<DueSoon[]>([]);
+const dueSoonFailed = ref(false);
+const DUE_ROWS = 3; // as many as Needs your attention shows (ATTENTION_ROWS)
+async function loadDueSoon() {
+  try {
+    const data = await api.get<DueSoon[]>('/admin/rent-due-soon');
+    dueSoon.value = Array.isArray(data) ? data : [];
+    dueSoonFailed.value = false;
+  } catch {
+    // Not "nobody is due": the tile says the list could not be read.
+    dueSoonFailed.value = true;
+  }
+}
+function dueDateWords(iso: string) {
+  return new Date(`${iso}T00:00:00+08:00`).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' });
+}
+
 async function refreshAllData() {
   /**
    * A retry after a failure goes back behind the first-load skeleton.
@@ -250,6 +273,7 @@ async function refreshAllData() {
       fetchTenants(),
       fetchInquiries(),
       loadPayments(),
+      loadDueSoon(),
     ]);
   } finally {
     isRefreshing.value = false;
@@ -506,9 +530,10 @@ watch(isInitialLoading, (loading) => {
   if (!loading) setTimeout(() => (tilesSettled.value = true), TILE_ENTRANCE_DELAY_MS);
 });
 const attentionShown = computed(() => tilesSettled.value && attentionParts.value > 0);
-const monthShown = computed(
-  () => tilesSettled.value && (incomeRecordsFetchFailed.value || currentMonthRecordCount.value > 0)
-);
+// Every month now, "Not recorded" until the first receipt is in (Sean, 6 Nov 2026): an empty month
+// is worth seeing at a glance, and it was the gap beside Needs your attention.
+const monthShown = computed(() => tilesSettled.value);
+const dueShown = computed(() => tilesSettled.value && (dueSoonFailed.value || dueSoon.value.length > 0));
 
 /**
  * The width of each tile on the twelve-column grid (Sean, 6 Nov 2026). The tiles that come and go,
@@ -521,6 +546,7 @@ const monthShown = computed(
 const tileSpans = computed(() => ({
   attention: attentionParts.value <= 1 ? 'xl:col-span-4' : attentionParts.value === 2 ? 'xl:col-span-8' : 'xl:col-span-12',
   month: 'xl:col-span-4',
+  due: 'xl:col-span-4',
   // Always starts its own row, so it sits beside Income and expenses and never beside a tile above.
   occupancy: 'xl:col-span-4 xl:col-start-1',
   byMonth: 'xl:col-span-8',
@@ -1014,10 +1040,53 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
         </div>
       </OverviewTile>
 
+      <!-- Who to ask for rent this week, before it is late. No bar (Sean, 6 Nov 2026): the names are
+           the point. Each row as Needs your attention's are: who, the figure, then where and when. -->
+      <OverviewTile
+        v-if="dueShown"
+        key="due"
+        tone="night"
+        title="Rent due this week"
+        :class="['col-span-2 max-md:order-1 max-md:gap-3 max-md:p-4', tileSpans.due]"
+      >
+        <UnavailableNote
+          v-if="dueSoonFailed"
+          dark
+          message="Rent due this week could not be loaded."
+          @retry="refreshAllData"
+        />
+        <template v-else>
+          <div class="flex items-start gap-1">
+            <p class="flex min-w-0 items-baseline">
+              <span class="text-3xl leading-none font-semibold tracking-tight">{{ dueSoon.length }}</span>
+              <span class="sr-only">{{ dueSoon.length === 1 ? 'tenant' : 'tenants' }} with rent due in the next seven days</span>
+            </p>
+            <router-link to="/admin/tenants" aria-label="Open tenants" class="icon-btn icon-btn-goto icon-btn-on-dark group/goto shrink-0">
+              <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
+            </router-link>
+          </div>
+          <ul class="mt-2 divide-y divide-white/10">
+            <li
+              v-for="(d, i) in dueSoon.slice(0, DUE_ROWS)"
+              :key="d.tenantProfileId"
+              class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
+              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+            >
+              <span class="break-words text-base font-medium">{{ d.name ?? 'Name not recorded' }}</span>
+              <span class="text-base font-semibold tabular">{{ peso(d.amount, 2) }}</span>
+              <span class="text-sm text-on-night-soft">Unit {{ d.roomNumber }}, due {{ dueDateWords(d.dueDate) }}</span>
+            </li>
+          </ul>
+          <p v-if="dueSoon.length > DUE_ROWS" class="mt-2 text-xs text-on-night-soft">
+            {{ dueSoon.length - DUE_ROWS }} more this week.
+          </p>
+        </template>
+      </OverviewTile>
+
       <OverviewTile
         v-if="monthShown"
         key="month"
-        :title="`Received, ${MONTH_LONG[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`"
+        :title="`Received, ${MONTH_LONG[CURRENT_MONTH - 1]}`"
         phone-title="Received"
         to="/admin/income#income-records"
         to-label="Open the income records"
@@ -1041,10 +1110,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               tile's text is 106px wide, which "₱141,000" fills at `text-2xl`, so
               all three step down together there.
             -->
-            <p class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl">{{ peso(currentMonthRevenue) }}</p>
+            <p v-if="currentMonthRecordCount === 0" class="text-3xl leading-none font-semibold tracking-tight text-ink-soft max-[359px]:text-2xl">Not recorded</p>
+            <p v-else class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl">{{ peso(currentMonthRevenue) }}</p>
             <!-- The count only; "usually entered a week or two after" was
                  explanation she does not need on her own screen (Sean, 2026-10-01). -->
-            <p class="mt-2 text-sm text-ink-soft">
+            <p v-if="currentMonthRecordCount > 0" class="mt-2 text-sm text-ink-soft">
               <span class="md:hidden">{{ MONTH_LONG[CURRENT_MONTH - 1] }}, </span>{{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'payment' : 'payments' }}<span class="max-md:hidden"> entered for {{ MONTH_LONG[CURRENT_MONTH - 1] }}</span> so far
             </p>
           </div>
