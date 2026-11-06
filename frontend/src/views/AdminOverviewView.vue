@@ -511,17 +511,18 @@ const monthShown = computed(
 );
 
 /**
- * The width of each tile on the twelve-column grid. No tile runs the full width (Sean, 6 Nov 2026:
- * "we shouldn't have a card there that is full width, it's absurd"; "it is okay for us to keep dead
- * space instead of trying to fill those spaces"): each takes the columns its content needs and the
- * row keeps whatever is left over, empty. Needs your attention a third for one part and two thirds
- * for two or three side by side; Received and Occupancy a third each; Income and expenses two
- * thirds. This replaces the halves that filled each row (3 and 5 Nov 2026).
+ * The width of each tile on the twelve-column grid (Sean, 6 Nov 2026). The tiles that come and go,
+ * Needs your attention and Received, sit on top, alone in their row if need be, and never stretched
+ * to fill it: Needs your attention takes half for one part, two thirds for two, and the full width
+ * only for all three side by side; Received a third. Occupancy and Income and expenses always share
+ * the row below, a third and two thirds. Whatever a row leaves over stays empty ("it is okay for us
+ * to keep dead space").
  */
 const tileSpans = computed(() => ({
-  attention: attentionParts.value <= 1 ? 'xl:col-span-4' : 'xl:col-span-8',
+  attention: attentionParts.value <= 1 ? 'xl:col-span-6' : attentionParts.value === 2 ? 'xl:col-span-8' : 'xl:col-span-12',
   month: 'xl:col-span-4',
-  occupancy: 'xl:col-span-4',
+  // Always starts its own row, so it sits beside Income and expenses and never beside a tile above.
+  occupancy: 'xl:col-span-4 xl:col-start-1',
   byMonth: 'xl:col-span-8',
 }) as Record<string, string>);
 /** The inquiries waiting for an answer, newest first, three of them. */
@@ -840,7 +841,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ pendingCount }}</span>
                 <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
               </span>
-              <span class="text-sm text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
+              <span class="text-base text-on-night-soft">{{ pendingCount === 1 ? 'payment' : 'payments' }} to verify</span>
               <span class="text-xs tabular text-on-night-soft">{{ peso(pendingTotal, 2) }} in total</span>
             </router-link>
           </template>
@@ -861,7 +862,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ urgentTickets.length }}</span>
                 <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
               </span>
-              <span class="text-sm text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
+              <span class="text-base text-on-night-soft">urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open</span>
             </router-link>
           </template>
           <template v-if="inquiriesWaiting">
@@ -880,7 +881,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                 <span class="text-3xl leading-none font-semibold tracking-tight max-[359px]:text-2xl">{{ waitingInquiryCount }}</span>
                 <ArrowUpRight class="size-4 text-on-night" aria-hidden="true" />
               </span>
-              <span class="text-sm text-on-night-soft">{{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer</span>
+              <span class="text-base text-on-night-soft">{{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer</span>
             </router-link>
           </template>
         </div>
@@ -899,8 +900,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <div class="flex items-start gap-1">
                 <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
                   <!-- Not `tabular`: fixed-width digits are for columns, and at this size its 1 grows a foot. -->
-                  <span class="text-5xl leading-none font-semibold tracking-tight lg:text-6xl">{{ pendingCount }}</span>
-                  <span class="text-sm text-on-night-soft">
+                  <span class="text-3xl leading-none font-semibold tracking-tight">{{ pendingCount }}</span>
+                  <span class="text-base text-on-night-soft">
                     {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify, {{ peso(pendingTotal, 2) }} in total
                   </span>
                 </p>
@@ -919,12 +920,12 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
                   <span class="min-w-0">
-                    <span class="block break-words text-sm font-medium">{{ p.name }}</span>
-                    <span class="block text-xs text-on-night-soft">
+                    <span class="block break-words text-base font-medium">{{ p.name }}</span>
+                    <span class="block text-sm text-on-night-soft">
                       <template v-if="p.unit">Unit {{ p.unit }}</template><template v-if="p.unit && p.date">, </template>{{ p.date }}
                     </span>
                   </span>
-                  <span class="text-sm font-semibold tabular">{{ peso(p.amount, 2) }}</span>
+                  <span class="text-base font-semibold tabular">{{ peso(p.amount, 2) }}</span>
                 </li>
               </ul>
               <p v-if="pendingCount > pendingPreview.length" class="mt-2 text-xs text-on-night-soft">
@@ -943,8 +944,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <template v-else>
               <div class="flex items-start gap-1">
                 <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span class="text-5xl leading-none font-semibold tracking-tight lg:text-6xl">{{ urgentTickets.length }}</span>
-                  <span class="text-sm text-on-night-soft">
+                  <span class="text-3xl leading-none font-semibold tracking-tight">{{ urgentTickets.length }}</span>
+                  <span class="text-base text-on-night-soft">
                     urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
                   </span>
                 </p>
@@ -965,8 +966,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
                   <span class="min-w-0">
-                    <span class="block break-words text-sm font-medium">{{ t.title }}</span>
-                    <span class="block text-xs text-on-night-soft">
+                    <span class="block break-words text-base font-medium">{{ t.title }}</span>
+                    <span class="block text-sm text-on-night-soft">
                       {{ t.unit.toUpperCase() }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician === 'Unassigned' ? 'no one assigned yet' : t.technician }}</template>
                     </span>
                   </span>
@@ -988,8 +989,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
             <template v-else>
               <div class="flex items-start gap-1">
                 <p class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span class="text-5xl leading-none font-semibold tracking-tight lg:text-6xl">{{ waitingInquiryCount }}</span>
-                  <span class="text-sm text-on-night-soft">
+                  <span class="text-3xl leading-none font-semibold tracking-tight">{{ waitingInquiryCount }}</span>
+                  <span class="text-base text-on-night-soft">
                     {{ waitingInquiryCount === 1 ? 'inquiry' : 'inquiries' }} waiting for an answer
                   </span>
                 </p>
@@ -1005,10 +1006,10 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
                   <span class="min-w-0">
-                    <span class="block break-words text-sm font-medium">{{ q.name }}</span>
-                    <span class="block truncate text-xs text-on-night-soft">{{ q.message }}</span>
+                    <span class="block break-words text-base font-medium">{{ q.name }}</span>
+                    <span class="block truncate text-sm text-on-night-soft">{{ q.message }}</span>
                   </span>
-                  <span class="shrink-0 text-right text-xs text-on-night-soft">
+                  <span class="shrink-0 text-right text-sm text-on-night-soft">
                     <span class="block font-semibold text-on-night">Unit {{ q.unit.toUpperCase() }}</span>
                     {{ q.date }}
                   </span>
@@ -1049,7 +1050,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               tile's text is 106px wide, which "₱141,000" fills at `text-2xl`, so
               all three step down together there.
             -->
-            <p class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl md:text-4xl lg:text-5xl">{{ peso(currentMonthRevenue) }}</p>
+            <p class="text-3xl leading-none font-semibold tabular tracking-tight max-[359px]:text-2xl">{{ peso(currentMonthRevenue) }}</p>
             <!-- The count only; "usually entered a week or two after" was
                  explanation she does not need on her own screen (Sean, 2026-10-01). -->
             <p class="mt-2 text-sm text-ink-soft">
@@ -1070,8 +1071,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                the arc and a bar drew the one fact twice. -->
           <div>
             <p class="flex flex-wrap items-baseline gap-x-2">
-              <span class="text-5xl leading-none font-semibold tabular tracking-tight">
-                <span class="text-brand">{{ occupiedCount }}</span><span class="text-3xl text-ink-faint">/{{ rooms.length }}</span>
+              <span class="text-3xl leading-none font-semibold tabular tracking-tight">
+                <span class="text-brand">{{ occupiedCount }}</span><span class="text-xl text-ink-faint">/{{ rooms.length }}</span>
               </span>
               <span class="text-sm text-ink-soft">units occupied</span>
             </p>
@@ -1140,7 +1141,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                   </RouterLink>
                 </dt>
-                <dd :class="['text-lg font-semibold tabular', !pickedMonth.hasIncome && 'text-ink-soft']">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
+                <dd :class="['text-xl font-semibold tabular', !pickedMonth.hasIncome && 'text-ink-soft']">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
               </div>
               <div>
                 <dt class="text-xs text-ink-faint">
@@ -1149,11 +1150,11 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                   </RouterLink>
                 </dt>
-                <dd :class="['text-lg font-semibold tabular', !pickedMonth.hasExpenses && 'text-ink-soft']">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
+                <dd :class="['text-xl font-semibold tabular', !pickedMonth.hasExpenses && 'text-ink-soft']">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
               </div>
               <div>
                 <dt class="text-xs text-ink-faint">Net income</dt>
-                <dd :class="['text-lg font-semibold tabular', !(pickedMonth.hasIncome && pickedMonth.hasExpenses) ? 'text-ink-soft' : pickedMonth.noi < 0 && 'text-overdue']">
+                <dd :class="['text-xl font-semibold tabular', !(pickedMonth.hasIncome && pickedMonth.hasExpenses) ? 'text-ink-soft' : pickedMonth.noi < 0 && 'text-overdue']">
                   {{ pickedMonth.hasIncome && pickedMonth.hasExpenses ? peso(pickedMonth.noi) : notEnteredWord(pickedMonth) }}
                 </dd>
               </div>
