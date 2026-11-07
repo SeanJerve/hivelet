@@ -248,7 +248,8 @@ const paymentHistory = screenRef<Array<{
  * clean, one row per month (a receipt she verified, or Not recorded); the Payment history is every
  * transaction, a GCash attempt that was not accepted or is waiting included.
  */
-const recordTab = ref<'record' | 'history'>('record');
+// History first (Sean, 7 Nov 2026): every payment, sent ones included, with its method.
+const recordTab = ref<'record' | 'history'>('history');
 
 // Year filter for payment history. BR-015 prevents excessively long lists.
 // The property's year, not the viewer's - lib/propertyDate.ts exists so both
@@ -319,7 +320,22 @@ const NOT_ENTERED = 'NOT_ENTERED';
 const notEnteredRows = computed(() => {
   const st = standing.value;
   if (!st) return [];
-  return st.owedPeriods.map((p) => ({
+  return st.owedPeriods.map((p) => {
+    const sent = sentForPeriod(p.start);
+    if (sent) {
+      return {
+        id: `sent-${p.start}`,
+        invoiceRef: sent.transaction_reference || '',
+        datePaid: new Date(sent.paid_at || sent.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric', timeZone: PROPERTY_TIMEZONE }),
+        datePaidRaw: p.start,
+        year: Number(p.start.slice(0, 4)),
+        forLabel: `Rent, ${formatDateOnly(p.start, shortDay)} to ${formatDateOnly(p.end, shortDay)}`,
+        amountPaid: Number(sent.amount) || st.perPeriod.totalAmount,
+        paymentMethod: methodLabel(sent.payment_method),
+        status: (sent.verification_status || 'PENDING VERIFICATION').toUpperCase(),
+      };
+    }
+    return ({
     id: `not-entered-${p.start}`,
     invoiceRef: '',
     // Nothing in Date paid: nothing was paid. Its month is in For (Sean, 5 Nov 2026).
@@ -330,8 +346,19 @@ const notEnteredRows = computed(() => {
     amountPaid: st.perPeriod.totalAmount,
     paymentMethod: '',
     status: NOT_ENTERED,
-  }));
+  });
+  });
 });
+/**
+ * The payment sent for a period's bill and waiting to be verified, if any (Sean, 7 Nov 2026: the
+ * record showed such a month as Not recorded, with no method).
+ */
+const rawPayments = ref<any[]>([]);
+function sentForPeriod(start: string) {
+  const bill = outstandingBills.value.find((b) => String(b.billing_period_start ?? '').slice(0, 10) === start);
+  if (!bill) return null;
+  return rawPayments.value.find((p) => p.bill_id === bill.id && p.verification_status === 'Pending Verification') ?? null;
+}
 
 const filteredPayments = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
@@ -606,6 +633,12 @@ function billRemainderAfterPending(bill: any): number {
  * Received figure; only a bill still to pay is the green box (Sean, 5 Nov 2026).
  */
 const billSent = (bill: any) => billPending(bill) > 0;
+/**
+ * The bills still to pay. One whose whole balance is sent and waiting is not a card any more (Sean,
+ * 7 Nov 2026): the payment is in the record below, with its method and day.
+ */
+const billsToPay = computed(() => outstandingBills.value.filter((b) => billRemainderAfterPending(b) > 0));
+const allBillsSent = computed(() => outstandingBills.value.length > 0 && billsToPay.value.length === 0);
 const softText = (bill: any) => (billSent(bill) ? 'text-ink-soft' : 'text-on-brand-soft');
 const strongText = (bill: any) => (billSent(bill) ? 'text-ink' : 'text-on-brand');
 
@@ -747,6 +780,7 @@ async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
       });
 
     paymentHistory.value = [...paymentRows, ...receiptRows];
+    rawPayments.value = payments ?? [];
     rawReceipts.value = receipts ?? [];
     // Rejected is not waiting: that money was not accepted and does not count.
     waitingPayments.value = (payments ?? [])
@@ -802,7 +836,7 @@ function refreshAll() {
          something is to pay, two side by side when two are open, and nothing above the record
          once she is settled. -->
     <section
-      v-if="!nothingDue"
+      v-if="!nothingDue && !allBillsSent"
       ref="billsRegion"
       tabindex="-1"
       aria-label="Your bills"
@@ -862,7 +896,7 @@ function refreshAll() {
 
     <template v-else>
       <OverviewTile
-        v-for="(bill, i) in outstandingBills"
+        v-for="(bill, i) in billsToPay"
         :key="bill.id"
         :tone="billSent(bill) ? 'plain' : 'brand'"
         :title="billTileTitle(bill)"
@@ -925,7 +959,8 @@ function refreshAll() {
     </section>
 
     <!-- Payment record -->
-    <OverviewTile id="payment-record" class="scroll-mt-24">
+    <!-- In a card (Sean, 7 Nov 2026). -->
+    <OverviewTile id="payment-record" boxed class="scroll-mt-24">
       <template #heading>
         <span role="tablist" aria-label="Your payments" class="flex items-center gap-5">
           <button

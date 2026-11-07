@@ -142,6 +142,11 @@ const standingStatus = screenRef('tenant.overview.standing', '');
  * read as ₱8,000 + ₱200 = ₱16,400 (unit 1c, 4 Nov 2026).
  */
 const owedMonths = screenRef('tenant.overview.owedMonths', 1);
+/**
+ * Everything owed is already sent and waiting for the landlady to verify (Sean, 7 Nov 2026): the
+ * Amount due card goes, as when settled, and the unit and payments share the row.
+ */
+const sentCoversDue = screenRef('tenant.overview.sentCoversDue', false);
 const overviewLoaded = screenLoaded('tenant.overview');
 const loading = ref(!overviewLoaded.value);
 /**
@@ -234,6 +239,20 @@ const todayLabel = new Date().toLocaleDateString('en-PH', {
   year: 'numeric',
   timeZone: PROPERTY_TIMEZONE,
 });
+
+/**
+ * The months an amount is for, by name (Sean, 7 Nov 2026): "October to November 2026", or one month
+ * "November 2026". A period is the rent for the month it starts in.
+ */
+function monthsFor(starts: string[]) {
+  const sorted = starts.filter(Boolean).sort();
+  if (!sorted.length) return '';
+  const name = (iso: string, year: boolean) =>
+    new Date(`${iso.slice(0, 10)}T00:00:00+08:00`).toLocaleDateString('en-PH', { month: 'long', timeZone: PROPERTY_TIMEZONE, ...(year ? { year: 'numeric' } : {}) });
+  const first = sorted[0]!, last = sorted[sorted.length - 1]!;
+  if (first.slice(0, 7) === last.slice(0, 7)) return name(first, true);
+  return `${name(first, first.slice(0, 4) !== last.slice(0, 4))} to ${name(last, true)}`;
+}
 
 function shortDate(value: string | null | undefined, withYear = false) {
   if (!value) return '';
@@ -516,6 +535,7 @@ async function applyTenantData() {
   owedSummary.value = '';
   fromLedgerOnly.value = false;
   owedMonths.value = 1;
+  sentCoversDue.value = false;
 
   if (unpaidBill) {
     // A bill that has actually been raised comes first: it is the debt as issued.
@@ -538,12 +558,9 @@ async function applyTenantData() {
     const perPeriodTotal = Number(standing?.perPeriod.totalAmount) || 0;
     tenantData.value.totalAmountDue = Math.round((billsOwed + unbilledDue.length * perPeriodTotal) * 100) / 100;
     owedMonths.value = unpaidBills.length + unbilledDue.length;
-    // The landlady still keeps her own book while the system is new, and arrangements are made in
-    // person, so a late month here may be one she has not entered yet (Sean, 6 Nov 2026). Said
-    // once the amount is late or covers more than one month, as the no-bill branch says it.
-    if (owedMonths.value > 1 || (unpaidBill.effective_status ?? unpaidBill.status) === 'Overdue') {
-      owedSummary.value = 'If you have paid, it shows here once the landlady records it.';
-    }
+    // All of it sent and waiting: nothing left to pay from here (Sean, 7 Nov 2026).
+    const pendingSum = unpaidBills.reduce((s: number, b: any) => s + (Number(b.amount_pending) || 0), 0);
+    sentCoversDue.value = unbilledDue.length === 0 && pendingSum > 0 && pendingSum + 0.005 >= billsOwed;
     tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
     tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
     tenantData.value.dueDaysRemaining = 'Awaiting payment';
@@ -553,12 +570,10 @@ async function applyTenantData() {
     tenantData.value.activeBillPaid = Number(unpaidBill.amount_paid) || 0;
     if (unpaidBill.billing_period_start && unpaidBill.billing_period_end) {
       // First to last of the months the amount counts, as the no-bill branch says it (1c, 4 Nov).
-      const ends = [
-        ...unpaidBills.map((b: any) => String(b.billing_period_end ?? '').slice(0, 10)),
-        ...unbilledDue.map((p) => p.end),
-      ].filter(Boolean).sort();
-      tenantData.value.billPeriodDisplay =
-        `${shortDate(unpaidBill.billing_period_start)} to ${shortDate(ends[ends.length - 1] ?? unpaidBill.billing_period_end, true)}`;
+      tenantData.value.billPeriodDisplay = monthsFor([
+        ...unpaidBills.map((b: any) => String(b.billing_period_start ?? '').slice(0, 10)),
+        ...unbilledDue.map((p) => p.start),
+      ]);
     }
   } else if (standing && standing.owedPeriods.length > 0) {
     // Owed, but no bill raised yet. The checkout raises the OLDEST owed period.
@@ -576,8 +591,7 @@ async function applyTenantData() {
     // The months the amount above counts, first to last: it said only the first month's dates
     // over a total for two (unit 1c, 4 Nov 2026).
     owedMonths.value = standing.totalDue > 0 ? Math.max(1, Math.min(standing.periodsDue, standing.owedPeriods.length)) : 1;
-    const last = standing.owedPeriods[owedMonths.value - 1] ?? first;
-    tenantData.value.billPeriodDisplay = `${shortDate(first.start)} to ${shortDate(last.end, true)}`;
+    tenantData.value.billPeriodDisplay = monthsFor(standing.owedPeriods.slice(0, owedMonths.value).map((p) => p.start));
     tenantData.value.dueDateRaw = first.dueDate;
     fromLedgerOnly.value = true;
     standingStatus.value = standing.status;
@@ -588,9 +602,8 @@ async function applyTenantData() {
     owedSummary.value =
       standing.status === 'overdue'
         ? (standing.paidThrough
-            ? `Payments recorded up to ${tenantData.value.paidThroughDisplay}${periods > 1 ? ` (${periods} months since)` : ''}. `
-            : 'No payment recorded. ') +
-          'If you have paid, it shows here once the landlady records it.'
+            ? `Payments recorded up to ${tenantData.value.paidThroughDisplay}${periods > 1 ? ` (${periods} months since)` : ''}.`
+            : 'No payment recorded.')
         : standing.paidThrough
           ? `Payments recorded up to ${tenantData.value.paidThroughDisplay}.`
           : 'No payment recorded.';
@@ -740,7 +753,7 @@ const statusTone = computed(() => {
            and the unit and Payments share the row (Sean, 5 Nov 2026). -->
       <!-- With the current bill in it (Sean, 5 Nov 2026): Amount due and its rent and water are one
            card, right of the unit, and there is no Still to pay line to repeat the figure. -->
-      <OverviewTile v-if="tenantDataLoadFailed || !isSettled" tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not recorded' : 'Amount due'" to="/tenant/payments" to-label="Open payments and billing" :class="['list-reveal-item md:order-2 md:col-span-1 xl:col-span-8', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
+      <OverviewTile v-if="tenantDataLoadFailed || (!isSettled && !sentCoversDue)" tone="brand" :title="fromLedgerOnly && standingStatus === 'overdue' ? 'Rent not recorded' : 'Amount due'" to="/tenant/payments" to-label="Open payments and billing" :class="['list-reveal-item md:order-2 md:col-span-1 xl:col-span-8', settledOnPhone ? 'order-5' : 'order-1']" style="animation-delay: 0ms">
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           dark
@@ -797,12 +810,6 @@ const statusTone = computed(() => {
               <div v-if="tenantData.activeBillPaid > 0" class="flex items-baseline justify-between gap-3 py-2">
                 <dt>Already paid</dt>
                 <dd class="font-semibold tabular">{{ peso(tenantData.activeBillPaid, 2) }}</dd>
-              </div>
-              <!-- Both branches: with a bill raised the amount can count more than one month too
-                   (figures audit, 6 Nov 2026), and Rent and Water above are one month's. -->
-              <div v-if="owedMonths > 1" class="flex items-baseline justify-between gap-3 py-2">
-                <dt>Months not recorded</dt>
-                <dd class="font-semibold tabular">{{ owedMonths }}</dd>
               </div>
             </dl>
           </template>
@@ -973,7 +980,7 @@ const statusTone = computed(() => {
         title="Payments"
         to="/tenant/payments#payment-record"
         to-label="Open payments and billing"
-        :class="['list-reveal-item order-4 md:order-3', !tenantDataLoadFailed && isSettled ? 'xl:col-span-8' : 'md:col-span-2 xl:col-span-12']"
+        :class="['list-reveal-item order-4 md:order-3', !tenantDataLoadFailed && (isSettled || sentCoversDue) ? 'xl:col-span-8' : 'md:col-span-2 xl:col-span-12']"
         style="animation-delay: 90ms"
       >
         <UnavailableNote
