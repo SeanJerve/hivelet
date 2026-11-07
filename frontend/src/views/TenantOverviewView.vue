@@ -12,7 +12,7 @@ import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { writesUnavailable } from '@/lib/offlineCache';
-import { floorLabelFor } from '@/lib/systemState';
+import { floorLabelFor, LANDLADY } from '@/lib/systemState';
 import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
@@ -147,6 +147,14 @@ const owedMonths = screenRef('tenant.overview.owedMonths', 1);
  * Amount due card goes, as when settled, and the unit and payments share the row.
  */
 const sentCoversDue = screenRef('tenant.overview.sentCoversDue', false);
+/**
+ * What the paper's tenant overview lists and testing day matched (Chapter 4, the screens table: rate,
+ * occupants, monthly charge, contact details), back on the page when nothing is due (Sean, 7 Nov
+ * 2026: "too empty"): one month's charge at today's rate and headcount, the next rent when settled,
+ * and the landlady's number.
+ */
+const monthlyCharge = screenRef<{ rentAmount: number; waterAmount: number; totalAmount: number } | null>('tenant.overview.monthly', null);
+const nextRent = screenRef<{ month: string; due: string } | null>('tenant.overview.nextRent', null);
 const overviewLoaded = screenLoaded('tenant.overview');
 const loading = ref(!overviewLoaded.value);
 /**
@@ -536,6 +544,8 @@ async function applyTenantData() {
   fromLedgerOnly.value = false;
   owedMonths.value = 1;
   sentCoversDue.value = false;
+  nextRent.value = null;
+  monthlyCharge.value = standing?.perPeriod ? { ...standing.perPeriod } : null;
 
   if (unpaidBill) {
     // A bill that has actually been raised comes first: it is the debt as issued.
@@ -621,6 +631,9 @@ async function applyTenantData() {
     tenantData.value.dueDate = '';
     tenantData.value.dueDateRaw = '';
     tenantData.value.nextDueDateDisplay = formatDateOnly(standing.nextPeriodStart, longDate);
+    nextRent.value = standing.nextPeriodStart
+      ? { month: monthsFor([standing.nextPeriodStart]), due: formatDateOnly(standing.nextPeriodStart, longDate) }
+      : null;
 
     const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
     tenantData.value.verifiedAt = linkedPayment?.verified_at
@@ -1069,6 +1082,33 @@ const statusTone = computed(() => {
           </section>
         </div>
       </OverviewTile>
+
+      <!-- Your rent, under a rule: the monthly charge, the next rent when settled, and who to call. On
+           the page, three across, as the landlady's Due this week (Sean, 7 Nov 2026). -->
+      <section
+        v-if="!tenantDataLoadFailed"
+        aria-label="Your rent"
+        class="list-reveal-item order-5 grid gap-x-8 gap-y-6 border-t border-line pt-6 sm:grid-cols-2 md:col-span-2 xl:col-span-12 xl:grid-cols-3"
+        style="animation-delay: 120ms"
+      >
+        <div v-if="monthlyCharge">
+          <p class="text-sm text-ink-soft">Monthly charge</p>
+          <p class="mt-1 text-2xl font-semibold tabular tracking-tight">{{ peso(monthlyCharge.totalAmount, 2) }}</p>
+          <p class="mt-1 text-sm text-ink-soft">
+            Rent {{ peso(monthlyCharge.rentAmount, 2) }}, water {{ peso(monthlyCharge.waterAmount, 2) }}<template v-if="tenantData.occupants && waterRatePerOccupant !== null"> ({{ tenantData.occupants }} {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }} at {{ peso(waterRatePerOccupant) }})</template>
+          </p>
+        </div>
+        <div v-if="nextRent">
+          <p class="text-sm text-ink-soft">Next rent</p>
+          <p class="mt-1 text-2xl font-semibold tracking-tight">{{ nextRent.month }}</p>
+          <p class="mt-1 text-sm text-ink-soft">Due {{ nextRent.due }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-ink-soft">Landlady</p>
+          <a :href="`tel:${LANDLADY.phone}`" class="press mt-1 inline-block text-2xl font-semibold tabular tracking-tight text-ink hover:text-brand">{{ LANDLADY.phoneShown }}</a>
+          <p class="mt-1 text-sm text-ink-soft">Call or text</p>
+        </div>
+      </section>
 
     </div>
   </div>
