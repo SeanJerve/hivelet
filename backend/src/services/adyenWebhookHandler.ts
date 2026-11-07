@@ -272,7 +272,7 @@ export async function applyNotificationItem(
     if (refusedRequest) {
       const what = REQUESTED_MODIFICATIONS[eventCode];
       await notificationService.notify({
-        title: `Online payment: ${what.replace(/^an? /, '')} did not go through`,
+        title: `GCash payment: ${what.replace(/^an? /, '')} did not go through`,
         message:
           `Adyen reports that ${what} on this payment did NOT go through. The money has not ` +
           `moved and is still in your account. ${subject}` +
@@ -284,7 +284,7 @@ export async function applyNotificationItem(
       }).catch(() => {});
     } else if (reversal) {
       await notificationService.notify({
-        title: `Online payment: ${eventCode.replace(/_/g, ' ').toLowerCase()}`,
+        title: `GCash payment: ${eventCode.replace(/_/g, ' ').toLowerCase()}`,
         message:
           `Adyen reports that ${reversal.meaning}. ${subject}` +
           'Hivelet has NOT changed the ledger, because reversing a payment is your decision and ' +
@@ -457,7 +457,7 @@ export async function applyNotificationItem(
       ipAddress,
     });
     await notificationService.notify({
-      title: 'Online payment on an unexpected account or currency',
+      title: 'GCash payment on an unexpected account or currency',
       message:
         `A payment (ref ${pspReference}) arrived as ${currency || 'an unknown currency'} on ` +
         `account "${account || 'unknown'}". It has NOT been recorded. Check the Adyen ` +
@@ -509,7 +509,7 @@ export async function applyNotificationItem(
       ipAddress
     });
     await notificationService.notify({
-      title: 'Unmatched online payment received',
+      title: 'Unmatched GCash payment received',
       message:
         `An authorised payment of PHP ${amount.toFixed(2)} (ref ${pspReference}) could not be ` +
         `matched to a bill. It has NOT been recorded as a payment. Reconcile it manually.`,
@@ -634,7 +634,7 @@ export async function applyNotificationItem(
   });
 
   await notificationService.notify({
-    title: 'Online payment awaiting verification',
+    title: 'GCash payment awaiting verification',
     message:
       `PHP ${amount.toFixed(2)} received via GCash (ref ${pspReference}). ` +
       `It is pending your verification and has not settled the bill.`,

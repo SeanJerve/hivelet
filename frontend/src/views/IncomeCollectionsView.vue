@@ -1491,7 +1491,7 @@ const isDownloadOpen = ref(false);
           Reworded without "test" for the live demo (Sean, 6 Oct 2026); the instruction is the same.
         -->
         <p class="ws-reveal rounded-2xl bg-verify-soft px-4 py-3 text-sm leading-6 text-ink">
-          Online GCash payment is not live yet, so no money has reached you. Reject these for now.
+          GCash payment is not live yet, so no money has reached you. Reject these for now.
         </p>
         <ul class="grid gap-4 md:grid-cols-2">
           <li

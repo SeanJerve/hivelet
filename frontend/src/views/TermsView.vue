@@ -135,12 +135,12 @@ const sections = Object.values(S);
     <section :aria-labelledby="S.payments.id">
       <h2 :id="S.payments.id" tabindex="-1">{{ S.payments.title }}</h2>
       <p>
-        You can pay a bill from the portal with GCash. Online payments go through Adyen. Each one
+        You can pay a bill from the portal with GCash. GCash payments go through Adyen. Each one
         counts as paid once the landlady verifies it. Until she does, it shows as waiting for
         verification, and the bill stays on your balance.
       </p>
       <p>
-        Online GCash payment is not live yet, so no money is charged through the portal. Please
+        GCash payment is not live yet, so no money is charged through the portal. Please
         pay your rent in person for now.
       </p>
       <ul>

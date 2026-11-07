@@ -173,7 +173,7 @@ const sections = Object.values(S);
       <ul>
         <li>To answer your inquiry and arrange a viewing.</li>
         <li>To set up and run your tenancy: your account, your bills, and the record of what you have paid.</li>
-        <li>To take online payments and match each one to the right bill.</li>
+        <li>To take GCash payments and match each one to the right bill.</li>
         <li>To deal with the maintenance problems you report.</li>
         <li>To reach you, or the person you named, if something happens to you.</li>
         <li>

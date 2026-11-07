@@ -154,19 +154,24 @@ const OLD_TITLES: Record<string, string> = {
   'Tenant Commented on Ticket': 'Tenant commented on a repair',
   'New Maintenance Ticket Comment': 'New comment on your repair',
   'New Online GCash Payment': 'New GCash payment',
-  'Online Payment Verified': 'Online payment verified',
+  'Online Payment Verified': 'GCash payment verified',
   'Payment Verification Declined': 'Payment verification declined',
 };
 
+/** Stored rows from before 7 Nov 2026 say "online payment"; GCash is the word now (Sean). */
+function gcashNotOnline(text: string) {
+  return text.replace(/\b([Oo])nline payment/g, (_m, o) => (o === 'O' ? 'GCash payment' : 'GCash payment'));
+}
+
 function headline(item: NotificationItem) {
   const old = item.title.match(OLD_REPAIR_TITLE);
-  if (!old) return OLD_TITLES[item.title] ?? item.title;
+  if (!old) return gcashNotOnline(OLD_TITLES[item.title] ?? item.title);
   if (old[1] === 'Emergency') return 'Emergency repair';
   return old[1] === 'High' ? 'Urgent repair' : 'New repair request';
 }
 
 function detail(item: NotificationItem) {
-  return item.message.match(OLD_REPAIR_MESSAGE)?.[1] ?? item.message;
+  return gcashNotOnline(item.message.match(OLD_REPAIR_MESSAGE)?.[1] ?? item.message);
 }
 
 /** An unread emergency is the one row that should stop the eye. Once read it quietens. */

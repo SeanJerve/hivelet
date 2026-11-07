@@ -234,7 +234,7 @@ const paymentHistory = screenRef<Array<{
   datePaidRaw: string; // for sorting
   /** The property's year, worked out per row: a receipt's bare date and a payment's timestamp need different handling. */
   year: number;
-  /** What the money was for: a receipt's rent period, or "Online payment". */
+  /** What the money was for: a receipt's rent period, or "Payment" for one sent and not yet a receipt. */
   forLabel: string;
   amountPaid: number;
   paymentMethod: string;
@@ -764,7 +764,7 @@ async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
           id: `payment-${p.id}`,
           // No reference is shown rather than an invented one.
           invoiceRef: p.transaction_reference || '',
-          forLabel: p.payment_method === 'Adyen Online' ? 'Online payment' : 'Payment',
+          forLabel: 'Payment',
           datePaid: new Date(raw).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric', timeZone: PROPERTY_TIMEZONE }),
           datePaidRaw: raw,
           year: Number(propertyDate(new Date(raw)).slice(0, 4)),

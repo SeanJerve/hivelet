@@ -2378,8 +2378,8 @@ router.patch(
       warnIfWriteFailed(
         await db.from('notifications').insert({
         recipient_profile_id: before.tenant_profile_id,
-        title: 'Online payment verified',
-        message: `Your online payment of ₱${before.amount.toLocaleString()} (Ref: ${before.transaction_reference}) has been verified and settled by the administrator.`,
+        title: 'GCash payment verified',
+        message: `Your GCash payment of ₱${before.amount.toLocaleString()} (Ref: ${before.transaction_reference}) has been verified and settled by the administrator.`,
           type: 'Payment',
           priority: 'Low',
           is_read: false,
@@ -2398,7 +2398,7 @@ router.patch(
         await db.from('notifications').insert({
         recipient_profile_id: before.tenant_profile_id,
         title: 'Payment verification declined',
-        message: `Your online payment submission (Ref: ${before.transaction_reference || 'Not recorded'}) was declined. Please contact the administrator.`,
+        message: `Your GCash payment (Ref: ${before.transaction_reference || 'Not recorded'}) was declined. Please contact the administrator.`,
           type: 'Payment',
           priority: 'High',
           is_read: false,

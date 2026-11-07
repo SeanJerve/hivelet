@@ -451,7 +451,7 @@ async function applyTenantData() {
       id: String(p.id),
       amount: Number(p.amount) || 0,
       date: shortDate(p.paid_at || p.created_at, true),
-      method: methodLabel(p.payment_method) || 'Online payment',
+      method: methodLabel(p.payment_method) || 'GCash',
       at: String(p.paid_at || p.created_at || ''),
     }));
 
@@ -461,7 +461,7 @@ async function applyTenantData() {
       id: String(p.id),
       amount: Number(p.amount) || 0,
       date: shortDate(p.paid_at || p.created_at, true),
-      method: methodLabel(p.payment_method) || 'Online payment',
+      method: methodLabel(p.payment_method) || 'GCash',
       at: String(p.paid_at || p.created_at || ''),
     }));
 

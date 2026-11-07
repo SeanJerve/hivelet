@@ -5,5 +5,6 @@
  */
 export function methodInWords(method: string | null | undefined): string {
   if (!method) return 'Not recorded';
-  return method === 'Adyen Online' ? 'GCash (online)' : method;
+  // "GCash", not "GCash (online)" (Sean, 7 Nov 2026: GCash is enough).
+  return method === 'Adyen Online' ? 'GCash' : method;
 }
