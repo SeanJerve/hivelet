@@ -944,7 +944,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               @retry="refreshAllData"
             />
             <template v-else>
-              <p class="flex items-center gap-1 text-sm font-semibold">
+              <p class="flex items-center gap-1 text-base font-semibold">
                   Payments to verify
                   <router-link to="/admin/income?tab=verify#income-records" aria-label="Review payments" class="icon-btn icon-btn-goto group/goto shrink-0">
                     <ArrowUpRight
@@ -971,8 +971,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
-                  <span class="break-words text-base font-medium">{{ p.name }}</span>
-                  <span class="text-base font-semibold tabular">{{ peso(p.amount, 2) }}</span>
+                  <span class="break-words text-lg font-semibold leading-snug">{{ p.name }}</span>
+                  <span class="text-lg font-semibold tabular">{{ peso(p.amount, 2) }}</span>
                   <!-- "Sent", the To verify card's word for the day the tenant paid, so the day is not read as
                        a due day or the month the rent is for (Sean, 7 Nov 2026). -->
                   <span v-if="p.date" class="text-sm text-ink-soft">Sent {{ p.date }}</span>
@@ -991,7 +991,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               @retry="refreshAllData"
             />
             <template v-else>
-              <p class="flex items-center gap-1 text-sm font-semibold">
+              <p class="flex items-center gap-1 text-base font-semibold">
                   Urgent repairs
                   <router-link to="/admin/tickets#repairs-board" aria-label="Open repairs" class="icon-btn icon-btn-goto group/goto shrink-0">
                     <ArrowUpRight
@@ -1015,7 +1015,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   class="list-reveal-item flex min-w-0 flex-col items-start gap-0.5 py-2.5"
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
-                  <span class="break-words text-base font-medium">{{ t.title }}</span>
+                  <span class="break-words text-lg font-semibold leading-snug">{{ t.title }}</span>
                   <StatusPill :tone="t.priority === 'Emergency' ? 'overdue' : 'verify'">{{ t.priority }}</StatusPill>
                   <!-- "Reported", as Repairs says it, so a bare date is not read as a due day (Sean, 7 Nov 2026). -->
                   <span class="text-sm text-ink-soft">Reported {{ t.reported }}</span>
@@ -1033,7 +1033,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               @retry="refreshAllData"
             />
             <template v-else>
-              <p class="flex items-center gap-1 text-sm font-semibold">
+              <p class="flex items-center gap-1 text-base font-semibold">
                   Inquiries
                   <router-link to="/admin/inquiries" aria-label="Open inquiries" class="icon-btn icon-btn-goto group/goto shrink-0">
                     <ArrowUpRight class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[var(--ease-out)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
@@ -1052,8 +1052,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
-                  <span class="break-words text-base font-medium">{{ q.name }}</span>
-                  <span class="text-base font-semibold">Unit {{ q.unit.toUpperCase() }}</span>
+                  <span class="break-words text-lg font-semibold leading-snug">{{ q.name }}</span>
+                  <span class="text-lg font-semibold">Unit {{ q.unit.toUpperCase() }}</span>
                   <span class="text-sm text-ink-soft">{{ q.date }}</span>
                 </li>
               </ul>
@@ -1125,8 +1125,8 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   :aria-label="`Record a payment for Unit ${d.roomNumber}`"
                   @click="recordForDue(d.roomNumber)"
                 />
-                <span class="break-words text-base font-medium">{{ d.name ?? 'Name not recorded' }}</span>
-                <span class="text-base font-semibold tabular">{{ peso(d.amount, 2) }}</span>
+                <span class="break-words text-lg font-semibold leading-snug">{{ d.name ?? 'Name not recorded' }}</span>
+                <span class="text-lg font-semibold tabular">{{ peso(d.amount, 2) }}</span>
                 <span class="text-sm text-ink-soft">Unit {{ d.roomNumber }}, {{ periodWords(d.dueDate, d.periodEnd) }}</span>
                 <StatusPill v-if="dueSent(d.tenantProfileId)" tone="verify" class="self-start">Payment sent, to verify</StatusPill>
               </li>
