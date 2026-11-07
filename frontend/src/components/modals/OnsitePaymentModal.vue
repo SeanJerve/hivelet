@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { 
-  isOnsitePaymentModalOpen, 
+  isOnsitePaymentModalOpen,
+  onsitePaymentPresetUnit, 
   rooms, 
   incomeRecords, 
   fetchIncomeRecords, 
@@ -381,6 +382,11 @@ watch(
 
 watch(isOnsitePaymentModalOpen, (isOpen) => {
   if (isOpen) {
+    // Opened on a tenant's unit (the Overview's Due this week, Sean, 7 Nov 2026), taken once.
+    if (onsitePaymentPresetUnit.value) {
+      selectedUnit.value = asListedUnitCode(onsitePaymentPresetUnit.value);
+      onsitePaymentPresetUnit.value = null;
+    }
     // A fresh receipt: the period follows the tenant again, not the last one typed.
     coverStartTyped.value = false;
     occupantsTyped.value = false;

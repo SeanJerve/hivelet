@@ -35,6 +35,8 @@ import {
   incomeRecordsFetchFailed,
   expenseRecordsFetchFailed,
   maintenanceTicketsFetchFailed,
+  isOnsitePaymentModalOpen,
+  onsitePaymentPresetUnit,
 } from '@/lib/systemState';
 import { CLUSTERS, peso as pesoFixed, pesoExact, wholePercents } from '@/lib/canonicalUnits';
 // Every money figure on this page is shown as it is, centavos included when there are any
@@ -253,6 +255,15 @@ async function loadDueSoon() {
  * "Received, November" as October's rent (Sean, 7 Nov 2026). A period starts on its due day. Both
  * dates take the year when either is not in this one: "Dec 7, 2026 to Jan 6, 2027".
  */
+/** A GCash payment from this tenant waiting for her to verify: the rent may already be sent. */
+function dueSent(tenantProfileId: string) {
+  return pendingPayments.value.some((p: any) => p.tenant_profile_id === tenantProfileId);
+}
+/** Record payment, opened on the tenant's unit (Sean, 7 Nov 2026: each entry clickable). */
+function recordForDue(roomNumber: string) {
+  onsitePaymentPresetUnit.value = roomNumber;
+  isOnsitePaymentModalOpen.value = true;
+}
 function periodWords(startIso: string, endIso: string) {
   const thisYear = [startIso, endIso].every((iso) => Number(iso.slice(0, 4)) === CURRENT_YEAR);
   const day = (iso: string) =>
@@ -1104,12 +1115,20 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
               <li
                 v-for="(d, i) in dueSoon.slice(0, DUE_ROWS)"
                 :key="d.tenantProfileId"
-                class="list-reveal-item flex min-w-0 flex-col gap-0.5 py-2.5"
+                class="list-reveal-item group relative -mx-3 flex min-w-0 flex-col gap-0.5 py-2.5"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
+                <button
+                  v-if="!writesUnavailable"
+                  type="button"
+                  class="row-open"
+                  :aria-label="`Record a payment for Unit ${d.roomNumber}`"
+                  @click="recordForDue(d.roomNumber)"
+                />
                 <span class="break-words text-base font-medium">{{ d.name ?? 'Name not recorded' }}</span>
                 <span class="text-base font-semibold tabular">{{ peso(d.amount, 2) }}</span>
                 <span class="text-sm text-ink-soft">Unit {{ d.roomNumber }}, {{ periodWords(d.dueDate, d.periodEnd) }}</span>
+                <StatusPill v-if="dueSent(d.tenantProfileId)" tone="verify" class="self-start">Payment sent, to verify</StatusPill>
               </li>
             </ul>
             <p v-if="dueSoon.length > DUE_ROWS" class="mt-1 text-xs text-ink-soft">{{ dueSoon.length - DUE_ROWS }} more this week.</p>
@@ -1198,7 +1217,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                   </RouterLink>
                 </dt>
-                <dd :class="['text-xl font-semibold tabular', !pickedMonth.hasIncome && 'text-ink-soft']">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome) : notEnteredWord(pickedMonth) }}</dd>
+                <dd :class="['text-xl font-semibold tabular', !pickedMonth.hasIncome && 'text-ink-soft']">{{ pickedMonth.hasIncome ? peso(pickedMonth.grossIncome, 2) : notEnteredWord(pickedMonth) }}</dd>
               </div>
               <div>
                 <dt class="text-xs text-ink-faint">
@@ -1207,12 +1226,12 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                     <ArrowUpRight class="size-3.5 motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5" aria-hidden="true" />
                   </RouterLink>
                 </dt>
-                <dd :class="['text-xl font-semibold tabular', !pickedMonth.hasExpenses && 'text-ink-soft']">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses) : notEnteredWord(pickedMonth) }}</dd>
+                <dd :class="['text-xl font-semibold tabular', !pickedMonth.hasExpenses && 'text-ink-soft']">{{ pickedMonth.hasExpenses ? peso(pickedMonth.expenses, 2) : notEnteredWord(pickedMonth) }}</dd>
               </div>
               <div>
                 <dt class="text-xs text-ink-faint">Net income</dt>
                 <dd :class="['text-xl font-semibold tabular', !(pickedMonth.hasIncome && pickedMonth.hasExpenses) ? 'text-ink-soft' : pickedMonth.noi < 0 && 'text-overdue']">
-                  {{ pickedMonth.hasIncome && pickedMonth.hasExpenses ? peso(pickedMonth.noi) : notEnteredWord(pickedMonth) }}
+                  {{ pickedMonth.hasIncome && pickedMonth.hasExpenses ? peso(pickedMonth.noi, 2) : notEnteredWord(pickedMonth) }}
                 </dd>
               </div>
             </dl>

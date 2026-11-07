@@ -650,6 +650,8 @@ export function setLandladyPhone(phone: string): void {
 export const isAdminEditUnitModalOpen = ref(false);
 export const activeAdminEditUnit = ref<RoomItem | null>(null);
 export const isOnsitePaymentModalOpen = ref(false);
+/** A unit for Record payment to open on, set by whoever opens it (the Overview's Due this week). */
+export const onsitePaymentPresetUnit = ref<string | null>(null);
 // `selectedInquirerId` and `selectedPublicInquiryUnit` are gone. Both were written in one
 // place - `RoomDetailModal.handleInquireDirectly()`, on a button that could not render - and
 // read in none. A value nothing reads is not state, it is a note to nobody.
