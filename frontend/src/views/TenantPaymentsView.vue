@@ -1042,9 +1042,6 @@ function refreshAll() {
               <StatusPill :tone="statusTone(record.status)">
                 {{ statusLabel(record.status) }}
               </StatusPill>
-              <p v-if="isRejected(record.status)" class="mt-1.5 text-sm text-ink-soft">
-                The bill it was for is still owed. Pay it again or speak to the landlady.
-              </p>
             </td>
           </tr>
         </template>
@@ -1069,9 +1066,6 @@ function refreshAll() {
               {{ statusLabelShort(record.status) }}
             </StatusPill>
           </div>
-          <p v-if="isRejected(record.status)" class="mt-1.5 text-sm text-ink-soft">
-            The bill it was for is still owed. Pay it again or speak to the landlady.
-          </p>
 
           <dl class="mt-4 space-y-3 text-sm">
             <div v-if="!isNotEntered(record.status)">

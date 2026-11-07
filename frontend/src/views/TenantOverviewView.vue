@@ -1013,7 +1013,7 @@ const statusTone = computed(() => {
                 <span class="min-w-0 flex-1 basis-48">
                   <span class="block text-sm font-medium">{{ p.method }}</span>
                   <span class="block text-xs leading-5 text-ink-faint">
-                    Sent {{ p.date }}. The bill it was for is still owed.
+                    Sent {{ p.date }}
                   </span>
                 </span>
                 <span class="flex items-center gap-3">
