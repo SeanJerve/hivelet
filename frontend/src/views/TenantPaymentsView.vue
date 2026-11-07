@@ -959,8 +959,8 @@ function refreshAll() {
     </section>
 
     <!-- Payment record -->
-    <!-- In a card (Sean, 7 Nov 2026). -->
-    <OverviewTile id="payment-record" boxed class="scroll-mt-24">
+    <!-- On the page, not in a card (Sean, 7 Nov 2026), as every list and table is. -->
+    <OverviewTile id="payment-record" class="scroll-mt-24">
       <template #heading>
         <span role="tablist" aria-label="Your payments" class="flex items-center gap-5">
           <button
