@@ -229,7 +229,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 16. ISO/IEC 25010 results
 {
-  const s = titled('ISO/IEC 25010 evaluation: 4.59, Very High Quality', 'Composite means (Table 4-17), mean of the group means. Ten respondents: the owner, three tenants, a prospective tenant and five technical evaluators. Every characteristic Very High Quality. Second round on the redesigned system: 4.73 from 17 answers, 4.58 from all 27.');
+  const s = titled('ISO/IEC 25010 evaluation: 4.59, Very High Quality', 'Composite means (Table 4-17), mean of the group means. Ten respondents: the owner, three tenants, a prospective tenant and five technical evaluators. Every characteristic Very High Quality. Second round on the redesigned system: 4.82 from 16 answers, 4.61 from all 26.');
   const labels = ['Portability', 'Functional Suitability', 'Security', 'Reliability', 'Compatibility', 'Performance Efficiency', 'Usability', 'Maintainability'];
   const values = [4.86, 4.79, 4.68, 4.61, 4.55, 4.48, 4.42, 4.32];
   s.addChart(pptx.ChartType.bar, [{ name: 'Composite mean', labels, values }], {

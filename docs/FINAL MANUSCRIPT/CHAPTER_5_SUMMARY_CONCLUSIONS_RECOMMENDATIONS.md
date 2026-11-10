@@ -21,7 +21,7 @@ Web Application, for the Fe Galang Da Silva Boarding House, a 33-unit property i
 system was developed in three Agile iterations with Vue, Express and PostgreSQL, pilot tested at the unit
 and integration, system and acceptance levels, and evaluated on the eight characteristics of ISO/IEC
 25010:2011 by the owner, three tenants, a prospective tenant and five technical evaluators, then by a
-second round of seventeen users on the redesigned system. The results
+second round of sixteen users on the redesigned system. The results
 are summarized below in the order of the specific objectives.
 
 1. **The existing practices were analyzed.** The owner kept a two-sheet workbook on a USB flash
@@ -53,8 +53,8 @@ are summarized below in the order of the specific objectives.
    thirty-one sub-characteristics had a measured result and twenty-five were rated. The ten
    respondents rated the system 4.59 overall: Functional Suitability 4.79, Performance Efficiency
    4.48, Compatibility 4.55, Usability 4.42, Reliability 4.61, Security 4.68, Maintainability 4.32 and
-   Portability 4.86. A second round of seventeen respondents rated it 4.73, and all 27 answers
-   together 4.58. In response to feedback and testing, 51 changes were made, among them each of
+   Portability 4.86. A second round of sixteen respondents rated it 4.82, and all 26 answers
+   together 4.61. In response to feedback and testing, 51 changes were made, among them each of
    the technical evaluators' fourteen comments of 3 October 2026.
 
 ## 5.2 Conclusions
@@ -84,8 +84,8 @@ Based on the results of the study, the following conclusions were drawn:
    Very High Quality overall (4.59), with every characteristic Very High Quality on the scale
    of Chapter 3's Table 4A (Chapter 4, Tables 22 and 23). The ratings agree with the measured evidence on every
    characteristic, and they describe how ten people rated the system over three weeks, two of the
-   four groups with one respondent each. A second round of seventeen users on the redesigned system
-   rated it 4.73, and all 27 answers together 4.58, so the rating held after the redesign.
+   four groups with one respondent each. A second round of sixteen users on the redesigned system
+   rated it 4.82, and all 26 answers together 4.61, so the rating held after the redesign.
 
 ## 5.3 Recommendations
 

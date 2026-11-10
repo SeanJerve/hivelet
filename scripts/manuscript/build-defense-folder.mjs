@@ -105,7 +105,7 @@ const EXTRA = [
   { folder: 'Consent forms - Appendix P', asks: 'Every tester consented in writing (Chapter 3, Section 3.4). The blank form is Appendix P.', who: 'Team',
     files: [cp('docs/FINAL MANUSCRIPT/CONSENT_FORM.pdf', 'Informed consent form (blank, Appendix P).pdf')],
     text: { 'Where the signed forms are.txt': 'The signed scans are kept in "_CONSENT_FORMS (not in repo)" beside this folder, because they carry names and signatures: the landlady (scanned twice), tenant F1, tenant F2F and the tenant in unit 2, sent 29 October 2026. Do not copy them into anything that is shared or printed for the panel.\n\nF1 agreed to take part only: no screen recording, no photos, no face. Blur or crop F2F\'s face unless he confirms.\n' },
-    needs: ['Signed forms from the second round: ten tenants and four prospects, 31 October to 10 November', 'The prospective tenant\'s signed form (he tested on 30 September)', '"Research team member present" filled in on all four paper originals'] },
+    needs: ['Scans of the ten second-round tenants\' signed forms, kept private in _CONSENT_FORMS (not in repo). Prospects and evaluators consented in the questionnaire', '"Research team member present" filled in on all four paper originals'] },
   { folder: 'Study guides', asks: 'Not a Form 2 item: the team\'s guides for studying the capstone and the defense.', who: 'Team',
     files: [md('FINAL/00_HOW_TO_STUDY.md', '0 How to study (start here).docx'), md('FINAL/STUDY_GUIDE_TEAM_REVIEWER.md', '1 Team reviewer, the whole capstone in one sitting.docx'),
       md('FINAL/STUDY_GUIDE_DEFENSE_QA.md', '2 Defense questions and answers.docx'), md('FINAL/STUDY_GUIDE_PAPER_WALKTHROUGH.md', '3 Paper walkthrough.docx'),

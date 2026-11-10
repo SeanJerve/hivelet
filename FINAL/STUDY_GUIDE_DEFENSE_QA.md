@@ -157,7 +157,7 @@ records cannot be changed, and a tenant cannot cancel a repair once someone is s
 test cases on 4 November and none failed, and every automated check passed after each later change, so
 the functional, reliability, security and performance results stand. A second round of users then
 used the redesigned system (31 October to 10 November): ten tenants and four prospects did the tasks,
-and 17 answered the same questionnaire, rating it 4.73. *Appendix M, Tables M-28 to M-30.* The ratings on how the interface looks were given
+and 16 answered the same questionnaire, rating it 4.82. *Appendix M, Tables M-28 to M-30.* The ratings on how the interface looks were given
 on the design before the redesign, and the paper says so. *Section 4.2.1; Appendix M, Table M-19.*
 
 **Why no Figma or separate design tool?**
@@ -410,7 +410,7 @@ was corrected the same day and is reported separately in Appendix M, Table M-27.
 
 **What was the overall result?**
 4.59 out of 5, Very High Quality, with every characteristic Very High Quality. *Table 4-17.* The second
-round, on the redesigned system, gave 4.73, and all 27 answers together 4.58. *Table M-29.*
+round, on the redesigned system, gave 4.82, and all 26 answers together 4.61. *Table M-29.*
 
 | Characteristic | Mean | Rank |
 | :--- | --: | --: |

@@ -72,8 +72,7 @@ LATER    Proponent's Checklist - Phase 5 Editing and approval (items 27 to 32)
 PARTLY   Proponent's Checklist - Phase 5, item 31 Turnover package
            still needed: The database script, a schema-only dump of the live database. Never database/FULL_DATABASE_SCHEMA.sql, which does not describe it (Sean)
 PARTLY   Consent forms - Appendix P
-           still needed: Signed forms from the second round: ten tenants and four prospects, 31 October to 10 November
-           still needed: The prospective tenant's signed form (he tested on 30 September)
+           still needed: Scans of the ten second-round tenants' signed forms, kept private in _CONSENT_FORMS (not in repo). Prospects and evaluators consented in the questionnaire
            still needed: "Research team member present" filled in on all four paper originals
 READY    Study guides
 

@@ -356,9 +356,9 @@ characteristic, and every change made in response to the evaluation.
 | Requirements | The owner settled four questions on 13 September: 33 units, no grace period, no automatic rent increase, and tenants recorded without needing an email address | The owner's answers of 17 and 19 to 20 September: the advance is the deposit, rent and water stay one bill, and a rate for each of the 33 units; acknowledgement receipts for payments with no invoice number (1 October) | The team's review of the deployed screens on a phone and a computer; no new functional requirement |
 | Design | The business rule register rebuilt, 49 rules each with its evidence; the automatic rent increase removed from scope | The owner's review on a phone (23 September) and the design rules the screens now follow; the tenant and owner overviews reworked | Translucent glass surfaces over a light green page, in light and dark themes; boxes kept for what needs attention and what is looked for at a glance; sign in, inquiry and conversation joined in one screen |
 | Development | Fifteen defects in behavior corrected, among them a partial payment that left no debt and cash recorded with nothing written to the books; the Excel downloads | Adyen with GCash working end to end on the test account (26 September); updates checked every two seconds; offline reading; the breached-password check (7 October) | The restyle of every screen; an inquiry the owner deleted now says so to its sender; a signed-in account is sent from the inquiry pages to its own portal. The move-in form no longer asks for an anniversary date, which the server always set to the move-in date. Each screen keeps the figures it has loaded for the visit, so returning to it does not wait for them. A record dated in a closed year can no longer be recorded, changed or deleted, and last year stays open until every December receipt is in. A GCash payment settles the oldest unpaid bill. A tenant can no longer cancel a repair once someone is sent. The owner's Manage window no longer shows a repair's messages, and a tenant's note reaches her as a notification |
-| Testing | Seven automated check suites, over 100 assertions, each defect covered by one | The screen-versus-database audit (26 and 29 September, six defects); 20 suites (29 September); the testing day with the owner and three tenants (30 September); the technical evaluators' review (3 October) | All 114 test cases of Appendix L rerun on 4 November: none failed, 56 passed as written, 21 passed with wording the redesign had changed, and 37 need a person and were left for one. A click-by-click audit of every screen on 6 November. The 21 automated check suites passed after each change, and the screens were checked in light and dark at phone and desktop width. A second round of users, 31 October to 10 November: ten tenants and four prospective tenants did the tasks, and seventeen answered the ISO/IEC 25010 questionnaire (Tables M-28 to M-30) |
+| Testing | Seven automated check suites, over 100 assertions, each defect covered by one | The screen-versus-database audit (26 and 29 September, six defects); 20 suites (29 September); the testing day with the owner and three tenants (30 September); the technical evaluators' review (3 October) | All 114 test cases of Appendix L rerun on 4 November: none failed, 56 passed as written, 21 passed with wording the redesign had changed, and 37 need a person and were left for one. A click-by-click audit of every screen on 6 November. The 21 automated check suites passed after each change, and the screens were checked in light and dark at phone and desktop width. A second round of users, 31 October to 10 November: ten tenants and four prospective tenants did the tasks, and sixteen answered the ISO/IEC 25010 questionnaire (Tables M-28 to M-30) |
 | Deployment | Unchanged | Hosted on Vercel from 24 September; tenant accounts prepared on 29 September; in use beside the owner's own records (Table 4-22) | The same site. Four corrections to the data, each a numbered migration applied after a backup and read back. Migration 088 (2 November) moved sixteen units into the kind of unit they really are, with the old kinds kept in the audit record. Migration 089 (4 November) removed old password hashes from 16 audit rows. Migration 090 (5 November) removed a rehearsal test tenant. Migration 091 (6 November) ended two receipts' rent periods a month after they start, as each was one month's rent |
-| Review | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 4-19); the ISO/IEC 25010 survey (Section 4.4) | The team's review of the screens. The second round rated the system 4.73 overall, Very High Quality, and all 27 answers together 4.58 (Table M-29) |
+| Review | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 4-19); the ISO/IEC 25010 survey (Section 4.4) | The team's review of the screens. The second round rated the system 4.82 overall, Very High Quality, and all 26 answers together 4.61 (Table M-29) |
 
 **Table M-20.** Quality in use (30 September 2026) (summarized in Chapter 4, Section 4.4.5)
 
@@ -450,27 +450,27 @@ characteristic, and every change made in response to the evaluation.
 
 | Group | Round 1, 30 September to 18 October 2026 | Round 2, 31 October to 10 November 2026 | Both rounds |
 | :--- | --: | --: | --: |
-| Owner or administrator | 1 | 2 | 3 |
+| Owner or administrator | 1 | 1 | 2 |
 | Tenants | 3 | 11 | 14 |
 | Technical evaluators | 5 | 0 | 5 |
 | Prospective tenants | 1 | 4 | 5 |
-| **Total** | **10** | **17** | **27** |
+| **Total** | **10** | **16** | **26** |
 
-The landlady answered in both rounds, and both of her answers are counted. Round 2 had no technical evaluators, so its Maintainability rests on Round 1 alone, and Security, which only the owner and the evaluators rate, rests on Round 2's two owner or administrator answers. Names are removed from the response files: `docs/TESTING_DAY/results/ROUND_1_...csv`, `ROUND_2_...csv` and `COMBINED_...csv`.
+The landlady answered in both rounds, and both of her answers are counted. A prospective tenant who answered the owner's section of the questionnaire by mistake is left out, since those items describe the owner's use. Round 2 had no technical evaluators, so its Maintainability rests on Round 1 alone, and its Security, which only the owner and the evaluators rate, on the landlady's second answer. Names are removed from the response files: `docs/TESTING_DAY/results/ROUND_1_...csv`, `ROUND_2_...csv` and `COMBINED_...csv`.
 
 **Table M-29.** Composite means by round (summarized in Chapter 4, Section 4.4.3)
 
 | Characteristic | Round 1 (Chapter 4) | Round 2 | Both rounds |
 | :--- | --: | --: | --: |
-| Functional Suitability | 4.79 | 4.64 | 4.61 |
-| Performance Efficiency | 4.48 | 4.72 | 4.59 |
-| Compatibility | 4.55 | 4.66 | 4.63 |
-| Usability | 4.42 | 4.62 | 4.48 |
-| Reliability | 4.61 | 4.61 | 4.53 |
+| Functional Suitability | 4.79 | 4.72 | 4.64 |
+| Performance Efficiency | 4.48 | 4.89 | 4.66 |
+| Compatibility | 4.55 | 4.83 | 4.71 |
+| Usability | 4.42 | 4.78 | 4.52 |
+| Reliability | 4.61 | 4.65 | 4.55 |
 | Security | 4.68 | 5.00 | 4.68 |
 | Maintainability | 4.32 | no responses | 4.32 |
 | Portability | 4.86 | 4.87 | 4.80 |
-| **Overall** | **4.59** | **4.73** | **4.58** |
+| **Overall** | **4.59** | **4.82** | **4.61** |
 
 Each composite is the mean of the group means, as in Chapter 3. Every composite in every column is Very High Quality on the scale of Table 3-5. Round 2's overall is the mean of seven characteristics, since it has no Maintainability ratings.
 

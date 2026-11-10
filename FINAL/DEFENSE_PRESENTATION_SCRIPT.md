@@ -132,7 +132,7 @@ exactly what Chapter 5 recommends showing new tenants first." [4.3.7, Table 4-11
 **Slide 16. The evaluation** (50 s)
 **Land: 4.59, Very High Quality; every characteristic Very High Quality.**
 "Ten respondents: the owner, three tenants, a prospective tenant and five technical evaluators. A
-second round on the redesigned system, 17 more answers, gave 4.73, and all 27 together 4.58.
+second round on the redesigned system, 16 more answers, gave 4.82, and all 26 together 4.61.
 Portability highest at 4.86, Functional Suitability 4.79; even the lowest two, Usability 4.42 and
 Maintainability 4.32, are Very High Quality. We used the mean of the group means, so one owner is not outweighed by
 three tenants." [Table 4-17, 4.4.2]

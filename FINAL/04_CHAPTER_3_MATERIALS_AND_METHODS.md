@@ -275,9 +275,8 @@ with volunteer evaluators, with at least three years' experience asked of each, 
 demonstration copy of the system on 15 to 18 October: the same software on a separate database
 holding sample data, so that no outside reviewer saw the owner's records. None inspected the source
 code. A second round was held on the redesigned system of Iteration 3, between 31 October and 10
-November 2026: ten more tenants and four more prospective tenants did the same tasks, and seventeen
-answered the questionnaire, eleven tenants, four prospective tenants and two in the owner or
-administrator group. Its time on task was not recorded reliably and is not reported.
+November 2026: ten more tenants and four more prospective tenants did the same tasks, and sixteen
+answered the questionnaire, eleven tenants, four prospective tenants and the landlady. Its time on task was not recorded reliably and is not reported.
 
 **Instruments.** Four instruments were used. Task cards were read aloud to each tester, in English and
 Filipino. An observation sheet recorded, for each task, whether it was completed without help, with
@@ -286,7 +285,9 @@ was the ISO/IEC 25010 survey questionnaire, with a separate section for each of 
 groups (the administrator, tenants, prospective tenants and technical evaluators); the tenant and
 prospective tenant sections were in English and Filipino.
 
-**Data gathering.** Each tester gave written consent before taking part. Each used their own account on their own device while a
+**Data gathering.** The owner and each tenant signed the informed consent form (Appendix P) before
+taking part. The prospective tenants and the technical evaluators gave their consent through the data
+privacy notice that opens the questionnaire. Each used their own account on their own device while a
 facilitator read the tasks without indicating where to tap and an observer completed the observation
 sheet. Testers were asked to think aloud, saying, for example, whether they expected a change to their
 personal details to save, whether a payment showed as settled once the owner confirmed it, and whether

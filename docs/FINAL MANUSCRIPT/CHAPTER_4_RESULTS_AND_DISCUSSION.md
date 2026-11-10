@@ -673,10 +673,9 @@ groups have one respondent each, so for those groups a mean is one person's rati
 describe how these ten people rated the system, not a sample from which a wider population can be
 inferred.
 
-In the second round, seventeen more answered the same questionnaire after their tasks, between 31
-October and 10 November 2026: eleven tenants, four prospective tenants, and two in the owner or
-administrator group, the landlady again and one more respondent (Appendix M, Table M-28). With them,
-27 answers were received in all. The second round had no technical evaluators.
+In the second round, sixteen more answered the same questionnaire after their tasks, between 31
+October and 10 November 2026: eleven tenants, four prospective tenants and the landlady again (Appendix M, Table M-28). With them,
+26 answers were received in all. The second round had no technical evaluators.
 
 ### 4.4.2 Interpretation of Scores
 
@@ -726,10 +725,10 @@ rated Very High Quality, and no group mean fell below High Quality. This is the 
 dormitory system rated by the same kinds of respondents, tenants, administrators and IT professionals;
 here, each rating is also read beside the measured evidence for its characteristic (Section 4.4.5).
 
-The second round, seventeen answers on the redesigned system of Iteration 3, rated it **4.73
-overall**, with every characteristic again Very High Quality. Across both rounds, 27 answers, the
-overall is **4.58** (Appendix M, Table M-29). Usability, the lowest-rated characteristic the
-evaluators rated in the first round at 4.42, was 4.62 in the second, after the evaluators' changes and
+The second round, sixteen answers on the redesigned system of Iteration 3, rated it **4.82
+overall**, with every characteristic again Very High Quality. Across both rounds, 26 answers, the
+overall is **4.61** (Appendix M, Table M-29). Usability, the lowest-rated characteristic the
+evaluators rated in the first round at 4.42, was 4.78 in the second, after the evaluators' changes and
 the redesign. The second round had no technical evaluators, so Maintainability rests on the first
 round's five.
 

@@ -21,6 +21,6 @@ Chapter 4 cites K, M, N and O by letter, so those letters must not change.
 | M | Supporting Evidence for Chapter 4 | Tables M-1 to M-27 | `FINAL/appendices/APPENDIX_M_CHAPTER_4_EVIDENCE.md` |
 | N | Data Dictionary | 24 tables, 238 columns, read from the live database | `FINAL/appendices/APPENDIX_N_DATA_DICTIONARY.md` |
 | O | User Acceptance Sign-off | The owner's signed form, scanned. **[TO DO: signature]** | `FINAL/appendices/APPENDIX_O_UAT_SIGN_OFF.md`; print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx` |
-| P | Informed Consent Form | The blank form each tester signed (Section 3.4). Never the signed copies, which carry names | `docs/FINAL MANUSCRIPT/CONSENT_FORM.pdf` |
+| P | Informed Consent Form | The blank form the owner and each tenant signed (Section 3.3). Never the signed copies, which carry names | `docs/FINAL MANUSCRIPT/CONSENT_FORM.pdf` |
 | Q | Source Code | The repository's layout; the code itself is shown at the defense on request. The old contents called this Appendix M, which Chapter 4 now uses for its evidence | `FINAL/appendices/APPENDIX_Q_SOURCE_CODE.md` |
 | R | Literature Map | The literature of Chapter 2 by theme, narrowing to the gap and the study (Form 3A asks for it) | `FINAL/appendices/APPENDIX_R_LITERATURE_MAP.md`, image `docs/FINAL MANUSCRIPT/figures/appendix-r-literature-map.png` |

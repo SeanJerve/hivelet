@@ -36,13 +36,12 @@ and the deployment report (item 10), the last two in `FORM_2_EVIDENCE/`.
 | What | Who |
 | :--- | :--- |
 | **New screenshots** of the redesigned screens for Figures 4-7 to 4-11, with sample tenants only, never a real name or payment (P16) | Team |
-| **Who "Tricia" is**: she answered the second round as owner or administrator, and Chapter 3 says the landlady is the only administrator. The paper calls her "one more respondent" in that group until the team says who she is | Sean |
 | **The front matter**: title page, approval sheet, defense date and room, each member's Curriculum Vitae (P3) | Team |
 | **The Acknowledgement**: who to thank. Claude drafts it once given the names (P4) | Team |
 | **Scans** of the signed letter of request and the adviser appointment papers, for Appendices A and B (P10) | Team |
 | **The AI-use statement**: where it goes, and whether the prompt log is attached (P5). The adviser should also confirm the AI disclosure in Section 3.1.1 (P21). The prompt log is exported on Lloyd's laptop with `node scripts/ai-use/export-prompt-log.mjs` (P2) | Adviser, Lloyd |
-| **Consent forms for the second round**: ten tenants and four prospects tested between 31 October and 10 November. Their survey consent is recorded in the form, but Chapter 3 says every tester consented in writing, so each needs a signed form too | Team |
-| **Consent forms**: the prospective tenant's signed form is missing (Chapter 3 says every tester consented in writing). "Research team member present" is blank on all five originals. F1 agreed to no photos or recording, so F1 appears in none | Team |
+| **Scans of the second round's ten tenant consent forms** (signed on paper), kept private in `_CONSENT_FORMS (not in repo)/`. Prospects and evaluators consented through the questionnaire, as Chapter 3 now says | Team |
+| **Consent forms**: "Research team member present" is blank on all five originals. F1 agreed to no photos or recording, so F1 appears in none | Team |
 
 ## 3. For the system
 
