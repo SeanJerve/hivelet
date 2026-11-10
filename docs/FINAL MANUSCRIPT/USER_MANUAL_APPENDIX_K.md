@@ -102,8 +102,14 @@ Your name can only be changed by the landlady. A phone number is spaced as you t
 (0917 123 4567). Both your number and the
 number of the person to call must be Philippine mobile numbers; if one is not, a note under the box
 says so and nothing is saved until it is corrected.
+**To change your password:** press **Change password** on My details, or tap your initials at the
+top right > **Change password**. *Para palitan ang password: Change password.*
 
 ### 6. Install it on your phone / I-install sa cellphone
+
+Tap your initials at the top right > **Add to home screen**, and follow what it shows. Or do it from
+the browser:
+*Pindutin ang inyong initials sa itaas, saka ang Add to home screen.*
 
 - **Android (Chrome):** menu **⋮** > **Install app** (or **Add to Home screen**).
 - **iPhone (Safari):** **Share** > **Add to Home Screen**.
@@ -183,7 +189,7 @@ as good as that.
 
 The first screen: **Needs your attention**, in up to three parts: the payments waiting to be verified, the urgent
 repairs, and the inquiries waiting for an answer, three of each with a count of the rest. A part with
-nothing waiting is not shown, and with nothing waiting at all the card is not shown. Then come **Rent for** this month (for example **"Rent for November"**, the rent filed under November, whenever it was paid) with **Due this week** under it (each tenant whose rent falls due in the next seven days, with the period it pays for, such as "Unit 1A, Nov 7 to Dec 6"), **Occupancy** (the units
+nothing waiting is not shown, and with nothing waiting at all the card is not shown. Then come **Rent for** this month (for example **"Rent for November"**, the rent filed under November, whenever it was paid) with **Due this week** under it (each tenant whose rent falls due in the next seven days, with the period it pays for, such as "Unit 1A, Nov 7 to Dec 6". Three are shown, and tapping one opens **Record payment** for that unit), **Occupancy** (the units
 occupied out of 33, with each cluster's count, such as 22/22), and **Income and expenses**, the year month by month. Tap a
 month on the chart to see its **Income**, **Operating expenses** and **Net income** under the chart;
 the arrows beside **Income** and **Operating expenses** open Monthly Income and Monthly Expenses. Urgent repairs are listed only in Needs your attention.
@@ -200,12 +206,13 @@ never anyone else's.
   tap the green **+** at the bottom right to show them; tap it again to hide them.
 - **Another year:** tap the year beside the date (for example **2026 ⌄**) and choose one, or
   **2026, this year** to come back. A past year shows its year only, not today's date, and can be
-  read but not added to: the green buttons are for this year.
+  read but not added to: the green buttons are for this year. (Last year's late December rent is
+  recorded from Monthly Income, section 3.)
 
 **The bell** at the top shows a **dot** when you have unread notifications; open it to read them.
 The **filter icon** beside the title shows only **Unread**, **Payments**, **Repairs** or
-**Inquiries** (or **All**); the **refresh icon** checks for new ones; **X** closes. **Mark all
-read** is at the bottom.
+**Inquiries** (or **All**), and **X** closes. The list updates by itself. **Mark all read** is at
+the bottom.
 **The numbers beside Inquiries and Repairs** in the side menu count what you have not looked at yet
 (new inquiries, and urgent repairs). They clear once you open that page, and come back if something
 changes: a visitor writes back, or a repair is made more urgent. They are remembered on this device
@@ -214,31 +221,33 @@ only, so another phone or computer shows its own count.
 ### 3. Recording a payment (Monthly Income)
 
 1. **Monthly Income** > **Record payment**.
-2. Choose the **Unit**, the **Date paid**, **How they paid**, and the period it covers
-   (**Covering from**, **Covering to**, or **Months covered** for more than one month at once).
+2. Choose the **Unit**, the **Mode of payment** (Cash, GCash or Bank transfer. For GCash or a bank
+   transfer, type **Their reference number**), the **Date paid**, and the period it covers:
+   **Months covered** and **Covering from**. **Covering to** is worked out from them.
    **Covering from** starts on the day after that tenant's last recorded period, so payments
    entered oldest first need no change. Change it if this payment is for a different period.
 3. **Occupants** starts at the number on record. Change it if more or fewer people live there now:
    **Water** is worked out from it (₱200 a person) and cannot be typed. **Rent** fills in from the
    unit's rate.
 4. **Invoice or acknowledgement receipt (if any)**: type the number on the invoice you issued, or
-   pick **Acknowledgement receipt** from the list when you gave a slip with no number. Leave it blank
+   tap **ACK** in the box when you gave an acknowledgement receipt with no number. Leave it blank
    if there was neither. "4726" or "INV 4726" is saved as INV#4726.
-5. Save, and check the summary that appears: the months, rent, water, total, and, if you changed
+5. Press **Record payment**, check the figures in **Record this payment?** and press **Record it**.
+   Then check the summary that appears: the months, rent, water, total, and, if you changed
    the occupants, that the tenant's record now shows the new number (their water from then on).
    **See it in Monthly Income** opens that month with the payment marked.
 
 The system never makes up an invoice number: it records yours, or none. The same invoice number
 cannot be recorded twice for the same unit and month.
 
-**To correct a payment:** open it with **Edit** > change > **Save changes**. **To remove one**
-recorded by mistake: **Edit** > **Delete payment**. It leaves the records and totals at once; the
+**To correct a payment:** click or tap its row to open **Edit this payment**, change it, and press
+**Save changes**. **To remove one** recorded by mistake: open it and press **Delete payment**. It leaves the records and totals at once; the
 system's own record (section 9) keeps that it existed and who removed it.
 
 **Online (GCash) payments** appear under **To verify**, beside **Records** (every payment recorded).
 When any are waiting, Monthly Income opens on **To verify**. Check the money arrived, then press
-**Verify payment**, or **Reject** to its left and then **Reject payment** to confirm. A payment is only counted once you verify it. **Until online
-payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
+**Verify payment**, or **Reject** to its left and then **Reject payment** to confirm. A payment is only counted once you verify it. **GCash works
+in Adyen's test environment and takes no real money. It is optional and not live, so reject these.**
 
 **The month and the year.** **Rent for** at the top is **one month**, its total alone (for example
 "Rent for October": the rent filed under October, the month its period starts, not the month it
@@ -249,8 +258,10 @@ is the **year**: the year's total and how it divides across the clusters. Tap th
 to change it to **month**, the year month by month. Monthly Expenses is laid out the same way
 ("Expenses for October"; **Expense by area**, or by **month** in red bars). The **All months** dropdown
 (under **Filters** on a phone) shows one month in Rent for. The year beside the page name (for example **2026 ⌄**) picks
-another year, or **All years** for everything since the records began; a past year can be read but
-not added to, so **Record payment** is not shown there. The **Group by cluster** dropdown (the usual view) can
+another year, or **All years** for everything since the records began. A past year can be read but
+not added to, so **Record payment**, **To verify** and opening a row to change it are not offered
+there. The one exception is last year: it stays open until every unit let last December has its
+December rent recorded, and then it closes. The **Group by cluster** dropdown (the usual view) can
 instead read **Group by unit** or **Group by tenant (A to Z)**.
 
 **Download** opens a small window that asks what the file should cover: **Month**, **Year** or
@@ -265,20 +276,22 @@ TOTAL**.
 ### 4. Recording an expense (Monthly Expenses)
 
 1. **Monthly Expenses** > **Record expense**.
-2. The date, the invoice or supplier, amount, category, and the property **area** it was for.
+2. The **Date of the expense**, then for each expense **What for**, **What kind**, **Where** (the
+   property area) and **How much**.
 3. One expense for several areas: **Split across another area**. The parts must add up to the
    expense; the total is worked out for you. **Choose an area** for each new part; each area can
    be given once, so two amounts for the same area go in as one.
 4. **Add another expense** records the next one without closing the form.
-5. A kind of expense that is not in the list: open **Kind of expense**, choose **Add a new kind…**
+5. A kind of expense that is not in the list: open **What kind**, choose **Add a new kind…**
    at the bottom, type its name and press **Add kind**. It is added after your 13, numbered 11,
    12 and so on, and chosen for that expense; it is also in the **All kinds** dropdown and
    in the workbook's category summary. Your 13 stay as they are. A kind you add cannot be renamed
    or removed, so check the spelling.
 
-Editing and **Delete expense** work as for payments. Monthly Expenses also opens on **this year**,
-and its year is chosen the same way, beside the page name. **Download** asks **Month**, **Year** or **All**, as
-for income; a single month's file ends in "only" ("Monthly Expenses March 2026 only - ME032026").
+Editing (click or tap the row) and **Delete expense** work as for payments. Monthly Expenses also
+opens on **this year**, and its year is chosen the same way, beside the page name, with the same
+rule for past years. **Download** asks **Month**, **Year** or **All**, as for income, and names the
+file the same way ("Monthly Expenses March 2026").
 
 ### 5. Tenants
 
@@ -286,12 +299,14 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
   how many, and an emergency contact with their phone. The tenant adds their own phone number. Press **Move them in**. Their **login ID** and a **one-time password**
   are shown: write both down and give them to the tenant in person (the password is shown only
   once). At first sign-in they choose their own password and add their own phone number.
-- **Edit** (click the tenant's row): change their details, unit or number of occupants, then **Save
-  changes**. The water charge follows the number of occupants.
+- **Click or tap a tenant's row** to open their record. **On record** shows their login ID, phone,
+  deposit, move-in date and emergency contact. Below it you can change their **Unit**, their
+  **Standing**, and **Sharing the unit** with **How many roommates**, then press **Save changes**.
+  The water charge follows the number of occupants.
 - **Reset password** (in the same window): for a tenant who forgot theirs or lost the slip. Confirm,
   and their login ID and a new one-time password are shown. Their old password stops working and
-  their phone is signed out. The login ID is also on their record (Edit), under **Login ID**.
-- **Move them out**: type the unit code to confirm, and add a **reason** if you like (kept with the
+  their phone is signed out. The login ID is also on their record, under **Login ID**.
+- **Move them out** (in the same window): type the unit code to confirm, and add a **reason** if you like (kept with the
   move-out; the tenant does not see it). The tenant loses access at once, the unit becomes free to
   let, and **their records stay**.
 - **Who lived where before**: change the dropdown that reads **Today** to a year (and pick a month
@@ -300,21 +315,22 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
   or for one month what the receipt covered, when it was paid and its number. A name you wrote two
   ways in the same unit is shown once, with the other spelling under it; a tenant who moved units
   says which other unit they rented. **Download** asks **Month**, **Year** or **All** and saves
-  the list as a workbook, named like "Tenant History June 2025 - TH062025". **Clear** (under the search) goes back to your current
+  the list as a workbook, named like "Tenant History June 2025". **Clear** (under the search) goes back to your current
   tenants.
 
 ### 6. Rooms and rates
 
-Every unit, by cluster or as one list (**By cluster** or **As a list**, under **Filters** on a phone); **Filters** also narrows them by
-status or cluster. Click a unit to change its rate, status, description
-or picture. A unit with no photograph shows its **Floor plan**, the same one visitors see on the
+Every unit, by cluster or as one list (**By cluster** or **As a list**, under **Filters** on a phone). The **All units** and **All clusters** dropdowns narrow them by
+status or cluster. Click or tap a unit to change its rate, kind, status, whether it is shown **On
+the website**, its description or its picture. A unit with no photograph shows its **Floor plan**, the same one visitors see on the
 public pages; **Replace photo** uploads one, and once saved the public page shows that
 photograph instead. Every rate change is kept in the unit's price history automatically; the system never
 raises a rate by itself.
 
 ### 7. Repairs
 
-New requests from tenants appear here, marked by urgency. Click a card to open it
+Requests are in three columns, **To dispatch**, **In progress** and **Done**, each card marked by
+urgency. Click or tap a card to open it
 (**Manage this repair**) and **Send technician** or change its status. A repair in progress has
 **Mark resolved** at the bottom right of its card, and the tenant is notified when you press it. When a tenant adds a note to a request, it reaches you as a notification that quotes it. **Log
 a repair** records one you were told about in person, or one for an empty unit. **Delete repair**
@@ -328,7 +344,7 @@ Messages from people asking about a unit. Type a reply and press the arrow (**Se
 **Move them in** to start a tenancy with the details already filled in. **Delete** (on any inquiry)
 asks **"Delete this inquiry?"** and then removes it and its conversation for good; it cannot be
 undone. If the person who sent it opens its page again, it tells them the inquiry was closed and
-removed. **Filters** > **Status**
+removed. The **All inquiries** dropdown (under **Filters** on a phone)
 shows only those **Waiting for an answer**, **Answered**, **Moved in** or **Closed**.
 
 The person who asked reads your reply on their inquiry's own page, and can write back there: when
@@ -375,8 +391,8 @@ look at the list before recording it again, so it is not recorded twice.
 | Question | Answer |
 | :--- | :--- |
 | A tenant says their balance is wrong | Check that their receipts since the date shown are recorded (Monthly Income, their unit) |
-| A tenant cannot sign in | They sign in with the login ID on their record (Tenants > Edit). Five wrong tries lock it for 15 minutes. If they forgot the password: **Reset password** |
+| A tenant cannot sign in | They sign in with the login ID on their record (Tenants, their row). Five wrong tries lock it for 15 minutes. If they forgot the password: **Reset password** |
 | A figure shows "—" | It could not be loaded. Refresh when the connection is back |
 | "Too many attempts from this connection" | Everyone on the house wifi shares one counter; wait 15 minutes or use mobile data |
-| A GCash payment appeared | Until online payment goes live no real money arrives: reject it under **To verify** |
+| A GCash payment appeared | GCash works in Adyen's test environment and takes no real money: reject it under **To verify** |
 | Something looks wrong | Take a screenshot and tell the team. Do not try to correct the numbers directly |
