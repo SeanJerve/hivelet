@@ -6,8 +6,9 @@ Status on 10 November 2026: PARTLY
 
 Here:
   - Form 03B - Programming Adviser Endorsement (blank).docx
+  - Forms 3A and 3B checked item by item.docx
 
 Still needed (only a person can supply these):
-  - Form 3B, signed (original)
+  - Form 3B, signed (original). All 6 items are met
 
 Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

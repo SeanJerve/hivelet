@@ -1,0 +1,3 @@
+Fix Form 3A items 2, 3 and 5 in Chapter 1 first, and check item 11 (see the check in this folder)
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

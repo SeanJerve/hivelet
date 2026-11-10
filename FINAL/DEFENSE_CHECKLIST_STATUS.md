@@ -34,7 +34,7 @@ Figure and table numbers are the final paper's (`FINAL/05_CHAPTER_4_...`), not t
 | 14 | Use Case Diagram | Figure 4-5 and Appendix G | Done | |
 | 15 | ERD or database diagram | Figure 4-6 and Appendix H, drawn from the live database catalogue | Done | |
 | 16, 17 | Consultation records with each adviser, signed sessions | Paper records | Not in the repository | Team |
-| 18, 19 | Forms 3A and 3B signed, all items ticked, the four diagram annexes attached to 3B | Forms 3A and 3B. The annexes are Appendices D, E and F, G and H | Signatures open | Team |
+| 18, 19 | Forms 3A and 3B signed, all items ticked, the four diagram annexes attached to 3B | Forms 3A and 3B. The annexes are Appendices D, E and F, G and H. Each form is checked item by item in `FORM_2_EVIDENCE/FORMS_3A_3B_CHECK.md` | 3B: all 6 met. **3A: items 2, 3 and 5 need a fix in Chapter 1** (inverted pyramid, the gap as the last paragraph of 1.1, time-bound objectives) and item 11 a check. Signatures open | Team (Lloyd: the Chapter 1 fixes) |
 | 20, 21 | Mock defense held, every recommendation acted on | The mock defense evaluation and a list of actions taken | Open | Team. Send the recommendations and Claude records what was done |
 | 22 | Slides and demo script, with a backup copy of the system and slides | `FINAL/HIVELET DEFENSE SLIDES.pptx`, `FINAL/DEFENSE_PRESENTATION_SCRIPT.md`, `FINAL/DEMO_SCRIPT.md` | Ready. Slide 1 still needs the names, adviser and date. Backup copy not made | Team |
 | 23 | Copies for the three panelists and two advisers | Five printed copies | Open | Team |

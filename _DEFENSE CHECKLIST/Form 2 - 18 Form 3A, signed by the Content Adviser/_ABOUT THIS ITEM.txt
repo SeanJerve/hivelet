@@ -6,8 +6,10 @@ Status on 10 November 2026: PARTLY
 
 Here:
   - Form 03A - Content Adviser Endorsement (blank).docx
+  - Forms 3A and 3B checked item by item.docx
 
 Still needed (only a person can supply these):
+  - Fix Form 3A items 2, 3 and 5 in Chapter 1 first, and check item 11 (see the check in this folder)
   - Form 3A, signed (original)
 
 Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.
