@@ -4,7 +4,8 @@ For the whole team, before the defense. [STUDY_GUIDE_CODE.md](STUDY_GUIDE_CODE.m
 system feature by feature (screen, endpoint, table). This guide goes the other way: it walks through
 **every file** in `backend/src`, **every migration** in `database/migrations`, and **every script**
 in `scripts/` and `backend/scripts/`, and says in plain words what each one does. Everything here was
-read from the code on 24 October 2026. Where the code does not make something clear, this guide says
+read from the code on 24 October 2026 and checked again on 10 November 2026 (every file named exists,
+and the database objects named were read from the live catalogue). Where the code does not make something clear, this guide says
 "unclear from the code" instead of guessing.
 
 Read Section 1 once. Then use the rest as a reference: when a panelist points at a file, find it here.
@@ -189,7 +190,7 @@ tenant ids are never taken from the body; they come from the signed-in profile.
 | `POST /api/tenant/tickets` | New repair request with priority and JPEG/PNG photos. The unit must be one of the tenant's own. If the photo fails to save, the ticket is kept and the tenant is told | `maintenance_tickets`, `ticket_attachments`, `notifications` |
 | `GET /api/tenant/tickets/:ticketId/messages` | The notes on one of their own tickets | `ticket_messages` |
 | `POST /api/tenant/tickets/:ticketId/messages` | Add a note to their own ticket (not a Closed one) | `ticket_messages` |
-| `POST /api/tenant/tickets/:ticketId/cancel` | Withdraw their own request **only while Submitted**, at most once an hour. Nothing is deleted: it becomes Closed with `closed_by` = the tenant | `maintenance_tickets`, `ticket_messages` |
+| `POST /api/tenant/tickets/:ticketId/cancel` | Withdraw their own request **only while Submitted and nobody has been sent to it** (since 5 November 2026), at most once an hour. Nothing is deleted: it becomes Closed with `closed_by` = the tenant | `maintenance_tickets`, `ticket_messages` |
 | `GET /api/tenant/my-notifications`, `/unread-count`; `PATCH .../:id/read`; `POST .../mark-all-read` | Own notifications only | `notifications` |
 | `POST /api/tenant/payments/checkout` | Open an Adyen checkout for GCash. Raises the bill first if none exists (bills are raised on demand). Refused if a payment on that bill is already waiting for verification, or if a checkout was opened on it in the last **15 minutes** (migration 051) | `bills`, `room_assignments`, `payments` |
 | `POST /api/tenant/payments/adyen/verify-session` | Asks Adyen what happened to the session and tells the payer. **Records no payment**; only the webhook does | none written |
@@ -220,6 +221,8 @@ tenant in; the per-route permissions are a second barrier.
 | `PATCH /api/admin/payments/:paymentId/verify` | Verify or reject a payment. Verifying calls the database function `settle_verified_payment`: payment Verified, bill Paid, receipt written, **in one transaction**. A Verified payment cannot be switched to Rejected here | `payments`, `bills`, `monthly_income_records`, `notifications` |
 | `GET /api/admin/reports/income.xlsx`, `expenses.xlsx`, `tenants.xlsx` | Excel downloads in her layout, for one month, one year or everything. Audited as `LEDGER_EXPORT` | the ledgers |
 | `GET /api/admin/income-records` | The Monthly Income ledger, paged | `monthly_income_records` |
+| `GET /api/admin/rent-due-soon` | Whose rent falls due in the next seven days, for the Overview's Due this week | `room_assignments`, `monthly_income_records` |
+| `GET /api/admin/open-years` | The years that still take records: this year, and last year while any of its December rent is unpaid (`openYears`) | `monthly_income_records`, `room_assignments` |
 | `POST /api/admin/income-records` | Record a receipt. Calls `record_income_for_months`, so a receipt covering three months becomes three rows, all or nothing. Refuses a duplicate, an invoice number already used on another unit or another day, and never invents an invoice number. Then settles the tenant's open bills (`allocateReceipt`) | `monthly_income_records`, `bills`, `payments`, `rooms`, `room_assignments` |
 | `PATCH /api/admin/income-records/:id` | Correct a receipt in place; unknown fields are refused, not dropped | `monthly_income_records`, `rooms` |
 | `DELETE /api/admin/income-records/:id` | **Void**, not delete: calls `void_income_record`; refuses to void twice (it would erase who voided it first) | `monthly_income_records`, `payments`, `bills` |
@@ -228,6 +231,10 @@ tenant in; the per-route permissions are a second barrier.
 | `GET/POST /api/admin/tickets`, `PATCH/DELETE .../:ticketId` | The repair board. Logging a repair sets the unit Under Maintenance; finishing it puts back only what the repair changed; the tenant is told once when it is done. Delete is one of only two hard deletes, audited | `maintenance_tickets`, `rooms`, `room_assignments`, `notifications` |
 | `GET/POST /api/admin/tickets/:id/messages` | Read and add notes on any ticket | `ticket_messages` |
 | `GET /api/admin/notifications`, `/unread-count`; `PATCH .../:id/read`; `POST .../mark-all-read` | Her own notifications | `notifications` |
+
+**Closed years (Iteration 3).** Recording, correcting or voiding a receipt, and recording, editing or
+voiding an expense, first call `refusePastYear`: a record dated in a year that is no longer open is
+refused with "Records from past years cannot be changed."
 
 There is no endpoint that shows the audit trail. A comment in `admin.ts` records that the adviser
 ruled the audit trail a developer's record, so the Activity screen and its two endpoints were
@@ -281,7 +288,8 @@ Table: `room_assignments`.
 
 **`services/adyenService.ts`**
 Opens the Adyen checkout session on the server, so the Adyen API key never reaches a browser. Adyen
-runs on its **test account** (`checkout-test.adyen.com`). The session expires inside the 15-minute
+works end to end in its **test environment** (`checkout-test.adyen.com`) and takes no real money. Going
+live needs the owner's merchant onboarding documents. The session expires inside the 15-minute
 hold on the bill. Its rule: **only the webhook writes an Adyen payment**; the browser's return is used
 to tell the payer what Adyen says, never to record money. It also raises a bill on demand if a paid
 notification arrives with none, and contains the local cashier fallback used only when no gateway is
@@ -523,7 +531,7 @@ decides, row by row, what a database role may see.
 The rule (CLAUDE.md): every change to the schema or to live data is a new numbered file, never an
 ad-hoc edit, and `npm run backup` is run first. Several headers say "NOT APPLIED by the author"; that
 means the author wrote it for Sean to run in the Supabase SQL editor. Whether each one was run later
-is not recorded in every file, so this list says what each file **does**, not whether it ran. Checked on 24 October 2026: every migration from 066 to 085 is in effect on the live database (the database's own migration history lists them, and the effects of the hand-run ones, 070 to 075, were checked directly), and the 21 check suites pass against it.
+is not recorded in every file, so this list says what each file **does**, not whether it ran. Checked on 24 October 2026: every migration from 066 to 085 is in effect on the live database (the database's own migration history lists them, and the effects of the hand-run ones, 070 to 075, were checked directly), and the 21 check suites pass against it. Checked again on 10 November 2026: 088, 089 and 091 are in the migration history, and the effects of 086 (the audit trail and receipt indexes), 087 (loydtest's stay in PH from 1 October) and 090 (the rehearsal profile gone) were read from the live database.
 
 | # | What it changed, and why |
 | :--- | :--- |
@@ -541,7 +549,7 @@ is not recorded in every file, so this list says what each file **does**, not wh
 | 012 | Added Penthouse as a sixth expense area and linked each cluster to the area its costs go to (owner's answer). |
 | 013 | Fixed `replace_expense_allocations`, which could not insert into the area column's enum type. |
 | 014 | Wrote into the repository two objects that existed only in production: the expense-total trigger and the one-amount-per-area unique key. |
-| 015 | Corrected one unit's floor so the floors read 11/11/10/1, as the owner surveyed. |
+| 015 | Corrected one unit's floor so the floors read 11/11/10/1, as the owner surveyed then. 034 later moved F1, so the live floors are 12, 11, 9 and 1. |
 | 016 | Set the grace period to 0: the business does not accept late payment (the seeded 7 days was never a rule). |
 | 017 | Retired the fixed electricity charge for unmetered units (owner's answer); old rows stay as collected. |
 | 018 | Added `settle_verified_payment`: verify payment, mark bill Paid and write the receipt in one transaction. |
@@ -617,6 +625,7 @@ is not recorded in every file, so this list says what each file **does**, not wh
 | 088 | Moved sixteen units into the unit category they really are. Price and every other detail stay as they were. |
 | 089 | Took password hashes out of sixteen old audit trail rows from August 2026. |
 | 090 | Removed the moved-out "REHERSAL TEST" tenant the testing day's case A-12 created (PH, one day, 30 September 2026), as 053 removed the two before it. Its audit rows stay with an empty actor. loydtest is a different account and remains in PH. |
+| 091 | Ended two receipts' rent periods a month after they start (each ran eleven months for one month's rent). The money was right. Only the end date was wrong. Applied 6 November 2026 after a backup. |
 
 **The other files in `database/migrations/`** (no number, not part of the sequence)
 
@@ -685,7 +694,6 @@ are gitignored and must be sent separately.
 | `rotate-demo-passwords.mjs` | Replaced every password that had been published in the repository (run after the September audit). |
 | `testing-day-watch.mjs` | Read only: during a testing day, shows who has set a password, who is locked out, and today's requests, by unit code only. |
 | `build-chapter-4-diagrams.mjs` | Draws the paper's diagrams (ERD, data flows) as images from the real system. |
-| `build-chapter-4-docx.mjs` | Builds Chapter 4 as a Word file in the manuscript format. |
 | `build-consent-docx.mjs` | Builds the testing day's consent form as a Word file. |
 | `build-uat-signoff-docx.mjs` | Builds the owner's acceptance sign-off form as a Word file. |
 | `lib/adminSignIn.mjs` | The one way a suite signs in as the administrator; it refuses to resend a password that was already refused, so the suites cannot lock her account. |
@@ -693,7 +701,7 @@ are gitignored and must be sent separately.
 | `demo/` (`make-demo-passwords.mjs`, `set-demo-secrets.mjs`, `demo-schema.sql`, `demo-seed.sql`) | Build and fill the separate demo copy (its own database of invented people and money) for outside evaluators; never the live site. |
 | `field-tests/` (`offline-and-weak-signal.mjs`, `simultaneous-readers.mjs`, `layout-and-accessibility.mjs`, `owner-screens-layout.mjs`, `print-docs.mjs`) | The browser measurements behind Chapter 4: offline and slow-network behaviour, many readers at once, page width and accessibility (read only), and print versions of the testing-day handouts. |
 | `survey/` (`compute-survey.mjs`, `compute-uat.mjs`, `fill-timings.mjs`, `fill-walkthrough.mjs`, `a-md-to-csv.mjs`, `t-md-to-csv.mjs`) | Turn the survey export and the testing-day sheets into Chapter 4's tables. |
-| `manuscript/` (`build-final.mjs`, `build-manuscript-docx.mjs`, `docx-from-markdown.mjs`, `build-data-dictionary.mjs`, `build-appendices-j-l.mjs`, `number-by-chapter.mjs`, `check-docx.mjs`, `build-slides.mjs`, `reviewer/build.mjs`) | The manuscript builders: `FINAL/` from its sources, the Word file, Appendix N from the live database, Appendices J and L, the table and figure renumbering list, a checker for the Word file, the defense slides, and the team study page. |
+| `manuscript/` (`build-final.mjs`, `build-manuscript-docx.mjs`, `docx-from-markdown.mjs`, `build-data-dictionary.mjs`, `build-appendices-j-l.mjs`, `number-by-chapter.mjs`, `check-docx.mjs`, `build-slides.mjs`, `build-defense-folder.mjs`, `reviewer/build.mjs`) | The manuscript builders: `FINAL/` from its sources, the Word file, Appendix N from the live database, Appendices J and L, the table and figure renumbering list, a checker for the Word file, the defense slides, the `_DEFENSE CHECKLIST/` folder, and the team study page. |
 
 ### 5.3 Scripts in `backend/scripts/`
 
@@ -725,7 +733,6 @@ are gitignored and must be sent separately.
 | `measure-endpoints.mjs` | `npm run measure`: times the read endpoints (needs the backend and credentials). |
 | `measure-doc-citations.mjs` | Counts how many line-number citations in the traceability matrix still point at the right route. |
 | `simulate-adyen.mjs` | `npm run simulate:adyen`: posts correctly signed notifications that the system must refuse or ignore to the running API, then reports what it left (audit rows only, by design). Needs the backend and `.env`. |
-| `tmp-bill.mjs` | A one-off, read-only check that bills come out right after migrations 035 and 037. |
 
 The frontend's own suite scripts are in `frontend/scripts/` (`check-design-tokens.mjs`,
 `check-reachable.mjs`, `check-components.mjs`, `check-labels.mjs`, `check-liveness.mjs`), with

@@ -10,7 +10,7 @@ and a name in plain words (for example *Monthly Income screen*) is a screen in t
 
 **The paper's own wording wins.** Everything here was read from the final chapters in `FINAL/`, the
 appendices, the business rules register, the requirements and the screens as they stood on
-24 October 2026. If an entry and a chapter ever disagree, **the chapter is right**: say what the
+24 October 2026, and checked again against the screens on 10 November 2026. If an entry and a chapter ever disagree, **the chapter is right**: say what the
 chapter says, and tell Sean so this page can be fixed. Section 6 of `STUDY_GUIDE_TEAM_REVIEWER.md`
 is the short version of this list; the meanings here agree with it.
 
@@ -19,7 +19,9 @@ is the short version of this list; the meanings here agree with it.
 - The property has **33 units, 32 of them occupied**.
 - The **50% Share** is only ever *a system-computed figure equal to half that row's Rent Amount,
   kept for ledger parity with the owner's historical spreadsheet.* Nothing more.
-- **Adyen with GCash** is committed, configured and working, on Adyen's **test account**.
+- **Adyen with GCash** is committed, configured and working end to end in Adyen's **test
+  environment**, where it takes no real money. It is optional and not live: going live needs the
+  owner's merchant onboarding documents.
 - **Rates are set by the owner by hand.** Only the history of each change is kept; nothing raises a
   rate by itself.
 - **Nobody signs in with, or gives, an email** (since 20 October 2026). Sign-in is by **login ID or
@@ -117,7 +119,8 @@ total, worked out by the system. **Where:** BR-046; FR-040.
 **Deposit.** One month's rent, set once at move-in, equal to the rent in effect then. Example: moved
 in at ₱8,500, so deposit ₱8,500. It is held, spent on repairs when the tenant leaves, and the rest
 returned; that settling is the owner's own bookkeeping. It is kept out of the remitted amount. Since
-13 October 2026 a tenant sees it on their Overview. **Where:** Table 4-6 (BR-039); Section 4.2.2;
+13 October 2026 a tenant can see it, and since 5 November 2026 it is on their Overview, in the unit
+card. **Where:** Table 4-6 (BR-039); Section 4.2.2;
 Tenants screen; tenant Overview.
 
 **Due date.** The day a bill should be paid, set by the billing cycle. **Where:** Table 4-6
@@ -154,8 +157,8 @@ Section 4.1.
 **Financial tracking.** Recording and checking tenant payments and expenses in one structured place.
 One of the six features. **Where:** Section 2.4; Section 4.2.4.
 
-**Floor.** The building level of a unit: 1 to 3 are residential floors (11, 11 and 10 units) and 4
-is the rooftop penthouse (1 unit). **Where:** Section 4.1; App. N (rooms).
+**Floor.** The building level of a unit: 1 to 3 are residential floors (12, 11 and 9 units, in
+the live records after migration 034) and 4 is the rooftop penthouse (1 unit). **Where:** Section 4.1; App. N (rooms).
 
 **Floor plan.** A drawing of a unit, shown when the unit has no photograph, on the public pages and
 on Rooms and rates. **Where:** App. K, Part 2, §6; public site.
@@ -488,8 +491,8 @@ Section 4.2.4; side menu.
 **Monthly Income (screen).** The owner's income ledger, by cluster, in her layout, with Record payment
 and To verify. **Where:** Section 4.2.4; Figure 4-9; side menu.
 
-**Months paid / Paid in these months.** On the tenant's rent months, how many months and which months
-are paid. **Where:** App. K, Part 1, §3.
+**Months paid in (year).** On the Tenants screen's history of a past year, how many months each
+person paid for, read from the receipts. **Where:** Tenants screen.
 
 **Most urgent first.** The repairs board's default order. **Where:** App. K, Part 2.
 
@@ -513,15 +516,17 @@ offline. **Where:** App. K, Part 1, §6.
 **Not accepted.** What a tenant sees for a GCash payment the landlady rejected. **Where:** tenant
 Overview and Payments screens.
 
-**Not due yet.** A month whose rent is not yet due. **Where:** App. K, Part 1, §3.
-
 **Not recorded.** A month with no receipt recorded yet. It does **not** mean owed: the records alone
 cannot tell an unpaid month from one not yet entered. Say "Not recorded", never "unpaid". **Where:**
 Section 4.2.4; App. K, Part 1, §3.
 
 **Not recorded.** Shown for a move-in date the owner's workbook never had. **Where:** Section 4.2.2.
 
-**Nothing yet.** A pale, empty month before the tenant moved in. **Where:** App. K, Part 1, §3.
+**Nothing yet.** Shown where nothing has happened yet, for example an empty Recently list.
+**Where:** side menu.
+
+**Occupancy.** The owner's Overview tile counting occupied and vacant units, with each cluster's
+count. **Where:** App. K, Part 2, §2; Overview screen.
 
 **One-time password (starting password).** The first password the landlady gives a tenant in person.
 It is shown once; at first sign-in the tenant must choose their own. **Where:** Section 3.4;
@@ -533,14 +538,13 @@ Part 2.
 **Overview.** The first screen after sign-in, for the owner and for each tenant. **Where:**
 Figure 4-11; App. K.
 
-**Paid / Paid up to / Up to date.** On the tenant's rent months: a paid month; the date their recorded
-payments reach; and a tenant with nothing due. **Where:** App. K, Part 1, §3.
-
 **Pay with GCash.** The tenant's button to pay a bill online. It is hidden when offline. **Where:**
 Section 4.2.4; App. K, Part 1, §3.
 
-**Payment record.** The tenant's list of every payment recorded for their unit. **Where:** App. K,
-Part 1, §3.
+**Payment record (History, Record).** The tenant's payments on Payments and billing, under the bill
+card, in two tabs. **History**, shown first, lists every payment, a GCash payment that is waiting or
+was not accepted included. **Record** lists one row per month: a receipt the landlady verified, or
+**Not recorded** for a month with no receipt. **Where:** Section 4.2.4; App. K, Part 1, §3.
 
 **Payments and billing.** The tenant's screen for rent, months and payments. **Where:** side menu
 (tenant).
@@ -593,14 +597,10 @@ menu.
 
 **Send technician.** Records who was sent to do a repair. **Where:** App. K, Part 2, §7.
 
-**Sharing the unit (Living alone, With roommates).** In the Tenants form, whether the tenant has
+**Sharing the unit (Lives alone, With roommates).** In the Tenants form, whether the tenant has
 roommates and how many. **Where:** Tenants screen.
 
 **Show 8 more / Show all / Show fewer.** Open or close more of a long list. **Where:** App. K, Part 2.
-
-**Payment record.** The tenant's list on Payments and billing, under the bill card (shown only while something is to pay). A month
-with no payment entered appears as a **Not recorded** row in the Payment record below it.
-**Where:** App. K, Part 1, §3.
 
 **Sign in / Sign out.** Start and end a session. Signing out also removes the offline copy.
 **Where:** App. K, Part 1, §1 and §7.
@@ -631,9 +631,6 @@ Monthly Income screen.
 **Total handed over.** In Record payment, the total the tenant gave: rent plus water for the months
 covered. **Where:** Record payment form.
 
-**Units by cluster.** An Overview tile counting units in each cluster. **Where:** App. K, Part 2,
-§2.
-
 **Verify.** The owner confirms a GCash payment arrived; only then does it count. **Where:**
 Section 4.2.4; Monthly Income screen.
 
@@ -661,7 +658,7 @@ Section 4.4.4; App. M, Table M-1, step 17.
 
 **A+ grade.** The top grade given by the three outside security scanners. **Where:** Section 4.4.4.
 
-**Access control.** Deciding who may use which function. **Where:** Section 4.2.6; Table 4-8.
+**Access control.** Deciding who may use which function. **Where:** Section 4.2.6; Table 4-7.
 
 **AI coding assistant.** A program that writes code from instructions. Much of Hivelet's code was
 generated this way at the team's direction, then reviewed and verified. **Where:** Section 3.1.1;
@@ -751,8 +748,9 @@ technical evaluators so no outsider saw the owner's records. **Where:** Section 
 **Deploy (deployment).** Putting a new version on the live site. Every approved change deploys
 automatically from the main code branch. **Where:** Section 3.2.5; Section 4.5.
 
-**Endpoint (route).** One address on the API, such as POST /admin/income-records. 58 administrator
-and tenant routes (4 November 2026) are checked against the permission matrix. **Where:** Section 4.2.6; Table 4-8.
+**Endpoint (route).** One address on the API, such as POST /admin/income-records. 60 administrator
+and tenant routes (42 in admin.ts, 18 in tenant.ts, counted 10 November 2026) are checked against
+the permission matrix. **Where:** Section 4.2.6; Table 4-7.
 
 **Entity-relationship diagram (ERD).** A diagram of the database tables and how they link: 21 tables
 and 37 foreign keys. **Where:** Figure 4-6; App. H.
@@ -763,7 +761,7 @@ Verification or Rejected. **Where:** Table 4-5; App. N.
 **Excel export (.xlsx).** A download of a ledger as an Excel file in the owner's layout. **Where:**
 Section 4.2.4; NFR-010.
 
-**Express (Express.js).** The framework the backend is written with, on Node.js. Version 4.19.
+**Express (Express.js).** The framework the backend is written with, on Node.js. Version 4.22.
 **Where:** Table 3-1; Table 4-4.
 
 **Foreign key (FK).** A column that points to a row in another table, such as room_id pointing to a
@@ -826,7 +824,7 @@ by hand. There were 81 by October 2026. **Where:** Section 4.2.1; Section 4.5; A
 **Mozilla HTTP Observatory.** An outside scanner of a site's security settings; it graded Hivelet A+
 (12 of 12 tests). **Where:** Section 4.4.4.
 
-**Node.js.** The program that runs JavaScript (and so Express) on a server. **Where:** Table 3-1.
+**Node.js.** The program that runs JavaScript (and so Express) on a server, version 22 LTS. **Where:** Table 3-1.
 
 **Offline copy.** A read-only copy of the figures, names and notifications a person last loaded, kept
 on their own device and removed at sign-out. **Where:** Section 4.2.7.
@@ -916,7 +914,7 @@ Section 4.3.6.
 
 **Table.** A set of rows of one kind, such as rooms or payments. 24 in App. N. **Where:** App. N.
 
-**Tailwind CSS.** The styling tool for the screens, version 4.0. **Where:** Table 3-1.
+**Tailwind CSS.** The styling tool for the screens, version 4.3. **Where:** Table 3-1.
 
 **Timeout.** A limit on waiting: a page gives up after 25 seconds, a save after 45. **Where:**
 Section 4.3.6.
@@ -1217,8 +1215,10 @@ satisfaction, freedom from risk and context coverage. **Where:** Section 3.3; Se
 **Requirements grading.** Each functional requirement graded against the code: 25 as worded, 15 in
 part, 1 interface only, 3 not as worded. **Where:** Section 4.1.2.
 
-**Respondent groups.** Owner/administrator (1), tenants (3), prospective tenant (1), technical
-evaluators (5). **Where:** Table 4-14.
+**Respondent groups.** Round 1: owner/administrator (1), tenants (3), prospective tenant (1),
+technical evaluators (5), ten in all. Round 2 (31 October to 10 November 2026): the landlady again
+(1), tenants (11), prospective tenants (4), sixteen in all. 26 answers in both rounds. **Where:**
+Table 4-14; App. M, Table M-28.
 
 **SDLC (Software Development Life Cycle).** The stages of building software; Agile is one. **Where:**
 Section 3.2.
@@ -1305,7 +1305,9 @@ Table 4-11.
 **n / N.** The number of respondents (n per characteristic in Table 4-17; N in the formula).
 **Where:** Table 4-16; Table 4-17.
 
-**Overall mean.** The mean of the eight composites: 4.59. **Where:** Table 4-17.
+**Overall mean.** The mean of the eight composites: 4.59 in Round 1. Round 2 gave 4.82 (seven
+characteristics, since it had no Maintainability ratings), and both rounds together 4.61. **Where:**
+Table 4-17; App. M, Table M-29.
 
 **Pass rate.** Tests passed divided by tests executed: 82 / 83 = 98.8%. **Where:** Table 4-12.
 

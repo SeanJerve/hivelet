@@ -2,7 +2,9 @@
 
 For studying before the defense. Each of the 35 references below has what it is, what it found,
 how our paper uses it, where it is cited, and what to say if a panelist asks. Written 13 October
-2026 from each source's abstract, first page or Crossref record.
+2026 from each source's abstract, first page or Crossref record. On 10 November 2026 the "how we use
+it" and "cited in" lines were brought into line with the chapters as corrected that day (Burke,
+Encarnacion, Mia and Setty in particular).
 
 **How sure each summary is.** *Checked* means it was read from the abstract, the first page or the
 publisher's record. *Title only* means the source could not be opened here: **someone must read it
@@ -16,7 +18,7 @@ anything in it, not only what we quote.
 If you only have time for five, learn these. They carry the paper.
 
 1. **Burke (2026)**: the property management problem. Cited in six sections, across Chapters 1, 2 and 4.
-2. **Magno et al. (2024)**: the closest Philippine apartment system. Cited in eight sections.
+2. **Magno et al. (2024)**: the closest Philippine apartment system. Cited in nine sections.
 3. **Pernate et al. (2025)**: the closest Philippine boarding house app, also rated with ISO/IEC 25010.
 4. **Canlas et al. (2026)**: the closest study overall (Philippine dormitory, Agile, ISO/IEC 25010,
    tenants plus administrators plus IT professionals). Chapter 4 compares our 4.59 with it.
@@ -31,9 +33,13 @@ If you only have time for five, learn these. They carry the paper.
   on the management of apartment complexes of 50 to 500 units. Mixed methods: a literature review
   and a case study.
 - **What it found:** apartment complexes face operational, tenant, regulatory, labor and technology
-  challenges that differ from those of commercial properties; it names five research gaps.
-- **How we use it:** administrative work grows with the size of a property, and the paper's problem
-  is fragmentation across those areas.
+  challenges that differ from those of commercial properties; it names five research gaps. Among
+  its findings, residential tenants ask often for minor repairs. The software in use often does not
+  connect with other financial and operational tools, which leaves information in separate silos and
+  makes consolidated reporting difficult. Small portfolios find it hardest to pay for better software.
+- **How we use it:** the fragmentation problem (1.1, 2.1.1, 2.1.2, 2.1.6), and in the gap (2.2) the
+  point that small portfolios find it hardest to pay for better software and so keep systems that do
+  not integrate. Chapter 4 (4.1.1) finds the same fragmentation at the boarding house.
 - **Cited in:** 1.1, 2.1.1, 2.1.2, 2.1.6, 2.2, 4.1.1.
 - **If asked:** "Burke shows apartment management is its own problem, not a smaller version of
   commercial property management; our owner's case, 33 units run by one person, is the small end of
@@ -48,7 +54,9 @@ If you only have time for five, learn these. They carry the paper.
 - **How we use it:** the closest local example of digitizing an apartment's records; Chapter 4
   (4.3.3) notes that our records were already digital in one database, yet six screens disagreed
   with it, so digitizing alone did not make the records agree.
-- **Cited in:** 1.1, 2.1.1, 2.1.2, 2.1.3, 2.1.6, 2.2, 4.1.1, 4.3.3.
+- **Cited in:** 1.1, 2.1.1, 2.1.2, 2.1.3, 2.1.6, 2.2, 4.1.1, 4.2.4, 4.3.3. In 4.2.4 our ledger
+  results agree with its finding that digitizing billing and payment tracking improved data
+  management and reduced manual errors.
 - **If asked how ours differs:** "Theirs digitizes transactions and tasks; ours also covers booking
   inquiries, repair requests, online payment and the tenants' own accounts."
 
@@ -117,19 +125,25 @@ If you only have time for five, learn these. They carry the paper.
 - **How we use it:** a local property system with billing and tenant communication (2.1.3).
 - **Cited in:** 2.1.3.
 
-### Encarnacion, Laulita, Cruiz and Quinte (2025) *(title only)*
-- **What it is:** a conference paper (IEICES proceedings) on the design and evaluation of an online
-  payment monitoring system for student boarding houses near a university campus in the Philippines.
-- **How we use it:** a structured payment monitoring system improves oversight (2.1.3); our ledger
-  results agree (4.2.4).
-- **Cited in:** 2.1.3, 2.1.6, 4.2.4. **Read it:** confirm it reports organized ledgers, payment
-  summaries and transaction visibility, as 2.1.3 says.
+### Encarnacion, Laulita, Cruiz and Quinte (2025) *(as Chapter 2 now reports it, 10 November 2026)*
+- **What it is:** a conference paper (IEICES proceedings): a web-based payment tracking system for
+  boarding houses near a university in Butuan City, where rent had been tracked through notes and
+  verbal reminders.
+- **What it found:** landlords create bills, track payments and see each tenant's balance, and
+  tenants see their own bills and payment history. Evaluated with ISO/IEC 25010, it simplified
+  payment tracking, reduced manual work and improved communication between landlords and tenants.
+- **How we use it:** structured payment records improve oversight and transparency (2.1.3, 2.1.6),
+  and our ledger results agree (4.2.4).
+- **Cited in:** 2.1.3, 2.1.6, 4.2.4.
 
-### Setty (2022) *(title only)*
-- **What it is:** a master's capstone project (Governors State University, USA): a management system
-  for an apartment.
-- **How we use it:** centralized financial records improve transparency and reduce errors (2.1.3).
-- **Cited in:** 2.1.1, 2.1.3, 2.1.6, 2.2, 4.2.4. **Read it:** confirm what 2.1.3 says it explains.
+### Setty (2022) *(as Chapter 2 now reports it, 10 November 2026)*
+- **What it is:** a master's capstone project (Governors State University, USA): a website on which
+  homeowners list their properties and renters register, search for a home and contact its owner.
+  It has no finances.
+- **How we use it:** only as a single-purpose system, one that centers on how a renter finds a home
+  (2.1.4), and as one of the isolated solutions in the gap (2.2).
+- **Cited in:** 2.1.4, 2.2. **Careful:** do not say it is about financial records or ledgers. It is
+  not.
 
 ### Pavia et al. (2022) *(checked)*
 - **What it is:** a Philippine study (Bicol College, *JPAIR*): a property management system for a
@@ -184,12 +198,16 @@ If you only have time for five, learn these. They carry the paper.
 ### Mia et al. (2024) *(checked)*
 - **What it is:** a multiple case study (*Journal of Business, Ethics and Society*) of nine
   Philippine micro, small and medium enterprises during COVID-19.
-- **What it found:** barriers, enablers and challenges to digital adoption; the firms became more
-  open to digital tools.
-- **How we use it:** small Philippine enterprises meet barriers of infrastructure, technical
-  capacity and resources; a small boarding house is such an enterprise.
-- **Cited in:** 1.1, 2.1.5, 2.1.6, 2.2, 4.3.7. **Careful:** it is about small businesses in general,
-  not about boarding houses or rental systems.
+- **What it found:** in its nine cases, a lack of money, infrastructure or digital skills was **not**
+  what held back adoption. The firms used digital tools they already knew and could use at no
+  upfront cost, such as social media. What held them back was the owners' hesitation and readiness,
+  including doubt that a tool fits how the business already works.
+- **How we use it:** a small boarding house is such an enterprise, so a system for it must fit how
+  the business already works (1.1, 2.1.5, 2.1.6, 2.2). In 4.3.7 the tenants' results agree: the help
+  they needed was confined to the first two things a new user does.
+- **Cited in:** 1.1, 2.1.5, 2.1.6, 2.2, 4.3.7. **Careful:** never say Mia found that money,
+  infrastructure or skills were the barriers. It found the opposite. It is about small businesses in
+  general, not about boarding houses or rental systems.
 
 ---
 
@@ -280,8 +298,8 @@ testers find most problems. Do not claim it.
 
 - **"What is your most recent source?"** Canlas et al. (2026) and Burke (2026), both 2026.
 - **"Do you have local studies?"** Yes: Magno (Negros), Pavia (Bicol), Pernate (Ormoc City),
-  Mangca (Surigao), Caparos (South Cotabato), Canlas (dormitories), Encarnacion (a campus in the
-  Philippines), and Mia on Philippine small enterprises.
+  Mangca (Surigao), Caparos (South Cotabato), Canlas (dormitories), Encarnacion (Butuan City), and
+  Mia on Philippine small enterprises.
 - **"Which study is closest to yours?"** Canlas et al. (2026), FixHub.
 - **"What did no study do that you did?"** Integrate booking, billing and receipts, tenant accounts,
   repair requests and online payment for one small boarding house, and measure each ISO/IEC 25010

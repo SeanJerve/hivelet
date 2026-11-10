@@ -5,8 +5,9 @@ paper's own order and with the paper's own section numbers, so that each of you 
 of it to the panel. It covers the abstract, all five chapters, the references and every appendix.
 
 Everything here is taken from the final chapters (01_ABSTRACT.md to 08_APPENDICES.md and the
-appendices/ folder) as they stood on 24 October 2026. **If a chapter says something different from
-this guide, the chapter wins.**
+appendices/ folder) as they stood on 24 October 2026, brought up to date on 10 November 2026 for the
+second round of users, the redesign and the re-timed screens. **If a chapter says something
+different from this guide, the chapter wins.**
 
 ## How the paper is organised
 
@@ -277,14 +278,18 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   than kept as a separate feature.
 
 **Key facts and numbers**
-- Encarnacion et al. (2025): a payment monitoring system for student boarding houses.
-- Magno et al. (2024) and Setty (2022): digital and centralized financial records.
+- Encarnacion et al. (2025): a web-based payment tracking system for boarding houses near a
+  university in **Butuan City**. Landlords create bills, track payments and see each tenant's
+  balance, and tenants see their own bills. Evaluated with ISO/IEC 25010.
+- Magno et al. (2024): monthly bills computed, billing tracked and a statement made for each unit in
+  place of paper records.
 - Caparos et al. (2025): a cloud-based property system for a real estate business in **Region XII**;
   staff rated it positively, **security highest**.
 
 **If the panel asks**
-- *"Which study supports your financial module?"* Encarnacion et al. (2025) and Setty (2022); Chapter
-  4 (Section 4.2.4) says Hivelet's results agree with them.
+- *"Which study supports your financial module?"* Magno et al. (2024) and Encarnacion et al. (2025).
+  Chapter 4 (Section 4.2.4) says Hivelet's results agree with them. Setty (2022) is not a financial
+  study: it is a website where homeowners list homes and renters find them (2.1.4, 2.2).
 
 ### 2.1.4 Digital Communication and Structured Issue Resolution
 
@@ -304,6 +309,8 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 - Pernate et al. (2025), Ormoc City: rated **Excellent** by owners and **Very Good** by tenants, with
   Agile and ISO/IEC 25010.
 - Mangca (2023b), Surigao City: web booking with SMS notifications; Mangca (2023a) is its assessment.
+- Setty (2022): a website where homeowners list their homes and renters register, search and contact
+  the owner. Like the booking studies, it centers on how a tenant finds a home.
 - Canlas et al. (2026), FixHub: Agile, ISO/IEC 25010 and the Technology Acceptance Model; surveys of
   tenants, administrators and IT professionals.
 
@@ -326,7 +333,9 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 
 **Key facts and numbers**
 - Muawwal (2024); Biørn-Hansen et al. (2017); Anuar and Othman (2024) on PWA usability heuristics; Mia
-  et al. (2024) on barriers for Philippine small enterprises.
+  et al. (2024): small Philippine enterprises used tools they already knew at no upfront cost, and
+  what held them back was less money or skill than the owners' hesitation and doubt that a tool fits
+  how the business already works.
 - "A PWA is therefore the delivery layer that keeps the centralized functions of an MIS accessible
   across devices and conditions."
 
@@ -469,8 +478,8 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 **Table 3-1. Software requirements**
 - *What it shows*: each software tool and its version.
 - *How to read it*: left column the tool, right column the version. Rows: Visual Studio Code 1.85+;
-  Vue 3 with TypeScript 3.5 / TypeScript 5.7; Vite (build tool) 5.4; Tailwind CSS 4.0; Node.js with
-  Express.js (TypeScript) LTS (v18+) / Express 4.19; PostgreSQL, hosted on Supabase 17.6; Adyen Web
+  Vue 3.5 with TypeScript 5.7; Vite (build tool) 5.4; Tailwind CSS 4.3; Node.js 22 LTS with
+  Express.js 4.22 (TypeScript); PostgreSQL, hosted on Supabase 17.6; Adyen Web
   Drop-in / API Library 6.44 / 32.0.
 - The development environment ran on "Windows 10 or higher". Google Chrome was the main browser.
 
@@ -647,6 +656,9 @@ The section then has four labelled parts.
   matches capstone projects with volunteer evaluators), each asked to have at least three years'
   experience, and reviewed a **demonstration copy** with sample data on **15 to 18 October**. "None
   inspected the source code."
+- **A second round**, 31 October to 10 November 2026, on the redesigned system: ten tenants and four
+  prospective tenants did the same tasks, and sixteen answered the questionnaire (eleven tenants, four
+  prospective tenants and the landlady). Time on task was not recorded reliably and is not reported.
 
 **Instruments** (the tools used to collect data)
 - Four instruments: **task cards** read aloud in English and Filipino; an **observation sheet**
@@ -750,7 +762,9 @@ The section then has four labelled parts.
 **Key facts and numbers**
 - **33 rentable units in five clusters**: Boarding House (22 units), Back Apartment (5), Front
   Apartment (3), Penthouse (1), Linda (2).
-- Three residential floors and a rooftop penthouse level: **11, 11, 10 and 1 units**.
+- Three residential floors and a rooftop penthouse level. The live rooms table gives **12, 11, 9 and
+  1 units** (migration 034 moved unit F1 to floor 1). If the chapter still prints 11, 11, 10 and 1,
+  that is the count before that correction.
 - **32 of the 33 units are occupied** at the time of writing.
 - The owner confirmed these figures on **13 September 2026**.
 
@@ -885,8 +899,8 @@ The section then has four labelled parts.
 
 **Table 4-4. Technology stack of the developed system**
 - *What it shows*: each layer of the system, the technology used, and its purpose.
-- *How to read it*: Presentation (Vue 3.5, TypeScript 5.7, Vite 5.4, Tailwind CSS 4.0: the screens);
-  Application (Node.js with Express 4.19 in TypeScript: rules, calculations, access checks); Data
+- *How to read it*: Presentation (Vue 3.5, TypeScript 5.7, Vite 5.4, Tailwind CSS 4.3: the screens);
+  Application (Node.js 22 with Express 4.22 in TypeScript: rules, calculations, access checks); Data
   (PostgreSQL 17.6 on Supabase, with row-level security); Payment gateway (Adyen Web Drop-in 6.44, API
   Library 32.0, with GCash); Client delivery (PWA, vite-plugin-pwa); Hosting (Vercel).
 
@@ -1004,11 +1018,13 @@ The section then has four labelled parts.
   yet entered."
 - Electricity is outside the system: each unit has its own meter and the tenant pays the electric
   company directly.
-- Discussion: agrees with Encarnacion et al. (2025) and Setty (2022), and adds that consolidation also
-  exposed errors already in her records.
+- Discussion: agrees with Magno et al. (2024) and Encarnacion et al. (2025), and adds that
+  consolidation also exposed errors already in her records.
 
-**Figure 4-9. The monthly income ledger.**
-- *What it shows*: the owner's Monthly Income screen in her workbook's layout (sample records).
+**Figure 4-9. Monthly Income, with a GCash payment waiting to be verified.**
+- *What it shows*: the owner's Monthly Income screen in her workbook's layout (sample records). Its
+  two tabs are **Records** and **To verify**. While a GCash payment is waiting, the page opens on To
+  verify.
 
 **Table 4-6. Business rules for computed figures, with a worked example**
 - *What it shows*: every computed figure, its rule number, and an example.
@@ -1057,7 +1073,8 @@ The section then has four labelled parts.
 - Password and account protections are listed; their testing is in Section 4.4.4.
 
 **Key facts and numbers**
-- **55** administrator and tenant routes checked against the matrix on every verification run.
+- **60** administrator and tenant routes (42 owner, 18 tenant, counted 10 November 2026) checked
+  against the matrix on every verification run.
 - Passwords stored as **bcrypt hashes with a per-password salt** (bcrypt is a slow one-way scrambling
   method; a salt is random data added so that equal passwords look different).
 - A new password needs **ten characters, a letter and a number**, and is refused if it is in a public
@@ -1292,6 +1309,10 @@ The section then has four labelled parts.
 - The owner's full year of Monthly Income opened in **about three seconds** during simultaneous use.
 - Tests needing several tenants saving at once were not performed, "because only two attended
   together".
+- **Second round**, 31 October to 10 November 2026, on the redesigned system: ten tenants did **151 of
+  160** attempts without help (**94 percent**) and four prospective tenants **31 of 32** (**97
+  percent**). Every task was completed. Help was needed mostly at the first sign-in. No times were
+  recorded in this round, so none are reported (Appendix M, Table M-30).
 
 **Table 4-11. Tenant task results (30 September 2026)**
 - *What it shows*: each group of tasks, how the tenants did, how long it took, and how often they went
@@ -1365,6 +1386,9 @@ The section then has four labelled parts.
 - Prospective tenant and three tenants: **30 September 2026**, after their tasks. The owner: that
   night. One technical evaluator: **4 October**. Four more: **15 and 16 October and two on 18
   October**.
+- **Second round**, 31 October to 10 November 2026: **sixteen** more answers, from eleven tenants,
+  four prospective tenants and the landlady again, with no technical evaluators. **26 answers** in
+  all (Appendix M, Table M-28).
 
 **Table 4-14. Distribution of respondents**
 - *What it shows*: how many respondents per group. Owner / administrator **1 (10.00%)**; Tenants **3
@@ -1378,7 +1402,7 @@ The section then has four labelled parts.
 **If the panel asks**
 - *"Ten respondents is very few."* The paper agrees: "the results describe how these ten people rated
   the system, not a sample from which a wider population can be inferred." The measurements back the
-  ratings (Section 4.4.5).
+  ratings (Section 4.4.5), and the second round of sixteen gave 4.82, 4.61 with all 26 answers.
 
 ### 4.4.2 Interpretation of Scores
 
@@ -1796,6 +1820,8 @@ prospective tenant's task cards were not recorded on the day. It is the raw evid
 - M-18 all 51 optimizations; M-19 the three iterations phase by phase; M-20 quality in use; M-21 the
   2011 to 2023 mapping; M-22 simultaneous use; M-23 tests mapped to characteristics; M-24 offline and
   installation; M-25 simulated users; M-26 simultaneous saves; M-27 the correction of 13 October 2026.
+- M-28 the respondents by round; M-29 the composite means by round (4.59, 4.82, 4.61); M-30 the
+  second round's task results; M-31 the page timings before and after the redesign.
 It is there so every Chapter 4 number can be checked.
 
 *How to read a ratings table (for example Table M-2, Functional Suitability)*: rows are the items,
@@ -1817,9 +1843,14 @@ marked **[TO DO: signature]**; the owner signs only if she agrees.
 copies, which carry names.
 
 **Appendix Q. Source Code.** The repository's layout; the code itself is shown at the defense on
-request. Key facts: **63 components, of which 19 are screens**; the API in **49 files**; **81 numbered
-migrations**; the check suites in the scripts folders. Each change is recorded with its author, date and
-reason.
+request. Key facts on 10 November 2026: **62 Vue files, of which 19 are screens** (the tenant's old
+rent-months chart was removed on 5 November); the API in **49 files**; **91 numbered migrations**; the
+check suites in the scripts folders. If the appendix still says 63 and 81, those are its older counts.
+Each change is recorded with its author, date and reason.
+
+**Appendix R. Literature Map.** Figure R-1 maps the literature of Chapter 2: the problem at the top,
+the five themes of Sections 2.1.1 to 2.1.5 under it, each with what its studies found, then the
+synthesis (2.1.6) narrowing to the gap (2.2) and to this study. Form 3A asks for it.
 
 ---
 
@@ -1835,7 +1866,8 @@ defense; know them, and say what each part says.
 > [Defense Q&A](STUDY_GUIDE_DEFENSE_QA.md) (Section 5) says both are right.
 
 > **Notes 2 to 4, fixed on 24 October 2026.** Appendix I now names the screens as Figures 4-7 to 4-11
-> (it said 4-4 to 4-8), the appendix list now gives Appendix M as Tables M-1 to M-27 (it said M-26),
+> (it said 4-4 to 4-8), the appendix list gave Appendix M as Tables M-1 to M-27 (it said M-26). Appendix M now runs to
+M-31, so check the list says so.
 > and Appendix J now gives the survey as 30 September to 18 October 2026 (it said 4 October), matching
 > Section 4.4.1.
 

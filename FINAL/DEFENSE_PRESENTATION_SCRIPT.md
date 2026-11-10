@@ -71,7 +71,8 @@ the next iteration." [2.3, Figure 2-2]
 12 to 14 September: we checked the system and its documents against each other and corrected 22
 recorded errors. Iteration 2, 15 September to 31 October: her answers, real users, testing and the
 evaluation. Iteration 3, from 1 November: a redesign of how the screens look. No module was added or
-removed, and a rerun of all 114 test cases on 4 November found none failing." [4.2.1, Appendix M Table M-19]
+removed, a rerun of all 114 test cases on 4 November found none failing, and a second round of users
+tested the redesign from 31 October to 10 November." [4.2.1, Appendix M Table M-19]
 *Likely question: "Did AI write it?" Yes, much of the code, at our direction; we reviewed and
 verified it, and iteration 1 exists because we did not trust it unchecked. [Q&A guide, Section 4]*
 
@@ -127,7 +128,10 @@ sent five times at once, one is saved. "Simulated users, not people: we say so i
 **Land: all 34 tenant tasks completed, 31 without help.**
 "The owner and three tenants used it on their own devices on 30 September. Median 60 seconds a task.
 Help was needed only at the start: the first sign-in and finding their unit and rent, which is
-exactly what Chapter 5 recommends showing new tenants first." [4.3.7, Table 4-11]
+exactly what Chapter 5 recommends showing new tenants first. In a second round on the redesigned
+system, ten tenants did 151 of 160 attempts without help, 94 percent, and four prospective tenants 31
+of 32. Every task was completed, and no times were recorded in that round." [4.3.7, Table 4-11; Appendix
+M, Table M-30]
 
 **Slide 16. The evaluation** (50 s)
 **Land: 4.59, Very High Quality; every characteristic Very High Quality.**
@@ -136,8 +140,9 @@ second round on the redesigned system, 16 more answers, gave 4.82, and all 26 to
 Portability highest at 4.86, Functional Suitability 4.79; even the lowest two, Usability 4.42 and
 Maintainability 4.32, are Very High Quality. We used the mean of the group means, so one owner is not outweighed by
 three tenants." [Table 4-17, 4.4.2]
-*Likely question: "Ten is very few." We claim it only for these ten, and every characteristic was
-also measured. [4.4.1, 4.4.5]*
+*Likely question: "Ten is very few." We claim it only for the people who answered, every
+characteristic was also measured, and the second round of sixteen gave 4.82. [4.4.1, 4.4.5;
+Appendix M, Tables M-28 and M-29]*
 
 **Slide 17. Measured and rated agree** (50 s)
 **Land: all eight agree.**
@@ -155,7 +160,7 @@ made 51 changes in response, including all 14 of the technical evaluators' comme
 **Slide 18. Conclusions** (45 s)
 One line per objective, in order: every gap traced to a module; all six features in use on her real
 records, in her own layout; 82 of 83 tests passed with no critical defect; Very High Quality, 4.59,
-with 51 optimizations. "All four objectives were achieved." [5.2]
+and 4.82 in the second round, with 51 optimizations. "All four objectives were achieved." [5.2]
 
 **Slide 19. Recommendations** (40 s)
 Grouped by who acts: the owner (keep the system's receipts up to date; keep backups); the system

@@ -2,7 +2,8 @@
 
 For the team, before the defense. This guide walks through **every file in `frontend/src`**, plus
 `frontend/vite.config.ts`, `frontend/index.html` and `frontend/public`, and says in plain words what
-each one does. Everything here was read from the code on 24 October 2026. Where the code did not
+each one does. Everything here was read from the code on 24 October 2026 and checked again on 10
+November 2026, after the redesign of Iteration 3. Where the code did not
 make something clear, this guide says "unclear from the code" instead of guessing.
 
 The companion guide, **`STUDY_GUIDE_CODE.md`**, already explains the whole system, each feature from
@@ -42,6 +43,7 @@ A few words first:
 | `components/ui/` | Small building blocks every screen shares: the one dialog, the one table, the toolbar, toasts |
 | `lib/` | Logic with no screen of its own: talking to the server, who is signed in, dates, money, offline copies |
 | `index.css` | The colours, fonts, dark mode and animations, as named tokens |
+| `glass.css` | The glass look of the Iteration 3 redesign (1 November 2026): translucent surfaces over a light green page, in light and dark. Loaded after `index.css` by `main.ts` |
 
 ### How a page gets its data
 
@@ -103,12 +105,20 @@ which come with the app so they draw at once. There is deliberately no `/admin/a
 adviser ruled the activity log a developer's record, so that address shows "not found".
 
 **`index.css`**
-All the styling rules shared across the app, about 2,600 lines. It defines the colour, font and
+All the styling rules shared across the app, about 2,800 lines. It defines the colour, font and
 radius **tokens** (named values such as `--brand`, the green `#17603f`) and redefines them for dark
 mode under `[data-theme="dark"]`. It also holds the shared classes: page widths (`ws-page`), the
 page-change crossfade (`page-move`), dialogs, list reveals, the skip link, and reduced-motion
 versions of every animation. The fonts are Sora and Plus Jakarta Sans, loaded from Google Fonts in
 `index.html`.
+
+**`glass.css`**
+The look of the Iteration 3 redesign, about 1,000 lines, in one file loaded after `index.css` (so
+removing its one import in `main.ts` would bring back the old surfaces). The page stays near white
+with soft patches of light green behind it, and each surface is translucent white with a bright rim.
+It has three weights: a section, what floats (a dialog or menu, more opaque so a form stays
+readable), and the dark and green tiles. It also holds `.row-open`, the invisible button that makes a
+whole row or card open its record when clicked, which replaced the pencil buttons in November 2026.
 
 ---
 
@@ -200,8 +210,11 @@ The tenant's bills and payment record, with the GCash pay button. It reads `/ten
 after a payment calls `POST /tenant/payments/adyen/verify-session`. It opens `AdyenPaymentModal.vue`
 only when needed and loads that file's code on demand, because the Adyen library alone made this
 screen's download about 209 KB. A tenant can pay the current period even before a bill exists
-(`?pay=current`); the server raises the bill itself. The month-by-month chart is
-`PaymentMonths.vue`. See `STUDY_GUIDE_CODE.md`, Section 5, for the payment steps.
+(`?pay=current`); the server raises the bill itself. Under the bill is the **Payment record**, with
+two tabs: **History** (shown first), every payment including a GCash payment that is waiting or was
+not accepted, and **Record**, one row per month, a verified receipt or "Not recorded". The months
+are worked out with `lib/tenantPaymentMonths.ts`. See `STUDY_GUIDE_CODE.md`, Section 5, for the
+payment steps.
 
 **`views/TenantTicketsView.vue`** (`/tenant/tickets`)
 The tenant's repair requests: a form to file one (with a photo), a list with progress, and a
@@ -209,8 +222,8 @@ conversation per request. It calls `POST /tenant/tickets`, `GET /tenant/my-ticke
 `GET`/`POST /tenant/tickets/:id/messages`, `POST /tenant/tickets/:id/cancel` and
 `GET /tenant/my-rooms`. A photo must be JPG or PNG (`lib/photoFile.ts`) and is shrunk in the
 browser first (`lib/shrinkPhoto.ts`) so a normal phone photo fits the server's 1 MB limit. A tenant
-may cancel only while the request is still Submitted, not once it is In Progress, and the server
-limits this to once an hour.
+may cancel only while the request is still Submitted and nobody has been sent to it (since 5
+November 2026), and the server limits this to one cancellation an hour.
 
 **`views/TenantProfileView.vue`** (`/tenant/profile`, "My details")
 What a tenant can change about themselves: phone number and emergency contact, with password in
@@ -233,8 +246,8 @@ someone in/out) move into `QuickActionsFab.vue`.
 **`views/RoomDirectoryView.vue`** (`/admin/directory`, "Rooms and rates")
 All 33 units by cluster, with status, rate and occupants. It reads rooms and tenants through
 `systemState.ts` (`GET /admin/rooms`, `GET /admin/tenants`). Clusters are folded so the page is not
-ten screens tall on a phone; the first cluster opens by default. Editing a unit opens
-`AdminEditUnitModal.vue`.
+ten screens tall on a phone; the first cluster opens by default. Clicking a unit's row or card opens
+`AdminEditUnitModal.vue` (there is no pencil button since 5 November 2026).
 
 **`views/TenantManagementView.vue`** (`/admin/tenants`)
 The tenant list, and the place the owner moves a tenant in, edits them, resets their password and
@@ -246,8 +259,9 @@ to type the unit code first (`ConfirmDialog`'s typed phrase), because it removes
 past year or month the page shows `TenantHistory.vue` instead, read from the receipts.
 
 **`views/IncomeCollectionsView.vue`** (`/admin/income`, "Monthly Income")
-The income ledger, the largest screen (about 2,200 lines). It has two tabs: the ledger, grouped by
-cluster like her spreadsheet, and "To verify", the GCash payments waiting for her. It calls
+The income ledger, the largest screen (about 2,200 lines). It has two tabs: **Records**, the ledger
+grouped by cluster like her spreadsheet, and **To verify**, the GCash payments waiting for her. While
+any are waiting the page opens on To verify, and in a past year there is no To verify tab. It calls
 `GET /admin/payments`, `PATCH /admin/payments/:id/verify` (Verified or Rejected),
 `POST /admin/income-records`, `PATCH`/`DELETE /admin/income-records/:id`, and `GET /public/rates`.
 Rows are filed by the month the rent is **for**, not the date paid (`lib/incomeFiling.ts`), so this
@@ -275,8 +289,9 @@ removed from the screen only after the server confirms it.
 **`views/InquiriesView.vue`** (`/admin/inquiries`)
 The owner's inbox of inquiries from visitors. It calls `GET`/`POST /admin/inquiries/:id/messages`
 (read and reply), `PATCH /admin/inquiries/:id` (for example to Closed) and
-`DELETE /admin/inquiries/:id`. Each inquiry shows its real status: Pending, Contacted, Converted or
-Closed; it used to show the same badge for every lead. Delete removes the inquiry and its
+`DELETE /admin/inquiries/:id`. Each inquiry shows its real status in words: Waiting for an answer,
+Answered, Moved in or Closed (the database's Pending, Contacted, Converted and Closed); it used to
+show the same badge for every lead. Delete removes the inquiry and its
 conversation for good, and only after the server confirms.
 
 ---
@@ -289,7 +304,7 @@ conversation for good, and only after the server confirms.
 The bar at the top of every page except the inquiry, sign-in and category pages, which draw their
 own. For a signed-in person it holds the notification bell (with its unread count) and the account
 menu: Change password for a tenant, Change number / password for the owner, the Appearance (dark
-mode) choice, and Sign out. Its comment records that the bell was once removed by accident for
+mode) choice, **Add to home screen** where the browser allows it (`lib/installApp.ts`), and Sign out. Its comment records that the bell was once removed by accident for
 twenty days while notifications kept being written, and asks future editors to keep it.
 
 **`AppSidebar.vue`**
@@ -348,7 +363,8 @@ server, then shows Adyen's own **Drop-in** (Adyen's ready-made payment form, fro
 `@adyen/adyen-web` library) on the tenant's page; Hivelet never sees the GCash account. On return it
 calls `POST /tenant/payments/adyen/verify-session`. It shows the outstanding balance, which is what
 the server charges, so a part-paid bill is never charged in full twice. Raw gateway messages are
-replaced with sentences a tenant can act on. Adyen runs on its test account (Chapter 5,
+replaced with sentences a tenant can act on. It works end to end in Adyen's test environment and
+takes no real money. Going live needs the owner's merchant onboarding documents (Chapter 5,
 recommendation 3).
 
 **`BookViewingPrompt.vue`** (visitor, landing page)
@@ -388,18 +404,13 @@ double-collection gap.
 ### `components/overview/` (tiles and charts)
 
 **`MonthCapsules.vue`**
-Twelve months as rounded bars, used on the owner's Overview and the tenant's Payments. A month not
+Twelve months as rounded bars, used on the owner's Overview, Monthly Income and Monthly Expenses. A month not
 yet entered is drawn hatched, not as a zero, because "nothing entered" is not "nothing collected".
 Each bar is a button that reads out its own value.
 
 **`OverviewTile.vue`**
 The standard tile used on both Overviews and the ledgers. Its tone shows importance: the green and
 dark tones are kept for the one or two things that need action.
-
-**`PaymentMonths.vue`** (tenant)
-Removed 5 Nov 2026 (PaymentMonths.vue): the tenant's Rent paid chart, replaced by Paying your rent on Payments and billing. It drew from their own receipts and standing
-(`lib/tenantPaymentMonths.ts`). It keeps "still loading", "could not load" and "nothing recorded"
-apart, so a tenant is never told the house has no record of their money by accident.
 
 **`QuickActionsFab.vue`** (owner, phone)
 The floating green button on the phone Overview that opens Record payment, Record expense and Move
@@ -409,7 +420,8 @@ disagree.
 **`RecentActions.vue`**
 "Recently": the last three things the signed-in person did, as plain sentences the server writes
 (`GET /auth/me/recent-actions`, through `lib/recentActions.ts`). It is not the audit trail: no
-codes, no other people. It appears in the desktop sidebar and as one line on the phone Overview.
+codes, no other people. It appears in the sidebar, under the menu, on a computer and in the phone's
+menu drawer.
 
 **`SegmentBar.vue`**
 One whole split into its parts, used only when the parts add up to the total, for example expenses
@@ -432,6 +444,12 @@ entered, expected, future, and "none" before a tenancy starts) and the shape of 
 Shown when the site cannot find out which units are free. It shows no unit list, rates or counts,
 and gives the number to call instead. It exists because the landing page once showed all 33 units as
 Available during an outage, from out-of-date seed data.
+
+**`VisitorShell.vue`** (visitor)
+The one screen that holds **Sign in**, **Inquire** and **Your inquiries** since 2 November 2026
+(the router nests `/login`, `/inquire` and `/inquiry` under it). The photograph and the masthead stay
+still and only the left column changes, sliding in the direction of travel. On a computer it is one
+screen tall. A phone has no photograph and scrolls as normal.
 
 **`InquiryConversationLink.vue`** (visitor)
 Shown after an inquiry is sent: the private link back to the conversation, and the reference code
@@ -549,8 +567,8 @@ The notifications for whoever is signed in: `GET /admin/notifications` or
 last person's notifications.
 
 **`recentActions.ts`**
-The one shared copy of "Recently" (`GET /auth/me/recent-actions`), so the sidebar and the phone
-Overview make one request and show the same three actions.
+The one shared copy of "Recently" (`GET /auth/me/recent-actions`), so the sidebar on a computer and
+the phone's menu drawer make one request and show the same three actions.
 
 **`live.ts`**
 Keeps open pages current. Every 2 seconds while a page is on screen it asks `GET /live/version` for a
@@ -585,7 +603,7 @@ disagreed.
 
 **`floorPlans.ts`**
 Which floor-plan picture each unit is on and where its label goes. Ten pictures cover all 33 units,
-instead of 33 large files (11.3 MB reduced to 1.27 MB).
+instead of 33 large files, which would have been 11.3 MB. As WebP files the ten come to about 0.8 MB.
 
 **`contactDetails.ts`**
 The phone rules: `phoneDigits` (reads `+63` as `0`), `isPhMobile` (a Philippine mobile, 09 followed
@@ -621,6 +639,20 @@ differ.
 Works out a tenant's months: paid (only Verified receipts count), due, overdue, or nothing recorded.
 A gap before their latest receipt is shown as "nothing recorded", never as owed.
 
+**`notRecorded.ts`**
+The one wording for a value nobody entered: "Not recorded", drawn muted so it never reads as a
+value someone typed. Since 6 November 2026 every screen, dialog and export uses it instead of "Not
+given yet", "None" or a dash. Words for a real state ("Vacant", "Unassigned") stay as they are.
+
+**`paymentMethod.ts`**
+How a payment was made, in plain words: the stored value "Adyen Online" is shown as "GCash".
+
+**`openYears.ts`**
+The years that still take records, as the server decides them (`GET /admin/open-years`): this
+year, and last year while any of its December rent is unpaid. Until the answer arrives only this
+year is open, so a closed year never shows an edit button the server would refuse (the closed-year
+rule of Iteration 3).
+
 **`greeting.ts`**
 "Good morning", "Good noon", "Good afternoon" or "Good evening" on the Overviews, by Manila's clock,
 kept current while the page is open.
@@ -637,6 +669,25 @@ out in full so the `check:endpoints` check can find each one.
 `useOpenFromQuery()` opens the record named in the address (for example a payment from a
 notification) and then removes it from the address, so a refresh does not reopen it.
 `notificationTarget()` decides where each notification leads.
+
+**`screenCache.ts`**
+Keeps a screen's loaded figures in memory for the visit, so going back to a screen shows what it
+had at once and fetches again behind it. The grey placeholders show only the first time (4 November
+2026). Memory only, never storage, and emptied at sign-out and sign-in, so the next person on a
+shared phone never sees the last person's figures.
+
+**`glide.ts`**
+The `v-glide` directive: one pane of glass that slides to the chosen option of a control, such as
+the sidebar's links or a two-way switch. Under reduced motion it moves without sliding.
+
+**`glideToSection.ts`**
+When an arrow opens another page at one of its sections, the page appears first and then scrolls
+smoothly down to that section. If the reader starts scrolling, it leaves them alone.
+
+**`installApp.ts`**
+**Add to home screen** in the account menu (6 November 2026). On Chrome, Edge and Samsung Internet it
+opens the browser's own install prompt. On an iPhone or iPad, where a page cannot open one, it shows
+the steps for the browser in use. It is hidden once the app is opened from the home screen.
 
 **`afterArrival.ts`**
 Waits until a page has appeared and its data has loaded before opening a dialog on top of it, so a
@@ -774,7 +825,7 @@ the app's code never loads.
 - **`fe-galang-building.webp`**: the building photo on the landing page; stored for offline use.
 - **`fe-galang-gate.webp`, `fe-galang-gate-800.webp`**: the gate photo in the Location section, full
   size and an 800-pixel copy; not part of the first download.
-- **`floorplans/`** (10 PNGs: `ground`, `2ndfloor`, `3rdfloor`, `back1stfloor`, `back2ndfloor`,
+- **`floorplans/`** (10 WebP pictures: `ground`, `2ndfloor`, `3rdfloor`, `back1stfloor`, `back2ndfloor`,
   `back3rdfloor`, `front1stfloor`, `front2ndfloor`, `linda`, `penthouse`): one picture per floor area,
   shown on a unit with no photo (`lib/floorPlans.ts`).
 - **`robots.txt`**: lets search engines read the public pages and keeps them out of `/admin`,

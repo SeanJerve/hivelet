@@ -3,7 +3,8 @@
 For the team, before the defense. The system was built with an AI coding assistant, so this guide
 is how each of you can answer **"where is this feature?", "how does it work?" and "how would you
 debug it?"** without having written every line yourself. Everything here was read from the code and
-the live database on 13 October 2026. Line numbers are as of that day and drift as the code changes;
+the live database on 13 October 2026, and checked again on 10 November 2026 (file names, functions,
+line numbers and the database objects named). Line numbers are as of 10 November and drift as the code changes;
 search for the name if a line has moved.
 
 **How to study it:** read Section 1 once, then pick the features you are most likely to be asked
@@ -54,7 +55,7 @@ Both halves are **TypeScript**, so a field with the wrong shape is caught before
 | `backend/src/services/` | Logic shared by routes: billing, Adyen, audit trail, notifications, Excel exports |
 | `backend/src/config/rbac.ts` | **The role and permission matrix**: who may do what |
 | `backend/src/utils/validators.ts` | The rules every input is checked against (money, dates, unit codes) |
-| `database/migrations/` | **Every change ever made to the database**, numbered 001 to 081, applied in order |
+| `database/migrations/` | **Every change ever made to the database**, numbered 001 to 091 on 10 November 2026, applied in order |
 | `scripts/`, `backend/scripts/`, `frontend/scripts/` | The 21 automated check suites and the build tools |
 | `video/` | The defense film (Remotion), separate from the system |
 
@@ -69,19 +70,19 @@ the handler reads or writes those tables.
 
 | Feature | Screen | Endpoint | Backend | Tables |
 | :--- | :--- | :--- | :--- | :--- |
-| Landing page, units and rates | `PublicGuestView.vue`, `CategoryRoomsView.vue` | `GET /public/rooms`, `GET /public/rates` | `public.ts:57`, `:92` | `rooms`, `room_photos`, `system_settings` |
-| The landlady's number to call | every public page (`LANDLADY.phone` in `lib/systemState.ts`) | `GET /public/contact` | `public.ts:136`, her account's own phone number and nothing else | `profiles` |
-| Send an inquiry | `InquireView.vue` (and the form on a unit) | `POST /public/inquiries` | `public.ts:179`, rate-limited per address (`middleware/rateLimit.ts`) | `inquiries` |
-| Read and answer the reply | `InquiryThreadView.vue` | `POST /public/inquiries/thread`, `.../thread/messages` | `public.ts:301`, `:340`; `services/inquiryThread.ts` | `inquiries`, `inquiry_messages` |
+| Landing page, units and rates | `PublicGuestView.vue`, `CategoryRoomsView.vue` | `GET /public/rooms`, `GET /public/rates` | `public.ts:88`, `:124` | `rooms`, `room_photos`, `system_settings` |
+| The landlady's number to call | every public page (`LANDLADY.phone` in `lib/systemState.ts`) | `GET /public/contact` | `public.ts:169`, her account's own phone number and nothing else | `profiles` |
+| Send an inquiry | `InquireView.vue` (and the form on a unit) | `POST /public/inquiries` | `public.ts:213`, rate-limited per address (`middleware/rateLimit.ts`) | `inquiries` |
+| Read and answer the reply | `InquiryThreadView.vue` | `POST /public/inquiries/thread`, `.../thread/messages` | `public.ts:344`, `:383`; `services/inquiryThread.ts` | `inquiries`, `inquiry_messages` |
 
 ### Signing in
 
 | Feature | Screen | Endpoint | Backend |
 | :--- | :--- | :--- | :--- |
-| Sign in with login ID or phone (an email is refused) | `LoginView.vue` | `POST /auth/login` | `auth.ts:76` → `services/authService.ts` (finds the account through the database function `resolve_login_identifier`) |
-| Change password (a tenant) | `ChangePasswordModal.vue` | `POST /auth/change-password` | `auth.ts:334`, checks the new password against known breaches (`utils/breachedPassword.ts`) |
-| Change number / password (the landlady) | `ChangeSignInModal.vue` | `POST /auth/change-sign-in` | `auth.ts:445` → `changeOwnSignIn`: current number AND current password first, one refusal for either |
-| Who am I | (every page) | `GET /auth/me` | `auth.ts:225` |
+| Sign in with login ID or phone (an email is refused) | `LoginView.vue` | `POST /auth/login` | `auth.ts:95` → `services/authService.ts` (finds the account through the database function `resolve_login_identifier`) |
+| Change password (a tenant) | `ChangePasswordModal.vue` | `POST /auth/change-password` | `auth.ts:360`, checks the new password against known breaches (`utils/breachedPassword.ts`) |
+| Change number / password (the landlady) | `ChangeSignInModal.vue` | `POST /auth/change-sign-in` | `auth.ts:471` → `changeOwnSignIn`: current number AND current password first, one refusal for either |
+| Who am I | (every page) | `GET /auth/me` | `auth.ts:251` |
 
 ### The tenant's side
 
@@ -89,25 +90,25 @@ the handler reads or writes those tables.
 | :--- | :--- | :--- | :--- | :--- |
 | Overview: unit, rent, standing, deposit | `TenantOverviewView.vue` | `GET /tenant/my-rooms`, `/my-standing` | `tenant.ts:50`, `:404`; `services/standingService.ts` | `room_assignments`, `rooms`, `bills` |
 | Bills, payments, receipts | `TenantPaymentsView.vue` | `GET /tenant/my-bills`, `/my-payments`, `/my-income-records` | `tenant.ts:345`, `:372`, `:413` | `bills`, `payments`, `monthly_income_records` |
-| Pay with GCash | `TenantPaymentsView.vue` + `AdyenPaymentModal.vue` | `POST /tenant/payments/checkout`, `.../adyen/verify-session` | `tenant.ts:944`, `:1281`; `services/adyenService.ts` | `bills`, `payments` (Section 5) |
-| Repair requests, with photos | `TenantTicketsView.vue` | `POST /tenant/tickets`, `GET /tenant/my-tickets`, `.../cancel` | `tenant.ts:531`, `:438`, `:737` | `maintenance_tickets`, `ticket_attachments`, `ticket_messages` |
-| My details | `TenantProfileView.vue` | `GET`/`PUT /tenant/my-profile` | `tenant.ts:1318`, `:1349` → `authService.ts` (only the allowed fields are copied) | `profiles` |
-| Notifications | `NotificationPopover.vue` | `/tenant/my-notifications...` | `tenant.ts:830` onward; `services/notificationService.ts` | `notifications` |
+| Pay with GCash | `TenantPaymentsView.vue` + `AdyenPaymentModal.vue` | `POST /tenant/payments/checkout`, `.../adyen/verify-session` | `tenant.ts:977`, `:1318`; `services/adyenService.ts` | `bills`, `payments` (Section 5) |
+| Repair requests, with photos | `TenantTicketsView.vue` | `POST /tenant/tickets`, `GET /tenant/my-tickets`, `.../cancel` | `tenant.ts:539`, `:438`, `:764` | `maintenance_tickets`, `ticket_attachments`, `ticket_messages` |
+| My details | `TenantProfileView.vue` | `GET`/`PUT /tenant/my-profile` | `tenant.ts:1355`, `:1386` → `authService.ts` (only the allowed fields are copied) | `profiles` |
+| Notifications | `NotificationPopover.vue` | `/tenant/my-notifications...` | `tenant.ts:863` onward; `services/notificationService.ts` | `notifications` |
 
 ### The owner's side
 
 | Feature | Screen | Endpoint | Backend | Tables |
 | :--- | :--- | :--- | :--- | :--- |
-| Overview | `AdminOverviewView.vue` + `components/overview/` | several reads; `GET /admin/payments` | `admin.ts:1958` | many |
-| Rooms and rates | `RoomDirectoryView.vue`, `AdminEditUnitModal.vue` | `GET`/`POST /admin/rooms`, `PATCH /admin/rooms/:roomId` | `admin.ts:66`, `:159`, `:274` | `rooms`; a rate change is recorded by the trigger `trg_record_room_price_change` into `room_price_history` |
-| Tenants: move in, edit, reset password, move out | `TenantManagementView.vue` | `POST /admin/tenants`, `PATCH /admin/tenants/:profileId`, `.../reset-password`, `.../vacate` | `admin.ts:627`, `:1164`, `:1478`, `:1590` | `profiles`, `room_assignments`, `rooms` |
-| Record a cash payment | `IncomeCollectionsView.vue` + `OnsitePaymentModal.vue` | `POST /admin/income-records` | `admin.ts:2731` → database function `record_income_for_months` | `monthly_income_records` |
-| Correct or void a receipt | `IncomeCollectionsView.vue` | `PATCH`/`DELETE /admin/income-records/:id` | `admin.ts:3420`, `:3674` → `void_income_record` | `monthly_income_records`, `audit_logs` |
-| Verify a GCash payment | `IncomeCollectionsView.vue` (Online verification) | `PATCH /admin/payments/:paymentId/verify` | `admin.ts:2004` → `settle_verified_payment` (Section 5) | `payments`, `bills`, `monthly_income_records` |
-| Expenses | `ExpensesLedgerView.vue`, `NewExpenseKindDialog.vue` | `/admin/expense-entries`, `/admin/expense-categories` | `admin.ts:3795` to `:4195` → `create_expense_entry_with_allocations`, `replace_expense_allocations` | `monthly_expense_entries`, `expense_property_allocations`, `fixed_expense_categories` |
-| Excel workbooks in her layout | Download buttons (`DownloadDialog.vue`) | `GET /admin/reports/income.xlsx`, `expenses.xlsx`, `tenants.xlsx` | `admin.ts:2442`, `:2486`, `:2531`; `services/incomeReportExport.ts`, `expenseReportExport.ts`, `tenantHistoryExport.ts` (library: `exceljs`) | the ledgers |
-| Repair board | `MaintenanceDispatchView.vue` | `/admin/tickets...` | `admin.ts:4219`, `:4254`, `:4419` | `maintenance_tickets`; a ticket also changes the unit's status |
-| Inquiries | `InquiriesView.vue` | `/admin/inquiries...` | `admin.ts:1701`, `:1765`, `:4944` | `inquiries`, `inquiry_messages` |
+| Overview | `AdminOverviewView.vue` + `components/overview/` | several reads; `GET /admin/payments` | `admin.ts:1966` | many |
+| Rooms and rates | `RoomDirectoryView.vue`, `AdminEditUnitModal.vue` | `GET`/`POST /admin/rooms`, `PATCH /admin/rooms/:roomId` | `admin.ts:67`, `:160`, `:275` | `rooms`; a rate change is recorded by the trigger `trg_record_room_price_change` into `room_price_history` |
+| Tenants: move in, edit, reset password, move out | `TenantManagementView.vue` | `POST /admin/tenants`, `PATCH /admin/tenants/:profileId`, `.../reset-password`, `.../vacate` | `admin.ts:628`, `:1167`, `:1481`, `:1593` | `profiles`, `room_assignments`, `rooms` |
+| Record a cash payment | `IncomeCollectionsView.vue` + `OnsitePaymentModal.vue` | `POST /admin/income-records` | `admin.ts:2863` → database function `record_income_for_months` | `monthly_income_records` |
+| Correct or void a receipt | `IncomeCollectionsView.vue` | `PATCH`/`DELETE /admin/income-records/:id` | `admin.ts:3555`, `:3813` → `void_income_record` | `monthly_income_records`, `audit_logs` |
+| Verify a GCash payment | `IncomeCollectionsView.vue` (the **To verify** tab beside **Records**) | `PATCH /admin/payments/:paymentId/verify` | `admin.ts:2012` → `settle_verified_payment` (Section 5) | `payments`, `bills`, `monthly_income_records` |
+| Expenses | `ExpensesLedgerView.vue`, `NewExpenseKindDialog.vue` | `/admin/expense-entries`, `/admin/expense-categories` | `admin.ts:3935` to `:4339` → `create_expense_entry_with_allocations`, `replace_expense_allocations` | `monthly_expense_entries`, `expense_property_allocations`, `fixed_expense_categories` |
+| Excel workbooks in her layout | Download buttons (`DownloadDialog.vue`) | `GET /admin/reports/income.xlsx`, `expenses.xlsx`, `tenants.xlsx` | `admin.ts:2450`, `:2494`, `:2539`; `services/incomeReportExport.ts`, `expenseReportExport.ts`, `tenantHistoryExport.ts` (library: `exceljs`) | the ledgers |
+| Repair board | `MaintenanceDispatchView.vue` | `/admin/tickets...` | `admin.ts:4363`, `:4398`, `:4563` | `maintenance_tickets`; a ticket also changes the unit's status |
+| Inquiries | `InquiriesView.vue` | `/admin/inquiries...` | `admin.ts:1704`, `:1768`, `:5088` | `inquiries`, `inquiry_messages` |
 | Your recent actions | `RecentActions.vue` | `GET /auth/me/recent-actions` | `routes/recentActions.ts`, `services/recentActions.ts` | `audit_logs` |
 
 ---
@@ -116,8 +117,8 @@ the handler reads or writes those tables.
 
 | Protection | How | Where |
 | :--- | :--- | :--- |
-| Passwords | Never stored, only a **bcrypt** hash (cost 12, with its own salt) | `admin.ts:807`, `:1519`; checked in `authService.ts` |
-| Signed-in session | A **JWT** (signed token) sent with every request as `Authorization: Bearer`; kept in the browser's storage | `api.ts:124` onward; verified in `middleware/auth.ts` |
+| Passwords | Never stored, only a **bcrypt** hash (cost 12, with its own salt) | `admin.ts:810`, `:1522`; checked in `authService.ts` |
+| Signed-in session | A **JWT** (signed token) sent with every request as `Authorization: Bearer`; kept in the browser's storage | `api.ts:231`; verified in `middleware/auth.ts` |
 | Too many wrong passwords | The account locks for **15 minutes** (`failed_login_count`, `locked_until`) | `config/env.ts:168`, `authService.ts` |
 | Breached passwords | Checked against Have I Been Pwned **by k-anonymity**: only the first 5 characters of the password's hash ever leave the server | `utils/breachedPassword.ts` |
 | Who may do what | One permission matrix; every protected route names the permission it needs | `config/rbac.ts`; `middleware/auth.ts` (`requirePermission`) |
@@ -154,19 +155,22 @@ parity with the owner's historical spreadsheet. In the database it is a generate
 code can set it differently.
 
 **A GCash payment, step by step:**
-1. The tenant presses Pay; `POST /tenant/payments/checkout` (`tenant.ts:944`) raises the bill if
+1. The tenant presses Pay with GCash; `POST /tenant/payments/checkout` (`tenant.ts:977`) raises the bill if
    needed and asks Adyen for a session. The bill is held for **15 minutes**, so a second checkout on
    the same bill is refused (migration 051).
 2. Adyen's payment window (`AdyenPaymentModal.vue`, library `@adyen/adyen-web`) takes the GCash
    payment. Hivelet never sees the GCash account.
-3. On return, `POST /tenant/payments/adyen/verify-session` (`tenant.ts:1281`) confirms the session.
-4. Adyen also calls `POST /public/payments/adyen/webhook` (`public.ts:1172`). Its HMAC signature is
+3. On return, `POST /tenant/payments/adyen/verify-session` (`tenant.ts:1318`) confirms the session.
+4. Adyen also calls `POST /public/payments/adyen/webhook` (`public.ts:1215`). Its HMAC signature is
    checked (`adyenWebhook.ts`), then `adyenWebhookHandler.ts` writes the payment as **Pending
    Verification**. The same gateway reference cannot be recorded twice (`uq_payments_gateway_reference`).
-5. The owner verifies it (`PATCH /admin/payments/:paymentId/verify`, `admin.ts:2004`).
-   `settle_verified_payment` settles the bill and writes the receipt in one step.
+5. The owner verifies it on the **To verify** tab of Monthly Income (`PATCH
+   /admin/payments/:paymentId/verify`, `admin.ts:2012`). `settle_verified_payment` settles the bill
+   and writes the receipt in one step.
 
-Adyen runs on its **test account**, so no real money moves yet (Chapter 5, recommendation 3).
+Adyen with GCash works end to end in Adyen's **test environment** and takes no real money. It is
+optional and not live: going live needs the owner's merchant onboarding documents (Chapter 5,
+recommendation 3).
 `GET /public/payments/local-cashier` is a built-in checkout page for development only; the server
 refuses it whenever Adyen is configured, as it is on the live site.
 
@@ -179,7 +183,7 @@ refuses it whenever Adyen is configured, as it is on the live site.
   database function, `live_version`. Only what changed is reloaded. A page nobody has touched for
   five minutes asks every 30 seconds instead, and the next touch asks at once.
 - **Timeouts:** a page stops waiting after **25 seconds**, a save after **45 seconds**, and says it
-  cannot tell whether the save arrived (`api.ts:238`).
+  cannot tell whether the save arrived (`api.ts:252`).
 - **Installing:** the PWA plugin (`vite.config.ts:120`) makes a service worker that keeps the
   application's files on the device, **70 files, about 1.2 MB**. Adding it to the home screen opens
   it in its own window; nothing comes from an app store.
@@ -224,7 +228,7 @@ at the root (copy `.env.example`; never commit it); `npm run dev:backend` (port 
 | A screen shows a total the owner disputes | The same figure in the database (Supabase SQL editor); `npm run check:ledger` and `check:reports` |
 | Someone cannot sign in | `profiles.locked_until` and `failed_login_count`; the owner can reset a tenant's password from the Tenants page |
 | A change on one device does not show on another | `live.ts`; is the other page on screen? Is it offline? |
-| "Cannot tell whether it was saved" | The connection stalled past 45 s (`api.ts:238`); check the record before sending it again |
+| "Cannot tell whether it was saved" | The connection stalled past 45 s (`api.ts:252`); check the record before sending it again |
 | A page fails after a deploy | Vercel deployment log; `npm run build` in `frontend/` and `npx tsc --noEmit` in `backend/` |
 | An error with no clear cause | `middleware/errorHandler.ts` logs it; Vercel's runtime logs show the request |
 
@@ -232,8 +236,8 @@ at the root (copy `.env.example`; never commit it); `npm run dev:backend` (port 
 
 ## 9. What the panel may ask, and what to show
 
-- **"Show us where the login is."** `backend/src/routes/auth.ts:76`, then `services/authService.ts`.
-- **"How are passwords stored?"** Hashed with bcrypt, cost 12, a salt per password (`admin.ts:809`).
+- **"Show us where the login is."** `backend/src/routes/auth.ts:95`, then `services/authService.ts`.
+- **"How are passwords stored?"** Hashed with bcrypt, cost 12, a salt per password (`admin.ts:810`).
 - **"How do you stop a tenant seeing another tenant's bill?"** Every protected route names a permission
   (`config/rbac.ts`), tenant queries are scoped to the caller (`scopeService.ts`), and the database
   has row-level security on every table.

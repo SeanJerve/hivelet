@@ -130,8 +130,8 @@ workflows. Process: the Agile cycle and the modules built in it. Output: the sys
 evaluation results, the manuscript and the user manual, with feedback across all three. *Section 2.3.*
 
 **How does your result agree or disagree with the literature?**
-It agrees with Encarnacion et al. (2025) and Setty (2022) that one ledger improves oversight, and with
-Saputra et al. (2025) that traceable requests improve accountability. It **qualifies** Magno et al.
+It agrees with Magno et al. (2024) and Encarnacion et al. (2025) that keeping billing and payments in
+one system improves record keeping (Section 4.2.4), and with Saputra et al. (2025) that traceable requests improve accountability. It **qualifies** Magno et al.
 (2024): digitizing alone did not make records agree, because our records were already in one database
 and six screens still disagreed with it until the audit. *Sections 4.2.4, 4.2.5, 4.3.3.*
 
