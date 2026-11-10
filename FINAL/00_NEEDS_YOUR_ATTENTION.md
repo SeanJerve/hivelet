@@ -1,52 +1,55 @@
 # Needs your attention
 
-Updated 18 October 2026 from Sean's answers. What the team will bring later is in
-[TO_FOLLOW.md](TO_FOLLOW.md). The detail behind each item is in `QUESTIONS_TO_FINALIZE.md` (P
-numbers) and `BLOCKED_FOR_SEAN.md` (B numbers).
+Updated 10 November 2026. Everything that still waits on a person, in one list. The detail behind
+each item is in `QUESTIONS_TO_FINALIZE.md` (P numbers), `BLOCKED_FOR_SEAN.md` (B numbers, in the
+repository's top folder) and `DEFENSE_CHECKLIST_STATUS.md` (Form 2 item numbers). What the team will
+bring later is also in [TO_FOLLOW.md](TO_FOLLOW.md).
 
----
+Nothing here is a fault in the system. Every check suite passed on 7 November, and the paper agrees
+with the screens as they are on 10 November.
 
-## Done (Sean, 18 October)
+## 1. For the pre-defense clearance (Form 2)
 
-- **The Word file**: opened, fields updated; the Appendix N tables fit the page and Tables 3-1 and
-  4-5 sit whole on one page.
-- **The owner's September and October receipts** (P14): the owners will enter them themselves on
-  Monthly Income when the time comes. Marked done.
-- **The owner's current password** is in `credentials/creds.txt`, so check:api and check:relations
-  can run (B-101).
-- **The survey** (P11): ten respondents, overall 4.59, recomputed through the paper by another
-  session on 19 October.
+| What | Form 2 item | Who |
+| :--- | :--- | :--- |
+| **The owner's signature** on the acceptance form, Appendix O. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`. She signs only if she agrees. Then Claude adds one sentence to Section 4.3.7 (P1) | 9 | Team, with the owner |
+| **An acceptance form or MOA.** None exists. Ask the Faculty-in-Charge whether the signed UAT form serves, or whether Module 06's form is separate | 10 | Team |
+| **The similarity check** on the full manuscript, and its report | 5 | Team |
+| **Consultation records** with the Content Adviser and the Programming Adviser, signed sessions | 2, 16, 17 | Team |
+| **Forms 3A and 3B**, signed, with the four diagram annexes (Appendices D to H) attached to 3B | 18, 19 | Team, with the advisers |
+| **The Form 1 template**: check the paper's layout and reference style against it. It is not in the repository | 1, 4 | Team |
+| **The mock defense**: hold it, then send its recommendations and Claude records what was done | 20, 21 | Team |
+| **Slide 1** (names, adviser, date), a **backup copy** of the system and the slides, and **five printed copies** | 22, 23 | Team |
+| **The repository**: if it is made private before the defense (P9), add the Programming Adviser as a collaborator | 11 | Sean |
 
-## Still open
+Ready to attach, done 10 November: the Literature Map (Appendix R, item 3), the revision log (item 7)
+and the deployment report (item 10), the last two in `FORM_2_EVIDENCE/`.
 
-| # | What | Who |
-| :-- | :--- | :--- |
-| 0 | ~~Which number visitors call~~ **Done 20 Oct**: her account now holds 0927 465 3938 (it held the app's example number), the site shows her account's number, and she signs in with it. **She signs in with that number now, not her email** | Tell her |
-| 1 | ~~Change number / password~~ **Done 20 Oct**: in her account menu; it asks for her current password and current number | - |
-| 1b | ~~F2F's headcount~~ **Answered 21 Oct**: the record (4) is right. The earlier receipts were for 1 person; three roommates joined, and their water is charged from the next bill, which the system does by itself (4 x ₱200). check:relations records her answer and passes | - |
-| 1c | ~~A test tenant for check:api~~ **Done 20 Oct**: it signs in as loydtest by login ID; 78 of 78 pass, the tenant isolation checks included | - |
-| 1a | ~~Emails~~ **Done 20 Oct**: no screen asks for, shows or accepts an email. Sign-in by email is refused; inquiries take a name, phone and question (migration 085); first sign-in and My details ask for the phone only. The manual, the tenant quick guide and the data dictionary say so | - |
-| 1d | ~~The demo copy~~ **Done** (Sean, 20 Oct: "it's all done") | - |
-| 1e | Optional, laptop only: the one-click demo buttons on the sign-in page of your local dev server need each account's login ID (`"identifier"` in credentials/demo-accounts.json). The real site is not affected | Sean, if ever |
-| 1f | ~~Is Linda's rent part of her income?~~ **Settled 21 Oct** (Sean: "just follow what's in the records because that's true always"). The screens show what is recorded, Linda included on its own line, and nothing is recomputed. Every figure on the owner's screens was checked against the database on 21 Oct and matches | - |
-| 1g | **Consent forms** (scans in `_CONSENT_FORMS (not in repo)/`, see its README): the prospective tenant's signed form is missing (Chapter 3 says every tester consented in writing); "Research team member present" is blank on all five originals; F1 agreed to no photos or recording, so none of F1 anywhere | The team |
-| 1h | ~~Migration 086~~ **Done 31 Oct** (B-114). **Ask the owner about F1's August receipt and 2c's water** (B-115) | Sean |
-| 1i | ~~The test tenant's dates~~ **Done 31 Oct** (migration 087, B-116) | - |
-| 1j | **Testing round 2, week of 2 November** (Sean, 1 Nov): more tenants and prospects, no adviser step. Print file `docs/TESTING_DAY/ROUND_2_PRINT.pdf`; page 6 lists what to send back so every number can be recomputed | The team |
-| 2 | ~~The evaluation slides~~ **Done 20 Oct**: the deck now shows ten respondents, 4.59 and the eight composites of Table 4-17. Slide 1 still needs names, adviser and date | The team, slide 1 only |
-| 3 | **Make the GitHub repository private** before the defense (P9). I was refused doing it. github.com/SeanJerve/hivelet > Settings > scroll to the bottom > Change visibility > Private. Checked 20 Oct: nothing on the site or in the paper needs it public, and Vercel deploys a private repository on your own account the same way. Kiel's old fork (Drexgithub/hivelet, from 27 July) stays public unless he deletes it | Sean |
-| 4 | **Move loydtest out of unit PH after the defense** (B-106) | Sean |
-| 5 | Later: may the owner edit a move-in date (P8); two identical receipts with no invoice number at the same instant (B-105) | A decision, after the defense |
+## 2. For the paper
 
-## The defense, the day before
+| What | Who |
+| :--- | :--- |
+| **New screenshots** of the redesigned screens for Figures 4-7 to 4-11, with sample tenants only, never a real name or payment (P16) | Team |
+| **The last batch of tenants and prospects**: send their results and Claude adds them to Sections 4.3 and 4.4 and Iteration 3 in Table M-19 (P17) | Team |
+| **The front matter**: title page, approval sheet, defense date and room, each member's Curriculum Vitae (P3) | Team |
+| **The Acknowledgement**: who to thank. Claude drafts it once given the names (P4) | Team |
+| **Scans** of the signed letter of request and the adviser appointment papers, for Appendices A and B (P10) | Team |
+| **The AI-use statement**: where it goes, and whether the prompt log is attached (P5). The adviser should also confirm the AI disclosure in Section 3.1.1 (P21). The prompt log is exported on Lloyd's laptop with `node scripts/ai-use/export-prompt-log.mjs` (P2) | Adviser, Lloyd |
+| **Consent forms**: the prospective tenant's signed form is missing (Chapter 3 says every tester consented in writing). "Research team member present" is blank on all five originals. F1 agreed to no photos or recording, so F1 appears in none | Team |
 
-To be asked again before the defense or while studying. The steps are in `DEMO_SCRIPT.md`: the
-backup, one sign-in as the owner and as loydtest, the installed app opened once on the demo phone,
-one GCash test payment rejected, the offline fallback on the laptop, no test items in Repairs or
-Inquiries, the owner asked about showing her screens, and slide 1 filled in.
+## 3. For the system
 
-## For the team
+| What | Who |
+| :--- | :--- |
+| **Ask the owner** whether F1's August rent was paid (no August receipt is recorded), and whether 2c's water is for 4 people as her receipt says (B-115) | Sean |
+| **The design and wording calls** left from the 6 November audit (B-121). Its first two were settled the same day | Sean |
+| **Move the test tenant out of unit PH** after the defense demonstration (B-106) | Sean |
+| Later, after the defense: whether the owner may edit a move-in date (P8), and two identical receipts with no invoice number at the same instant (B-105) | A decision |
 
-- The speakers' names in `DEFENSE_PRESENTATION_SCRIPT.md`: the team handles it and comes back if
-  needed.
-- To study: `STUDY_GUIDE_TEAM_REVIEWER.md`, `STUDY_GUIDE_DEFENSE_QA.md`, `STUDY_GUIDE_REFERENCES.md`.
+## 4. The day before the defense
+
+The steps are in `DEMO_SCRIPT.md`: the backup, one sign-in as the owner and as the test tenant, the
+installed app opened once on the demonstration phone, one GCash test payment rejected, the offline
+fallback on the laptop, no test items in Repairs or Inquiries, the owner asked about showing her
+screens, and slide 1 filled in. The speakers' names in `DEFENSE_PRESENTATION_SCRIPT.md` are the
+team's to fill.

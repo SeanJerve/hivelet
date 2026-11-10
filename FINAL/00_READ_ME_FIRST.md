@@ -3,7 +3,7 @@
 **What is waiting on you is all in [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_YOUR_ATTENTION.md).** Start there.
 
 **Start with the folder `CLAUDE MANUSCRIPT/`** (13 October 2026). `CLAUDE MANUSCRIPT.docx` holds the
-Abstract, a table of contents, Chapters 1 to 5, the References and Appendices A to Q in the
+Abstract, a table of contents, Chapters 1 to 5, the References and Appendices A to R in the
 proposal's format (Arial 12, double-spaced, justified, margins 1.5 in left and 1 in elsewhere).
 **Copy and paste it section by section into the team's own Word file**, which keeps the school's
 logo, headers and page numbers. `images/` holds every picture, each named by its figure number
@@ -22,14 +22,31 @@ these files replace Chapters 1 to 5, the Abstract and the References entirely.
 reading order. It also lists the guides added on 24 October 2026: the paper walkthrough, the
 glossary, and the frontend and backend file-by-file guides.
 
-**Other files here:** `QUESTIONS_TO_FINALIZE.md` (what is still needed, Section 1), and the study
-guides for the defense. **Start with `STUDY_GUIDE_TEAM_REVIEWER.md`**: the whole capstone in one
-sitting, the numbers to know, a tour of every screen, tips for the defense and a self-quiz. Then
-`STUDY_GUIDE_DEFENSE_QA.md` (the panel's likely questions, each answered with the section that proves
-it), `DEFENSE_PRESENTATION_SCRIPT.md` (what to say on each of the 20 slides, in four speaking blocks),
-`STUDY_GUIDE_REFERENCES.md` (every reference: what it found, where the paper uses it, and what to
-say if the panel asks), and `STUDY_GUIDE_CODE.md` (every feature: its screen, endpoint, code and
-tables, how to debug it, and the questions a panel asks about the code).
+**Every file in this folder** (updated 10 November 2026):
+
+| File or folder | What it is | Use it to |
+| :--- | :--- | :--- |
+| `00_READ_ME_FIRST.md` | This file | Find anything here, and paste the paper into Word |
+| `00_NEEDS_YOUR_ATTENTION.md` | Everything still waiting on a person, in one list | See what is left before the defense |
+| `00_HOW_TO_STUDY.md` | Which study guide answers which question, and a reading order | Start studying |
+| `01_ABSTRACT.md` to `08_APPENDICES.md` | The paper, one file per part, built from the sources. Never edit these | Paste into Word (Section 1) |
+| `appendices/` | Appendices C, F, I, J, K, L, M, N, O, Q and R in full | Paste after `08_APPENDICES.md` |
+| `CLAUDE MANUSCRIPT/` | The whole paper as one Word file, with every image in `images/` | Copy into the team's own Word file |
+| `DEFENSE_CHECKLIST_STATUS.md` | Form 2 and the Proponent's Checklist, item by item: what to attach, whether it is ready, who acts | Prepare the pre-defense clearance |
+| `FORM_2_EVIDENCE/` | The revision log (Form 2 item 7) and the deployment report (item 10), with a README | Print and attach to Form 2 |
+| `QUESTIONS_TO_FINALIZE.md` | Every question the paper raised (P numbers), with its answer or what it waits for | Look up why something is the way it is |
+| `TO_FOLLOW.md` | Papers the team will bring later (signatures, scans, front matter) | Know what to hand Claude when it arrives |
+| `HIVELET DEFENSE SLIDES.pptx` | The 20 defense slides | Present |
+| `DEFENSE_PRESENTATION_SCRIPT.md` | What to say on each slide, in four speaking blocks | Rehearse the talk |
+| `DEMO_SCRIPT.md` | The live demonstration step by step, and what to do if it fails | Rehearse the demo |
+| `STUDY_GUIDE_TEAM_REVIEWER.md` | The whole capstone in one sitting: the story, the numbers, a tour of every screen, a self-quiz | Study first |
+| `STUDY_GUIDE_PAPER_WALKTHROUGH.md` | Every section, table and figure of the paper in plain words | Understand a part of the paper |
+| `STUDY_GUIDE_DEFENSE_QA.md` | The panel's likely questions, each answered with the section that proves it | Prepare answers |
+| `STUDY_GUIDE_GLOSSARY.md` | Every term, screen label, standard, code and abbreviation | Look up a word |
+| `STUDY_GUIDE_REFERENCES.md` | Every reference: what it found and where the paper uses it | Answer questions on the sources |
+| `STUDY_GUIDE_CODE.md` | Every feature: its screen, endpoint, code and tables | Answer questions on the code |
+| `STUDY_GUIDE_CODE_FRONTEND_FILES.md`, `STUDY_GUIDE_CODE_BACKEND_FILES.md` | What each file of the code does | Find where something is built |
+| `_src/` | The sources of Chapters 1 to 3, the references, the appendix list and Appendices C, F, I, J, L, Q and R | Change the paper (Section 7) |
 
 ## 1. The order of the Word document
 
@@ -43,7 +60,7 @@ tables, how to debug it, and the questions a panel asks about the code).
 | Chapter 4 | `05_CHAPTER_4_RESULTS_AND_DISCUSSION.md` | Chapter 4 (the old one is template text) |
 | Chapter 5 | `06_CHAPTER_5_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md` | Chapter 5 (the old one describes another project's auto shop application) |
 | References | `07_REFERENCES.md` | References |
-| Appendices | `08_APPENDICES.md` lists A to Q and where each one's content is; C, F, K, M, N, O and Q are in `appendices/` | Appendices |
+| Appendices | `08_APPENDICES.md` lists A to R and where each one's content is; C, F, I, J, K, L, M, N, O, Q and R are in `appendices/` | Appendices |
 | | Curriculum Vitae | Still the blank template (Section 4) |
 
 ## 2. How to paste
@@ -68,12 +85,17 @@ tables, how to debug it, and the questions a panel asks about the code).
 
 ## 3. What is still open
 
+The full list, with who acts on each, is [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_YOUR_ATTENTION.md). In the paper itself:
+
 | Where | What | Who |
 | :--- | :--- | :--- |
 | Chapter 4, Section 4.3.7 | One sentence once the owner signs the acceptance form (the marker gives it) | Team, after the signature |
-| Appendix O | The scan of the signed form. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`; she ticks and signs only if she agrees. Never sign it for her | Team, with the owner |
+| Appendix O | The scan of the signed form. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`. She ticks and signs only if she agrees. Never sign it for her | Team, with the owner |
+| Appendices A, B and P | The scans of the letter of request and the appointment papers, and the blank consent form | Team |
+| Figures 4-7 to 4-11 | New screenshots of the redesigned screens, sample tenants only (P16) | Team |
+| Sections 4.3 and 4.4 | The last batch of tenants and prospects (P17) | Team sends the results |
 | AI statement | Where it goes, and whether the prompt log is attached | Adviser |
-| Acknowledgement | Who to thank; then Claude drafts it | Team decision |
+| Acknowledgement | Who to thank. Then Claude drafts it | Team decision |
 
 Everything else in `QUESTIONS_TO_FINALIZE.md` is answered and applied. Search the folder for
 `[TO DO` to see the markers still in the text.
@@ -127,8 +149,8 @@ agree with Chapter 5, and it does. It is about 310 words.
 
 Sorted alphabetically (FIXES C7), with italics restored to the APA 7 places (journal and volume,
 book and report titles), and the six ISO entries the method now cites added (2011a, 2011b, 2016a,
-2016b, 2023, and ISO/IEC/IEEE 29119-1:2022). **Thevaraju et al. (2019) was removed:** it was listed but cited nowhere, which a panel reads as
-padding. Monteverde et al. (2023) was also removed (Sean, 13 Oct).
+2016b, 2023, and ISO/IEC/IEEE 29119-1:2022). **Thevaraju et al. (2019) was removed** on 13 October, listed but cited nowhere, and came back the same
+day from the team's own RRL, cited in Section 2.1.1 (table below). Monteverde et al. (2023) was also removed (Sean, 13 Oct).
 **Ullah et al. (2018)**, *Sustainability* 10(9), 3142, is a review of how real estate adopts digital
 technologies. The draft cited it for things it does not say (that property management workflows are
 fragmented, that systems assume dedicated staff); it is now cited only for its finding that real
@@ -193,7 +215,7 @@ process written for it; Appendix M, Table M-21 shows where each result falls in 
 ## 7. Changing a file here
 
 Do not edit the numbered files: they are rebuilt. Chapters 1 to 3, the references, the appendix
-list and Appendices C, F and Q are written in `FINAL/_src/`; the Abstract, Chapters 4 and 5 and
+list and Appendices C, F, I, J, L, Q and R are written in `FINAL/_src/`; the Abstract, Chapters 4 and 5 and
 Appendices K, M, N and O stay in `docs/FINAL MANUSCRIPT/` (in the drafts' old numbering, so other
 documents that cite "Table 22A" still find it). After editing either, run
 
