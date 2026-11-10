@@ -21,7 +21,7 @@ with the screens as they are on 10 November.
 | **The owner's signature** on the acceptance form, Appendix O. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`. She signs only if she agrees. Then Claude adds one sentence to Section 4.3.7 (P1) | 9 | Team, with the owner |
 | **An acceptance form or MOA.** None exists. Ask the Faculty-in-Charge whether the signed UAT form serves, or whether Module 06's form is separate | 10 | Team |
 | **The similarity check** on the full manuscript, and its report | 5 | Team |
-| **Consultation records** with the Content Adviser and the Programming Adviser, signed sessions | 2, 16, 17 | Team |
+| **The consultation record**: print it (in folders 16 and 17), fill in the session before the final defense, and have Sir Jayvee sign each session. He is both advisers, so one record serves both items | 2, 16, 17 | Team |
 | **Forms 3A and 3B**, signed, with the four diagram annexes (Appendices D to H) attached to 3B | 18, 19 | Team, with the advisers |
 | **The Form 1 template**: check the paper's layout and reference style against it. It is not in the repository | 1, 4 | Team |
 | **The mock defense**: hold it, then send its recommendations and Claude records what was done | 20, 21 | Team |

@@ -147,7 +147,7 @@ conclusion per objective, one to three sentences each; eight recommendations, ea
 in Chapter 4. No citations, and no number that is not in Chapter 4.
 
 **Abstract.** The guides set no word limit; its last sentence must restate the general objective and
-agree with Chapter 5, and it does. It is about 310 words.
+agree with Chapter 5, and it does. It is about 345 words.
 
 ## 6. What changed in the references
 

@@ -312,7 +312,8 @@ there is no second sign-in factor, even for the administrator. Both are recommen
 4.4.4; Chapter 5.*
 
 **How did you protect the respondents' and tenants' privacy?**
-Under the Data Privacy Act of 2012: voluntary participation, written consent, each tenant used only
+Under the Data Privacy Act of 2012: voluntary participation, a signed consent form from the owner and
+each tenant (prospects and technical evaluators agreed through the questionnaire's privacy notice), each tenant used only
 their own account with an individual starting password, names removed before analysis, and names and
 amounts hidden in every figure. *Section 3.4.*
 

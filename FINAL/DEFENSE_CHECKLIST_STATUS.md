@@ -19,7 +19,7 @@ Figure and table numbers are the final paper's (`FINAL/05_CHAPTER_4_...`), not t
 | No. | What the form asks for | What to attach | Status | Who |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | Chapters I to V complete, with front matter, references and annexes, on the Form 1 template | `FINAL/CLAUDE MANUSCRIPT/CLAUDE MANUSCRIPT.docx` (Chapters 1 to 5, References, Appendices A to R) | Nearly done. Open: the front matter (P3: title page, defense date and room, CVs) and the Acknowledgement (P4). The layout has not been checked against the Form 1 template, which is not in the repository | Team |
-| 2 | Every comment of the Content Adviser addressed | The consultation record | Not in the repository | Team |
+| 2 | Every comment of the Content Adviser addressed | `FINAL/FORM_2_EVIDENCE/CONSULTATION_RECORD.md`: each point Sir Jayvee raised beside what the team did | Every point recorded so far is addressed. Signatures open | Team, with Sir Jayvee |
 | 3 | **Literature Map** (Form 3A asks for it) | **Appendix R**, Figure R-1 (`docs/FINAL MANUSCRIPT/figures/appendix-r-literature-map.png`) | **Done 10 Nov**: Chapter 2's five themes with their sources, narrowing to the gap and the study | Content Adviser to check |
 | 4 | Citations and references in the Form 1 template's style | `FINAL/07_REFERENCES.md` (APA 7, 35 entries. The build checks every citation has an entry and every entry is cited) | Style not checked against Form 1 | Team, with the template |
 | 5 | Similarity check, within the University's threshold | The similarity report | Not done. The threshold on the form is blank | Team |
@@ -33,7 +33,7 @@ Figure and table numbers are the final paper's (`FINAL/05_CHAPTER_4_...`), not t
 | 13 | Data Flow Diagram in Gane and Sarson notation, down to Level 2 | Figure 4-4 (Level 1) and Appendix F (Level 2, all eight processes, Figures F-1 to F-8) | Done | See the level naming note below |
 | 14 | Use Case Diagram | Figure 4-5 and Appendix G | Done | |
 | 15 | ERD or database diagram | Figure 4-6 and Appendix H, drawn from the live database catalogue | Done | |
-| 16, 17 | Consultation records with each adviser, signed sessions | Paper records | Not in the repository | Team |
+| 16, 17 | Consultation records with each adviser, signed sessions | `FINAL/FORM_2_EVIDENCE/CONSULTATION_RECORD.md`, one record for both, since Sir Jayvee is both advisers: 26 February, 2 March and 22 September 2026, and one before the final defense | Ready to print. Signatures open | Team, with Sir Jayvee |
 | 18, 19 | Forms 3A and 3B signed, all items ticked, the four diagram annexes attached to 3B | Forms 3A and 3B. The annexes are Appendices D, E and F, G and H. Each form is checked item by item in `FORM_2_EVIDENCE/FORMS_3A_3B_CHECK.md` | All 16 items of 3A and all 6 of 3B met (3A items 2, 3, 5 and 11 fixed in Chapters 1 and 2 on 10 Nov). Signatures open | Team |
 | 20, 21 | Mock defense held, every recommendation acted on | The mock defense evaluation and a list of actions taken | Open | Team. Send the recommendations and Claude records what was done |
 | 22 | Slides and demo script, with a backup copy of the system and slides | `FINAL/HIVELET DEFENSE SLIDES.pptx`, `FINAL/DEFENSE_PRESENTATION_SCRIPT.md`, `FINAL/DEMO_SCRIPT.md` | Ready. Slide 1 still needs the names, adviser and date. Backup copy not made | Team |

@@ -103,16 +103,20 @@ them:
 
 ## 1.1 Background of the Study
 
-**What it says**
-- Apartment management means keeping tenant records, tracking money and handling maintenance, and it
-  gets harder as the number of units grows.
-- At the boarding house studied, records were kept in spreadsheets on a USB flash drive, and tenant
-  concerns came by messaging app or by word of mouth. This is a **fragmented workflow**: records,
-  messages and transactions sit in separate tools that do not talk to each other.
-- Existing systems are built for large properties with stable infrastructure and staff. Local
-  Philippine studies each solve only one part (payments, booking, a school setting).
-- The gap: **no integrated platform** that brings together tenant management, financial tracking,
-  communication and booking for a small, resource-constrained boarding house. Hivelet is the answer.
+**What it says** (an inverted pyramid, as Form 3A asks: world, country, region, place, then the gap)
+- **Around the world**: apartment management means keeping tenant records, tracking money and
+  handling maintenance, and it gets harder as the number of units grows. Existing systems are built for
+  large properties with stable infrastructure and staff.
+- **In the Philippines**: small enterprises adopt such tools slowly. Philippine studies each solve only
+  one part (payments, booking).
+- **In the Bicol Region**: a property management system at Bicol College, in a controlled school
+  setting.
+- **Locally**: the Fe Galang Da Silva Boarding House, 33 units in Legazpi City near Bicol University.
+  Records were kept in spreadsheets on a USB flash drive, rent is collected in cash, and concerns come
+  by messaging app or word of mouth: a **fragmented workflow**.
+- **The gap, the last sentence of 1.1**: no integrated platform that brings together tenant
+  management, financial tracking, communication and booking for a small boarding house. Section 1.2
+  then introduces Hivelet.
 
 **Key facts and numbers**
 - Records "were kept on a USB flash drive", with risks of "accidental deletion, file corruption,
@@ -136,7 +140,7 @@ them:
 ## 1.2 Objectives of the Study
 
 **What it says**
-- The **general objective**: to design, develop and evaluate Hivelet, a web-based apartment
+- The **general objective**, from **July to November 2026**: to design, develop and evaluate Hivelet, a web-based apartment
   management system that improves administrative workflow integration, communication and operational
   control, for small, resource-constrained boarding houses.
 - Four **specific objectives** follow. Learn them in order, because Chapter 4 and Chapter 5 follow the
@@ -404,8 +408,10 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   House.
 - **Resource-Constrained Environment**: limited money, minimal technical infrastructure, few staff.
 - **Fragmented Workflow**: work done in disconnected tools (spreadsheets, paper, messaging apps).
-- **Centralized System**: all data and processes in one integrated platform.
-- **Booking Inquiry**: a prospective tenant's request about a room, reviewed by the administrator.
+- **Centralized System**: in this study, one database and one website holding every record the owner
+  had kept in separate files and channels.
+- **Booking Inquiry**: a message a prospective tenant sends about a unit from the public website. The
+  owner answers it, and moves the person in from it if they rent. Nothing is approved or booked.
 - **Issue Ticketing System**: tenants submit concerns that are tracked, assigned and resolved.
 - **Role-Based Access Control (RBAC)**: each role (admin, tenant) can use only its own functions.
 - **Optional Online Payment Feature**: paying a bill through GCash using Adyen; it "enters a pending
@@ -648,7 +654,8 @@ The section then has four labelled parts.
   **ISO/IEC 25010 survey questionnaire**, with a section for each group.
 
 **Data gathering**
-- Each tester gave **written consent**, used their own account and device, and was asked to **think
+- The owner and each tenant **signed the consent form**. Prospects and technical evaluators agreed
+  through the questionnaire's privacy notice. Each tester used their own account and device, and was asked to **think
   aloud** (say what they expect as they go).
 - Help followed a fixed order: a neutral prompt after about thirty seconds ("What are you looking
   for?"), then a hint, then a demonstration.
@@ -840,7 +847,7 @@ The section then has four labelled parts.
 
 **What it says**
 - Figures 4-2 to 4-6 model the system as built; Figures 4-7 to 4-11 show its screens as they stood on
-  **5 October 2026**.
+  **10 November 2026**, after the redesign. They were retaken that day with sample tenants only.
 - The units, rates and statuses in Figures 4-7 and 4-8 are real; the names, payments, expenses and
   repair requests in Figures 4-7, 4-9, 4-10 and 4-11 are **sample records**, so no real tenant appears.
 
@@ -867,7 +874,8 @@ The section then has four labelled parts.
   (a closed year's records cannot be changed, and a tenant cannot cancel a repair once someone is
   sent). All 114 test cases were rerun on 4 November and none failed, so the results of Iteration 2
   stand.
-- The formal ISO/IEC 25010 evaluation was done once, in Iteration 2.
+- The formal ISO/IEC 25010 evaluation was done in Iteration 2, and its questionnaire and the users'
+  tasks were repeated with a second round of users in Iteration 3 (Tables M-28 to M-30).
 - The ERD (Figure 4-6), drawn from the database's own catalogue on **5 October 2026**: **21 tables**,
   each with a primary key, and **37 foreign keys**.
 - Rules enforced by the database: one unit cannot have two active tenancies; one invoice number cannot
@@ -1550,6 +1558,8 @@ The section then has four labelled parts.
 - Hosted on **Vercel**, database on **Supabase**, payment gateway on **Adyen**. Every approved change is
   deployed automatically from the project's main code branch.
 - The system is not yet the owner's main record; it runs beside her own records.
+- The team gives the system to the owner **free, with no subscription to pay** (from the 26 February
+  consultation).
 - Three risks are managed on purpose: her records are real; credentials must stay secret; the five
   historical receipt anomalies must not be mistaken for system errors.
 
@@ -1803,7 +1813,7 @@ extract).
 test was held on **30 September 2026** by the owner, three tenants and one prospective tenant. Still
 marked **[TO DO: signature]**; the owner signs only if she agrees.
 
-**Appendix P. Informed Consent Form.** The blank form each tester signed (Section 3.4), never the signed
+**Appendix P. Informed Consent Form.** The blank form the owner and each tenant signed (Section 3.3), never the signed
 copies, which carry names.
 
 **Appendix Q. Source Code.** The repository's layout; the code itself is shown at the defense on

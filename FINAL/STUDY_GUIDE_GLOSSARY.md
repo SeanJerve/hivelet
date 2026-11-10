@@ -1128,7 +1128,7 @@ Table 4-17.
 (the Agile cycle and the modules), Output (the system, reports, results, manuscript, manual), with
 feedback across all three. **Where:** Section 2.3; Figure 2-2.
 
-**Consent (informed consent).** Each tester agreed in writing before taking part. **Where:**
+**Consent (informed consent).** The owner and each tenant signed the consent form before taking part. Prospects and technical evaluators agreed through the questionnaire's privacy notice. **Where:**
 Section 3.4; App. P.
 
 **Course standard (90%).** The course's pass mark for testing: at least 90% of tests passed with no
