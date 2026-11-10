@@ -129,8 +129,7 @@ has the same bar at the top:
   **On a phone**, tap **Filters** to open them under the bar, and tap it again to close them. The
   filters in use are named under the bar; **Clear** removes them.
 - **Show 8 more** (or however many are next) and **Show all** under a long list open more of it; **Show fewer** closes it again.
-- **The pencil** on a row or card opens it to edit. On a computer it shows when you point at the row
-  or card. On a phone it is always there.
+- **Click or tap a row or card** to open it and edit it. There is no separate edit button.
 
 **Also on every screen:** a short ping means something was saved, or someone else's change has
 arrived. Messages appear at the top centre of the screen. Tap one to close it. A window that slides
@@ -166,7 +165,7 @@ as good as that.
 
 The first screen: **Needs your attention**, in up to three parts: the payments waiting to be verified, the urgent
 repairs, and the inquiries waiting for an answer, three of each with a count of the rest. A part with
-nothing waiting is not shown, and with nothing waiting at all the card is not shown, **Rent for** this month (for example **"Rent for November"**, the rent filed under November, whenever it was paid) with **Due this week** under it (each tenant whose rent falls due in the next seven days, with the period it pays for, such as "Unit 1A, Nov 7 to Dec 6"), **Occupancy** (the units
+nothing waiting is not shown, and with nothing waiting at all the card is not shown. Then come **Rent for** this month (for example **"Rent for November"**, the rent filed under November, whenever it was paid) with **Due this week** under it (each tenant whose rent falls due in the next seven days, with the period it pays for, such as "Unit 1A, Nov 7 to Dec 6"), **Occupancy** (the units
 occupied out of 33, with each cluster's count, such as 22/22), and **Income and expenses**, the year month by month. Tap a
 month on the chart to see its **Income**, **Operating expenses** and **Net income** under the chart;
 the arrows beside **Income** and **Operating expenses** open Monthly Income and Monthly Expenses. Urgent repairs are listed only in Needs your attention.
@@ -269,7 +268,7 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
   how many, and an emergency contact with their phone. The tenant adds their own phone number. Press **Move them in**. Their **login ID** and a **one-time password**
   are shown: write both down and give them to the tenant in person (the password is shown only
   once). At first sign-in they choose their own password and add their own phone number.
-- **Edit** (pencil on a tenant): change their details, unit or number of occupants, then **Save
+- **Edit** (click the tenant's row): change their details, unit or number of occupants, then **Save
   changes**. The water charge follows the number of occupants.
 - **Reset password** (in the same window): for a tenant who forgot theirs or lost the slip. Confirm,
   and their login ID and a new one-time password are shown. Their old password stops working and
@@ -289,7 +288,7 @@ for income; a single month's file ends in "only" ("Monthly Expenses March 2026 o
 ### 6. Rooms and rates
 
 Every unit, by cluster or as one list (**By cluster** or **As a list**, under **Filters** on a phone); **Filters** also narrows them by
-status or cluster. **Edit** (the pencil) a unit to change its rate, status, description
+status or cluster. Click a unit to change its rate, status, description
 or picture. A unit with no photograph shows its **Floor plan**, the same one visitors see on the
 public pages; **Replace photo** uploads one, and once saved the public page shows that
 photograph instead. Every rate change is kept in the unit's price history automatically; the system never
@@ -297,10 +296,9 @@ raises a rate by itself.
 
 ### 7. Repairs
 
-New requests from tenants appear here, marked by urgency. Open one with the pencil on its card
-(**Manage this repair**) to **Send technician** or change its status. A repair in progress has
-**Mark resolved** on its card, to the right of the pencil, and the tenant is notified when you press
-it. When a tenant adds a note to a request, it reaches you as a notification that quotes it. **Log
+New requests from tenants appear here, marked by urgency. Click a card to open it
+(**Manage this repair**) and **Send technician** or change its status. A repair in progress has
+**Mark resolved** at the bottom right of its card, and the tenant is notified when you press it. When a tenant adds a note to a request, it reaches you as a notification that quotes it. **Log
 a repair** records one you were told about in person, or one for an empty unit. **Delete repair**
 (in **Manage this repair**) removes a request for good after you confirm it. **Status** in the filters shows one stage only. A request the tenant
 cancelled (they can, until work starts) is marked **Cancelled by the tenant**, with their reason as a

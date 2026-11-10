@@ -189,7 +189,7 @@ without her permission**: it shows real names and money. For practice, the demo 
 | **Monthly Expenses** | **Expenses** for the month, and **Expense by area** (switchable to **month**, red bars). Expenses split across property areas; her thirteen categories plus her own; Download |
 | **Tenants** | Move in, move out, edit, reset a password, see the login ID |
 | **Rooms and rates** | Every unit's rate and status; every rate change is recorded |
-| **Repairs** | The board (to dispatch, in progress, done). The pencil on a card opens **Manage this repair** (send a technician, change the status), and a repair in progress has **Mark resolved** on its card. **Log a repair** she was told about in person, even for an empty unit |
+| **Repairs** | The board (to dispatch, in progress, done). Clicking a card opens **Manage this repair** (send a technician, change the status), and a repair in progress has **Mark resolved** on its card. **Log a repair** she was told about in person, even for an empty unit |
 | **Inquiries** | Read and answer inquiries; move a person in from one; close or delete |
 
 Also: the **bell** (notifications, with a dot when unread), **Recently** (her last three actions),
