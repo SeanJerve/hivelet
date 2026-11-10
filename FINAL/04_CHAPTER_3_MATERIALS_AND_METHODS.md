@@ -26,8 +26,8 @@ and tenants of a small-to-medium apartment system.
 | Visual Studio Code | 1.85+ |
 | Vue 3 with TypeScript | 3.5 / TypeScript 5.7 |
 | Vite (build tool) | 5.4 |
-| Tailwind CSS | 4.0 |
-| Node.js with Express.js (TypeScript) | LTS (v18+) / Express 4.19 |
+| Tailwind CSS | 4.3 |
+| Node.js with Express.js (TypeScript) | 22 LTS / Express 4.22 |
 | PostgreSQL, hosted on Supabase | 17.6 |
 | Adyen Web Drop-in / API Library | 6.44 / 32.0 |
 
@@ -84,11 +84,10 @@ Application (PWA) architecture, both computer workstations and mobile devices we
 | Internet connection | 25 Mbps broadband or fiber |
 
 As detailed in Table 3-2, the workstation used for local development, database management, and system
-testing required an SSD to ensure fast processing and smooth execution of development tools. For
-mobile testing, a mid-range Android device was planned to evaluate system responsiveness and
-performance under real-world conditions. As shown in Table 3-3, this baseline mobile setup ensured that
-the development team could evaluate the system's UI/UX layout and mobile adaptability using modern
-device standards.
+testing required an SSD to ensure fast processing and smooth execution of development tools. The
+baseline for mobile testing, shown in Table 3-3, was a mid-range Android device, so that system
+responsiveness, layout and mobile adaptability were evaluated under real-world conditions on a
+current handset.
 
 **Table 3-3.** Mobile testing hardware specifications (baseline)
 
@@ -103,7 +102,9 @@ device standards.
 During testing, the workstation was a Dell XPS 15 laptop with Google Chrome 154; the response times
 were taken on it over the boarding house's Wi-Fi and on an iPhone 15 in Safari over mobile data, and
 the offline, installation and browser tests also used an Infinix GT20 with Android and Chrome. The
-administrator used her own laptop, an Acer Nitro V 15, with Chrome.
+administrator used her own laptop, an Acer Nitro V 15, with Chrome, and the tenants used their own
+phones. After the redesign, the screens were timed again on 10 November 2026 on a Windows 11 laptop
+in a Chromium browser, on a different network from the boarding house's (Chapter 4, Section 4.3.5).
 
 ## 3.2 Software Methodology
 
@@ -136,6 +137,16 @@ Additionally, the flexibility of Agile allowed the system to be continuously imp
 adapted without compromising performance. This is particularly important in ensuring that Hivelet
 remains functional under varying conditions such as limited infrastructure, unstable internet
 connectivity, and evolving user needs.
+
+The work ran from July to November 2026. A first working system was built from 24 July to 28 August
+2026, and the owner's records were transferred into it. It was then developed in three iterations,
+each passing through the phases described below. Iteration 1, from 12 to 14 September, verified the
+system and its documents against each other and corrected the errors found, and it had no deployment
+work. Iteration 2, from 15 September to 31 October, took the owner's answers, put the system in her
+and her tenants' hands, and refined it from their feedback, the testing and the evaluation. Iteration
+3, from 1 November, redesigned the look of the screens and added no module. The testing and the
+formal evaluation took place in Iteration 2, and a second round of users tried the redesigned system
+from 31 October to 10 November (Appendix C).
 
 ### 3.2.1 Requirements
 
@@ -209,15 +220,19 @@ screens against the Web Content Accessibility Guidelines, levels A and AA (World
 **Functional walkthrough and user acceptance testing.** A 26-step walkthrough exercised every function
 that writes data once, on the one vacant unit. The owner and three tenants then used the live system
 for their own tasks on their own devices, observed by the researchers, and the owner and two of the
-tenants used it at the same time. Results are reported in Chapter 4, Section 4.3.
+tenants used it at the same time. One prospective tenant used the public website on their own phone.
+In the second round, ten tenants and four prospective tenants did the same tasks on the redesigned
+system. Results are reported in Chapter 4, Section 4.3.
 
 ### 3.2.5 Deployment
 
-After successful testing, the Hivelet system was deployed to Vercel, a cloud hosting service, with its
-database hosted on Supabase, where the system is accessible through a public web address for
-real-world usage and evaluation. A pilot implementation was conducted with selected users to validate
-real-world performance before full deployment. The researchers performed the final system
-configuration, database migration, and environment setup to ensure smooth operation.
+The Hivelet system was deployed to Vercel, a cloud hosting service, on 24 September 2026, with its
+database hosted on Supabase, and is reached through a public web address. On the adviser's advice
+the team hosted it itself rather than on the university's server, so the boarding house needs no
+equipment beyond the owner's own laptop and phone. The testing and the evaluation took place on this
+deployment, as a pilot in which the system runs beside the owner's own records, which it has not yet
+replaced (Chapter 4, Section 4.5). The researchers performed the system configuration, database
+migrations, and environment setup.
 
 ### 3.2.6 Review and Maintenance
 
@@ -249,7 +264,8 @@ Safety, was used only to show where each result falls in the newer model.
 This phase directly supports the fourth objective of the study, which focuses on evaluating and
 optimizing the system using the ISO/IEC 25010 Software Quality Model. To ensure a realistic measurement
 of system performance and usability, the evaluation was conducted during actual use in the deployment
-environment, with a specific emphasis on eight key attributes: functional suitability, performance
+environment, except that four technical evaluators reviewed a demonstration copy (see Participants),
+with a specific emphasis on eight key attributes: functional suitability, performance
 efficiency, compatibility, usability, reliability, security, maintainability, and portability.
 
 A structured survey questionnaire was administered to four groups: the administrator of the boarding
@@ -263,7 +279,7 @@ interpreted using the ranges in Table 3-5.
 part as the system's only administrator. Because she is the one person who uses the owner's side of
 the system, Chapter 4 refers to her, in that role, as the owner. Tenants were chosen by purposive and convenience sampling (Etikan et al., 2016): from the tenants
 at the boarding house on the evening of the test, the researchers chose ones who pay in cash on site,
-ones less used to mobile applications, users of both Android and iPhone handsets, and residents of more than one cluster. Three tenants were observed because the number of new
+ones less used to mobile applications, users of both Android and iPhone handsets, and tenants from more than one cluster. Three tenants were observed because the number of new
 usability problems found falls quickly with each additional tester (Nielsen & Landauer, 1993). One prospective tenant, a person who does
 not live at the boarding house and was invited by the researchers to use the public website as someone
 looking for a room would, used it on their own phone without an account: they browsed the units and
@@ -287,7 +303,8 @@ prospective tenant sections were in English and Filipino.
 
 **Data gathering.** The owner and each tenant signed the informed consent form (Appendix P) before
 taking part. The prospective tenants and the technical evaluators gave their consent through the data
-privacy notice that opens the questionnaire. Each used their own account on their own device while a
+privacy notice that opens the questionnaire. The owner and each tenant used their own account on
+their own device, and each prospective tenant the public website without an account, while a
 facilitator read the tasks without indicating where to tap and an observer completed the observation
 sheet. Testers were asked to think aloud, saying, for example, whether they expected a change to their
 personal details to save, whether a payment showed as settled once the owner confirmed it, and whether
@@ -299,7 +316,9 @@ help, and one that needed a demonstration as not completed. Photographs were tak
 documentation, only with the tester's permission; no screen was recorded. Each respondent answered the survey after using the system,
 without the researchers viewing their answers: the tenants and the prospective tenant straight after
 their tasks, the administrator the same evening, the first technical evaluator the day after the
-evaluators' review, and the other four after their reviews of the demonstration copy. Page load times were measured once per screen
+evaluators' review, and the other four after their reviews of the demonstration copy. In the second
+round, between 31 October and 10 November 2026, the tenants, the prospective tenants and the
+landlady answered after using the redesigned system. Page load times were measured once per screen
 on the devices named in Section 3.1.2, with the browser's cache cleared for a first load.
 
 **Statistical treatment.** For each survey item the weighted mean was computed as
@@ -310,10 +329,13 @@ where *f* is the number of respondents choosing a rating, *w* the rating (1 to 5
 respondents, and interpreted using Table 3-5. The composite mean of each characteristic is the mean of
 its item means, computed per respondent group and then as the mean of the group means, so that one
 administrator is not outweighed by several tenants on functions only she uses; the overall mean is the
-mean of the eight composites. For the acceptance test, the task completion rate is the number of tasks
-completed without help divided by the number attempted, reported with the median time per task and the
-mean number of wrong turns, following the effectiveness and efficiency measures of the ISO/IEC 25010
-quality in use model.
+mean of the eight composites. The two rounds were computed the same way, each on its own and then
+together. The second round had no technical evaluators and so no Maintainability ratings, and its
+overall mean is the mean of seven composites. For the acceptance test, the task completion rate is
+the number of tasks completed without help divided by the number attempted, reported with the median
+time per task and the mean number of wrong turns, following the effectiveness and efficiency measures
+of the ISO/IEC 25010 quality in use model. The second round reports no times, since time on task was
+not recorded reliably in it.
 
 The responses are summarized with descriptive statistics, the weighted mean of each item and the
 composite mean of each characteristic, and read alongside the results of the tests in Section 3.2.4. No
@@ -386,7 +408,10 @@ evaluators, P = prospective tenants).
 ## 3.4 Ethical Considerations
 
 The study used the owner's real records and the tenants' real accounts, so it followed the Data Privacy Act of 2012 (Republic Act No. 10173, 2012). Participation was voluntary and could be withdrawn at any
-time without any effect on a tenant's tenancy. Each tenant used only their own account, which shows
+time without any effect on a tenant's tenancy. The owner and each tenant signed the informed consent
+form (Appendix P), and the prospective tenants and the technical evaluators agreed through the data
+privacy notice that opens the questionnaire. The four technical evaluators reached through Panelista
+reviewed a demonstration copy holding sample data, so none of them saw the owner's records. Each tenant used only their own account, which shows
 only their own records, and received an individual starting password in person, which they replaced at
 first sign-in. Respondents could give a name so that the researchers could tell the responses apart; the
 names were removed before the responses were analyzed, and none appears in this paper. Names, contact details and amounts are hidden in every

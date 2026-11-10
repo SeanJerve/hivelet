@@ -18,12 +18,14 @@ apartment environments.
 The increasing complexity of apartment and boarding house operations has intensified the need for
 structured and centralized management systems. The reviewed studies identify fragmentation of
 administrative workflows as one of the primary operational issues in residential property management
-(Burke, 2026; Setty, 2022): as tenants, transactions, and maintenance activities increase, manual
+(Burke, 2026; Magno et al., 2024): as tenants, transactions, and maintenance activities increase, manual
 documentation, spreadsheet-based tracking, and informal communication become difficult to manage
 consistently and accurately.
 
 Burke (2026), examining apartment complexes of 50 to 500 units, finds operational, tenant,
-regulatory, labor, and technology challenges that differ from those of commercial properties.
+regulatory, labor, and technology challenges that differ from those of commercial properties. Among
+them, residential tenants ask often for minor repairs, and the software in use often does not
+connect with other financial and operational tools, which leaves information in separate silos.
 Thevaraju et al. (2019) describe the same condition at an apartment of eight blocks and more than
 1,000 units whose maintenance transactions were recorded by hand, and built a web system, developed
 with the Agile methodology, through which management handles apartment and tenant data, maintenance
@@ -32,12 +34,13 @@ smart real estate technology, find that real estate still needs to improve its a
 technologies and online platforms to move from traditional to smart practice.
 
 This condition is also reflected in local implementations. Magno et al. (2024) observed that
-apartment administrators commonly experience difficulties in tracking payments, organizing tenant
-records, and managing paper-based transactions, and that digitization improves data consistency and
-transaction monitoring. Pavia et al. (2022) show that a property management system improved
-coordination and service operations in a mock hotel for hospitality students, an institutional
-setting with predefined workflows and technical support that differs significantly from
-resource-constrained apartment operations.
+apartment rental management suffers from tracking pending and paid bills across units, missed payment
+deadlines, and informal, paper-based records, and that their system improved data management and
+reduced the errors of manual processes. Pavia et al. (2022) built a property management system for
+the mock hotel in which hospitality students take their practical examinations, and its users rated
+its design, functionality, and user-friendliness positively. That is an institutional setting with
+predefined workflows and technical support, which differs significantly from resource-constrained
+apartment operations.
 
 Together, these studies show that the main challenge in apartment management is not the absence of
 digital tools but the absence of a structure that consolidates administrative functions into one
@@ -75,14 +78,16 @@ information systems lack interoperability and centralized accessibility (Burke, 
 Financial management is one of the most critical components of apartment administration, since
 payment monitoring, expense tracking, and cash flow visibility shape managerial decisions. The
 reviewed studies emphasize that financial inefficiencies emerge when payment records are kept through
-fragmented or manual processes (Encarnacion et al., 2025; Magno et al., 2024; Setty, 2022).
+fragmented or manual processes (Encarnacion et al., 2025; Magno et al., 2024).
 
-Encarnacion et al. (2025) demonstrate that a structured payment monitoring system improves
-administrative oversight in student boarding houses by providing organized financial ledgers, payment
-summaries, and transaction visibility. Magno et al. (2024) observed that digital transaction tracking
-improves billing management and payment monitoring compared with paper-based systems, and Setty
-(2022) explains that centralized financial management systems improve transparency and reduce
-administrative errors by consolidating transaction records into one database. In the Philippines,
+Encarnacion et al. (2025) built a web-based payment tracking system for boarding houses near a
+university in Butuan City, where rent had been tracked through notes and verbal reminders, with
+delayed payments and little transparency as a result. In their system, landlords create bills,
+track payments, and monitor each tenant's balance, and tenants see their own bills and payment
+history. Evaluated with ISO/IEC 25010, it simplified payment tracking, reduced manual work, and
+improved communication between landlords and tenants. Magno et al. (2024) likewise built their
+system to compute monthly bills, track billing transactions, and generate a billing statement for
+each unit in place of paper-based records. In the Philippines,
 Caparos et al. (2025) developed a cloud-based property management system with automated billing,
 secure access controls, and real-time tenant communication for a real estate business in Region XII,
 which its staff rated positively on usability, security, operational efficiency, and tenant
@@ -120,7 +125,9 @@ boarding houses were found through newspapers, posters, friends, and social medi
 developed with Agile and evaluated with ISO/IEC 25010, which owners rated Excellent and tenants Very
 Good. In Surigao City, Mangca (2023b) developed a web-based boarding house booking system with SMS
 notifications, and its boarders and owners credited the notifications with reducing miscommunication
-(Mangca, 2023a). Each centers on how a tenant finds and books a room.
+(Mangca, 2023a). Setty (2022) built a website on which homeowners list their properties and renters
+register, search for a home, and contact its owner. Each centers on how a tenant finds and books a
+room.
 
 Closest to this study, Canlas et al. (2026) developed FixHub, a maintenance reporting system for
 dormitories in the Philippines, using the Agile methodology, and evaluated it with ISO/IEC 25010 and
@@ -149,9 +156,11 @@ usability has also been given heuristics of its own (Anuar & Othman, 2024).
 
 These characteristics matter in small-scale apartment operations, where limited infrastructure,
 inconsistent connectivity, and varied devices can keep conventional enterprise systems out of reach.
-Mia et al. (2024) find that small and medium-sized enterprises in the Philippines meet barriers of
-infrastructure, technical capacity, and resources when they adopt digital technology, which makes
-accessibility and simplicity of deployment critical considerations. A PWA is therefore the delivery
+Mia et al. (2024) found that small Philippine enterprises adopted the digital tools they already
+knew and could use at no upfront cost, such as social media, and that what held back adoption was
+less money or skill than the owners' hesitation and readiness, including doubt that a tool fits how
+the business already works. Accessibility, simplicity of deployment, and a fit with existing practice
+are therefore critical considerations. A PWA is therefore the delivery
 layer that keeps the centralized functions of an MIS accessible across devices and conditions.
 
 ### 2.1.6 Synthesis of Literature
@@ -159,20 +168,21 @@ layer that keeps the centralized functions of an MIS accessible across devices a
 The reviewed literature collectively demonstrates that operational inefficiencies in apartment
 management environments primarily emerge from fragmented administrative structures rather than the
 complete absence of digital technologies. Property management studies identify persistent issues
-involving disconnected workflows, inconsistent record management, delayed communication, and
-operational redundancy (Burke, 2026; Magno et al., 2024). Information systems and software
-engineering literature explains these inefficiencies as consequences of fragmented information
-processing and lack of centralized operational visibility (Ghasemaghaei et al., 2018; Pressman & Maxim, 2020).
+involving systems that do not connect with one another and records that are disorganized and
+inaccurate (Burke, 2026; Magno et al., 2024). Information systems and software engineering
+literature links better decisions to the quality of the data an organization holds and analyzes
+(Ghasemaghaei et al., 2018) and credits integrated systems with reducing redundancy and streamlining
+the flow of data (Pressman & Maxim, 2020).
 
-Financial analytics studies further establish that structured and centralized financial data improves administrative oversight and operational transparency
-(Encarnacion et al., 2025; Setty, 2022). Similarly, communication and maintenance coordination studies
+Financial studies further show that structured payment records improve administrative oversight and
+transparency (Encarnacion et al., 2025; Magno et al., 2024). Similarly, communication and maintenance coordination studies
 emphasize that operational accountability improves when issue resolution processes are formalized
 through structured digital workflows rather than informal communication channels (Jing & Lim, 2021;
 Saputra et al., 2025).
 
 Meanwhile, PWA literature provides the technological framework that enables these integrated
-operational components to remain accessible within environments characterized by limited infrastructure (Mia et al., 2024) and
-varying device conditions (Biørn-Hansen et al., 2017; Muawwal, 2024). Recent housing systems have also
+operational components to remain accessible within small enterprises that hesitate over tools that
+do not fit their practice (Mia et al., 2024) and across varying device conditions (Biørn-Hansen et al., 2017; Muawwal, 2024). Recent housing systems have also
 been evaluated with ISO/IEC 25010 (Canlas et al., 2026; Pernate et al., 2025), the quality model
 this study uses.
 
@@ -197,9 +207,10 @@ notifications through WhatsApp, but its only user is the boarding house manager,
 see their own bills or report a concern through it.
 
 While these systems demonstrate improvements in specific operational areas, small-scale apartment
-and boarding house operations face conditions they were not built around: administrative work that
-grows with every unit (Burke, 2026), and limited infrastructure, technical capacity, and resources
-(Mia et al., 2024). As a result, many administrators continue to rely on fragmented workflows
+and boarding house operations face conditions they were not built around: small portfolios that
+find it hardest to pay for better software and so keep systems that do not integrate (Burke, 2026),
+and owners who hesitate over a tool that does not fit how the business already works (Mia et al.,
+2024). As a result, many administrators continue to rely on fragmented workflows
 involving manual documentation, spreadsheet-based records, informal communication channels, and
 disconnected transaction monitoring processes.
 
@@ -240,7 +251,7 @@ interviews, needfinding observations, and analysis of existing administrative an
 These inputs provide both theoretical and contextual foundations, allowing the researchers to identify
 operational gaps, user requirements, and system constraints within the apartment management
 environment. The Process phase applies the Agile Software Development Life Cycle, integrating
-iterative stages of planning, design, development, testing, deployment, and review. Within this phase,
+iterative stages of requirements, design, development, testing, deployment, and review (Section 3.2). Within this phase,
 the system modules are implemented, including financial tracking (analytics and reports), booking
 management (reservation logic), tenant management (profiles and records), maintenance ticketing
 (requests and notifications), and an optional online payment integration using the Adyen API with
@@ -248,12 +259,12 @@ GCash. These processes transform identified requirements into a
 functional and structured system aligned with real-world operational needs. The Output phase includes
 the developed Hivelet system, its functional modules, and generated outputs such as financial reports
 exportable as Excel files, inquiry and tenancy records, and payment records. It also includes the
-completed research manuscript, system evaluation results based on ISO/IEC 25010 standards, and the
+completed research manuscript, system evaluation results based on ISO/IEC 25010:2011, and the
 user manual. These outputs reflect the system's effectiveness in improving administrative efficiency,
-data organization, and communication within the apartment management process. Feedback is
-incorporated across all phases, allowing continuous system refinement based on user evaluation and
-operational performance, ensuring that the system remains adaptive and responsive to real-world
-conditions.
+data organization, and communication within the apartment management process. Feedback from the
+outputs, chiefly the users' evaluation and the system's operational performance, returns to the
+input, so that each iteration starts from what the last one found and the system keeps being
+refined to real-world conditions.
 
 ## 2.4 Definition of Terms
 
@@ -301,11 +312,12 @@ expenses and net income by month on the Overview, and the monthly income and exp
 downloads.
 
 **Issue Ticketing System** – A structured digital mechanism that allows tenants to submit maintenance
-or facility-related concerns, which are then tracked, assigned, and resolved by administrators through
+or facility-related concerns, which are then tracked, assigned, and resolved by the administrator through
 a centralized workflow system.
 
 **User Authentication** – Signing in with a login ID or phone number and a password. The owner creates
-each tenant's account with a one-time password, which the tenant replaces at the first sign-in.
+each tenant's account with an individual starting password, which the tenant replaces at the first
+sign-in.
 
 **Role-Based Access Control (RBAC)** – The rule that each of Hivelet's three kinds of user, the
 public, tenants and the administrator, can use only the functions given to that role, checked by the
