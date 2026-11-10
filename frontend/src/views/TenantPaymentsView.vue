@@ -333,6 +333,8 @@ const notEnteredRows = computed(() => {
         amountPaid: Number(sent.amount) || st.perPeriod.totalAmount,
         paymentMethod: methodLabel(sent.payment_method),
         status: (sent.verification_status || 'PENDING VERIFICATION').toUpperCase(),
+        // Sent, not paid: the phone card says "Sent <date>" for it, as History does (audit, 7 Nov 2026).
+        kind: 'attempt' as const,
       };
     }
     return ({
@@ -964,7 +966,7 @@ function refreshAll() {
       <template #heading>
         <span role="tablist" aria-label="Your payments" class="flex items-center gap-5">
           <button
-            v-for="t in [{ v: 'record', label: 'Record' }, { v: 'history', label: 'History' }] as const"
+            v-for="t in [{ v: 'history', label: 'History' }, { v: 'record', label: 'Record' }] as const"
             :key="t.v"
             type="button"
             role="tab"
@@ -972,8 +974,8 @@ function refreshAll() {
             :tabindex="recordTab === t.v ? 0 : -1"
             :class="['press cursor-pointer whitespace-nowrap', recordTab === t.v ? 'text-brand' : 'font-normal text-ink-soft hover:text-brand']"
             @click="recordTab = t.v"
-            @keydown.right.prevent="recordTab = 'history'"
-            @keydown.left.prevent="recordTab = 'record'"
+            @keydown.right.prevent="recordTab = 'record'"
+            @keydown.left.prevent="recordTab = 'history'"
           >
             {{ t.label }}
           </button>

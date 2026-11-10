@@ -503,7 +503,10 @@ const rows = computed(() => {
   });
   // Arranged by name or by unit (Sean, 2026-10-02: "a filter that can arrange the tenants by
   // their units"). Units compare naturally (1A, 1B ... 3G, then the named units); no unit last.
-  const byName = (a: (typeof matched)[number], b: (typeof matched)[number]) => a.name.localeCompare(b.name);
+  // Numeric and case-blind, as every other list's name order (lib/rowOrder.ts): plain localeCompare
+  // put "Resident 8" after "Resident 32" (audit, 7 Nov 2026).
+  const byName = (a: (typeof matched)[number], b: (typeof matched)[number]) =>
+    a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
   return [...matched].sort(
     tenantOrder.value === 'unit'
       ? (a, b) =>

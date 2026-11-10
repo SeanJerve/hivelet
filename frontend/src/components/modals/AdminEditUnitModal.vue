@@ -435,7 +435,7 @@ async function handleSave() {
                   uploadedFileName
                     ? `${uploadedFileName} (${uploadedFileSize})`
                     : showingFloorPlan
-                      ? 'Shown on the public page'
+                      ? 'Shown on the website'
                       : 'JPG or PNG'
                 }}
               </span>
@@ -494,10 +494,12 @@ async function handleSave() {
           </label>
         </div>
 
-        <!-- Public visibility - the column existed and the API accepted it; nothing sent it. -->
+        <!-- Public visibility - the column existed and the API accepted it; nothing sent it. "Website", the
+             word its options, its hint and the account menu use; this dialog also said "public site" and
+             "public page" for the same place (audit, 7 Nov 2026). -->
         <label class="ws-field">
-          On the public site
-          <PillSelect v-model="editVisibility" :options="VISIBILITY_OPTIONS" aria-label="On the public site" widthClass="w-full" />
+          On the website
+          <PillSelect v-model="editVisibility" :options="VISIBILITY_OPTIONS" aria-label="On the website" widthClass="w-full" />
           <span class="ws-hint">Hidden units don't appear on the website or take inquiries.</span>
         </label>
 

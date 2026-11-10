@@ -129,3 +129,5 @@ FINAL/_reviewer/
 
 # Signed consent forms (names and signatures): private, never committed
 /_CONSENT_FORMS (not in repo)/
+
+.vercel
