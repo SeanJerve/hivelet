@@ -870,7 +870,7 @@ The system is hosted on Vercel at a public web address, with the database on Sup
 payment gateway in Adyen's test environment, which takes no real money; going live needs the owner
 to complete Adyen's merchant onboarding for GCash with her business documents, which this study did
 not do. Every approved change is deployed automatically from the project's main
-code branch. Table 24 lists what is needed to use the system, and Table 25 the deployment plan.
+code branch. The team gives the system to the owner free, with no subscription to pay. Table 24 lists what is needed to use the system, and Table 25 the deployment plan.
 
 **Table 24.** Software and hardware requirements for deployment
 

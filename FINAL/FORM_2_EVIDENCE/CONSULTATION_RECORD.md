@@ -9,11 +9,11 @@ checklist.
 
 ## Before the proposal defense
 
-### Session 1, February 2026
+### Session 1, 26 February 2026
 
 | | |
 | :--- | :--- |
-| Date | February ____, 2026 |
+| Date | 26 February 2026 |
 | Adviser | Sir Jayvee, Content and Programming Adviser |
 | Adviser's signature | ____________________ |
 
@@ -21,7 +21,7 @@ checklist.
 | :--- | :--- |
 | Find literature about boarding houses and follow it | Chapter 2 reviews boarding house and dormitory studies, among them Pernate et al. (2025), Mangca (2023a, 2023b), Puspasari et al. (2025), Altinay et al. (2024) and Canlas et al. (2026), mapped in Appendix R |
 | Make the content suit Sir Felix | The paper follows the IT 124 course guides and the Faculty-in-Charge's forms: Form 2, Forms 3A and 3B and the Proponent's Checklist, each checked item by item |
-| Find a solution, for example: a subscription is expensive, so the team offers it free | The team decided to give the system to the owner free, with no subscription. The paper does not state this yet |
+| Find a solution, for example: a subscription is expensive, so the team offers it free | The system is given to the owner free, with no subscription to pay (Section 4.5) |
 | Find out what the professors require and comply with it | The paper is checked against Form 2's 23 items and every item of Forms 3A and 3B, in the team's checklist files |
 
 ### Session 2, 2 March 2026
