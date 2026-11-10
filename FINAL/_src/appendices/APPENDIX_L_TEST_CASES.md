@@ -5,7 +5,10 @@ Chapter 4, Sections 4.3.4 to 4.3.7. Each case names the ISO/IEC 25010 characteri
 Functional Suitability, PE Performance Efficiency, CO Compatibility, US Usability, RE Reliability,
 SE Security, MA Maintainability, PO Portability) and the requirement it traces to. Results: Pass;
 Fail; Pass after fix; NT, not tested. The prospective tenant's task cards (Part PR) were not
-recorded on the day and are not shown.
+recorded on the day and are not shown. All 114 cases were run again on 4 November 2026, after the
+redesign, and none failed (Appendix M, Table M-19). The second round of users, from 31 October to 10
+November 2026, repeated the tenant tasks of Part T and the prospective tenants' tasks, and its
+results are in Appendix M, Table M-30.
 
 ## Part A. Owner and administrator (A-05 to A-32 are the 26-step walkthrough)
 

@@ -151,8 +151,8 @@ third (Sections 4.3.7 and 4.4). Table 7 lists the technology used.
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| Presentation | Vue 3.5 with TypeScript 5.7, built with Vite 5.4, styled with Tailwind CSS 4.0 | The screens used by the public, tenants and the owner |
-| Application | Node.js with Express 4.19 in TypeScript | Business rules, calculations and access checks |
+| Presentation | Vue 3.5 with TypeScript 5.7, built with Vite 5.4, styled with Tailwind CSS 4.3 | The screens used by the public, tenants and the owner |
+| Application | Node.js with Express 4.22 in TypeScript | Business rules, calculations and access checks |
 | Data | PostgreSQL 17.6, hosted on Supabase | Storage of all records, with row-level security |
 | Payment gateway | Adyen (Web Drop-in 6.44, API Library 32.0) with GCash | The optional online payment, in Adyen's test environment, which takes no real money |
 | Client delivery | Progressive Web Application (vite-plugin-pwa) | Installation on a phone or computer without an app store |
@@ -292,9 +292,10 @@ company directly.
 
 ![Monthly Income](figures/figure-12-monthly-income.png)
 
-These results agree with Encarnacion et al. (2025) and Setty (2022), who found that one structured
-ledger improves oversight and reduces administrative errors, and add one observation: the
-consolidation also exposed errors already in the owner's records (Section 4.1.1). Every figure the
+These results agree with Magno et al. (2024), who found that digitizing billing and payment
+tracking improved data management and reduced the errors of manual processes, and with Encarnacion
+et al. (2025), whose system let landlords track payments and see balances. They add one observation:
+the consolidation also exposed errors already in the owner's records (Section 4.1.1). Every figure the
 owner reads is computed from the rules in Table 7B rather than typed, so the same inputs always give
 the same amount.
 
@@ -582,9 +583,10 @@ Every task the tenants attempted was completed, 31 of 34 attempts without help (
 was needed only at the start: two of the three tenants were helped through their first sign-in and
 one to find their unit and rent; everything else, from finding payments to reporting a repair and
 opening the GCash payment, was done alone in one to two minutes. The repairs they sent reached the
-owner at once, and she acted on them the same evening. Mia et al. (2024) name limited technical
-capacity as a barrier when small Philippine enterprises adopt digital tools; these results place it
-precisely, in the first two things a new user does. The tests that needed several tenants saving at
+owner at once, and she acted on them the same evening. Mia et al. (2024) found that a lack of
+digital skills was not necessarily a barrier for small Philippine enterprises, which relied on tools
+they already knew. These results agree: the help tenants needed was confined to the first two things
+a new user does. The tests that needed several tenants saving at
 once were not performed, because only two attended together. In the session in which the owner and
 two tenants used the system at the same time, every screen loaded, each tenant saw only their own
 unit, the owner's full year of Monthly Income opened in about three seconds, and no session

@@ -5,6 +5,8 @@ in the Gane and Sarson notation used for Figures 6 and 7. A rounded rectangle is
 number in the band across the top. A rectangle open on the right is a data store. A shaded square is
 an external entity. Each step is one operation the system's screens perform. The stores and external
 entities keep the names of Figure 7, and each diagram uses only the stores its process uses there.
+Adyen, the payment gateway, is part of the payment process rather than an external entity, so it
+appears on no diagram as an entity. Taking a GCash payment through it is step 4.3 of Figure F-4.
 
 *Figure F-1. Level 2 diagram of process 1.0, handle inquiries.*
 
