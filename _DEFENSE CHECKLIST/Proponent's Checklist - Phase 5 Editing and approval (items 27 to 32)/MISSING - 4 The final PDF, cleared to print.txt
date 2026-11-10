@@ -1,0 +1,3 @@
+The final PDF, cleared to print
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

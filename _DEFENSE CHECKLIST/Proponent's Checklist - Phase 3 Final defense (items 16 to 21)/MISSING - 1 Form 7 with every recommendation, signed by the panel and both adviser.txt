@@ -1,0 +1,3 @@
+Form 7 with every recommendation, signed by the panel and both advisers
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

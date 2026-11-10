@@ -1,5 +1,14 @@
-The forms as the FIC sent them, copied here on 10 November 2026 from the Desktop and Downloads (the originals are still there).
+Every blank form from the IT 124 LMS, as the FIC posted them (copied 10 November 2026).
 
-- Form 2: the 23 items the folders "Form 2 - 01" to "Form 2 - 23" follow.
-- The Proponent's Checklist: Phases 1 to 6, from endorsement to the hardbound copy.
-- SAD Laboratory Activity 3: the data flow diagrams the professor checked and approved. The paper's diagrams follow its notation, and Adyen is part of the payment process, not an entity.
+Form 02          Pre-Defense Clearance Checklist: the 23 items the 'Form 2 - 01' to '- 23' folders follow
+Form 03A, 03B    Adviser endorsements: also in Form 2 items 18 and 19
+Form 04, 06      Final Defense Form, appointment letters: Proponent's Checklist Phase 2
+CS Form 48       Daily Time Record: Phase 2
+Form 05A, 05B    Grade sheets: Phase 3, the defense day
+Form 07          Revision Form: Phase 3
+Form 08          Compliance Form: Phase 4
+Form 09          Editor's Certification: Phase 5
+Proponent's Checklist: Phases 1 to 6, from endorsement to the hardbound copy
+SAD Laboratory Activity 3: the data flow diagrams the professor approved
+
+Fill in a copy in its item's folder, never these blanks.

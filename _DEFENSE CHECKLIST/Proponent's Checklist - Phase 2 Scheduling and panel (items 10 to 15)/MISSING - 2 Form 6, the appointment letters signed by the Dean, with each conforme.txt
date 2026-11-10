@@ -1,0 +1,3 @@
+Form 6, the appointment letters signed by the Dean, with each conforme
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

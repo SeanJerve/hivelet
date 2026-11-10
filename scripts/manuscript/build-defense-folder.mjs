@@ -30,6 +30,9 @@ const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'l
 // needs is READY; with files and needs it is PARTLY; with needs and nothing else it is MISSING.
 const md = (from, as) => ({ md: from, as });
 const cp = (from, as) => ({ from, as });
+// A blank form from the FIC (the LMS), kept in the folder below, copied to the item that uses it.
+const FORMS = '_DEFENSE CHECKLIST/Forms from the FIC (blank)';
+const form = (name) => cp(`${FORMS}/${name}`, `${name.replace(/\.(docx|xlsx)$/, '')} (blank).${name.split('.').pop()}`);
 const ITEMS = [
   { no: '01', name: 'Manuscript, Chapters I to V', asks: 'Chapters I to V complete and on the Form 1 template, with the front matter, references and annexes.', who: 'Content Adviser',
     files: [cp('FINAL/CLAUDE MANUSCRIPT/CLAUDE MANUSCRIPT.docx', 'Hivelet manuscript (Abstract, Chapters 1 to 5, References, Appendices A to R).docx')],
@@ -71,8 +74,8 @@ const ITEMS = [
     files: [cp(`${FIG}/figure-9-entity-relationship.png`, 'Figure 4-6 and Appendix H - Entity-relationship diagram.png'), md('FINAL/appendices/APPENDIX_N_DATA_DICTIONARY.md', 'Appendix N - Data dictionary.docx')] },
   { no: '16', name: 'Consultation record, Content Adviser', asks: 'The consultation record with the Content Adviser, with the signed sessions the FIC sets.', who: 'FIC', needs: ['The signed consultation record'] },
   { no: '17', name: 'Consultation record, Programming Adviser', asks: 'The consultation record with the Programming Adviser, with the signed sessions the FIC sets.', who: 'FIC', needs: ['The signed consultation record'] },
-  { no: '18', name: 'Form 3A, signed by the Content Adviser', asks: 'Form 3A signed by the Content Adviser, all 16 items ticked.', who: 'FIC', needs: ['Form 3A, signed (original)'] },
-  { no: '19', name: 'Form 3B, signed by the Programming Adviser', asks: 'Form 3B signed by the Programming Adviser, all 6 items ticked, with the four diagram annexes (items 12 to 15) attached.', who: 'FIC', needs: ['Form 3B, signed (original)'] },
+  { no: '18', name: 'Form 3A, signed by the Content Adviser', asks: 'Form 3A signed by the Content Adviser, all 16 items ticked.', who: 'FIC', files: [form('Form 03A - Content Adviser Endorsement.docx')], needs: ['Form 3A, signed (original)'] },
+  { no: '19', name: 'Form 3B, signed by the Programming Adviser', asks: 'Form 3B signed by the Programming Adviser, all 6 items ticked, with the four diagram annexes (items 12 to 15) attached.', who: 'FIC', files: [form('Form 03B - Programming Adviser Endorsement.docx')], needs: ['Form 3B, signed (original)'] },
   { no: '20', name: 'Mock defense evaluation', asks: 'The mock or practice defense held and evaluated.', who: 'FIC', needs: ['The mock defense evaluation'] },
   { no: '21', name: 'Actions on the mock defense', asks: 'Every recommendation from the mock defense acted on.', who: 'FIC', needs: ['The list of actions taken. Send the recommendations and Claude records what was done'] },
   { no: '22', name: 'Slides and demo script', asks: 'The final slides and the live demonstration script ready, with a backup copy of the system and the slides.', who: 'FIC',
@@ -81,9 +84,21 @@ const ITEMS = [
   { no: '23', name: 'Copies for the panel and advisers', asks: 'Complete manuscript copies for the three panelists and the two advisers.', who: 'FIC', needs: ['Five printed copies of the manuscript'] },
 ];
 const EXTRA = [
-  { folder: "Proponent's Checklist - 04 Annexes, UAT and acceptance", asks: 'The signed UAT Sign-off Form and the signed Client or End-User Acceptance Form or MOA in the annexes.', who: 'Client',
+  { folder: "Proponent's Checklist - Phase 1, item 04 Annexes, UAT and acceptance", asks: 'The signed UAT Sign-off Form and the signed Client or End-User Acceptance Form or MOA in the annexes.', who: 'Client',
     needs: ['The signed UAT form (see Form 2 item 09)', 'The acceptance form or MOA (see Form 2 item 10)'] },
-  { folder: "Proponent's Checklist - 31 Turnover package", asks: 'The user manual, the source code and database script, installation and deployment notes, and the repository link.', who: 'Programming Adviser',
+  { folder: "Proponent's Checklist - Phase 2 Scheduling and panel (items 10 to 15)", later: true, asks: 'Form 4 filled in and signed (FIC, both advisers, the panel\'s conforme), the appointment letters (Form 6) signed by the Dean and delivered, manuscript copies to the panel, and the FIC\'s other requirements, such as honoraria.', who: 'FIC, panel, Dean',
+    files: [form('Form 04 - Final Defense Form.docx'), form('Form 06 - Appointment Letters.docx'), form('CS Form 48 - Daily Time Record.docx')],
+    needs: ['Form 4, filled in and signed', 'Form 6, the appointment letters signed by the Dean, with each conforme', 'The receiving copy signed by each panelist and adviser'] },
+  { folder: "Proponent's Checklist - Phase 3 Final defense (items 16 to 21)", later: true, asks: 'The defense kit (three Form 5A, one Form 5B, one Form 7, one Form 4), the presentation and demo set up, the panel\'s recommendations on Form 7 and its signatures.', who: 'Panel',
+    files: [form('Form 05A - Panelist Grade Sheet.docx'), form('Form 05B - Summary Grade Sheet.docx'), form('Form 07 - Revision Form.xlsx')],
+    needs: ['Form 7 with every recommendation, signed by the panel and both advisers', 'Forms 5A and 5B, filled in by the panel'] },
+  { folder: "Proponent's Checklist - Phase 4 Revisions (items 22 to 26)", later: true, asks: 'Every recommendation on Form 7 carried out and recorded on Form 8, Part A (manuscript) and Part B (system), signed by both advisers.', who: 'Advisers',
+    files: [form('Form 08 - Compliance Form.xlsx')],
+    needs: ['Form 8, filled in and signed by both advisers'] },
+  { folder: "Proponent's Checklist - Phase 5 Editing and approval (items 27 to 32)", later: true, asks: 'The editor\'s certification (Form 9), a final similarity check, the final manuscript with its signed front matter, the approval sheet, and the final PDF for the FIC.', who: 'Editor, advisers, FIC',
+    files: [form("Form 09 - Editor's Certification.docx")],
+    needs: ['Form 9, signed by the editor', 'The final similarity report', 'The approval sheet, signed', 'The final PDF, cleared to print'] },
+  { folder: "Proponent's Checklist - Phase 5, item 31 Turnover package", asks: 'The user manual, the source code and database script, installation and deployment notes, and the repository link.', who: 'Programming Adviser',
     files: [md('FINAL/appendices/APPENDIX_K_USER_MANUAL.md', 'User manual (Appendix K).docx'), md('FINAL/FORM_2_EVIDENCE/DEPLOYMENT_REPORT.md', 'Deployment report, with the installation notes in Section 6.docx')],
     text: { 'Repository.txt': 'https://github.com/SeanJerve/hivelet\n' },
     needs: ['The database script, a schema-only dump of the live database. Never database/FULL_DATABASE_SCHEMA.sql, which does not describe it (Sean)'] },
@@ -135,7 +150,7 @@ async function fill(dir, item, label) {
   }
   // Files this script wrote before but no longer writes (a renamed output) go; the team's never do.
   for (const f of before) if (!written.includes(f) && !theirs.includes(f) && fs.existsSync(path.join(dir, f))) fs.rmSync(path.join(dir, f));
-  const status = !needs.length ? 'READY' : theirs.length ? 'CHECK' : (item.files?.length || item.text) ? 'PARTLY' : 'MISSING';
+  const status = item.later && !theirs.length ? 'LATER' : !needs.length ? 'READY' : theirs.length ? 'CHECK' : (item.files?.length || item.text) ? 'PARTLY' : 'MISSING';
   fs.writeFileSync(path.join(dir, ABOUT), [
     label, '',
     `What the form asks: ${item.asks}`,
@@ -164,11 +179,12 @@ fs.writeFileSync(path.join(OUT, '00 STATUS - what is here and what is missing.tx
   `DEFENSE CHECKLIST: Hivelet, Fe Galang Da Silva Boarding House`,
   `Status on ${today}. One folder per item of Form 2 (Pre-Defense Clearance Checklist), numbered as`,
   `the form numbers them, then the Proponent's Checklist items Form 2 does not cover.`, '',
-  `READY ${count('READY')}   PARTLY ${count('PARTLY')}   MISSING ${count('MISSING')}   CHECK ${count('CHECK')}`, '',
+  `READY ${count('READY')}   PARTLY ${count('PARTLY')}   MISSING ${count('MISSING')}   CHECK ${count('CHECK')}   LATER ${count('LATER')}`, '',
   'READY    everything the item asks for is here',
   'PARTLY   the documents are here, and something only a person can supply is still needed',
   'MISSING  nothing yet: it needs a signature, a scan or a paper',
-  'CHECK    the team put a file in the folder: open it and confirm the item is complete', '',
+  'CHECK    the team put a file in the folder: open it and confirm the item is complete',
+  'LATER    not due yet: on or after the defense day. The blank forms are already there', '',
   ...rows.flatMap((r) => [`${pad(r.status, 9)}${r.folder}`, ...r.needs.map((n) => `           still needed: ${n}`), ...r.theirs.map((f) => `           added by the team: ${f}`)]),
   '', 'Put each scan or signed form in its folder and run, from the hivelet folder:',
   '  node scripts/manuscript/build-defense-folder.mjs',

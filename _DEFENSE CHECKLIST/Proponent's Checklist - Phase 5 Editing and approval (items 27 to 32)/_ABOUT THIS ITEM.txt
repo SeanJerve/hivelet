@@ -1,0 +1,16 @@
+Proponent's Checklist - Phase 5 Editing and approval (items 27 to 32)
+
+What the form asks: The editor's certification (Form 9), a final similarity check, the final manuscript with its signed front matter, the approval sheet, and the final PDF for the FIC.
+Checked or signed by: Editor, advisers, FIC
+Status on 10 November 2026: LATER
+
+Here:
+  - Form 09 - Editor's Certification (blank).docx
+
+Still needed (only a person can supply these):
+  - Form 9, signed by the editor
+  - The final similarity report
+  - The approval sheet, signed
+  - The final PDF, cleared to print
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

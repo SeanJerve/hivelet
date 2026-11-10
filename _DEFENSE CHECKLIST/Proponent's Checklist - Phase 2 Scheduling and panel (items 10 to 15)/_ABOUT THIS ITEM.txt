@@ -1,0 +1,17 @@
+Proponent's Checklist - Phase 2 Scheduling and panel (items 10 to 15)
+
+What the form asks: Form 4 filled in and signed (FIC, both advisers, the panel's conforme), the appointment letters (Form 6) signed by the Dean and delivered, manuscript copies to the panel, and the FIC's other requirements, such as honoraria.
+Checked or signed by: FIC, panel, Dean
+Status on 10 November 2026: LATER
+
+Here:
+  - Form 04 - Final Defense Form (blank).docx
+  - Form 06 - Appointment Letters (blank).docx
+  - CS Form 48 - Daily Time Record (blank).docx
+
+Still needed (only a person can supply these):
+  - Form 4, filled in and signed
+  - Form 6, the appointment letters signed by the Dean, with each conforme
+  - The receiving copy signed by each panelist and adviser
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

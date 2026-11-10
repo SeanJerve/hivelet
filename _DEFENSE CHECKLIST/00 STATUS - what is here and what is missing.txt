@@ -2,12 +2,13 @@ DEFENSE CHECKLIST: Hivelet, Fe Galang Da Silva Boarding House
 Status on 10 November 2026. One folder per item of Form 2 (Pre-Defense Clearance Checklist), numbered as
 the form numbers them, then the Proponent's Checklist items Form 2 does not cover.
 
-READY 10   PARTLY 7   MISSING 10   CHECK 0
+READY 10   PARTLY 9   MISSING 8   CHECK 0   LATER 4
 
 READY    everything the item asks for is here
 PARTLY   the documents are here, and something only a person can supply is still needed
 MISSING  nothing yet: it needs a signature, a scan or a paper
 CHECK    the team put a file in the folder: open it and confirm the item is complete
+LATER    not due yet: on or after the defense day. The blank forms are already there
 
 PARTLY   Form 2 - 01 Manuscript, Chapters I to V
            still needed: The front matter in the team's Word file: title page, approval sheet, defense date and room, each member's Curriculum Vitae (P3)
@@ -38,9 +39,9 @@ MISSING  Form 2 - 16 Consultation record, Content Adviser
            still needed: The signed consultation record
 MISSING  Form 2 - 17 Consultation record, Programming Adviser
            still needed: The signed consultation record
-MISSING  Form 2 - 18 Form 3A, signed by the Content Adviser
+PARTLY   Form 2 - 18 Form 3A, signed by the Content Adviser
            still needed: Form 3A, signed (original)
-MISSING  Form 2 - 19 Form 3B, signed by the Programming Adviser
+PARTLY   Form 2 - 19 Form 3B, signed by the Programming Adviser
            still needed: Form 3B, signed (original)
 MISSING  Form 2 - 20 Mock defense evaluation
            still needed: The mock defense evaluation
@@ -51,10 +52,24 @@ PARTLY   Form 2 - 22 Slides and demo script
            still needed: A backup copy of the system and the slides
 MISSING  Form 2 - 23 Copies for the panel and advisers
            still needed: Five printed copies of the manuscript
-MISSING  Proponent's Checklist - 04 Annexes, UAT and acceptance
+MISSING  Proponent's Checklist - Phase 1, item 04 Annexes, UAT and acceptance
            still needed: The signed UAT form (see Form 2 item 09)
            still needed: The acceptance form or MOA (see Form 2 item 10)
-PARTLY   Proponent's Checklist - 31 Turnover package
+LATER    Proponent's Checklist - Phase 2 Scheduling and panel (items 10 to 15)
+           still needed: Form 4, filled in and signed
+           still needed: Form 6, the appointment letters signed by the Dean, with each conforme
+           still needed: The receiving copy signed by each panelist and adviser
+LATER    Proponent's Checklist - Phase 3 Final defense (items 16 to 21)
+           still needed: Form 7 with every recommendation, signed by the panel and both advisers
+           still needed: Forms 5A and 5B, filled in by the panel
+LATER    Proponent's Checklist - Phase 4 Revisions (items 22 to 26)
+           still needed: Form 8, filled in and signed by both advisers
+LATER    Proponent's Checklist - Phase 5 Editing and approval (items 27 to 32)
+           still needed: Form 9, signed by the editor
+           still needed: The final similarity report
+           still needed: The approval sheet, signed
+           still needed: The final PDF, cleared to print
+PARTLY   Proponent's Checklist - Phase 5, item 31 Turnover package
            still needed: The database script, a schema-only dump of the live database. Never database/FULL_DATABASE_SCHEMA.sql, which does not describe it (Sean)
 PARTLY   Consent forms - Appendix P
            still needed: The prospective tenant's signed form (he tested on 30 September)
