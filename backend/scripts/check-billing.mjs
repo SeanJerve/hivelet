@@ -333,6 +333,65 @@ check('a tenancy with nothing on record for years is capped, not unbounded',
   st(null, '2026-09-24', '2010-01-01').owedPeriods.length,
   24);
 
+/**
+ * THE OVERVIEW'S RENT DUE THIS WEEK READS EVERY TENANT AT ONCE (final backend audit, 7 Nov 2026).
+ *
+ * `/admin/rent-due-soon` called `readStanding` once per tenant: 100 round trips, 2.2 to 2.8 s on
+ * every Overview load. `readActiveStandings` reads the same rows in three. It must give each tenant
+ * exactly what `readStanding` gives them, or the Overview and the tenant's own Amount due disagree.
+ * Compared against the LIVE data, read only.
+ */
+{
+  const { readActiveStandings, readStanding } = await import('../dist/services/standingService.js');
+  const all = await readActiveStandings();
+  // Side by side, so the suite does not wait on 100 round trips one after another.
+  const singles = await Promise.all(all.map((e) => readStanding(e.tenantProfileId)));
+  const differ = all
+    .filter((e, i) => JSON.stringify(singles[i]) !== JSON.stringify(e.standing))
+    .map((e) => e.standing?.roomNumber ?? e.tenantProfileId);
+  check(`every active tenant's standing read in one batch equals readStanding (${all.length} tenants)`,
+    differ, []);
+
+  // No live tenant has moved unit, so the comparison above cannot see the batch lose the
+  // continuous stay (FINAL_REVIEW F11). A stubbed one can: moved today, owing since 40 days ago.
+  const { db } = await import('../dist/config/db.js');
+  const { propertyToday } = await import('../dist/utils/propertyClock.js');
+  const shift = (iso, n) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+  };
+  const today = propertyToday();
+  const paid = shift(today, -40);
+  const realFrom = db.from.bind(db);
+  db.from = (table) => {
+    const calls = [];
+    const chain = new Proxy(() => {}, {
+      get: (_t, prop) => prop === 'then'
+        ? (resolve) => {
+            const names = calls.map((c) => c[0]);
+            if (table === 'room_assignments' && !names.includes('in')) return resolve({ data: [
+              { tenant_profile_id: 'moved', room_id: '2b', start_date: today, occupant_count: 1,
+                rooms: { room_number: '2b', current_price: 6700 }, profiles: { full_name: 'Moved' } }], error: null });
+            if (table === 'room_assignments') return resolve({ data: [
+              { tenant_profile_id: 'moved', start_date: today, end_date: null },
+              { tenant_profile_id: 'moved', start_date: '2024-01-01', end_date: today }], error: null });
+            if (table === 'monthly_income_records') return resolve({ data: [
+              { id: 'r1', tenant_profile_id: 'moved', rent_period_end: paid }], error: null });
+            return resolve({ data: [], error: null });
+          }
+        : (...args) => { calls.push([prop, args]); return chain; },
+    });
+    return chain;
+  };
+  try {
+    const [moved] = await readActiveStandings();
+    check('the batch keeps what was owed before a room move (continuous stay)',
+      moved?.standing?.owedPeriods[0]?.start, shift(paid, 1));
+  } finally {
+    db.from = realFrom;
+  }
+}
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 /**
  * `process.exitCode`, not `process.exit()`.
