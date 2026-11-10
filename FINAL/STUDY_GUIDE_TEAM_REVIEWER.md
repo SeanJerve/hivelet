@@ -3,7 +3,8 @@
 **The whole capstone in one sitting**, for every member of the team, whatever part you worked on. Read
 it top to bottom once (about 40 minutes), then use Section 4 (the numbers) and Section 9 (the
 self-quiz) the night before. Everything here is taken from the final chapters in this folder and the
-user manual (Appendix K) as they stood on 13 October 2026; if a chapter changes, the chapter wins.
+user manual (Appendix K), checked against the system as it stood on 10 November 2026; if a chapter
+changes, the chapter wins.
 
 | Read next | For |
 | :--- | :--- |
@@ -98,7 +99,7 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 | As worded / in part / interface only / not as worded | 25 / 15 / 1 / 3 (graded 16 Sep) |
 | Iterations | **3**, after a first build (24 Jul to 28 Aug): 12 to 14 Sep (22 errors corrected); 15 Sep to 31 Oct; from 1 Nov (interface redesign) |
 | Database | **21** tables and 37 foreign keys in the ERD; **24** tables and 238 columns in Appendix N (three are backups from corrections) |
-| Routes checked against the permission matrix | **55** (administrator and tenant); **71** request handlers reviewed for security |
+| Routes checked against the permission matrix | **58** (administrator and tenant, 4 Nov); **71** request handlers reviewed for security (2 Oct) |
 | App size when installed | about **1.2 MB** |
 | Water | **₱200** per occupant per month |
 
@@ -126,7 +127,7 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 | :--- | :--- |
 | Respondents | **10**: the owner, 3 tenants, 1 prospective tenant, 5 technical evaluators (4 of them on the demo copy, 15 to 18 Oct) |
 | Overall | **4.59, Very High Quality** (4.47 if every response is averaged together) |
-| Second round (31 Oct to 10 Nov) | **4.82** from 16 answers (11 tenants, 4 prospects, the landlady). Both rounds: **4.61** from 27. Tasks: tenants 151 of 160 without help (94%), prospects 31 of 32 (97%), none failed. No times this round (Table M-28 to M-30) |
+| Second round (31 Oct to 10 Nov) | **4.82** from 16 answers (11 tenants, 4 prospects, the landlady). Both rounds: **4.61** from 26. Tasks: 10 tenants did 151 of 160 without help (94%), 4 prospects 31 of 32 (97%), none failed. No times this round (Appendix M, Tables M-28 to M-30) |
 | Highest / lowest | Portability **4.86** / Maintainability **4.32** |
 | Sub-characteristics | **31**: 27 measured, 25 rated, 2 neither (UI aesthetics, reusability) |
 | Changes made in response | **51**; the evaluators' **14** comments of 3 Oct, all addressed by 5 Oct |
@@ -171,9 +172,11 @@ without her permission**: it shows real names and money. For practice, the demo 
    sign in with the login ID or that number.
 2. **Overview**: the amount due and when it is due, **Pay with GCash**, their unit with its own floor plan, recent payments, and **Request a repair** at the top right
    (the round button on a phone).
-3. **Payments and billing**: the bill to pay, named by its month, shown only while something is to pay, and the **Payment record** under them. Only receipts the landlady verified count
-   as paid, and a month with no receipt says **"Not recorded"**, never "owed", as a
-   row in the record. The deposit is on the tenant's Overview, in the unit card.
+3. **Payments and billing**: the bill to pay, named by its month, shown only while something is to
+   pay, and the **Payment record** under it, with two tabs. **History** (first) lists every payment,
+   a GCash payment that is waiting or was not accepted included. **Record** lists one row per month:
+   a receipt the landlady verified, or **"Not recorded"** for a month with no receipt, never "owed".
+   The deposit is on the tenant's Overview, in the unit card.
 4. **Pay with GCash** (optional): Adyen's own payment window takes the payment, in Adyen's test
    environment, so no real money moves; the dialog says so. It shows as **waiting for the
    landlady** until she verifies it; then the bill is settled.
@@ -187,7 +190,7 @@ without her permission**: it shows real names and money. For practice, the demo 
 
 | Screen (side menu) | What it is for |
 | :--- | :--- |
-| **Overview** | Needs your attention (payments to verify, urgent repairs), **Rent for** this month (the rent filed under it, whenever paid) and **Due this week** (whose rent falls due in seven days, with the period it pays for), Occupancy (32 of 33, each cluster's count), Income month by month (tap a month for its Income, Expenses and Net income, with arrows on Income and Expenses to their pages), and the three green buttons: **Move someone in/out**, **Record expense**, **Record payment** |
+| **Overview** | Needs your attention (payments to verify, urgent repairs), **Rent for** this month (the rent filed under it, whenever paid) and **Due this week** (whose rent falls due in seven days, with the period it pays for), Occupancy (32 of 33, each cluster's count), **Income and expenses** month by month (tap a month for its Income, Operating expenses and Net income, with arrows on the first two to their pages), and the three buttons: **Move someone in/out**, **Record expense**, **Record payment** |
 | **Monthly Income** | The month's **Rent for** figure and **Income by cluster** (its green word switches it to **month**, as bars). Her income records, by cluster, in her workbook's layout, on the **Records** tab beside **To verify** (it opens on To verify when GCash payments are waiting); **Record payment**; verify or reject GCash payments; void a receipt; **Download** for Excel |
 | **Monthly Expenses** | **Expenses** for the month, and **Expense by area** (switchable to **month**, red bars). Expenses split across property areas; her thirteen categories plus her own; Download |
 | **Tenants** | Move in, move out, edit, reset a password, see the login ID |
@@ -259,7 +262,7 @@ anyway**.
 - Lead with the story (Section 1 above), not the technology. Panels remember "43% of her rows had no
   anniversary date" longer than "Vue 3".
 - Keep slide 13 (82 of 83) and slide 16 (4.59) on screen long enough for the panel to read them.
-- Say the limits before the panel does: ten respondents in the first round (a second round added 17),
+- Say the limits before the panel does: ten respondents in the first round (a second round added 16),
   no technical evaluators in the second round, no task times in the second round, Adyen on its test
   account, the system still running beside her records. Each is in the paper; naming them shows you know the work.
 
@@ -300,7 +303,7 @@ anyway**.
 | What they see | Why, and what to say |
 | :--- | :--- |
 | No vacant unit (33 of 33) | The test account is the tenant of PH for the demo; the property has 32 occupied |
-| October not entered yet | The landlady enters her receipts when she collects them; her records in the system stop at August (`00_NEEDS_YOUR_ATTENTION.md`, item 1) |
+| September to November mostly not entered | The landlady enters her receipts when she collects them. On 10 November her records in the system were full to August, with two September receipts and none after. The system shows "Not recorded", never "owed" (Chapter 5, recommendation 1) |
 | "Move-in date not recorded" | Her workbook never recorded it; the system does not invent one (Section 4.2.2) |
 | Five invoice numbers flagged | From her historical book, kept as written (Section 4.1.1) |
 | A GCash payment marked "Not accepted" | The demo payment, rejected on purpose so it does not enter her ledger |
@@ -320,11 +323,11 @@ Cover the answers and test yourself, or quiz each other. The answer to every que
 <details><summary>7. How many tests passed?</summary>82 of 83 (98.8%), no critical defect, course standard 90%.</details>
 <details><summary>8. What was the one failed test?</summary>Walkthrough step 23b: ₱0 shown instead of "—" with no connection; fixed and passed on 13 Oct.</details>
 <details><summary>9. What did the screen-versus-database audit find?</summary>Six defects every automated suite had missed, all fixed on 26 Sep.</details>
-<details><summary>10. How did the tenants do?</summary>All 34 attempts completed, 31 without help (91%), median 60 seconds; help only at first sign-in and finding their unit and rent.</details>
+<details><summary>10. How did the tenants do?</summary>Round 1: all 34 attempts completed, 31 without help (91%), median 60 seconds; help only at first sign-in and finding their unit and rent. Round 2: ten tenants, 151 of 160 without help (94%); four prospects, 31 of 32 (97%); none failed; no times recorded.</details>
 <details><summary>11. Overall rating, highest and lowest?</summary>4.59 Very High Quality, every characteristic Very High; Portability 4.86 highest; Maintainability 4.32 lowest (Usability 4.42 second lowest).</details>
-<details><summary>12. Who were the respondents?</summary>Ten: the owner, three tenants, one prospective tenant, five technical evaluators.</details>
+<details><summary>12. Who were the respondents?</summary>Round 1, ten: the owner, three tenants, one prospective tenant, five technical evaluators. Round 2, sixteen: eleven tenants, four prospective tenants and the landlady again. 26 answers in all.</details>
 <details><summary>13. Why the mean of group means?</summary>So one owner is not outweighed by three tenants on functions only she uses. Averaging everyone gives 4.47, same interpretation.</details>
-<details><summary>14. Why is Maintainability low?</summary>One respondent who did not inspect the code; and the code shows 154 of 204 database calls written inside request handlers. Recommendation 6.</details>
+<details><summary>14. Why is Maintainability low?</summary>Only the five technical evaluators rated it (4.00, 5.00, 4.60, 3.00 and 5.00), and none of them inspected the code; the code itself shows 154 of 204 database calls written inside request handlers. It is still Very High Quality. Recommendation 6.</details>
 <details><summary>15. What are the two security weaknesses left?</summary>The sign-in token in browser storage; no second sign-in factor. Recommendation 3.</details>
 <details><summary>16. How is water computed?</summary>₱200 per occupant per month.</details>
 <details><summary>17. What is the 50% Share?</summary>A system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet.</details>

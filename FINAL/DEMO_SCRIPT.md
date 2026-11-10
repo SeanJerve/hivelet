@@ -3,10 +3,11 @@
 A live demonstration of Hivelet in about 8 minutes that shows every feature the objectives name
 **without putting a real tenant's name or the owner's money on the projector.** Chapter 3, Section
 3.4 promises that names and amounts are hidden; a live demo of the owner's ledger would break that
-promise in front of the panel. Checked against the live system on 13 October 2026.
+promise in front of the panel. Checked against the code and the live records on 10 November 2026.
 
-**The safe data:** the test tenant **loydtest**, on unit **PH** (the Penthouse). Its two receipts
-are voided and its three GCash payments rejected, so nothing it does touches the owner's totals.
+**The safe data:** the test tenant **loydtest**, on unit **PH** (the Penthouse). On 10 November all
+five of its receipts were voided and nine of its ten GCash test payments rejected (the tenth was
+verified in a test and its receipt voided), so nothing it does touches the owner's totals.
 Its passwords are with Sean; never type them where the projector shows them.
 
 **Two people:** one drives the laptop (the owner's side and the public site), one drives a phone
@@ -26,8 +27,9 @@ Its passwords are with Sean; never type them where the projector shows them.
 5. Put the fallback on the laptop, offline: the defense film (`video/`) and the paper's figures
    (`FINAL/CLAUDE MANUSCRIPT/images/`).
 6. ~~Close the two test repair requests on PH~~ **Done 13 October**: all three test requests on PH
-   and a 4 October test inquiry were deleted through the app (audit trail, 18:50). Check Repairs is
-   still empty of tests the day before; the 30 September inquiry is real evidence and stays.
+   and a 4 October test inquiry were deleted through the app (audit trail, 18:50). On 10 November one
+   new test request on PH was open again: check Repairs the day before and close any test request
+   on PH. The 30 September inquiry is real evidence and stays.
 7. **After the last push before the defense, open the installed app on the phone once and close
    it.** The installed copy updates on the visit after a change; until then it shows the previous
    version (seen 13 October: a laptop's saved copy still had the street misspelled after the fix
@@ -41,6 +43,7 @@ Its passwords are with Sean; never type them where the projector shows them.
 
 ### 1. The public website (laptop, 1 minute). Objective 2: booking and reservations
 - Open `hivelet.vercel.app`. Say: "This is what a person looking for a room sees, with no account."
+  On a first visit a pop-up about viewings appears; close it.
 - Open a unit category, then a unit: its rate, floor and floor plan.
 - Open the inquiry form, fill it as **"Defense Demo"**, and press **Send inquiry**. Point out the
   reference code they can come back with.
@@ -50,7 +53,8 @@ Its passwords are with Sean; never type them where the projector shows them.
   from an app store, and it takes about 1.2 MB."
 - **Overview**: the amount due, the current bill and the unit.
 - **Payments and billing**: the bill named by its month, shown only while something is to pay, and the
-  **Payment record** (a month with no payment entered shows as **Not recorded**).
+  **Payment record** with its two tabs: **History** (every payment, opened first) and **Record** (one
+  row per month, where a month with no payment entered shows as **Not recorded**).
 - Press **Pay with GCash**. Adyen's payment window opens. On Adyen's GCash test page choose a
   successful payment. The phone returns to "Payment received". Say: "Nothing counts yet. The owner
   must verify it. This runs in Adyen's test environment, so it takes no real money; going live needs
@@ -105,6 +109,7 @@ Its passwords are with Sean; never type them where the projector shows them.
 
 Since 1 October 2026 loydtest has been the tenant of **PH**, the property's one vacant unit, so the
 live site counts **33 of 33 units occupied** and shows no vacancy, while the property really has 32
-occupied (CLAUDE.md, and Chapter 4). It also leaves one open test bill of ₱30,400 on PH. For the
+occupied (CLAUDE.md, and Chapter 4). It also leaves two open test bills on PH, ₱60,800 in all (10
+November). For the
 demo this is useful; after it, the owner (or Sean) should **move loydtest out** through Tenants, so
 the public site shows PH as vacant again. It is recorded in `BLOCKED_FOR_SEAN.md` as B-106.

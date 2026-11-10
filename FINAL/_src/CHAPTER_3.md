@@ -275,8 +275,8 @@ with volunteer evaluators, with at least three years' experience asked of each, 
 demonstration copy of the system on 15 to 18 October: the same software on a separate database
 holding sample data, so that no outside reviewer saw the owner's records. None inspected the source
 code. A second round was held on the redesigned system of Iteration 3, between 31 October and 10
-November 2026: ten more tenants and four more prospective tenants did the same tasks, and sixteen
-answered the questionnaire, eleven tenants, four prospective tenants and the landlady. Its time on task was not recorded reliably and is not reported.
+November 2026: ten tenants and four prospective tenants did the same tasks, and sixteen
+answered the questionnaire: eleven tenants, four prospective tenants and the landlady. Its time on task was not recorded reliably and is not reported.
 
 **Instruments.** Four instruments were used. Task cards were read aloud to each tester, in English and
 Filipino. An observation sheet recorded, for each task, whether it was completed without help, with

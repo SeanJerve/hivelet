@@ -591,7 +591,7 @@ after 60 to 80 seconds instead of 45; corrected on 1 October, it was on time whe
 phone on 13 October 2026 (Table 23A).
 
 **Second round.** Between 31 October and 10 November 2026, on the redesigned system of Iteration 3,
-ten more tenants and four more prospective tenants did the same tasks (Appendix M, Table M-30).
+ten tenants and four prospective tenants did the same tasks (Appendix M, Table M-30).
 Every task was completed. The tenants did 151 of their 160 attempts without help (94 percent), and
 the prospective tenants 31 of 32 (97 percent). As in the first round, help was needed mostly at the
 first sign-in, where five of twenty attempts needed a hint, most often after a character on the

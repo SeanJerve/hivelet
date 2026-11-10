@@ -66,7 +66,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
   s.addText('A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House', { x: 0.8, y: 2.7, w: 11.5, h: 1.0, fontFace: FONT, fontSize: 24, color: C.white });
   s.addText('IT 124 Capstone Project 2 · Group 4, BS Information Technology · Bicol University College of Science', { x: 0.8, y: 4.2, w: 11.5, h: 0.5, fontFace: FONT, fontSize: 14, color: C.soft });
   s.addText('[Team members]   ·   Adviser: [name]   ·   [Defense date]', { x: 0.8, y: 4.8, w: 11.5, h: 0.5, fontFace: FONT, fontSize: 14, color: C.soft });
-  s.addNotes('Introduce the team and the client: a 33-unit boarding house in Legazpi City, 32 of them occupied, run by its owner.');
+  s.addNotes('Introduce the team and the client: a 33-unit boarding house in Legazpi City, 32 of them occupied, run day to day by the landlady.');
 }
 
 // 2. The problem
@@ -94,7 +94,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 // 4. Objectives
 {
   const s = titled('Objectives of the study', 'Read the general objective, then the four specific ones. The conclusions near the end answer each one in the same order.');
-  s.addText('To design, develop and evaluate Hivelet, a web-based apartment management system that integrates the boarding house\'s administrative workflow, communication and operational control.', { x: 0.6, y: 1.3, w: W - 1.2, h: 1.0, fontFace: FONT, fontSize: 16, italic: true, color: C.faint });
+  s.addText('To design, develop and evaluate Hivelet, a web-based apartment management system that improves administrative workflow integration, communication and operational control.', { x: 0.6, y: 1.3, w: W - 1.2, h: 1.0, fontFace: FONT, fontSize: 16, italic: true, color: C.faint });
   bullets(s, [
     'Analyze the existing practices and set the system requirements',
     'Develop tenant and room management, booking, financial tracking with optional online payment, maintenance ticketing and notifications, role-based access control, and PWA support',
@@ -123,7 +123,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 7. Method
 {
-  const s = titled('Method: Agile, in three iterations', 'Iteration 1 is the honest part of the story: it checked the system and its documents against each other and corrected 22 recorded errors, many written in the first build with the AI assistant and never checked.');
+  const s = titled('Method: Agile, in three iterations', 'Iteration 1 is the honest part of the story: it checked the system and its documents against each other and corrected 22 recorded errors. Iteration 3 redesigned the screens and added no module, and a second round of users tested it (Appendix M, Table M-19).');
   image(s, 'appendix-c-gantt-chart.png', 0.5, 1.2, 7.6, 4.6);
   bullets(s, [
     'First build, 24 July to 28 August',
@@ -219,12 +219,12 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 15. User acceptance
 {
-  const s = titled('The owner and three tenants used it themselves', 'Observed on their own devices with a fixed help ladder; testers thought aloud (Chapter 3, Section 3.3; Chapter 4, Section 4.3.7).');
+  const s = titled('The owner and three tenants used it themselves', 'Observed on their own devices with a fixed help ladder; testers thought aloud (Chapter 3, Section 3.3; Chapter 4, Section 4.3.7). The second round, 31 October to 10 November, recorded no times, so the 60 seconds is the first round only (Appendix M, Table M-30).');
   stat(s, 0.8, 1.5, '34 of 34', 'tenant tasks completed');
   stat(s, 3.9, 1.5, '31', 'of them without help (91%)');
   stat(s, 7.0, 1.5, '60 s', 'median time per task');
   stat(s, 10.1, 1.5, '24 of 25', 'walkthrough steps the owner performed passed the first time');
-  s.addText('Where tenants needed help: the first sign-in and finding their unit and rent. Chapter 5 recommends showing each new tenant those first.', { x: 0.8, y: 4.2, w: 11.7, h: 1.2, fontFace: FONT, fontSize: 18, color: C.ink });
+  s.addText('Where tenants needed help: the first sign-in and finding their unit and rent. In a second round on the redesigned system, ten tenants did 151 of 160 attempts without help (94%) and four prospective tenants 31 of 32 (97%).', { x: 0.8, y: 4.2, w: 11.7, h: 1.2, fontFace: FONT, fontSize: 18, color: C.ink });
 }
 
 // 16. ISO/IEC 25010 results
@@ -258,7 +258,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
     ['1. Analyze the practices', 'Every gap in the owner\'s practices traced to a requirement and a module'],
     ['2. Develop the system', 'All six features built and in use on her real records, in her own layout'],
     ['3. Pilot test it', '82 of 83 tests passed (98.8%), with no critical defect'],
-    ['4. Evaluate and optimize', 'Very High Quality overall (4.59) on ISO/IEC 25010; 51 optimizations made'],
+    ['4. Evaluate and optimize', 'Very High Quality overall (4.59) on ISO/IEC 25010, 4.82 in a second round; 51 optimizations made'],
   ].forEach(([h, b], i) => box(s, 0.6 + (i % 2) * 6.15, 1.45 + Math.floor(i / 2) * 2.65, 5.95, 2.45, h, b, 19));
 }
 

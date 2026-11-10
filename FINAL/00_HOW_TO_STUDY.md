@@ -34,7 +34,8 @@ on, a quiz and the plan for the day). Sean shares it from the page's Share menu.
    `STUDY_GUIDE_PAPER_WALKTHROUGH.md`. End with its checklist, "Can you explain these without notes?".
 3. **Everyone, the questions:** `STUDY_GUIDE_DEFENSE_QA.md`, or the Questions tab of the study page in
    practice mode. Learn the three weak spots well: Usability (the owner's two 3s), Maintainability
-   (154 of 204 database calls inside the request handlers) and the ten-respondent sample.
+   (154 of 204 database calls inside the request handlers) and the small sample (ten respondents in
+   the first round, sixteen in the second).
 4. **By topic, then go deeper on your own:**
    - the problem and the paper: `STUDY_GUIDE_REFERENCES.md` and the walkthrough of Chapters 1 to 3;
    - the system and the code: `STUDY_GUIDE_CODE.md`, then the two file-by-file guides;
@@ -52,6 +53,7 @@ on, a quiz and the plan for the day). Sean shares it from the page's Share menu.
 - Say a number only if it is in a chapter or a guide. If you forget it, say where it is.
 - The 50% Share, exactly: "a system-computed figure equal to half that row's Rent Amount, kept for
   ledger parity with the owner's historical spreadsheet." Nothing more about it.
-- GCash through Adyen works end to end on Adyen's test account, so no real money moves yet.
+- GCash through Adyen works end to end in Adyen's test environment and takes no real money. It is
+  optional and not live, because going live needs the owner's merchant onboarding documents.
 - 33 units, 32 occupied (the live site may show 33 of 33: the test account holds PH for the demo).
 - Nobody signs in with an email: it is a login ID or a phone number.

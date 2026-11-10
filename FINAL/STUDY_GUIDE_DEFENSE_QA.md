@@ -2,8 +2,8 @@
 
 For the whole team, before the defense. These are the questions a panel is most likely to ask about
 Hivelet, each with a short answer you can say aloud and **where in the paper the proof is**, so you can
-open it on the spot. Every figure here is copied from the final chapters in this folder (as built on
-13 October 2026); if a chapter changes, the chapter wins.
+open it on the spot. Every figure here is copied from the final chapters in this folder and checked
+against the system on 10 November 2026; if a chapter changes, the chapter wins.
 
 The other study guides cover the rest: `STUDY_GUIDE_TEAM_REVIEWER.md` (the whole capstone in one
 sitting, the numbers to memorize, and a tour of every screen), `STUDY_GUIDE_CODE.md` (where each
@@ -157,8 +157,9 @@ records cannot be changed, and a tenant cannot cancel a repair once someone is s
 test cases on 4 November and none failed, and every automated check passed after each later change, so
 the functional, reliability, security and performance results stand. A second round of users then
 used the redesigned system (31 October to 10 November): ten tenants and four prospects did the tasks,
-and 16 answered the same questionnaire, rating it 4.82. *Appendix M, Tables M-28 to M-30.* The ratings on how the interface looks were given
-on the design before the redesign, and the paper says so. *Section 4.2.1; Appendix M, Table M-19.*
+and 16 answered the same questionnaire, rating it 4.82. *Appendix M, Tables M-28 to M-30.* So the
+first round's ratings are on the design before the redesign, and the second round's on the redesign
+itself. *Section 4.2.1; Appendix M, Table M-19.*
 
 **Why no Figma or separate design tool?**
 The screens were prototyped directly in Vue and Tailwind so the landlady and tenants could try them on
@@ -386,13 +387,17 @@ screens was fixed. PageSpeed gave the public page 100 for accessibility. *Sectio
 **How did real users do?**
 The owner and three tenants used the live system on 30 September on their own devices. Tenants
 completed all 34 task attempts, 31 without help (91%), with a median of 60 seconds a task. Help was
-needed only at the start: the first sign-in and finding their unit and rent. *Section 4.3.7,
-Table 4-11.*
+needed only at the start: the first sign-in and finding their unit and rent. In the second round, on
+the redesigned system, ten tenants did 151 of 160 attempts without help (94%) and four
+prospective tenants 31 of 32 (97%); none failed, and no times were recorded. *Section 4.3.7,
+Table 4-11; Appendix M, Table M-30.*
 
-**Why only three tenants?**
+**Why only three tenants in the first round?**
 Purposive and convenience sampling of tenants at home that evening, chosen to cover cash payers, less
 app-confident users, Android and iPhone and more than one cluster; and Nielsen and Landauer (1993)
-show each additional tester finds fewer new usability problems. *Section 3.3, Participants.*
+show each additional tester finds fewer new usability problems. The second round added ten tenants
+for the tasks and eleven for the questionnaire. *Section 3.3, Participants; Appendix M, Tables M-28
+and M-30.*
 
 **Did two people saving at the same time cause problems?**
 Before the fix, the same receipt sent twice or five times at once was saved every time, and two GCash
@@ -429,10 +434,13 @@ Ten people: the owner, three tenants, one prospective tenant and five technical 
 first evaluator, an IT professional in software quality assurance, reviewed the live system on 3
 October; the other four, reached through Panelista, reviewed the demonstration copy with sample
 data on 15 to 18 October, so no outsider saw the owner's records. No member of the team. *Tables 4-14 and 4-15.*
+The second round, 31 October to 10 November, added sixteen answers: eleven tenants, four prospective
+tenants and the landlady again, with no technical evaluators. *Appendix M, Table M-28.*
 
 **Ten respondents is very few. How can you claim Very High Quality?**
-We claim it only for these ten people, and the paper says so: the results describe how they rated the
-system, not a population. What strengthens it is that every characteristic was also **measured**, and
+We claim it only for the people who answered, and the paper says so: the results describe how they
+rated the system, not a population. A second round of sixteen on the redesigned system gave 4.82,
+and all 26 answers together 4.61, so the rating held. What strengthens it is that every characteristic was also **measured**, and
 the measurements agree with the ratings on all eight. *Sections 4.4.1 and 4.4.5; Chapter 5,
 conclusion 4.*
 
@@ -525,7 +533,7 @@ merchant onboarding for GCash with her business documents, which this study did 
 The owner and three tenants used it on their own accounts on 30 September, the owner did the
 walkthrough herself, and the system holds her real records. *Sections 4.3.4 and 4.3.7.*
 
-**"Your technical evaluator never saw the code. Is Maintainability valid?"**
+**"Your technical evaluators never saw the code. Is Maintainability valid?"**
 That is why the paper weighs the measured evidence more heavily there, and it reports the code's
 weakness itself (154 of 204 database calls inside handlers). *Section 4.4.3.*
 
