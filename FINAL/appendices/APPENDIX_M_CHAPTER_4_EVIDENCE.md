@@ -456,7 +456,7 @@ characteristic, and every change made in response to the evaluation.
 | Prospective tenants | 1 | 4 | 5 |
 | **Total** | **10** | **16** | **26** |
 
-The landlady answered in both rounds, and both of her answers are counted. A prospective tenant who answered the owner's section of the questionnaire by mistake is left out, since those items describe the owner's use. Round 2 had no technical evaluators, so its Maintainability rests on Round 1 alone, and its Security, which only the owner and the evaluators rate, on the landlady's second answer. Names are removed from the response files: `docs/TESTING_DAY/results/ROUND_1_...csv`, `ROUND_2_...csv` and `COMBINED_...csv`.
+Round 1's users were the landlady, three tenants and one prospective tenant, who tested on 30 September 2026. The five technical evaluators reviewed the system separately, on 3 to 18 October, and their answers are counted with Round 1 in Chapter 4. The landlady answered in both rounds, and both of her answers are counted. A prospective tenant who answered the owner's section of the questionnaire by mistake is left out, since those items describe the owner's use. Round 2 had no technical evaluators, so its Maintainability rests on Round 1 alone, and its Security, which only the owner and the evaluators rate, on the landlady's second answer. Names are removed from the response files: `docs/TESTING_DAY/results/ROUND_1_...csv`, `ROUND_2_...csv` and `COMBINED_...csv`.
 
 **Table M-29.** Composite means by round (summarized in Chapter 4, Section 4.4.3)
 
