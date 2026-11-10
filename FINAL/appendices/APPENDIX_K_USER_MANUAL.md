@@ -1,7 +1,7 @@
 # APPENDIX K: USER'S MANUAL
 
 **For the owner and the tenants of the Fe Galang Da Silva Boarding House.** Written 2026-09-29
-against the system as deployed that night, and brought up to date on 4 November 2026 for the
+against the system as deployed that night, and checked again on 10 November 2026 against the
 redesign of Iteration 3. Every button and screen name below is the one the system shows. Chapter 4, §4.5 (Table 4-22, stage 4) names this manual as the hand-over document.
 
 Hivelet is at **https://hivelet.vercel.app**. It works in any current browser on a phone or a
@@ -30,10 +30,24 @@ screen. *Nakalimutan ang password? Lumapit sa landlady; bibigyan niya kayo ng ba
 
 ### 2. Overview / Pangunahing pahina
 
-The greeting, then your unit (its floor plan, its kind and floor, and the deposit; when the landlady has acted on one of your repairs, one line saying so, such as **In progress** or **Done**; its arrows open **Repairs**) beside **Amount due**, which shows the rent and water it is made of, and your payments under them. The amount due counts only the payments the landlady has
-recorded, up to the date it shows ("Your recorded payments cover rent up to…"). If you have paid
-and it is not there yet, it appears once she records your receipt.
-*Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.*
+The greeting, with **Request a repair** at the top right (on a phone, the green button at the
+bottom right). Then:
+
+- **Your unit**: its floor plan, its kind and floor, and the deposit. When the landlady has acted on
+  one of your repairs, one line says so, such as **In progress** or **Done**. Tap it to open
+  **Repairs**.
+- **Amount due**, only while something is to pay: the amount, when it is due, the rent and water it
+  is made of, and **Pay with GCash**.
+- **Payments**: a payment that was not accepted, one still waiting for verification, and the
+  payments **Recorded by the landlady**.
+- Under a line: your **Monthly charge** (rent and water), the **Next rent** and when it is due
+  (once you are settled), and the **Landlady**'s number to call or text.
+
+The amount due counts only the payments the landlady has recorded, up to the date it shows
+("Payments recorded up to…"). If you have paid and it is not there yet, it appears once she records
+your receipt.
+*Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady. Makikita lang ito kapag may
+babayaran.*
 
 **Your recent actions** lists the last three things you did here (a repair request sent, a GCash
 payment started, your details updated), newest first. On a computer it is in the menu on the left,
@@ -58,16 +72,18 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
 
 ### 4. Repairs / Pagpapaayos
 
-1. Open **Repairs**. Say what needs fixing, choose the kind of problem and **How urgent**, add the
-   details. *Isulat kung ano ang sira at gaano kaapurahan.*
+1. Open **Repairs** (or press **Request a repair** on your Overview). Under **Report it**, fill in
+   **What needs fixing**, choose the **Category** and **How urgent**, and add the **Details**.
+   *Isulat kung ano ang sira at gaano kaapurahan.*
 2. **Add a photo** if you can, as a **JPG or PNG** (a phone camera's photos are). It is made smaller
    before sending.
 3. Press **Send request**. It goes straight to the landlady and appears in **Your requests**.
-4. Open a request to follow it through its three steps, **Submitted**, **In progress** and **Done**,
-   and to **add a note**. You get a notification when it is done.
-   The **Show** dropdown above your requests shows only **Open** or **Done** ones (on a phone, under
-   **Filters**).
-5. **Changed your mind?** Open the request and press **Cancel request** while it is still
+4. Tap a request to open it, then press **Progress and notes** to follow it through its three
+   steps, **Submitted**, **In progress** and **Done**, and to **add a note**. You get a
+   notification when it is done. The **All requests** dropdown above your requests shows only
+   **Open** or **Done** ones (on a phone, under **Filters**).
+   *Pindutin ang request, saka ang Progress and notes para makita kung nasaan na ito.*
+5. **Changed your mind?** Tap the request and press **Cancel request** while it is still
    **Submitted**. You may give a reason. You can cancel one request an hour, and not once the landlady
    has sent someone or started on it. Send her a note instead. A cancelled request stays in your list, marked
    **Cancelled**. *Puwedeng i-cancel habang hindi pa sinisimulan ng landlady.*
