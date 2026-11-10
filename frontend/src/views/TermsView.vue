@@ -175,7 +175,7 @@ const sections = Object.values(S);
         </li>
         <li>
           <strong>If you paid twice, or paid too much,</strong> tell the landlady. A payment she does
-          not accept is marked as not accepted, and it is not paid back automatically. An online
+          not accept is marked as not accepted, and it is not paid back automatically. A GCash
           payment can only be refunded through Adyen, to the GCash account it came from; money
           paid in person is settled with her directly.
         </li>

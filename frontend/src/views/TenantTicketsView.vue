@@ -343,7 +343,8 @@ const TIMELINE_STAGES = [
   { key: 'Submitted',   label: 'Submitted' },
   { key: 'In Progress', label: 'In progress' },
   { key: 'Resolved',    label: 'Done' },
-  { key: 'Closed',      label: 'Closed' },
+  // No fourth "Closed" stage (audit, 7 Nov 2026): the row's steps, its filter and the count call a
+  // request she closed Done, so the dialog opened from that row does too (`getStageIndex`).
 ];
 
 /*
@@ -365,8 +366,7 @@ const timelineStages = computed(() =>
 
 function getStageIndex(status: string): number {
   if (activeTimelineTicket.value && isCancelled(activeTimelineTicket.value)) return 1;
-  if (status === 'Closed') return 3;
-  if (status === 'Resolved') return 2;
+  if (status === 'Resolved' || status === 'Closed') return 2;
   if (status === 'In Progress') return 1;
   return 0; // Submitted - and anything unrecognised, which is honest about it
 }
@@ -454,14 +454,17 @@ function seedNotesForTicket(ticket: TicketRow): TicketNote[] {
       id: `note-progress-${ticket.id}`,
       author: 'System',
       text: 'Marked in progress.',
-      timestamp: ticket.created_at,
+      // No time: the row does not record when it was marked, and the time it was sent read as that
+      // (audit, 7 Nov 2026). Records are the truth.
+      timestamp: '',
     });
   }
   if (RESOLVED_STATES.includes(ticket.status) && ticket.resolved_at) {
     base.push({
       id: `note-resolve-${ticket.id}`,
       author: 'System',
-      text: `Marked ${ticket.status.toLowerCase()} on ${formatDate(ticket.resolved_at)}.`,
+      // "done", the word the row, its pill and the steps use, not the enum's "resolved" (audit, 7 Nov 2026).
+      text: `Marked done on ${formatDate(ticket.resolved_at)}.`,
       timestamp: ticket.resolved_at,
     });
   }
@@ -1292,7 +1295,7 @@ function formatDateTime(iso: string) {
               >
                 <p class="mb-1 px-1 text-xs text-ink-faint">
                   <span class="font-semibold text-ink-soft">{{ note.author }}</span>
-                  · {{ formatDateTime(note.timestamp) }}
+                  <template v-if="note.timestamp"> · {{ formatDateTime(note.timestamp) }}</template>
                 </p>
                 <p
                   :class="[

@@ -27,7 +27,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { likeLiteral } from '../utils/likeLiteral.js';
 import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
-import { readStanding } from '../services/standingService.js';
+import { readActiveStandings } from '../services/standingService.js';
 import { attachmentHeader, yearsInSheets } from '../utils/reportFileName.js';
 import { parseReportScope, scopeAudit, scopeName } from '../utils/reportScope.js';
 import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
@@ -2807,44 +2807,35 @@ async function refusePastYear(year: unknown): Promise<void> {
  * covered by a verified receipt falls due today or in the next seven days, soonest first, with one
  * period's amount at today's rate and headcount.
  *
- * Read through `readStanding`, the same function the tenant's own portal and the checkout use, so
- * the date and amount here are the ones the tenant sees. A period already overdue is not listed: it
- * is owed, not coming up, and while the landlady still keeps her own book most of those are months
- * she has not entered yet (6 Nov 2026).
+ * Read through `readActiveStandings`, the batched `readStanding` (the function the tenant's own
+ * portal and the checkout use), so the date and amount here are the ones the tenant sees. A period
+ * already overdue is not listed: it is owed, not coming up, and while the landlady still keeps her
+ * own book most of those are months she has not entered yet (6 Nov 2026).
  */
 router.get(
   '/admin/rent-due-soon',
   requirePermission(PERMISSIONS.TENANT_READ_ALL),
   asyncHandler(async (_req, res) => {
-    const { data: tenancies, error } = await db
-      .from('room_assignments')
-      .select('tenant_profile_id, profiles:tenant_profile_id (full_name)')
-      .eq('is_active', true);
-    if (error) throw ApiError.internal(error.message);
-
     const today = propertyToday();
     const until = (() => {
       const [y, m, d] = today.split('-').map(Number);
       return new Date(Date.UTC(y, m - 1, d + 7)).toISOString().slice(0, 10);
     })();
 
-    const rows = await Promise.all(
-      (tenancies ?? []).map(async (t: { tenant_profile_id: string | null; profiles: unknown }) => {
-        if (!t.tenant_profile_id) return null;
-        const standing = await readStanding(t.tenant_profile_id);
-        const next = standing?.owedPeriods.find((p) => p.dueDate >= today && p.dueDate <= until);
-        if (!standing || !next) return null;
-        const profile = (Array.isArray(t.profiles) ? t.profiles[0] : t.profiles) as { full_name?: string } | null;
-        return {
-          tenantProfileId: t.tenant_profile_id,
-          name: profile?.full_name ?? null,
-          roomNumber: String(standing.roomNumber).toUpperCase(),
-          dueDate: next.dueDate,
-          periodEnd: next.end,
-          amount: standing.perPeriod.totalAmount,
-        };
-      })
-    );
+    // Every active tenant's `readStanding` in three reads, not three per tenant: 100 round trips
+    // took 2.2 to 2.8 s on every Overview load (final backend audit, 7 Nov 2026).
+    const rows = (await readActiveStandings()).map(({ tenantProfileId, name, standing }) => {
+      const next = standing?.owedPeriods.find((p) => p.dueDate >= today && p.dueDate <= until);
+      if (!standing || !next) return null;
+      return {
+        tenantProfileId,
+        name,
+        roomNumber: String(standing.roomNumber).toUpperCase(),
+        dueDate: next.dueDate,
+        periodEnd: next.end,
+        amount: standing.perPeriod.totalAmount,
+      };
+    });
     const due = rows
       .filter((r): r is NonNullable<typeof r> => r !== null)
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.roomNumber.localeCompare(b.roomNumber));

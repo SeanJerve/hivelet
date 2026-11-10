@@ -521,7 +521,9 @@ const liveCapsules = computed<CapsuleMonth[]>(() =>
     const long = `${MONTH_LONG[d.monthNum - 1]} ${CURRENT_YEAR}`;
     if (d.hasIncome) {
       const water = d.waterIncome ?? 0;
-      const detail = `Rent ${peso(d.grossIncome - water)}, water ${peso(water)}`;
+      // Centavos on both, as the month's figure above them and the three below (7 Nov 2026):
+      // "Rent ₱4,750, water ₱200" sat under "₱4,950.00 recorded".
+      const detail = `Rent ${peso(d.grossIncome - water, 2)}, water ${peso(water, 2)}`;
       return { short: d.month, long, value: d.grossIncome, kind: 'recorded', detail };
     }
     if (d.monthNum <= CURRENT_MONTH) return { short: d.month, long, value: null, kind: 'unentered' };

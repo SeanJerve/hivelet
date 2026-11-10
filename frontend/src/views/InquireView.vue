@@ -16,7 +16,7 @@
  * Adding the others is a schema change, not a design change.
  */
 import { ref, reactive, nextTick } from 'vue';
-import { Loader2, AlertCircle, ArrowUpRight } from 'lucide-vue-next';
+import { Loader2, AlertCircle, ArrowUpRight, Send } from 'lucide-vue-next';
 import { LANDLADY } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import { rememberInquiry, savedInquiries } from '@/lib/myInquiries';
@@ -368,6 +368,8 @@ async function submitInquiry() {
         <!-- "Send inquiry", not "Register your interest" (asked to simplify, 2026-09-24). -->
 
         <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+        <!-- The same send mark as a unit page's Ask about dialog, for the same action (audit, 7 Nov 2026). -->
+        <Send v-else class="size-4" aria-hidden="true" />
         <span>{{ isSubmitting ? 'Sending…' : 'Send inquiry' }}</span>
       </button>
 

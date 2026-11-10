@@ -717,9 +717,11 @@ function handleDeleteTicketPrompt() {
           :disabled="isSubmitting || writesUnavailable || logUnitOptions.length === 0"
           :title="writesUnavailable ? 'Needs a connection' : undefined"
         >
+          <!-- The page button's name and the check, as Record payment and Record expense have them
+               (audit, 7 Nov 2026: it said "Log repair" with a plus). -->
           <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
-          <Plus v-else class="size-4" aria-hidden="true" />
-          Log repair
+          <Check v-else class="size-4" aria-hidden="true" />
+          Log a repair
         </button>
       </template>
     </WsModal>

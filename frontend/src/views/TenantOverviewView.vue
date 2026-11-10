@@ -1067,7 +1067,9 @@ const statusTone = computed(() => {
               >
                 <span class="min-w-0 flex-1 basis-48">
                   <span class="block text-sm font-medium">
-                    {{ r.period ? `Rent for ${r.period}` : 'Rent payment' }}
+                    <!-- A period, so "Rent, <start> to <end>" as Payments and billing names it; "Rent
+                         for" is for a month by name (audit, 7 Nov 2026). -->
+                    {{ r.period ? `Rent, ${r.period}` : 'Rent' }}
                   </span>
                   <span class="block text-xs text-ink-faint">
                     Paid {{ r.date }}<template v-if="r.method">, {{ r.method }}</template>

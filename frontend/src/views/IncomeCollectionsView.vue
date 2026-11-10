@@ -903,7 +903,8 @@ const editMethodOptions = computed(() => {
   const base = [
     { value: 'Cash', label: 'Cash' },
     { value: 'GCash', label: 'GCash' },
-    { value: 'Bank Transfer', label: 'Bank Transfer' },
+    // Sentence case, as the Record payment form lists it (audit, 7 Nov 2026).
+    { value: 'Bank Transfer', label: 'Bank transfer' },
   ];
   if (editMethod.value === 'Adyen Online') {
     base.push({ value: 'Adyen Online', label: methodInWords('Adyen Online') });
@@ -1329,8 +1330,10 @@ const isDownloadOpen = ref(false);
           <template v-else>cluster</template>
         </template>
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="fetchIncome" />
-        <p v-else-if="clusterSplit.length === 0" class="text-sm text-ink-soft">
-          No payments match the filters above.
+        <!-- The Rent tile's two empties beside it (audit, 7 Nov 2026): it said "No payments match the
+             filters above", and the filters are below the card. -->
+        <p v-else-if="clusterSplit.length === 0" :class="['text-sm', NOT_RECORDED_CLASS]">
+          {{ q.trim() ? 'Nothing matches' : NOT_RECORDED }}
         </p>
         <!-- Both views in one cell, the hidden one invisible but still taking its room, so the card is
              as tall as the taller view and switching moves nothing; they crossfade (Sean, 5 Nov 2026). -->
@@ -1502,7 +1505,7 @@ const isDownloadOpen = ref(false);
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-sm font-medium break-words">{{ p.profiles?.full_name || 'Name not recorded' }}</p>
+                <p :class="['text-sm font-medium break-words', !p.profiles?.full_name && NOT_RECORDED_CLASS]">{{ p.profiles?.full_name || NOT_RECORDED }}</p>
                 <!-- Upper case, as the ledger below and the reject dialog print it. -->
                 <p class="mt-0.5 text-xs text-ink-faint">
                   Unit {{ String(p.rooms?.room_number || '').toUpperCase() || 'not recorded' }}<template v-if="p.profiles?.phone_number">, {{ showPhone(p.profiles.phone_number) }}</template>
@@ -2076,8 +2079,9 @@ const isDownloadOpen = ref(false);
               Months covered
               <input v-model.number="editMonthsCovered" type="number" min="1" class="ws-input w-full" required />
             </label>
+            <!-- "Occupants", the Record payment form's name for the same field (audit, 7 Nov 2026). -->
             <label class="ws-field">
-              How many people
+              Occupants
               <input v-model.number="editOccupants" type="number" min="1" max="50" class="ws-input w-full" required />
             </label>
           </div>
@@ -2165,7 +2169,7 @@ const isDownloadOpen = ref(false);
     <WsModal
       v-if="openedPayment"
       title="Payment to verify"
-      :subtitle="`${openedPayment.profiles?.full_name || 'Name not recorded'}, unit ${String(openedPayment.rooms?.room_number || '').toUpperCase() || 'not recorded'}`"
+      :subtitle="`${openedPayment.profiles?.full_name || NOT_RECORDED}, unit ${String(openedPayment.rooms?.room_number || '').toUpperCase() || 'not recorded'}`"
       @close="openedPayment = null"
     >
       <div class="flex flex-col gap-5">

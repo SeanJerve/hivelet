@@ -366,7 +366,7 @@ onBeforeUnmount(() => {
               v-if="item.badge"
               :class="['min-w-6 px-2 py-0.5 text-center text-xs font-semibold tabular rounded-full', item.badgeColor]"
             >
-              {{ item.badge }}
+              {{ item.badge }}<span class="sr-only"> new</span>
             </span>
           </Transition>
         </router-link>
@@ -495,7 +495,7 @@ onBeforeUnmount(() => {
                         v-if="item.badge"
                         :class="['min-w-6 px-2 py-0.5 text-center text-xs font-semibold tabular rounded-full', item.badgeColor]"
                       >
-                        {{ item.badge }}
+                        {{ item.badge }}<span class="sr-only"> new</span>
                       </span>
                     </Transition>
                   </router-link>

@@ -807,15 +807,20 @@ router.post(
       );
     }
 
-    // Guarded on the status it was read with: if the landlady started it a
-    // moment ago, nothing changes and the tenant is told so.
+    // Guarded on the status AND the technician it was read with: if the landlady started it or
+    // picked someone a moment ago, nothing changes and the tenant is told so. The technician was
+    // checked on the read only, so an assignment landing between the read and this write was
+    // cancelled over (final backend audit, 7 Nov 2026); assigning leaves the status Submitted.
     const closedAt = new Date().toISOString();
-    const { data: updated, error: updateError } = await db
+    const cancel = db
       .from('maintenance_tickets')
       .update({ status: 'Closed', closed_at: closedAt, closed_by: me })
       .eq('id', ticket.id)
-      .eq('status', 'Submitted')
-      .select('id, status, closed_at, closed_by');
+      .eq('status', 'Submitted');
+    const { data: updated, error: updateError } = await (ticket.assigned_technician === null
+      ? cancel.is('assigned_technician', null)
+      : cancel.eq('assigned_technician', ticket.assigned_technician)
+    ).select('id, status, closed_at, closed_by');
     if (updateError) throw ApiError.internal(updateError.message);
     if (!updated || updated.length === 0) {
       throw ApiError.conflict('This request changed a moment ago and can no longer be cancelled. Reload to see it.');

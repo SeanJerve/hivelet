@@ -40,6 +40,7 @@ import {
 import { isAdmin } from '@/lib/authStore';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { notificationTarget } from '@/lib/openFromQuery';
+import { pesoExact } from '@/lib/canonicalUnits';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import {
   Check,
@@ -170,8 +171,17 @@ function headline(item: NotificationItem) {
   return old[1] === 'High' ? 'Urgent repair' : 'New repair request';
 }
 
+/**
+ * The GCash webhook writes "PHP 13000.00" (adyenWebhookHandler.ts); every other figure on screen,
+ * the older payment notices included, reads "₱13,000". Shown that way; the rows stay as written
+ * (audit, 7 Nov 2026).
+ */
+function pesoNotPhp(text: string) {
+  return text.replace(/\bPHP (\d+(?:\.\d{1,2})?)\b/g, (_m, n) => pesoExact(Number(n)));
+}
+
 function detail(item: NotificationItem) {
-  return gcashNotOnline(item.message.match(OLD_REPAIR_MESSAGE)?.[1] ?? item.message);
+  return pesoNotPhp(gcashNotOnline(item.message.match(OLD_REPAIR_MESSAGE)?.[1] ?? item.message));
 }
 
 /** An unread emergency is the one row that should stop the eye. Once read it quietens. */

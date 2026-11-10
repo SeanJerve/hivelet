@@ -333,5 +333,53 @@ check(`with ${PAST}'s December unpaid, ${PAST - 1} stays closed`,
   [r.status, PAST_YEAR.test(r.error ?? ''), writes], [409, true, []]);
 decemberPaid = true;
 
+// ------------------------------------------------- 4. a cancel and an assignment at once ----
+// Sean, 5 Nov 2026: once someone is picked to go, the tenant can no longer cancel. Assigning leaves
+// the status Submitted, and the cancel checked the technician on its read only, so an assignment
+// landing between the read and the write was cancelled over (final backend audit, 7 Nov 2026). The
+// stand-in applies an UPDATE only when every eq/is filter holds on the row as it is when it runs.
+const TENANT_USER = { profileId: '00000000-0000-4000-8000-0000000000e1', role: 'tenant', email: null };
+const TICKET_ID = '00000000-0000-4000-8000-000000000c01';
+let ticketRow;
+let assignBetween;     // the landlady's assignment, landing after the tenant's read
+function ticketAnswer(table, calls) {
+  if (table !== 'maintenance_tickets') return { data: has(calls, 'insert') ? { id: 'x' } : [], error: null };
+  if (has(calls, 'maybeSingle')) {
+    const read = { ...ticketRow };
+    if (assignBetween) ticketRow.assigned_technician = assignBetween;
+    return { data: read, error: null };
+  }
+  if (has(calls, 'update')) {
+    const holds = calls.every((c) =>
+      c[0] === 'eq' ? ticketRow[c[1][0]] === c[1][1] : c[0] === 'is' ? ticketRow[c[1][0]] === c[1][1] : true);
+    if (!holds) return { data: [], error: null };
+    Object.assign(ticketRow, arg(calls, 'update')[0]);
+    return { data: [{ id: ticketRow.id, status: ticketRow.status }], error: null };
+  }
+  return { data: [], error: null };     // the one-an-hour lookback: nothing cancelled lately
+}
+const cancelTicket = tenantRouter.stack
+  .find((l) => l.route?.path === '/tenant/tickets/:ticketId/cancel').route.stack.at(-1).handle;
+function sendCancel() {
+  return new Promise((resolve) => {
+    const res = { statusCode: 200, status(c) { this.statusCode = c; return this; }, json(p) { resolve({ status: this.statusCode, payload: p }); return this; } };
+    const req = { params: { ticketId: TICKET_ID }, query: {}, body: {}, headers: {}, ip: '127.0.0.1', socket: {}, user: TENANT_USER, get: () => undefined };
+    cancelTicket(req, res, (err) => resolve({ status: err?.statusCode ?? 500, error: String(err?.message ?? err) }));
+  });
+}
+answer = ticketAnswer;
+ticketRow = { id: TICKET_ID, title: 'Leak', status: 'Submitted', tenant_profile_id: TENANT_USER.profileId, assigned_technician: null };
+assignBetween = 'Mang Jose';
+r = await sendCancel();
+check('a technician picked while the tenant cancels: the cancel is refused, the ticket stays open',
+  [r.status, ticketRow.status, ticketRow.assigned_technician], [409, 'Submitted', 'Mang Jose']);
+ticketRow = { id: TICKET_ID, title: 'Leak', status: 'Submitted', tenant_profile_id: TENANT_USER.profileId, assigned_technician: null };
+assignBetween = null;
+r = await sendCancel();
+check('with nobody picked, the tenant still cancels', [r.status, ticketRow.status], [200, 'Closed']);
+ticketRow = { id: TICKET_ID, title: 'Leak', status: 'Submitted', tenant_profile_id: TENANT_USER.profileId, assigned_technician: 'Unassigned' };
+r = await sendCancel();
+check("'Unassigned' is nobody picked: the tenant still cancels", [r.status, ticketRow.status], [200, 'Closed']);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

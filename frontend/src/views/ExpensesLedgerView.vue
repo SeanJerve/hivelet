@@ -1114,8 +1114,10 @@ async function handleEditExpense() {
           <template v-else>area</template>
         </template>
         <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
-        <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
-          No expenses match the filters above.
+        <!-- The month tile's two empties beside it (audit, 7 Nov 2026): it said "No expenses match the
+             filters above", and the filters are below the card. -->
+        <p v-else-if="areaSplit.length === 0" :class="['text-sm', NOT_RECORDED_CLASS]">
+          {{ q.trim() ? 'Nothing matches' : NOT_RECORDED }}
         </p>
         <!-- Both views in one cell, the hidden one invisible but still taking its room, so the card is
              as tall as the taller view and switching moves nothing; they crossfade (Sean, 5 Nov 2026). -->
