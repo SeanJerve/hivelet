@@ -141,7 +141,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <WsModal v-if="open" :title="heading" size="sm" @close="close">
+  <!-- A pop-up in the middle of the screen, as Download is (Sean, 10 Nov 2026): one sentence and one
+       button do not need a sheet rising from the bottom edge. -->
+  <WsModal v-if="open" :title="heading" size="sm" decision @close="close">
     <!-- `aria-live`: the sheet opens before the listing answers, so the count can arrive while it is open. -->
     <p aria-live="polite" class="text-sm leading-relaxed text-ink-soft">{{ detail }}</p>
     <template #actions>
