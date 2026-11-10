@@ -128,7 +128,10 @@ Occupancy reads 33 of 33.
 ## The paper
 
 `FINAL/` is the manuscript. Never edit its numbered files; edit `FINAL/_src/` or
-`docs/FINAL MANUSCRIPT/` and run `node scripts/manuscript/build-final.mjs`. Open items are in
+`docs/FINAL MANUSCRIPT/` and run `node scripts/manuscript/build-final.mjs`. Start at
+`FINAL/00_READ_ME_FIRST.md`, which says what every file there is for. What still waits on a person
+is `FINAL/00_NEEDS_YOUR_ATTENTION.md`, and the defense's Form 2, item by item, is
+`FINAL/DEFENSE_CHECKLIST_STATUS.md`. Open items are in
 `FINAL/QUESTIONS_TO_FINALIZE.md` §1. P21 still needs the adviser to confirm how the paper words its
 disclosure that the data transfer used an AI coding assistant. The test-case sheets are the 30 Sep
 record, so leave their wording as it is; the 4 Nov re-run lists which labels have changed since.

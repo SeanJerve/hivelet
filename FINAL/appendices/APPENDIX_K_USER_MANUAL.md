@@ -46,9 +46,10 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
 - **The bill** to pay, named by its month (for example **"Bill to pay, rent for November"**): the rent, plus
   water at **₱200 per occupant per month**. *Tubig: ₱200 bawat nakatira bawat buwan.*
 - The bill card shows only while something is to pay. Once you are settled the page is the **Payment record** alone. Only receipts the landlady has **verified** count, and a GCash payment you sent shows as **waiting** until she verifies it.
-- **Record** and **History**, two tabs. The record is one row per month: a receipt
-  the landlady verified, or **Not recorded** for a month with no payment recorded yet. The history is
-  every transaction, a GCash payment that was not accepted or is still waiting included. **"Not recorded"** does not mean you owe that month: the landlady may not have recorded your payment yet. Search it, or pick another year or order in the
+- **History** and **Record**, two tabs, History first. The history is every transaction, a GCash
+  payment that was not accepted or is still waiting included, and a payment you sent reads **Sent**
+  with its date. The record is one row per month: a receipt the landlady verified, or **Not recorded**
+  for a month with no payment recorded yet. **"Not recorded"** does not mean you owe that month: the landlady may not have recorded your payment yet. Search it, or pick another year or order in the
   dropdowns above it (on a phone, tap **Filters** first). The list changes as soon as you pick.
 - **The deposit** held for your tenancy is on your Overview, in the card for your unit.
   *Nasa Overview ang deposit, sa card ng inyong unit.*
@@ -62,12 +63,13 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
 2. **Add a photo** if you can, as a **JPG or PNG** (a phone camera's photos are). It is made smaller
    before sending.
 3. Press **Send request**. It goes straight to the landlady and appears in **Your requests**.
-4. Open a request to follow it and to **add a note**. You get a notification when it is done.
+4. Open a request to follow it through its three steps, **Submitted**, **In progress** and **Done**,
+   and to **add a note**. You get a notification when it is done.
    The **Show** dropdown above your requests shows only **Open** or **Done** ones (on a phone, under
    **Filters**).
 5. **Changed your mind?** Open the request and press **Cancel request** while it is still
    **Submitted**. You may give a reason. You can cancel one request an hour, and not once the landlady
-   has started on it; send her a note instead. A cancelled request stays in your list, marked
+   has sent someone or started on it. Send her a note instead. A cancelled request stays in your list, marked
    **Cancelled**. *Puwedeng i-cancel habang hindi pa sinisimulan ng landlady.*
 
 ### 5. My details / Aking detalye
