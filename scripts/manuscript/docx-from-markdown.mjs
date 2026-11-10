@@ -1,5 +1,5 @@
 /**
- * Markdown to Word, in the manuscript's format: the one used by `build-chapter-4-docx.mjs` and by
+ * Markdown to Word, in the manuscript's format, set by
  * the team's proposal (read from "Proposal Checkpoint.docx" on 13 October 2026): US Letter,
  * margins 1.5 in left and 1 in elsewhere, Arial 12, justified, double-spaced, 0.5 in first-line
  * indent, chapter titles 14 pt bold and centered, captions centered above the exhibit.

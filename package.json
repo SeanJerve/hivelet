@@ -38,7 +38,7 @@
     "check:liveness": "cd frontend && npm run check:liveness",
     "contract": "cd frontend && npm run contract",
     "measure": "cd backend && npm run measure",
-    "build:docx": "node scripts/build-chapter-4-docx.mjs"
+    "build:docx": "node scripts/manuscript/build-manuscript-docx.mjs"
   },
   "keywords": [
     "hivelet",

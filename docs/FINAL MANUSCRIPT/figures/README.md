@@ -1,7 +1,7 @@
 # Chapter 4 figures
 
-Placed in `CHAPTER_4_RESULTS_AND_DISCUSSION.md` and embedded in its `.docx` by
-`scripts/build-chapter-4-docx.mjs`. Two kinds: diagrams drawn from the system (Figures 4 to 9) and
+Placed in `CHAPTER_4_RESULTS_AND_DISCUSSION.md` and embedded in the full manuscript's Word file by
+`scripts/manuscript/build-manuscript-docx.mjs`. Two kinds: diagrams drawn from the system (Figures 4 to 9) and
 screenshots of it (Figures 10 to 14).
 
 ## Diagrams (Figures 4 to 9)

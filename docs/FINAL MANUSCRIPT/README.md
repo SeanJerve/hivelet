@@ -9,7 +9,7 @@ question lists, the testing-day forms, the table numbering map, the audits) were
 | File | Becomes |
 | :--- | :--- |
 | `ABSTRACT.md` | `FINAL/01_ABSTRACT.md` |
-| `CHAPTER_4_RESULTS_AND_DISCUSSION.md` | `FINAL/05_CHAPTER_4_RESULTS_AND_DISCUSSION.md` (also built to `.docx` by `node scripts/build-chapter-4-docx.mjs`) |
+| `CHAPTER_4_RESULTS_AND_DISCUSSION.md` | `FINAL/05_CHAPTER_4_RESULTS_AND_DISCUSSION.md`. The only Word file is the whole paper, `FINAL/CLAUDE MANUSCRIPT/CLAUDE MANUSCRIPT.docx` (`npm run build:docx`). The separate Chapter 4 Word file was removed on 10 Nov 2026: it had not been rebuilt since 13 October |
 | `CHAPTER_5_SUMMARY_CONCLUSIONS_RECOMMENDATIONS.md` | `FINAL/06_CHAPTER_5_SUMMARY_CONCLUSIONS_AND_RECOMMENDATIONS.md` |
 | `USER_MANUAL_APPENDIX_K.md` | Appendix K |
 | `TESTING_DAY_TEST_CASES.md` | Appendix L |
