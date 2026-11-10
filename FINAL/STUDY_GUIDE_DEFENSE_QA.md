@@ -14,7 +14,7 @@ feature is in the code), and `STUDY_GUIDE_REFERENCES.md` (every source, and what
 ## How to answer any question
 
 1. **Answer first, in one sentence.** "Yes, a tenant sees only their own records."
-2. **Then the evidence, with one number.** "The server checks every one of the 58 administrator and tenant routes against one
+2. **Then the evidence, with one number.** "The server checks every one of the 60 administrator and tenant routes against one
    permission matrix, and the database itself refuses other rows."
 3. **Then where it is.** "Chapter 4, Section 4.2.6, Table 4-7."
 
@@ -285,7 +285,7 @@ checks matched the export to the database. *Sections 4.2.4 and 4.3.1.*
 ## 6. Security and privacy
 
 **Can a tenant see another tenant's records?**
-No. Every role's rights come from one permission matrix checked against all 58 administrator and tenant
+No. Every role's rights come from one permission matrix checked against all 60 administrator and tenant
 routes on every verification run, and row-level security is on for every table. In testing, another
 tenant's repair answered "not found". *Sections 4.2.6 and 4.4.4; Table 4-7.*
 

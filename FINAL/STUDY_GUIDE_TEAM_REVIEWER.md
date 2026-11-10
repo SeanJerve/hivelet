@@ -80,7 +80,7 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 | :--- | :--- |
 | Units | **33**, in five clusters: Boarding House 22, Back Apartment 5, Front Apartment 3, Penthouse 1, Linda 2 |
 | Occupied | **32 of 33** (the live site may say 33 during the demo: the test account is on PH) |
-| Floors | Three residential floors (11, 11 and 10 units) and the rooftop penthouse (1) |
+| Floors | Three residential floors (12, 11 and 9 units) and the rooftop penthouse (1) |
 | Address | 32 Sampaguita Street, Barangay 4 Sagpon, Old Albay District, Legazpi City |
 
 **Her records**
@@ -99,7 +99,7 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 | As worded / in part / interface only / not as worded | 25 / 15 / 1 / 3 (graded 16 Sep) |
 | Iterations | **3**, after a first build (24 Jul to 28 Aug): 12 to 14 Sep (22 errors corrected); 15 Sep to 31 Oct; from 1 Nov (interface redesign) |
 | Database | **21** tables and 37 foreign keys in the ERD; **24** tables and 238 columns in Appendix N (three are backups from corrections) |
-| Routes checked against the permission matrix | **58** (administrator and tenant, 4 Nov); **71** request handlers reviewed for security (2 Oct) |
+| Routes checked against the permission matrix | **60** (administrator and tenant, 10 Nov); **71** request handlers reviewed for security (2 Oct) |
 | App size when installed | about **1.2 MB** |
 | Water | **₱200** per occupant per month |
 

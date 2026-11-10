@@ -28,9 +28,10 @@ judged on two kinds of evidence, what was measured in testing and how the system
 
 The Fe Galang Da Silva Boarding House has 33 rentable units in five clusters: the Boarding House
 (22 units), the Back Apartment (5), the Front Apartment (3), the Penthouse (1) and Linda (2), on three
-residential floors and a rooftop penthouse level (11, 11, 10 and 1 units). At the time of writing, 32
-of the 33 units are occupied. The owner confirmed these figures on 13 September 2026, and they are
-checked against the live records on every verification run.
+residential floors and a rooftop penthouse level (12, 11, 9 and 1 units). At the time of writing, 32
+of the 33 units are let to the owner's tenants, and the Penthouse holds the team's test tenant until
+after the defense. The owner confirmed the number of units on 13 September 2026, and it is checked
+against the live records on every verification run.
 
 ### 4.1.1 Existing Practices and Identified Problems
 
@@ -94,9 +95,9 @@ each was met.
 | NFR-001 | The system shall provide the required business functions accurately | Sections 4.3.1 to 4.3.4; Section 4.4.3 |
 | NFR-002 | The system shall be understandable to a non-technical administrator | Section 4.3.7; Section 4.4.3 (Usability) |
 | NFR-003 | The system shall protect personal and financial information | Section 4.2.6; Section 4.4.4 |
-| NFR-004 | Common operations should respond efficiently under the expected workload | Tables 11 and 11B |
+| NFR-004 | Common operations should respond efficiently under the expected workload | Table 11; Appendix M, Tables M-25 and M-31 |
 | NFR-005 | The system shall function on modern desktop and mobile browsers | Table 24; Section 4.4.3 (Compatibility) |
-| NFR-006 | The system shall preserve data consistency and avoid silent data loss | Sections 4.3.1, 4.3.3 and 4.3.6 (Table 11F) |
+| NFR-006 | The system shall preserve data consistency and avoid silent data loss | Sections 4.3.1, 4.3.3 and 4.3.6 (Appendix M, Table M-26) |
 | NFR-007 | The codebase shall use a modular, documented, maintainable architecture | Section 4.4.3 (Maintainability): partly met |
 | NFR-008 | The system shall be deployable to a hosting environment the team can maintain | Section 4.2.1; Table 24 |
 | NFR-009 | Important financial and administrative changes shall be traceable | Section 4.2.6 (audit trail) |
@@ -138,7 +139,8 @@ evaluation. The third (from 1 November) redesigned the look of the screens and j
 inquiry pages into one screen. It added no module and removed none. It added two rules: a record
 dated in a closed year can no longer be recorded, changed or deleted, and a tenant can no longer
 cancel a repair once someone is sent. A rerun of all 114 test cases on 4 November found none
-failing, and the automated checks passed after every later change, so the results of the second
+failing. Of the 114, 77 passed, 21 of them with wording the redesign had changed, and 37 that need a
+person were left for one. The automated checks passed after every later change, so the results of the second
 iteration stand. Appendix M, Table M-19, sets out what each iteration did in each phase
 of Section 3.2. Each was tested and reviewed by the means available to it; the formal evaluation
 against ISO/IEC 25010 was carried out in the second, because Section 3.3 places it in actual
@@ -204,7 +206,8 @@ the owner kept them. Several rules live in the database itself, so no screen or 
 them: one unit cannot have two active tenancies, one invoice number cannot be used twice for the same
 unit and month, a gateway reference cannot be recorded twice, and the 50% Share and the remitted
 amount are computed columns. Table 7A is an extract of the data dictionary for the table the owner
-reads most; the complete dictionary, every column of all 24 tables, is in Appendix N.
+reads most. The complete dictionary, every column of all 24 tables, is in Appendix N. It holds the 21
+drawn in Figure 9 and three that keep backups made before corrections to the data.
 
 *Figure 9. Entity-relationship diagram.*
 
@@ -274,7 +277,7 @@ is checked on every verification run against all 33 units.
 
 Figure 12 presents Monthly Income. The owner records a cash payment with the number of the
 invoice she issued, or with none, since not every payment has one; the system never makes up an
-invoice number, and it warns her if the same tenant already has a payment for that month. The receipt
+invoice number, and it warns her if the unit already has a payment recorded for that period. The receipt
 is filed under the month the rent is for, not the day it was paid, and both the income and the
 expense records keep her workbook's layout and download as Excel files in it. Online payments go through Adyen with GCash, in Adyen's test environment, where they take no
 real money: a payment made this way enters **Pending Verification** and changes nothing on the tenant's bill until
@@ -311,7 +314,7 @@ the same amount.
 ### 4.2.5 Maintenance Ticketing and Notification Module
 
 Figure 13 presents the repairs board. A tenant submits a request with a title, description and
-priority, follows it through to completion, and may cancel it before work starts. The owner can also
+priority, follows it through to completion, and may cancel it until someone is sent to do the work. The owner can also
 log a repair she is told about in person, including one for an empty unit. Only the owner closes a
 request, and the tenant is notified when it is done. In-app notifications also tell a tenant when a
 payment is verified or declined, and the owner when a payment, inquiry or comment arrives; opening one
@@ -328,8 +331,8 @@ to closing, where before it left no record (Figure 4).
 
 The system has the three kinds of user designed in Section 3.2.2, the public, tenants and the
 administrator, plus a record of each visitor who sends an inquiry (a *prospect*), who holds the
-public's rights. Every role's rights come from one permission matrix, against which each of the 58
-administrator and tenant routes (4 November 2026) is checked on every verification run, and row-level security is on
+public's rights. Every role's rights come from one permission matrix, against which each of the 60
+administrator and tenant routes (10 November 2026) is checked on every verification run, and row-level security is on
 for every table. Table 7C sets out which role may use which function.
 
 **Table 7C.** Role and privilege matrix
@@ -386,7 +389,7 @@ The three qualities Objective 3 names are characteristics of ISO/IEC 25010:2011:
 **Functional Suitability**, responsiveness the time behavior of **Performance Efficiency**, and
 operational performance its capacity and **Reliability**. A test written for one quality often
 measures others, so each test was assigned in advance to the sub-characteristics it measures
-(Chapter 3, Table 4B); Appendix M, Table 7D lists them by test activity. The
+(Chapter 3, Table 4B); Appendix M, Table M-23 lists them by test activity. The
 measures are brought together by characteristic in Section 4.4.
 
 ### 4.3.1 Automated Verification
@@ -464,8 +467,8 @@ it, so digitizing alone did not make the records agree.
 
 ### 4.3.4 Functional Walkthrough Testing
 
-A 26-step walkthrough, 30 rows counting its sub-steps, exercises every function that writes data
-once, on the one unoccupied unit so that no real record is touched. The owner performed it herself on
+A 26-step walkthrough, 30 rows counting its sub-steps, exercised every function that writes data
+once, on the one unit then unoccupied, so that no real record was touched. The owner performed it herself on
 30 September 2026 on her laptop, signed in to her own account, with a team member reading each step;
 the full results are in Appendix M, Table M-1. Of the 30 rows, 24 passed the first time, 1 failed and
 5 were not performed as written. Every function a tenant uses passed, as did onboarding, the duplicate
@@ -521,7 +524,7 @@ offline; on a slow connection a returning visitor saw the units after 0.3 second
 a load test a script played 12 simultaneous users on the public pages and 6 on the owner's records,
 each pausing between requests as a person reading does: none of the 1,085 and 285 requests failed.
 These were simulated users, not people (the owner and tenants together are reported in Section
-4.3.7). Every result is in Appendix M, Tables 11A and 11B.
+4.3.7). Every result is in Appendix M, Tables M-24 and M-25.
 
 The application opens without a connection and says plainly what it cannot do, and under loads
 several times the property's own no request failed and nineteen in twenty were answered in under a
@@ -538,7 +541,7 @@ saved. This was tested by sending the same request several times in the same ins
 reproduces a double click, a retry after a timeout, or two people pressing Save together, with closer timing than people can produce by hand. Before the change, the same receipt sent twice
 or five times at once was saved every time, and two GCash checkouts could open on one bill; after it,
 one was saved and every other refused, and a checkout abandoned for more than 15 minutes no longer
-held the bill (Appendix M, Table 11F).
+held the bill (Appendix M, Table M-26).
 
 Neither fault showed an error, and neither could be fixed in the program alone, since a check
 followed by a save can always be outrun. Each fix is a rule in the database, which refuses the second
@@ -586,15 +589,16 @@ once were not performed, because only two attended together. In the session in w
 two tenants used the system at the same time, every screen loaded, each tenant saw only their own
 unit, the owner's full year of Monthly Income opened in about three seconds, and no session
 affected another (Appendix M, Table M-22). On two phones the offline behavior
-matched Appendix M, Table 11A, except that the Android phone showed the "cannot tell whether it was saved" message
+matched Appendix M, Table M-24, except that the Android phone showed the "cannot tell whether it was saved" message
 after 60 to 80 seconds instead of 45; corrected on 1 October, it was on time when re-tested on that
 phone on 13 October 2026 (Table 23A).
 
 **Second round.** Between 31 October and 10 November 2026, on the redesigned system of Iteration 3,
-ten tenants and four prospective tenants did the same tasks (Appendix M, Table M-30).
+ten tenants and four prospective tenants did the tasks set for them, the tenants the same tasks as
+in Table 11C (Appendix M, Table M-30).
 Every task was completed. The tenants did 151 of their 160 attempts without help (94 percent), and
 the prospective tenants 31 of 32 (97 percent). As in the first round, help was needed mostly at the
-first sign-in, where five of twenty attempts needed a hint, most often after a character on the
+first sign-in, where five of twenty attempts needed help, most often after a character on the
 starting-password slip was misread, and in finding the browser's address bar when asked to type in
 an owner's page. Time on task was not recorded reliably in this round, so no times are reported
 for it.
@@ -635,10 +639,10 @@ evaluators rated Maintainability, the group with the background to judge it.
 
 | Step | What it required | How it was carried out |
 | :--- | :--- | :--- |
-| 1. Establish the evaluation requirements | The purpose, the product, the quality model and who judges it | Objective 4; the live system at its public address, and for four technical evaluators a demonstration copy of it with sample data; ISO/IEC 25010:2011, eight characteristics; the owner, tenants and technical evaluators (Section 3.3) |
-| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Table 7D); survey items assigned to sub-characteristics (Chapter 3, Table 4B); criteria: Chapter 3's Table 4A for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
-| 3. Design the evaluation | The activities, their order and schedule | Measurements on 29 September 2026; the walkthrough and acceptance test on 30 September; the technical evaluators' review on 3 October; four further technical evaluators on 15 to 18 October; the survey after each group's use of the system |
-| 4. Execute the evaluation | Take the measures and apply the criteria | Section 4.3 (measured) and the survey (rated; Appendix M, Tables M-2 to M-17) |
+| 1. Establish the evaluation requirements | The purpose, the product, the quality model and who judges it | Objective 4; the live system at its public address, and for four technical evaluators a demonstration copy of it with sample data; ISO/IEC 25010:2011, eight characteristics; the owner, tenants, prospective tenants and technical evaluators (Section 3.3) |
+| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Appendix M, Table M-23); survey items assigned to sub-characteristics (Chapter 3, Table 4B); criteria: Chapter 3's Table 4A for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
+| 3. Design the evaluation | The activities, their order and schedule | Measurements on 29 September 2026; the walkthrough and acceptance test on 30 September; the technical evaluators' review on 3 October; four further technical evaluators on 15 to 18 October; the survey after each group's use of the system, and a second round of users, with their tasks and the same survey, from 31 October to 10 November |
+| 4. Execute the evaluation | Take the measures and apply the criteria | Section 4.3 (measured) and the survey (rated; Appendix M, Tables M-2 to M-17, and for the second round Tables M-28 to M-30) |
 | 5. Conclude the evaluation | Review the results, report them, and act on them | Tables 22 and 22A, and the changes made in response (Table 23) |
 
 ISO/IEC 25010 was revised in 2023, renaming Usability as *Interaction Capability* and Portability as
@@ -670,7 +674,8 @@ Table 12 shows the respondents by group, and Table 12A how many forms were given
 | Prospective tenants | 1 | 1 | 1 | 100% |
 | **Total** | **10** | **10** | **10** | **100%** |
 
-Ten people answered, each after using the system and giving consent: the prospective tenant and the
+Ten people answered, each after using the system and giving consent, the owner and the tenants on a
+signed form and the others through the questionnaire's privacy notice: the prospective tenant and the
 three tenants on 30 September 2026, after their tasks in Section 4.3.7, the owner that night after
 her walkthrough, one technical evaluator on 4 October, the day after the evaluators' review, and
 four more technical evaluators, on 15 and 16 October and two on 18 October. Those four reviewed a
@@ -681,9 +686,10 @@ groups have one respondent each, so for those groups a mean is one person's rati
 describe how these ten people rated the system, not a sample from which a wider population can be
 inferred.
 
-In the second round, sixteen more answered the same questionnaire after their tasks, between 31
-October and 10 November 2026: eleven tenants, four prospective tenants and the landlady again (Appendix M, Table M-28). With them,
-26 answers were received in all. The second round had no technical evaluators.
+In the second round, sixteen answers to the same questionnaire were received after use of the system,
+between 31 October and 10 November 2026: from eleven tenants, four prospective tenants and the owner,
+who answered again (Appendix M, Table M-28). With them, 26 answers were received in all. The second
+round had no technical evaluators.
 
 ### 4.4.2 Interpretation of Scores
 
@@ -734,11 +740,11 @@ dormitory system rated by the same kinds of respondents, tenants, administrators
 here, each rating is also read beside the measured evidence for its characteristic (Section 4.4.5).
 
 The second round, sixteen answers on the redesigned system of Iteration 3, rated it **4.82
-overall**, with every characteristic again Very High Quality. Across both rounds, 26 answers, the
-overall is **4.61** (Appendix M, Table M-29). Usability, the lowest-rated characteristic the
-evaluators rated in the first round at 4.42, was 4.78 in the second, after the evaluators' changes and
-the redesign. The second round had no technical evaluators, so Maintainability rests on the first
-round's five.
+overall**, with each of the seven characteristics it rated again Very High Quality. Across both
+rounds, 26 answers, the overall is **4.61** (Appendix M, Table M-29). Usability, rated 4.42 in the
+first round and the lowest of the characteristics all four groups rated, was 4.78 in the second,
+after the evaluators' changes and the redesign. The second round had no technical evaluators, so
+Maintainability rests on the first round's five, and its Security on the owner's second answer alone.
 
 **Portability** was rated highest (4.86), as one code base installed on an Android phone and an
 iPhone without an app store. **Functional Suitability** followed (4.79): every feature the objective
@@ -801,7 +807,7 @@ about them.
 | Usability | 6 | 5 | 4 | 91 percent of tasks without help; 0 accessibility violations in 76 scans | 4.42 |
 | Reliability | 4 | 3 | 4 | No critical defect; the two offline defects found on real devices, a ₱0 shown for a figure that could not load and a late message, both passed on re-test, 13 October | 4.61 |
 | Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | 4.68 |
-| Maintainability | 5 | 4 | 4 | 20 of 20 suites pass without writing to the records; every change a numbered migration; but 154 of 204 database calls inside the request handlers | 4.32 |
+| Maintainability | 5 | 4 | 4 | 20 of 20 suites passed without writing to the records; every change a numbered migration; but 154 of 204 database calls inside the request handlers | 4.32 |
 | Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | 4.86 |
 | **All** | **31** | **27** | **25** | | **4.59** |
 
@@ -812,7 +818,8 @@ use, which ISO/IEC 25010:2011 defines as the quality experienced by users in the
 measured by the acceptance test of Section 4.3.7 in the manner of ISO/IEC 25022 (Appendix M, Table
 M-20). For effectiveness, all 34 attempted tasks were completed, 31 of them without help. For
 efficiency, the median was 60 seconds a task with 0.2 wrong turns. For context coverage, the system
-was used on the owner's laptop, an Android phone and an iPhone.
+was used on the owner's laptop, an Android phone and an iPhone. In the second round every task was
+again completed, and time on task was not recorded (Appendix M, Table M-30).
 
 ### 4.4.6 Optimization in Response to the Evaluation
 
@@ -888,8 +895,8 @@ code branch. The team gives the system to the owner free, with no subscription t
 | 1. Environment preparation | Hosting, database and gateway set up; security settings applied | Done |
 | 2. Record transfer | The owner's workbook transferred: 937 income rows and 1,327 expense allocations | Done |
 | 3. Pilot use | The system used alongside the owner's existing records; differences investigated | In progress |
-| 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | Done: every tenant account prepared with its own starting password on 29 September 2026; the owner guided through the system, and the owner and three tenants using it on their own accounts, on 30 September 2026 (Section 4.3.7); the first change taken from the owner's own practice, acknowledgement receipts for payments with no invoice number, made on 1 October 2026 |
-| 5. Full transition | The system becomes the owner's main record once both records agree | Not yet: as of 13 October 2026 the system has not become the owner's main record and runs beside her own records |
+| 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | Done: every tenant account prepared with its own starting password on 29 September 2026; the owner guided through the system, and the owner and three tenants using it on their own accounts, on 30 September 2026 (Section 4.3.7); the first change taken from the owner's own practice, acknowledgement receipts for payments with no invoice number, made on 1 October 2026, and ten tenants and four prospective tenants used it in the second round, 31 October to 10 November 2026 (Section 4.3.7) |
+| 5. Full transition | The system becomes the owner's main record once both records agree | Not yet: as of 10 November 2026 the system has not become the owner's main record and runs beside her own records. Its live records hold no receipt yet for October or November 2026 |
 
 Three risks are managed deliberately:
 
