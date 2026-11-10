@@ -1,0 +1,3 @@
+The consultation record signed by Sir Jayvee for each session (he is both advisers, so one record serves items 16 and 17)
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

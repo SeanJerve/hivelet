@@ -2,11 +2,12 @@ Form 2, item 17: Consultation record, Programming Adviser
 
 What the form asks: The consultation record with the Programming Adviser, with the signed sessions the FIC sets.
 Checked or signed by: FIC
-Status on 10 November 2026: MISSING
+Status on 10 November 2026: PARTLY
 
 Here:
+  - Consultation record, Sir Jayvee (to print and sign).docx
 
 Still needed (only a person can supply these):
-  - The signed consultation record
+  - The consultation record signed by Sir Jayvee for each session (the same record as item 16)
 
 Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

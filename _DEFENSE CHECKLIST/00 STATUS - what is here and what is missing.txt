@@ -2,7 +2,7 @@ DEFENSE CHECKLIST: Hivelet, Fe Galang Da Silva Boarding House
 Status on 10 November 2026. One folder per item of Form 2 (Pre-Defense Clearance Checklist), numbered as
 the form numbers them, then the Proponent's Checklist items Form 2 does not cover.
 
-READY 10   PARTLY 9   MISSING 8   CHECK 0   LATER 4
+READY 10   PARTLY 11   MISSING 6   CHECK 0   LATER 4
 
 READY    everything the item asks for is here
 PARTLY   the documents are here, and something only a person can supply is still needed
@@ -34,10 +34,10 @@ READY    Form 2 - 12 Context diagram
 READY    Form 2 - 13 Data flow diagrams, Gane and Sarson, to Level 2
 READY    Form 2 - 14 Use case diagram
 READY    Form 2 - 15 Entity-relationship diagram
-MISSING  Form 2 - 16 Consultation record, Content Adviser
-           still needed: The signed consultation record
-MISSING  Form 2 - 17 Consultation record, Programming Adviser
-           still needed: The signed consultation record
+PARTLY   Form 2 - 16 Consultation record, Content Adviser
+           still needed: The consultation record signed by Sir Jayvee for each session (he is both advisers, so one record serves items 16 and 17)
+PARTLY   Form 2 - 17 Consultation record, Programming Adviser
+           still needed: The consultation record signed by Sir Jayvee for each session (the same record as item 16)
 PARTLY   Form 2 - 18 Form 3A, signed by the Content Adviser
            still needed: Form 3A, signed (original). All 16 items are met
 PARTLY   Form 2 - 19 Form 3B, signed by the Programming Adviser
