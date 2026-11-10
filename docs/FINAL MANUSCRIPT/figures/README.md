@@ -30,7 +30,7 @@ cannot tell whether a label collides with a line.
 
 ## Screenshots (Figures 10 to 14)
 
-Made on 5 October 2026 from `main` as deployed that day, light theme, by headless Chrome
+Retaken on 10 November 2026, after the redesign of Iteration 3 (first made 5 October), from `main` as it stood that day, light theme, by headless Chrome
 (`chrome --headless=new --screenshot`, a throwaway profile), at twice the screen's resolution
 (three times for the phone). Numbered 4 to 8 until the diagrams were added the same night.
 
@@ -45,8 +45,8 @@ Made on 5 October 2026 from `main` as deployed that day, light theme, by headles
 
 **Sample data, and why.** The signed-in screens were drawn by the real application with every
 `/api` answer supplied by a local page, so no tenant's name or payment record appears and nothing
-was signed in to or written on the live site. The 33 units, rates and status are the live site's
-public list on 5 October 2026; every tenant is "Sample Tenant" plus the unit code; payments are
+was signed in to or written on the live site. The 33 units, kinds, rates and status are the live site's
+public list on 10 November 2026; every tenant is "Sample Tenant" plus the unit code; payments are
 each unit's published rate plus ₱200 water per occupant, January to October 2026; expenses,
 repairs and inquiries are invented. The administrator is shown as Michelle. Chapter 4, Section 4.2,
 says so in one sentence at the start of Section 4.2. Keep that sentence with the figures.

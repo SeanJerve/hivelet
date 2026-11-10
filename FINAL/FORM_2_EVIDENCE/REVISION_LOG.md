@@ -45,4 +45,3 @@ git history of the repository holds every individual change with its reason, in 
 
 | What | Why it is open | Who |
 | :--- | :--- | :--- |
-| New screenshots of the screens (P16) | Figures 4-7 to 4-11 show the design before Iteration 3 | The team |

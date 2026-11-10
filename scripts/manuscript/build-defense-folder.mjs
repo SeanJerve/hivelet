@@ -36,7 +36,7 @@ const form = (name) => cp(`${FORMS}/${name}`, `${name.replace(/\.(docx|xlsx)$/, 
 const ITEMS = [
   { no: '01', name: 'Manuscript, Chapters I to V', asks: 'Chapters I to V complete and on the Form 1 template, with the front matter, references and annexes.', who: 'Content Adviser',
     files: [cp('FINAL/CLAUDE MANUSCRIPT/CLAUDE MANUSCRIPT.docx', 'Hivelet manuscript (Abstract, Chapters 1 to 5, References, Appendices A to R).docx')],
-    needs: ['The front matter in the team\'s Word file: title page, approval sheet, defense date and room, each member\'s Curriculum Vitae (P3)', 'The Acknowledgement (P4)', 'Scans for Appendices A (letter of request) and B (adviser appointments) (P10)', 'New screenshots for Figures 4-7 to 4-11 (P16)', 'A check of the layout against the Form 1 template'] },
+    needs: ['The front matter in the team\'s Word file: title page, approval sheet, defense date and room, each member\'s Curriculum Vitae (P3)', 'The Acknowledgement (P4)', 'Scans for Appendices A (letter of request) and B (adviser appointments) (P10)', 'A check of the layout against the Form 1 template'] },
   { no: '02', name: 'Content Adviser comments addressed', asks: 'All comments of the Content Adviser on the latest draft addressed.', who: 'Content Adviser',
     needs: ['The consultation record with the Content Adviser'] },
   { no: '03', name: 'Literature Map', asks: 'The Literature Map required by Form 3A, prepared and attached.', who: 'Content Adviser',

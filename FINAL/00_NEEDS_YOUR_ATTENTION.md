@@ -35,7 +35,6 @@ and the deployment report (item 10), the last two in `FORM_2_EVIDENCE/`.
 
 | What | Who |
 | :--- | :--- |
-| **New screenshots** of the redesigned screens for Figures 4-7 to 4-11, with sample tenants only, never a real name or payment (P16) | Team |
 | **The front matter**: title page, approval sheet, defense date and room, each member's Curriculum Vitae (P3) | Team |
 | **The Acknowledgement**: who to thank. Claude drafts it once given the names (P4) | Team |
 | **Scans** of the signed letter of request and the adviser appointment papers, for Appendices A and B (P10) | Team |

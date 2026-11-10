@@ -110,8 +110,8 @@ current tenancy, so the system shows those dates as not recorded (Section 4.2.2)
 
 *Answers Objective 2. Each feature the objective names has its own subsection.*
 
-Figures 4-2 to 4-6 model the system as built, and Figures 4-7 to 4-11 show its screens as they stood on 5
-October 2026. The units, rates and statuses in Figures 4-7 and 4-8 are the property's own; the names,
+Figures 4-2 to 4-6 model the system as built, and Figures 4-7 to 4-11 show its screens as they stood on 10
+November 2026, after the redesign of Iteration 3. The units, rates and statuses in Figures 4-7 and 4-8 are the property's own; the names,
 payments, expenses and repair requests in Figures 4-7, 4-9, 4-10 and 4-11 are sample records, so that no
 real tenant's name or payment appears in any figure.
 
@@ -260,7 +260,7 @@ is checked on every verification run against all 33 units.
 
 ### 4.2.4 Financial Tracking and Payment Recording Module
 
-Figure 4-9 presents the Monthly Income records. The owner records a cash payment with the number of the
+Figure 4-9 presents Monthly Income. The owner records a cash payment with the number of the
 invoice she issued, or with none, since not every payment has one; the system never makes up an
 invoice number, and it warns her if the same tenant already has a payment for that month. The receipt
 is filed under the month the rent is for, not the day it was paid, and both the income and the
@@ -273,9 +273,9 @@ never as owed, because the records alone cannot tell an unpaid month from one no
 Electricity is outside the system: each unit has its own meter and the tenant pays the electric
 company directly.
 
-*Figure 4-9. The monthly income records.*
+*Figure 4-9. Monthly Income, with a GCash payment waiting to be verified.*
 
-![The Monthly Income Records](<../docs/FINAL MANUSCRIPT/figures/figure-12-monthly-income.png>)
+![Monthly Income](<../docs/FINAL MANUSCRIPT/figures/figure-12-monthly-income.png>)
 
 These results agree with Encarnacion et al. (2025) and Setty (2022), who found that one structured
 ledger improves oversight and reduces administrative errors, and add one observation: the
