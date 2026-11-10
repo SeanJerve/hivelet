@@ -1,0 +1,3 @@
+The consultation record with the Content Adviser
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

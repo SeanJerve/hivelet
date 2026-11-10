@@ -1,0 +1,12 @@
+Form 2, item 20: Mock defense evaluation
+
+What the form asks: The mock or practice defense held and evaluated.
+Checked or signed by: FIC
+Status on 10 November 2026: MISSING
+
+Here:
+
+Still needed (only a person can supply these):
+  - The mock defense evaluation
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

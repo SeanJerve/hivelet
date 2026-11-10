@@ -1,0 +1,3 @@
+The signed consultation record
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

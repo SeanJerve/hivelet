@@ -1,0 +1,3 @@
+A backup copy of the system and the slides
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

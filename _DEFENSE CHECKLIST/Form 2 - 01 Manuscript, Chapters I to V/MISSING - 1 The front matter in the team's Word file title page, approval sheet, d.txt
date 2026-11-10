@@ -1,0 +1,3 @@
+The front matter in the team's Word file: title page, approval sheet, defense date and room, each member's Curriculum Vitae (P3)
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

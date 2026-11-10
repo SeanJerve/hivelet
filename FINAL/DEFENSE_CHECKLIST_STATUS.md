@@ -6,8 +6,9 @@ Clearance Checklist** (23 items, signed by the advisers and the Faculty-in-Charg
 the form asks for, what to attach, whether it is ready, and who acts. "Team" means it needs a person,
 a signature or a paper that cannot come from the repository.
 
-**Everything for the defense checklist, one folder per Form 2 item:** `_DEFENSE CHECKLIST (not in repo)/`
-in the hivelet folder, outside the code. Its `00 STATUS` file says which items are ready and which are
+**Everything for the defense checklist, one folder per Form 2 item:** `_DEFENSE CHECKLIST/` in the
+hivelet folder, outside the code, committed so both machines have it. **The repository is public until
+it is made private (P9): a signed scan put there is published by the next commit.** Its `00 STATUS` file says which items are ready and which are
 missing. Put each signed scan in its item's folder, then rebuild it with
 `node scripts/manuscript/build-defense-folder.mjs`, which never deletes a file the team put there.
 

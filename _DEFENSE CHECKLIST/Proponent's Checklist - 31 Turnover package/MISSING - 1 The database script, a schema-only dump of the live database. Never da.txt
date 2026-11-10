@@ -1,0 +1,3 @@
+The database script, a schema-only dump of the live database. Never database/FULL_DATABASE_SCHEMA.sql, which does not describe it (Sean)
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

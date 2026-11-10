@@ -1,0 +1,19 @@
+Form 2, item 13: Data flow diagrams, Gane and Sarson, to Level 2
+
+What the form asks: A Data Flow Diagram in Gane and Sarson notation, down to Level 2 (Form 3B annex).
+Checked or signed by: Programming Adviser
+Status on 10 November 2026: READY
+
+Here:
+  - Figure 4-4 and Appendix E - Level 1.png
+  - Appendix F - Level 2, all eight processes.docx
+  - Figure F-1 - Level 2, process 1.0.png
+  - Figure F-2 - Level 2, process 2.0.png
+  - Figure F-3 - Level 2, process 3.0.png
+  - Figure F-4 - Level 2, process 4.0.png
+  - Figure F-5 - Level 2, process 5.0.png
+  - Figure F-6 - Level 2, process 6.0.png
+  - Figure F-7 - Level 2, process 7.0.png
+  - Figure F-8 - Level 2, process 8.0.png
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

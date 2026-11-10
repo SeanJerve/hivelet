@@ -1,0 +1,10 @@
+Form 2, item 7: Revision log
+
+What the form asks: Revisions after testing documented, and the revision log up to date.
+Checked or signed by: Programming Adviser
+Status on 10 November 2026: READY
+
+Here:
+  - Revision log.docx
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

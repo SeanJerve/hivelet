@@ -1,0 +1,11 @@
+Form 2, item 6: Live demonstration
+
+What the form asks: All planned modules developed, integrated and working, shown live.
+Checked or signed by: Programming Adviser
+Status on 10 November 2026: READY
+
+Here:
+  - Demo script.docx
+  - The live system.txt
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

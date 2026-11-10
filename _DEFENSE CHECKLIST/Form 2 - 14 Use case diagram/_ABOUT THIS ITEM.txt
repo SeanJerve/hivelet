@@ -1,0 +1,10 @@
+Form 2, item 14: Use case diagram
+
+What the form asks: A Use Case Diagram of the actors, use cases and the system (Form 3B annex).
+Checked or signed by: Programming Adviser
+Status on 10 November 2026: READY
+
+Here:
+  - Figure 4-5 and Appendix G - Use case diagram.png
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

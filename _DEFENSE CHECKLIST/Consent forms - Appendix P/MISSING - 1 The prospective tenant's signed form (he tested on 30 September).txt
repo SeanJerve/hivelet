@@ -1,0 +1,3 @@
+The prospective tenant's signed form (he tested on 30 September)
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

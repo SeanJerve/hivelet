@@ -1,0 +1,13 @@
+Proponent's Checklist - 04 Annexes, UAT and acceptance
+
+What the form asks: The signed UAT Sign-off Form and the signed Client or End-User Acceptance Form or MOA in the annexes.
+Checked or signed by: Client
+Status on 10 November 2026: MISSING
+
+Here:
+
+Still needed (only a person can supply these):
+  - The signed UAT form (see Form 2 item 09)
+  - The acceptance form or MOA (see Form 2 item 10)
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

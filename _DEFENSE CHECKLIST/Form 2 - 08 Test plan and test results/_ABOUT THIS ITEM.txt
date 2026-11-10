@@ -1,0 +1,12 @@
+Form 2, item 8: Test plan and test results
+
+What the form asks: The test plan executed: at least 90% of cases pass, every critical defect logged and resolved.
+Checked or signed by: Programming Adviser
+Status on 10 November 2026: READY
+
+Here:
+  - Appendix L - Test cases and results (30 September 2026).docx
+  - Rerun of all 114 test cases (4 November 2026).docx
+  - Summary.txt
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

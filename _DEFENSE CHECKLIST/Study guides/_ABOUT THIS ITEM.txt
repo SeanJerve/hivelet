@@ -1,0 +1,18 @@
+Study guides
+
+What the form asks: Not a Form 2 item: the team's guides for studying the capstone and the defense.
+Checked or signed by: Team
+Status on 10 November 2026: READY
+
+Here:
+  - 0 How to study (start here).docx
+  - 1 Team reviewer, the whole capstone in one sitting.docx
+  - 2 Defense questions and answers.docx
+  - 3 Paper walkthrough.docx
+  - 4 Glossary.docx
+  - 5 References guide.docx
+  - 6 Code guide.docx
+  - 7 Frontend files.docx
+  - 8 Backend files.docx
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

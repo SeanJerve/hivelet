@@ -1,0 +1,3 @@
+The scan of the form signed by the owner (P1). She signs only if she agrees. Never sign it for her
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

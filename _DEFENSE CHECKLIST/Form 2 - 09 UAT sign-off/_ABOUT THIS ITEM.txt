@@ -1,0 +1,13 @@
+Form 2, item 9: UAT sign-off
+
+What the form asks: User Acceptance Testing done and signed off by the client.
+Checked or signed by: Programming Adviser
+Status on 10 November 2026: PARTLY
+
+Here:
+  - UAT sign-off form (blank, to print).docx
+
+Still needed (only a person can supply these):
+  - The scan of the form signed by the owner (P1). She signs only if she agrees. Never sign it for her
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

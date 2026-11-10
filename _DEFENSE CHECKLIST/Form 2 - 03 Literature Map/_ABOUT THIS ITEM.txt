@@ -1,0 +1,11 @@
+Form 2, item 3: Literature Map
+
+What the form asks: The Literature Map required by Form 3A, prepared and attached.
+Checked or signed by: Content Adviser
+Status on 10 November 2026: READY
+
+Here:
+  - Appendix R - Literature Map.docx
+  - Figure R-1 - Literature map.png
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

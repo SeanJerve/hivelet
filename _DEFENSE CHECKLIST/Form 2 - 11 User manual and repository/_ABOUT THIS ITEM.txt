@@ -1,0 +1,12 @@
+Form 2, item 11: User manual and repository
+
+What the form asks: The user manual complete, and the source code in version control, open to the Programming Adviser.
+Checked or signed by: Programming Adviser
+Status on 10 November 2026: READY
+
+Here:
+  - Appendix K - User manual.docx
+  - Tenant quick guide (open in a browser and print).html
+  - Repository.txt
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

@@ -1,0 +1,3 @@
+https://github.com/SeanJerve/hivelet
+
+If the repository is made private before the defense (P9), add the Programming Adviser as a collaborator, or this item fails.

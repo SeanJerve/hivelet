@@ -2,8 +2,9 @@
 
 **What is waiting on you is all in [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_YOUR_ATTENTION.md).** Start there.
 
-**Everything for the defense checklist, one folder per Form 2 item:** `_DEFENSE CHECKLIST (not in repo)/`
-in the hivelet folder, outside the code. Its `00 STATUS` file says which items are ready and which are
+**Everything for the defense checklist, one folder per Form 2 item:** `_DEFENSE CHECKLIST/` in the
+hivelet folder, outside the code, committed so both machines have it. **The repository is public until
+it is made private (P9): a signed scan put there is published by the next commit.** Its `00 STATUS` file says which items are ready and which are
 missing. Put each signed scan in its item's folder, then rebuild it with
 `node scripts/manuscript/build-defense-folder.mjs`, which never deletes a file the team put there.
 

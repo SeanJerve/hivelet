@@ -1,0 +1,1 @@
+82 of 83 test cases passed on 30 September 2026 (98.8%), above the 90% Form 2 asks for. No critical defect was found in any activity: 35 defects were found, 32 resolved and 3 accepted as low risk with the reason recorded (Chapter 4, Table 4-20). Table 4-12 gives the results by test level. On 4 November 2026 all 114 cases were run again and none failed.

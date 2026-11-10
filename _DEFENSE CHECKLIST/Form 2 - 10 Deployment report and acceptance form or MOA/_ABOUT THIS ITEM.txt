@@ -1,0 +1,13 @@
+Form 2, item 10: Deployment report and acceptance form or MOA
+
+What the form asks: Deployed or pilot-tested in its intended environment, with the client or end-user acceptance signed.
+Checked or signed by: Programming Adviser
+Status on 10 November 2026: PARTLY
+
+Here:
+  - Deployment report.docx
+
+Still needed (only a person can supply these):
+  - A Client or End-User Acceptance Form, or an MOA. None exists yet: ask the FIC whether the signed UAT form of item 09 serves
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

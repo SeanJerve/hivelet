@@ -7,24 +7,21 @@
 //   node scripts/manuscript/build-manuscript-docx.mjs    then the Word manuscript
 //   node scripts/manuscript/build-defense-folder.mjs     then this
 //
-// It writes to `_DEFENSE CHECKLIST (not in repo)/` in the main hivelet folder, beside the other
-// private folders, and git ignores it: it holds documents, not code, and the team adds signed scans
-// to it. Run from a worktree, it still writes there, from that worktree's files.
+// It writes to `_DEFENSE CHECKLIST/` at the top of the checkout it runs in, outside the code
+// folders. The folder is committed, so both machines have it (Sean, 10 Nov 2026). The repository is
+// public until P9 makes it private: a signed scan put here is published by the next commit.
 //
 // It never deletes a file it did not write. Each folder's `.generated.json` lists what this script
 // put there; anything else is the team's (a scan, a signed form) and is left alone and reported in
 // `00 STATUS`. Markdown documents are converted to Word so they print as they are.
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { Document, Packer } from 'docx';
 import { convert, PAGE, FONT, BODY, HEADING_STYLES, CAPTION_STYLES } from './docx-from-markdown.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const gitDir = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: repo }).toString().trim();
-const home = path.dirname(gitDir); // the main hivelet folder, also when run from a worktree
-const OUT = path.join(home, '_DEFENSE CHECKLIST (not in repo)');
+const OUT = path.join(repo, '_DEFENSE CHECKLIST');
 const FIG = 'docs/FINAL MANUSCRIPT/figures';
 const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Manila' });
 

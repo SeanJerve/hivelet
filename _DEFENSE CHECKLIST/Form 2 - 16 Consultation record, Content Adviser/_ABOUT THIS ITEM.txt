@@ -1,0 +1,12 @@
+Form 2, item 16: Consultation record, Content Adviser
+
+What the form asks: The consultation record with the Content Adviser, with the signed sessions the FIC sets.
+Checked or signed by: FIC
+Status on 10 November 2026: MISSING
+
+Here:
+
+Still needed (only a person can supply these):
+  - The signed consultation record
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

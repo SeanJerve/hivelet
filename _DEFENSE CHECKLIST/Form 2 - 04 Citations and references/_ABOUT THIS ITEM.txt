@@ -1,0 +1,13 @@
+Form 2, item 4: Citations and references
+
+What the form asks: Citations and the reference list in the style the Form 1 template prescribes.
+Checked or signed by: Content Adviser
+Status on 10 November 2026: PARTLY
+
+Here:
+  - References (APA 7, 35 entries).docx
+
+Still needed (only a person can supply these):
+  - A check of the reference style against the Form 1 template
+
+Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.
