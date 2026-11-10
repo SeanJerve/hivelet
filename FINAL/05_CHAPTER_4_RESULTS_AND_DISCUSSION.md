@@ -123,8 +123,11 @@ transferred into it. It was then developed in three Agile iterations (Section 3.
 and added automated checks. The second (15 September to 31 October) took the owner's answers, put the
 system in her and her tenants' hands, and refined it from their feedback, the testing and the
 evaluation. The third (from 1 November) redesigned the look of the screens and joined the sign-in and
-inquiry pages into one screen. It added no module and removed none, and the functions tested and
-evaluated work as they did, so the results of the second iteration stand. Appendix M, Table M-19, sets out what each iteration did in each phase
+inquiry pages into one screen. It added no module and removed none. It added two rules: a record
+dated in a closed year can no longer be recorded, changed or deleted, and a tenant can no longer
+cancel a repair once someone is sent. A rerun of all 114 test cases on 4 November found none
+failing, and the automated checks passed after every later change, so the results of the second
+iteration stand. Appendix M, Table M-19, sets out what each iteration did in each phase
 of Section 3.2. Each was tested and reviewed by the means available to it; the formal evaluation
 against ISO/IEC 25010 was carried out once, in the second, because Section 3.3 places it in actual
 use. Table 4-4 lists the technology used.

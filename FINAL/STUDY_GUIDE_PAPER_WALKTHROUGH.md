@@ -862,8 +862,10 @@ The section then has four labelled parts.
 - Iteration 2: **15 September to 31 October**, the owner's answers, real users, feedback, testing and
   evaluation.
 - Iteration 3: **from 1 November**, the interface redesign: a glass look in light and dark, and the
-  sign-in and inquiry pages joined in one screen. The functions tested and evaluated were not changed,
-  so the results of Iteration 2 stand.
+  sign-in and inquiry pages joined in one screen. No module was added or removed. Two rules were added
+  (a closed year's records cannot be changed, and a tenant cannot cancel a repair once someone is
+  sent). All 114 test cases were rerun on 4 November and none failed, so the results of Iteration 2
+  stand.
 - The formal ISO/IEC 25010 evaluation was done once, in Iteration 2.
 - The ERD (Figure 4-6), drawn from the database's own catalogue on **5 October 2026**: **21 tables**,
   each with a primary key, and **37 foreign keys**.

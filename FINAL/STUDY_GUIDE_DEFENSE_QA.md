@@ -152,8 +152,10 @@ redesign, from 1 November. *Section 4.2.1; Appendix M, Table M-19.*
 
 **Your evaluators rated an earlier design. Do the results still hold?**
 Yes. The evaluation was done in Iteration 2. Iteration 3 changed how the screens look and joined the
-sign-in and inquiry pages, and it did not change the functions we tested, so the functional,
-reliability, security and performance results stand. The ratings on how the interface looks were given
+sign-in and inquiry pages. It added no module and removed none. It added two rules: a closed year's
+records cannot be changed, and a tenant cannot cancel a repair once someone is sent. We reran all 114
+test cases on 4 November and none failed, and every automated check passed after each later change, so
+the functional, reliability, security and performance results stand. The ratings on how the interface looks were given
 on the design before the redesign, and the paper says so. *Section 4.2.1; Appendix M, Table M-19.*
 
 **Why no Figma or separate design tool?**
