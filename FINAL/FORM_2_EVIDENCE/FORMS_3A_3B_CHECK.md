@@ -1,6 +1,6 @@
 # Forms 3A and 3B, item by item
 
-Checked against the paper on 10 November 2026. Every item must be ticked before an adviser signs.
+Checked against the paper on 10 November 2026. All 16 items of Form 3A and all 6 of Form 3B are now met. Every item must be ticked before an adviser signs.
 **OK** means the paper meets it. **FIX** means it does not yet, with what to change.
 
 ## Form 3A, Content Adviser (16 items)
@@ -8,16 +8,16 @@ Checked against the paper on 10 November 2026. Every item must be ticked before 
 | No. | The form asks | Status | Where, or what to change |
 | :--- | :--- | :--- | :--- |
 | 1 | The title is concise and covers the study | OK | "Hivelet: A Web-Based Apartment Management System for the Fe Galang Da Silva Boarding House" |
-| 2 | The background runs global, national, regional, local (inverted pyramid) | **FIX** | 1.1 opens in general terms, then the Philippines, then Bicol and Ormoc studies. Add one global sentence with a source at the start, and name the local level (Legazpi City, this boarding house) before the gap |
-| 3 | The **last** paragraph or sentence of the background states the gap | **FIX** | The gap is in the second-to-last paragraph of 1.1, and the last one introduces Hivelet. Move the gap sentence to the end, or fold the Hivelet paragraph into 1.2 |
+| 2 | The background runs global, national, regional, local (inverted pyramid) | OK, fixed 10 Nov | 1.1 now runs around the world (Burke, Kotkar, Ullah), the Philippines (Mia, Magno, Pernate, Mangca), the Bicol Region (Pavia), then Legazpi City and this boarding house |
+| 3 | The **last** paragraph or sentence of the background states the gap | OK, fixed 10 Nov | The last sentence of 1.1 states the gap. The paragraph that introduced Hivelet is gone, since 1.2 introduces it |
 | 4 | The objectives are anchored on the gap | OK | 1.2's general objective restates the gap |
-| 5 | The specific objectives are SMART, with Bloom's verbs | **FIX** | The verbs (analyze, develop, test, evaluate) are Bloom's. Not time-bound: no objective says by when. Add the period, for example "from July to November 2026" |
+| 5 | The specific objectives are SMART, with Bloom's verbs | OK, fixed 10 Nov | The verbs (analyze, develop, test, evaluate) are Bloom's. 1.2 now gives the period: "from July to November 2026", as Appendix C's schedule runs |
 | 6 | No personal opinions, every claim cited or backed by evidence | OK | The build checks that every citation has a reference. The adviser reads for opinions |
 | 7 | The significance names the beneficiaries | OK | 1.3: the owner, the tenants, future researchers |
 | 8 | Scope and delimitations, with reasons for what is left out | OK | 1.4 |
 | 9 | Enough up-to-date literature, cited, anchored on a Literature Map | OK | Chapter 2. 22 of the 35 references are from 2021 to 2026. The map is Appendix R |
 | 10 | The concept of the study illustrates how it was done | OK | 2.3, Figure 2-2 |
-| 11 | Definition of terms: only operational or customized definitions | **CHECK** | 2.4 also defines general terms (Progressive Web Application, MIS, ISO/IEC 25010, Weighted Mean, Adyen, GCash). Keep each only if it says how the term is used in this study |
+| 11 | Definition of terms: only operational or customized definitions | OK, fixed 10 Nov | Seven textbook definitions in 2.4 now say how this study uses the term: Progressive Web Application, Centralized System, MIS, Booking Inquiry (which wrongly said the owner approves bookings), Cash Flow Monitoring, User Authentication and RBAC |
 | 12 | The method: data gathering, evaluation and data analysis, with their forms | OK | Chapter 3. The forms are Appendix J (questionnaire), L (test cases) and P (consent) |
 | 13 | Chapter 4's results come from the method and follow the objectives | OK | 4.1 to 4.4, one section per objective, and 4.5 the deployment plan |
 | 14 | The summary of findings summarizes Chapter 4 | OK | 5.1 |

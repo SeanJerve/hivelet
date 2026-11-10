@@ -40,8 +40,7 @@ MISSING  Form 2 - 16 Consultation record, Content Adviser
 MISSING  Form 2 - 17 Consultation record, Programming Adviser
            still needed: The signed consultation record
 PARTLY   Form 2 - 18 Form 3A, signed by the Content Adviser
-           still needed: Fix Form 3A items 2, 3 and 5 in Chapter 1 first, and check item 11 (see the check in this folder)
-           still needed: Form 3A, signed (original)
+           still needed: Form 3A, signed (original). All 16 items are met
 PARTLY   Form 2 - 19 Form 3B, signed by the Programming Adviser
            still needed: Form 3B, signed (original). All 6 items are met
 MISSING  Form 2 - 20 Mock defense evaluation

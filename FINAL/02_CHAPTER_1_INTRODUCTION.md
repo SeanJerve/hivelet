@@ -2,81 +2,61 @@
 
 ## 1.1 Background of the Study
 
-Administrative processes in apartment management typically involve tenant record keeping, financial
-tracking, and maintenance coordination, which become increasingly complex as the number of units
-increases (Burke, 2026). While web-based property management systems have been developed to support these functions,
-small enterprises adopt such tools slowly: in the Philippines, adoption by micro, small, and
-medium-sized enterprises is held back by limited infrastructure, technical capacity, and resources
-(Mia et al., 2024), and a small boarding house is such an enterprise.
+Around the world, administrative processes in apartment management involve tenant record keeping,
+financial tracking, and maintenance coordination, which become increasingly complex as the number of
+units increases (Burke, 2026). Property management and rental platforms aim to address these
+inefficiencies through centralized data storage and real-time processing (Kotkar et al., 2026), yet a
+review of 213 studies found that real estate as a whole still needs to improve its adoption of
+digital technologies and online platforms to move from traditional to smart practice (Ullah et al.,
+2018). Many of these systems are designed with assumptions aligned to large-scale or commercial
+property environments, such as stable infrastructure, structured workflows, and dedicated
+administrative personnel, which do not reflect the operational conditions of small-scale,
+resource-constrained boarding houses.
 
-In small-scale boarding house operations, administrative tasks are still managed using standalone
-spreadsheet files and manual documentation. In the boarding house studied, these records were kept
-on a USB flash drive, exposing them to risks in data integrity such
-as accidental deletion, file corruption, duplication, and lack of version control. In addition,
-tenant concerns and maintenance requests are often communicated through informal channels such as
-messaging applications or verbal reporting, resulting in untracked requests, delayed responses, and
-inconsistent follow-up.
-
-These conditions reflect fragmented administrative workflows, where records, communication, and
-transactions are managed across separate, non-integrated tools. Consequently, property owners may
-experience difficulties in maintaining accurate records, monitoring financial transactions, and
-ensuring timely resolution of tenant concerns. Existing property management and rental platforms aim to address such inefficiencies through centralized
-data storage and real-time processing (Kotkar et al., 2026), and a review of 213 studies found that
-real estate as a whole still needs to improve its adoption of digital technologies and online
-platforms to move from traditional to smart practice (Ullah et al., 2018). Many of these systems,
-however, are designed with assumptions aligned to large-scale or commercial property environments,
-such as stable infrastructure, structured workflows, and dedicated administrative personnel, which do
-not reflect the operational conditions of small-scale, resource-constrained boarding houses.
-
-In the Philippine context, these challenges are further reinforced by limited access to integrated
-digital tools and continued dependence on manual record-keeping among small enterprises (Mia et al.,
-2024), and at the boarding house studied, rent is still collected in cash. As a result, many small-scale apartment operations
-continue to function under fragmented and informal administrative processes despite the
-availability of existing digital solutions.
-
-These limitations are also reflected in local implementations. Magno et al. (2024) developed an
-apartment rental management system to address issues such as disorganized data management,
-difficulty in tracking tenant payments, missed billing deadlines, and reliance on paper-based
-records. Their findings demonstrate that digitizing transaction tracking and task organization
-improves administrative efficiency and data accuracy. However, the system primarily focuses on
+In the Philippines, small enterprises adopt such tools slowly. Adoption by micro, small, and
+medium-sized enterprises is held back by limited infrastructure, technical capacity, and resources,
+and manual record-keeping continues (Mia et al., 2024). A small boarding house is such an enterprise.
+Magno et al. (2024) developed an apartment rental management system to address disorganized data
+management, difficulty in tracking tenant payments, missed billing deadlines, and reliance on
+paper-based records. Their findings demonstrate that digitizing transaction tracking and task
+organization improves administrative efficiency and data accuracy, but the system focuses on
 financial transactions and task management, without integrating communication, booking, and tenant
-interaction workflows into a unified system.
+interaction into a unified system. Boarding house studies elsewhere in the country show the same
+pattern. In Ormoc City, Pernate et al. (2025) built a mobile application for finding and booking
+boarding house rooms, and in Surigao City, Mangca (2023b) built a web-based booking system with SMS
+notifications. Both center on how a tenant finds and books a room rather than on the administration
+that follows.
 
-Similarly, Pavia et al. (2022) developed a property management system for Hospitality Management
-students at Bicol College, demonstrating how digital platforms can enhance coordination,
+In the Bicol Region, Pavia et al. (2022) developed a property management system for Hospitality
+Management students at Bicol College, demonstrating how digital platforms can enhance coordination,
 record-keeping, and service management within a controlled academic environment with predefined
 workflows and institutional support. While the study confirms the effectiveness of system-based
 management, these conditions differ significantly from small-scale boarding house operations, where
 administrative processes are informal, decentralized, and constrained by limited resources.
 
-Boarding house studies in the Philippines show the same pattern. In Ormoc City, Pernate et al. (2025)
-built a mobile application for finding and booking boarding house rooms, and in Surigao City, Mangca
-(2023b) built a web-based booking system with SMS notifications; both center on how a tenant finds and
-books a room rather than on the administration that follows.
+Locally, the Fe Galang Da Silva Boarding House, a 33-unit property in Legazpi City near Bicol
+University, shows these conditions directly. Its records were kept in standalone spreadsheet files
+on a USB flash drive, exposing them to accidental deletion, file corruption, duplication, and lack of
+version control. Rent is collected in cash, and tenant concerns and maintenance requests are
+communicated through messaging applications or verbal reporting, resulting in untracked requests,
+delayed responses, and inconsistent follow-up. Records, communication, and transactions are managed
+across separate, non-integrated tools, so the owner has difficulty keeping accurate records,
+monitoring financial transactions, and ensuring timely resolution of tenant concerns.
 
-Taken together, these local studies demonstrate that while digital solutions can improve specific
-aspects of property management, they are often implemented either as function-specific systems or
-within controlled environments. As such, they do not fully address the fragmented and
-non-integrated nature of administrative workflows in real-world, resource-constrained boarding house
-settings.
-
-Many existing systems therefore remain misaligned with the operational realities of small-scale
-apartment management environments. This reveals a critical gap: the absence of an integrated
-platform that consolidates tenant management, financial tracking, communication, and booking within
-a single, context-appropriate system.
-
-This study presents Hivelet, a web-based apartment management system designed to address these
-limitations by centralizing administrative processes and providing a structured mechanism for
-managing tenant records, financial transactions, and maintenance concerns within a unified
-platform, specifically tailored for resource-constrained residential settings.
+Taken together, these studies demonstrate that digital solutions can improve specific aspects of
+property management, but they are implemented either as function-specific systems or within
+controlled environments, and they do not address the fragmented administrative workflows of a
+real-world, resource-constrained boarding house. This reveals the gap this study addresses: the
+absence of an integrated platform that consolidates tenant management, financial tracking,
+communication, and booking within a single system suited to a small boarding house.
 
 ## 1.2 Objectives of the Study
 
 The primary objective of this study is to address the mismatch between existing property management
 systems and the operational realities of small-scale, resource-constrained boarding houses by
 designing, developing, and evaluating Hivelet, a web-based apartment management system that improves
-administrative workflow integration, communication, and operational control. Specifically, the study
-aims:
+administrative workflow integration, communication, and operational control. Specifically, from July
+to November 2026, the study aims:
 
 1. To analyze the existing apartment management practices of the Fe Galang Da Silva Boarding House to
    determine the challenges in tenant management, financial tracking, communication, and booking

@@ -262,10 +262,9 @@ conditions.
 management, financial tracking, booking inquiries, and maintenance issue reporting into a unified
 operational platform that supports small-scale, resource-constrained administrative environments.
 
-**Progressive Web Application (PWA)** – A web-based application architecture that enables app-like
-functionality through browsers, providing responsive design, offline capability, and cross-device
-accessibility without requiring installation from an app store, making it suitable for low-resource
-and hybrid operational environments.
+**Progressive Web Application (PWA)** – The form in which Hivelet is delivered: a website that the
+owner or a tenant can add to a phone's home screen from the browser, without an app store, and that
+shows the figures last loaded when there is no connection.
 
 **Resource-Constrained Environment** – Refers to small-scale residential or boarding house operations
 characterized by limited financial resources, minimal technical infrastructure, and constrained
@@ -277,40 +276,40 @@ financial recording, and maintenance reporting are handled using disconnected to
 spreadsheets, paper records, and messaging applications), resulting in inconsistent data, delayed
 coordination, and reduced operational efficiency.
 
-**Centralized System** – A system architecture in which all operational data and processes are
-managed within a single integrated platform, enabling consistent data storage, real-time access, and
-unified control over administrative functions.
+**Centralized System** – In this study, one database and one website holding every record the owner
+had kept in separate files and channels: tenants, units and rates, payments, expenses, repair
+requests and inquiries.
 
 **Small-Scale Apartment Management** – Refers to the administrative operation of residential boarding
 houses or apartments with limited units, minimal staff, and constrained digital infrastructure, where
 management processes are often hybrid, combining manual and basic digital tools.
 
-**Management Information System (MIS)** – An information system framework that processes raw
-operational data into structured and meaningful information to support decision-making,
-coordination, and control within an organization or operational environment.
+**Management Information System (MIS)** – The view of Hivelet taken in Chapter 2: a system that turns
+the owner's raw records, such as receipts, expenses and repair requests, into the summaries she reads
+on the Overview and in the downloaded workbooks.
 
-**Booking Inquiry** – A system feature that allows prospective tenants to submit room availability
-requests through the platform, which are reviewed and processed by administrators for approval or
-scheduling purposes.
+**Booking Inquiry** – A message a prospective tenant sends about a unit through the public website,
+without an account. The owner answers it in the system, and if the person rents, moves them in from
+it.
 
 **Financial Tracking** – A system function that records and monitors tenant payments and operational
 expenses in a structured digital format, ensuring accurate financial records and supporting
 administrative monitoring of income and expenditures.
 
-**Cash Flow Monitoring** – The process of generating summarized financial reports based on recorded
-transactions, providing insights into income, expenses, and overall financial movement within the
-apartment system.
+**Cash Flow Monitoring** – In this study, the owner's view of money in and out: income, operating
+expenses and net income by month on the Overview, and the monthly income and expense workbooks she
+downloads.
 
 **Issue Ticketing System** – A structured digital mechanism that allows tenants to submit maintenance
 or facility-related concerns, which are then tracked, assigned, and resolved by administrators through
 a centralized workflow system.
 
-**User Authentication** – A security process that verifies the identity of users accessing the system
-to ensure authorized entry and protect sensitive operational data.
+**User Authentication** – Signing in with a login ID or phone number and a password. The owner creates
+each tenant's account with a one-time password, which the tenant replaces at the first sign-in.
 
-**Role-Based Access Control (RBAC)** – A security model that restricts system access based on user
-roles (e.g., admin, tenant), ensuring that users can only access functions relevant to their
-responsibilities.
+**Role-Based Access Control (RBAC)** – The rule that each of Hivelet's three kinds of user, the
+public, tenants and the administrator, can use only the functions given to that role, checked by the
+server on every request (Section 4.2.6).
 
 **Optional Online Payment Feature** – A supplementary system function that allows tenants to settle a
 bill through GCash using the Adyen payment gateway, without serving as the primary financial
