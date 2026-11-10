@@ -503,6 +503,14 @@ element at 3.4 to 3.6 seconds, and 100 for accessibility. On the owner's Overvie
 the page moving as its figures arrived (a layout shift of 0.22) and 0.7 seconds of script work on the
 phone (Chapter 5, recommendation 5).
 
+The screens were timed again on 10 November 2026, after the redesign of Iteration 3, on a Windows 11
+laptop in the Chromium browser built into the Claude desktop app, on a different network from the
+boarding house's Wi-Fi (Appendix M, Table M-31). Every screen timed was ready sooner than on 30
+September except sign-in to the Overview, at 2.63 seconds against 2.10. The owner's Overview now
+moves by 0.08 as its figures arrive, below the 0.1 counted as good, where it moved by 0.22 before.
+PageSpeed Insights scored the public page 85 on a phone, as before, with its largest element at 4.2
+to 4.4 seconds, and 99 on a desktop.
+
 ### 4.3.6 Offline Use, Installation, Weak Connections and Simultaneous Users
 
 On 29 September 2026 the live system was measured with no connection, on a weak one, once installed,

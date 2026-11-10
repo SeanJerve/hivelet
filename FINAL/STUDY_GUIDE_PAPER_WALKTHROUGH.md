@@ -1213,6 +1213,7 @@ The section then has four labelled parts.
 - Slowest: tenant portal first load, **3.05 seconds** on the phone.
 - **PageSpeed Insights** (Google's speed test), emulating a mid-range phone on slow 4G: public page
   **85 to 88**, largest element at **3.4 to 3.6 seconds**, and **100 for accessibility**.
+- **Re-timed 10 November** after the redesign (Table M-31): most screens faster, sign-in 2.63 s, layout shift **0.08**, PageSpeed phone still **85**.
 - **Lighthouse** on the owner's Overview: a **layout shift of 0.22** (how much the page jumps while
   loading) and **0.7 seconds** of script work on the phone.
 
@@ -1662,7 +1663,7 @@ The section then has four labelled parts.
    archived records; list finished repairs by date; call the action **Void** rather than Delete on
    Monthly Income and let the owner see voided receipts; record each tenancy's agreed term; warn when a
    headcount exceeds a unit's capacity.
-5. Make pages appear faster on phones (largest element at 3.4 to 3.6 seconds; layout shift 0.22) by
+5. Make the public page appear faster on phones (largest element 4.2 to 4.4 seconds on 10 November). The layout shift is fixed (0.08) by
    pre-rendering the public page, serving the typefaces from the site itself, and reserving the space
    each figure takes; keep figures already loaded.
 6. Strengthen the two lowest characteristics: **Maintainability (4.32)**, by moving database work out

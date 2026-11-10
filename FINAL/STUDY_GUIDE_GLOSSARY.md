@@ -796,7 +796,7 @@ own window. **Where:** Section 4.2.7.
 request. It is kept in the browser's storage, one of two named weaknesses. **Where:** Section 4.4.4;
 `STUDY_GUIDE_CODE.md`, §4.
 
-**Layout shift (CLS).** How much a page jumps while it loads. The owner's Overview measured 0.22.
+**Layout shift (CLS).** How much a page jumps while it loads. The owner's Overview measured 0.22 on 30 September and 0.08 on 10 November, after the redesign (Table M-31).
 **Where:** Section 4.3.5; Ch. 5, recommendation 5.
 
 **Largest element drawn (LCP).** How soon the main content of a page appears: 3.4 to 3.6 seconds for

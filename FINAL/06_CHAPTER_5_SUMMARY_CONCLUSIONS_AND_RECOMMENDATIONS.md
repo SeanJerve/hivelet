@@ -109,12 +109,12 @@ Based on the summary and conclusions of the study, the following are recommended
    Delete on Monthly Income, where the button and its warning still read as an erasure, and let the
    owner see the voided receipts. Record the agreed term of each tenancy, and warn the owner when a
    headcount exceeds the unit's capacity, which is now noted only in the audit log.
-5. Make the pages appear faster on phones, where the public page's largest element was drawn at 3.4
-   to 3.6 seconds and the owner's Overview moved as its figures arrived (a layout shift of 0.22), by
-   pre-rendering the public page, serving the typefaces from the site itself and reserving the space
-   each figure takes (Section 4.3.5). The other part of this recommendation was done in Iteration 3:
-   since 4 November 2026 each screen keeps the figures it has loaded for the visit, so returning to
-   it no longer waits for them.
+5. Make the public page appear faster on phones, where its largest element was drawn at 3.4 to 3.6
+   seconds on 30 September and 4.2 to 4.4 seconds on 10 November, by pre-rendering it and serving
+   the typefaces from the site itself (Section 4.3.5). The rest of this recommendation was done in
+   Iteration 3: each screen keeps the figures it has loaded for the visit, so returning to it no
+   longer waits for them, and the owner's Overview moves by 0.08 as its figures arrive, where it
+   moved by 0.22 before.
 6. Strengthen the two characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.32)
    by moving the database work now written inside the request handlers, three calls in four, into
    service modules, one per kind of record, with the result reviewed by more than one developer, and
