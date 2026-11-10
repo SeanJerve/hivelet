@@ -811,11 +811,11 @@ function agile() {
 // the study. Every source is one the chapter cites in that section; every finding is the chapter's own.
 // ---------------------------------------------------------------------------------------------
 const LIT_THEMES = [
-  ['2.1.1', 'Fragmentation in property management', 'Disconnected workflows, inconsistent records and delayed communication slow the work', ['Burke (2026)', 'Magno et al. (2024)', 'Pavia et al. (2022)', 'Setty (2022)', 'Thevaraju et al. (2019)', 'Ullah et al. (2018)']],
+  ['2.1.1', 'Fragmentation in property management', 'Disconnected workflows, inconsistent records and delayed communication slow the work', ['Burke (2026)', 'Magno et al. (2024)', 'Pavia et al. (2022)', 'Thevaraju et al. (2019)', 'Ullah et al. (2018)']],
   ['2.1.2', 'Information systems as the basis of centralization', 'Inefficiency comes from fragmented information processing and no central view of operations', ['Burke (2026)', 'Ghasemaghaei et al. (2018)', 'Laudon et al. (2026)', 'Magno et al. (2024)', 'Pressman and Maxim (2020)']],
-  ['2.1.3', 'Financial analytics and decision support', 'Structured, centralized financial data improves oversight and transparency', ['Caparos et al. (2025)', 'Encarnacion et al. (2025)', 'Ghasemaghaei et al. (2018)', 'Magno et al. (2024)', 'Setty (2022)']],
-  ['2.1.4', 'Communication and structured issue resolution', 'Accountability improves when requests follow a structured digital workflow', ['Altinay et al. (2024)', 'Canlas et al. (2026)', 'Jing and Lim (2021)', 'Mangca (2023a, 2023b)', 'Pernate et al. (2025)', 'Saputra et al. (2025)']],
-  ['2.1.5', 'Progressive Web Applications', 'One installable web application reaches varied devices where infrastructure is limited', ['Anuar and Othman (2024)', 'Biørn-Hansen et al. (2017)', 'Mia et al. (2024)', 'Muawwal (2024)']],
+  ['2.1.3', 'Financial analytics and decision support', 'Structured payment records improve oversight and transparency', ['Caparos et al. (2025)', 'Encarnacion et al. (2025)', 'Ghasemaghaei et al. (2018)', 'Magno et al. (2024)']],
+  ['2.1.4', 'Communication and structured issue resolution', 'Accountability improves when requests follow a structured digital workflow', ['Altinay et al. (2024)', 'Canlas et al. (2026)', 'Jing and Lim (2021)', 'Mangca (2023a, 2023b)', 'Pernate et al. (2025)', 'Saputra et al. (2025)', 'Setty (2022)']],
+  ['2.1.5', 'Progressive Web Applications', 'One installable web application reaches varied devices, and a tool is taken up when it fits existing practice', ['Anuar and Othman (2024)', 'Biørn-Hansen et al. (2017)', 'Mia et al. (2024)', 'Muawwal (2024)']],
 ];
 function literatureMap() {
   const W = 1000, gap = 10, cw = (W - 32 - gap * 4) / 5;
