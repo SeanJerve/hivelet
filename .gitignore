@@ -130,4 +130,8 @@ FINAL/_reviewer/
 # Signed consent forms (names and signatures): private, never committed
 /_CONSENT_FORMS (not in repo)/
 
+# The defense checklist folder: documents for Form 2, and the team's signed scans. Rebuilt by
+# scripts/manuscript/build-defense-folder.mjs, which never deletes a file the team put there
+/_DEFENSE CHECKLIST (not in repo)/
+
 .vercel

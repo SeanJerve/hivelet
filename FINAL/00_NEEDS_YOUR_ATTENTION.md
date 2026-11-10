@@ -5,6 +5,11 @@ each item is in `QUESTIONS_TO_FINALIZE.md` (P numbers), `BLOCKED_FOR_SEAN.md` (B
 repository's top folder) and `DEFENSE_CHECKLIST_STATUS.md` (Form 2 item numbers). What the team will
 bring later is also in [TO_FOLLOW.md](TO_FOLLOW.md).
 
+**Everything for the defense checklist, one folder per Form 2 item:** `_DEFENSE CHECKLIST (not in repo)/`
+in the hivelet folder, outside the code. Its `00 STATUS` file says which items are ready and which are
+missing. Put each signed scan in its item's folder, then rebuild it with
+`node scripts/manuscript/build-defense-folder.mjs`, which never deletes a file the team put there.
+
 Nothing here is a fault in the system. Every check suite passed on 7 November, and the paper agrees
 with the screens as they are on 10 November.
 

@@ -2,6 +2,11 @@
 
 **What is waiting on you is all in [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_YOUR_ATTENTION.md).** Start there.
 
+**Everything for the defense checklist, one folder per Form 2 item:** `_DEFENSE CHECKLIST (not in repo)/`
+in the hivelet folder, outside the code. Its `00 STATUS` file says which items are ready and which are
+missing. Put each signed scan in its item's folder, then rebuild it with
+`node scripts/manuscript/build-defense-folder.mjs`, which never deletes a file the team put there.
+
 **Start with the folder `CLAUDE MANUSCRIPT/`** (13 October 2026). `CLAUDE MANUSCRIPT.docx` holds the
 Abstract, a table of contents, Chapters 1 to 5, the References and Appendices A to R in the
 proposal's format (Arial 12, double-spaced, justified, margins 1.5 in left and 1 in elsewhere).
