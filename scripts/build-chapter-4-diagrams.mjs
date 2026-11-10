@@ -805,6 +805,67 @@ function agile() {
   return { W, H, body: s };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Appendix R. Literature map (Form 3A, Form 2 item 3): Chapter 2's five themes, what each body of work
+// found and the sources cited under it, narrowing through the synthesis (2.1.6) and the gap (2.2) to
+// the study. Every source is one the chapter cites in that section; every finding is the chapter's own.
+// ---------------------------------------------------------------------------------------------
+const LIT_THEMES = [
+  ['2.1.1', 'Fragmentation in property management', 'Disconnected workflows, inconsistent records and delayed communication slow the work', ['Burke (2026)', 'Magno et al. (2024)', 'Pavia et al. (2022)', 'Setty (2022)', 'Thevaraju et al. (2019)', 'Ullah et al. (2018)']],
+  ['2.1.2', 'Information systems as the basis of centralization', 'Inefficiency comes from fragmented information processing and no central view of operations', ['Burke (2026)', 'Ghasemaghaei et al. (2018)', 'Laudon et al. (2026)', 'Magno et al. (2024)', 'Pressman and Maxim (2020)']],
+  ['2.1.3', 'Financial analytics and decision support', 'Structured, centralized financial data improves oversight and transparency', ['Caparos et al. (2025)', 'Encarnacion et al. (2025)', 'Ghasemaghaei et al. (2018)', 'Magno et al. (2024)', 'Setty (2022)']],
+  ['2.1.4', 'Communication and structured issue resolution', 'Accountability improves when requests follow a structured digital workflow', ['Altinay et al. (2024)', 'Canlas et al. (2026)', 'Jing and Lim (2021)', 'Mangca (2023a, 2023b)', 'Pernate et al. (2025)', 'Saputra et al. (2025)']],
+  ['2.1.5', 'Progressive Web Applications', 'One installable web application reaches varied devices where infrastructure is limited', ['Anuar and Othman (2024)', 'Biørn-Hansen et al. (2017)', 'Mia et al. (2024)', 'Muawwal (2024)']],
+];
+function literatureMap() {
+  const W = 1000, gap = 10, cw = (W - 32 - gap * 4) / 5;
+  const lh = (t, w, size) => wrap(t, w, size).length * Math.round(size * 1.22);
+  let s = '';
+  let y = 16;
+  // The topic.
+  s += rect(16, y, W - 32, 56, { sw: 2 });
+  s += T(W / 2, y + 28, 'Managing a small boarding house: tenants and units, rent and expenses, repairs and inquiries', { size: 16, weight: 'bold', w: W - 60 });
+  y += 56;
+  const top = y + 34;
+  // The five themes, each a column: number and title, the finding, then its sources.
+  const body = LIT_THEMES.map(([, title, found, src]) =>
+    lh(title, cw - 16, 14) + 10 + lh(found, cw - 16, 13) + 14 + src.length * 17 + 14);
+  const ch = Math.max(...body) + 30;
+  LIT_THEMES.forEach(([n, title, found, src], i) => {
+    const x = 16 + i * (cw + gap), cx = x + cw / 2;
+    s += line([[cx, y], [cx, top]]);
+    s += rect(x, top, cw, ch, { rx: 8 });
+    let ty = top + 10;
+    s += T(cx, 0, n, { top: ty, size: 13, weight: 'bold' }); ty += 18;
+    s += T(cx, 0, title, { top: ty, size: 14, weight: 'bold', w: cw - 16 }); ty += lh(title, cw - 16, 14) + 10;
+    s += line([[x + 10, ty - 4], [x + cw - 10, ty - 4]], { head: 'none', sw: 0.8 });
+    s += T(x + 8, 0, found, { top: ty + 2, size: 13, w: cw - 16, anchor: 'start' }); ty += lh(found, cw - 16, 13) + 14;
+    for (const r of src) { s += T(x + 8, 0, r, { top: ty, size: 12.5, anchor: 'start', fill: MUTED }); ty += 17; }
+  });
+  y = top + ch;
+  // All five themes feed the synthesis: a short drop from each, joined by one bar.
+  const xs = LIT_THEMES.map((_, i) => 16 + i * (cw + gap) + cw / 2);
+  for (const x of xs) s += line([[x, y], [x, y + 14]], { head: 'none' });
+  s += line([[xs[0], y + 14], [xs[4], y + 14]], { head: 'none' });
+  y += 14;
+  // Converging: the synthesis, the gap, the study.
+  const steps = [
+    ['Synthesis (2.1.6)', 'Each study solves one part in isolation, finance, communication or tenant tracking, not all of them together. Recent housing systems were evaluated with ISO/IEC 25010 (Canlas et al., 2026; Pernate et al., 2025).', 860],
+    ['Gap (2.2)', 'No integrated system is built for a small, resource-constrained boarding house and used by both its owner and its tenants. Puspasari et al. (2025) serve the manager only.', 760],
+    ['This study', 'Hivelet: one Progressive Web Application joining tenant and unit records, financial tracking, repair requests and inquiries, evaluated with ISO/IEC 25010.', 660],
+  ];
+  for (const [i, [head, text, w]] of steps.entries()) {
+    const h = lh(text, w - 24, 13.5) + 40;
+    s += line([[W / 2, y], [W / 2, y + 28]]);
+    y += 28;
+    s += rect(W / 2 - w / 2, y, w, h, { rx: 8, sw: i === 2 ? 2.4 : 1.6 });
+    s += T(W / 2, 0, head, { top: y + 8, size: 14, weight: 'bold' });
+    s += T(W / 2, 0, text, { top: y + 28, size: 13.5, w: w - 24 });
+    y += h;
+  }
+  return { W, H: y + 16, body: s };
+}
+
 const DIAGRAMS = {
   'as-is': { file: 'figure-4-current-process.png', make: asIs },
   architecture: { file: 'figure-5-system-architecture.png', make: architecture },
@@ -824,6 +885,7 @@ const DIAGRAMS = {
   'dfd-6': { file: 'appendix-f-dfd-6-expenses.png', make: childDfd('6') },
   'dfd-7': { file: 'appendix-f-dfd-7-reports.png', make: childDfd('7') },
   'dfd-8': { file: 'appendix-f-dfd-8-account.png', make: childDfd('8') },
+  'literature-map': { file: 'appendix-r-literature-map.png', make: literatureMap },
 };
 
 // ---------------------------------------------------------------------------------------------

@@ -182,7 +182,8 @@ tenant tracking independently, resulting in partial solutions that fail to addre
 interconnected nature of apartment management workflows. Consequently, the literature reveals a need
 for an integrated operational framework that centralizes administrative processes, formalizes
 communication, supports financial monitoring, and remains accessible within resource-constrained
-residential environments.
+residential environments. Appendix R maps these studies by theme, from the problem to the gap this
+study fills.
 
 ## 2.2 Gap Bridged by the Study
 

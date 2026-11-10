@@ -99,6 +99,7 @@ const appendices = [
   ...md('appendices/APPENDIX_O_UAT_SIGN_OFF.md'),
   h1('APPENDIX P: INFORMED CONSENT FORM'), todo('the blank consent form, CONSENT_FORM.pdf'),
   ...md('appendices/APPENDIX_Q_SOURCE_CODE.md'),
+  ...md('appendices/APPENDIX_R_LITERATURE_MAP.md'),
 ];
 
 const main = [
