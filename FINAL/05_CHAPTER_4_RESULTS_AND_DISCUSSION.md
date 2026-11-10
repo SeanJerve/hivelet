@@ -129,8 +129,9 @@ cancel a repair once someone is sent. A rerun of all 114 test cases on 4 Novembe
 failing, and the automated checks passed after every later change, so the results of the second
 iteration stand. Appendix M, Table M-19, sets out what each iteration did in each phase
 of Section 3.2. Each was tested and reviewed by the means available to it; the formal evaluation
-against ISO/IEC 25010 was carried out once, in the second, because Section 3.3 places it in actual
-use. Table 4-4 lists the technology used.
+against ISO/IEC 25010 was carried out in the second, because Section 3.3 places it in actual
+use, and its questionnaire and the users' tasks were repeated with a second round of users in the
+third (Sections 4.3.7 and 4.4). Table 4-4 lists the technology used.
 
 **Table 4-4.** Technology stack of the developed system
 
@@ -567,6 +568,15 @@ matched Appendix M, Table M-24, except that the Android phone showed the "cannot
 after 60 to 80 seconds instead of 45; corrected on 1 October, it was on time when re-tested on that
 phone on 13 October 2026 (Table 4-20).
 
+**Second round.** Between 31 October and 10 November 2026, on the redesigned system of Iteration 3,
+ten more tenants and four more prospective tenants did the same tasks (Appendix M, Table M-30).
+Every task was completed. The tenants did 151 of their 160 attempts without help (94 percent), and
+the prospective tenants 31 of 32 (97 percent). As in the first round, help was needed mostly at the
+first sign-in, where five of twenty attempts needed a hint, most often after a character on the
+starting-password slip was misread, and in finding the browser's address bar when asked to type in
+an owner's page. Time on task was not recorded reliably in this round, so no times are reported
+for it.
+
 Table 4-12 brings the testing together by the test levels of ISO/IEC/IEEE 29119 (Section 3.2.4).
 
 **Table 4-12.** Summary of test execution by level
@@ -649,6 +659,11 @@ groups have one respondent each, so for those groups a mean is one person's rati
 describe how these ten people rated the system, not a sample from which a wider population can be
 inferred.
 
+In the second round, seventeen more answered the same questionnaire after their tasks, between 31
+October and 10 November 2026: eleven tenants, four prospective tenants, and two in the owner or
+administrator group, the landlady again and one more respondent (Appendix M, Table M-28). With them,
+27 answers were received in all. The second round had no technical evaluators.
+
 ### 4.4.2 Interpretation of Scores
 
 Each item was rated on the five-point scale in Table 3-4, and means are read using Chapter 3's Table 3-5. The
@@ -696,6 +711,13 @@ The ten respondents rated the system **Very High Quality overall (4.59)**: every
 rated Very High Quality, and no group mean fell below High Quality. This is the range Canlas et al. (2026) report for a Philippine
 dormitory system rated by the same kinds of respondents, tenants, administrators and IT professionals;
 here, each rating is also read beside the measured evidence for its characteristic (Section 4.4.5).
+
+The second round, seventeen answers on the redesigned system of Iteration 3, rated it **4.73
+overall**, with every characteristic again Very High Quality. Across both rounds, 27 answers, the
+overall is **4.58** (Appendix M, Table M-29). Usability, the lowest-rated characteristic the
+evaluators rated in the first round at 4.42, was 4.62 in the second, after the evaluators' changes and
+the redesign. The second round had no technical evaluators, so Maintainability rests on the first
+round's five.
 
 **Portability** was rated highest (4.86), as one code base installed on an Android phone and an
 iPhone without an app store. **Functional Suitability** followed (4.79): every feature the objective

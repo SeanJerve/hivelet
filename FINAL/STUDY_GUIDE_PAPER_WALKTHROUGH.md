@@ -81,7 +81,8 @@ them:
 - Evaluated on the eight characteristics of **ISO/IEC 25010:2011**, following the **ISO/IEC 25040**
   evaluation process, using two kinds of evidence: measures from the tests, and a survey of the owner,
   three tenants, a prospective tenant and five technical evaluators.
-- Rated **4.59 overall, Very High Quality**; every characteristic Very High Quality; **Portability
+- Rated **4.59 overall, Very High Quality** (a second round of 17 on the redesigned system: **4.73**,
+  all 27 answers **4.58**); every characteristic Very High Quality; **Portability
   highest, Maintainability lowest**; the measurements agreed with the ratings on every characteristic.
 
 **Terms to know**

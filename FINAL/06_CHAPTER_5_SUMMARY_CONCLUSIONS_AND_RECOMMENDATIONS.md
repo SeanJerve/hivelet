@@ -12,7 +12,8 @@ developed and evaluated Hivelet, a web-based apartment management system deliver
 Web Application, for the Fe Galang Da Silva Boarding House, a 33-unit property in Legazpi City. The
 system was developed in three Agile iterations with Vue, Express and PostgreSQL, pilot tested at the unit
 and integration, system and acceptance levels, and evaluated on the eight characteristics of ISO/IEC
-25010:2011 by the owner, three tenants, a prospective tenant and five technical evaluators. The results
+25010:2011 by the owner, three tenants, a prospective tenant and five technical evaluators, then by a
+second round of seventeen users on the redesigned system. The results
 are summarized below in the order of the specific objectives.
 
 1. **The existing practices were analyzed.** The owner kept a two-sheet workbook on a USB flash
@@ -34,7 +35,8 @@ are summarized below in the order of the specific objectives.
    comparison with the live records found six defects the checks had missed, all corrected the same
    day. The owner performed the walkthrough herself: 24 of its 30 rows passed the first time, one
    failed and five were not performed as written. Three tenants completed every task they attempted,
-   31 of 34 attempts without help. Of the 83 tests executed across the three levels, 82 passed (98.8
+   31 of 34 attempts without help. In a second round on the redesigned system, ten tenants and four
+   prospective tenants completed every task, 151 of 160 and 31 of 32 attempts without help. Of the 83 tests executed across the three levels, 82 passed (98.8
    percent), and no critical defect was found. Every screen measured was usable within about three
    seconds on a phone, and no request failed under twelve simulated simultaneous visitors or six
    simulated readers of the owner's records.
@@ -43,7 +45,8 @@ are summarized below in the order of the specific objectives.
    thirty-one sub-characteristics had a measured result and twenty-five were rated. The ten
    respondents rated the system 4.59 overall: Functional Suitability 4.79, Performance Efficiency
    4.48, Compatibility 4.55, Usability 4.42, Reliability 4.61, Security 4.68, Maintainability 4.32 and
-   Portability 4.86. In response to feedback and testing, 51 changes were made, among them each of
+   Portability 4.86. A second round of seventeen respondents rated it 4.73, and all 27 answers
+   together 4.58. In response to feedback and testing, 51 changes were made, among them each of
    the technical evaluators' fourteen comments of 3 October 2026.
 
 ## 5.2 Conclusions
@@ -72,7 +75,8 @@ Based on the results of the study, the following conclusions were drawn:
    Very High Quality overall (4.59), with every characteristic Very High Quality on the scale
    of Chapter 3's Table 3-5 (Chapter 4, Tables 4-17 and 4-19). The ratings agree with the measured evidence on every
    characteristic, and they describe how ten people rated the system over three weeks, two of the
-   four groups with one respondent each.
+   four groups with one respondent each. A second round of seventeen users on the redesigned system
+   rated it 4.73, and all 27 answers together 4.58, so the rating held after the redesign.
 
 ## 5.3 Recommendations
 

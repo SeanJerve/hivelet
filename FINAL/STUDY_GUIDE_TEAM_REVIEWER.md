@@ -37,7 +37,9 @@ defense with it.
 >
 > We tested it at three levels: **82 of 83 tests passed (98.8%)**, with no critical defect, and three
 > tenants completed **all 34 task attempts, 31 without help**. Ten respondents rated it on **ISO/IEC 25010**:
-> **4.59 out of 5, Very High Quality**. All four objectives were met.
+> **4.59 out of 5, Very High Quality**. A second round on the redesigned system (11 tenants,
+> 4 prospects, 17 answers) gave **4.73**, and all 27 answers together **4.58**. All four objectives
+> were met.
 
 ---
 
@@ -124,6 +126,7 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 | :--- | :--- |
 | Respondents | **10**: the owner, 3 tenants, 1 prospective tenant, 5 technical evaluators (4 of them on the demo copy, 15 to 18 Oct) |
 | Overall | **4.59, Very High Quality** (4.47 if every response is averaged together) |
+| Second round (31 Oct to 10 Nov) | **4.73** from 17 answers (11 tenants, 4 prospects, 2 owner or administrator). Both rounds: **4.58** from 27. Tasks: tenants 151 of 160 without help (94%), prospects 31 of 32 (97%), none failed. No times this round (Table M-28 to M-30) |
 | Highest / lowest | Portability **4.86** / Maintainability **4.32** |
 | Sub-characteristics | **31**: 27 measured, 25 rated, 2 neither (UI aesthetics, reusability) |
 | Changes made in response | **51**; the evaluators' **14** comments of 3 Oct, all addressed by 5 Oct |
@@ -256,8 +259,9 @@ anyway**.
 - Lead with the story (Section 1 above), not the technology. Panels remember "43% of her rows had no
   anniversary date" longer than "Vue 3".
 - Keep slide 13 (82 of 83) and slide 16 (4.59) on screen long enough for the panel to read them.
-- Say the limits before the panel does: ten respondents, three tenants, Adyen on its test account, the
-  system still running beside her records. Each is in the paper; naming them shows you know the work.
+- Say the limits before the panel does: ten respondents in the first round (a second round added 17),
+  no technical evaluators in the second round, no task times in the second round, Adyen on its test
+  account, the system still running beside her records. Each is in the paper; naming them shows you know the work.
 
 **Words to use, and words never to use**
 - **33 units, 32 occupied.** Never "32 units".

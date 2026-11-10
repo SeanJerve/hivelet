@@ -19,10 +19,12 @@ role-based access control, and installation from the browser on a phone or compu
 store. It was pilot tested at the
 unit and integration, system, and acceptance levels, and 82 of the 83 tests executed passed (98.8
 percent), with no critical defect. Three tenants completed every task they attempted, 31 of 34
-attempts without help. The system was then evaluated on the eight characteristics of the ISO/IEC
+attempts without help, and a second round of ten tenants and four prospective tenants completed
+every task. The system was then evaluated on the eight characteristics of the ISO/IEC
 25010:2011 quality model, following the ISO/IEC 25040 evaluation process, on two kinds of evidence:
 measures from the tests, and a survey of the owner, three tenants, a prospective tenant and five
-technical evaluators. The respondents rated it 4.59 overall, Very High Quality, with every
+technical evaluators. The respondents rated it 4.59 overall, Very High Quality (4.73 in a second round of seventeen on the
+redesigned system), with every
 characteristic Very High Quality; Portability rated highest and Maintainability lowest, and the
 measurements agreed with the ratings on every characteristic. The
 results show that an integrated system can be fitted to a small, cash-based property without

@@ -99,7 +99,6 @@ The full list, with who acts on each, is [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_Y
 | Appendix O | The scan of the signed form. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`. She ticks and signs only if she agrees. Never sign it for her | Team, with the owner |
 | Appendices A, B and P | The scans of the letter of request and the appointment papers, and the blank consent form | Team |
 | Figures 4-7 to 4-11 | New screenshots of the redesigned screens, sample tenants only (P16) | Team |
-| Sections 4.3 and 4.4 | The last batch of tenants and prospects (P17) | Team sends the results |
 | AI statement | Where it goes, and whether the prompt log is attached | Adviser |
 | Acknowledgement | Who to thank. Then Claude drafts it | Team decision |
 
