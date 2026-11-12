@@ -834,6 +834,13 @@ finding arrived.
 | The survey, 30 Sep to 4 Oct 2026 | 4 | Usability, Reliability, Functional Suitability | Usability items rated 3 before the evaluators' changes; a tenant asking to see the deposit |
 | **All** | **51** | | |
 
+The four technical evaluators who reviewed the demonstration copy from 15 to 18 October wrote their
+comments on the questionnaire after the period Table 4-19 counts. One asked for three things: figures
+kept rather than loaded again on Monthly Income and the dashboards, which Iteration 3 did (Appendix
+M, Table M-31), finished repair requests listed by their dates so they can be looked back on, and a
+record archived rather than deleted. The last two were not done in this study (Chapter 5,
+recommendation 4).
+
 Table 4-20 counts the defects found by each activity in Sections 4.3 and 4.4, by their highest
 severity and what became of them. **Critical** means a wrong amount in the records or lost data.
 **High** means a wrong amount shown, a core task blocked, or an exploitable weakness. **Medium**

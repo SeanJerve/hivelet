@@ -104,7 +104,11 @@ Based on the summary and conclusions of the study, the following are recommended
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested on every change rather than once by a person. Extend
    the rule that refuses a second copy of a receipt to receipts with no invoice number and to
-   acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6).
+   acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6). As a technical evaluator advised
+   (Section 4.4.6), keep a deleted repair request or inquiry as an archived record, as a voided
+   receipt or expense already is, and list finished repair requests by the dates they were resolved
+   and closed. Call the Monthly Income action Void rather than Delete, since its button and warning
+   still read as an erasure, and let the landlady see the voided receipts.
 5. Make the public page appear faster on phones, where its largest element was drawn at 3.4 to 3.6
    seconds on 30 September and 4.2 to 4.4 seconds on 10 November, by pre-rendering it and serving
    the typefaces from the site itself (Section 4.3.5). The section's other speed findings were acted

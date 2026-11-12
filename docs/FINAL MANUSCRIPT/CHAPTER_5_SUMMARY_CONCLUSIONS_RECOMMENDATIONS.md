@@ -115,12 +115,10 @@ Based on the results of the study, the following conclusions were drawn:
 > back", which is why it read as a delete. A headcount over capacity is accepted and audited by
 > design. The ERD and architecture are Figures 4-6 and 4-2; he was not sent them.
 >
-> **TEAM NOTE (12 Nov 2026).** Removed from 4, because each recommendation must rest on a finding
-> in Chapter 4 and these came from the two outside reviewers after the evaluation: keep a deleted
-> repair request or inquiry as an archived record; list finished repairs by the dates they were
-> resolved and closed; call the Monthly Income action Void rather than Delete and let the landlady see
-> voided receipts; record each tenancy's agreed term; warn when a headcount exceeds the unit's
-> capacity. Restore them to 4 if the adviser wants the reviewers' advice in the chapter. Also cut:
+> **TEAM NOTE (12 Nov 2026).** Recommendation 4 keeps what the 15 October evaluator wrote on the
+> questionnaire (archive, dated repair history, Void), now reported in Section 4.4.6. Left out, since
+> no recorded finding supports them: record each tenancy's agreed term, and warn when a headcount
+> exceeds the unit's capacity. Restore them if the adviser wants them. Also cut:
 > the Summary's opening repeated the method and respondents that items 2 and 4 now give once.
 
 Based on the summary and conclusions of the study, the following are recommended:
@@ -145,7 +143,11 @@ Based on the summary and conclusions of the study, the following are recommended
 4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested on every change rather than once by a person. Extend
    the rule that refuses a second copy of a receipt to receipts with no invoice number and to
-   acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6).
+   acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6). As a technical evaluator advised
+   (Section 4.4.6), keep a deleted repair request or inquiry as an archived record, as a voided
+   receipt or expense already is, and list finished repair requests by the dates they were resolved
+   and closed. Call the Monthly Income action Void rather than Delete, since its button and warning
+   still read as an erasure, and let the landlady see the voided receipts.
 5. Make the public page appear faster on phones, where its largest element was drawn at 3.4 to 3.6
    seconds on 30 September and 4.2 to 4.4 seconds on 10 November, by pre-rendering it and serving
    the typefaces from the site itself (Section 4.3.5). The section's other speed findings were acted
