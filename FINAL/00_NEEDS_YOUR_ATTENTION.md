@@ -1,6 +1,6 @@
 # Needs your attention
 
-Updated 12 November 2026. Everything that still waits on a person, in one list. The detail behind
+Updated 12 November 2026. **The same items as a checklist, each explained, are in [00_TO_DO_CHECKLIST.md](00_TO_DO_CHECKLIST.md).** Everything that still waits on a person, in one list. The detail behind
 each item is in `QUESTIONS_TO_FINALIZE.md` (P numbers), `BLOCKED_FOR_SEAN.md` (B numbers, in the
 repository's top folder) and `DEFENSE_CHECKLIST_STATUS.md` (Form 2 item numbers). What the team will
 bring later is also in [TO_FOLLOW.md](TO_FOLLOW.md).

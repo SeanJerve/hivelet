@@ -1,6 +1,6 @@
 # FINAL: the manuscript, ready for Word
 
-**What is waiting on you is all in [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_YOUR_ATTENTION.md).** Start there.
+**What is left to do, as a checklist with what each item is and why: [00_TO_DO_CHECKLIST.md](00_TO_DO_CHECKLIST.md).** Start there. The same items, with their P and B numbers, are in [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_YOUR_ATTENTION.md).
 
 **Everything for the defense checklist, one folder per Form 2 item:** `_DEFENSE CHECKLIST/` in the
 hivelet folder, outside the code, committed so both machines have it. **The repository is public until
