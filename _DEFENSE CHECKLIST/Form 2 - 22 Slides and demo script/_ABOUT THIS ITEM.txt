@@ -2,7 +2,7 @@ Form 2, item 22: Slides and demo script
 
 What the form asks: The final slides and the live demonstration script ready, with a backup copy of the system and the slides.
 Checked or signed by: FIC
-Status on 10 November 2026: PARTLY
+Status on 12 November 2026: PARTLY
 
 Here:
   - Hivelet defense slides.pptx

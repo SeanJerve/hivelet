@@ -2,7 +2,7 @@ Proponent's Checklist - Phase 5, item 31 Turnover package
 
 What the form asks: The user manual, the source code and database script, installation and deployment notes, and the repository link.
 Checked or signed by: Programming Adviser
-Status on 10 November 2026: PARTLY
+Status on 12 November 2026: PARTLY
 
 Here:
   - User manual (Appendix K).docx

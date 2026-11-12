@@ -2,7 +2,7 @@ Form 2, item 12: Context diagram
 
 What the form asks: A Context Diagram, in the standard model (Form 3B annex).
 Checked or signed by: Programming Adviser
-Status on 10 November 2026: READY
+Status on 12 November 2026: READY
 
 Here:
   - Figure 4-3 and Appendix D - Context diagram.png

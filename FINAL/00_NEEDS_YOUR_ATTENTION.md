@@ -1,6 +1,6 @@
 # Needs your attention
 
-Updated 10 November 2026. Everything that still waits on a person, in one list. The detail behind
+Updated 12 November 2026. Everything that still waits on a person, in one list. The detail behind
 each item is in `QUESTIONS_TO_FINALIZE.md` (P numbers), `BLOCKED_FOR_SEAN.md` (B numbers, in the
 repository's top folder) and `DEFENSE_CHECKLIST_STATUS.md` (Form 2 item numbers). What the team will
 bring later is also in [TO_FOLLOW.md](TO_FOLLOW.md).
@@ -11,8 +11,8 @@ it is made private (P9): a signed scan put there is published by the next commit
 missing. Put each signed scan in its item's folder, then rebuild it with
 `node scripts/manuscript/build-defense-folder.mjs`, which never deletes a file the team put there.
 
-Nothing here is a fault in the system. Every check suite passed on 7 November, and the paper agrees
-with the screens as they are on 10 November.
+Nothing here is a fault in the system. All 21 check suites passed on 10 November, the document and
+live-record checks passed again on 12 November, and the paper agrees with the screens as they are.
 
 ## 1. For the pre-defense clearance (Form 2)
 
@@ -40,7 +40,7 @@ and the deployment report (item 10), the last two in `FORM_2_EVIDENCE/`.
 | **Scans** of the signed letter of request and the adviser appointment papers, for Appendices A and B (P10) | Team |
 | **The AI-use statement**: where it goes, and whether the prompt log is attached (P5). The adviser should also confirm the AI disclosure in Section 3.1.1 (P21). The prompt log is exported on Lloyd's laptop with `node scripts/ai-use/export-prompt-log.mjs` (P2) | Adviser, Lloyd |
 | **Scans of the second round's ten tenant consent forms** (signed on paper), kept private in `_CONSENT_FORMS (not in repo)/`. Prospects and evaluators consented through the questionnaire, as Chapter 3 now says | Team |
-| **Consent forms**: "Research team member present" is blank on all five originals. F1 agreed to no photos or recording, so F1 appears in none | Team |
+| **Consent forms**: "Research team member present" is blank on all four originals (the landlady's and three tenants', 30 September). F1 agreed to no photos or recording, so F1 appears in none | Team |
 
 ## 3. For the system
 

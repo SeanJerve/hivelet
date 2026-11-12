@@ -2,7 +2,7 @@ Form 2, item 13: Data flow diagrams, Gane and Sarson, to Level 2
 
 What the form asks: A Data Flow Diagram in Gane and Sarson notation, down to Level 2 (Form 3B annex).
 Checked or signed by: Programming Adviser
-Status on 10 November 2026: READY
+Status on 12 November 2026: READY
 
 Here:
   - Figure 4-4 and Appendix E - Level 1.png
