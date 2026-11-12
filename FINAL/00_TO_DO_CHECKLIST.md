@@ -227,7 +227,11 @@ the team is allowed to schedule the final defense. Each item below is one we can
     12 November: "the owner's past records" became "the landlady's past records".
   - [ ] Ask him where the full statement goes (a page after the Abstract, the end of Section 3.2, or
     an appendix) and whether the prompt log must be attached. Tell Claude his answer.
-  - [ ] Lloyd: on his laptop, run `node scripts/ai-use/export-prompt-log.mjs` and send Sean the file.
+  - [x] Lloyd's prompt log exported (12 November): 252 prompts in 13 sessions, 17 September to 12
+    November, in `ai-use-log/` on his laptop (never committed). The file to share is
+    `PROMPT_LOG_LAPTOP-2F4BFUEL - SHAREABLE.md`: two pasted passwords (since changed), payment strings,
+    Google Docs links and the names of 42 private people removed. The original stays on the laptop.
+  - [ ] Lloyd sends Sean the shareable copy and the summary privately, not through the repository.
 
 ### [x] 10. The year of Laudon et al. (done 12 November)
 
