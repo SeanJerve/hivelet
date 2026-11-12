@@ -1,6 +1,7 @@
 # Hivelet: what is left to do
 
-Written 12 November 2026 from Sean's answers the same day, and brought up to date that evening. Tick
+Written 12 November 2026 from Sean's answers the same day, and brought up to date late that night,
+when the paper moved to finalizing. Tick
 each box (`[x]`) when it is done.
 Every item says **what it is**, **why it is needed** and **what to do**. The paper itself is finished
 and checked: what is left is signatures, scans, forms and a few decisions only people can make.
@@ -161,6 +162,10 @@ the team is allowed to schedule the final defense. Each item below is one we can
 
 ### [ ] 6b. Bring the team's Word manuscript up to date (Lloyd)
 
+**The two prompts for Lloyd's Claude are in `FINAL/00_PROMPTS_FOR_FINALIZING.md`:** one to start
+any session, one for the final realign-and-check pass. Run the second before replacing the chapters
+in the Word file, so the Word file gets the checked version.
+
 - **What:** the team's Word file ("REVISED AFTER PROPOSAL", 240 pages, checked as a PDF on 12
   November) has the right front matter but **old chapters**. Chapter 1 is from before 10 November:
   it still cites Mia et al. (2024) for the opposite of what that study found, has no world-to-Legazpi
@@ -172,6 +177,8 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **Why:** the panel reads the Word file, not the repository. Everything checked and corrected since
   10 November is only in `FINAL/CLAUDE MANUSCRIPT/CLAUDE MANUSCRIPT.docx`.
 - **To do:**
+    - [ ] Delete every TEAM NOTE block: they are notes to the team, not part of the paper. The
+    CLAUDE MANUSCRIPT.docx already leaves them out; check none came across.
   - [ ] Keep the front pages (title page to List of Figures). Replace everything from **1 INTRODUCTION**
     to the end of the appendices with the same part of `FINAL/CLAUDE MANUSCRIPT/CLAUDE MANUSCRIPT.docx`
     (already Arial 12, double spaced, 1.5 inch left margin, final table and figure numbers).
@@ -338,9 +345,11 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
   November). Nothing to change.
 - [x] Consent: they answered anonymously on the Google Form after its privacy notice, signing no
   paper form, which is what Section 3.4 already says.
-- [x] How many were sent the form: 3, all returned (Sean, 12 November). Table 4-15 says 100%. The
-  users' forms stay "Not recorded": the count remembered (10 tenants) is below the 11 tenants who
-  answered, so it cannot be the number given out.
+- [x] How many were sent the form: 3, all returned (Sean, 12 November). Table 4-15 says 100%.
+- [ ] Optional: the users' forms given out still read "Not recorded" in Table 4-15. If the forms went
+  to exactly the 10 tenants and 5 prospective tenants (Janelle, Shannaya, the unnamed one, Toledo and
+  Tricia), tell Claude: the table can then show 10 of 10 tenants (100%) and 3 valid of 5 prospects
+  (60%). Only if you are sure; "Not recorded" is honest as it is.
 
 ### [x] 18. Small design and wording choices (B-121): done 12 November
 
