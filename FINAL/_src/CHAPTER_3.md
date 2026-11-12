@@ -218,7 +218,8 @@ applications, users of both Android and iPhone handsets, and more than one clust
 observed, since the number of new usability problems found falls quickly with each additional tester
 (Nielsen & Landauer, 1993). A prospective tenant used the public website as a person looking for a
 unit would. Of the five technical evaluators of the first round, four reviewed a demonstration copy of the system
-holding sample data, so that no outside reviewer saw the boarding house's records. After the screens were redesigned in the third iteration, the tasks and the questionnaire were
+holding sample data, so that they did not see the boarding house's records. The three technical
+evaluators of the second round reviewed the live system. After the screens were redesigned in the third iteration, the tasks and the questionnaire were
 repeated with a second round of tenants, prospective tenants and the landlady, and three more
 technical evaluators answered the questionnaire. Each group rated only the characteristics it
 was in a position to judge: tenants and prospective tenants did not rate Security, and only the
@@ -322,8 +323,7 @@ Data Privacy Act of 2012 (Republic Act No. 10173, 2012). Participation was volun
 withdrawn at any time without any effect on a tenant's tenancy. The landlady and each tenant signed
 the informed consent form (Appendix P), and the prospective tenants and the technical evaluators
 agreed through the data privacy notice that opens the questionnaire. The four technical evaluators
-reached through Panelista reviewed a demonstration copy holding sample data, so none of them saw the
-landlady's records. Each tenant used only their own account, which shows only their own
+reached through Panelista reviewed a demonstration copy holding sample data, so none of them saw the landlady's records. The three of the second round reviewed the live system. Each tenant used only their own account, which shows only their own
 records, and received an individual starting password in person, which they replaced at first
 sign-in. Respondents could give a name so that the researchers could tell the responses apart. The
 names were removed before the responses were analyzed, and none appears in this paper. Names,

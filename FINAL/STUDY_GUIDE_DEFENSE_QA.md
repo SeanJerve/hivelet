@@ -454,7 +454,7 @@ the mean of its own group means. *Sections 3.3 and 4.4.2.*
 
 **Who rated it?**
 Nineteen on the redesigned system: the landlady, eleven tenants and four prospective tenants (31
-October to 10 November), and three technical evaluators (12 November). No member of the team. *Tables
+October to 10 November), and three technical evaluators, who reviewed the live system on 12 November. No member of the team. *Tables
 4-14 and 4-15.* The first round, before the redesign, had ten: the landlady, three tenants, one
 prospective tenant and five technical evaluators. The first of those evaluators, an IT professional in
 software quality assurance, reviewed the live system on 3 October; the other four, reached through

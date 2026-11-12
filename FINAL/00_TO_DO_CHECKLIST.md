@@ -326,9 +326,10 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
 
 - [ ] Who they are and why they count as technical evaluators (IT professional, developer or IT
   faculty), and that none is on the team. The paper says so (Section 4.4.1).
-- [ ] What they reviewed: the live site or the demonstration copy with sample data. The paper does
-  not say yet. If it was the live site, tell Claude, since Section 3.4 says no outside reviewer saw
-  the landlady's records.
+- [x] What they reviewed: the live site (Sean, 12 November). Chapter 3 and Section 4.4.1 now say so.
+- [ ] Which account they used on the live site, and whether they saw any tenant's name or amounts.
+  Section 3.4 (ethics) needs one sentence on it: the four October evaluators used the demo copy
+  precisely so no outsider saw the landlady's records.
 - [ ] How many were sent the form. Table 4-15 says "Not recorded" until you give the number.
 
 ### [x] 18. Small design and wording choices (B-121): done 12 November

@@ -641,7 +641,7 @@ The number of forms given out was not recorded, so no response rate can be given
 returned was complete and valid.
 
 The landlady, eleven tenants and four prospective tenants answered after using the redesigned system
-of the third iteration, and three technical evaluators after reviewing it on 12 November 2026, each
+of the third iteration, and three technical evaluators after reviewing the live system on 12 November 2026, each
 after giving consent as described in Section 3.3. No member of the development team was among them.
 The landlady is one respondent, so her group's mean is one person's rating, and three technical
 evaluators are a small group. The results describe how these respondents rated the system, not a
