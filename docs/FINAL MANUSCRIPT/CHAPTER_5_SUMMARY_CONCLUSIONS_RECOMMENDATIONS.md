@@ -36,16 +36,16 @@ results are summarized below in the order of the specific objectives.
    and takes no real money. It is not live, because going live needs the owner's merchant onboarding
    documents.
 
-3. **The system was pilot tested.** Twenty automated check suites, run against the live system on 29
-   September 2026, all passed, including 490 report reconciliation checks. A screen-by-screen
-   comparison with the live records found six defects the checks had missed, all corrected on 26
-   September. The landlady performed the walkthrough herself: 24 of its 30 rows passed the first
+3. **The system was pilot tested.** Twenty automated check suites, run against the live system, all
+   passed, including 490 report reconciliation checks. A screen-by-screen comparison with the live
+   records found six defects the checks had missed, all corrected. The landlady performed the walkthrough herself: 24 of its 30 rows passed the first
    time, one failed and five were not performed as written. Three tenants completed every task they
    attempted, 31 of 34 attempts without help. Of the 83 tests executed across the three levels, 82
    passed (98.8 percent), and no critical defect was found. Every screen measured was usable within
    about three seconds on a phone, and no request failed under twelve simulated simultaneous visitors
-   or six simulated readers of the boarding house's records. In the third iteration, a rerun of the 114 test cases on 4 November 2026 passed the 77 that need no person and found none failing, and every screen timed again on a laptop on
-   10 November was ready sooner than before except sign-in. On the redesigned system, ten tenants and
+   or six simulated readers of the boarding house's records. After the redesign, the 77 of the 114 test
+   cases that need no person were run again and none failed, and every screen timed again was ready
+   sooner than before except sign-in. On the redesigned system, ten tenants and
    four prospective tenants completed every task, 151 of 160 and 31 of 32 attempts without help.
 
 4. **The system was evaluated** by the five steps of ISO/IEC 25040: twenty-seven of the model's
@@ -54,7 +54,7 @@ results are summarized below in the order of the specific objectives.
    evaluators, rated the system 4.59 overall: Functional Suitability 4.79, Performance Efficiency
    4.48, Compatibility 4.55, Usability 4.42, Reliability 4.61, Security 4.68, Maintainability 4.32
    and Portability 4.86. In response to feedback and testing, 51 changes were made, among them each
-   of the technical evaluators' fourteen comments of 3 October 2026, and the third iteration then
+   of the technical evaluators' fourteen comments, and the third iteration then
    redesigned the screens. The sixteen respondents of the second round, the
    landlady, eleven tenants and four prospective tenants, rated the redesigned system 4.82, with
    Usability at 4.78, and all 26 answers together rated it 4.61.
@@ -79,8 +79,8 @@ Based on the results of the study, the following conclusions were drawn:
    responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8
    percent), above the course standard of 90 percent, with no critical defect (Chapter 4, Tables 11E
    and 23A). The one failure, a ₱0 shown with the connection cut, passed when re-tested on the
-   landlady's laptop. The redesigned system kept the result: none of the 77 test cases rerun on
-   4 November 2026 failed, every task of the second round was completed, and the landlady accepted
+   landlady's laptop. The redesigned system kept the result: none of the 77 test cases rerun after the
+   redesign failed, every task of the second round was completed, and the landlady accepted
    the system and signed the acceptance form (Section 4.3.7).
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
@@ -151,11 +151,8 @@ Based on the summary and conclusions of the study, the following are recommended
    and closed. Call the Monthly Income action Void rather than Delete, since its button and warning
    still read as an erasure, and let the landlady see the voided receipts.
 5. Make the public page appear faster on phones, where its largest element was drawn at 3.4 to 3.6
-   seconds on 30 September and 4.2 to 4.4 seconds on 10 November, by pre-rendering it and serving
-   the typefaces from the site itself (Section 4.3.5). The section's other speed findings were acted
-   on in Iteration 3: each screen now keeps the figures it has loaded for the visit, and the landlady's
-   Overview moves by 0.08 as its figures arrive, where it moved by 0.22 before (Appendix M, Table
-   M-31).
+   seconds before the redesign and 4.2 to 4.4 seconds after it, by pre-rendering it and serving the
+   typefaces from the site itself (Section 4.3.5).
 6. Strengthen the two characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.32)
    by moving the database work now written inside the request handlers, three calls in four, into
    service modules, one per kind of record, with the result reviewed by more than one developer, and

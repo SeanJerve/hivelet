@@ -1455,11 +1455,14 @@ The section then has four labelled parts.
   four prospective tenants and the landlady again, with no technical evaluators. **26 answers** in
   all (Appendix M, Table M-28).
 
-**Table 4-14. Distribution of respondents**
-- *What it shows*: how many respondents per group. Landlady **1 (10.00%)**; Tenants **3
-  (30.00%)**; Technical evaluators **5 (50.00%)**; Prospective tenants **1 (10.00%)**; Total **10**.
+**Table 4-14. Distribution of respondents, by round**
+- *What it shows*: how many respondents per group in each round. Round 1: Landlady **1 (10.00%)**;
+  Tenants **3 (30.00%)**; Technical evaluators **5 (50.00%)**; Prospective tenants **1 (10.00%)**;
+  Total **10**. Round 2: **1, 11, 0 and 4**, total **16**. Both rounds: **2 (7.69%), 14 (53.85%),
+  5 (19.23%) and 5 (19.23%)**, total **26** answers from 25 people (the landlady answered twice).
+- *How to read it*: Table 4-22's scores are Round 1, the first column. Round 2's are in Table M-29.
 
-**Table 4-15. Instrument administration and response rate**
+**Table 4-15. Instrument administration and response rate, Round 1**
 - *What it shows*: forms distributed, retrieved and valid per group. Every group 100%; total **10
   distributed, 10 retrieved, 10 valid, 100%**.
 - *How to read it*: **response rate** = forms retrieved ÷ forms distributed.
