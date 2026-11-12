@@ -53,7 +53,7 @@ A few words first:
    sentences a person can act on. The browser never talks to the database directly.
 2. **`lib/authStore.ts`** remembers who is signed in, their role (tenant or admin) and what they may
    do. The router reads it to decide whether a page can open.
-3. **`lib/systemState.ts`** holds the shared lists the owner's screens read: rooms, tenants, income
+3. **`lib/systemState.ts`** holds the shared lists the landlady's screens read: rooms, tenants, income
    rows, expense rows, repairs and inquiries. A screen calls, say, `fetchIncomeRecords()`, and every
    screen showing that list updates.
 
@@ -71,7 +71,7 @@ screen calls when it is set up, for example `useToast()` or `useLiveRefresh()`. 
 
 Each file has its path, then a few sentences: what it does, who sees it, which screen it belongs
 to, which endpoints it calls, and anything a panelist might ask. "Visitor" means someone with no
-account, "tenant" a signed-in resident, "owner" the signed-in administrator (the landlady's
+account, "tenant" a signed-in person renting a unit, "landlady" the signed-in administrator (her
 account). Endpoints are written without the `/api` prefix, as `STUDY_GUIDE_CODE.md` writes them.
 
 ---
@@ -90,7 +90,7 @@ takes down the start-up loader once the first page has really drawn (never later
 The frame around every screen, seen by everyone. It shows the header, the sidebar (signed-in
 screens only), the footer (public pages only), and the thin bar that says "No connection" or "Saved
 figures from ..." when the data on screen is an offline copy. It starts live updates while someone
-is signed in and loads the owner's contact number (`GET /public/contact`). It also holds the
+is signed in and loads the landlady's contact number (`GET /public/contact`). It also holds the
 **forced first sign-in step**: while an account is on a starting password, or a tenant has no phone
 number on file, `ChangePasswordModal` is shown and cannot be closed.
 
@@ -133,7 +133,7 @@ Below is what each screen file is and the decisions inside it.
 The first page a visitor sees: the building photo, the four kinds of unit, the full availability
 list, answers to common questions, and the location. It reads `GET /public/rooms` (through
 `fetchRooms()`) and `GET /public/rates` for the water rate, which is quoted only when that read
-works. Its header explains why the old text about electricity billing was removed: the owner said
+works. Its header explains why the old text about electricity billing was removed: the landlady said
 each unit's electricity is metered and paid separately and is not part of this system. The
 location section is a link to the visitor's own maps app plus the gate photo; the embedded map was
 removed on purpose so the section works offline. It shows `BookViewingPrompt` once per browser.
@@ -158,7 +158,7 @@ back to the conversation (`InquiryConversationLink.vue`) and remembers the inqui
 (`lib/myInquiries.ts`).
 
 **`views/InquiryThreadView.vue`** (`/inquiry`)
-Where a visitor who sent an inquiry reads the owner's reply and answers it, without an account.
+Where a visitor who sent an inquiry reads the landlady's reply and answers it, without an account.
 There are three ways in: the private link (the secret sits after `#` in the address, which browsers
 never send to a server), the list of inquiries this browser sent, or the reference code plus the
 phone number used. It calls `POST /public/inquiries/thread` to read and
@@ -167,13 +167,15 @@ whichever part was wrong and limits the tries, so the code form cannot be used t
 people's conversations.
 
 **`views/LoginView.vue`** (`/login`)
-The sign-in page for tenants and the owner. A person signs in with a **login ID or phone number**
+The sign-in page for tenants and the landlady. A person signs in with a **login ID or phone number**
 and a password; the server refuses an email. It calls `login()` in `authStore.ts`, which posts to
-`POST /auth/login`. There is deliberately no sign-up: the owner admits each tenant from the Tenants
+`POST /auth/login`. There is deliberately no sign-up: the landlady admits each tenant from the Tenants
 page. Two decisions worth knowing: the notice above the form is built from the page being returned
 to, never copied from the address bar (so nobody can send a link that prints their own message on
 the sign-in page); and after signing in it returns to the last page that person had open
-(`lib/lastPage.ts`). A "Forgot your password?" note explains there is no email or text reset, so
+(`lib/lastPage.ts`). Since 12 November 2026 the form is `novalidate`: pressing Enter with a box empty shows
+the page's own message ("Enter your login ID or phone number." or "Enter your password.") instead of the
+browser's bubble, and the button stays pressable so that message can appear. A "Forgot your password?" note explains there is no email or text reset, so
 the answer is who to ask. **Dev-only:** a list of demo sign-in buttons appears only on a developer's
 machine (`lib/demoAccounts.dev.ts`); it is removed from the built site.
 
@@ -227,15 +229,15 @@ November 2026), and the server limits this to one cancellation an hour.
 
 **`views/TenantProfileView.vue`** (`/tenant/profile`, "My details")
 What a tenant can change about themselves: phone number and emergency contact, with password in
-`ChangePasswordModal`. The name and account status are shown, not edited, because the owner owns
+`ChangePasswordModal`. The name and account status are shown, not edited, because the landlady owns
 them. It reads `GET /tenant/my-profile` and saves with `PUT /tenant/my-profile`; only the phone
 number (when changed) and the emergency contact are sent. Saving is refused if the profile could
 not be read, so an empty form never overwrites what is on file. There is no email field: it was removed on 20 October 2026.
 
-### Owner screens (signed-in owner)
+### Landlady screens (signed-in landlady)
 
 **`views/AdminOverviewView.vue`** (`/admin/overview`)
-The owner's home. It leads with what needs her (GCash payments to verify, urgent repairs), then
+The landlady's home. It leads with what needs her (GCash payments to verify, urgent repairs), then
 this month's collections, occupancy, the year by month, and cash flow; past years open as an
 archive (`?archiveYear=`). It reads `GET /admin/payments` and, through `systemState.ts`, rooms,
 tenants, income rows, expense rows and repairs. All dates come from the property's clock (Manila),
@@ -250,11 +252,11 @@ ten screens tall on a phone; the first cluster opens by default. Clicking a unit
 `AdminEditUnitModal.vue` (there is no pencil button since 5 November 2026).
 
 **`views/TenantManagementView.vue`** (`/admin/tenants`)
-The tenant list, and the place the owner moves a tenant in, edits them, resets their password and
+The tenant list, and the place the landlady moves a tenant in, edits them, resets their password and
 moves them out. It calls `POST /admin/tenants`, `PATCH /admin/tenants/:id`,
 `POST /admin/tenants/:id/reset-password`, `POST /admin/tenants/:id/vacate`, and
 `PATCH /admin/inquiries/:id` when a move-in came from an inquiry. A new tenant or a reset gets a
-one-time starting password and login ID, shown once to hand over. Moving someone out asks the owner
+one-time starting password and login ID, shown once to hand over. Moving someone out asks the landlady
 to type the unit code first (`ConfirmDialog`'s typed phrase), because it removes their access. For a
 past year or month the page shows `TenantHistory.vue` instead, read from the receipts.
 
@@ -268,31 +270,36 @@ Rows are filed by the month the rent is **for**, not the date paid (`lib/incomeF
 page, the Overview and the Excel file agree. Boarding House rows show the 50% Share column: a
 system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the
 owner's historical spreadsheet. A notification can open one payment directly
-(`?tab=verify&payment=...`, `lib/openFromQuery.ts`).
+(`?tab=verify&payment=...`, `lib/openFromQuery.ts`). In **Edit this payment**, Water shows occupants
+times the rate and cannot be typed (12 November 2026): the server always wrote that figure and the form
+never sent a typed one, so the old box accepted numbers that were thrown away.
 
 **`views/ExpensesLedgerView.vue`** (`/admin/expenses`, "Monthly Expenses")
 The expense ledger. It calls `GET /admin/expense-categories`, `POST /admin/expense-entries`,
 `PATCH`/`DELETE /admin/expense-entries/:id`. Each expense is split across the **six property areas**,
 and the splits add up to the expense's total, which is why it can be drawn as one bar
 (`SegmentBar.vue`). The kind-of-expense list is built from the database's own category names; its
-header records that a hard-coded list once made 927 entries impossible to filter or edit. The owner
-can add her own kind of expense (`NewExpenseKindDialog.vue`).
+header records that a hard-coded list once made 927 entries impossible to filter or edit. The landlady
+can add her own kind of expense (`NewExpenseKindDialog.vue`). Before saving it asks **Record this
+expense?** with **Go back** and **Record it**, as Record payment does (12 November 2026).
 
 **`views/MaintenanceDispatchView.vue`** (`/admin/tickets`, "Repairs")
-The owner's repair board: list, assign, resolve, delete, and log a repair herself. It calls
+The landlady's repair board: list, assign, resolve, delete, and log a repair herself. It calls
 `POST /admin/tickets`, `PATCH /admin/tickets/:id` and `DELETE /admin/tickets/:id`. Since 4 November
-2026 Manage this repair shows no tenant messages (a tenant's note reaches the owner as a
-notification), and Mark resolved is on the card of a repair in progress. "Log a repair" was added because a repair the owner
+2026 Manage this repair shows no tenant messages (a tenant's note reaches the landlady as a
+notification), and Mark resolved is on the card of a repair in progress. "Log a repair" was added because a repair the landlady
 noticed herself had nowhere to go; a repair to an empty unit is filed with no tenant. A delete is
 removed from the screen only after the server confirms it.
 
 **`views/InquiriesView.vue`** (`/admin/inquiries`)
-The owner's inbox of inquiries from visitors. It calls `GET`/`POST /admin/inquiries/:id/messages`
+The landlady's inbox of inquiries from visitors. It calls `GET`/`POST /admin/inquiries/:id/messages`
 (read and reply), `PATCH /admin/inquiries/:id` (for example to Closed) and
 `DELETE /admin/inquiries/:id`. Each inquiry shows its real status in words: Waiting for an answer,
 Answered, Moved in or Closed (the database's Pending, Contacted, Converted and Closed); it used to
-show the same badge for every lead. Delete removes the inquiry and its
-conversation for good, and only after the server confirms.
+show the same badge for every lead. A Closed or Converted inquiry has no reply box, since the
+visitor's own page already stopped taking replies, and **Delete** appears only on those (the server
+holds the same rule). Delete removes the inquiry and its conversation for good, and only after the
+server confirms. An empty search says "Nothing matches", as every list now does (12 November 2026).
 
 ---
 
@@ -303,13 +310,13 @@ conversation for good, and only after the server confirms.
 **`AppHeader.vue`**
 The bar at the top of every page except the inquiry, sign-in and category pages, which draw their
 own. For a signed-in person it holds the notification bell (with its unread count) and the account
-menu: Change password for a tenant, Change number / password for the owner, the Appearance (dark
+menu: Change password for a tenant, Change number / password for the landlady, the Appearance (dark
 mode) choice, **Add to home screen** where the browser allows it (`lib/installApp.ts`), and Sign out. Its comment records that the bell was once removed by accident for
 twenty days while notifications kept being written, and asks future editors to keep it.
 
 **`AppSidebar.vue`**
-The left-hand menu on signed-in screens, for tenants and the owner; on a phone it is a drawer. The
-owner's menu is in order of use: Overview, Monthly Income, Monthly Expenses, Tenants, Rooms and
+The left-hand menu on signed-in screens, for tenants and the landlady; on a phone it is a drawer. The
+landlady's menu is in order of use: Overview, Monthly Income, Monthly Expenses, Tenants, Rooms and
 rates, Repairs, Inquiries. Repairs and Inquiries show a count of new urgent repairs and new inquiries
 she has not seen, refreshed every 45 seconds (it calls `fetchInquiries()` and
 `fetchMaintenanceTickets()`, which read `GET /admin/inquiries` and `GET /admin/tickets`). On a wide
@@ -327,7 +334,7 @@ column of about 70 characters a line at 16 px. Contents links scroll in code and
 heading, so a keyboard or screen-reader user continues from the chosen section.
 
 **`NotificationPopover.vue`**
-The notification panel that opens from the bell, for tenants and the owner. It lists notifications
+The notification panel that opens from the bell, for tenants and the landlady. It lists notifications
 with a filter (All, Unread, Payments, Repairs, Inquiries), marks one or all as read, and opens the
 record a notification is about (`notificationTarget` in `lib/openFromQuery.ts`). Data comes from
 `lib/notificationsStore.ts`. Every row is a real button, so it works from the keyboard.
@@ -348,7 +355,7 @@ so the header never sits over a blank page and nothing jumps when the page arriv
 
 ### `components/modals/` (pop-up forms)
 
-**`AdminEditUnitModal.vue`** (owner, from Rooms and rates)
+**`AdminEditUnitModal.vue`** (landlady, from Rooms and rates)
 Edits one unit: monthly rate, type, status (Available, Reserved, Occupied, Under Maintenance),
 whether it is Published or Hidden on the public site, description and photo. It reads
 `GET /admin/rooms` to find the unit's id, then saves with `PATCH /admin/rooms/:id`. If the unit
@@ -373,26 +380,26 @@ are vacant, but only when that number is known to be current: while loading, aft
 offline it falls back to "Viewings are by appointment". It promises nothing the property does not
 offer.
 
-**`ChangePasswordModal.vue`** (tenant, and the owner on a starting password)
+**`ChangePasswordModal.vue`** (tenant, and the landlady on a starting password)
 Change your own password with `POST /auth/change-password`. The rules shown (ten characters, a
 letter, a number) mirror the server, which checks them anyway. In **mandatory mode** (opened by
 `App.vue`) it cannot be closed: an account on a starting password must replace it, and a tenant also
 confirms their phone number. A missing phone alone is saved with `PUT /tenant/my-profile`. It reads
 `GET /auth/me` to prefill the phone.
 
-**`ChangeSignInModal.vue`** (owner)
-"Change number / password" for the owner, who signs in with her phone number. She gives her current
+**`ChangeSignInModal.vue`** (landlady)
+"Change number / password" for the landlady, who signs in with her phone number. She gives her current
 number and current password first, then a new number, a new password, or both
 (`POST /auth/change-sign-in`). A wrong current number or password gets one refusal that does not say
 which was wrong. Her number is also the public contact number, so every page updates at once
 (`setLandladyPhone`).
 
-**`NewExpenseKindDialog.vue`** (owner, from Monthly Expenses)
+**`NewExpenseKindDialog.vue`** (landlady, from Monthly Expenses)
 Adds a kind of expense of her own beside the thirteen built in, with
 `POST /admin/expense-categories`. Name only, 2 to 60 characters; the server picks its number. There
 is no rename or remove, so the hint says to check the spelling.
 
-**`OnsitePaymentModal.vue`** (owner, from Monthly Income)
+**`OnsitePaymentModal.vue`** (landlady, from Monthly Income)
 "Record payment" for cash, GCash handed over in person, or bank transfer. It saves with
 `POST /admin/income-records`, and reads `GET /admin/rooms`, `GET /public/rates` and
 `GET /admin/payments`. Worth knowing: the amount starts at zero, not a guessed figure; water is
@@ -404,7 +411,7 @@ double-collection gap.
 ### `components/overview/` (tiles and charts)
 
 **`MonthCapsules.vue`**
-Twelve months as rounded bars, used on the owner's Overview, Monthly Income and Monthly Expenses. A month not
+Twelve months as rounded bars, used on the landlady's Overview, Monthly Income and Monthly Expenses. A month not
 yet entered is drawn hatched, not as a zero, because "nothing entered" is not "nothing collected".
 Each bar is a button that reads out its own value.
 
@@ -412,7 +419,7 @@ Each bar is a button that reads out its own value.
 The standard tile used on both Overviews and the ledgers. Its tone shows importance: the green and
 dark tones are kept for the one or two things that need action.
 
-**`QuickActionsFab.vue`** (owner, phone)
+**`QuickActionsFab.vue`** (landlady, phone)
 The floating green button on the phone Overview that opens Record payment, Record expense and Move
 someone in/out. It uses the same action list as the desktop header buttons, so the two cannot
 disagree.
@@ -463,7 +470,7 @@ cannot drift apart. It also words what a visitor is told when sending fails.
 
 ### `components/tenants/`
 
-**`TenantHistory.vue`** (owner, Tenants page)
+**`TenantHistory.vue`** (landlady, Tenants page)
 For a past year or month, who paid for each unit, read from the receipts (`lib/tenantHistory.ts`).
 Read-only. Different spellings of one person's name are shown under the name they were folded into,
 never hidden. It offers the download of the tenant history workbook through `DownloadDialog.vue`.
@@ -539,7 +546,7 @@ shared by all three (`lib/yearScope.ts`).
 **`api.ts`**
 Every request to the backend goes through here (see Section 1). It adds the `Authorization: Bearer`
 token, sets the 25-second read and 45-second save deadlines, and treats a save that timed out as
-"not confirmed" rather than "failed", so the owner checks before saving twice. It reads the API's
+"not confirmed" rather than "failed", so the landlady checks before saving twice. It reads the API's
 address from `VITE_API_BASE_URL`, set at build time. It also passes every read through
 `offlineCache.ts`. See `STUDY_GUIDE_CODE.md`, Sections 4 and 6.
 
@@ -552,12 +559,13 @@ copies and saved filters, so the next person on a shared phone sees nothing of t
 `registerUser()` still exists but no screen calls it.
 
 **`systemState.ts`**
-The shared lists the owner's screens read (see Section 1), each with a `fetch...()` loader and a
+The shared lists the landlady's screens read (see Section 1), each with a `fetch...()` loader and a
 "fetch failed" flag so a failure is never shown as zero. It also holds the property's contact
 details (`LANDLADY`), refreshed from `GET /public/contact`, with 0927 465 3938 as the stand-in when
 that read fails, and the water charge rule (`waterChargeFor`): the configured rate per occupant for
-every unit. Its last comment explains why nothing loads when the file is imported: it once fired six
-owner-only requests on every page, which wrote false "access denied" rows into the audit trail for
+every unit. Its summary of who lives in a unit gives one phrase for a unit nobody lives in, **No tenant**, on every
+screen (12 November 2026). **Vacant** stays the unit's status. Its last comment explains why nothing loads when the file is imported: it once fired six
+landlady-only requests on every page, which wrote false "access denied" rows into the audit trail for
 every tenant.
 
 **`notificationsStore.ts`**
@@ -725,7 +733,7 @@ server's 1 MB request limit.
 
 **`copyText.ts`**
 Copies text to the clipboard, with an older fallback where the modern way is refused. Used, for
-example, when the owner copies a starting password to hand over.
+example, when the landlady copies a starting password to hand over.
 
 **`scrollLock.ts`**
 One shared lock that stops the page scrolling behind any open dialog or drawer; the page scrolls
@@ -871,7 +879,7 @@ made-up data; they are not part of the repository or the site.
 8. **"How does the GCash payment appear on screen?"** `TenantPaymentsView.vue` opens
    `AdyenPaymentModal.vue`, which gets a session from `POST /tenant/payments/checkout` and shows
    Adyen's Drop-in. Hivelet never sees the GCash account, and the payment counts only after the
-   owner verifies it on Monthly Income (`IncomeCollectionsView.vue`).
+   landlady verifies it on Monthly Income (`IncomeCollectionsView.vue`).
 
 9. **"Why do the dates not shift for someone in another timezone?"** `lib/propertyDate.ts` reads
    every date by Asia/Manila and formats bare dates without converting them.

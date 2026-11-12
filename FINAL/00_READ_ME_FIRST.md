@@ -13,7 +13,7 @@ Abstract, a table of contents, Chapters 1 to 5, the References and Appendices A 
 proposal's format (Arial 12, double-spaced, justified, margins 1.5 in left and 1 in elsewhere).
 **Copy and paste it section by section into the team's own Word file**, which keeps the school's
 logo, headers and page numbers. `images/` holds every picture, each named by its figure number
-and caption (`Figure 4-1 - The owner's process before the system.png`); in the .docx, a
+and caption (`Figure 2-2 - Conceptual Framework.png`); in the .docx, a
 blue-highlighted **[IMAGE FILE: ...]** label above each picture names its file, and every
 yellow-highlighted **[TO DO]** must be resolved before printing. Insert each caption with
 **References > Insert Caption** so the lists of tables and figures build. Rebuild after any change
@@ -23,6 +23,14 @@ Every chapter here has every fix applied, sentence by sentence, from the list of
 the panel-style read of 13 October 2026, and the two IT 124 course guides. Retype or paste each file
 into the Word manuscript in the order below. Do not compare against the old Word file line by line:
 these files replace Chapters 1 to 5, the Abstract and the References entirely.
+
+**On 12 November 2026** the whole paper had a purpose pass. The person who runs the boarding house
+is called **the landlady** throughout, because she manages it for its owner. "The owner" is kept only
+for the proprietor (going live with GCash needs the owner's merchant onboarding documents) and in
+BR-035's locked wording. One name is used for each thing: tenant, prospective tenant, unit, inquiry,
+repair request. In Section 2.4, "Booking Inquiry" became **Inquiry** and "Issue Ticketing System"
+became **Maintenance Ticketing**. The figures say **Landlady (administrator)**. The Word file and
+`CLAUDE MANUSCRIPT/images/` were built before that pass: rebuild them before copying anything.
 
 **To study, start with [00_HOW_TO_STUDY.md](00_HOW_TO_STUDY.md)**: which guide answers what, and a
 reading order. It also lists the guides added on 24 October 2026: the paper walkthrough, the
@@ -95,8 +103,8 @@ The full list, with who acts on each, is [00_NEEDS_YOUR_ATTENTION.md](00_NEEDS_Y
 
 | Where | What | Who |
 | :--- | :--- | :--- |
-| Chapter 4, Section 4.3.7 | One sentence once the owner signs the acceptance form (the marker gives it) | Team, after the signature |
-| Appendix O | The scan of the signed form. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`. She ticks and signs only if she agrees. Never sign it for her | Team, with the owner |
+| Chapter 4, Section 4.3.7 | One sentence once the landlady signs the acceptance form (the marker gives it) | Team, after the signature |
+| Appendix O | The scan of the signed form. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`. She ticks and signs only if she agrees. Never sign it for her | Team, with the landlady |
 | Appendices A, B and P | The scans of the letter of request and the appointment papers, and the blank consent form | Team |
 | AI statement | Where it goes, and whether the prompt log is attached | Adviser |
 | Acknowledgement | Who to thank. Then Claude drafts it | Team decision |
@@ -118,7 +126,7 @@ From FIXES sections D and E, unchanged because only the team or the adviser can 
 ## 5. What each chapter must contain, and where it is
 
 **Chapter 1.** Background with the gap stated (1.1); the general and four specific objectives (1.2);
-significance for the owner, the tenants and future researchers (1.3); scope and delimitations (1.4).
+significance for the landlady, the tenants and future researchers (1.3); scope and delimitations (1.4).
 The property is the **Fe Galang Da Silva Boarding House** everywhere, and Section 1.4 names its 33
 units.
 
@@ -128,7 +136,7 @@ units.
 every reference is cited (the build checks both).
 
 **Chapter 3, in the past tense, describing what was done.** Software and hardware, including the
-devices actually used (3.1); the Agile method and its six phases (3.2), with testing in four layers
+devices actually used (3.1); the Agile method and its six phases (3.2), with testing in four parts
 on the ISO/IEC/IEEE 29119 levels (3.2.4); the evaluation procedure (3.3): the ISO/IEC 25000 series,
 the 25040 process, the four respondent groups and what each rated, participants, instruments, data
 gathering, the statistical treatment (mean of group means), and Tables 3-4 to 3-6 (scale,
@@ -147,7 +155,7 @@ conclusion per objective, one to three sentences each; eight recommendations, ea
 in Chapter 4. No citations, and no number that is not in Chapter 4.
 
 **Abstract.** The guides set no word limit; its last sentence must restate the general objective and
-agree with Chapter 5, and it does. It is about 345 words.
+agree with Chapter 5, and it does. It is about 355 words.
 
 ## 6. What changed in the references
 

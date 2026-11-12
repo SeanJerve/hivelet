@@ -93,7 +93,7 @@ own rows when the query runs. A prospect has guest rights only.
 
 **`config/propertyAreas.ts`**
 The six property areas an expense can be split across: Boarding House, Main House, Front Apartment,
-Back Apartment, Penthouse, Other Expenses / Personal. Main House (the owner's own home) and Other
+Back Apartment, Penthouse, Other Expenses / Personal. Main House (the residence on the property) and Other
 Expenses / Personal are marked as **not** rental costs. It also accepts short forms ("bh", "ph",
 "front apt") and turns them into the full names; a caller must refuse anything it cannot resolve.
 
@@ -104,7 +104,7 @@ The enforcement point for sign-in and permissions. `attachGuestRole` marks every
 first, so a missing check means "deny", not "crash". `requireAuth` reads the `Authorization: Bearer`
 token, verifies it, and **re-reads the profile from the database on every request**, so a moved-out
 tenant loses access on their next tap. `optionalAuth` does the same when a token is present (used on
-public routes that show the owner a little more). `requirePasswordCurrent` answers 428 to an account
+public routes that show the landlady a little more). `requirePasswordCurrent` answers 428 to an account
 still on a one-time password. `requireRole`, `requireAdmin`, `requirePermission` and
 `requireSelfOrAdmin` are the guards routes declare.
 
@@ -167,7 +167,7 @@ Tables: `profiles` (through `authService`), `audit_logs`.
 | `GET /api/public/rooms` | Anyone | The unit list, from an allow-list of columns with no tenant details. A guest sees only Published units; the administrator also sees Hidden ones. Tables: `rooms`, `room_photos`. |
 | `GET /api/public/rates` | Anyone | The water rate per occupant from `system_settings`, so the public page never quotes a hard-typed price. |
 | `GET /api/public/contact` | Anyone | The number to call: the active administrator's own phone number, digits only, nothing else from her row. Table: `profiles`. |
-| `POST /api/public/inquiries` | Anyone | Send an inquiry about a unit: name, Philippine mobile number, message. **No email.** The unit must be Published, and a Reserved unit refuses inquiries (BR-006). Limited to 10 per 15 minutes per address. Writes `inquiries` and the first `inquiry_messages` row, notifies the owner, and returns the visitor's private link secret and reference code. |
+| `POST /api/public/inquiries` | Anyone | Send an inquiry about a unit: name, Philippine mobile number, message. **No email.** The unit must be Published, and a Reserved unit refuses inquiries (BR-006). Limited to 10 per 15 minutes per address. Writes `inquiries` and the first `inquiry_messages` row, notifies the landlady, and returns the visitor's private link secret and reference code. |
 | `POST /api/public/inquiries/thread` | Anyone holding the link secret, or the reference code with the phone number | Read one's own inquiry and its replies. Credentials go in the body, never the address. 30 tries per 15 minutes. |
 | `POST /api/public/inquiries/thread/messages` | Same | The visitor replies. Refused once the inquiry is Closed or Converted. A reply to a Contacted inquiry sets it back to Pending. |
 | `GET /api/public/payments/local-cashier` | Anyone with a session id | A built-in checkout page for an environment with **no** gateway credentials. Answers 404 whenever Adyen is configured, as it is on the live site. |
@@ -185,7 +185,7 @@ tenant ids are never taken from the body; they come from the signed-in profile.
 | `GET /api/tenant/my-bills` | Own bills, with an `effective_status` worked out on read (overdue from the day after the due date); the stored `status` is left as it is | `bills` |
 | `GET /api/tenant/my-payments` | Own payments and their verification status (read only) | `payments` |
 | `GET /api/tenant/my-standing` | Paid up, or which periods are owed, read from the receipts (`standingService.ts`) | `monthly_income_records`, `room_assignments` |
-| `GET /api/tenant/my-income-records` | Own receipts in the owner's ledger; voided ones are left out | `monthly_income_records` |
+| `GET /api/tenant/my-income-records` | Own receipts in the landlady's ledger; voided ones are left out | `monthly_income_records` |
 | `GET /api/tenant/my-tickets` | Own repair requests | `maintenance_tickets` |
 | `POST /api/tenant/tickets` | New repair request with priority and JPEG/PNG photos. The unit must be one of the tenant's own. If the photo fails to save, the ticket is kept and the tenant is told | `maintenance_tickets`, `ticket_attachments`, `notifications` |
 | `GET /api/tenant/tickets/:ticketId/messages` | The notes on one of their own tickets | `ticket_messages` |
@@ -304,7 +304,7 @@ with quotes or spaces and prints a short one-way fingerprint of the key, never t
 **`services/adyenWebhookHandler.ts`**
 Runs only after the signature is accepted. A successful AUTHORISATION writes a payment as **Pending
 Verification**; it never settles a bill (BR-017). A repeat of the same gateway reference is a
-duplicate and is acknowledged. Refunds and chargebacks change no ledger row: the owner is notified
+duplicate and is acknowledged. Refunds and chargebacks change no ledger row: the landlady is notified
 loudly, naming the unit and amount, and decides herself. Notifications that can never succeed are
 acknowledged and audited so Adyen stops retrying. Tables: `payments`, `bills`, `notifications`,
 `audit_logs`.
@@ -337,14 +337,14 @@ caller's own rows, only actions on an allow-list per role, never sign-ins, refus
 downloads, never codes or raw values. Table: `audit_logs` (read only).
 
 **`services/expenseCategories.ts`**
-The rules for the owner adding her own kind of expense: a name of 2 to 60 characters, not a repeat
+The rules for the landlady adding her own kind of expense: a name of 2 to 60 characters, not a repeat
 of an existing name in any spelling, numbered after her highest number and placed after the
 thirteen built-in kinds, which are never renamed or removed. Table: `fixed_expense_categories`.
 
 **`services/incomeReportExport.ts`**
 Builds the Monthly Income workbook (library `exceljs`) in the layout of her spreadsheet: month blocks,
 units in fixed order inside each cluster, a subtotal per cluster, a grand subtotal that leaves out
-Linda's units, then Linda's own section. Because the owner has not said whether she wants monthly or
+Linda's units, then Linda's own section. Because the landlady has not said whether she wants monthly or
 year-to-date totals, it prints both, labelled. Tables: `monthly_income_records`, `room_assignments`.
 
 **`services/expenseReportExport.ts`**
@@ -420,7 +420,7 @@ decides carefully when two hand-written names are the same person. A copy of the
 
 ## 3. The database
 
-**What it is.** PostgreSQL hosted on Supabase, holding the owner's live records: 33 units, 32 of them
+**What it is.** PostgreSQL hosted on Supabase, holding the landlady's live records: 33 units, 32 of them
 occupied. There are **24 tables**. The full column list is
 `docs/FINAL MANUSCRIPT/APPENDIX_N_DATA_DICTIONARY.md` (Appendix N); the overview is in
 [STUDY_GUIDE_CODE.md, Section 7](STUDY_GUIDE_CODE.md). Do not read `database/FULL_DATABASE_SCHEMA.sql`
@@ -449,19 +449,19 @@ as the truth: it does not describe the live database.
 
 | Table | In plain words |
 | :--- | :--- |
-| `monthly_income_records` | The owner's Monthly Income ledger: one row per receipt per month covered. Includes the **50% Share** column, a system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet, and the Remitted Amount (rent plus water). Voided rows stay, marked. |
+| `monthly_income_records` | The landlady's Monthly Income ledger: one row per receipt per month covered. Includes the **50% Share** column, a system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet, and the Remitted Amount (rent plus water). Voided rows stay, marked. |
 | `monthly_expense_entries` | The Monthly Expenses ledger: one row per expense. Its total is kept equal to its parts by a trigger. |
 | `expense_property_allocations` | How each expense is split across the property areas. |
 | `fixed_expense_categories` | Her expense categories: the thirteen numbered lines (with sub-lines such as 6a) and any she adds. |
 | `bills` | A bill for one whole month: rent plus water, due date, status, and when a GCash checkout was last opened on it. |
 | `payments` | Payments against bills, by GCash through Adyen or recorded on site, with their verification. |
-| `system_settings` | Values the owner can change without a new release, such as the water rate per occupant. |
+| `system_settings` | Values the landlady can change without a new release, such as the water rate per occupant. |
 
 **Requests**
 
 | Table | In plain words |
 | :--- | :--- |
-| `maintenance_tickets` | Repair requests, from Submitted to Closed. The tenant may be empty for a repair the owner logs on an empty unit. |
+| `maintenance_tickets` | Repair requests, from Submitted to Closed. The tenant may be empty for a repair the landlady logs on an empty unit. |
 | `ticket_messages` | Notes on a repair request. |
 | `ticket_attachments` | Photos on a repair request (JPEG or PNG). |
 | `inquiries` | Questions from the public site about a unit, with the visitor's name and mobile number, the hash of their private-link secret and their reference code. |
@@ -542,16 +542,16 @@ is not recorded in every file, so this list says what each file **does**, not wh
 | 005 | Changed the ledgers' foreign keys from CASCADE to RESTRICT, so deleting a unit cannot silently delete its money history. |
 | 006 | Made email optional so a tenant can exist without one; added `normalize_ph_phone`, the unique phone-login index and the "password needs an identifier" CHECK. |
 | 007 | Moved the penthouse to floor 4 (the rooftop) and added a floor CHECK. |
-| 008 | Created `property_areas`, marking Main House (the owner's home) and personal costs as not rental costs, with a foreign key from the expense split. |
-| 009 | Recorded two owner answers as column comments: rent is charged whole, never prorated; and its reading of the deposit, which 036 later corrected. |
+| 008 | Created `property_areas`, marking Main House (the residence on the property) and personal costs as not rental costs, with a foreign key from the expense split. |
+| 009 | Recorded two landlady answers as column comments: rent is charged whole, never prorated; and its reading of the deposit, which 036 later corrected. |
 | 010 | Added `replace_expense_allocations`, so editing an expense's split is one transaction instead of a delete then an insert. |
 | 011 | Security fixes: RLS on `property_areas`, revoking a function from PUBLIC properly, and pinning functions' `search_path`. |
-| 012 | Added Penthouse as a sixth expense area and linked each cluster to the area its costs go to (owner's answer). |
+| 012 | Added Penthouse as a sixth expense area and linked each cluster to the area its costs go to (landlady's answer). |
 | 013 | Fixed `replace_expense_allocations`, which could not insert into the area column's enum type. |
 | 014 | Wrote into the repository two objects that existed only in production: the expense-total trigger and the one-amount-per-area unique key. |
-| 015 | Corrected one unit's floor so the floors read 11/11/10/1, as the owner surveyed then. 034 later moved F1, so the live floors are 12, 11, 9 and 1. |
+| 015 | Corrected one unit's floor so the floors read 11/11/10/1, as the landlady surveyed then. 034 later moved F1, so the live floors are 12, 11, 9 and 1. |
 | 016 | Set the grace period to 0: the business does not accept late payment (the seeded 7 days was never a rule). |
-| 017 | Retired the fixed electricity charge for unmetered units (owner's answer); old rows stay as collected. |
+| 017 | Retired the fixed electricity charge for unmetered units (landlady's answer); old rows stay as collected. |
 | 018 | Added `settle_verified_payment`: verify payment, mark bill Paid and write the receipt in one transaction. |
 | 019 | Added `create_expense_entry_with_allocations`, so a new expense and its split are saved together. |
 | 020 | Added the trigger that records every rate change in `room_price_history`, by any path. |
@@ -566,11 +566,11 @@ is not recorded in every file, so this list says what each file **does**, not wh
 | 029 | Added `record_income_for_months`: a receipt covering several months becomes one row per month, in one transaction. |
 | 030 | Corrected 58 rent periods whose year disagreed with the row's own year; old values kept in a backup table. |
 | 031 | Corrected 5 rent periods copied from the previous receipt; old values kept in a backup table. |
-| 032 | Moved every imported payment date one day later to match the owner's workbook; totals checked unchanged; backup table kept. |
+| 032 | Moved every imported payment date one day later to match the landlady's workbook; totals checked unchanged; backup table kept. |
 | 033 | Added the unique index so the same receipt cannot be saved twice for one unit in one month. |
 | 034 | Corrected unit F1's floor to 1. |
 | 035 | Set each tenancy's rent day from the receipts instead of the import's placeholder date. |
-| 036 | Rewrote the deposit column's comment to match the owner's answer: one month held, used for repairs at move-out, the rest refunded. |
+| 036 | Rewrote the deposit column's comment to match the landlady's answer: one month held, used for repairs at move-out, the rest refunded. |
 | 037 | Set occupant counts from the receipts (every tenancy read 1), because water is billed from them. |
 | 038 | Added the unique index so two taps on Pay cannot raise the same bill twice. |
 | 039 | Removed 37 rows an audit's tests had put into the live ledger. |
@@ -578,13 +578,13 @@ is not recorded in every file, so this list says what each file **does**, not wh
 | 041 | Added the trigger that routes a Linda unit's water into Linda's own column on every write path. |
 | 042 | Removed four rate-history rows created while testing the 020 trigger. |
 | 043 | Added one correcting audit entry for 276 rows that wrongly said an account was created when someone only signed in. |
-| 044 | Removed residents' names from two units' public descriptions. |
-| 045 | Set the unit rates from the rate card the owner gave. |
+| 044 | Removed tenants' names from two units' public descriptions. |
+| 045 | Set the unit rates from the rate card the landlady gave. |
 | 046 | Deletes three inactive profiles the import created twice that nothing references. |
 | 047 | Deletes five test profiles (and their test records) that were not real people. |
 | 048 | Added `must_change_password`, so a new tenant must set their own password before using the portal. |
-| 049 | Deactivates two residents who had moved out but could still sign in. |
-| 050 | Deletes three dummy profiles, deliberately keeping two the request had included (one a current resident). |
+| 049 | Deactivates two tenants who had moved out but could still sign in. |
+| 050 | Deletes three dummy profiles, deliberately keeping two the request had included (one a current tenant). |
 | 051 | Added `bills.checkout_opened_at`, so a second GCash checkout on a bill is refused for 15 minutes. |
 | 052 | An attempt to remove a rehearsal test tenant; its header says it cannot succeed as written (an audit foreign key refused it). Do not re-run. |
 | 053 | Removed the rehearsal test profiles, loosening the audit foreign key for that one transaction so the audit rows stay with an empty actor. |
@@ -592,13 +592,13 @@ is not recorded in every file, so this list says what each file **does**, not wh
 | 055 | Removes the GCash test payments and the demo profiles' records. |
 | 056 | Corrected one receipt's rent period that the import misread from a typo in the workbook. |
 | 057 | Deletes the last demo profile, which showed as a former tenant who never lived there. |
-| 058 | Made a repair's tenant optional, so the owner can log a repair for an empty unit. |
+| 058 | Made a repair's tenant optional, so the landlady can log a repair for an empty unit. |
 | 059 | Gave the one ended tenancy with no end date the date it ended. |
 | 060 | Locked `record_income_for_months` like every other function (pinned `search_path`, no PUBLIC execute). |
 | 061 | Removes what the testing day's rehearsal tenant left in the books. |
-| 062 | Added the owner's August 2026 receipts (15) and expenses (34) from her updated workbook; additive only. |
+| 062 | Added the landlady's August 2026 receipts (15) and expenses (34) from her updated workbook; additive only. |
 | 063 | Put the name of the person who uses the administrator account on it. |
-| 064 | Moved imported expenses to the dates the owner wrote (the import had shifted them). |
+| 064 | Moved imported expenses to the dates the landlady wrote (the import had shifted them). |
 | 065 | Added the inquiry's secret-link hash and reference code, so a visitor can follow and answer their inquiry. |
 | 066 | Removed the garbage fee entirely; made the invoice number optional and written as `INV#`; renamed the receipt index and the expense supplier column. |
 | 067 | Gave active tenants a placeholder email that cannot receive mail until they gave their own (email has since been dropped from the site). |
@@ -615,8 +615,8 @@ is not recorded in every file, so this list says what each file **does**, not wh
 | 078 | Rewrote every unit's public description to say only what is known. |
 | 079 | Undid what one test session on the live site did to real records on 4 October 2026 (expense lines added, a receipt voided, a tenant moved out). |
 | 080 | Took TRUNCATE on `audit_logs` away from the application, so it cannot empty the trail. |
-| 081 | Set three units' occupant counts to 2, as the owner confirmed. |
-| 082 | Marked two bills Paid that the owner's August receipts had already paid, by adding the payment the receipt route would have added. |
+| 081 | Set three units' occupant counts to 2, as the landlady confirmed. |
+| 082 | Marked two bills Paid that the landlady's August receipts had already paid, by adding the payment the receipt route would have added. |
 | 083 | Named the administrator as verifier on 082's two payments, so the "every Verified payment names its verifier" check holds. |
 | 084 | Put the property's public number on the administrator's account, so her sign-in number and the site's contact number are one number. |
 | 085 | Made an inquiry's email optional: the site no longer asks for one. |
@@ -675,7 +675,7 @@ are gitignored and must be sent separately.
 | `check:columns` | Every table and column the backend names exists in the live database | .env |
 | `check:fields` | Every field the frontend reads is one the API actually sends | .env |
 | `check:endpoints` | Every backend route has a caller in the frontend, or a stated reason | nothing |
-| `check:ledger` | The owner's money adds up and the business rules hold in the live data | .env |
+| `check:ledger` | The landlady's money adds up and the business rules hold in the live data | .env |
 | `check:reports` | The Excel workbooks agree with the database, month by month | .env |
 | `check:adyen` | The HMAC signature code matches Adyen's own library and published example, and the payment return is read correctly | nothing (builds first) |
 | `check:billing` | Water, period, due date, overdue and receipt-allocation arithmetic, against the live settings | .env (builds first) |
@@ -695,7 +695,7 @@ are gitignored and must be sent separately.
 | `testing-day-watch.mjs` | Read only: during a testing day, shows who has set a password, who is locked out, and today's requests, by unit code only. |
 | `build-chapter-4-diagrams.mjs` | Draws the paper's diagrams (ERD, data flows) as images from the real system. |
 | `build-consent-docx.mjs` | Builds the testing day's consent form as a Word file. |
-| `build-uat-signoff-docx.mjs` | Builds the owner's acceptance sign-off form as a Word file. |
+| `build-uat-signoff-docx.mjs` | Builds the landlady's acceptance sign-off form as a Word file. |
 | `lib/adminSignIn.mjs` | The one way a suite signs in as the administrator; it refuses to resend a password that was already refused, so the suites cannot lock her account. |
 | `ai-use/export-prompt-log.mjs` | Turns this machine's AI session logs into a dated prompt log for the AI-use disclosure (gitignored output). |
 | `demo/` (`make-demo-passwords.mjs`, `set-demo-secrets.mjs`, `demo-schema.sql`, `demo-seed.sql`) | Build and fill the separate demo copy (its own database of invented people and money) for outside evaluators; never the live site. |
@@ -759,13 +759,13 @@ test of which month a receipt is filed under).
    refused like an unknown account; otherwise `resolve_login_identifier` (migration 073) matches the
    login ID or the phone number. Five wrong passwords lock the account for 15 minutes.
 
-5. **"What if the owner presses Save twice on a receipt?"** The unique index
+5. **"What if the landlady presses Save twice on a receipt?"** The unique index
    `idx_one_invoice_per_unit_per_month` refuses the second one (migrations 033, 066, 072), and the
    route turns that into a clear 409. `check:concurrency` proves it on every run. A receipt with no
    invoice number is guarded only by the route's read-before-write (judgement log 3.6b).
 
 6. **"Can the payment gateway mark a bill as paid on its own?"** No. `services/adyenWebhookHandler.ts`
-   writes a payment as Pending Verification only; the owner verifies it in
+   writes a payment as Pending Verification only; the landlady verifies it in
    `PATCH /admin/payments/:paymentId/verify`, which calls `settle_verified_payment`.
 
 7. **"How do you know a webhook really came from Adyen?"** `services/adyenWebhook.ts` checks the HMAC
@@ -786,7 +786,7 @@ test of which month a receipt is filed under).
 
 11. **"How is water computed, and do rates go up automatically?"** `services/billingService.ts`
     `computeWaterFee`: occupants times the rate in `system_settings` (₱200 each). Rates never change by
-    themselves; the owner sets each one by hand and the trigger from migration 020 records every
+    themselves; the landlady sets each one by hand and the trigger from migration 020 records every
     change in `room_price_history`.
 
 12. **"What stops two GCash payments for one bill?"** Checkout is refused while a payment on the bill
@@ -802,5 +802,5 @@ test of which month a receipt is filed under).
     guards that stop if the rows are not exactly what was expected.
 
 15. **"How do you know the code still works?"** `npm run check:all` (21 suites, Section 5.1). For
-    example, `check:ledger` re-derives the owner's money from the live data, and `check:api` calls
+    example, `check:ledger` re-derives the boarding house's money from the live data, and `check:api` calls
     every endpoint both roles use without writing anything.

@@ -8,7 +8,7 @@ Section 1.**
 
 | # | What | Why it is still open |
 | :--- | :--- | :--- |
-| P1 | **The owner's signature** on the acceptance form (Appendix O), then one sentence in Section 4.3.7 | Sean: "noted, ask me again" (E1). She is happy with the system, but the guide accepts acceptance results only with a signed form |
+| P1 | **The landlady's signature** on the acceptance form (Appendix O), then one sentence in Section 4.3.7 | Sean: "noted, ask me again" (E1). She is happy with the system, but the guide accepts acceptance results only with a signed form |
 | P2 | **The prompt-log export on Lloyd's laptop**: `node scripts/ai-use/export-prompt-log.mjs` | Sean: "ask me again" (E2). It also answers which models Lloyd's machine used (A18, left pending on purpose) |
 | P3 | **The front matter in Word**: the defense date and room, each member's Curriculum Vitae, the title page | Sean: "ask me again" (E3) |
 | P4 | **The Acknowledgement**: who to thank | A team decision (D8); Claude drafts it once the names are given |
@@ -17,11 +17,11 @@ Section 1.**
 | P7 | ~~The street name~~ **Answered 13 Oct: Sampaguita.** Fixed in Chapter 1 and on the public site (four places said "Sapaguita") | Done |
 | P8 | **Move-in dates**: the system cannot edit a tenancy's move-in date today (editing a tenant leaves it unchanged; only a move to another unit sets it, to that day) | Sean expected she could edit it. The recommendation is removed as asked. **Looked at 13 Oct, not built:** it is not a display field. `start_date` decides which months a tenant is shown as owing (standing counts from the later of the day after her last receipt and the move-in date, so a later date can hide months owed, and a tenant with no receipts would be shown owing back to an earlier one), and which tenancy a receipt is credited to (`tenancyForPeriod`; unit 1a has overlapping tenancies where a changed date moves receipts between tenants). Safe to add after the defense with those two rules decided; not worth the risk before it |
 | P9 | Make the repository private before the defense | Decided (E4) |
-| P10 | **Scans for Appendices A and B**: the signed letter of request to the owner, and the adviser appointment papers | Found 13 Oct: the 18 September manuscript has only their headings |
+| P10 | **Scans for Appendices A and B**: the signed letter of request, and the adviser appointment papers | Found 13 Oct: the 18 September manuscript has only their headings |
 | P11 | ~~Done 19 Oct~~ **The technical evaluator may re-rate after reviewing the code** (Sean, 13 Oct). If he does, export the survey CSV again and send it; Claude reruns `compute-survey.mjs` and updates Tables 4-14 to 4-18, Maintainability in 4.4.3, Chapter 3 Participants ("did not inspect the source code") and Chapter 5 | Superseded: four more technical evaluators answered instead (15 to 18 Oct); the survey stands at ten respondents, overall 4.59 (B-110) |
-| P12 | ~~Done 19 Oct~~ **More respondents** (Sean, 13 Oct): more technical evaluators and tenants answer the same Google Form; then the same: send the CSV, Claude recomputes every table and updates the counts (now 6) everywhere they appear | Done: ten respondents (owner 1, tenants 3, technical evaluators 5, prospective tenant 1), every table, the paper and the slides recomputed (B-109, B-110). Reopen only if more answer |
+| P12 | ~~Done 19 Oct~~ **More respondents** (Sean, 13 Oct): more technical evaluators and tenants answer the same Google Form; then the same: send the CSV, Claude recomputes every table and updates the counts (now 6) everywhere they appear | Done: ten respondents (landlady 1, tenants 3, technical evaluators 5, prospective tenant 1), every table, the paper and the slides recomputed (B-109, B-110). Reopen only if more answer |
 | P13 | **Unit PH and the test tenant** (B-106): move loydtest out after the defense demo | Decision for Sean |
-| P14 | ~~Done 18 Oct~~ **The owner's September and October receipts.** Her records in the system stop at August (15 receipts that month, none since), so the Overview reads "Not entered yet" for October and four tenants (1a, 1c, 2c, F1) see an amount due for a period her workbook had not marked paid at the end of August. Entering them **on Monthly Income** settles those bills; an import does not (B-107) | Sean, 18 Oct: the owners enter them themselves on Monthly Income when the time comes |
+| P14 | ~~Done 18 Oct~~ **The landlady's September and October receipts.** Her records in the system stop at August (15 receipts that month, none since), so the Overview reads "Not entered yet" for October and four tenants (1a, 1c, 2c, F1) see an amount due for a period her workbook had not marked paid at the end of August. Entering them **on Monthly Income** settles those bills; an import does not (B-107) | Sean, 18 Oct: they enter them themselves on Monthly Income when the time comes |
 | P15 | ~~Run migration 082~~ **Done 13 Oct (082 and 083).** (B-107): two tenants, 1d and F2B, are shown an overdue amount for August, which they paid | Found in the audit, 13 Oct. For Sean, before the defense |
 
 | P16 | ~~Done 10 Nov~~ **New screenshots for the paper**: Figures 10 to 14 and every other figure of a screen show the design before Iteration 3 (the glass redesign of 1 to 2 November) | **Retaken 10 Nov**: Figures 4-7 to 4-11 from the mocked figure pages (sample tenants only) and the live public site, light theme. The figure README says how |
@@ -30,13 +30,15 @@ Section 1.**
 | P19 | **The Form 2 and Proponent's Checklist items only the team can do** (4 Nov 2026): consultation records, Forms 3A and 3B, the similarity report, the acceptance form or MOA, the mock defense, the copies | Item by item in `FINAL/DEFENSE_CHECKLIST_STATUS.md`. **Drafted 10 Nov:** the Literature Map (Appendix R), the revision log and the Deployment Report (`FINAL/FORM_2_EVIDENCE/`). Still the team's: the rest of the list |
 | P20 | ~~Done 6 Nov~~ **GCash is an option, not live** (Sean, 6 Nov 2026): the paper and the system say it is built and works end to end in Adyen's test environment, is optional and takes no real money, and that going live needs the owner's merchant onboarding documents, which the study did not do | Done: a stated limitation in Section 1.4, Recommendation 3 in Chapter 5, the abstract, Chapters 2 to 4, Appendix K, the homepage FAQ and the tenant's Pay with GCash dialog; defense answer "Is the GCash payment real?" in `STUDY_GUIDE_DEFENSE_QA.md` |
 | P21 | **How the workbook was transferred, and the AI disclosure** (Sean, 6 Nov 2026): a paragraph in Chapter 3, Section 3.1.1, after the AI prototyping paragraph | **Drafted, adviser to confirm the AI disclosure wording.** Written from the scripts, migrations and git record: the first transfer script (27 to 28 August) carries no AI co-author and A16 says no AI tool was used in August apart from 20 August, so the paragraph says the researchers wrote it, and that the 30 September update script and the later corrections were written with the AI assistant's help. If the first script was in fact AI-assisted, change that one sentence. The verification script counts rows only; the totals checks are in the migrations (032 refuses to commit if the ledger total moves; 062 matches her August totals row) |
-| P22 | ~~Done 10 Nov~~ **No subscription, free for the owner** (Sean, 10 Nov 2026, from the February consultation): the team decided to give the system to the owner free. The paper does not say so | **Added 10 Nov** to Section 4.5: the team gives the system to the owner free, with no subscription to pay |
+| P22 | ~~Done 10 Nov~~ **No subscription, free for the boarding house** (Sean, 10 Nov 2026, from the February consultation): the team decided to give the system to the boarding house free. The paper does not say so | **Added 10 Nov** to Section 4.5: the team gives the system to the boarding house free, with no subscription to pay |
 
 ## 2. The answers, and what each changed
 
 **Who is who.** Mrs. Fe Galang Da Silva owns the business; Michelle, Lloyd's mother, is the landlady
-and runs it, and is the only administrator (A1 to A3). Chapter 3 now says the landlady runs it on
-behalf of its owner, and that Chapter 4 calls her "the owner" in that role. No names in the paper.
+and runs it, and is the only administrator (A1 to A3). Sean confirmed on 12 November that she manages
+the boarding house for its owner, so the whole paper now calls her the landlady. "The owner" is kept
+only for the proprietor: going live with GCash needs the owner's merchant onboarding documents, and
+BR-035's locked wording. Section 2.4 defines both. No names in the paper.
 
 **Interviews (A4).** With Michelle, from about February 2026. Nothing in the repository or the
 archive records them (the repository begins on 24 July 2026); what is recorded is her workbook and
@@ -70,7 +72,7 @@ matched no article. Kotkar et al. now links to the article itself.
 **The Word file (A21, A22).** There is none yet; the team retypes from this folder into the final
 format. No school format was given, so the paper follows APA 7.
 
-**The owner side (B1 to B5).** B2: Chapter 4's deployment table now says the owner was guided through
+**The landlady side (B1 to B5).** B2: Chapter 4's deployment table now says the landlady was guided through
 the system on 30 September, so training and hand-over is done. B3: the move-in recommendation is
 removed (see P8). B4: receipts whenever she wants; no change to the paper, as every figure is dated.
 B5: the address is in Chapter 1, Section 1.4.

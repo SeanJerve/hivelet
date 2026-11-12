@@ -25,7 +25,8 @@ like the next speaker's first sentence, not "I'll pass it to...".
 **Slide 1. Title** (20 s)
 "Good morning. We are Group 4. Our capstone is Hivelet, a web-based apartment management system
 for the Fe Galang Da Silva Boarding House: 33 units in Legazpi City, 32 of them occupied, and it runs
-on the landlady's real records."
+on the boarding house's real records. The landlady manages it for its owner and is the system's only
+administrator."
 *Fill in slide 1's square brackets before the day.*
 
 **Slide 2. Before Hivelet** (50 s)
@@ -57,7 +58,7 @@ as rated. [`STUDY_GUIDE_REFERENCES.md`]*
 
 **Slide 6. Conceptual framework** (30 s)
 "Input, process, output: the objectives, literature and her workflows go in; the Agile cycle builds
-the modules; the system, its reports, the evaluation and the manuscript come out, with feedback into
+the modules, among them booking and reservation, which here means inquiries and Reserved units; the system, its reports, the evaluation and the manuscript come out, with feedback into
 the next iteration." [2.3, Figure 2-2]
 *Hand-over to B: "To build it, we worked in three iterations."*
 
@@ -71,8 +72,9 @@ the next iteration." [2.3, Figure 2-2]
 12 to 14 September: we checked the system and its documents against each other and corrected 22
 recorded errors. Iteration 2, 15 September to 31 October: her answers, real users, testing and the
 evaluation. Iteration 3, from 1 November: a redesign of how the screens look. No module was added or
-removed, a rerun of all 114 test cases on 4 November found none failing, and a second round of users
-tested the redesign from 31 October to 10 November." [4.2.1, Appendix M Table M-19]
+removed. On 4 November we reran the 114 test cases: the 77 that need no person were run and passed,
+the 37 that need a person were left for one, and none failed. A second round of users tested the
+redesign from 31 October to 10 November." [4.2.1, Appendix M Table M-19]
 *Likely question: "Did AI write it?" Yes, much of the code, at our direction; we reviewed and
 verified it, and iteration 1 exists because we did not trust it unchecked. [Q&A guide, Section 4]*
 
@@ -84,16 +86,17 @@ from Adyen's own form straight to Adyen; they never pass through our server." [4
 
 **Slide 9. Six features** (60 s)
 One sentence each, in the objective's order: tenants and rooms (every rate change recorded); booking
-and inquiries (a thread, no account needed); financial tracking (her own ledger layout, invoice
-numbers, Excel); optional GCash (counts only after she verifies it); repairs and notifications;
-roles and the PWA (each person sees only their part; installs from the browser). [4.2.2 to 4.2.7]
+and reservation management (an inquiry without an account, which the landlady answers, the unit
+marked Reserved, the move-in, and nothing booked or paid online); financial tracking (her own ledger
+layout, invoice numbers, Excel); optional GCash (in Adyen's test environment, no real money, counts
+only after she verifies it); maintenance ticketing and notification; roles and the PWA (each person sees only their part; installs from the browser). [4.2.2 to 4.2.7]
 
 **Slide 10. What a visitor and a tenant see** (30 s)
 "On the left, the public catalogue: a vacant unit, its rate and floor plan, and the inquiry form. On
 the right, the tenant's phone: what is due, and Pay with GCash. The names
 and payments in our figures are samples; the units and rates are real." [Figures 4-8, 4-11]
 
-**Slide 11. What the owner sees** (30 s)
+**Slide 11. What the landlady sees** (30 s)
 "Her ledger, in her workbook's own layout, and the repair board from request to done." [Figures
 4-9, 4-10]
 
@@ -113,7 +116,7 @@ money moves: the sign-in token in browser storage, and no second sign-in factor.
 **Land: 82 of 83 tests passed, 98.8 percent, with no critical defect; the standard is 90.**
 Read the table's four rows. "The one failure: with the connection cut, the Overview showed ₱0
 where the design shows a dash, so a missing figure is never read as zero. Fixed, and it passed on the
-owner's laptop on 13 October." Then: "35 defects across all activities, 32 resolved, 3 accepted as
+landlady's laptop on 13 October." Then: "35 defects across all activities, 32 resolved, 3 accepted as
 low risk." [Table 4-12, Table 4-20]
 *Likely question: "If every suite passed, how did you find bugs?" The screen-versus-database audit:
 six defects every suite missed. [4.3.3]*
@@ -126,7 +129,7 @@ sent five times at once, one is saved. "Simulated users, not people: we say so i
 
 **Slide 15. Real users** (50 s)
 **Land: all 34 tenant tasks completed, 31 without help.**
-"The owner and three tenants used it on their own devices on 30 September. Median 60 seconds a task.
+"The landlady and three tenants used it on their own devices on 30 September. Median 60 seconds a task.
 Help was needed only at the start: the first sign-in and finding their unit and rent, which is
 exactly what Chapter 5 recommends showing new tenants first. In a second round on the redesigned
 system, ten tenants did 151 of 160 attempts without help, 94 percent, and four prospective tenants 31
@@ -135,10 +138,10 @@ M, Table M-30]
 
 **Slide 16. The evaluation** (50 s)
 **Land: 4.59, Very High Quality; every characteristic Very High Quality.**
-"Ten respondents: the owner, three tenants, a prospective tenant and five technical evaluators. A
+"Ten respondents: the landlady, three tenants, a prospective tenant and five technical evaluators. A
 second round on the redesigned system, 16 more answers, gave 4.82, and all 26 together 4.61.
 Portability highest at 4.86, Functional Suitability 4.79; even the lowest two, Usability 4.42 and
-Maintainability 4.32, are Very High Quality. We used the mean of the group means, so one owner is not outweighed by
+Maintainability 4.32, are Very High Quality. We used the mean of the group means, so one landlady is not outweighed by
 three tenants." [Table 4-17, 4.4.2]
 *Likely question: "Ten is very few." We claim it only for the people who answered, every
 characteristic was also measured, and the second round of sixteen gave 4.82. [4.4.1, 4.4.5;
@@ -147,7 +150,7 @@ Appendix M, Tables M-28 and M-29]*
 **Slide 17. Measured and rated agree** (50 s)
 **Land: all eight agree.**
 "27 of the 31 sub-characteristics were measured and 25 rated. Usability: nine tasks in ten were done without
-help, and the owner's lower rating for learning alone shows where a first-timer needs help. Maintainability rests on the code: the
+help, and the landlady's lower rating for learning alone shows where a first-timer needs help. Maintainability rests on the code: the
 checks pass on every change, but three database calls in four sit inside the request handlers. We
 made 51 changes in response, including all 14 of the technical evaluators' comments by 5 October."
 [4.4.3, 4.4.5, 4.4.6]
@@ -163,10 +166,11 @@ records, in her own layout; 82 of 83 tests passed with no critical defect; Very 
 and 4.82 in the second round, with 51 optimizations. "All four objectives were achieved." [5.2]
 
 **Slide 19. Recommendations** (40 s)
-Grouped by who acts: the owner (keep the system's receipts up to date; keep backups); the system
-(Adyen live with refunds, a protected sign-in cookie and second factor, automated browser tests,
-faster first loads on phones, stronger Maintainability and Usability); future researchers (test
-against real data; evaluate longer with every tenant). [5.3]
+Grouped by who acts: the landlady (enter each receipt on Monthly Income, have backups taken); the
+system (GCash live, if the owner wants it, with the owner's merchant onboarding documents, and
+refunds, a protected sign-in cookie and a second factor, automated browser tests of the walkthrough,
+a faster public page on phones, stronger Maintainability and Usability); future researchers (test
+against real data, evaluate longer with every tenant). [5.3]
 
 **Slide 20. Thank you** (10 s)
 "Thank you. We'd like to show it working." Then switch to `DEMO_SCRIPT.md`: the test tenant on unit

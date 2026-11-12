@@ -50,7 +50,7 @@ Both halves are **TypeScript**, so a field with the wrong shape is caught before
 | `frontend/src/router/index.ts` | Which address opens which screen, and who may open it |
 | `frontend/vite.config.ts` | The build, and the PWA settings (`VitePWA`, line 120) |
 | `backend/src/server.ts` | Where the API starts |
-| `backend/src/routes/` | **Every API endpoint**: `public.ts` (no sign-in), `auth.ts` (sign-in), `tenant.ts`, `admin.ts` (the owner), `live.ts`, `recentActions.ts`, `health.ts` |
+| `backend/src/routes/` | **Every API endpoint**: `public.ts` (no sign-in), `auth.ts` (sign-in), `tenant.ts`, `admin.ts` (the landlady), `live.ts`, `recentActions.ts`, `health.ts` |
 | `backend/src/middleware/` | Runs before a route: `auth.ts` (who you are, what you may do), `rateLimit.ts`, `errorHandler.ts`, `requireUuidParam.ts` |
 | `backend/src/services/` | Logic shared by routes: billing, Adyen, audit trail, notifications, Excel exports |
 | `backend/src/config/rbac.ts` | **The role and permission matrix**: who may do what |
@@ -95,7 +95,7 @@ the handler reads or writes those tables.
 | My details | `TenantProfileView.vue` | `GET`/`PUT /tenant/my-profile` | `tenant.ts:1355`, `:1386` → `authService.ts` (only the allowed fields are copied) | `profiles` |
 | Notifications | `NotificationPopover.vue` | `/tenant/my-notifications...` | `tenant.ts:863` onward; `services/notificationService.ts` | `notifications` |
 
-### The owner's side
+### The landlady's side
 
 | Feature | Screen | Endpoint | Backend | Tables |
 | :--- | :--- | :--- | :--- | :--- |
@@ -126,7 +126,7 @@ the handler reads or writes those tables.
 | Database-level protection | **Row-level security** on all 24 tables (checked 13 Oct); the browser never holds a database key | Supabase; `config/db.ts` |
 | Inputs | Every body and query is checked by **zod** schemas before use | `utils/validators.ts`, at each route |
 | The public form cannot be flooded | Per-address rate limit, and a site-wide ceiling counted in the database, 30 new inquiries in 15 minutes | `middleware/rateLimit.ts`, `INQUIRY_CEILING` in `routes/public.ts` |
-| Everything the owner changes is recorded | An audit trail the application cannot edit, delete or empty (migration 080) | `services/auditService.ts`, `audit_logs` |
+| Everything the landlady changes is recorded | An audit trail the application cannot edit, delete or empty (migration 080) | `services/auditService.ts`, `audit_logs` |
 | Headers | HTTPS forced, no framing, no MIME sniffing | `vercel.json`, `helmet` in `server.ts` |
 | Gateway messages are genuine | Every Adyen notification is checked by **HMAC signature** before anything is written | `services/adyenWebhook.ts` |
 
@@ -164,7 +164,7 @@ code can set it differently.
 4. Adyen also calls `POST /public/payments/adyen/webhook` (`public.ts:1215`). Its HMAC signature is
    checked (`adyenWebhook.ts`), then `adyenWebhookHandler.ts` writes the payment as **Pending
    Verification**. The same gateway reference cannot be recorded twice (`uq_payments_gateway_reference`).
-5. The owner verifies it on the **To verify** tab of Monthly Income (`PATCH
+5. The landlady verifies it on the **To verify** tab of Monthly Income (`PATCH
    /admin/payments/:paymentId/verify`, `admin.ts:2012`). `settle_verified_payment` settles the bill
    and writes the receipt in one step.
 
@@ -211,7 +211,7 @@ refuses it whenever Adyen is configured, as it is on the live site.
 recorded), `trg_update_expense_total` (an expense's total follows its allocations),
 `trg_route_linda_water`.
 
-**One rule above all:** the database is live, with the owner's real records. Every change is a new
+**One rule above all:** the database is live, with the landlady's real records. Every change is a new
 numbered file in `database/migrations/`, taken after `npm run backup`; nothing is ever reset.
 
 ---
@@ -225,8 +225,8 @@ at the root (copy `.env.example`; never commit it); `npm run dev:backend` (port 
 | If this happens | Look here first |
 | :--- | :--- |
 | A GCash payment does not appear | Adyen dashboard, webhook log (was it delivered and accepted?); Vercel's function logs for `/public/payments/adyen/webhook`; the `payments` table |
-| A screen shows a total the owner disputes | The same figure in the database (Supabase SQL editor); `npm run check:ledger` and `check:reports` |
-| Someone cannot sign in | `profiles.locked_until` and `failed_login_count`; the owner can reset a tenant's password from the Tenants page |
+| A screen shows a total the landlady disputes | The same figure in the database (Supabase SQL editor); `npm run check:ledger` and `check:reports` |
+| Someone cannot sign in | `profiles.locked_until` and `failed_login_count`; the landlady can reset a tenant's password from the Tenants page |
 | A change on one device does not show on another | `live.ts`; is the other page on screen? Is it offline? |
 | "Cannot tell whether it was saved" | The connection stalled past 45 s (`api.ts:252`); check the record before sending it again |
 | A page fails after a deploy | Vercel deployment log; `npm run build` in `frontend/` and `npx tsc --noEmit` in `backend/` |
@@ -241,10 +241,10 @@ at the root (copy `.env.example`; never commit it); `npm run dev:backend` (port 
 - **"How do you stop a tenant seeing another tenant's bill?"** Every protected route names a permission
   (`config/rbac.ts`), tenant queries are scoped to the caller (`scopeService.ts`), and the database
   has row-level security on every table.
-- **"What happens if the owner clicks Save twice?"** The database refuses the second receipt (the
+- **"What happens if the landlady clicks Save twice?"** The database refuses the second receipt (the
   unique index), and Chapter 4, Section 4.3.6 shows the test.
 - **"How does the online payment work?"** Section 5, steps 1 to 5. Stress: nothing counts until the
-  owner verifies it.
+  landlady verifies it.
 - **"Where is the water computed?"** `billingService.ts:69`, `computeWaterFee`.
 - **"Is it really offline?"** It reads offline; it does not write offline (Section 6).
 - **"Why Vue, Express and Supabase?"** Chapter 3, Section 3.1.1 gives the reasons; in short, one

@@ -10,7 +10,8 @@ and a name in plain words (for example *Monthly Income screen*) is a screen in t
 
 **The paper's own wording wins.** Everything here was read from the final chapters in `FINAL/`, the
 appendices, the business rules register, the requirements and the screens as they stood on
-24 October 2026, and checked again against the screens on 10 November 2026. If an entry and a chapter ever disagree, **the chapter is right**: say what the
+24 October 2026, checked again against the screens on 10 November 2026, and brought in line with the
+paper of 12 November 2026. If an entry and a chapter ever disagree, **the chapter is right**: say what the
 chapter says, and tell Sean so this page can be fixed. Section 6 of `STUDY_GUIDE_TEAM_REVIEWER.md`
 is the short version of this list; the meanings here agree with it.
 
@@ -22,7 +23,7 @@ is the short version of this list; the meanings here agree with it.
 - **Adyen with GCash** is committed, configured and working end to end in Adyen's **test
   environment**, where it takes no real money. It is optional and not live: going live needs the
   owner's merchant onboarding documents.
-- **Rates are set by the owner by hand.** Only the history of each change is kept; nothing raises a
+- **Rates are set by the landlady by hand.** Only the history of each change is kept; nothing raises a
   rate by itself.
 - **Nobody signs in with, or gives, an email** (since 20 October 2026). Sign-in is by **login ID or
   phone number**.
@@ -53,10 +54,10 @@ the Record payment form she picks "Acknowledgement receipt" from the invoice lis
 Excel workbook show it as ACK. It was added on 1 October 2026, copied from her own practice.
 **Where:** Section 4.3.6; Table 4-22, stage 4; App. K, Part 2, §3; Record payment form.
 
-**Administrator.** The role with full rights on the owner's side of the system. Only the landlady
+**Administrator.** The role with full rights on the landlady's side of the system. Only the landlady
 holds it. **Where:** Section 3.3; Table 4-7.
 
-**Advance.** The owner's own word for the deposit. It is the same sum, not extra rent paid ahead.
+**Advance.** The landlady's own word for the deposit. It is the same sum, not extra rent paid ahead.
 **Where:** App. M, Table M-19; BR-039.
 
 **Anniversary date.** The day of the month a tenancy's rent runs from. The rent period runs from that
@@ -88,23 +89,23 @@ Section 4.2.4; App. N (bills); `STUDY_GUIDE_CODE.md`, §5.
 rooms 1a to 1h, 2a to 2g and 3a to 3g, called "Boarding House" on every screen and in every workbook.
 **Where:** Section 4.1; BR-032; App. K, Part 2.
 
-**Booking inquiry.** The paper's term for a visitor's question about a vacant unit, sent from the
-public site and answered by the administrator. On screen it is simply an **inquiry**. **Where:**
-Section 2.4; Section 4.2.3.
+**Booking and reservation management.** The name of the module the approved objective gives. In this
+study it means the public list of units, the inquiry the landlady answers, marking a unit Reserved,
+and moving the person in from the inquiry. Nothing is booked or paid for online. Never say the
+system takes bookings. **Where:** Section 1.4; Section 2.4 (Inquiry); Section 4.2.3.
 
-**Capacity.** The most occupants a unit is meant for. **Where:** App. N (rooms); Ch. 5,
-recommendation 4.
+**Capacity.** The most occupants a unit is meant for. **Where:** App. N (rooms).
 
 **Cash.** The main way tenants pay, in person on site. The landlady records every cash payment;
 tenants do not report their own. **Where:** Section 1.4; Section 4.1.2.
 
 **Cash flow monitoring.** Making summaries of income and expenses from the recorded transactions so
-the owner can see where money came from and went. **Where:** Section 2.4; Overview screen.
+the landlady can see where money came from and went. **Where:** Section 2.4; Overview screen.
 
 **Centralized system.** One system that holds all the data and processes in one place, instead of
 separate files and chats. **Where:** Section 2.4.
 
-**Cluster.** A group of units that the owner's workbook books together. There are five: Boarding
+**Cluster.** A group of units that the landlady's workbook books together. There are five: Boarding
 House (22), Back Apartment (5), Front Apartment (3), Penthouse (1) and Linda (2). **Where:**
 Section 4.1; BR-032; Monthly Income screen ("Group by cluster").
 
@@ -118,7 +119,7 @@ total, worked out by the system. **Where:** BR-046; FR-040.
 
 **Deposit.** One month's rent, set once at move-in, equal to the rent in effect then. Example: moved
 in at ₱8,500, so deposit ₱8,500. It is held, spent on repairs when the tenant leaves, and the rest
-returned; that settling is the owner's own bookkeeping. It is kept out of the remitted amount. Since
+returned; that settling is the landlady's own bookkeeping. It is kept out of the remitted amount. Since
 13 October 2026 a tenant can see it, and since 5 November 2026 it is on their Overview, in the unit
 card. **Where:** Table 4-6 (BR-039); Section 4.2.2;
 Tenants screen; tenant Overview.
@@ -137,7 +138,7 @@ Part 1, §5.
 **Expense allocation.** One part of an expense, booked to one property area. Her workbook gave
 1,327 of them. **Where:** Section 4.1.1; BR-044.
 
-**Expense category (Kind of expense).** The owner's thirteen built-in kinds of expense: Supplies,
+**Expense category (Kind of expense).** The landlady's thirteen built-in kinds of expense: Supplies,
 Taxes and Licenses, Janitorial and Messengerial Services, Depreciation, Professional Fees, Salaries
 (with three sub-lines), Communication/Light/Water, Repairs and Maintenance, Fuel and Oil, and Others.
 She can add her own after them (numbered 11, 12 and so on); none can be renamed or removed.
@@ -176,7 +177,7 @@ recorded only when the administrator records an arrangement. **Where:** BR-013; 
 removed from the system entirely. It was never part of the remitted amount. **Where:** Table 4-9;
 BR-037 (retired).
 
-**Grace period.** There is **none**. A bill is overdue from the day after its due date. The owner
+**Grace period.** There is **none**. A bill is overdue from the day after its due date. The landlady
 still accepts late payment and follows it up after about a week, but that week does not change when
 a bill is overdue. **Where:** Section 4.1.2; Table 4-6; BR-012.
 
@@ -184,7 +185,7 @@ a bill is overdue. **Where:** Section 4.1.2; Table 4-6; BR-012.
 workbook gave 937. A receipt is filed under the month the rent is for, not the day it was paid.
 **Where:** Section 4.1.1; Section 4.2.4; Table 4-5.
 
-**Invoice.** The owner's own numbered paper slip for a payment. Say "invoice", not "OR": the screens
+**Invoice.** The landlady's own numbered paper slip for a payment. Say "invoice", not "OR": the screens
 say invoice. **Where:** Section 4.1.1; Section 4.2.4.
 
 **Invoice book.** The paper book in which she writes her invoices. **Where:** Section 4.1.1.
@@ -194,8 +195,11 @@ up. "4726" or "INV 4726" is saved as INV#4726. The same number cannot be used tw
 and month (among receipts that are not voided). **Where:** Table 4-5; Section 4.2.4; App. K, Part 2,
 §3.
 
-**Issue ticketing system.** A structured way for tenants to report a problem, which is then tracked,
-assigned and resolved. In the system it is **Repairs**. **Where:** Section 2.4; Section 4.2.5.
+**Inquiry.** A message a prospective tenant sends about a unit through the public website, without
+an account. The landlady answers it in the system, may mark the unit Reserved so that it takes no
+other inquiry, and if the person rents, moves them in from it. This is the form booking and
+reservation management takes here: nothing is booked or paid for online. The paper's term, renamed
+from "Booking Inquiry" on 12 November 2026. **Where:** Section 2.4; Section 4.2.3; Inquiries screen.
 
 **Landlady.** The person who runs the boarding house day to day on behalf of its owner, and the
 system's only administrator. **Where:** Section 2.4; Section 3.3.
@@ -203,7 +207,7 @@ system's only administrator. **Where:** Section 2.4; Section 3.3.
 **Late payment.** Accepted. A late bill is still overdue from the day after its due date. **Where:**
 BR-012.
 
-**Ledger.** A record book of money. Hivelet has two, kept in the owner's own layout: **Monthly
+**Ledger.** A record book of money. Hivelet has two, kept in the landlady's own layout: **Monthly
 Income** and **Monthly Expenses**. The screens call them records: Monthly Income's list is the
 **Records** tab. **Where:** Section 4.2.4.
 
@@ -216,8 +220,12 @@ per occupant as everyone, but recorded separately as Linda's water and kept out 
 amount; the workbook shows Linda separately. Example: LF with two occupants, ₱400 recorded as Linda's
 water; remitted = rent only. **Where:** Table 4-6 (BR-040); Table 4-5; App. K, Part 2, §3.
 
-**Main House.** A property area: the owner's own residence. It is non-rental, so its costs are not
+**Main House.** A property area: the residence on the property, not let to tenants. It is non-rental, so its costs are not
 taken from rental income. **Where:** BR-041; App. N (property_areas).
+
+**Maintenance ticketing.** The module through which a tenant sends a repair request, which the
+landlady assigns, tracks and updates until it is resolved. In the system it is **Repairs**. The paper's
+term, renamed from "Issue Ticketing System" on 12 November 2026. **Where:** Section 2.4; Section 4.2.5.
 
 **Monthly Expenses Report.** The second sheet of her workbook, and the screen and Excel workbook that
 reproduce it: expenses by date, area and category. **Where:** Section 4.1.1; Section 4.2.4.
@@ -253,11 +261,12 @@ Rooms and rates screen.
 **Operating expenses.** Costs of running the rental property, from the four rental areas. **Where:**
 Table 4-9; Overview screen ("Operating").
 
-**Other Expenses / Personal.** A property area for the owner's personal costs. Non-rental, so not
+**Other Expenses / Personal.** A property area for personal costs, not the business's. Non-rental, so not
 deducted from rental income. **Where:** BR-041; App. N.
 
-**Owner.** In Chapter 4, the landlady in her role as the system's administrator. **Where:**
-Section 2.4; Section 3.3.
+**Owner.** The proprietor of the boarding house, for whom the landlady runs it. Not the landlady. The
+paper says "the owner" only where taking GCash live needs the owner's merchant onboarding documents,
+and in BR-035's locked wording. **Where:** Section 2.4; Section 1.4.
 
 **Partial payment.** Paying part of a bill. Not the normal way; an early defect once lost the rest of
 the debt and is now checked on every run. **Where:** BR-013; Section 4.3.1.
@@ -265,7 +274,7 @@ the debt and is now checked on every run. **Where:** BR-013; Section 4.3.1.
 **Penthouse (PH).** The one rooftop unit, a cluster and an expense area of its own. In testing it was
 the one vacant unit. **Where:** Section 4.1; BR-032; BR-041; Section 4.3.4.
 
-**Personal spending.** Spending booked to the owner's own areas, for example the 2025 renovation of
+**Personal spending.** Spending booked to the landlady's own areas, for example the 2025 renovation of
 her house. Shown beside operating costs, never deducted from rental income. **Where:** Section 4.1.2;
 Overview screen ("Personal, not deducted").
 
@@ -282,7 +291,7 @@ only. **Where:** Section 4.2.6; App. N (profiles).
 **Prospective tenant.** A person looking for a room who uses only the public website, with no
 account. One took part in the evaluation. **Where:** Section 2.4; Section 3.3.
 
-**Rate (rent rate).** A unit's monthly rent. The owner sets it by hand; a database trigger records
+**Rate (rent rate).** A unit's monthly rent. The landlady sets it by hand; a database trigger records
 the old rate, the new rate, the date and who changed it. On 20 September 2026 she confirmed every
 unit's rate. **Where:** Section 4.1.2; Section 4.2.2; Rooms and rates screen.
 
@@ -300,7 +309,7 @@ Section 4.1.1; Table 4-8; Section 4.5.
 date, never typed. **Where:** Table 4-5; Table 4-6 (BR-033).
 
 **Repair request (maintenance ticket).** A tenant's report of something to fix, with a title,
-details, how urgent and an optional photo. It is tracked until the owner closes it. **Where:**
+details, how urgent and an optional photo. It is tracked until the landlady closes it. **Where:**
 Section 4.2.5; Repairs screen.
 
 **Reserved.** A unit status: held for someone. A reserved unit takes no new inquiries. **Where:**
@@ -337,7 +346,7 @@ Part 2, §5.
 **Unit.** One rentable room or apartment. The paper says unit; the database table is called rooms.
 There are 33. **Where:** Section 4.1; App. N.
 
-**Unit code.** The short name of a unit, as the owner writes it: 1a to 1h, 2a to 2g, 3a to 3g, B1F,
+**Unit code.** The short name of a unit, as the landlady writes it: 1a to 1h, 2a to 2g, 3a to 3g, B1F,
 B2F, B2B, B3F, B3B, PH, F1, F2F, F2B, LF and LB. **Where:** BR-032; App. N (rooms).
 
 **USB flash drive.** Where her only copy of the workbook was kept before the system: one file, one
@@ -364,7 +373,7 @@ the year. **Where:** Section 4.1.2.
 never read as ₱0. The one failed test (step 23b) was ₱0 shown here instead. **Where:** Section 4.3.4;
 App. K, Part 2, §2; Overview screen.
 
-**Add a new kind… / Add kind.** In Monthly Expenses, how the owner adds her own expense category after
+**Add a new kind… / Add kind.** In Monthly Expenses, how the landlady adds her own expense category after
 the thirteen. **Where:** App. K, Part 2, §4; BR-043.
 
 **Add a photo.** On a repair request, attach one photo as a JPG or PNG; it is made smaller before
@@ -405,9 +414,10 @@ Part 2, §1.
 
 **Clear.** Removes the filters in use. **Where:** App. K, Part 2.
 
-**Close inquiry.** Marks an inquiry settled. **Where:** App. K, Part 2, §8.
+**Close inquiry.** Marks an inquiry settled. A Closed inquiry, or one whose person moved in, has no
+reply box and takes no more replies. **Where:** App. K, Part 2, §8.
 
-**Closed.** A final status for an inquiry, or for a repair the owner has closed. **Where:** App. N;
+**Closed.** A final status for an inquiry, or for a repair the landlady has closed. **Where:** App. N;
 Inquiries and Repairs screens.
 
 **Covering from / Covering to / Months covered.** In Record payment, the period a payment covers.
@@ -416,28 +426,29 @@ Covering from starts the day after the tenant's last recorded period. **Where:**
 **Date paid.** In Record payment and Edit payment, the day the tenant paid. The payment is filed under the month its rent period starts, not this day. **Where:** App. K, Part 2, §3.
 
 **Delete payment.** The button that removes a receipt recorded by mistake. It does not erase it: the
-receipt is **voided**, kept with who, when and why, and drops out of the totals. Ch. 5 recommends the
-button say Void. **Where:** App. K, Part 2, §3; App. L, A-25; Ch. 5, recommendation 4.
+receipt is **voided**, kept with who, when and why, and drops out of the totals. The button
+still says Delete, which is why it can read as an erasure. **Where:** App. K, Part 2, §3; App. L, A-25.
 
 **Delete expense.** Removes an expense from the ledger the same way, by voiding it. **Where:**
-App. K, Part 2, §4; Ch. 5, recommendation 4.
+App. K, Part 2, §4.
 
 **Delete repair / Delete (inquiry).** Removes a repair request or an inquiry for good, after a
-confirmation. Ch. 5 recommends keeping them archived instead. **Where:** App. K, Part 2, §7 and §8;
-Ch. 5, recommendation 4.
+confirmation. On Inquiries, **Delete** appears only on a Closed inquiry or one whose person moved in,
+and asks "Delete this inquiry?". **Where:** App. K, Part 2, §7 and §8.
 
 **Done.** On the repairs board and the tenant's Repairs screen, a request that is resolved or closed.
 **Where:** Repairs screen.
 
 **Download (Month, Year, All).** Saves a ledger or the tenant history as an Excel workbook in the
-owner's layout. The message "Report downloaded" (computer) or "Download started" (phone) confirms
+landlady's layout. The message "Report downloaded" (computer) or "Download started" (phone) confirms
 it. **Where:** Section 4.2.4; App. K, Part 2.
 
 **Due / Due soon / Due today / Due now.** On the tenant's rent months, a month that must be paid, soon
 or today; Due now is the total due. **Where:** App. K, Part 1, §3.
 
 **Edit / Save changes.** Opens a record to correct it and saves the correction. Every correction is
-written to the audit trail. **Where:** App. K, Part 2.
+written to the audit trail. In **Edit this payment**, Water is worked out from Occupants and cannot
+be typed. **Where:** App. K, Part 2, §3.
 
 **Filters.** Dropdowns beside the search (cluster, month, year, status, kind). They carry no label
 above them: each option says what it shows, such as **All clusters**, **All months**, **Group by
@@ -460,7 +471,7 @@ App. K, Part 2, §3.
 **How urgent.** A repair request's priority: Low, Medium, High or Emergency. **Where:** App. K,
 Part 1, §4; BR-021.
 
-**In progress.** A repair the owner has started. **Where:** Section 4.2.5; Repairs screen.
+**In progress.** A repair the landlady has started. **Where:** Section 4.2.5; Repairs screen.
 
 **Inquire now / Send inquiry.** The public site's buttons for asking about a unit. **Where:**
 Section 4.2.3; public site.
@@ -468,7 +479,7 @@ Section 4.2.3; public site.
 **Invoice or acknowledgement receipt (if any).** The Record payment field for her invoice number, or
 the choice "Acknowledgement receipt", or blank. **Where:** App. K, Part 2, §3.
 
-**Log a repair.** The owner records a repair she was told about in person, even for an empty unit.
+**Log a repair.** The landlady records a repair she was told about in person, even for an empty unit.
 **Where:** Section 4.2.5; App. K, Part 2, §7.
 
 **Login ID.** A tenant's short sign-in name, such as HV-48213, shown when they are moved in and on
@@ -482,13 +493,13 @@ screen.
 
 **Mark all read.** Marks every notification read. **Where:** App. K, Part 2, §2.
 
-**Mark resolved.** The owner marks a repair done; the tenant is notified. **Where:** App. K, Part 2,
+**Mark resolved.** The landlady marks a repair done; the tenant is notified. **Where:** App. K, Part 2,
 §7.
 
-**Monthly Expenses (screen).** The owner's expense ledger, by property area, in her layout. **Where:**
+**Monthly Expenses (screen).** The landlady's expense ledger, by property area, in her layout. **Where:**
 Section 4.2.4; side menu.
 
-**Monthly Income (screen).** The owner's income ledger, by cluster, in her layout, with Record payment
+**Monthly Income (screen).** The landlady's income ledger, by cluster, in her layout, with Record payment
 and To verify. **Where:** Section 4.2.4; Figure 4-9; side menu.
 
 **Months paid in (year).** On the Tenants screen's history of a past year, how many months each
@@ -513,6 +524,9 @@ App. K, Part 2, §2.
 **No connection · Transactions unavailable.** The thin bar shown at the top when the device is
 offline. **Where:** App. K, Part 1, §6.
 
+**No tenant.** Shown wherever a screen says who lives in a unit and no one does. **Vacant** stays the
+unit's status. **Where:** Rooms and rates, Tenants and Repairs screens.
+
 **Not accepted.** What a tenant sees for a GCash payment the landlady rejected. **Where:** tenant
 Overview and Payments screens.
 
@@ -520,12 +534,15 @@ Overview and Payments screens.
 cannot tell an unpaid month from one not yet entered. Say "Not recorded", never "unpaid". **Where:**
 Section 4.2.4; App. K, Part 1, §3.
 
-**Not recorded.** Shown for a move-in date the owner's workbook never had. **Where:** Section 4.2.2.
+**Not recorded.** Shown for a move-in date the landlady's workbook never had. **Where:** Section 4.2.2.
+
+**Nothing matches.** What every list shows when a search finds nothing. **Where:** every screen with a
+search.
 
 **Nothing yet.** Shown where nothing has happened yet, for example an empty Recently list.
 **Where:** side menu.
 
-**Occupancy.** The owner's Overview tile counting occupied and vacant units, with each cluster's
+**Occupancy.** The landlady's Overview tile counting occupied and vacant units, with each cluster's
 count. **Where:** App. K, Part 2, §2; Overview screen.
 
 **One-time password (starting password).** The first password the landlady gives a tenant in person.
@@ -535,7 +552,7 @@ App. K, Part 1, §1, and Part 2, §5.
 **Order.** How a list is arranged: by unit, by name, newest or oldest first. **Where:** App. K,
 Part 2.
 
-**Overview.** The first screen after sign-in, for the owner and for each tenant. **Where:**
+**Overview.** The first screen after sign-in, for the landlady and for each tenant. **Where:**
 Figure 4-11; App. K.
 
 **Pay with GCash.** The tenant's button to pay a bill online. It is hidden when offline. **Where:**
@@ -560,9 +577,11 @@ bars. **Where:** App. K, Part 2, §3.
 **Recently (Your recent actions).** The last three things you did, in the side menu (on a phone,
 the menu that opens from the top left). Only you see your own. **Where:** App. K, Part 1, §2.
 
-**Record expense.** Opens the form for a new expense. **Where:** App. K, Part 2, §4.
+**Record expense.** Opens the form for a new expense. Before saving it asks **Record this expense?**
+with **Go back** and **Record it**, as Record payment does. **Where:** App. K, Part 2, §4.
 
-**Record it / Record it anyway.** The last button of Record payment. It reads Record it anyway when
+**Record it / Record it anyway.** The last button of Record payment and Record expense. On Record
+payment it reads Record it anyway when
 the unit already has a payment for that period. **Where:** `STUDY_GUIDE_TEAM_REVIEWER.md`, §5;
 Record payment form.
 
@@ -571,27 +590,28 @@ Record payment form.
 **Reference code.** A short code a visitor gets after sending an inquiry. With their phone number it
 opens their conversation. **Where:** Section 4.2.3; App. K, Part 2, §8.
 
-**Reject.** The owner refuses a GCash payment; it never reaches the ledger. **Where:** Section 4.2.4;
+**Reject.** The landlady refuses a GCash payment; it never reaches the ledger. **Where:** Section 4.2.4;
 App. K, Part 2, §3.
 
 **Remitted.** The Monthly Income column and total for rent plus water. **Where:**
 Monthly Income screen; BR-038.
 
-**Repairs (board).** The owner's board of repair requests in three columns: To dispatch, In
+**Repairs (board).** The landlady's board of repair requests in three columns: To dispatch, In
 progress, Done. **Where:** Figure 4-10; side menu.
 
-**Reset password.** The owner gives a tenant a new one-time password; the old one stops working and
+**Reset password.** The landlady gives a tenant a new one-time password; the old one stops working and
 their phone is signed out. **Where:** App. K, Part 2, §5.
 
-**Rooms and rates.** The owner's screen of every unit's rate and status. **Where:** Figure 4-7; side
+**Rooms and rates.** The landlady's screen of every unit's rate and status. **Where:** Figure 4-7; side
 menu.
 
-**Search.** Narrows a list as you type. **Where:** App. K, Part 2.
+**Search.** Narrows a list as you type. When nothing is found it says **Nothing matches**. **Where:**
+App. K, Part 2.
 
 **See it in Monthly Income.** After saving a payment, opens that month with the payment marked.
 **Where:** App. K, Part 2, §3.
 
-**Send reply.** Sends the owner's answer on an inquiry. **Where:** App. K, Part 2, §8.
+**Send reply.** Sends the landlady's answer on an inquiry. **Where:** App. K, Part 2, §8.
 
 **Send request.** Sends a tenant's repair request. **Where:** App. K, Part 1, §4.
 
@@ -602,7 +622,8 @@ roommates and how many. **Where:** Tenants screen.
 
 **Show 8 more / Show all / Show fewer.** Open or close more of a long list. **Where:** App. K, Part 2.
 
-**Sign in / Sign out.** Start and end a session. Signing out also removes the offline copy.
+**Sign in / Sign out.** Start and end a session. Signing out also removes the offline copy. Sign in
+shows its own message for an empty field, such as "Enter your password."
 **Where:** App. K, Part 1, §1 and §7.
 
 **Split across another area.** Splits one expense across more than one property area; the parts must
@@ -616,7 +637,7 @@ there. **Where:** Tenants screen.
 **Submitted.** A repair request just sent, not yet started. **Where:** App. N (maintenance_tickets);
 tenant Repairs screen.
 
-**Tenants (screen).** The owner's screen for moving tenants in and out, editing them and resetting
+**Tenants (screen).** The landlady's screen for moving tenants in and out, editing them and resetting
 passwords. **Where:** side menu.
 
 **The activity record.** The audit trail. Since 1 October 2026 it is kept in the database and not
@@ -625,13 +646,13 @@ shown in the app. **Where:** App. K, Part 2, §9; Table 4-9 ("Activity").
 **To dispatch.** A repair waiting for someone to be sent. **Where:** Repairs screen.
 
 **To verify.** The tab on Monthly Income, beside Records, that lists the GCash payments waiting for
-the owner's check. While any are waiting, Monthly Income opens on it. **Where:** App. K, Part 2, §3;
+the landlady's check. While any are waiting, Monthly Income opens on it. **Where:** App. K, Part 2, §3;
 Monthly Income screen.
 
 **Total handed over.** In Record payment, the total the tenant gave: rent plus water for the months
 covered. **Where:** Record payment form.
 
-**Verify.** The owner confirms a GCash payment arrived; only then does it count. **Where:**
+**Verify.** The landlady confirms a GCash payment arrived; only then does it count. **Where:**
 Section 4.2.4; Monthly Income screen.
 
 **Waiting for an answer.** An inquiry status: not yet answered. **Where:** App. K, Part 2, §8.
@@ -645,7 +666,7 @@ check the list before sending it again. **Where:** Section 4.3.6; App. K, Part 2
 **Year picker (2026 ⌄).** Beside the page name, chooses another year; a past year can be read but not
 added to. **Where:** App. K, Part 2, §2 and §3.
 
-**"Your inquiry" page.** The visitor's private page for an inquiry, where the owner's answer appears
+**"Your inquiry" page.** The visitor's private page for an inquiry, where the landlady's answer appears
 and they can write back. **Where:** Section 4.2.3; `STUDY_GUIDE_TEAM_REVIEWER.md`, §5.
 
 ---
@@ -743,7 +764,7 @@ nothing. Example: record_income_for_months saves a three-month receipt as three 
 **Where:** `STUDY_GUIDE_CODE.md`, §5 and §7.
 
 **Demonstration copy.** The same software on a separate database with sample data, used by four
-technical evaluators so no outsider saw the owner's records. **Where:** Section 3.3; Section 4.4.1.
+technical evaluators so no outsider saw the landlady's records. **Where:** Section 3.3; Section 4.4.1.
 
 **Deploy (deployment).** Putting a new version on the live site. Every approved change deploys
 automatically from the main code branch. **Where:** Section 3.2.5; Section 4.5.
@@ -758,7 +779,7 @@ and 37 foreign keys. **Where:** Figure 4-6; App. H.
 **Enumeration (enum).** A column that accepts only a fixed list of values, such as Verified, Pending
 Verification or Rejected. **Where:** Table 4-5; App. N.
 
-**Excel export (.xlsx).** A download of a ledger as an Excel file in the owner's layout. **Where:**
+**Excel export (.xlsx).** A download of a ledger as an Excel file in the landlady's layout. **Where:**
 Section 4.2.4; NFR-010.
 
 **Express (Express.js).** The framework the backend is written with, on Node.js. Version 4.22.
@@ -794,7 +815,7 @@ own window. **Where:** Section 4.2.7.
 request. It is kept in the browser's storage, one of two named weaknesses. **Where:** Section 4.4.4;
 `STUDY_GUIDE_CODE.md`, §4.
 
-**Layout shift (CLS).** How much a page jumps while it loads. The owner's Overview measured 0.22 on 30 September and 0.08 on 10 November, after the redesign (Table M-31).
+**Layout shift (CLS).** How much a page jumps while it loads. The landlady's Overview measured 0.22 on 30 September and 0.08 on 10 November, after the redesign (Table M-31).
 **Where:** Section 4.3.5; Ch. 5, recommendation 5.
 
 **Largest element drawn (LCP).** How soon the main content of a page appears: 3.4 to 3.6 seconds for
@@ -807,7 +828,7 @@ Section 4.3.5; Table 4-19.
 only what did. **Where:** `STUDY_GUIDE_CODE.md`, §6.
 
 **Load test.** Sending many requests at once to see if the system copes: 12 simulated users on the
-public pages and 6 on the owner's records, 0 of 1,085 and 285 requests failed. **Where:**
+public pages and 6 on the landlady's records, 0 of 1,085 and 285 requests failed. **Where:**
 Section 4.3.6; App. M, Table M-25.
 
 **Lockout.** After five wrong passwords an account locks for 15 minutes. **Where:** Section 4.2.6.
@@ -968,7 +989,7 @@ parties. **Where:** Section 4.2.1.
 refused payments at first; Adyen support replaced it (Case 08657379). **Where:** Section 4.3.2.
 
 **Adyen.** The payment gateway through which a tenant may pay a bill with GCash. It runs on Adyen's
-test account, and each payment it reports is recorded as pending until the owner verifies it.
+test account, and each payment it reports is recorded as pending until the landlady verifies it.
 **Where:** Section 2.4; Table 4-4.
 
 **Adyen Online / Bank Transfer / Cash / GCash.** The four payment methods a record can carry.
@@ -996,8 +1017,7 @@ Section 2.4.
 message is refused. 73 of 73 gateway checks passed. **Where:** Table 4-8; `STUDY_GUIDE_CODE.md`, §5.
 
 **Live account.** Adyen's real-money mode. Hivelet is not on it: moving from test to live needs the
-owner to complete Adyen's merchant onboarding for GCash with her business documents, which the study
-did not do. Ch. 5, recommendation 3.
+owner's merchant onboarding documents, which the study did not do. Ch. 5, recommendation 3.
 **Where:** Ch. 5, recommendation 3.
 
 **Local cashier page.** A built-in checkout page used only in development. The server refuses it
@@ -1024,7 +1044,7 @@ to the database; reconciliation against bank records is excluded. **Where:** Sec
 **Refund.** Returning money. Excluded from the system; made from Adyen's own dashboard. **Where:**
 Section 1.4; Ch. 5, recommendation 3.
 
-**Rejected.** A verification status: the owner refused the payment; the tenant sees "Not accepted".
+**Rejected.** A verification status: the landlady refused the payment; the tenant sees "Not accepted".
 **Where:** Table 4-5.
 
 **Settle.** When a payment is verified, the bill is marked paid and the receipt written, in one step.
@@ -1036,10 +1056,10 @@ gateway runs on it. **Where:** Section 2.4; Section 4.3.2.
 **Transaction reference (gateway reference).** Adyen's own number for an online payment; it can never
 be recorded twice. **Where:** Table 4-5.
 
-**Verification queue.** The owner's list of payments to verify (To verify). **Where:** Section 4.3.2;
+**Verification queue.** The landlady's list of payments to verify (To verify). **Where:** Section 4.3.2;
 App. L, A-34.
 
-**Verified.** A verification status: the owner confirmed the payment; it counts as paid. **Where:**
+**Verified.** A verification status: the landlady confirmed the payment; it counts as paid. **Where:**
 Table 4-5.
 
 **Void.** Cancelling a receipt while keeping it, with who, when and why. It drops out of the totals
@@ -1123,10 +1143,11 @@ Table 4-17.
 **Check suite results (Table 4-8).** See Check suite in Section 3. **Where:** Section 4.3.1.
 
 **Conceptual framework (IPO model).** Input (objectives, literature, interviews, workflows), Process
-(the Agile cycle and the modules), Output (the system, reports, results, manuscript, manual), with
+(the Agile cycle and the modules, one of them "Booking and Reservation (Inquiries, Reserved units)"),
+Output (the system, reports, results, manuscript, manual), with
 feedback across all three. **Where:** Section 2.3; Figure 2-2.
 
-**Consent (informed consent).** The owner and each tenant signed the consent form before taking part. Prospects and technical evaluators agreed through the questionnaire's privacy notice. **Where:**
+**Consent (informed consent).** The landlady and each tenant signed the consent form before taking part. Prospects and technical evaluators agreed through the questionnaire's privacy notice. **Where:**
 Section 3.4; App. P.
 
 **Course standard (90%).** The course's pass mark for testing: at least 90% of tests passed with no
@@ -1215,7 +1236,7 @@ satisfaction, freedom from risk and context coverage. **Where:** Section 3.3; Se
 **Requirements grading.** Each functional requirement graded against the code: 25 as worded, 15 in
 part, 1 interface only, 3 not as worded. **Where:** Section 4.1.2.
 
-**Respondent groups.** Round 1: owner/administrator (1), tenants (3), prospective tenant (1),
+**Respondent groups.** Round 1: the landlady (administrator) (1), tenants (3), prospective tenant (1),
 technical evaluators (5), ten in all. Round 2 (31 October to 10 November 2026): the landlady again
 (1), tenants (11), prospective tenants (4), sixteen in all. 26 answers in both rounds. **Where:**
 Table 4-14; App. M, Table M-28.
@@ -1252,7 +1273,7 @@ Table 4-12.
 **Use case diagram.** A diagram of what each kind of user can do. **Where:** Figure 4-5; App. G.
 
 **Walkthrough (functional walkthrough).** 26 steps (30 rows) exercising every function that writes
-data once, on the vacant unit, done by the owner: 24 passed, 1 failed, 5 not performed as written.
+data once, on the vacant unit, done by the landlady: 24 passed, 1 failed, 5 not performed as written.
 **Where:** Section 4.3.4; App. M, Table M-1.
 
 **Waterfall.** A one-way, step-after-step method, one of the "traditional SDLC models" the paper
@@ -1294,7 +1315,7 @@ Table 3-4.
 
 **Mean.** The average: add up, divide by how many. **Where:** Section 3.3.
 
-**Mean of group means.** Each group averaged first, then the groups, so one owner is not outweighed
+**Mean of group means.** Each group averaged first, then the groups, so one landlady is not outweighed
 by three tenants on functions only she uses. **Where:** Section 3.3; Section 4.4.2.
 
 **Mean wrong turns.** The average number of wrong taps or pages per task (0.2). **Where:**
@@ -1479,7 +1500,7 @@ There are 44 (Section 4.1.2). App. L names the test cases that trace to each.
 | **N-01 to N-03** | Changes shipped on 30 September | App. L, Part N |
 | **P, PH, F, NT** | In Part T: done alone, done with help, not done, not tried | App. L |
 | **FS, PE, CO, US, RE, SE, MA, PO** | The eight characteristics, as App. L labels them | App. L |
-| **O, T, E, P** | Questionnaire sections: administrator (owner), tenants, technical evaluators, prospective tenants | Table 3-6 |
+| **O, T, E, P** | Questionnaire sections: administrator (landlady), tenants, technical evaluators, prospective tenants | Table 3-6 |
 | **1.0 to 8.0** | DFD processes: inquiries, units and rates, tenants, billing and payments, repairs, expenses, reports, sign-in | Figure 4-4; App. F |
 | **D3** | The data store Bills and receipts | Section 4.2.1 |
 | **Table M-1 to M-27** | The evidence tables behind Chapter 4 | App. M |
@@ -1537,7 +1558,7 @@ There are 44 (Section 4.1.2). App. L names the test cases that trace to each.
 | **MSMEs** | Micro, small and medium-sized enterprises | Mia et al. (2024) |
 | **NFR** | Non-functional requirement | One of 10 |
 | **NT** | Not tested | App. L result |
-| **OD** | Open decision | A question put to the owner, in the register (for example OD-16) |
+| **OD** | Open decision | A question put to the landlady, in the register (for example OD-16) |
 | **OR** | Official receipt | Say "invoice" instead; the screens do |
 | **PE** | Performance Efficiency | App. L label |
 | **PH** | Penthouse | The one rooftop unit |

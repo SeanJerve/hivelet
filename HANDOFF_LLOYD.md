@@ -37,8 +37,13 @@ look, then cancel. To see admin and tenant screens without signing in, use the m
   - "Paid <date>", "Due <date>", "Sent <date>", "Reported <date>".
   - "GCash", never "GCash (online)" or "online payment".
   - "Tenant", never "Resident". No email anywhere.
+  - Added 12 Nov (B-121): "No tenant" for a unit nobody lives in (Vacant stays the status), "Nothing
+    matches" for every empty search, and "Record this expense?" with Go back / Record it, as payments.
+  - One name for each thing, as the paper has it since 12 Nov: tenant, prospective tenant, unit,
+    inquiry, repair request. She is "the landlady", never "the owner": she manages the boarding
+    house for its owner.
 - **GCash** works end to end in Adyen's **test** environment and takes no real money. It is optional
-  and not live, because going live needs the owner's merchant documents. Never call it "under
+  and not live, because going live needs the owner's merchant onboarding documents. Never call it "under
   development", "mock" or "simulator" (rule 5).
 - **Past years are read-only** on screen and on the server. The exception: last year stays open
   while any of its December rent is unrecorded.

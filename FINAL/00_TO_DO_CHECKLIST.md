@@ -92,17 +92,18 @@ the team is allowed to schedule the final defense. Each item below is one we can
 
 - **What it is:** Form 2 item 10 asks for proof that the system was **deployed** where it is meant to
   be used, and that the client **accepted** it. It names two kinds of paper:
-  - a **Client or End-User Acceptance Form**: a short letter or form, signed by the owner, saying she
+  - a **Client or End-User Acceptance Form**: a short letter or form, signed by the landlady, saying she
     received the system and accepts it; or
-  - an **MOA (Memorandum of Agreement)**: a signed agreement between the team and the owner, saying
-    the team gives her the system (free, as Section 4.5 says) and what each side does after.
+  - an **MOA (Memorandum of Agreement)**: a signed agreement between the team and the boarding house,
+    saying the team gives the boarding house the system (free, as Section 4.5 says) and what each side
+    does after.
 - **Why:** the deployment report (already in folder 10) shows the system runs. This paper shows the
-  owner agreed to receive it.
+  boarding house agreed to receive it.
 - **Where we stand:** neither exists yet. The UAT form of item 4 may be enough.
 - **To do:**
   - [ ] Ask the FIC: "Does the signed UAT form count as the acceptance form for item 10, or do you
     need a separate acceptance form or MOA? Is there a template?"
-  - [ ] If a separate one is needed, tell Claude which kind: it drafts it for the owner to sign.
+  - [ ] If a separate one is needed, tell Claude which kind: it drafts it for the landlady to sign.
   - [ ] Scan the signed paper into folder 10.
 
 ### [ ] 6. Form 1 template (Form 2 items 1 and 4)
@@ -136,11 +137,11 @@ the team is allowed to schedule the final defense. Each item below is one we can
 ### [ ] 8. Scans for Appendices A and B
 
 - **What they are:**
-  - **Appendix A, Letter of Request:** the signed letter the team gave the landlady asking to study
-    her boarding house and use her records.
+  - **Appendix A, Letter of Request:** the signed letter of request asking to study the boarding
+    house and use its records.
   - **Appendix B, Adviser appointment:** the paper that appoints Sir Jayvee as the team's adviser.
 - **Why:** the paper lists both appendices, but today they have only their headings. They prove the
-  study had the owner's permission and an official adviser.
+  study had the boarding house's permission and an official adviser.
 - **To do:**
   - [ ] Find the signed letter of request and scan it.
   - [ ] Find the adviser appointment paper and scan it.
@@ -182,7 +183,7 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **What:** the ten tenants who did the tasks between 31 October and 10 November signed paper consent
   forms. Prospective tenants and technical evaluators signed none: they agreed through the privacy
   notice at the start of the questionnaire, as Chapter 3 says.
-- **Why:** Chapter 3 says the owner and each tenant signed. The scans are the proof if the panel asks.
+- **Why:** Chapter 3 says the landlady and each tenant signed. The scans are the proof if the panel asks.
 - **To do:**
   - [ ] Scan the ten forms into `_CONSENT_FORMS (not in repo)/`. **Never into the repository.**
 
@@ -216,7 +217,7 @@ the team is allowed to schedule the final defense. Each item below is one we can
 
 ### [ ] 16. The day-before steps in `FINAL/DEMO_SCRIPT.md`
 
-- **What:** the checklist for the live demonstration: sign in once as the owner and as the test
+- **What:** the checklist for the live demonstration: sign in once as the landlady and as the test
   tenant, open the installed app on the demonstration phone, reject one GCash test payment, put the
   offline fallback on the laptop, and remove test items.
 - [ ] **Close the open test repair on unit PH** (one was still open on 10 November).

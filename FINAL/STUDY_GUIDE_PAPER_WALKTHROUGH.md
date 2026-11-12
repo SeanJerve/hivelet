@@ -6,7 +6,8 @@ of it to the panel. It covers the abstract, all five chapters, the references an
 
 Everything here is taken from the final chapters (01_ABSTRACT.md to 08_APPENDICES.md and the
 appendices/ folder) as they stood on 24 October 2026, brought up to date on 10 November 2026 for the
-second round of users, the redesign and the re-timed screens. **If a chapter says something
+second round of users, the redesign and the re-timed screens, and on 12 November 2026 for the paper's
+purpose pass (the landlady named as the landlady, one name for each thing, the renamed terms). **If a chapter says something
 different from this guide, the chapter wins.**
 
 ## How the paper is organised
@@ -46,13 +47,16 @@ them:
 - [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFERENCES.md): every reference, what it found and where
   the paper uses it.
 
-**Four wording rules for the defense** (the paper follows them; so must we):
+**Five wording rules for the defense** (the paper follows them, so must we):
 
 - The property has **33 units**, 32 of them occupied.
 - The **50% Share** is described only as: *a system-computed figure equal to half that row's Rent
   Amount, kept for ledger parity with the owner's historical spreadsheet.* Say nothing more about it.
-- **Adyen with GCash** is configured and working, on Adyen's test account. The owner sets every rate
-  by hand; nothing raises rent automatically.
+- **Adyen with GCash** is configured and working end to end in Adyen's test environment, where it takes
+  no real money. It is optional and not live, because going live needs the owner's merchant onboarding
+  documents. The landlady sets every rate by hand. Nothing raises rent automatically.
+- **The landlady is not the owner.** She manages the boarding house for its owner and is the system's
+  only administrator. Say "the landlady" for her. "The owner" is only the proprietor.
 - Since 20 October 2026, nobody signs in with or gives an email; sign-in is by login ID or phone
   number.
 
@@ -65,7 +69,7 @@ them:
   and the general property management systems on the market do not fit them.
 - The team designed, developed and evaluated **Hivelet**, a web-based apartment management system
   delivered as a Progressive Web Application, for the Fe Galang Da Silva Boarding House.
-- Moving the owner's real records into the system exposed problems the spreadsheet had hidden.
+- Moving the landlady's real records into the system exposed problems the spreadsheet had hidden.
 - The system was tested at three levels and evaluated on ISO/IEC 25010, and it met its general
   objective.
 
@@ -73,14 +77,17 @@ them:
 - "a 33-unit property in Legazpi City".
 - Her records: **937 income rows and 1,327 expense allocations**.
 - Built in **three Agile iterations** with **Vue, Express and PostgreSQL**.
-- Features: tenant and room management, inquiries about units, financial tracking with optional GCash
-  payment through Adyen, maintenance requests with notifications, role-based access control, and
-  installation from the browser without an app store.
+- Features: tenant and room management, "a public list of units with inquiries the landlady answers",
+  financial tracking with optional GCash payment through Adyen, repair requests with notifications,
+  role-based access control, and installation on a phone or computer without an app store.
+- GCash "works end to end in Adyen's test environment and takes no real money. It is not live,
+  because going live needs the owner's merchant onboarding documents."
+- Second round, on the redesigned system: ten tenants and four prospective tenants completed every task.
 - Tested at the unit and integration, system, and acceptance levels: **82 of the 83 tests executed
   passed (98.8 percent)**, no critical defect.
 - Three tenants completed every task they attempted, **31 of 34 attempts without help**.
 - Evaluated on the eight characteristics of **ISO/IEC 25010:2011**, following the **ISO/IEC 25040**
-  evaluation process, using two kinds of evidence: measures from the tests, and a survey of the owner,
+  evaluation process, using two kinds of evidence: measures from the tests, and a survey of the landlady,
   three tenants, a prospective tenant and five technical evaluators.
 - Rated **4.59 overall, Very High Quality** (a second round of 16 on the redesigned system: **4.82**,
   all 26 answers **4.61**); every characteristic Very High Quality; **Portability
@@ -96,7 +103,7 @@ them:
 
 **If the panel asks**
 - *"In one sentence, what did you find?"* "The results show that an integrated system can be fitted to
-  a small, cash-based property without changing how its owner keeps her accounts" (Abstract).
+  a small, cash-based property without changing how its landlady keeps the accounts" (Abstract).
 
 ---
 
@@ -105,38 +112,41 @@ them:
 ## 1.1 Background of the Study
 
 **What it says** (an inverted pyramid, as Form 3A asks: world, country, region, place, then the gap)
-- **Around the world**: apartment management means keeping tenant records, tracking money and
-  handling maintenance, and it gets harder as the number of units grows. Existing systems are built for
-  large properties with stable infrastructure and staff.
-- **In the Philippines**: small enterprises adopt such tools slowly. Philippine studies each solve only
-  one part (payments, booking).
+- **Around the world**: apartment management means tenant records, financial tracking and maintenance
+  coordination. The software managers use often does not connect with their other tools, and many
+  systems assume large or commercial properties with stable infrastructure and staff.
+- **In the Philippines**: small enterprises were held back less by money or skills than by the owners'
+  hesitation (Mia et al., 2024). Philippine studies each solve one part: payments and records, or how a
+  prospective tenant finds and books a room.
 - **In the Bicol Region**: a property management system at Bicol College, in a controlled school
   setting.
 - **Locally**: the Fe Galang Da Silva Boarding House, 33 units in Legazpi City near Bicol University.
-  Records were kept in spreadsheets on a USB flash drive, rent is collected in cash, and concerns come
-  by messaging app or word of mouth: a **fragmented workflow**.
-- **The gap, the last sentence of 1.1**: no integrated platform that brings together tenant
-  management, financial tracking, communication and booking for a small boarding house. Section 1.2
-  then introduces Hivelet.
+  Records were kept in spreadsheets on a USB flash drive, rent is collected in cash, and repair requests
+  come by messaging app or in person. The landlady, who runs the boarding house for its owner, has
+  difficulty keeping accurate records and resolving concerns on time.
+- **The gap, the last sentence of 1.1**: "the absence of an integrated platform that brings tenant
+  management, booking and reservation management, financial tracking, and communication into one
+  system suited to a small boarding house." Section 1.2 then introduces Hivelet.
 
 **Key facts and numbers**
-- Records "were kept on a USB flash drive", with risks of "accidental deletion, file corruption,
-  duplication, and lack of version control".
-- Rent "is still collected in cash".
+- Records were kept "in standalone spreadsheet files on a USB flash drive", exposed to "accidental
+  deletion, file corruption, duplication, and lack of version control".
+- "Rent is collected in cash".
 - A review of **213 studies** found real estate still needs to improve its adoption of digital tools
   (Ullah et al., 2018).
-- Studies cited: Burke (2026); Mia et al. (2024); Kotkar et al. (2026); Ullah et al. (2018); Magno et
-  al. (2024); Pavia et al. (2022, Bicol College); Pernate et al. (2025, Ormoc City); Mangca (2023b,
-  Surigao City).
+- Studies cited: Burke (2026); Kotkar et al. (2026); Ullah et al. (2018); Mia et al. (2024); Magno et
+  al. (2024); Pernate et al. (2025, Ormoc City); Mangca (2023b, Surigao City); Pavia et al. (2022,
+  Bicol College).
 
 **If the panel asks**
-- *"Why not just use an existing property management system?"* Many are "designed with assumptions
-  aligned to large-scale or commercial property environments, such as stable infrastructure,
-  structured workflows, and dedicated administrative personnel", which a small boarding house does not
-  have.
-- *"How is Magno et al. (2024) different from yours?"* Their system "primarily focuses on financial
-  transactions and task management, without integrating communication, booking, and tenant
-  interaction workflows into a unified system."
+- *"Why not just use an existing property management system?"* "Many of these systems assume the
+  conditions of large or commercial properties, such as stable infrastructure, structured workflows,
+  and dedicated administrative staff", which a small boarding house does not have.
+- *"How is Magno et al. (2024) different from yours?"* Their system "focuses on financial transactions
+  and task management, without integrating communication, booking, and tenant interaction into a
+  unified system."
+- *"Is the landlady the owner?"* No. Section 1.1 says she "runs the boarding house for its owner", and
+  Section 2.4 defines both.
 
 ## 1.2 Objectives of the Study
 
@@ -168,44 +178,54 @@ them:
 ## 1.3 Significance of the Study
 
 **What it says**
-- **For owners and administrators**: one central system instead of spreadsheets on a USB flash drive,
-  which are prone to inconsistency, loss and duplication.
-- **For tenants**: a structured way to send and follow maintenance concerns and see their own account,
-  instead of messages and verbal reports that get lost.
-- **For future researchers**: a local example of a PWA-based property system for small residential
-  settings, and an example of evaluation with ISO/IEC 25010.
+- **For the landlady**: one system in place of spreadsheets on a USB flash drive, which are prone to
+  inconsistency, loss and duplication. Tenant records, payments and repair requests in one place, even
+  where rent is paid in cash.
+- **For tenants**: one place to send and follow their repair requests and see their own bills and
+  receipts, instead of messages and verbal reports that leave requests untracked.
+- **For future researchers**: a PWA-based property management system built for a small residential
+  property, and its evaluation against ISO/IEC 25010, as a reference.
 
 **If the panel asks**
-- *"Who benefits most?"* The paper names three groups: property administrators and owners, tenants,
-  and future researchers.
+- *"Who benefits most?"* The paper names three groups: the landlady, the tenants and future researchers.
 
 ## 1.4 Scope and Delimitations
 
 **What it says**
 - **Scope** (what is in): moving the boarding house from spreadsheet and paper administration to one
-  digital system, with room and tenant management, a public booking module for inquiries without an
-  account, financial tracking (mainly cash, with optional GCash), and issue ticketing for maintenance.
-- **Delimitations** (what is out, or limited): saving data, real-time updates and booking updates need
-  the internet; offline access is limited to cached (stored) resources. Online payment excludes
-  refunds, automated reconciliation with bank records, and direct banking integration.
-- Each GCash payment is recorded as pending and counts only after the administrator verifies it.
+  centralized system. Tenant and room management moves tenants in, keeps their records and shows every
+  unit's availability. **Booking and reservation management** "takes the form the landlady's practice
+  needs": prospective tenants see the units on a public page and send an inquiry without an account,
+  the landlady answers it, can mark the unit Reserved, and moves the person in from it. **"Nothing is
+  booked or paid for online."** Financial tracking records payments and expenses, mainly cash, with
+  optional GCash. Maintenance ticketing lets tenants send repair requests, which the landlady assigns,
+  tracks and updates until they are resolved.
+- **Delimitations** (what is limited): first, entering data, keeping it synchronized and sending or
+  answering inquiries need the internet, and offline access is limited. Second, GCash payment through
+  Adyen works end to end but only in Adyen's test environment, so it is not live and takes no real money.
+- Each GCash payment is recorded as pending and counts only after the landlady verifies it.
 
 **Key facts and numbers**
 - "the 33-unit Fe Galang Da Silva Boarding House, at 32 Sampaguita Street, Barangay 4 Sagpon, Old
   Albay District, Legazpi City, near Bicol University".
-- Refunds "are made from the gateway's own dashboard".
+- "Going live needs the owner's merchant onboarding documents, which were outside this study."
+- The payment feature excludes refunds ("made from the gateway's own dashboard"), automated
+  reconciliation against bank records, and direct banking integration.
 - Evaluated against ISO/IEC 25010 on all eight characteristics.
 
 **Terms to know**
 - **Scope** is what the study covers; **delimitations** are the limits the team chose on purpose.
-- **Cached resources**: files the app keeps on the device so it can open without a connection.
+- **Reserved**: a unit status. A Reserved unit takes no other inquiry.
 
 **If the panel asks**
-- *"Does the system work offline?"* Only partly, by design: "core functionalities, such as data
-  encoding, real-time synchronization, and booking updates, strictly require an active internet
-  connection." (Section 4.2.7 adds that the installed app shows a read-only copy of the last figures.)
-- *"Can a tenant get a refund through Hivelet?"* No. The feature "explicitly excludes refunds, which
-  are made from the gateway's own dashboard".
+- *"Does the system take bookings?"* No. Booking and reservation management is the objective's name.
+  Here it is the public unit list, the inquiry, a unit marked Reserved and the move-in. Nothing is
+  booked or paid for online.
+- *"Does the system work offline?"* Only partly, by design: entering data, keeping it synchronized and
+  sending or answering inquiries "require an internet connection, so that every device works from the
+  same records." (Section 4.2.7 adds that the installed app shows a read-only copy of the last figures.)
+- *"Can a tenant get a refund through Hivelet?"* No. Refunds are "made from the gateway's own
+  dashboard".
 
 ---
 
@@ -228,7 +248,7 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 - As tenants, transactions and repairs grow, manual records, spreadsheets and informal messages
   become hard to keep accurate.
 - Studies from abroad and in the Philippines show the same problem.
-- The main challenge is "not the absence of digital tools but the absence of a structure that
+- The main challenge "is not the absence of digital tools but the absence of a structure that
   consolidates administrative functions into one environment".
 
 **Key facts and numbers**
@@ -295,8 +315,8 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 
 **What it says**
 - Informal messages lead to late replies, untracked requests and unhappy tenants.
-- Recording a complaint as a request is what makes it traceable "from report to resolution".
-- Booking studies in the Philippines focus on how a tenant finds and books a room.
+- A concern recorded in one system "can be traced, coordinated, and followed to completion".
+- Booking studies in the Philippines center on how a prospective tenant finds and books a room.
 - The closest study is FixHub (Canlas et al., 2026), a Philippine dormitory maintenance system
   evaluated with ISO/IEC 25010.
 
@@ -309,8 +329,8 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 - Pernate et al. (2025), Ormoc City: rated **Excellent** by owners and **Very Good** by tenants, with
   Agile and ISO/IEC 25010.
 - Mangca (2023b), Surigao City: web booking with SMS notifications; Mangca (2023a) is its assessment.
-- Setty (2022): a website where homeowners list their homes and renters register, search and contact
-  the owner. Like the booking studies, it centers on how a tenant finds a home.
+- Setty (2022): a website where homeowners list their homes and prospective tenants register, search
+  and contact the home's owner. Like the booking studies, it centers on how a tenant finds a home.
 - Canlas et al. (2026), FixHub: Agile, ISO/IEC 25010 and the Technology Acceptance Model; surveys of
   tenants, administrators and IT professionals.
 
@@ -336,7 +356,7 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   et al. (2024): small Philippine enterprises used tools they already knew at no upfront cost, and
   what held them back was less money or skill than the owners' hesitation and doubt that a tool fits
   how the business already works.
-- "A PWA is therefore the delivery layer that keeps the centralized functions of an MIS accessible
+- "A PWA serves as the delivery layer that keeps the centralized functions of an MIS accessible
   across devices and conditions."
 
 **If the panel asks**
@@ -355,19 +375,20 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   framework is needed.
 
 **If the panel asks**
-- *"Summarize your literature review in one sentence."* "Operational inefficiencies in apartment
-  management environments primarily emerge from fragmented administrative structures rather than the
-  complete absence of digital technologies."
+- *"Summarize your literature review in one sentence."* "The inefficiencies of apartment management
+  come mainly from fragmented administration rather than from a complete absence of digital
+  technologies."
 
 ## 2.2 Gap Bridged by the Study
 
 **What it says**
 - The **research gap**: no integrated apartment management system designed for small,
   resource-constrained operations.
-- Existing systems are either enterprise platforms or single-function tools (payments, booking,
+- Existing systems are either enterprise platforms or single-function tools (payments, room booking,
   tenants or maintenance).
-- Hivelet fills the gap by combining MIS principles, financial tracking, issue ticketing, tenant
-  management, booking and cross-device access in one platform.
+- Hivelet fills the gap: "It brings tenant and room management, booking and reservation management,
+  financial tracking, and maintenance ticketing into one system, organized on MIS principles and
+  usable across devices."
 
 **Key facts and numbers**
 - Single-function examples: Magno et al. (2024); Mangca (2023b); Pernate et al. (2025); Saputra et al.
@@ -377,14 +398,15 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   bills or report a concern through it."
 
 **If the panel asks**
-- *"What exactly is your gap?"* "The absence of an integrated apartment management system specifically
-  designed for small-scale and resource-constrained residential operations."
+- *"What exactly is your gap?"* "The absence of an integrated apartment management system designed for
+  small-scale, resource-constrained residential operations."
 
 ## 2.3 Concept of the Study
 
 **What it says**
-- The study's idea is to improve apartment management by integrating its core processes into one
-  digital platform.
+- The study's idea: apartment management improves when tenant management, payment tracking,
+  inquiries and reservations, and maintenance handling move from separate manual handling into one
+  centralized digital platform.
 - It is drawn as an **Input-Process-Output (IPO) model**: inputs are turned by a process into outputs,
   with feedback back to the start.
 
@@ -394,9 +416,10 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 - *How to read it*:
   - **Input**: the objectives of the study; the review of related literature; client interviews and
     observations of the workflow; and payment (integration and payment workflow).
-  - **Process**: **Agile**, in which the modules are built: financial tracking (analytics, reports),
-    booking (reservations, logic), tenant management (profiles, records), maintenance ticketing
-    (requests, notifications) and the Adyen Payment API with GCash.
+  - **Process**: **Agile**, in which the modules are built: Financial Tracking (Analytics, Reports),
+    **Booking and Reservation (Inquiries, Reserved units)**, Tenant Management (Profiles, Records),
+    Maintenance Ticketing (Requests, Notifications) and the Adyen Payment API (Optional GCash, in the
+    Adyen test environment).
   - **Output**: the Hivelet system and its modules, the finished research manuscript, the system
     evaluation results (ISO/IEC 25010:2011) and the user manual.
   - **Feedback**: refinement in every phase from user evaluation and performance.
@@ -412,29 +435,48 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 - This section defines the words the paper uses in a particular way. These are **operational
   definitions**: what the word means in this study.
 
-**Key facts and numbers** (learn these definitions; they are the paper's own words in short)
-- **Hivelet**: the web-based apartment management system, a PWA, for the Fe Galang Da Silva Boarding
-  House.
-- **Resource-Constrained Environment**: limited money, minimal technical infrastructure, few staff.
-- **Fragmented Workflow**: work done in disconnected tools (spreadsheets, paper, messaging apps).
-- **Centralized System**: in this study, one database and one website holding every record the owner
-  had kept in separate files and channels.
-- **Booking Inquiry**: a message a prospective tenant sends about a unit from the public website. The
-  owner answers it, and moves the person in from it if they rent. Nothing is approved or booked.
-- **Issue Ticketing System**: tenants submit concerns that are tracked, assigned and resolved.
-- **Role-Based Access Control (RBAC)**: each role (admin, tenant) can use only its own functions.
-- **Optional Online Payment Feature**: paying a bill through GCash using Adyen; it "enters a pending
-  state and is settled only after the administrator verifies it."
+**Key facts and numbers** (learn these definitions, they are the paper's own words in short). There
+are **25 terms**.
+- **Hivelet**: the web-based apartment management system, delivered as a PWA, that keeps tenant and
+  room management, inquiries and reservations, financial tracking, and repair requests in one system.
+- **Progressive Web Application (PWA)**: a website the landlady or a tenant can add to a phone's home
+  screen without an app store, which shows the figures last loaded when there is no connection.
+- **Resource-Constrained Environment**: a small residential operation with limited money, staff and
+  technical infrastructure.
+- **Fragmented Workflow**: tenant records, finances and repair requests handled in disconnected tools
+  (spreadsheets, paper, messaging apps).
+- **Centralized System**: one database and one website holding every record the landlady had kept in
+  separate files and channels.
+- **Small-Scale Apartment Management**: the 33 units of the boarding house, run by the landlady as the
+  system's only administrator.
+- **Management Information System (MIS)**: Hivelet turning the landlady's raw records into the
+  summaries she reads on the Overview and in the downloaded workbooks.
+- **Inquiry** (renamed from "Booking Inquiry"): a message a prospective tenant sends about a unit from
+  the public website, without an account. The landlady answers it, may mark the unit Reserved so it
+  takes no other inquiry, and moves the person in from it if they rent. "This is the form booking and
+  reservation management takes in this study: nothing is booked or paid for online."
+- **Financial Tracking** and **Cash Flow Monitoring**: the module where the landlady records payments
+  and expenses, and her view of money in and out on the Overview and in the workbooks.
+- **Maintenance Ticketing** (renamed from "Issue Ticketing System"): the module through which a tenant
+  sends a repair request, which the landlady assigns, tracks and updates until it is resolved.
+- **User Authentication**: signing in with a login ID or phone number and a password. The landlady
+  gives each tenant an individual starting password, replaced at the first sign-in.
+- **Role-Based Access Control (RBAC)**: the public, tenants and the administrator can each use only
+  their own functions, checked by the server on every request.
+- **Optional Online Payment Feature**: paying a bill with GCash through Adyen. It "is recorded as
+  pending and counts only after the landlady verifies it."
 - **ISO/IEC 25010:2011**: eight characteristics, **thirty-one sub-characteristics**, plus a model of
   quality in use with five characteristics (effectiveness, efficiency, satisfaction, freedom from risk,
   context coverage). The **2023 revision** renamed usability as interaction capability and portability
   as flexibility, added safety as a ninth characteristic, and moved quality in use to a separate
   standard.
-- **Adyen**: the payment gateway; in this study it runs in Adyen's test environment, so it takes no
-  real money, and going live needs the owner's merchant onboarding documents.
-- **GCash**: a Philippine mobile wallet, the optional online way to pay; not live.
-- **Landlady**: runs the boarding house day to day on behalf of its owner; the system's only
-  administrator. **Owner**: in Chapter 4, the landlady in her role as administrator.
+- **Adyen**: the payment gateway. It runs in Adyen's test environment, where it works end to end but
+  takes no real money. "Going live needs the owner's merchant onboarding documents".
+- **GCash**: a Philippine mobile wallet, the optional online way to pay. Not live, so rent is paid in
+  person and recorded by the landlady.
+- **Landlady**: "The person who runs the Fe Galang Da Silva Boarding House day to day on behalf of its
+  owner, and the system's only administrator."
+- **Owner**: "The proprietor of the Fe Galang Da Silva Boarding House, for whom the landlady runs it."
 - **Tenant**, **Prospective Tenant**, **Technical Evaluator** (an IT professional from outside the
   team).
 - **User Acceptance Testing (UAT)**: the intended users do their own tasks on the live system.
@@ -444,9 +486,11 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   with the owner's historical spreadsheet."
 
 **If the panel asks**
-- *"Why does Chapter 4 say 'owner' when she is the landlady?"* Section 2.4 and Section 3.3 explain it:
-  she is the one person who uses the owner's side of the system, so Chapter 4 calls her the owner in
-  that role.
+- *"Is the landlady the owner?"* No. She manages the boarding house for its owner and is the system's
+  only administrator. That is why the paper says "the landlady", and why going live with GCash needs the
+  owner's merchant onboarding documents (Section 2.4, Landlady and Owner).
+- *"Why 'Inquiry' and not 'Booking Inquiry'?"* Because nothing is booked online. The objective keeps its
+  approved name, booking and reservation management, and 2.4 says what it means here.
 
 ---
 
@@ -471,7 +515,7 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   matters with real financial records.
 - **PostgreSQL** was chosen for **row-level security** (the database itself decides who may read or
   change each row) and **triggers** (database rules that run automatically, here to keep a history of
-  every room rate change).
+  every unit rate change).
 - The interface was **prototyped directly in code**, generated with the help of an AI coding assistant
   and reviewed by the researchers, so the landlady and tenants could try it on their own phones.
 
@@ -484,8 +528,9 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 - The development environment ran on "Windows 10 or higher". Google Chrome was the main browser.
 
 **If the panel asks**
-- *"Why PostgreSQL?"* "for its row-level security ... and for database triggers, which keep a history
-  of every room rate change regardless of how the change is made."
+- *"Why PostgreSQL?"* "for its row-level security, which lets the database itself enforce who may read
+  or change each record, and for database triggers, which keep a history of every unit rate change
+  however the change is made."
 - *"Did you use Figma?"* No: "the user interface was prototyped directly in code rather than in a
   separate design tool."
 
@@ -521,8 +566,11 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 - The team used the **Agile Software Development Life Cycle (SDLC)**. Agile builds software in short,
   repeated cycles (iterations), working closely with the client and changing course on feedback,
   instead of one long fixed plan.
-- Agile was chosen because the boarding house's needs changed, and it let the team work continuously
-  with the landlady.
+- Agile was chosen because the boarding house's needs could change while the system was being built,
+  and it let the team work continuously with the landlady.
+- The work ran from July to November 2026: a first build (24 July to 28 August), then Iteration 1 (12
+  to 14 September), Iteration 2 (15 September to 31 October, the testing and formal evaluation) and
+  Iteration 3 (from 1 November, the redesign, no new module).
 - The system was assessed against ISO/IEC 25010:2011 on its eight characteristics.
 
 **Figure 3-1. Agile Software Development Life Cycle.**
@@ -532,9 +580,9 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
   3.2.6 describe the six phases in the same order.
 
 **If the panel asks**
-- *"Why Agile and not Waterfall?"* "Agile supports early identification of system issues through
-  iterative cycles of development and testing", and it allowed "continuous interaction with the
-  landlady and management".
+- *"Why Agile and not Waterfall?"* "Agile lets issues be found early, because each iteration includes
+  its own testing", and it "allowed continuous interaction with the landlady, so that the features
+  followed her actual work".
 - *"How many iterations?"* Three (Section 4.2.1).
 
 ### 3.2.1 Requirements
@@ -556,8 +604,8 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 ### 3.2.2 Design
 
 **What it says**
-- Requirements were turned into architecture and **working prototypes in code** for three user roles:
-  public users, tenants and administrators.
+- Requirements were turned into architecture and **working prototypes in code** for three kinds of
+  user: the public, tenants and the administrator.
 - Each prototype was reviewed with the landlady on her own device, and the findings went into the next
   iteration (Table 4-19).
 - Designed to be lightweight, simple to navigate, and to need little equipment.
@@ -570,21 +618,22 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 
 **What it says**
 - This phase serves Objective 2.
-- Vue 3 with TypeScript for the screens; Node.js and Express in TypeScript for the server; PostgreSQL
-  on Supabase for data; Adyen for optional GCash payment, without replacing the main cash workflow.
-- Built step by step, following Agile.
+- Built with the software of Section 3.1.1 and refined in each iteration. Adyen adds an optional GCash
+  payment, while cash paid in person remains the main way to pay.
+- GCash "works end to end in Adyen's test environment, where it takes no real money. It is not live,
+  because going live needs the owner's merchant onboarding documents."
 
 ### 3.2.4 Testing
 
 **What it says**
-- This phase serves Objective 3. Testing was done in **four layers**. The test levels come from
+- This phase serves Objective 3. Testing was done in **four parts**. The test levels come from
   **ISO/IEC/IEEE 29119-1**, a testing standard: **unit and integration** (small parts and how they
   connect), **system** (the whole system) and **acceptance** (the real users decide if it meets their
   needs).
 - Each test was planned in advance as a measure of an ISO/IEC 25010 sub-characteristic (Table 3-6).
 
-**Key facts and numbers** (the four layers)
-1. **Automated verification**: **twenty check suites** that test every endpoint (address on the server
+**Key facts and numbers** (the four parts)
+1. **Automated verification**: **twenty check suites**, and a twenty-first on 12 October 2026, that test every endpoint (address on the server
    the screens call) and role separation, re-derive the ledger and reports from the database, check the
    payment gateway's message signatures, and confirm no screen shows stored or empty data as live. They
    run against the live system **without writing to it**.
@@ -594,8 +643,10 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
    save blocked so nothing was written; screens scanned against the **Web Content Accessibility
    Guidelines (WCAG)**, levels A and AA.
 4. **Functional walkthrough and user acceptance testing**: a **26-step walkthrough** of every function
-   that writes data, on the one vacant unit; then the owner and three tenants used the live system for
-   their own tasks.
+   that writes data, on the one vacant unit; then the landlady and three tenants used the live system for
+   their own tasks, the landlady and two tenants at the same time. One prospective tenant used the
+   public website. In the second round, ten tenants and four prospective tenants did the same tasks on
+   the redesigned system.
 
 **If the panel asks**
 - *"How could you test on real financial records safely?"* The automated suites "run against the live
@@ -605,15 +656,17 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 ### 3.2.5 Deployment
 
 **What it says**
-- After testing, the system was deployed to **Vercel** (a cloud hosting service), with the database on
-  **Supabase**, at a public web address.
-- A pilot was run with selected users before full deployment.
+- Deployed to **Vercel** (a cloud hosting service) on **24 September 2026**, with the database on
+  **Supabase**, at a public web address. On the adviser's advice the team hosted it rather than the
+  university, so the boarding house needs no equipment beyond the landlady's own laptop and phone.
+- The testing and evaluation ran on this deployment as a pilot, beside her own records, which it has
+  not yet replaced (Section 4.5).
 
 ### 3.2.6 Review and Maintenance
 
 **What it says**
-- Refinements were made from the testing and evaluation results, across all eight ISO/IEC 25010
-  characteristics, following Agile.
+- The issues found by testing and by the ISO/IEC 25010 evaluation were corrected. Table 4-19 lists
+  the changes made in response to the evaluation.
 
 ## 3.3 Evaluation Procedure
 
@@ -635,18 +688,20 @@ This is the most important methods section for the defense. It explains how the 
 - The survey used the 2011 edition; the 2023 edition was used only to show where results fall in the
   newer model.
 - This section serves Objective 4.
-- Four respondent groups: the administrator, tenants, prospective tenants and technical evaluators.
+- Four respondent groups: the landlady as the system's administrator, tenants, prospective tenants and
+  technical evaluators.
   **Each group rated only what it could judge**: tenants did not rate Security or Maintainability;
   prospective tenants rated neither; only technical evaluators rated Maintainability.
 
 The section then has four labelled parts.
 
 **Participants**
-- The landlady took part as the only administrator; Chapter 4 calls her the owner.
+- The landlady, "who runs the boarding house day to day on behalf of its owner, took part as the
+  system's only administrator."
 - Tenants were chosen by **purposive and convenience sampling** (Etikan et al., 2016). Purposive means
   chosen for a purpose; convenience means chosen from those available. The team chose, from tenants at
   home that evening: cash payers, people less used to mobile apps, Android and iPhone users, and
-  residents of more than one cluster.
+  tenants from more than one cluster.
 - **Three tenants**, because "the number of new usability problems found falls quickly with each
   additional tester" (Nielsen & Landauer, 1993).
 - **One prospective tenant** (not living there, invited by the team) used the public site on their own
@@ -666,7 +721,7 @@ The section then has four labelled parts.
   **ISO/IEC 25010 survey questionnaire**, with a section for each group.
 
 **Data gathering**
-- The owner and each tenant **signed the consent form**. Prospects and technical evaluators agreed
+- The landlady and each tenant **signed the consent form**. Prospects and technical evaluators agreed
   through the questionnaire's privacy notice. Each tester used their own account and device, and was asked to **think
   aloud** (say what they expect as they go).
 - Help followed a fixed order: a neutral prompt after about thirty seconds ("What are you looking
@@ -681,14 +736,13 @@ The section then has four labelled parts.
 - **Weighted mean** of each survey item: **WM = Σ(f × w) / N**. Here *f* is how many respondents chose a
   rating, *w* is the rating (1 to 5), and *N* is the number of respondents. Σ means "add them all up".
 - **Composite mean** of a characteristic: the mean of its item means, first per group, then the **mean
-  of the group means**, "so that one administrator is not outweighed by several tenants on functions
-  only she uses".
+  of the group means**, "so that the landlady is not outweighed by several tenants on functions only
+  she uses".
 - **Overall mean**: the mean of the eight composites.
 - Task completion rate: tasks completed without help ÷ tasks attempted, with the **median** time (the
   middle value) and the mean number of wrong turns.
-- Only **descriptive statistics** (numbers that describe the data) were used. "No inferential test is
-  made", so the results describe how these respondents rated the system and are not generalized to a
-  wider population.
+- Only **descriptive statistics** (numbers that describe the data) were used. "No inferential test was
+  made, so the results describe how these respondents rated the system."
 
 **Table 3-4. Likert scale**
 - *What it shows*: the five answer choices. A **Likert scale** (Likert, 1932) asks how much a person
@@ -696,8 +750,8 @@ The section then has four labelled parts.
 - *How to read it*: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree.
 
 **Table 3-5. Interpretation of mean scores**
-- *What it shows*: how to turn a mean into words. "The range from 1 to 5 is divided into five equal
-  intervals of 0.80."
+- *What it shows*: how to turn a mean into words. Table 3-5 "divides the range from 1 to 5 into five
+  equal intervals of 0.80."
 - *How to read it*: find the band your mean falls in. 4.21 – 5.00 Very High Quality; 3.41 – 4.20 High
   Quality; 2.61 – 3.40 Moderate Quality; 1.81 – 2.60 Low Quality; 1.00 – 1.80 Very Low Quality. The
   important row is the top one: every result in Table 4-17 falls in it.
@@ -706,7 +760,7 @@ The section then has four labelled parts.
 - *What it shows*: for each of the 31 sub-characteristics, which survey items rate it and which test
   measures it.
 - *How to read it*:
-  - Columns **O, T, E, P** are the four sections of the questionnaire: **O** = administrator (owner),
+  - Columns **O, T, E, P** are the four sections of the questionnaire: **O** = administrator (landlady),
     **T** = tenants, **E** = technical evaluators, **P** = prospective tenants. The numbers are the item
     numbers in that section (see Appendix J).
   - The last column is the test that measures it (from Section 3.2.4).
@@ -717,13 +771,13 @@ The section then has four labelled parts.
   in column E.
 
 **If the panel asks**
-- *"Why the mean of group means instead of averaging everyone?"* So that "one administrator is not
+- *"Why the mean of group means instead of averaging everyone?"* So that "the landlady is not
   outweighed by several tenants on functions only she uses". (Section 4.4.2 gives the other result:
   averaging everyone gives 4.47.)
 - *"Why only three tenants?"* Purposive and convenience sampling, and Nielsen and Landauer (1993):
   each extra tester finds fewer new usability problems.
-- *"Can you generalize your results?"* No. "No inferential test is made, so the results are reported as
-  descriptions of how the respondents rated the system."
+- *"Can you generalize your results?"* No. "No inferential test was made, so the results describe how
+  these respondents rated the system."
 
 ## 3.4 Ethical Considerations
 
@@ -766,12 +820,12 @@ The section then has four labelled parts.
   1 units** (migration 034 moved unit F1 to floor 1). If the chapter still prints 11, 11, 10 and 1,
   that is the count before that correction.
 - **32 of the 33 units are occupied** at the time of writing.
-- The owner confirmed these figures on **13 September 2026**.
+- The landlady confirmed these figures on **13 September 2026**.
 
 ### 4.1.1 Existing Practices and Identified Problems
 
 **What it says**
-- Before Hivelet, the owner kept a two-sheet workbook (**Monthly Income Report** and **Monthly
+- Before Hivelet, the landlady kept a two-sheet workbook (**Monthly Income Report** and **Monthly
   Expenses Report**) on a USB flash drive, plus a paper invoice book. Rent was cash on site; requests
   came by messaging app or in person; inquiries left no record.
 - The strongest evidence came from her own records: moving them into the system exposed hidden
@@ -782,20 +836,20 @@ The section then has four labelled parts.
 - Transferred: **937 income rows and 1,327 expense allocations**.
 - **402 of the 937 income rows (43%)** had no anniversary date and no deposit.
 - **Five invoice numbers** were each used for two different payments, once for two tenants on the
-  same day. They were kept exactly as she wrote them and are reported on every verification run.
+  same day. They are kept as she wrote them and reported on every verification run (Section 4.3.1).
 - An **anniversary date** is the day of the month a tenancy started; the rent period runs from it.
 
 **Table 4-1. Existing practices and identified problems**
-- *What it shows*: for each of the four areas, what the owner did and what problem it caused.
+- *What it shows*: for each of the four areas, what the landlady did and what problem it caused.
 - *How to read it*: one row per area (Tenant management, Financial tracking, Communication, Booking);
   middle column the old practice; right column the problem. Example: Financial tracking, "Income and
   expense sheets typed by hand; invoices written in a paper book", caused "Totals depend on manual
   arithmetic; nothing checks an invoice number against the book; one file on a USB flash drive is the
   only copy".
 
-**Figure 4-1. The owner's process before the system.**
+**Figure 4-1. The landlady's process before the system.**
 - *What it shows*: a swimlane diagram. Columns are the four areas (rent collection, expenses, repair
-  requests, inquiries); rows are who acts (tenant or prospect, then owner), then the records kept, then
+  requests, inquiries); rows are who acts (tenant or prospect, then landlady), then the records kept, then
   the problem from Table 4-1.
 - *How to read it*: follow each column down. Rent ends in the paper invoice book and the workbook on a
   USB flash drive (the only copy); repairs and inquiries end in "No record". That shows the
@@ -805,8 +859,9 @@ The section then has four labelled parts.
 - *"How do you know fragmentation was the real problem?"* Her own records: 43% of income rows lacked an
   anniversary date and deposit, and five invoice numbers were used twice. The records existed; they
   were not connected.
-- *"Did you fix her duplicate invoice numbers?"* No. They were "kept exactly as she wrote them and are
-  reported on every verification run."
+- *"Did you fix her duplicate invoice numbers?"* No. They are reported on every run "rather than
+  corrected, because only her invoice book can say what each should read" (Section 4.3.1), and
+  recommendation 2 treats them "as history, kept as she wrote them".
 
 ### 4.1.2 System Requirements
 
@@ -815,16 +870,16 @@ The section then has four labelled parts.
   of her business the system must follow) and non-functional requirements (how well it must do it).
 - Each requirement is traced in a **traceability matrix** (a table linking each requirement to the
   part of the system that meets it).
-- Questions that needed the owner's answer were asked, not assumed.
+- Questions that needed the landlady's answer were asked, not assumed.
 
 **Key facts and numbers**
 - **44 functional requirements** and **49 business rules**.
 - Graded against the code on **16 September 2026**: **25** implemented as worded, **15** in part,
-  **1** in the interface only, **3** not as worded (what those three describe is visible to the owner in
+  **1** in the interface only, **3** not as worded (what those three describe is visible to the landlady in
   another form).
 - **Ten non-functional requirements**: one per ISO/IEC 25010 characteristic plus two for auditability
   and exportability.
-- The owner confirmed: a bill is **overdue from the day after its due date**; she **sets rates by
+- The landlady confirmed: a bill is **overdue from the day after its due date**; she **sets rates by
   hand**, so every rate change is recorded and no increase is applied automatically; a tenant needs no
   email address to be recorded; on **20 September 2026** she confirmed every unit's rate.
 - Her answers of **12 October 2026**: the bottom figure of her income sheet is a year-to-date total;
@@ -835,7 +890,7 @@ The section then has four labelled parts.
 - *What it shows*: the chain from problem to solution, which is the proof that Objective 1 was met.
 - *How to read it*: read each row left to right: the gap found, the requirement written for it, and
   the module (with its Chapter 4 section) that meets it. Example: "Requests not followed to completion"
-  leads to "Record each request and its status until the owner closes it", met by "Maintenance
+  leads to "Record each request and its status until the landlady closes it", met by "Maintenance
   Ticketing and Notification (4.2.5)". There are seven rows, covering all six modules (Financial
   Tracking appears twice).
 
@@ -850,7 +905,7 @@ The section then has four labelled parts.
 
 **If the panel asks**
 - *"Why only 25 of 44 as worded?"* The grading was against the exact wording; the three "not as worded"
-  are things "visible to the owner in another form". (See
+  are things "visible to the landlady in another form". (See
   [STUDY_GUIDE_DEFENSE_QA.md](STUDY_GUIDE_DEFENSE_QA.md), Section 1.)
 - *"Does rent go up automatically?"* No. She sets rates by hand; every change is recorded and "no
   increase is applied automatically."
@@ -877,17 +932,19 @@ The section then has four labelled parts.
 - Some rules live in the database itself so nothing can bypass them.
 
 **Key facts and numbers**
-- A first build (not an iteration): **24 July to 28 August 2026**, a working system and the owner's
+- A first build (not an iteration): **24 July to 28 August 2026**, a working system and the landlady's
   records transferred.
 - Iteration 1: **12 to 14 September**, system and documents checked against each other, **22 recorded
   errors** corrected, automated checks added.
-- Iteration 2: **15 September to 31 October**, the owner's answers, real users, feedback, testing and
+- Iteration 2: **15 September to 31 October**, the landlady's answers, real users, feedback, testing and
   evaluation.
 - Iteration 3: **from 1 November**, the interface redesign: a glass look in light and dark, and the
   sign-in and inquiry pages joined in one screen. No module was added or removed. Two rules were added
   (a closed year's records cannot be changed, and a tenant cannot cancel a repair once someone is
-  sent). All 114 test cases were rerun on 4 November and none failed, so the results of Iteration 2
-  stand.
+  sent). A rerun of the 114 test cases on 4 November found none failing: **77 were run and passed** (21
+  of them with wording the redesign had changed), and the other **37 need a person and were left for
+  one**. The automated checks passed after every later change, so the results of Iteration 2 stand.
+  Never say "all 114 were rerun".
 - The formal ISO/IEC 25010 evaluation was done in Iteration 2, and its questionnaire and the users'
   tasks were repeated with a second round of users in Iteration 3 (Tables M-28 to M-30).
 - The ERD (Figure 4-6), drawn from the database's own catalogue on **5 October 2026**: **21 tables**,
@@ -916,10 +973,10 @@ The section then has four labelled parts.
 
 **Figure 4-3. Context diagram.**
 - *What it shows*: the whole system as one rounded box (process 0) with the three outside parties:
-  Visitor or prospect, Owner (administrator) and Tenant. Adyen is not drawn: as the SAD professor
+  Visitor or prospect, Landlady (administrator) and Tenant. Adyen is not drawn: as the SAD professor
   approved, it is part of the payment process, not an entity, and appears as step 4.3 in Appendix F.
   If asked, the diagrams balance because no level adds an outside party the context diagram lacks.
-- *How to read it*: each arrow is data going in or out. For example, the owner sends payments with
+- *How to read it*: each arrow is data going in or out. For example, the landlady sends payments with
   invoice numbers, and gets overview figures, the income and expense records and workbook downloads back.
 
 **Figure 4-4. Level 1 data flow diagram.**
@@ -929,16 +986,16 @@ The section then has four labelled parts.
 - *How to read it*: processes 1.0 Handle inquiries, 2.0 Manage units and rates, 3.0 Manage tenants and
   tenancies, 4.0 Bill and record payments, 5.0 Manage repair requests, 6.0 Record expenses, 7.0 Produce
   reports, 8.0 Sign in, manage own account. Stores D1 Units and rates, D2 Tenants and tenancies, D3
-  Bills and receipts, D4 Expenses, D5 Inquiries, D6 Repair requests. The paper's own example: the owner
+  Bills and receipts, D4 Expenses, D5 Inquiries, D6 Repair requests. The paper's own example: the landlady
   records a cash receipt through **4.0**, which writes it to **D3**, and **7.0** reads it from D3 for the
   Overview and the Excel workbooks. Notifications and the audit record are left out for readability.
 
 **Figure 4-5. Use case diagram.**
 - *What it shows*: what each type of user can do. Actors (stick figures): Visitor or prospect, Tenant,
-  Owner (administrator) and Adyen (GCash). Ovals are use cases.
+  Landlady (administrator) and Adyen (GCash). Ovals are use cases.
 - *How to read it*: a line from an actor to an oval means that actor may use that function. Shared
   ovals in the middle (sign in, update own details and password, read notifications, see own recent
-  actions) connect to both tenant and owner. "Each use case is a function the server grants to that
+  actions) connect to both tenant and landlady. "Each use case is a function the server grants to that
   role and refuses to every other (Table 4-7)."
 
 **Figure 4-6. Entity-relationship diagram.**
@@ -950,7 +1007,7 @@ The section then has four labelled parts.
   another table.
 
 **Table 4-5. Data dictionary extract: monthly income records**
-- *What it shows*: the columns of the table the owner reads most, the income ledger.
+- *What it shows*: the columns of the table the landlady reads most, the income ledger.
 - *How to read it*: Column name; Type (uuid is a unique ID, numeric(10,2) is money, varchar is text);
   Null (can it be empty); Key (PK, FK or Computed); Description.
 - *Important cells*: **water_payment** (₱200 per occupant, BR-014); **fifty_percent_share**, Computed,
@@ -969,7 +1026,7 @@ The section then has four labelled parts.
 **What it says**
 - The Rooms and rates screen shows each unit's cluster, floor, current rate and status; each tenancy
   has occupants, move-in date and emergency contacts.
-- When the owner changes a rate, a **database trigger** records the old rate, new rate, date and who
+- When the landlady changes a rate, a **database trigger** records the old rate, new rate, date and who
   made the change.
 - Transferred tenancies show the move-in date as **not recorded**, not a guessed date.
 
@@ -978,7 +1035,7 @@ The section then has four labelled parts.
   in the survey. Since 5 November it is on their Overview, in the card for their unit.
 
 **Figure 4-7. Room and rate directory.**
-- *What it shows*: the owner's Rooms and rates screen, with the property's real units, rates and
+- *What it shows*: the landlady's Rooms and rates screen, with the property's real units, rates and
   statuses (names are samples).
 
 **If the panel asks**
@@ -988,12 +1045,17 @@ The section then has four labelled parts.
 ### 4.2.3 Booking and Reservation Management Module
 
 **What it says**
+- "Booking and reservation management takes the form the landlady's practice needs. She arranges every
+  viewing herself, so nothing is booked or paid for online." A visitor sends an inquiry about a unit,
+  the landlady answers it, may mark the unit Reserved, and moves the person in from the inquiry.
 - Visitors see each unit and its rate, read live from the database, and send an inquiry about a
   specific unit **without an account**.
 - They get a **private link** and a **short reference code**; either one (the code with the phone
-  number) opens the conversation with the owner.
-- An accepted inquiry becomes a tenancy; a reserved unit takes no new inquiries; the public site never
-  shows a tenant's name.
+  number) opens the conversation with the landlady.
+- An accepted inquiry becomes a tenancy linked to it; a reserved unit accepts no new inquiries; the
+  public site never shows a tenant's name.
+- On the landlady's side, a Closed inquiry, or one whose person moved in, has no reply box, and
+  **Delete** appears only on those (Appendix K, Part 2, §8, as of 12 November).
 
 **Key facts and numbers**
 - "The link's secret is stored only in hashed form." (**Hashed** means scrambled one way so it cannot
@@ -1007,11 +1069,11 @@ The section then has four labelled parts.
 ### 4.2.4 Financial Tracking and Payment Recording Module
 
 **What it says**
-- The owner records a cash payment with her invoice number, or with none; the system **never makes up
+- The landlady records a cash payment with her invoice number, or with none; the system **never makes up
   an invoice number** and warns if the same tenant already has a payment for that month.
 - A receipt is filed under the month the rent is for, not the day it was paid. Both ledgers keep her
   workbook's layout and download as Excel files.
-- A GCash payment through Adyen enters **Pending Verification** and changes nothing until the owner
+- A GCash payment through Adyen enters **Pending Verification** and changes nothing until the landlady
   verifies it.
 - Tenants see their months; only verified receipts count as paid, and a month with no receipt shows
   **"Not recorded"**, never as owed, "because the records alone cannot tell an unpaid month from one not
@@ -1022,7 +1084,7 @@ The section then has four labelled parts.
   consolidation also exposed errors already in her records.
 
 **Figure 4-9. Monthly Income, with a GCash payment waiting to be verified.**
-- *What it shows*: the owner's Monthly Income screen in her workbook's layout (sample records). Its
+- *What it shows*: the landlady's Monthly Income screen in her workbook's layout (sample records). Its
   two tabs are **Records** and **To verify**. While a GCash payment is waiting, the page opens on To
   verify.
 
@@ -1044,7 +1106,9 @@ The section then has four labelled parts.
   - **BR-045 Expense total**: the sum of its allocations to property areas. ₱6,000 + ₱2,000 = ₱8,000.
 
 **If the panel asks**
-- *"Is GCash the main way to pay?"* No; cash is. A GCash payment counts only after the owner verifies
+- *"Can the landlady type the water when she corrects a payment?"* No. In **Edit this payment**, Water is
+  worked out from Occupants and cannot be typed (Appendix K, Part 2, §3).
+- *"Is GCash the main way to pay?"* No; cash is. A GCash payment counts only after the landlady verifies
   it.
 - *"Why 'Not recorded' instead of 'unpaid'?"* The records alone cannot tell an unpaid month from one not
   yet entered.
@@ -1054,10 +1118,10 @@ The section then has four labelled parts.
 **What it says**
 - A tenant sends a repair request with a title, description and priority, follows it, and may cancel
   it before work starts.
-- The owner can log a repair she hears about in person, even for an empty unit. Only the owner closes a
+- The landlady can log a repair she hears about in person, even for an empty unit. Only the landlady closes a
   request, and the tenant is notified when it is done.
 - In-app notifications cover verified or declined payments (for tenants) and new payments, inquiries
-  or comments (for the owner).
+  or comments (for the landlady).
 - Discussion: matches Saputra et al. (2025) on traceable requests and Jing and Lim (2021) on
   responsiveness.
 
@@ -1073,7 +1137,7 @@ The section then has four labelled parts.
 - Password and account protections are listed; their testing is in Section 4.4.4.
 
 **Key facts and numbers**
-- **60** administrator and tenant routes (42 owner, 18 tenant, counted 10 November 2026) checked
+- **60** administrator and tenant routes (42 landlady, 18 tenant, counted 10 November 2026) checked
   against the matrix on every verification run.
 - Passwords stored as **bcrypt hashes with a per-password salt** (bcrypt is a slow one-way scrambling
   method; a salt is random data added so that equal passwords look different).
@@ -1133,10 +1197,11 @@ The section then has four labelled parts.
 ### 4.3.1 Automated Verification
 
 **What it says**
-- Twenty automated check suites were written during development. They run on the live system and
-  **write nothing**, so they are safe on the owner's real records.
-- They found problems in her records too (the five receipt anomalies), which are reported, not
-  corrected, "because only her invoice book can say what each should read."
+- Twenty automated check suites were written during development, and a twenty-first on 12 October
+  2026. They run on the live system and **write nothing**, so they are safe on the boarding house's real
+  records.
+- They found problems in her records too (the five receipt anomalies), which are "reported on every run
+  rather than corrected, because only her invoice book can say what each should read."
 - The worst defects found in development **showed no error on screen**: a cash payment confirmed with
   nothing written to the ledger, and a partial payment that lost the remaining debt. Each now has a
   check that fails if it returns.
@@ -1147,7 +1212,7 @@ The section then has four labelled parts.
 **Table 4-8. Results of automated verification (29 September 2026)**
 - *What it shows*: the main suites, what each checks, and the result.
 - *How to read it*: Suite, what it checks, result. Key results: Endpoint and access control **78 of
-  78**; Ledger integrity passed, **5 receipt anomalies** reported for the owner; Report reconciliation
+  78**; Ledger integrity passed, **5 receipt anomalies** reported for the landlady; Report reconciliation
   (Excel exports against the database) **490 of 490**; Payment gateway **73 of 73**; Record relations
   **30 of 30**; Data presentation **6 of 6**; Document consistency passed (44 requirements, 49 rules).
 
@@ -1157,18 +1222,18 @@ The section then has four labelled parts.
 ### 4.3.2 Use in the Live Environment
 
 **What it says**
-- The system has run at a public address with the owner's real records since **September 2026**.
+- The system has run at a public address with the landlady's real records since **September 2026**.
 - Real problems were found and fixed in real use (her phone, the GCash acquirer account).
 - All pilot test records were then removed by one reviewed migration after a backup.
 
 **Key facts and numbers**
 - **22 September**: a checkout raised the first real bill, **₱8,200.00 for unit 1a**; a test receipt
   voided four minutes later returned the ledger to its **937 rows**.
-- **23 September**: the owner found it hard to use on her phone; causes measured (a table **518 pixels**
+- **23 September**: the landlady found it hard to use on her phone; causes measured (a table **518 pixels**
   wide on a **301-pixel** screen; edit buttons touch screens never showed) and fixed the same day.
 - GCash payments were refused at first by a misconfigured acquirer account on Adyen's side, which Adyen
   support confirmed and replaced (**Case 08657379**).
-- **26 September**: a test payment passed end to end, from Adyen's authorization to the owner's
+- **26 September**: a test payment passed end to end, from Adyen's authorization to the landlady's
   verification queue.
 
 **If the panel asks**
@@ -1196,7 +1261,7 @@ The section then has four labelled parts.
 **Table 4-9. Results of the screen-versus-database audit (26 and 29 September 2026)**
 - *What it shows*: each screen checked, what was compared, and the result.
 - *How to read it*: Screen, what was compared, result. "Matched" means the screen agreed with the
-  database (the Owner overview "Matched to the peso"). Rows that say "defect fixed" are where the six
+  database (the Administrator overview "Matched to the peso"). Rows that say "defect fixed" are where the six
   defects were (Monthly Income one, Monthly Expenses one layout, Tenants one, Activity one, Tenant
   payments two). The tenant screens were checked on 29 September.
 
@@ -1209,13 +1274,13 @@ The section then has four labelled parts.
 **What it says**
 - A **26-step walkthrough** (30 rows counting sub-steps) exercises every function that writes data,
   once, on the one unoccupied unit.
-- The owner did it herself on **30 September 2026** on her laptop, signed in to her own account, with a
+- The landlady did it herself on **30 September 2026** on her laptop, signed in to her own account, with a
   team member reading each step. Full results: Appendix M, Table M-1.
 
 **Key facts and numbers**
 - Of the 30 rows: **24 passed the first time, 1 failed, 5 not performed as written**.
 - The one failure, **step 23b**: with the connection cut, the Overview showed **₱0** where the design
-  requires **"—"**, so a missing figure is never read as a zero balance. Re-tested on the owner's laptop
+  requires **"—"**, so a missing figure is never read as a zero balance. Re-tested on the landlady's laptop
   on **13 October 2026**, it passed.
 - Not exercised: a rate change and its reversal were skipped; an expense split across two areas was
   entered as two expenses.
@@ -1229,7 +1294,7 @@ The section then has four labelled parts.
 **What it says**
 - Response time = from the tap until the figures the user came for are on screen.
 - Every screen was usable within about three seconds on the phone and a little over two on the laptop.
-- Google tools found the public page's largest element slow on a mid-range phone, and the owner's
+- Google tools found the public page's largest element slow on a mid-range phone, and the landlady's
   Overview moving as figures arrived (recommendation 5).
 
 **Key facts and numbers**
@@ -1239,7 +1304,7 @@ The section then has four labelled parts.
 - **PageSpeed Insights** (Google's speed test), emulating a mid-range phone on slow 4G: public page
   **85 to 88**, largest element at **3.4 to 3.6 seconds**, and **100 for accessibility**.
 - **Re-timed 10 November** after the redesign (Table M-31): most screens faster, sign-in 2.63 s, layout shift **0.08**, PageSpeed phone still **85**.
-- **Lighthouse** on the owner's Overview: a **layout shift of 0.22** (how much the page jumps while
+- **Lighthouse** on the landlady's Overview: a **layout shift of 0.22** (how much the page jumps while
   loading) and **0.7 seconds** of script work on the phone.
 
 **Table 4-10. Page load and response times (30 September 2026, seconds)**
@@ -1264,12 +1329,12 @@ The section then has four labelled parts.
   personal or financial data until sign-in.
 - Slow connection: a returning visitor saw the units after **0.3 seconds instead of 4.6**.
 - **Load test** (a script acting as many users at once): **12** simulated users on the public pages and
-  **6** on the owner's records; **none of the 1,085 and 285 requests failed**; nineteen in twenty
+  **6** on the landlady's records; **none of the 1,085 and 285 requests failed**; nineteen in twenty
   answered in under a second. "These were simulated users, not people."
 - Timeouts: a page stops after **25 seconds**; a save stops after **45 seconds** and says it **cannot
   tell whether the save arrived, so the reader should check before sending it again**.
 - Accessibility: **axe-core 4** (an automatic checker) against **WCAG 2 A and AA** found no violation on
-  the public pages at phone and computer widths, nor on the owner's eight screens.
+  the public pages at phone and computer widths, nor on the landlady's eight screens.
 - Before the fix, the same receipt sent twice or five times at once was saved every time, and two GCash
   checkouts could open on one bill; after, one saved and every other refused; a checkout abandoned for
   more than **15 minutes** no longer holds the bill.
@@ -1282,31 +1347,31 @@ The section then has four labelled parts.
 **If the panel asks**
 - *"Why not just check for duplicates in the program?"* "a check followed by a save can always be
   outrun", so the fix is a rule in the database.
-- *"Did you load test with real people?"* No; simulated users. The owner and tenants together are in
+- *"Did you load test with real people?"* No; simulated users. The landlady and tenants together are in
   Section 4.3.7.
 
-### 4.3.7 User Acceptance Testing with the Owner and Tenants
+### 4.3.7 User Acceptance Testing with the Landlady and Tenants
 
 **What it says**
-- The owner and three tenants used the live system for their own tasks on **30 September 2026**, each
+- The landlady and three tenants used the live system for their own tasks on **30 September 2026**, each
   on their own device and account, after written consent.
 - Where the observer's sheet and the system's activity record disagreed, the activity record was used.
 - Help was needed only at the start (first sign-in, finding their unit and rent). Repairs reached the
-  owner at once and she acted on them that evening.
-- In the session where the owner and two tenants used it at the same time, every screen loaded and no
+  landlady at once and she acted on them that evening.
+- In the session where the landlady and two tenants used it at the same time, every screen loaded and no
   session affected another.
 - On two phones, offline behaviour matched Table M-24, except the Android phone showed the "cannot tell
   whether it was saved" message after 60 to 80 seconds instead of 45; corrected 1 October, on time on
   re-test 13 October 2026.
 
-> **Note:** the paper still has a placeholder line at the top of this section: "[TO DO when the owner
-> signs Appendix O: add "The owner's signed acceptance form is in Appendix O." ...]". Do not read it
-> out; it waits for the owner's signature.
+> **Note:** the paper still has a placeholder line at the top of this section: "[TO DO when the landlady
+> signs Appendix O: add "The landlady's signed acceptance form is in Appendix O." ...]". Do not read it
+> out; it waits for the landlady's signature.
 
 **Key facts and numbers**
 - **31 of 34 attempts without help (91 percent)**; every task attempted was completed.
 - Two of three tenants were helped through first sign-in; one to find their unit and rent.
-- The owner's full year of Monthly Income opened in **about three seconds** during simultaneous use.
+- The landlady's full year of Monthly Income opened in **about three seconds** during simultaneous use.
 - Tests needing several tenants saving at once were not performed, "because only two attended
   together".
 - **Second round**, 31 October to 10 November 2026, on the redesigned system: ten tenants did **151 of
@@ -1335,7 +1400,7 @@ The section then has four labelled parts.
 - *How to read it*: one row per activity. **Executed** counts only tests actually run; **Not performed
   or not applicable** are left out of the pass rate. Pass rate = passed ÷ executed.
   - Unit and integration: automated suites, 20 / 20 / 0 failed, **100%**.
-  - System: owner's walkthrough, 25 executed / 24 passed / 1 failed / 5 not performed, **96%**.
+  - System: landlady's walkthrough, 25 executed / 24 passed / 1 failed / 5 not performed, **96%**.
   - Acceptance: tenant tasks, 34 / 34, **100% (91% without help)**.
   - Acceptance: simultaneous use, 4 / 4, 3 not performed or not applicable, **100%**.
 - *Important cell*: **All levels: 83 executed, 82 passed, 1 failed, 8 not performed, 98.8%**. The
@@ -1363,7 +1428,7 @@ The section then has four labelled parts.
 - *What it shows*: the five steps of the standard and what the team did at each.
 - *How to read it*: Step, what the standard requires, how it was done.
   1. Establish the evaluation requirements: Objective 4; the live system (and for four evaluators a
-     demonstration copy); ISO/IEC 25010:2011; the owner, tenants and evaluators.
+     demonstration copy); ISO/IEC 25010:2011; the landlady, tenants and evaluators.
   2. Specify the evaluation: measures from the tests (Table M-23); survey items assigned to
      sub-characteristics (Table 3-6); criteria: Table 3-5 for means, and for tests "at least 90 percent
      passed with no critical defect open".
@@ -1378,12 +1443,12 @@ The section then has four labelled parts.
 - Ten people answered, each after using the system and giving consent. No team member was a
   respondent.
 - The four outside evaluators reviewed a demonstration copy (same software, separate database with
-  sample data) so no outsider saw the owner's records.
+  sample data) so no outsider saw the landlady's records.
 - Two groups have one respondent each, so the results describe these ten people, not a wider
   population.
 
 **Key facts and numbers**
-- Prospective tenant and three tenants: **30 September 2026**, after their tasks. The owner: that
+- Prospective tenant and three tenants: **30 September 2026**, after their tasks. The landlady: that
   night. One technical evaluator: **4 October**. Four more: **15 and 16 October and two on 18
   October**.
 - **Second round**, 31 October to 10 November 2026: **sixteen** more answers, from eleven tenants,
@@ -1391,7 +1456,7 @@ The section then has four labelled parts.
   all (Appendix M, Table M-28).
 
 **Table 4-14. Distribution of respondents**
-- *What it shows*: how many respondents per group. Owner / administrator **1 (10.00%)**; Tenants **3
+- *What it shows*: how many respondents per group. Landlady **1 (10.00%)**; Tenants **3
   (30.00%)**; Technical evaluators **5 (50.00%)**; Prospective tenants **1 (10.00%)**; Total **10**.
 
 **Table 4-15. Instrument administration and response rate**
@@ -1412,7 +1477,7 @@ The section then has four labelled parts.
   composites.
 - Averaging every response together gives **4.47** instead of **4.59**: same interpretation (Very High
   Quality), same highest (Portability), but Usability becomes lowest, because pooling lets the five
-  technical evaluators outweigh the one owner.
+  technical evaluators outweigh the one landlady.
 
 **Table 4-16. Worked computation of a weighted mean**
 - *What it shows*: one weighted mean worked out in full, so the panel can see the formula used.
@@ -1444,14 +1509,14 @@ The section then has four labelled parts.
 - **Compatibility 4.55**: every browser combination tried worked.
 - **Performance Efficiency 4.48**: no failed request, but two to three seconds on a phone.
 - **Usability 4.42**: "the lowest of the characteristics all four groups rated". The prospective tenant
-  gave every item 5; tenants **4.47**; the owner gave **3** to telling what each screen is for and to
+  gave every item 5; tenants **4.47**; the landlady gave **3** to telling what each screen is for and to
   learning without help. The technical evaluators' mean rose from **3.00 to 4.20**: the first gave 3 to
   all five items before the **fourteen changes** (eleven about usability); the next four gave **4.80,
   4.60, 3.60 and 5.00**. **76 accessibility scans of 19 screens** found no violation once one defect on
   three screens was corrected.
 - **Maintainability 4.32** (lowest composite): five respondents gave **4.00, 5.00, 4.60, 3.00 and
-  5.00**, none inspecting the source code, so "the measurement, read from the code itself, carries more
-  weight than the rating". Three database calls in four are written inside the request handlers.
+  5.00**, none inspecting the source code, so "the measurement, read from the code itself, therefore
+  carries more weight than the rating". Three database calls in four are written inside the request handlers.
 - The results are in the range Canlas et al. (2026) report for a Philippine dormitory system.
 
 **Table 4-17. Summary of evaluation results**
@@ -1461,14 +1526,14 @@ The section then has four labelled parts.
 - Values: Functional Suitability 10, 4.79, rank 2; Performance Efficiency 10, 4.48, rank 6;
   Compatibility 10, 4.55, rank 5; Usability 10, 4.42, rank 7; Reliability 10, 4.61, rank 4; Security
   **6**, 4.68, rank 3; Maintainability **5**, 4.32, rank 8; Portability 10, 4.86, rank 1.
-- *Important cells*: **Overall 4.59, Very High Quality**. Security has n = 6 (owner plus five
+- *Important cells*: **Overall 4.59, Very High Quality**. Security has n = 6 (landlady plus five
   evaluators) and Maintainability n = 5 (evaluators only), because of who could judge them.
 
 **If the panel asks**
 - *"Why is Maintainability lowest?"* Its raters did not inspect the code, and the code itself shows the
   weakness: database calls written inside the request handlers. Recommendation 6.
-- *"Why is Usability low if it is a simple system?"* The owner's two 3s and the first evaluator's 3s
-  before the changes; the owner learned it with each step read to her.
+- *"Why is Usability low if it is a simple system?"* The landlady's two 3s and the first evaluator's 3s
+  before the changes; the landlady learned it with each step read to her.
 
 ### 4.4.4 Security
 
@@ -1479,7 +1544,7 @@ The section then has four labelled parts.
 - Two weaknesses remain by design, left to recommendation 3.
 
 **Key facts and numbers**
-- The owner gave every Security item **5**. Technical evaluators: **4.60** role restriction and audit
+- The landlady gave every Security item **5**. Technical evaluators: **4.60** role restriction and audit
   trail; **4.40** tenant kept out of admin data; **4.20** authentication and session handling; **4.00**
   handling of credentials.
 - Three passive external scans graded the site **A+**: **Qualys SSL Labs**, **Mozilla HTTP
@@ -1510,7 +1575,7 @@ The section then has four labelled parts.
   **twenty-five** are rated; **two** (user interface aesthetics and reusability) have neither, and no
   conclusion is drawn about them.
 - Quality in use: effectiveness, all **34** tasks completed, **31** without help; efficiency, median
-  **60 seconds** and **0.2** wrong turns; context coverage, the owner's laptop, an Android phone and an
+  **60 seconds** and **0.2** wrong turns; context coverage, the landlady's laptop, an Android phone and an
   iPhone.
 
 **Table 4-18. Measured and rated evidence by characteristic**
@@ -1550,7 +1615,7 @@ The section then has four labelled parts.
 **Table 4-19. Optimizations made in response to evaluation, by source**
 - *What it shows*: the 51 changes grouped by where the finding came from.
 - *How to read it*: Source (with date), number of changes, characteristics served, examples. The
-  sources: the owner's phone review 23 Sep (4); screen-versus-database audit 26 Sep (7); development
+  sources: the landlady's phone review 23 Sep (4); screen-versus-database audit 26 Sep (7); development
   reviews 26 to 28 Sep (11); pre-testing audit and Lighthouse 29 and 30 Sep (5); testing day 30 Sep
   (3); evaluation account and security reviews 2 and 7 Oct (3); technical evaluators' review 3 Oct
   (14); the survey 30 Sep to 4 Oct (4). **All: 51.**
@@ -1581,17 +1646,16 @@ The section then has four labelled parts.
 **What it says**
 - Hosted on **Vercel**, database on **Supabase**, payment gateway on **Adyen**. Every approved change is
   deployed automatically from the project's main code branch.
-- The system is not yet the owner's main record; it runs beside her own records.
-- The team gives the system to the owner **free, with no subscription to pay** (from the 26 February
-  consultation).
+- The system is not yet the landlady's main record; it runs beside her own records.
+- "The team gives the system to the boarding house free, with no subscription to pay."
 - Three risks are managed on purpose: her records are real; credentials must stay secret; the five
   historical receipt anomalies must not be mistaken for system errors.
 
 **Table 4-21. Software and hardware requirements for deployment**
 - *What it shows*: what each side needs to use the system, and what was actually used in testing on
   30 September 2026.
-- *How to read it*: Side (Owner, Tenants and visitors, Hosting, Administration), the requirement, and
-  the device used. Owner: a current browser on a computer and internet (her Acer Nitro V 15 with Chrome;
+- *How to read it*: Side (Landlady, Tenants and visitors, Hosting, Administration), the requirement, and
+  the device used. Landlady: a current browser on a computer and internet (her Acer Nitro V 15 with Chrome;
   the team's Dell XPS 15 on Windows 11 with Chrome 154, Edge and Firefox 157). Tenants and visitors: any
   current browser on a phone or computer (Infinix GT20 with Chrome 154; iPhone 15 and iPhone 13 with
   Safari; the tenants' own phones, models not recorded). Hosting: Vercel, Supabase, an Adyen merchant
@@ -1605,7 +1669,7 @@ The section then has four labelled parts.
   2. Record transfer (937 income rows and 1,327 expense allocations): **Done**.
   3. Pilot use alongside her existing records: **In progress**.
   4. Training and hand-over (manual in Appendix K, accounts issued): **Done** (accounts prepared 29
-     September 2026; the owner guided through the system, and the owner and three tenants using it on
+     September 2026; the landlady guided through the system, and the landlady and three tenants using it on
      their own accounts, on 30 September 2026; acknowledgement receipts for payments with no invoice
      number added on 1 October 2026).
   5. Full transition, the system becomes her main record once both records agree: **Not yet** (as of
@@ -1613,7 +1677,7 @@ The section then has four labelled parts.
 - *Important cell*: **Stage 5, "Not yet"**. Be honest about it at the defense.
 
 **If the panel asks**
-- *"Is the owner using it as her main record?"* Not yet; it runs beside her own records until both
+- *"Is the landlady using it as her main record?"* Not yet; it runs beside her own records until both
   agree (stage 5).
 - *"How do you protect her real data?"* A backup before any change; every change a numbered migration
   reviewed before it runs; credentials never in code or documents, with a check before every commit.
@@ -1623,99 +1687,118 @@ The section then has four labelled parts.
 # CHAPTER 5: SUMMARY, CONCLUSIONS, AND RECOMMENDATIONS
 
 **Chapter opening: what it says**
-- Summarizes the study, states the conclusions, and gives recommendations for the owner, for further
-  development, and for future researchers.
+- Summarizes the study, states the conclusions, and gives recommendations for the landlady, for the
+  continued development of the system, and for future researchers.
 - Read it aloud before the defense: nearly every key number is here again.
 
 ## 5.1 Summary
 
 **What it says**
-- A one-paragraph restatement of the problem and the study, then four numbered points, one per
-  objective.
+- A short restatement of the problem and the study, then four numbered points, one per objective.
 
 **Key facts and numbers**
 1. Existing practices: two-sheet workbook on a USB flash drive, paper invoice book, cash, requests by
    message or in person. 937 income rows and 1,327 expense allocations; 43% lacked an anniversary date
    and deposit; five invoice numbers used twice. 44 functional requirements, 49 business rules; 25 as
    worded, 15 in part, 1 interface only, 3 not as worded.
-2. Developed with all six features; it holds the owner's real records.
+2. Developed in three Agile iterations with the six features the objective names, among them
+   "booking and reservation management"; it holds the boarding house's real records. GCash "works end
+   to end in Adyen's test environment and takes no real money. It is not live, because going live needs
+   the owner's merchant onboarding documents."
 3. Twenty suites passed on 29 September 2026 (including **490** report reconciliation checks); six
-   screen defects found and corrected; walkthrough 24 of 30 rows passed first time, one failed, five
-   not performed; tenants 31 of 34 without help; **82 of 83 (98.8 percent)**; no critical defect; every
-   screen within about three seconds on a phone; no failed request under twelve simulated visitors or
-   six simulated readers of the owner's records.
-4. Evaluated by the five steps of ISO/IEC 25040; 27 of 31 sub-characteristics measured, 25 rated;
+   screen defects found and corrected on 26 September; walkthrough 24 of 30 rows passed first time, one
+   failed, five not performed; tenants 31 of 34 without help; **82 of 83 (98.8 percent)**; no critical
+   defect; every screen within about three seconds on a phone; no failed request under twelve simulated
+   visitors or six simulated readers of the boarding house's records. In the third iteration, the rerun
+   of the 114 test cases on 4 November 2026 "passed the 77 that need no person and found none failing".
+   On the redesigned system, ten tenants did 151 of 160 attempts without help and four prospective
+   tenants 31 of 32.
+4. Evaluated by the five steps of ISO/IEC 25040; 27 of 31 sub-characteristics measured, 25 rated; ten
+   respondents (the landlady, three tenants, a prospective tenant, five technical evaluators) rated it
    **4.59 overall**: Functional Suitability 4.79, Performance Efficiency 4.48, Compatibility 4.55,
    Usability 4.42, Reliability 4.61, Security 4.68, Maintainability 4.32, Portability 4.86; **51
-   changes** made.
+   changes** made. Second round, sixteen respondents (the landlady, eleven tenants, four prospective
+   tenants): **4.82**, Usability 4.78, and all 26 answers **4.61**.
 
 ## 5.2 Conclusions
 
 **What it says**
-- Each objective was achieved, with the evidence named. **Conclusions answer the objectives**; that is
+- Each objective was achieved, with the evidence named. **Conclusions answer the objectives**, which is
   why there are exactly four.
 
 **Key facts and numbers**
 1. **First objective achieved**: every gap traced to a requirement and a module (Table 4-2). "The main
    problem at the property was not the lack of a digital tool but the lack of connection between its
    records."
-2. **Second objective achieved**: all six features in use on her real records; they keep her report
-   layout, invoice numbers and cash as the main way to pay, "so using the system requires no change to
-   how she keeps her accounts."
+2. **Second objective achieved**: all six features in use on the boarding house's real records; they
+   keep the landlady's own report layout, invoice numbers and cash as the main way to pay, "so using the
+   system requires no change to how she keeps the accounts". GCash is the one feature not in use with
+   real money.
 3. **Third objective achieved**: 82 of 83 (98.8 percent), above the course standard of 90 percent, no
-   critical defect (Tables 4-12 and 4-20). The one failure appeared only on a real device in its user's
-   hands and passed on re-test.
+   critical defect (Tables 4-12 and 4-20). The one failure, a ₱0 shown with the connection cut, passed
+   when re-tested on the landlady's laptop, and "none of the 77 test cases rerun on 4 November 2026
+   failed".
 4. **Fourth objective achieved**: Very High Quality overall (4.59), every characteristic Very High
-   Quality (Tables 4-17 and 4-19). The ratings agree with the measured evidence, and "they describe how
-   ten people rated the system over three weeks, two of the four groups with one respondent each."
+   Quality, in agreement with the measured evidence (Tables 4-17 and 4-19). The second round gave 4.82
+   and all 26 answers 4.61, "as the view of these respondents rather than of a wider population."
 
 **If the panel asks**
 - *"What is your main conclusion?"* The property's problem was the lack of connection between its
-  records, and Hivelet fixed it without changing how she keeps her accounts.
+  records, and Hivelet fixed it without changing how the landlady keeps the accounts.
+- *"Did you rerun all 114 test cases after the redesign?"* No. Of the 114, 77 were run and passed (21
+  with wording the redesign changed), 37 need a person and were left for one, and none failed.
 
 ## 5.3 Recommendations
 
 **What it says**
-- Eight recommendations in three groups. Each one comes from a weakness or limit named in Chapter 4,
-  with the section in brackets.
+- Eight recommendations in three groups. Each one rests on a finding in Chapter 4, with the section in
+  brackets.
 
 **Key facts and numbers**
 
-*For the owner*
-1. Keep the system's receipts up to date with her receipt book, entering each on Monthly Income; the
-   system can become her main record only once the two agree (Table M-27; Table 4-22).
-2. Keep taking a backup before any change, and read the five flagged invoice numbers as history.
+*For the landlady*
+1. Enter each receipt from her receipt book on Monthly Income, which also settles any bill it covers
+   (Table M-27), so the system's receipts agree with the book and the system can become her main record
+   (Table 4-22).
+2. Have a backup taken before any change to the records, and treat the five flagged invoice numbers as
+   history, kept as she wrote them (Section 4.1.1).
 
-*For continued development*
-3. Take GCash live if the owner wants it: she completes Adyen's merchant onboarding with her business
-   documents (the study did not), the account moves from test to live, and the system refunds a
-   rejected GCash payment; keep
-   the sign-in token in a cookie no script can read; add a second sign-in factor for the administrator
-   (Sections 1.4, 4.3.2, 4.4.4).
-4. Automated browser tests of all 26 walkthrough steps; extend the duplicate-receipt rule to receipts
-   with no invoice number and acknowledgement receipts; keep deleted repair requests and inquiries as
-   archived records; list finished repairs by date; call the action **Void** rather than Delete on
-   Monthly Income and let the owner see voided receipts; record each tenancy's agreed term; warn when a
-   headcount exceeds a unit's capacity.
-5. Make the public page appear faster on phones (largest element 4.2 to 4.4 seconds on 10 November). The layout shift is fixed (0.08) by
-   pre-rendering the public page, serving the typefaces from the site itself, and reserving the space
-   each figure takes; keep figures already loaded.
-6. Strengthen the two lowest characteristics: **Maintainability (4.32)**, by moving database work out
-   of the request handlers (three calls in four) into service modules, reviewed by more than one
-   developer, and giving evaluators the architecture, ERD and data dictionary; **Usability (4.42)**, by
-   taking the owner through each screen with the user manual and showing each new tenant how to sign in
-   and find their unit and rent.
+*For the continued development of the system*
+3. Take GCash live, if the owner wants it, by completing Adyen's merchant onboarding for GCash with the
+   owner's merchant onboarding documents (the study did not) and moving the account from test to live.
+   At the same time, let the system refund a GCash payment the landlady rejects. Move the sign-in token
+   into a cookie no script can read, and add a second sign-in factor for the administrator (Sections
+   1.4, 4.2.4 and 4.4.4).
+4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so every
+   function that writes data is tested on every change. Extend the rule that refuses a second copy of a
+   receipt to receipts with no invoice number and to acknowledgement receipts (Sections 4.3.3, 4.3.4
+   and 4.3.6). That is all of recommendation 4 now. The outside reviewers' advice given after the
+   evaluation (archiving deleted repairs and inquiries, Void instead of Delete, a tenancy's agreed term,
+   a capacity warning) was moved to a team note on 12 November, because a recommendation must rest on a
+   finding in Chapter 4.
+5. Make the public page appear faster on phones (largest element 3.4 to 3.6 seconds on 30 September,
+   4.2 to 4.4 on 10 November) by pre-rendering it and serving the typefaces from the site itself. The
+   other speed findings were acted on in Iteration 3: each screen keeps the figures it has loaded, and
+   the landlady's Overview moves by 0.08 as its figures arrive, where it moved by 0.22 before (Table
+   M-31).
+6. Strengthen the two lowest characteristics: **Maintainability (4.32)**, by moving the database work
+   inside the request handlers (three calls in four) into service modules, one per kind of record,
+   reviewed by more than one developer, and giving evaluators the architecture, ERD and data
+   dictionary; **Usability (4.42, then 4.78)**, by taking the landlady through each screen with the
+   user manual before she uses it alone, and showing each new tenant first how to sign in and find
+   their unit and rent.
 
 *For future researchers*
 7. Check a system against its own real data, not only test cases (Section 4.3.3).
-8. Evaluate over a longer period with every tenant, including two people changing the same record at
-   once; measure availability over months, the owner's time on record-keeping, and the two
-   sub-characteristics not covered (user interface aesthetics, reusability); build the instrument on
-   ISO/IEC 25010:2023; ask tenants what is missing.
+8. Evaluate over a longer period of real use with every tenant, including two people changing the same
+   record in different ways at once; measure availability over months, the landlady's time on
+   record-keeping, and the two sub-characteristics not covered (user interface aesthetics,
+   reusability); build the instrument on ISO/IEC 25010:2023; ask tenants what they find missing.
 
 **If the panel asks**
-- *"What would you do next?"* Recommendation 3 first: Adyen live with refunds, a protected cookie and a
-  second factor. See [STUDY_GUIDE_DEFENSE_QA.md](STUDY_GUIDE_DEFENSE_QA.md), Section 9.
+- *"What would you do next?"* Recommendation 3 first: GCash live with the owner's merchant onboarding
+  documents, refunds, a protected cookie and a second factor. See
+  [STUDY_GUIDE_DEFENSE_QA.md](STUDY_GUIDE_DEFENSE_QA.md), Section 9.
 
 ---
 
@@ -1761,7 +1844,7 @@ The section then has four labelled parts.
 The appendix list (08_APPENDICES.md) says each appendix starts on a new page with its letter and title.
 Chapter 4 cites K, M, N and O by letter, so those letters must not change.
 
-**Appendix A. Letter of Request.** The signed letter to the owner asking to conduct the study. It is
+**Appendix A. Letter of Request.** The signed letter of request asking to conduct the study. It is
 there to show the client agreed. The list marks it **[TO DO: scan it in]**.
 
 **Appendix B. Appointments.** The adviser appointment papers, showing the study was formally
@@ -1789,14 +1872,14 @@ the design one level deeper.
 **Appendix I. Initial Design.** Figures I-1 to I-4: four screens of the first working version, **28
 August 2026** (public landing page, a unit category, the tenant directory, the tenant overview on a
 phone), with sample tenants. Because the interface was prototyped in code, the first version is the
-initial design. It notes Iteration 1 removed an automatic rent increase the owner does not
+initial design. It notes Iteration 1 removed an automatic rent increase the landlady does not
 apply and corrected the number of units on the public page. It is there to show how the design
 changed.
 
 **Appendix J. Evaluation Instrument.** The ISO/IEC 25010 questionnaire exactly as respondents saw it in
 a Google Form, in English and Filipino. Section 1 (About you) sends each respondent to one section:
-Section 2 owner and administrator, Section 3 tenants, Section 4 technical evaluators, Section 5
-prospective tenants. Rated items: **owner 28, tenants 18, technical evaluators 33, prospective tenants
+Section 2 the landlady (the form titles it "Owner and administrator", as it was given), Section 3 tenants, Section 4 technical evaluators, Section 5
+prospective tenants. Rated items: **landlady 28, tenants 18, technical evaluators 33, prospective tenants
 12**, numbered as in Table 3-6. It is there so the panel can see every question behind the means.
 
 **Appendix K. User's Manual.** Part 1 for tenants (in English and Filipino) and Part 2 for the
@@ -1806,8 +1889,8 @@ Table 4-22, stage 4, and the basis of recommendation 6.
 
 **Appendix L. Test Cases.** Every test case run on **30 September 2026**, with its ISO/IEC 25010
 characteristic, the requirement it traces to, what to do, what should happen and the result (Pass,
-Fail, Pass after fix, NT not tested). Parts: A owner and administrator (A-05 to A-32 are the
-walkthrough), T tenant tasks, P public site, C simultaneous use, O offline, weak signal and installing,
+Fail, Pass after fix, NT not tested). Parts: A the landlady's tests (titled "Owner and administrator";
+A-05 to A-32 are the walkthrough), T tenant tasks, P public site, C simultaneous use, O offline, weak signal and installing,
 S security, CO browsers and devices, PF performance timings, N changes shipped on 30 September. The
 prospective tenant's task cards were not recorded on the day. It is the raw evidence behind Sections
 4.3.4 to 4.3.7.
@@ -1825,7 +1908,7 @@ prospective tenant's task cards were not recorded on the day. It is the raw evid
 It is there so every Chapter 4 number can be checked.
 
 *How to read a ratings table (for example Table M-2, Functional Suitability)*: rows are the items,
-grouped by who rated them; each group ends with a **group mean** (Owner 4.83, Tenants 5.00, Technical
+grouped by who rated them; each group ends with a **group mean** (Landlady 4.83, Tenants 5.00, Technical
 evaluators 4.32, Prospective tenant 5.00); the last row, the **composite**, is the mean of those group
 means (4.79).
 
@@ -1835,11 +1918,11 @@ Backup. The appendix list gives **24 tables, 238 columns**. No sample values are
 hold personal data. It is there so the database design can be checked column by column (Table 4-5 is an
 extract).
 
-**Appendix O. User Acceptance Sign-off.** The owner's signed acceptance form, scanned. It states the
-test was held on **30 September 2026** by the owner, three tenants and one prospective tenant. Still
-marked **[TO DO: signature]**; the owner signs only if she agrees.
+**Appendix O. User Acceptance Sign-off.** The landlady's signed acceptance form, scanned. It states the
+test was held on **30 September 2026** by the landlady, three tenants and one prospective tenant. Still
+marked **[TO DO: signature]**; the landlady signs only if she agrees.
 
-**Appendix P. Informed Consent Form.** The blank form the owner and each tenant signed (Section 3.3), never the signed
+**Appendix P. Informed Consent Form.** The blank form the landlady and each tenant signed (Section 3.3), never the signed
 copies, which carry names.
 
 **Appendix Q. Source Code.** The repository's layout; the code itself is shown at the defense on
@@ -1875,7 +1958,7 @@ M-31, so check the list says so.
 > system." Section 4.3.6 says "Since 12 October 2026 a twenty-first suite repeats these tests". Both
 > are true at different dates: Table 4-8 reports the twenty run on 29 September.
 
-> **Note 6: an unfinished line.** Section 4.3.7 still contains "[TO DO when the owner signs Appendix O:
+> **Note 6: an unfinished line.** Section 4.3.7 still contains "[TO DO when the landlady signs Appendix O:
 > ...]", and Appendices A, B and O are marked TO DO.
 
 ---
@@ -1888,7 +1971,9 @@ Say each answer aloud, in your own words, with one number and where it is in the
 2. How many units does the property have, in which five clusters, and how many are occupied?
 3. State the general objective and the four specific objectives in order.
 4. Which Chapter 4 section answers each objective?
-5. What is in the scope, and what are the delimitations of online payment?
+5. What is in the scope, and what are the delimitations of online payment? What does booking and
+   reservation management mean here, and why is nothing booked online?
+5b. Is the landlady the owner? Why does going live with GCash need the owner's documents?
 6. Which study is closest to Hivelet, and how is Hivelet different?
 7. What is the research gap (Section 2.2)?
 8. Draw the conceptual framework (Figure 2-2) from memory: input, process, output, feedback.

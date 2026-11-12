@@ -66,7 +66,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
   s.addText('A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House', { x: 0.8, y: 2.7, w: 11.5, h: 1.0, fontFace: FONT, fontSize: 24, color: C.white });
   s.addText('IT 124 Capstone Project 2 · Group 4, BS Information Technology · Bicol University College of Science', { x: 0.8, y: 4.2, w: 11.5, h: 0.5, fontFace: FONT, fontSize: 14, color: C.soft });
   s.addText('[Team members]   ·   Adviser: [name]   ·   [Defense date]', { x: 0.8, y: 4.8, w: 11.5, h: 0.5, fontFace: FONT, fontSize: 14, color: C.soft });
-  s.addNotes('Introduce the team and the client: a 33-unit boarding house in Legazpi City, 32 of them occupied, run day to day by the landlady.');
+  s.addNotes('Introduce the team and the client: a 33-unit boarding house in Legazpi City, 32 of them occupied, run day to day by the landlady, who manages it for its owner.');
 }
 
 // 2. The problem
@@ -83,7 +83,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 3. What her records showed
 {
-  const s = titled('What the owner\'s own records showed', 'These come from transferring her real workbook into the system (Section 4.1.1). The records were kept exactly as she wrote them; the system reports the anomalies rather than correcting them.');
+  const s = titled('What the landlady\'s own records showed', 'These come from transferring her real workbook into the system (Section 4.1.1). The records were kept exactly as she wrote them; the system reports the anomalies rather than correcting them.');
   stat(s, 0.8, 1.6, '937', 'income rows transferred');
   stat(s, 3.9, 1.6, '1,327', 'expense allocations transferred');
   stat(s, 7.0, 1.6, '43%', '402 of the 937 rows had no anniversary date and no deposit');
@@ -97,7 +97,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
   s.addText('To design, develop and evaluate Hivelet, a web-based apartment management system that improves administrative workflow integration, communication and operational control.', { x: 0.6, y: 1.3, w: W - 1.2, h: 1.0, fontFace: FONT, fontSize: 16, italic: true, color: C.faint });
   bullets(s, [
     'Analyze the existing practices and set the system requirements',
-    'Develop tenant and room management, booking, financial tracking with optional online payment, maintenance ticketing and notifications, role-based access control, and PWA support',
+    'Develop tenant and room management, booking and reservation management, financial tracking with optional online payment, maintenance ticketing and notifications, role-based access control, and PWA support',
     'Pilot test the system for functionality, responsiveness and operational performance',
     'Evaluate and optimize it with the ISO/IEC 25010 software quality model',
   ], { y: 2.5, h: 4.3 });
@@ -123,7 +123,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 7. Method
 {
-  const s = titled('Method: Agile, in three iterations', 'Iteration 1 is the honest part of the story: it checked the system and its documents against each other and corrected 22 recorded errors. Iteration 3 redesigned the screens and added no module, and a second round of users tested it (Appendix M, Table M-19).');
+  const s = titled('Method: Agile, in three iterations', 'Iteration 1 is the honest part of the story: it checked the system and its documents against each other and corrected 22 recorded errors. Iteration 3 redesigned the screens and added no module. On 4 November, of the 114 test cases, 77 were run and passed, 37 need a person, and none failed. A second round of users then tested it (Appendix M, Table M-19).');
   image(s, 'appendix-c-gantt-chart.png', 0.5, 1.2, 7.6, 4.6);
   bullets(s, [
     'First build, 24 July to 28 August',
@@ -152,10 +152,10 @@ function box(s, x, y, w, h, head, body, size = 13) {
   const s = titled('Six features, one system', 'These are the six the second objective names (Chapter 4, Sections 4.2.2 to 4.2.7).');
   const f = [
     ['Tenants and rooms', 'Move-in, move-out, occupants, deposit; every rate change recorded'],
-    ['Booking and inquiries', 'Public catalogue; an inquiry about a unit, answered in a thread'],
-    ['Financial tracking', 'The owner\'s own ledger layout, invoice numbers and Excel workbooks'],
-    ['Optional GCash payment', 'Through Adyen; counts only after the owner verifies it'],
-    ['Repairs and notifications', 'A request with photos, followed to completion'],
+    ['Booking and reservation', 'Public unit list, an inquiry the landlady answers, the unit marked Reserved. Nothing booked or paid online'],
+    ['Financial tracking', 'The landlady\'s own ledger layout, invoice numbers and Excel workbooks'],
+    ['Optional GCash payment', 'Through Adyen, in its test environment with no real money. Counts only after the landlady verifies it'],
+    ['Maintenance ticketing', 'A repair request with a photo, followed to completion, with notifications'],
     ['Roles and the PWA', 'Each person sees only their part; installs from the browser, reads offline'],
   ];
   f.forEach(([h, b], i) => box(s, 0.6 + (i % 3) * 4.1, 1.4 + Math.floor(i / 3) * 2.6, 3.9, 2.4, h, b));
@@ -168,9 +168,9 @@ function box(s, x, y, w, h, head, body, size = 13) {
   image(s, 'figure-14-tenant-portal-phone.png', 8.6, 1.2, 4.2, 5.6);
 }
 
-// 11. Screens: owner
+// 11. Screens: landlady
 {
-  const s = titled('What the owner sees', 'Left: the monthly income ledger in her workbook\'s layout (Figure 4-9). Right: the repair board (Figure 4-10). Sample records.');
+  const s = titled('What the landlady sees', 'Left: the monthly income ledger in her workbook\'s layout (Figure 4-9). Right: the repair board (Figure 4-10). Sample records.');
   image(s, 'figure-12-monthly-income.png', 0.5, 1.3, 6.1, 5.4);
   image(s, 'figure-13-repairs-board.png', 6.8, 1.3, 6.1, 5.4);
 }
@@ -183,18 +183,18 @@ function box(s, x, y, w, h, head, body, size = 13) {
     'Too many wrong passwords lock the account for 15 minutes; breached passwords are refused',
     'One permission matrix; a tenant sees only their own records',
     'Row-level security on all 24 database tables',
-    'Every owner action in an audit trail the application cannot erase',
+    'Every landlady action in an audit trail the application cannot erase',
     'Every gateway message checked by its HMAC signature before anything is written',
   ]);
 }
 
 // 13. Testing
 {
-  const s = titled('Pilot testing: 82 of 83 tests passed (98.8%)', 'Four layers, on the ISO/IEC/IEEE 29119 levels (Table 4-12). The one failure, a ₱0 shown with the connection cut, passed when re-tested on the owner\'s laptop on 13 October. The course standard is 90 percent.');
+  const s = titled('Pilot testing: 82 of 83 tests passed (98.8%)', 'Four parts, on the ISO/IEC/IEEE 29119 levels (Table 4-12). The one failure, a ₱0 shown with the connection cut, passed when re-tested on the landlady\'s laptop on 13 October. The course standard is 90 percent.');
   const rows = [
     ['Level', 'Activity', 'Executed', 'Passed'],
     ['Unit and integration', 'Automated check suites', '20', '20'],
-    ['System', 'Owner\'s functional walkthrough', '25', '24'],
+    ['System', 'Landlady\'s functional walkthrough', '25', '24'],
     ['Acceptance', 'Tenant tasks', '34', '34'],
     ['Acceptance', 'Simultaneous use', '4', '4'],
     ['All levels', '', '83', '82 (98.8%)'],
@@ -219,17 +219,17 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 15. User acceptance
 {
-  const s = titled('The owner and three tenants used it themselves', 'Observed on their own devices with a fixed help ladder; testers thought aloud (Chapter 3, Section 3.3; Chapter 4, Section 4.3.7). The second round, 31 October to 10 November, recorded no times, so the 60 seconds is the first round only (Appendix M, Table M-30).');
+  const s = titled('The landlady and three tenants used it themselves', 'Observed on their own devices with a fixed help ladder; testers thought aloud (Chapter 3, Section 3.3; Chapter 4, Section 4.3.7). The second round, 31 October to 10 November, recorded no times, so the 60 seconds is the first round only (Appendix M, Table M-30).');
   stat(s, 0.8, 1.5, '34 of 34', 'tenant tasks completed');
   stat(s, 3.9, 1.5, '31', 'of them without help (91%)');
   stat(s, 7.0, 1.5, '60 s', 'median time per task');
-  stat(s, 10.1, 1.5, '24 of 25', 'walkthrough steps the owner performed passed the first time');
+  stat(s, 10.1, 1.5, '24 of 25', 'walkthrough steps the landlady performed passed the first time');
   s.addText('Where tenants needed help: the first sign-in and finding their unit and rent. In a second round on the redesigned system, ten tenants did 151 of 160 attempts without help (94%) and four prospective tenants 31 of 32 (97%).', { x: 0.8, y: 4.2, w: 11.7, h: 1.2, fontFace: FONT, fontSize: 18, color: C.ink });
 }
 
 // 16. ISO/IEC 25010 results
 {
-  const s = titled('ISO/IEC 25010 evaluation: 4.59, Very High Quality', 'Composite means (Table 4-17), mean of the group means. Ten respondents: the owner, three tenants, a prospective tenant and five technical evaluators. Every characteristic Very High Quality. Second round on the redesigned system: 4.82 from 16 answers, 4.61 from all 26.');
+  const s = titled('ISO/IEC 25010 evaluation: 4.59, Very High Quality', 'Composite means (Table 4-17), mean of the group means. Ten respondents: the landlady, three tenants, a prospective tenant and five technical evaluators. Every characteristic Very High Quality. Second round on the redesigned system: 4.82 from 16 answers, 4.61 from all 26.');
   const labels = ['Portability', 'Functional Suitability', 'Security', 'Reliability', 'Compatibility', 'Performance Efficiency', 'Usability', 'Maintainability'];
   const values = [4.86, 4.79, 4.68, 4.61, 4.55, 4.48, 4.42, 4.32];
   s.addChart(pptx.ChartType.bar, [{ name: 'Composite mean', labels, values }], {
@@ -241,10 +241,10 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 17. Measured and rated
 {
-  const s = titled('Measured and rated evidence agree on all eight', 'Usability agrees once the later technical evaluators had rated it. The owner\'s two 3s still mark where a first-time user needs help (Section 4.4.5).');
+  const s = titled('Measured and rated evidence agree on all eight', 'Usability agrees once the later technical evaluators had rated it. The landlady\'s two 3s still mark where a first-time user needs help (Section 4.4.5).');
   bullets(s, [
     '27 of the 31 sub-characteristics measured by tests; 25 rated by the survey',
-    'Usability (4.42): nine tasks in ten done without help; the owner rated learning without help lower',
+    'Usability (4.42): nine tasks in ten done without help; the landlady rated learning without help lower',
     'Maintainability (4.32): checks pass on every change, but three database calls in four sit inside the request handlers',
     'The 14 comments of 3 October were all acted on by 5 October',
     '51 optimizations in all, each traced to the finding that caused it (Appendix M)',
@@ -255,7 +255,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 {
   const s = titled('Conclusions: all four objectives achieved', 'One line per objective, in order (Chapter 5, Section 5.2).');
   [
-    ['1. Analyze the practices', 'Every gap in the owner\'s practices traced to a requirement and a module'],
+    ['1. Analyze the practices', 'Every gap in the landlady\'s practices traced to a requirement and a module'],
     ['2. Develop the system', 'All six features built and in use on her real records, in her own layout'],
     ['3. Pilot test it', '82 of 83 tests passed (98.8%), with no critical defect'],
     ['4. Evaluate and optimize', 'Very High Quality overall (4.59) on ISO/IEC 25010, 4.82 in a second round; 51 optimizations made'],
@@ -265,8 +265,8 @@ function box(s, x, y, w, h, head, body, size = 13) {
 // 19. Recommendations
 {
   const s = titled('Recommendations', 'Grouped by who acts on them (Chapter 5, Section 5.3).');
-  box(s, 0.6, 1.45, 3.9, 5.1, 'The owner', 'Keep the system\'s receipts up to date with her receipt book.\n\nKeep a backup before any change to the records.', 16);
-  box(s, 4.7, 1.45, 3.9, 5.1, 'The system', 'Move Adyen from test to live, with refunds.\n\nA protected sign-in cookie and a second sign-in factor.\n\nAutomated browser tests for the 26 walkthrough steps, and faster first loads on phones.\n\nRaise Maintainability (service modules) and Usability (first-use guidance).', 16);
+  box(s, 0.6, 1.45, 3.9, 5.1, 'The landlady', 'Enter each receipt from her receipt book on Monthly Income.\n\nHave a backup taken before any change to the records.', 16);
+  box(s, 4.7, 1.45, 3.9, 5.1, 'The system', 'Take GCash live, if the owner wants it, with the owner\'s merchant onboarding documents, and add refunds.\n\nA protected sign-in cookie and a second sign-in factor.\n\nAutomated browser tests for the 26 walkthrough steps, and a faster public page on phones.\n\nRaise Maintainability (service modules) and Usability (first-use guidance).', 16);
   box(s, 8.8, 1.45, 3.9, 5.1, 'Future researchers', 'Check a system against its own real data, not only against test records.\n\nEvaluate over a longer period, with every tenant.', 16);
 }
 

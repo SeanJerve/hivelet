@@ -1,6 +1,6 @@
 # Defense checklists: where the paper stands
 
-Updated 10 November 2026 against the two forms Sean sent on 4 November: **Form 2, Pre-Defense
+Updated 10 November 2026, and its wording brought in line with the paper of 12 November, against the two forms Sean sent on 4 November: **Form 2, Pre-Defense
 Clearance Checklist** (23 items, signed by the advisers and the Faculty-in-Charge) and the
 **Proponent's Checklist** (Phases 1 to 6, from endorsement to the hardbound copy). Each row says what
 the form asks for, what to attach, whether it is ready, and who acts. "Team" means it needs a person,
@@ -25,8 +25,8 @@ Figure and table numbers are the final paper's (`FINAL/05_CHAPTER_4_...`), not t
 | 5 | Similarity check, within the University's threshold | The similarity report | Not done. The threshold on the form is blank | Team |
 | 6 | Every module developed and working | The live system at hivelet.vercel.app, shown with `FINAL/DEMO_SCRIPT.md` | Done | Team demonstrates |
 | 7 | Revision log, up to date | **`FINAL/FORM_2_EVIDENCE/REVISION_LOG.md`** | **Done 10 Nov**: every round of testing and review, what it found and what was revised, from Tables 4-19, 4-20, M-19 and M-27 and the 4 November rerun | Programming Adviser to check |
-| 8 | Test plan executed, at least 90% passing, critical defects resolved | Appendix L (the test cases and results), Table 4-12 (by level), Table 4-20 (defects) and `docs/TESTING_DAY/results/RERUN_2026-11-04.md` | Done: 82 of 83 passed (98.8%), no critical defect, and the 4 November rerun of all 114 cases found none failing | Attach as the Test Plan and Test Results Report |
-| 9 | UAT signed by the client | Appendix O, printed from `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx` | Waiting on the owner's signature (P1) | Team, with the owner |
+| 8 | Test plan executed, at least 90% passing, critical defects resolved | Appendix L (the test cases and results), Table 4-12 (by level), Table 4-20 (defects) and `docs/TESTING_DAY/results/RERUN_2026-11-04.md` | Done: 82 of 83 passed (98.8%), no critical defect, and the 4 November rerun found none failing: of the 114 cases, 77 were run and passed (21 with wording the redesign changed) and 37 need a person and were left for one | Attach as the Test Plan and Test Results Report |
+| 9 | UAT signed by the client | Appendix O, printed from `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx` | Waiting on the landlady's signature (P1) | Team, with the landlady |
 | 10 | Deployed or pilot-tested, with a Deployment Report and a Client or End-User Acceptance Form or MOA | **`FINAL/FORM_2_EVIDENCE/DEPLOYMENT_REPORT.md`**, and the acceptance form or MOA | Deployment Report **done 10 Nov**. **No acceptance form or MOA found.** Ask the FIC whether the signed UAT form of item 9 serves, or whether Module 06's form is separate | Team |
 | 11 | User manual complete, and the source code in version control and open to the Programming Adviser | Appendix K, and the repository link | Done, with one catch: if the repository goes private before the defense (P9), **add the Programming Adviser as a collaborator** | Sean |
 | 12 | Context Diagram in the standard model | Figure 4-3 and Appendix D | Done. Gane and Sarson, three outside parties: Adyen is part of process 4.0, as the SAD professor approved | |
@@ -34,7 +34,7 @@ Figure and table numbers are the final paper's (`FINAL/05_CHAPTER_4_...`), not t
 | 14 | Use Case Diagram | Figure 4-5 and Appendix G | Done | |
 | 15 | ERD or database diagram | Figure 4-6 and Appendix H, drawn from the live database catalogue | Done | |
 | 16, 17 | Consultation records with each adviser, signed sessions | `FINAL/FORM_2_EVIDENCE/CONSULTATION_RECORD.md`, one record for both, since Sir Jayvee is both advisers: 26 February, 2 March and 22 September 2026, and one before the final defense | Ready to print. Signatures open | Team, with Sir Jayvee |
-| 18, 19 | Forms 3A and 3B signed, all items ticked, the four diagram annexes attached to 3B | Forms 3A and 3B. The annexes are Appendices D, E and F, G and H. Each form is checked item by item in `FORM_2_EVIDENCE/FORMS_3A_3B_CHECK.md` | All 16 items of 3A and all 6 of 3B met (3A items 2, 3, 5 and 11 fixed in Chapters 1 and 2 on 10 Nov). Signatures open | Team |
+| 18, 19 | Forms 3A and 3B signed, all items ticked, the four diagram annexes attached to 3B | Forms 3A and 3B. The annexes are Appendices D, E and F, G and H. Each form is checked item by item in `FORM_2_EVIDENCE/FORMS_3A_3B_CHECK.md` | All 16 items of 3A and all 6 of 3B met (3A items 2, 3, 5 and 11 fixed in Chapters 1 and 2 on 10 Nov, item 11 again on 12 Nov when Booking Inquiry became Inquiry). Signatures open | Team |
 | 20, 21 | Mock defense held, every recommendation acted on | The mock defense evaluation and a list of actions taken | Open | Team. Send the recommendations and Claude records what was done |
 | 22 | Slides and demo script, with a backup copy of the system and slides | `FINAL/HIVELET DEFENSE SLIDES.pptx`, `FINAL/DEFENSE_PRESENTATION_SCRIPT.md`, `FINAL/DEMO_SCRIPT.md` | Ready. Slide 1 still needs the names, adviser and date. Backup copy not made | Team |
 | 23 | Copies for the three panelists and two advisers | Five printed copies | Open | Team |
@@ -62,7 +62,7 @@ Sean sent it on 4 November. It matches the paper's diagrams in style: Gane and S
    Section 4.2.1 says why. Figure 4-2 (the architecture) and the use case diagram still show Adyen,
    since those are not data flow diagrams.
 2. **Processes.** The lab has five. The paper's Figure 4-4 has eight, drawn from what was built, and
-   the system has no booking approval: a visitor sends an inquiry and the owner moves them in. The
+   nothing is booked or approved online: a visitor sends an inquiry, the landlady answers it, may mark the unit Reserved and moves the person in. The
    lab was the planned design, and the paper shows the system as built, which is what Chapter 4
    reports and tests. If asked, say exactly that.
 3. **Level names.** The lab calls the diagram under the context diagram "Diagram 0 (Level 0)". The

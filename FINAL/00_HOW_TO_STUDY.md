@@ -33,7 +33,7 @@ on, a quiz and the plan for the day). Sean shares it from the page's Share menu.
 2. **Everyone, the paper:** read each chapter (`01_ABSTRACT.md` to `06_...`), then its part of
    `STUDY_GUIDE_PAPER_WALKTHROUGH.md`. End with its checklist, "Can you explain these without notes?".
 3. **Everyone, the questions:** `STUDY_GUIDE_DEFENSE_QA.md`, or the Questions tab of the study page in
-   practice mode. Learn the three weak spots well: Usability (the owner's two 3s), Maintainability
+   practice mode. Learn the three weak spots well: Usability (the landlady's two 3s), Maintainability
    (154 of 204 database calls inside the request handlers) and the small sample (ten respondents in
    the first round, sixteen in the second).
 4. **By topic, then go deeper on your own:**
@@ -57,3 +57,11 @@ on, a quiz and the plan for the day). Sean shares it from the page's Share menu.
   optional and not live, because going live needs the owner's merchant onboarding documents.
 - 33 units, 32 occupied (the live site may show 33 of 33: the test account holds PH for the demo).
 - Nobody signs in with an email: it is a login ID or a phone number.
+- She is **the landlady**, never "the owner": she manages the boarding house for its owner and is the
+  system's only administrator. "The owner" is only the proprietor, whose merchant onboarding documents
+  going live with GCash would need.
+- The system takes no bookings. Booking and reservation management means the public list of units, the
+  inquiry the landlady answers, a unit marked Reserved, and the move-in. Nothing is booked or paid for
+  online.
+- The 4 November rerun: of the 114 test cases, 77 were run and passed, 37 need a person and were left
+  for one, none failed. Never "all 114 rerun".

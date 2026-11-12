@@ -1,6 +1,6 @@
 # Forms 3A and 3B, item by item
 
-Checked against the paper on 10 November 2026. All 16 items of Form 3A and all 6 of Form 3B are now met. Every item must be ticked before an adviser signs.
+Checked against the paper on 10 November 2026, and rows 2, 3, 5, 7 and 9 to 11 again on 12 November. All 16 items of Form 3A and all 6 of Form 3B are now met. Every item must be ticked before an adviser signs.
 **OK** means the paper meets it. **FIX** means it does not yet, with what to change.
 
 ## Form 3A, Content Adviser (16 items)
@@ -13,11 +13,11 @@ Checked against the paper on 10 November 2026. All 16 items of Form 3A and all 6
 | 4 | The objectives are anchored on the gap | OK | 1.2's general objective restates the gap |
 | 5 | The specific objectives are SMART, with Bloom's verbs | OK, fixed 10 Nov | The verbs (analyze, develop, test, evaluate) are Bloom's. 1.2 now gives the period: "from July to November 2026", as Appendix C's schedule runs |
 | 6 | No personal opinions, every claim cited or backed by evidence | OK | The build checks that every citation has a reference. The adviser reads for opinions |
-| 7 | The significance names the beneficiaries | OK | 1.3: the owner, the tenants, future researchers |
+| 7 | The significance names the beneficiaries | OK | 1.3: the landlady, the tenants, future researchers |
 | 8 | Scope and delimitations, with reasons for what is left out | OK | 1.4 |
 | 9 | Enough up-to-date literature, cited, anchored on a Literature Map | OK | Chapter 2. 22 of the 35 references are from 2021 to 2026. The map is Appendix R |
 | 10 | The concept of the study illustrates how it was done | OK | 2.3, Figure 2-2 |
-| 11 | Definition of terms: only operational or customized definitions | OK, fixed 10 Nov | Seven textbook definitions in 2.4 now say how this study uses the term: Progressive Web Application, Centralized System, MIS, Booking Inquiry (which wrongly said the owner approves bookings), Cash Flow Monitoring, User Authentication and RBAC |
+| 11 | Definition of terms: only operational or customized definitions | OK, fixed 10 and 12 Nov | Every term in 2.4 says how this study uses it. The 25 terms: Hivelet, Progressive Web Application, Resource-Constrained Environment, Fragmented Workflow, Centralized System, Small-Scale Apartment Management, MIS, Inquiry, Financial Tracking, Cash Flow Monitoring, Maintenance Ticketing, User Authentication, RBAC, Optional Online Payment Feature, ISO/IEC 25010:2011, Adyen, GCash, Landlady, Owner, Tenant, Prospective Tenant, Technical Evaluator, UAT, Weighted Mean and 50% Share. On 12 Nov "Booking Inquiry" became Inquiry (it now says nothing is booked or paid for online), "Issue Ticketing System" became Maintenance Ticketing, and Landlady and Owner say who each is |
 | 12 | The method: data gathering, evaluation and data analysis, with their forms | OK | Chapter 3. The forms are Appendix J (questionnaire), L (test cases) and P (consent) |
 | 13 | Chapter 4's results come from the method and follow the objectives | OK | 4.1 to 4.4, one section per objective, and 4.5 the deployment plan |
 | 14 | The summary of findings summarizes Chapter 4 | OK | 5.1 |

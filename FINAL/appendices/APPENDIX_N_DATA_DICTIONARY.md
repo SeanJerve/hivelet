@@ -49,7 +49,7 @@ The parts of the property an expense can be split across, and whether each count
 | :--- | :--- | :---: | :--- | :--- | :--- |
 | code | property_area_type (Boarding House, Main House, Front Apartment, Back Apartment, Other Expenses / Personal, Penthouse) | Yes |  | PK | The area |
 | name | varchar(150) | Yes |  |  | Name shown on screens |
-| is_rental_expense | boolean | Yes | true |  | False for the owner's own residence and personal costs, which are not deducted from rental income |
+| is_rental_expense | boolean | Yes | true |  | False for the Main House (personal) and other personal costs, which are not deducted from rental income |
 | display_order | integer | Yes | 0 |  | Order on screens and reports |
 | notes | text |  |  |  | Notes on what the area covers |
 

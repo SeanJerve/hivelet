@@ -6,7 +6,7 @@ Chapter 4 cites K, M, N and O by letter, so those letters must not change.
 
 | Appendix | Title | What goes in it | Where it is |
 | :--- | :--- | :--- | :--- |
-| A | Letter of Request | The signed letter to the owner. **[TO DO: scan it in; the manuscript has the heading only]** | The team's copy |
+| A | Letter of Request | The signed letter of request to the boarding house. **[TO DO: scan it in; the manuscript has the heading only]** | The team's copy |
 | B | Appointments | The adviser appointment papers. **[TO DO: scan them in; the manuscript has the heading only]** | The team's copies |
 | C | Gantt Chart | The schedule as it ran: the first build, the three iterations, the Module 01 gap, and the dated events | `FINAL/appendices/APPENDIX_C_GANTT_CHART.md` |
 | D | Context Diagram | The as-built context diagram, the same image as Figure 4-3 | `docs/FINAL MANUSCRIPT/figures/figure-6-context-diagram.png` |
@@ -20,7 +20,7 @@ Chapter 4 cites K, M, N and O by letter, so those letters must not change.
 | L | Test Cases | The test cases of 30 September 2026 and their results, Parts A, T, P, C, O, S, CO, PF and N | `FINAL/appendices/APPENDIX_L_TEST_CASES.md` |
 | M | Supporting Evidence for Chapter 4 | Tables M-1 to M-31 | `FINAL/appendices/APPENDIX_M_CHAPTER_4_EVIDENCE.md` |
 | N | Data Dictionary | 24 tables, 238 columns, read from the live database | `FINAL/appendices/APPENDIX_N_DATA_DICTIONARY.md` |
-| O | User Acceptance Sign-off | The owner's signed form, scanned. **[TO DO: signature]** | `FINAL/appendices/APPENDIX_O_UAT_SIGN_OFF.md`; print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx` |
+| O | User Acceptance Sign-off | The landlady's signed form, scanned. **[TO DO: signature]** | `FINAL/appendices/APPENDIX_O_UAT_SIGN_OFF.md`; print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx` |
 | P | Informed Consent Form | The blank form the landlady and each tenant signed (Section 3.4). Never the signed copies, which carry names | `docs/FINAL MANUSCRIPT/CONSENT_FORM.pdf` |
 | Q | Source Code | The repository's layout; the code itself is shown at the defense on request. The old contents called this Appendix M, which Chapter 4 now uses for its evidence | `FINAL/appendices/APPENDIX_Q_SOURCE_CODE.md` |
 | R | Literature Map | The literature of Chapter 2 by theme, narrowing to the gap and the study (Form 3A asks for it) | `FINAL/appendices/APPENDIX_R_LITERATURE_MAP.md`, image `docs/FINAL MANUSCRIPT/figures/appendix-r-literature-map.png` |

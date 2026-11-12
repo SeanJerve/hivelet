@@ -13,12 +13,17 @@ missing. Put each signed scan in its item's folder, then rebuild it with
 
 Nothing here is a fault in the system. All 21 check suites passed on 10 November, the document and
 live-record checks passed again on 12 November, and the paper agrees with the screens as they are.
+The design and wording calls of B-121 were made on 12 November (Water in Edit this payment worked out
+from Occupants, "Record this expense?", "No tenant", "Nothing matches", the sign-in message for an empty
+field, no reply box on a Closed or Converted inquiry). The paper now says the landlady
+throughout: she manages the boarding house for its owner. The study guides follow the paper of 12
+November.
 
 ## 1. For the pre-defense clearance (Form 2)
 
 | What | Form 2 item | Who |
 | :--- | :--- | :--- |
-| **The owner's signature** on the acceptance form, Appendix O. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`. She signs only if she agrees. Then Claude adds one sentence to Section 4.3.7 (P1) | 9 | Team, with the owner |
+| **The landlady's signature** on the acceptance form, Appendix O. Print `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx`. She signs only if she agrees. Then Claude adds one sentence to Section 4.3.7 (P1) | 9 | Team, with the landlady |
 | **An acceptance form or MOA.** None exists. Ask the Faculty-in-Charge whether the signed UAT form serves, or whether Module 06's form is separate | 10 | Team |
 | **The similarity check** on the full manuscript, and its report | 5 | Team |
 | **The consultation record**: print it (in folders 16 and 17), fill in the session before the final defense, and have Sir Jayvee sign each session. He is both advisers, so one record serves both items | 2, 16, 17 | Team |
@@ -46,15 +51,14 @@ and the deployment report (item 10), the last two in `FORM_2_EVIDENCE/`.
 
 | What | Who |
 | :--- | :--- |
-| **Ask the owner** whether F1's August rent was paid (no August receipt is recorded), and whether 2c's water is for 4 people as her receipt says (B-115) | Sean |
-| **The design and wording calls** left from the 6 November audit (B-121). Its first two were settled the same day | Sean |
+| **Ask the landlady** whether F1's August rent was paid (no August receipt is recorded), and whether 2c's water is for 4 people as her receipt says (B-115) | Sean |
 | **Move the test tenant out of unit PH** after the defense demonstration (B-106) | Sean |
-| Later, after the defense: whether the owner may edit a move-in date (P8), and two identical receipts with no invoice number at the same instant (B-105) | A decision |
+| Later, after the defense: whether the landlady may edit a move-in date (P8), and two identical receipts with no invoice number at the same instant (B-105) | A decision |
 
 ## 4. The day before the defense
 
-The steps are in `DEMO_SCRIPT.md`: the backup, one sign-in as the owner and as the test tenant, the
+The steps are in `DEMO_SCRIPT.md`: the backup, one sign-in as the landlady and as the test tenant, the
 installed app opened once on the demonstration phone, one GCash test payment rejected, the offline
-fallback on the laptop, no test items in Repairs or Inquiries, the owner asked about showing her
+fallback on the laptop, no test items in Repairs or Inquiries, the landlady asked about showing her
 screens, and slide 1 filled in. The speakers' names in `DEFENSE_PRESENTATION_SCRIPT.md` are the
 team's to fill.

@@ -42,7 +42,7 @@ If you only have time for five, learn these. They carry the paper.
   not integrate. Chapter 4 (4.1.1) finds the same fragmentation at the boarding house.
 - **Cited in:** 1.1, 2.1.1, 2.1.2, 2.1.6, 2.2, 4.1.1.
 - **If asked:** "Burke shows apartment management is its own problem, not a smaller version of
-  commercial property management; our owner's case, 33 units run by one person, is the small end of
+  commercial property management; our landlady's case, 33 units run by one person, is the small end of
   that."
 
 ### Magno, Pelayo and Soberano (2024) *(checked)*
@@ -57,8 +57,8 @@ If you only have time for five, learn these. They carry the paper.
 - **Cited in:** 1.1, 2.1.1, 2.1.2, 2.1.3, 2.1.6, 2.2, 4.1.1, 4.2.4, 4.3.3. In 4.2.4 our ledger
   results agree with its finding that digitizing billing and payment tracking improved data
   management and reduced manual errors.
-- **If asked how ours differs:** "Theirs digitizes transactions and tasks; ours also covers booking
-  inquiries, repair requests, online payment and the tenants' own accounts."
+- **If asked how ours differs:** "Theirs digitizes transactions and tasks; ours also covers inquiries
+  and reservations, repair requests, online payment and the tenants' own accounts."
 
 ### Pernate, Rosales, Aya-ay and Artigas (2025), BH Niyo App *(checked)*
 - **What it is:** a Philippine study (Eastern Visayas State University, Ormoc City): a mobile app
@@ -67,7 +67,7 @@ If you only have time for five, learn these. They carry the paper.
   media. The app gives real-time listings, booking and digital transactions; built with Agile,
   evaluated with ISO/IEC 25010. Owners rated it Excellent, tenants Very Good; 98% accuracy in
   real-time availability.
-- **How we use it:** how tenants find rooms (2.1.4), the same channels our owner used (4.1.1), and
+- **How we use it:** how tenants find rooms (2.1.4), the same channels our landlady used (4.1.1), and
   a housing system rated with ISO/IEC 25010 (2.1.6).
 - **Cited in:** 1.1, 2.1.4, 2.1.6, 2.2, 4.1.1.
 - **If asked how ours differs:** "BH Niyo covers finding and booking a room; ours also runs what
@@ -83,7 +83,7 @@ If you only have time for five, learn these. They carry the paper.
   in the same range.
 - **Cited in:** 2.1.4, 2.1.6, 4.4.3.
 - **If asked:** "It is the nearest comparison: same kinds of respondents, same quality model. Its
-  scope is maintenance; ours integrates maintenance with billing, tenants and booking, and we also
+  scope is maintenance; ours integrates maintenance with billing, tenants and inquiries, and we also
   measured each characteristic, not only rated it."
 
 ### Puspasari et al. (2025) *(checked)*
@@ -238,7 +238,7 @@ If you only have time for five, learn these. They carry the paper.
 ### Biørn-Hansen, Majchrzak and Grønli (2017) *(checked)*
 - **What it is:** a conference paper (WEBIST 2017) on PWAs as a single way to build for every
   mobile platform.
-- **How we use it:** one code base for every device; ours ran on the owner's laptop, an Android
+- **How we use it:** one code base for every device; ours ran on the landlady's laptop, an Android
   phone and an iPhone (4.2.7).
 - **Cited in:** 2.1.5, 2.1.6, 4.2.7.
 
@@ -301,8 +301,8 @@ testers find most problems. Do not claim it.
   Mangca (Surigao), Caparos (South Cotabato), Canlas (dormitories), Encarnacion (Butuan City), and
   Mia on Philippine small enterprises.
 - **"Which study is closest to yours?"** Canlas et al. (2026), FixHub.
-- **"What did no study do that you did?"** Integrate booking, billing and receipts, tenant accounts,
-  repair requests and online payment for one small boarding house, and measure each ISO/IEC 25010
+- **"What did no study do that you did?"** Integrate inquiries and reservations, billing and receipts, tenant
+  accounts, repair requests and online payment for one small boarding house, and measure each ISO/IEC 25010
   characteristic as well as rate it.
 - **"Why did you cite this study?"** Each entry above has a "how we use it" line; say that, in your
   own words.

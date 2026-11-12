@@ -3,7 +3,8 @@
 For the whole team, before the defense. These are the questions a panel is most likely to ask about
 Hivelet, each with a short answer you can say aloud and **where in the paper the proof is**, so you can
 open it on the spot. Every figure here is copied from the final chapters in this folder and checked
-against the system on 10 November 2026; if a chapter changes, the chapter wins.
+against the system on 10 November 2026, and brought in line with the paper of 12 November 2026.
+If a chapter changes, the chapter wins.
 
 The other study guides cover the rest: `STUDY_GUIDE_TEAM_REVIEWER.md` (the whole capstone in one
 sitting, the numbers to memorize, and a tour of every screen), `STUDY_GUIDE_CODE.md` (where each
@@ -44,8 +45,13 @@ not connected. *Section 4.1.1; Chapter 5, conclusion 1.*
 **Who is the client?**
 The Fe Galang Da Silva Boarding House, 33 units in five clusters at 32 Sampaguita Street, Barangay 4
 Sagpon, Old Albay District, Legazpi City. The landlady runs it day to day on behalf of its owner and is
-the system's only administrator; the paper calls her "the owner" in that role. *Section 1.4;
-Chapter 3, Participants.*
+the system's only administrator. *Section 1.4; Section 2.4, Landlady and Owner; Chapter 3,
+Participants.*
+
+**Is the landlady the owner?**
+No. She manages the boarding house for its owner and is the system's only administrator. That is why
+the paper says "the landlady" for her, and why going live with GCash needs the owner's merchant
+onboarding documents, not hers. *Section 1.1; Section 2.4, Landlady and Owner.*
 
 **How many units, and how many are occupied?**
 33 units: Boarding House 22, Back Apartment 5, Front Apartment 3, Penthouse 1 and Linda 2. 32 are
@@ -68,7 +74,7 @@ worded. Plus ten non-functional requirements. *Section 4.1.2, Tables 4-2 and 4-3
 
 **Why only 25 of 44 "as worded"?**
 Because we graded strictly against the exact wording, not against whether the need was met. The three
-"not as worded" describe things the owner sees in another form. Being strict is why the number is
+"not as worded" describe things the landlady sees in another form. Being strict is why the number is
 honest. *Section 4.1.2.*
 
 ---
@@ -94,15 +100,14 @@ electric company directly. *Section 1.4; Section 4.2.4.*
 
 **Is GCash the main way to pay?**
 No. Cash stays the main way; GCash through Adyen is optional. A GCash payment is recorded as Pending
-Verification and counts only after the owner verifies it. *Section 1.4; Section 4.2.4.*
+Verification and counts only after the landlady verifies it. *Section 1.4; Section 4.2.4.*
 
 **Is the GCash payment real?**
 It is real software, but it takes no real money. The whole path is built and works end to end: the
 tenant's Pay with GCash opens Adyen's checkout, Adyen's signed notification (HMAC-verified) records
-the payment as Pending Verification, and the owner verifies or rejects it. It runs in Adyen's test
-environment only, so it is optional and not live. Going live needs the owner to complete Adyen's
-merchant onboarding for GCash with her own business documents, which this study did not do; it is
-stated as a limitation and as recommendation 3. Rent is paid in person and recorded by the owner.
+the payment as Pending Verification, and the landlady verifies or rejects it. It runs in Adyen's test
+environment only, so it is optional and not live. Going live needs the owner's merchant onboarding
+documents, which this study did not do. It is stated as a limitation and as recommendation 3. Rent is paid in person and recorded by the landlady.
 *Section 1.4; Section 4.3.2; Chapter 5, recommendation 3.*
 
 ---
@@ -110,9 +115,10 @@ stated as a limitation and as recommendation 3. Rent is paid in person and recor
 ## 3. Related literature and the gap
 
 **What gap does your study fill?**
-Existing systems either target large properties or solve one function at a time: payments, booking,
-tenants or maintenance. No study we found integrated booking, billing and receipts, tenant accounts,
-repair requests and online payment for one small, cash-based boarding house. *Section 2.2.*
+Existing systems either target large properties or solve one function at a time: payments, room
+booking, tenants or maintenance. No study we found brought tenant and room management, inquiries and
+reservations, billing and receipts, and repair requests into one system for a small, cash-based
+boarding house. *Section 2.2.*
 
 **Which study is closest to yours?**
 Canlas et al. (2026), FixHub: a Philippine dormitory maintenance system, built with Agile and rated on
@@ -125,7 +131,7 @@ Mangca (2023, Surigao City), Caparos et al. (2025, Region XII), Canlas et al. (2
 (2024) on Philippine small enterprises. *`STUDY_GUIDE_REFERENCES.md`.*
 
 **What is your conceptual framework?**
-Input-Process-Output (Figure 2-2). Input: the objectives, the literature, interviews and the owner's
+Input-Process-Output (Figure 2-2). Input: the objectives, the literature, interviews and the landlady's
 workflows. Process: the Agile cycle and the modules built in it. Output: the system, its reports, the
 evaluation results, the manuscript and the user manual, with feedback across all three. *Section 2.3.*
 
@@ -140,7 +146,7 @@ and six screens still disagreed with it until the audit. *Sections 4.2.4, 4.2.5,
 ## 4. Method
 
 **Why Agile and not Waterfall?**
-The owner's needs changed as she used the system, and Agile let us show her working screens on her own
+The landlady's needs changed as she used the system, and Agile let us show her working screens on her own
 device each iteration and change them. *Section 3.2.*
 
 **What were the iterations?**
@@ -153,8 +159,10 @@ redesign, from 1 November. *Section 4.2.1; Appendix M, Table M-19.*
 **Your evaluators rated an earlier design. Do the results still hold?**
 Yes. The evaluation was done in Iteration 2. Iteration 3 changed how the screens look and joined the
 sign-in and inquiry pages. It added no module and removed none. It added two rules: a closed year's
-records cannot be changed, and a tenant cannot cancel a repair once someone is sent. We reran all 114
-test cases on 4 November and none failed, and every automated check passed after each later change, so
+records cannot be changed, and a tenant cannot cancel a repair once someone is sent. We reran the 114
+test cases on 4 November: 77 were run and passed (21 of them with wording the redesign changed), 37
+need a person and were left for one, and none failed. Every automated check passed after each later
+change, so
 the functional, reliability, security and performance results stand. A second round of users then
 used the redesigned system (31 October to 10 November): ten tenants and four prospects did the tasks,
 and 16 answered the same questionnaire, rating it 4.82. *Appendix M, Tables M-28 to M-30.* So the
@@ -169,7 +177,7 @@ their own phones with real data, and each prototype was reviewed with the landla
 **Did an AI write your system?**
 An AI coding assistant generated much of the code at our direction; we reviewed it, directed every
 change and verified it. The verification is the point: 21 automated check suites, a screen-by-screen
-comparison with the live database, the owner's walkthrough and the tenants' tasks. The AI-use statement
+comparison with the live database, the landlady's walkthrough and the tenants' tasks. The AI-use statement
 is ready for wherever the adviser says it goes. *Sections 3.1.1, 4.3.1, 4.3.3; `STUDY_GUIDE_CODE.md`,
 Section 9.*
 
@@ -193,7 +201,7 @@ money. PostgreSQL gives row-level security (the database itself enforces who see
 (every rate change is recorded whatever made it). *Section 3.1.1.*
 
 **Why a PWA and not a native app?**
-One code base serves the owner's laptop, Android and iPhone; it installs from the browser with no app
+One code base serves the landlady's laptop, Android and iPhone; it installs from the browser with no app
 store; and the installed files are about 1.2 MB. *Section 4.2.7.*
 
 **How do you install it?**
@@ -206,12 +214,19 @@ unavailable" (when the server alone is out of reach, the bar gives the time the 
 Paying and recording need a connection, and the copy is deleted at sign-out. *Sections 1.4 and 4.2.7.*
 
 **What are the six features?**
-Tenant and room management; booking and inquiries; financial tracking with optional GCash; maintenance
-tickets and notifications; role-based access control; PWA support. *Sections 4.2.2 to 4.2.7.*
+Tenant and room management; booking and reservation management; financial tracking with optional
+GCash; maintenance ticketing and notification; role-based access control; PWA support. *Sections 4.2.2
+to 4.2.7.*
+
+**Does the system take bookings?**
+No. Booking and reservation management, the objective's name, takes the form the landlady's practice
+needs: a public list of units, an inquiry she answers, marking the unit Reserved so it takes no other
+inquiry, and moving the person in from the inquiry. Nothing is booked or paid for online. *Section 1.4;
+Section 2.4, Inquiry; Section 4.2.3.*
 
 **How does a visitor inquire without an account?**
 They send an inquiry about a specific unit and receive a private link and a short reference code;
-either one (the code with their phone number) opens the conversation, where the owner's answer appears
+either one (the code with their phone number) opens the conversation, where the landlady's answer appears
 and they can write back. The link's secret is stored only hashed. *Section 4.2.3.*
 
 **How many tables does the database have? Your ERD says 21 and Appendix N says 24.**
@@ -236,18 +251,18 @@ for or what it is used for; the system only reproduces her spreadsheet's column.
 Rent plus water: ₱8,500 + ₱400 = ₱8,900. *Table 4-6, BR-038.*
 
 **When is a bill overdue?**
-From the day after its due date, with no grace period, as the owner confirmed. Bills are raised when
+From the day after its due date, with no grace period, as the landlady confirmed. Bills are raised when
 needed rather than by a scheduler. *Table 4-6; Section 4.1.2.*
 
 **Does the rent go up automatically each year?**
-No. The owner sets every rate by hand; the system keeps the history of each change (a database trigger
+No. The landlady sets every rate by hand; the system keeps the history of each change (a database trigger
 records the old rate, the new one, the date and who changed it). *Sections 4.1.2 and 4.2.2.*
 
 **Why do some tenants show "move-in date not recorded"?**
 Her workbook never recorded the move-in date of the current tenancies, so the system says so rather
 than invent one. *Sections 4.1.2 and 4.2.2.*
 
-**Why can the owner not edit a move-in date?**
+**Why can the landlady not edit a move-in date?**
 On purpose, for now: the move-in date decides which months a tenant is shown owing and which tenancy a
 receipt is credited to, so changing it can move receipts between tenants. It is safe to add once those
 two rules are decided. (`QUESTIONS_TO_FINALIZE.md`, P8.)
@@ -262,21 +277,21 @@ No, it can be voided: it is kept, marked with when, by whom and why, and drops o
 *Table 4-5.*
 
 **What does a tenant see?**
-Their own unit, rent and amount due, their payments month by month (only receipts the owner verified
+Their own unit, rent and amount due, their payments month by month (only receipts the landlady verified
 count as paid, and a month with no receipt says "Not recorded", never "owed"), their repair requests,
 notifications and details, and the deposit held for them, shown since 13 October after a survey
 answer asked for it, on their Overview since 5 November. *Sections 4.2.2, 4.2.4, 4.2.7; Figure 4-11.*
 
 **Why "Not recorded" instead of "Unpaid"?**
-Because the records alone cannot tell an unpaid month from one the owner has not entered yet. Saying
+Because the records alone cannot tell an unpaid month from one the landlady has not entered yet. Saying
 "owed" when it might be paid would be wrong in front of the tenant. *Section 4.2.4.*
 
 **How do repairs work?**
-A tenant sends a request with a title, description, priority and a photo; the owner moves it through
-dispatch, in progress and done; only the owner closes it, and the tenant is notified. The owner can
+A tenant sends a request with a title, description, priority and a photo; the landlady moves it through
+dispatch, in progress and done; only the landlady closes it, and the tenant is notified. The landlady can
 also log a repair she was told about in person, even for an empty unit. *Section 4.2.5.*
 
-**Can the owner export her records?**
+**Can the landlady export her records?**
 Yes. Both ledgers download as Excel files in her own workbook's layout, and 490 of 490 reconciliation
 checks matched the export to the database. *Sections 4.2.4 and 4.3.1.*
 
@@ -296,7 +311,7 @@ and is refused if it appears in a public list of breached passwords. *Section 4.
 **What stops someone guessing passwords?**
 The account locks after five failed sign-ins, for 15 minutes. *Section 4.2.6; Section 4.4.4.*
 
-**Can the owner's changes be traced?**
+**Can the landlady's changes be traced?**
 Every administrator action is written to an audit trail the application cannot edit, delete or empty.
 *Section 4.2.6.*
 
@@ -313,7 +328,7 @@ there is no second sign-in factor, even for the administrator. Both are recommen
 4.4.4; Chapter 5.*
 
 **How did you protect the respondents' and tenants' privacy?**
-Under the Data Privacy Act of 2012: voluntary participation, a signed consent form from the owner and
+Under the Data Privacy Act of 2012: voluntary participation, a signed consent form from the landlady and
 each tenant (prospects and technical evaluators agreed through the questionnaire's privacy notice), each tenant used only
 their own account with an individual starting password, names removed before analysis, and names and
 amounts hidden in every figure. *Section 3.4.*
@@ -332,14 +347,14 @@ property's own; names, payments, expenses and repairs in those figures are sampl
 | Level | Activity | Executed | Passed |
 | :--- | :--- | --: | --: |
 | Unit and integration | Automated check suites, 29 Sep 2026 | 20 | 20 |
-| System | The owner's functional walkthrough, 30 Sep | 25 | 24 |
+| System | The landlady's functional walkthrough, 30 Sep | 25 | 24 |
 | Acceptance | Tenant tasks, 30 Sep | 34 | 34 |
-| Acceptance | Simultaneous use by the owner and tenants | 4 | 4 |
+| Acceptance | Simultaneous use by the landlady and tenants | 4 | 4 |
 
 **What was the one failure?**
 Step 23b of the walkthrough: with the connection cut, the Overview showed ₱0 where the design requires
 "—", so a missing figure is never read as a zero balance. Fixed, and it passed when re-tested on the
-owner's laptop on 13 October. *Section 4.3.4.*
+landlady's laptop on 13 October. *Section 4.3.4.*
 
 **What do the automated suites check?**
 Every endpoint and the separation of roles (78 of 78), the ledger against the business rules, the Excel
@@ -358,9 +373,9 @@ lesson: passing checks show that what was tested is correct, not that everything
 Table 4-9.*
 
 **Was the GCash payment really tested?**
-Yes, end to end on 26 September, from Adyen's authorization to the owner's verification queue, after
+Yes, end to end on 26 September, from Adyen's authorization to the landlady's verification queue, after
 Adyen support replaced a misconfigured acquirer account (Case 08657379). The Adyen account is still
-the test account, so no real money moves; going live needs the owner's merchant onboarding
+the test account, so no real money moves. Going live needs the owner's merchant onboarding
 documents and is recommendation 3. *Section 4.3.2.*
 
 **How fast is it?**
@@ -369,7 +384,7 @@ slowest was the tenant portal's first load, 3.05 seconds on an iPhone 15 over mo
 4.3.5, Table 4-10.*
 
 **Did you load test it?**
-Yes, with simulated users, not people: 12 at once on the public pages and 6 on the owner's records,
+Yes, with simulated users, not people: 12 at once on the public pages and 6 on the landlady's records,
 each pausing like a reader. None of the 1,085 and 285 requests failed, and nineteen in twenty were
 answered in under a second. *Section 4.3.6.*
 
@@ -380,12 +395,12 @@ seconds and says it cannot tell whether the save arrived, so the person checks b
 
 **Is it accessible?**
 Scanned with axe-core against WCAG A and AA: no violation on the public pages at phone and computer
-widths, nor on the owner's eight screens; 76 scans of 19 screens in all, once one defect on three
+widths, nor on the landlady's eight screens; 76 scans of 19 screens in all, once one defect on three
 screens was fixed. PageSpeed gave the public page 100 for accessibility. *Sections 4.3.5, 4.3.6,
 4.4.3.*
 
 **How did real users do?**
-The owner and three tenants used the live system on 30 September on their own devices. Tenants
+The landlady and three tenants used the live system on 30 September on their own devices. Tenants
 completed all 34 task attempts, 31 without help (91%), with a median of 60 seconds a task. Help was
 needed only at the start: the first sign-in and finding their unit and rent. In the second round, on
 the redesigned system, ten tenants did 151 of 160 attempts without help (94%) and four
@@ -430,10 +445,10 @@ round, on the redesigned system, gave 4.82, and all 26 answers together 4.61. *T
 | Maintainability | 4.32 | 8 |
 
 **Who rated it?**
-Ten people: the owner, three tenants, one prospective tenant and five technical evaluators. The
+Ten people: the landlady, three tenants, one prospective tenant and five technical evaluators. The
 first evaluator, an IT professional in software quality assurance, reviewed the live system on 3
 October; the other four, reached through Panelista, reviewed the demonstration copy with sample
-data on 15 to 18 October, so no outsider saw the owner's records. No member of the team. *Tables 4-14 and 4-15.*
+data on 15 to 18 October, so no outsider saw the landlady's records. No member of the team. *Tables 4-14 and 4-15.*
 The second round, 31 October to 10 November, added sixteen answers: eleven tenants, four prospective
 tenants and the landlady again, with no technical evaluators. *Appendix M, Table M-28.*
 
@@ -446,20 +461,20 @@ conclusion 4.*
 
 **How did you compute the means?**
 Weighted mean per item, WM = Σ(f × w) / N; each characteristic's composite is the mean of its group
-means, so one owner is not outweighed by three tenants on functions only she uses; the overall is the
+means, so one landlady is not outweighed by three tenants on functions only she uses; the overall is the
 mean of the eight composites. Averaging every response together gives 4.47 instead: the same
 interpretation and the same highest, Portability, with the order below it changed and Usability
-lowest, because five technical evaluators then outweigh one owner. *Section 3.3; Section 4.4.2, Table 4-16.*
+lowest, because five technical evaluators then outweigh one landlady. *Section 3.3; Section 4.4.2, Table 4-16.*
 
 **Why did each group rate different characteristics?**
 Each rated only what it can judge: tenants did not rate Security or Maintainability, prospective
 tenants rated neither, and only the technical evaluators rated Maintainability. *Section 3.3.*
 
 **Why is Usability the second lowest?**
-It is still Very High Quality (4.42). The owner gave 3 to telling what each screen is for and learning
+It is still Very High Quality (4.42). The landlady gave 3 to telling what each screen is for and learning
 without help. The first technical evaluator gave 3 to all five items, before the fourteen changes made
 for that group; the four who came after the changes gave 4.80, 4.60, 3.60 and 5.00. The measurement agrees
-(91% of tasks without help, no accessibility violation), and the owner's two 3s show where a
+(91% of tasks without help, no accessibility violation), and the landlady's two 3s show where a
 first-timer needs help, which recommendation 6 acts on. *Section
 4.4.3.*
 
@@ -493,13 +508,13 @@ item; no conclusion is drawn about them. *Section 4.4.5.*
 ## 9. Deployment and the future
 
 **Is the system in use now?**
-Yes, at a public address with the owner's real records since September 2026. It has not yet replaced
+Yes, at a public address with the landlady's real records since September 2026. It has not yet replaced
 her own records: it runs beside them until both agree, which is the last stage of the deployment plan.
 *Section 4.5, Table 4-22.*
 
 **Who keeps it running after you graduate?**
 It needs no equipment at the property: it is hosted on Vercel and Supabase, and every approved change
-deploys automatically. The owner is shown how to use it in the user manual (Appendix K). Backups are
+deploys automatically. The landlady is shown how to use it in the user manual (Appendix K). Backups are
 taken before any change to the data. *Section 4.5.*
 
 **How do you protect her real data during development?**
@@ -508,10 +523,14 @@ before it runs; credentials are never in the code or documents, and a check for 
 runs before every commit. *Section 4.5.*
 
 **What would you do next?**
-The eight recommendations: keep receipts up to date in the system; keep taking backups; take GCash
-live once the owner completes Adyen's merchant onboarding, with refunds, a protected sign-in cookie and a second factor; automated browser tests of the 26
-walkthrough steps; faster pages on phones; strengthen Maintainability and Usability; and for future
-researchers, test against real data and evaluate over a longer period. *Chapter 5, Section 5.3.*
+The eight recommendations. For the landlady: (1) enter each receipt from her receipt book on Monthly
+Income, and (2) have a backup taken before any change. For the system: (3) take GCash live, if the
+owner wants it, with the owner's merchant onboarding documents, and add refunds, a sign-in cookie no
+script can read and a second sign-in factor. (4) Add automated browser tests of the 26 walkthrough
+steps, and extend the duplicate-receipt rule to receipts with no invoice number and acknowledgement
+receipts. (5) Make the public page faster on phones. (6) Strengthen Maintainability and Usability. For
+future researchers: (7) check a system against its own real data, and (8) evaluate over a longer
+period of real use. *Chapter 5, Section 5.3.*
 
 **What would you do differently?**
 Compare screens with the database from the start, not only at the end (that audit found what the
@@ -524,20 +543,19 @@ where Usability lost points. *Sections 4.3.3 and 4.4.3.*
 
 **"Is the GCash payment just for show?"**
 No. It works end to end: Adyen authorizes, its signed notification is checked, the payment lands as
-Pending Verification, and the owner verifies it. It runs in Adyen's test environment, so it takes no
-real money and is not live. Going live is not only a setting: the owner must first complete Adyen's
-merchant onboarding for GCash with her business documents, which this study did not do
-(recommendation 3). *Section 1.4; Section 4.3.2.*
+Pending Verification, and the landlady verifies it. It runs in Adyen's test environment, so it takes no
+real money and is not live. Going live is not only a setting: it needs Adyen's merchant onboarding for
+GCash with the owner's merchant onboarding documents, which this study did not do (recommendation 3). *Section 1.4; Section 4.3.2.*
 
 **"So you have no real users?"**
-The owner and three tenants used it on their own accounts on 30 September, the owner did the
+The landlady and three tenants used it on their own accounts on 30 September, the landlady did the
 walkthrough herself, and the system holds her real records. *Sections 4.3.4 and 4.3.7.*
 
 **"Your technical evaluators never saw the code. Is Maintainability valid?"**
 That is why the paper weighs the measured evidence more heavily there, and it reports the code's
 weakness itself (154 of 204 database calls inside handlers). *Section 4.4.3.*
 
-**"What if the owner forgets to verify a GCash payment?"**
+**"What if the landlady forgets to verify a GCash payment?"**
 It stays Pending Verification and does not settle the bill, and the Overview's "Needs your attention"
 tile counts it until she does. The tenant sees it as waiting, not paid. *Section 4.2.4; Appendix K.*
 
@@ -552,7 +570,7 @@ Her records export to Excel in her own layout at any time, and backups are kept.
 
 **"Why should we trust numbers produced by an AI-written system?"**
 Because we did not trust them either: every figure on every screen was compared with the database
-(six defects found and fixed), the exports were reconciled 490 of 490, and the owner checked her own
+(six defects found and fixed), the exports were reconciled 490 of 490, and the landlady checked her own
 walkthrough. *Sections 4.3.1 and 4.3.3.*
 
 **"The five duplicated invoice numbers: did your system create them?"**
