@@ -113,7 +113,7 @@ developed in three iterations, each passing through the phases described below (
 first verified the system and its documents against each other and corrected the errors found. The
 second put the system in the hands of the landlady and her tenants and refined it from their
 feedback, the testing and the evaluation. The third redesigned the screens and added no module, and
-a second round of users tried the redesigned system.
+a second round of users and technical evaluators tried and rated the redesigned system.
 
 ### 3.2.1 Requirements
 
@@ -217,10 +217,10 @@ sampling (Etikan et al., 2016) to include tenants who pay in cash, tenants less 
 applications, users of both Android and iPhone handsets, and more than one cluster. Three were
 observed, since the number of new usability problems found falls quickly with each additional tester
 (Nielsen & Landauer, 1993). A prospective tenant used the public website as a person looking for a
-unit would. Of the five technical evaluators, four reviewed a demonstration copy of the system
-holding sample data, so that no outside reviewer saw the boarding house's records. After the screens
-were redesigned in the third iteration, the tasks and the questionnaire were repeated with a second
-round of tenants, prospective tenants and the landlady. Each group rated only the characteristics it
+unit would. Of the five technical evaluators of the first round, four reviewed a demonstration copy of the system
+holding sample data, so that no outside reviewer saw the boarding house's records. After the screens were redesigned in the third iteration, the tasks and the questionnaire were
+repeated with a second round of tenants, prospective tenants and the landlady, and three more
+technical evaluators answered the questionnaire. Each group rated only the characteristics it
 was in a position to judge: tenants and prospective tenants did not rate Security, and only the
 technical evaluators rated Maintainability.
 
