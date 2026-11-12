@@ -412,8 +412,9 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
 - **To do:**
   - [ ] Agree what is true and say only that: each one's role, how long they used the system, and
     whether they were shown the paper, the repository or our own measurements.
-  - [ ] Tell Claude whether they opened the repository: Appendix J says the form asked them to, and
-    Section 4.4.3 says only that the first round did not.
+  - [ ] Tell Claude whether they opened the repository. The form never asked them to (checked on the
+    live form, 13 November; Appendix J used to say it did), and Section 4.4.3 says only that the
+    first round did not.
 
 ### [ ] 21. The conflict-of-interest question (decision C8 and D1)
 
@@ -422,14 +423,19 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
   - [ ] Ask Sir Jayvee at Session 4 whether one sentence belongs in Section 3.4.
   - [ ] Whatever he says, all five rehearse the same honest answer.
 
-### [ ] 22. Compare Appendix J with the live Google Form
+### [x] 22. Compare Appendix J with the live Google Form
 
-- **What:** the response files show the form had a consent question and an optional name field, and
-  no "How long have you been using the system?" question. Appendix J is corrected for those. The
-  files also show the group label was not worded as the appendix prints it.
-- **To do:**
-  - [ ] Open the form, compare every question and the notice with Appendix J, and tell Claude each
-    difference, including whether the technical evaluators' section asks them to review the repository.
+- **Done 13 November.** The live form was read question by question (nothing submitted) and saved in
+  `docs/FINAL MANUSCRIPT/survey/LIVE_FORM_SNAPSHOT.json`; Appendix J is now printed from that copy
+  (`scripts/survey/snapshot-live-form.mjs`, then `scripts/manuscript/build-appendices-j-l.mjs`).
+- **What was different:** all 91 rated statements were already word for word. The rest was not:
+  - the welcome text and the full privacy notice (Republic Act No. 10173), with "No, I do not agree";
+  - "Resident of the boarding house", and "Looking for a room" with no Filipino half;
+  - the statements and the device choices are in English only; the scale is in Filipino and English;
+  - **the technical evaluators' section never asked them to review the repository**;
+  - one open comment per section (two for prospective tenants), and they were required, not
+    optional. Every response file agrees: each respondent filled their section's boxes.
+- Nothing in Chapters 1 to 5 depended on the old wording.
 
 ### [ ] 23. Re-grade the 44 functional requirements (Sean)
 

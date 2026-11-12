@@ -1908,9 +1908,12 @@ apply and corrected the number of units on the public page. It is there to show 
 changed.
 
 **Appendix J. Evaluation Instrument.** The ISO/IEC 25010 questionnaire exactly as respondents saw it in
-a Google Form, in English and Filipino. Section 1 (About you) sends each respondent to one section:
-Section 2 the landlady (the form titles it "Owner and administrator", as it was given), Section 3 tenants, Section 4 technical evaluators, Section 5
-prospective tenants. Rated items: **landlady 28, tenants 18, technical evaluators 33, prospective tenants
+a Google Form, printed from the live form on 13 November 2026. The statements are in English; the
+group choices and the rating scale are also in Filipino. It opens with the data privacy notice, then
+Section 1 (About you) sends each respondent to one section: Section 2 the landlady (the form titles it
+"OWNER/LANDLADY"), Section 3 tenants, Section 4 technical evaluators, Section 5 prospective tenants
+("LOOKING FOR A ROOM"). Each section ends with one required open comment; the prospective tenants'
+has two. Rated items: **landlady 28, tenants 18, technical evaluators 33, prospective tenants
 12**, numbered as in Table 3-6. It is there so the panel can see every question behind the means.
 
 **Appendix K. User's Manual.** Part 1 for tenants (in English and Filipino) and Part 2 for the
