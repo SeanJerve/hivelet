@@ -341,7 +341,7 @@ function dfd() {
   s += store(606, rowB, 184, 'D2', 'Tenants, tenancies', true);
 
   // Landlady to the landlady-only processes (row 1).
-  for (const [k, t, head] of [['p2', 'Units, rates', 'end'], ['p3', 'Move-in, move-out', 'end'], ['p7', 'Overview, workbooks', 'start'], ['p6', 'Expenses', 'end']]) {
+  for (const [k, t, head] of [['p2', 'Units, rates', 'both'], ['p3', 'Move-in, move-out', 'both'], ['p7', 'Overview, workbooks', 'start'], ['p6', 'Expenses', 'both']]) {
     const [x, y] = P[k];
     s += line([[x, 60], [x, y - R]], { head });
     s += lab(x + 8, 104, t, { anchor: 'start', w: 84 });
@@ -678,7 +678,8 @@ function gantt() {
 // Appendix F. Level 2 data flow diagrams (Gane and Sarson): each of the eight processes of
 // Figure 7 opened into its steps, as Form 2 item 13 asks ("down to Level 2"). The steps and flows
 // are the endpoints the screens call (docs/SCREEN_CONTRACT.md, generated from the code); stores and
-// entities keep Figure 7's names, and each diagram touches only the stores its parent touches there.
+// entities keep Figure 7's names. Each diagram shows every store its steps read or write. Figure 7
+// draws each process with its main stores only, so 3.0, 4.0 and 5.0 also show D1 here (13 Nov 2026).
 // Entities and stores are repeated on each row rather than crossed; a repeated store carries a
 // second bar, as in Figure 7. The audit trail is left out, as there.
 // ---------------------------------------------------------------------------------------------
@@ -696,11 +697,11 @@ const CHILD = {
   '3': ['3.0 Manage tenants and tenancies', [
     ['3.1', 'Onboard a tenant', [['Landlady (administrator)', 'Tenant details, unit', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
     ['3.2', 'Edit a tenant record', [['Landlady (administrator)', 'Corrections', 'in']], [['D2', 'Tenants, tenancies', 'both']]],
-    ['3.3', 'Reset a tenant\'s password', [['Landlady (administrator)', 'Reset', 'in'], ['Tenant', 'One-time password', 'out']], [['D2', 'Tenants, tenancies', 'out']]],
+    ['3.3', 'Reset a tenant\'s password', [['Landlady (administrator)', 'Reset; one-time password', 'both']], [['D2', 'Tenants, tenancies', 'out']]],
     ['3.4', 'End a tenancy', [['Landlady (administrator)', 'Move-out', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
   ]],
   '4': ['4.0 Bill and record payments', [
-    ['4.1', 'Raise a bill on demand', [['Tenant', 'Bills shown', 'out']], [['D1', 'Units and rates', 'in'], ['D3', 'Bills and receipts', 'out']]],
+    ['4.1', 'Raise a bill on demand', [['Tenant', 'Bills shown', 'out']], [['D1', 'Units and rates', 'in'], ['D2', 'Tenants, tenancies', 'in'], ['D3', 'Bills and receipts', 'out']]],
     ['4.2', 'Record an on-site payment', [['Landlady (administrator)', 'Cash received, invoice no.', 'in']], [['D3', 'Bills and receipts', 'out']]],
     ['4.3', 'Take a GCash payment through Adyen', [['Tenant', 'GCash payment, receipt', 'both']], [['D3', 'Bills and receipts', 'out']]],
     ['4.4', 'Verify or decline a payment', [['Landlady (administrator)', 'Verify, decline', 'in'], ['Tenant', 'Outcome', 'out']], [['D3', 'Bills and receipts', 'both']]],
