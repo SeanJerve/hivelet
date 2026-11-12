@@ -42,10 +42,10 @@ results are summarized below in the order of the specific objectives.
 
 4. **The system was evaluated** by the five steps of ISO/IEC 25040: twenty-seven of the model's
    thirty-one sub-characteristics had a measured result and twenty-five were rated. In response to
-   feedback and testing, 51 changes were made, among them each of the first technical evaluators' fourteen comments, and the third iteration then redesigned the screens. The sixteen users, the landlady,
-   eleven tenants and four prospective tenants, rated the redesigned system 4.82 overall: Functional
-   Suitability 4.72, Performance Efficiency 4.89, Compatibility 4.83, Usability 4.78, Reliability
-   4.65, Security 5.00 and Portability 4.87. Three technical evaluators rated it 4.90 overall:
+   feedback and testing, 51 changes were made, among them each of the first technical evaluators' fourteen comments, and the third iteration then redesigned the screens. The fourteen users, the landlady,
+   ten tenants and three prospective tenants, rated the redesigned system 4.84 overall: Functional
+   Suitability 4.80, Performance Efficiency 4.86, Compatibility 4.79, Usability 4.80, Reliability
+   4.78, Security 5.00 and Portability 4.83. Three technical evaluators rated it 4.90 overall:
    Functional Suitability 4.93, Performance Efficiency 4.89, Compatibility 5.00, Usability 4.87,
    Reliability 4.83, Security 4.93, Maintainability 4.73 and Portability 5.00. Before the redesign,
    five users had rated the system 4.75 and five technical evaluators 4.34.
@@ -75,7 +75,7 @@ Based on the results of the study, the following conclusions were drawn:
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
    ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response. Its users rated it
-   Very High Quality overall (4.82), with every characteristic Very High Quality, and its technical
+   Very High Quality overall (4.84), with every characteristic Very High Quality, and its technical
    evaluators Very High Quality overall (4.90), every characteristic of both Very High Quality on the
    scale of Chapter 3's Table 3-5 and in agreement with the measured evidence (Chapter 4, Tables 4-17 and 4-19). Both ratings rose after the redesign, from 4.75 and 4.34 in the first round.
    This is the view of these respondents rather than of a wider population.
@@ -116,11 +116,11 @@ Based on the summary and conclusions of the study, the following are recommended
    by moving the database work now written inside the request handlers, three calls in four, into
    service modules, one per kind of record, with the result reviewed by more than one developer, and
    give whoever evaluates it the architecture, the entity-relationship diagram and the data dictionary
-   (Figures 4-2 and 4-6, Appendix N) together with the system. Make **Usability** (4.78 from the users, 4.20 from the technical evaluators before the redesign)
+   (Figures 4-2 and 4-6, Appendix N) together with the system. Make **Usability** (4.80 from the users, 4.20 from the technical evaluators before the redesign)
    easier still to learn by taking the landlady through each screen with the
    user manual (Appendix K) before she uses the system alone, and by showing each new tenant first how
    to sign in and find their unit and rent, where the tenants needed help, the first sign-in most of
-   all in both rounds (Section 4.3.7). Raise **Reliability** (4.65, the users' lowest, whose lowest item was whether the information shown is correct and up to date)
+   all in both rounds (Section 4.3.7). Raise **Reliability** (4.78, the users' lowest, whose lowest item was whether the information shown is correct and up to date)
    through recommendation 1, which keeps the figures tenants see in step with the receipt book.
 
 **For future researchers**
