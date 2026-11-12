@@ -2,67 +2,102 @@
 // Appendix J (the questionnaire as administered) and Appendix L (the test cases and their results),
 // print-ready, from their sources (13 October 2026):
 //
-//   node scripts/manuscript/build-appendices-j-l.mjs   -> FINAL/_src/appendices/APPENDIX_J_*.md, APPENDIX_L_*.md
+//   node scripts/manuscript/build-appendices-j-l.mjs            -> FINAL/_src/appendices/APPENDIX_J_*.md
+//   node scripts/manuscript/build-appendices-j-l.mjs --with-l   -> and APPENDIX_L_*.md
 //   then node scripts/manuscript/build-final.mjs
 //
-// J comes from survey/build_survey_form.gs, the script that built the Google Form, so every item is
-// worded and numbered exactly as respondents saw it (the numbering Chapter 3's Table 4B uses).
+// L is rebuilt only with --with-l: since 13 October it has been edited in FINAL/_src (the
+// 4 November re-run, "Landlady" for the owner's role), and a rebuild would undo those edits.
+//
+// J comes from survey/LIVE_FORM_SNAPSHOT.json, the live Google Form's own text saved by
+// scripts/survey/snapshot-live-form.mjs (13 November 2026), so every notice, label and item is worded
+// and numbered exactly as respondents saw it (the numbering Chapter 3's Table 3-6 uses). It used to
+// come from survey/build_survey_form.gs, the script written to build the form; the form was edited by
+// hand afterwards, and J printed a repository instruction, Filipino lines and open questions that
+// respondents never saw.
 // L comes from the testing day's result sheets in docs/TESTING_DAY/results/. Only the case, its
 // quality, its requirement, what was done, what should happen and the result are kept: the
 // Evidence and Notes columns name units and sign-in times that could identify a tenant, and carry
 // the team's working notes.
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const OUT = path.join(root, 'FINAL', '_src', 'appendices');
 
 // ---- Appendix J -------------------------------------------------------------------------------
-const gs = fs.readFileSync(path.join(root, 'docs', 'FINAL MANUSCRIPT', 'survey', 'build_survey_form.gs'), 'utf8');
-const consts = gs.slice(0, gs.indexOf('function scale('));
-const ctx = {};
-vm.runInNewContext(`${consts}\nObject.assign(globalThis.out, { OWNER, TENANT, TECH, PROSPECT, DESCRIPTION, OWNER_ITEMS, OWNER_OPEN, TENANT_ITEMS, TENANT_OPEN, TECH_ITEMS, TECH_OPEN, PROSPECT_ITEMS, PROSPECT_OPEN });`, { out: ctx });
-const choices = (q, opts) => `**${q}**\n\n${opts.map((o) => `- ${o}`).join('\n')}\n`;
-const section = (title, note, groups, bilingual, open) => {
-  let n = 0;
-  let s = `## ${title}\n\n${note}\n\n| No. | Statement | 5 | 4 | 3 | 2 | 1 |\n| :--- | :--- | :---: | :---: | :---: | :---: | :---: |\n`;
-  for (const [heading, items] of groups) {
-    s += `| | **${heading}** | | | | | |\n`;
-    for (const it of items) s += `| ${++n} | ${bilingual ? `${it[0]} *${it[1]}*` : it} | | | | | |\n`;
-  }
-  s += `\n**Open questions (optional)**\n\n`;
-  open.forEach((q, i) => { s += `${i + 1}. ${bilingual ? `${q[0]} *${q[1]}*` : q}\n`; });
-  return { text: s, n };
+const form = JSON.parse(fs.readFileSync(path.join(root, 'docs', 'FINAL MANUSCRIPT', 'survey', 'LIVE_FORM_SNAPSHOT.json'), 'utf8'));
+// "2026-11-13" as "13 November 2026", read as written rather than through a time zone.
+const longDate = (iso) => {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][m - 1]} ${y}`;
 };
-const scaleNote = 'Rate each statement: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree.';
-const scaleNoteFil = `${scaleNote} *5 Lubos na Sumasang-ayon, 4 Sumasang-ayon, 3 Walang Kinikilingan, 2 Hindi Sumasang-ayon, 1 Lubos na Hindi Sumasang-ayon.*`;
-const o = section('Section 2: Owner and administrator', scaleNote, ctx.OWNER_ITEMS, false, ctx.OWNER_OPEN);
-const t = section('Section 3: Tenants', scaleNoteFil, ctx.TENANT_ITEMS, true, ctx.TENANT_OPEN);
-const e = section('Section 4: Technical evaluators', `${scaleNote} The form asked evaluators to review the repository and documentation before answering.`, ctx.TECH_ITEMS, false, ctx.TECH_OPEN);
-const p = section('Section 5: Prospective tenants', scaleNoteFil, ctx.PROSPECT_ITEMS, true, ctx.PROSPECT_OPEN);
-const desc = ctx.DESCRIPTION.split('\n').filter((l) => l && l !== '---');
+// The form's own line breaks, one paragraph or list line each; trailing spaces are the form's, not text.
+const lines = (s) => s.split('\n').map((l) => l.trim()).filter(Boolean);
+const choices = (it) => `**${it.title.trim()}**\n\n${it.options.map((o) => `- ${o.trim()}`).join('\n')}\n`;
+const sectionTitles = [];
+const counts = [];
+let body = '';
+let rows = 0;
+let n = 0;
+const endTable = () => { if (rows) { body += '\n'; rows = 0; } };
+for (const it of form.items) {
+  const title = it.title.trim();
+  if (it.type === 'section') {
+    endTable();
+    if (sectionTitles.length) counts.push(n);
+    n = 0;
+    // The form numbers only its first section; the appendix numbers them all, keeping the form's titles.
+    const number = sectionTitles.length + 1;
+    sectionTitles.push(title);
+    body += `\n## ${/^Section \d+:/.test(title) ? title : `Section ${number}: ${title}`}\n\n`;
+    const [first, ...scale] = lines(it.description);
+    if (first) body += `${first}\n\n${scale.map((l) => `- ${l}`).join('\n')}${scale.length ? '\n\n' : ''}`;
+  } else if (it.type === 'grid') {
+    if (!rows) body += '| No. | Statement | 5 | 4 | 3 | 2 | 1 |\n| :--- | :--- | :---: | :---: | :---: | :---: | :---: |\n';
+    body += `| | **${title}** | | | | | |\n`;
+    rows++;
+    for (const r of it.rows) {
+      const m = r.trim().match(/^(\d+)\.\s+(.*)$/);
+      if (!m || Number(m[1]) !== ++n) throw new Error(`"${r}" is not item ${n} of "${sectionTitles.at(-1)}"`);
+      body += `| ${m[1]} | ${m[2]} | | | | | |\n`;
+    }
+  } else if (it.type === 'multiple choice') {
+    endTable();
+    // The consent question comes before Section 1, with the privacy notice as its description.
+    if (!sectionTitles.length) body += `**${title}**\n\n${lines(it.description).join('\n\n')}\n\n${it.options.map((o) => `- ${o.trim()}`).join('\n')}\n\n`;
+    else body += `${choices(it)}\n`;
+  } else if (it.type === 'short answer' || it.type === 'paragraph') {
+    endTable();
+    // The name field's placeholder is a team member's name; the field itself is what was asked.
+    const ask = /^Full Name/.test(title) ? '' : lines(it.description).join(' ');
+    body += `**${title}**${ask ? `: ${ask}` : ''}\n\n`;
+  } else throw new Error(`Appendix J cannot print a "${it.type}" item`);
+}
+endTable();
+counts.push(n);
+// Section 1 (About you) has no rated items; the four groups' sections follow it.
+const [, o, t, e, p] = counts;
 const J = `# APPENDIX J: EVALUATION INSTRUMENT
 
-The ISO/IEC 25010 questionnaire, as respondents saw it in a Google Form, from 30 September to
-18 October 2026. Each respondent answered Section 1, which sent them to the one section for their
-group; the item numbers are those of Chapter 3, Table 4B. Rated items: owner and administrator
-${o.n}, tenants ${t.n}, technical evaluators ${e.n}, prospective tenants ${p.n}.
+The ISO/IEC 25010 questionnaire that respondents answered in a Google Form, from 30 September to
+18 October 2026 and again in the second round, from 31 October to 10 November 2026, printed from the
+live form as it stood on ${longDate(form.takenOn)}. The questions are worded exactly as in the responses
+exported from it in both rounds. The form opens with a short description and the data privacy notice
+through which the prospective tenants and the technical evaluators gave their consent (Section 3.4),
+then asks for an optional name. Each respondent answered Section 1, which sent them to the one
+section for their group. The item numbers are those of Chapter 3, Table 3-6. Section 2, answered by
+the landlady, has ${o} rated items, Section 3 for tenants ${t}, Section 4 for technical evaluators ${e},
+and Section 5 for prospective tenants ${p}. Every rated item and every open comment had to be
+answered; the consent question and the name did not.
 
-**Hivelet System Evaluation: ISO/IEC 25010 Software Quality Assessment**
+**${form.title.trim()}**
 
-${desc.map((l, i) => (i >= desc.length / 2 ? `*${l}*` : l)).join('\n\n')}
+${lines(form.description).join('\n\n')}
 
-## Section 1: About you
-
-${choices('Q1. Which best describes you? / Alin ang naglalarawan sa inyo?', [ctx.OWNER, ctx.TENANT, ctx.TECH, ctx.PROSPECT])}
-${choices('Q2. How long have you been using or reviewing the system? / Gaano na kayo katagal gumagamit o sumusuri sa sistema?', ['Less than one week / Wala pang isang linggo', 'One to two weeks / Isa hanggang dalawang linggo', 'More than two weeks / Higit sa dalawang linggo'])}
-${choices('Q3. Which device did you mainly use? / Anong device ang pangunahin ninyong ginamit?', ['Desktop or laptop computer / Desktop o laptop', 'Mobile phone / Cellphone', 'Tablet / Tablet', 'Both computer and mobile phone / Parehong computer at cellphone'])}
-${o.text}
-${t.text}
-${e.text}
-${p.text}`;
+${body.trim()}
+`;
 
 // ---- Appendix L -------------------------------------------------------------------------------
 const R = path.join(root, 'docs', 'TESTING_DAY', 'results');
@@ -107,5 +142,5 @@ const tidy = (s) => s
   .replace(/\banalys(e|ed|es|ing)\b/g, 'analyz$1').replace(/\bper cent\b/g, 'percent')
   .replace(/\bClaude,\s*/g, 'Automated test, ');
 fs.writeFileSync(path.join(OUT, 'APPENDIX_J_EVALUATION_INSTRUMENT.md'), tidy(J));
-fs.writeFileSync(path.join(OUT, 'APPENDIX_L_TEST_CASES.md'), tidy(L));
-console.log(`J: ${o.n}/${t.n}/${e.n}/${p.n} items; L: ${parts.length} parts`);
+if (process.argv.includes('--with-l')) fs.writeFileSync(path.join(OUT, 'APPENDIX_L_TEST_CASES.md'), tidy(L));
+console.log(`J: ${o}/${t}/${e}/${p} items` + (process.argv.includes('--with-l') ? `; L: ${parts.length} parts` : '; L left as it is (--with-l to rebuild it)'));

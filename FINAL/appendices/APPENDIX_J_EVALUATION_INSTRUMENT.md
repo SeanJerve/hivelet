@@ -1,57 +1,60 @@
 # APPENDIX J: EVALUATION INSTRUMENT
 
 The ISO/IEC 25010 questionnaire that respondents answered in a Google Form, from 30 September to
-18 October 2026 and again in the second round, from 31 October to 10 November 2026. The opening
-paragraphs are the data privacy notice through which the prospective tenants and the technical
-evaluators gave their consent (Section 3.4). The form then asked each respondent to agree to the
-notice and offered an optional field for a name. Each respondent answered Section 1, which sent them
-to the one section for their group. The item numbers are those of Chapter 3, Table 3-6. Section 2,
-answered by the landlady, has 28 rated items, Section 3 for tenants 18, Section 4 for technical
-evaluators 33, and Section 5 for prospective tenants 12.
+18 October 2026 and again in the second round, from 31 October to 10 November 2026, printed from the
+live form as it stood on 13 November 2026. The questions are worded exactly as in the responses
+exported from it in both rounds. The form opens with a short description and the data privacy notice
+through which the prospective tenants and the technical evaluators gave their consent (Section 3.4),
+then asks for an optional name. Each respondent answered Section 1, which sent them to the one
+section for their group. The item numbers are those of Chapter 3, Table 3-6. Section 2, answered by
+the landlady, has 28 rated items, Section 3 for tenants 18, Section 4 for technical evaluators 33,
+and Section 5 for prospective tenants 12. Every rated item and every open comment had to be
+answered; the consent question and the name did not.
 
-**Hivelet System Evaluation: ISO/IEC 25010 Software Quality Assessment**
+**Hivelet System Evaluation — ISO/IEC 25010 Software Quality Assessment**
 
 Thank you for helping us evaluate Hivelet, a web-based apartment management system developed for the Fe Galang Da Silva Boarding House by Group 4, BS Information Technology, Bicol University College of Science.
 
-This survey measures the quality of the system using the ISO/IEC 25010 international standard for software product quality. It takes about 5 to 10 minutes.
-
-Please answer based on your own experience of using the system. There are no right or wrong answers, and an honest low rating is more useful to us than a polite high one.
-
-Your responses are used only for this academic study. Your name is not required and individual answers are not shown to anyone outside the research team.
-
-*Salamat sa pagtulong sa amin na suriin ang Hivelet, isang web-based na sistema para sa pamamahala ng apartment na ginawa para sa Fe Galang Da Silva Boarding House ng Group 4, BS Information Technology, Bicol University College of Science.*
-
-*Sinusukat ng survey na ito ang kalidad ng sistema gamit ang pamantayang ISO/IEC 25010. Aabutin ito ng humigit-kumulang 5 hanggang 10 minuto.*
-
-*Sagutin po batay sa sarili ninyong karanasan sa paggamit ng sistema. Walang tama o maling sagot, at mas nakakatulong sa amin ang tapat na mababang marka kaysa sa magalang na mataas na marka.*
-
-*Ang inyong mga sagot ay gagamitin lamang para sa pag-aaral na ito. Hindi kinakailangan ang inyong pangalan at hindi ipinapakita ang indibidwal na sagot sa sinumang wala sa pangkat ng mananaliksik.*
-
-## Section 1: About you
+This survey measures the software quality of the system using the ISO/IEC 25010 international standard. It takes approximately 5 to 10 minutes. Please answer based on your actual experience using the system. Your responses are anonymous and will be used solely for this academic capstone research.
 
 **Data Privacy Notice and Consent**
 
+In compliance with the Data Privacy Act of 2012 (Republic Act No. 10173), all data collected in this survey will be kept strictly confidential.
+
+Your responses will be used exclusively for the academic evaluation of the Hivelet system by our Group. No personally identifiable information will be published or shared outside the research team.
+
+By continuing, you confirm that you have read this notice and voluntarily agree to participate in this evaluation.
+
 - Yes, I agree
+- No, I do not agree
+
+## Section 1: ABOUT YOU
 
 **Full Name (optional)**
 
 **Which best describes you? / Alin ang naglalarawan sa inyo?**
 
 - Property owner or administrator / May-ari o administrador ng apartment
-- Tenant of the boarding house / Nangungupahan sa boarding house
+- Resident of the boarding house / Nangungupahan sa boarding house
 - Technical evaluator (IT professional, developer, or IT faculty) / Technical evaluator
-- Looking for a room (not living here yet) / Naghahanap ng kwarto (hindi pa nakatira dito)
+- Looking for a room (not living here yet)
 
 **Which device did you mainly use? / Anong device ang pangunahin ninyong ginamit?**
 
-- Desktop or laptop computer / Desktop o laptop
-- Mobile phone / Cellphone
-- Tablet / Tablet
-- Both computer and mobile phone / Parehong computer at cellphone
+- Desktop or laptop computer
+- Mobile phone
+- Tablet
+- Both computer and mobile phone
 
-## Section 2: Owner and administrator
+## Section 2: OWNER/LANDLADY
 
-Rate each statement: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree.
+For all questions, Rate each from 1-5
+
+- 5 — Lubos na Sumasang-ayon (Strongly Agree)
+- 4 — Sumasang-ayon (Agree)
+- 3 — Walang Kinikilingan (Neutral)
+- 2 — Hindi Sumasang-ayon (Disagree)
+- 1 — Lubos na Hindi Sumasang-ayon (Strongly Disagree)
 
 | No. | Statement | 5 | 4 | 3 | 2 | 1 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -91,50 +94,56 @@ Rate each statement: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongl
 | 27 | I can install the system on my phone without going to an app store. | | | | | |
 | 28 | I did not need to install any other software to use the system. | | | | | |
 
-**Open questions (optional)**
+**Open comments**: What worked best for you in the system?
 
-1. What worked best for you in the system?
-2. What was difficult, confusing, or missing? Please be specific — this is the most useful answer you can give us.
+## Section 3: TENANTS
 
-## Section 3: Tenants
+For all questions, Rate each from 1-5
 
-Rate each statement: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree. *5 Lubos na Sumasang-ayon, 4 Sumasang-ayon, 3 Walang Kinikilingan, 2 Hindi Sumasang-ayon, 1 Lubos na Hindi Sumasang-ayon.*
+- 5 — Lubos na Sumasang-ayon (Strongly Agree)
+- 4 — Sumasang-ayon (Agree)
+- 3 — Walang Kinikilingan (Neutral)
+- 2 — Hindi Sumasang-ayon (Disagree)
+- 1 — Lubos na Hindi Sumasang-ayon (Strongly Disagree)
 
 | No. | Statement | 5 | 4 | 3 | 2 | 1 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
 | | **Functional Suitability** | | | | | |
-| 1 | I can see my own unit details, my bill, and what I still owe. *Nakikita ko ang detalye ng aking unit, ang aking bill, at kung magkano pa ang dapat kong bayaran.* | | | | | |
-| 2 | I can submit a maintenance request and follow what happens to it. *Nakakapagpasa ako ng request para sa pagpapakumpuni at nasusubaybayan ko kung ano ang nangyayari dito.* | | | | | |
-| 3 | I can see a record of the payments I have made. *Nakikita ko ang talaan ng mga bayad na naibigay ko na.* | | | | | |
+| 1 | I can see my own unit details, my bill, and what I still owe. | | | | | |
+| 2 | I can submit a maintenance request and follow what happens to it. | | | | | |
+| 3 | I can see a record of the payments I have made. | | | | | |
 | | **Usability** | | | | | |
-| 4 | I can tell what each screen is for without being taught. *Nauunawaan ko kung para saan ang bawat screen kahit walang nagturo sa akin.* | | | | | |
-| 5 | The words used in the system are easy to understand. *Madaling maintindihan ang mga salitang ginamit sa sistema.* | | | | | |
-| 6 | It is clear how much I owe and what the amount is made up of. *Malinaw kung magkano ang dapat kong bayaran at kung paano ito nabuo.* | | | | | |
-| 7 | When something goes wrong, the message tells me what to do about it. *Kapag may mali, sinasabi ng mensahe kung ano ang dapat kong gawin.* | | | | | |
-| 8 | I was able to use the system without anyone explaining it to me. *Nagamit ko ang sistema kahit walang nagpaliwanag sa akin.* | | | | | |
+| 4 | I can tell what each screen is for without being taught. | | | | | |
+| 5 | The words used in the system are easy to understand. | | | | | |
+| 6 | It is clear how much I owe and what the amount is made up of. | | | | | |
+| 7 | When something goes wrong, the message tells me what to do about it. | | | | | |
+| 8 | I was able to use the system without anyone explaining it to me. | | | | | |
 | | **Performance Efficiency** | | | | | |
-| 9 | The system opens quickly. *Mabilis magbukas ang sistema.* | | | | | |
-| 10 | The system responds without delay when I move between screens. *Mabilis tumugon ang sistema kapag lumilipat ako ng screen.* | | | | | |
+| 9 | The system opens quickly. | | | | | |
+| 10 | The system responds without delay when I move between screens. | | | | | |
 | | **Reliability** | | | | | |
-| 11 | The system is available whenever I try to use it. *Magagamit ang sistema sa tuwing kailangan ko ito.* | | | | | |
-| 12 | The information shown to me is correct and up to date. *Tama at napapanahon ang mga impormasyong ipinapakita sa akin.* | | | | | |
-| 13 | When something cannot be loaded, the system says so instead of showing a wrong amount. *Kapag may hindi mabuksan o ma-load, sinasabi ito ng sistema sa halip na magpakita ng maling halaga.* | | | | | |
+| 11 | The system is available whenever I try to use it. | | | | | |
+| 12 | The information shown to me is correct and up to date. | | | | | |
+| 13 | When something cannot be loaded, the system says so instead of showing a wrong amount. | | | | | |
 | | **Compatibility** | | | | | |
-| 14 | The system works correctly in the browser I normally use. *Gumagana nang maayos ang sistema sa browser na karaniwan kong ginagamit.* | | | | | |
-| 15 | I can use the system at the same time as my other apps. *Nagagamit ko ang sistema kasabay ng iba kong mga app.* | | | | | |
+| 14 | The system works correctly in the browser I normally use. | | | | | |
+| 15 | I can use the system at the same time as my other apps. | | | | | |
 | | **Portability** | | | | | |
-| 16 | The system works on my own phone or computer. *Gumagana ang sistema sa sarili kong cellphone o computer.* | | | | | |
-| 17 | I can open the system on more than one device. *Nabubuksan ko ang sistema sa higit sa isang device.* | | | | | |
-| 18 | I did not need to install anything extra to use it. *Hindi ako kinailangang mag-install ng kahit anong karagdagang app para magamit ito.* | | | | | |
+| 16 | The system works on my own phone or computer. | | | | | |
+| 17 | I can open the system on more than one device. | | | | | |
+| 18 | I did not need to install anything extra to use it. | | | | | |
 
-**Open questions (optional)**
+**Open comments**: What did you find most useful?
 
-1. What did you find most useful? *Ano ang pinakanakatulong sa iyo?*
-2. What was difficult, confusing, or missing? *Ano ang nahirapan kang gawin, nakalito sa iyo, o kulang sa sistema?*
+## Section 4: TECHNICAL EVALUATORS
 
-## Section 4: Technical evaluators
+For all questions, Rate each from 1-5
 
-Rate each statement: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree. The form asked evaluators to review the repository and documentation before answering.
+- 5 — Lubos na Sumasang-ayon (Strongly Agree)
+- 4 — Sumasang-ayon (Agree)
+- 3 — Walang Kinikilingan (Neutral)
+- 2 — Hindi Sumasang-ayon (Disagree)
+- 1 — Lubos na Hindi Sumasang-ayon (Strongly Disagree)
 
 | No. | Statement | 5 | 4 | 3 | 2 | 1 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -180,37 +189,39 @@ Rate each statement: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongl
 | 32 | The client installs on a mobile device without an application store. | | | | | |
 | 33 | The system does not depend on software the target environment is unlikely to have. | | | | | |
 
-**Open questions (optional)**
+**Open comments**: Which aspect of the system is strongest, from a technical standpoint?
 
-1. Which aspect of the system is strongest, from a technical standpoint?
-2. Which aspect most needs improvement, and what would you change?
+## Section 5: LOOKING FOR A ROOM
 
-## Section 5: Prospective tenants
+For all questions, Rate each from 1-5
 
-Rate each statement: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree. *5 Lubos na Sumasang-ayon, 4 Sumasang-ayon, 3 Walang Kinikilingan, 2 Hindi Sumasang-ayon, 1 Lubos na Hindi Sumasang-ayon.*
+- 5 — Lubos na Sumasang-ayon (Strongly Agree)
+- 4 — Sumasang-ayon (Agree)
+- 3 — Walang Kinikilingan (Neutral)
+- 2 — Hindi Sumasang-ayon (Disagree)
+- 1 — Lubos na Hindi Sumasang-ayon (Strongly Disagree)
 
 | No. | Statement | 5 | 4 | 3 | 2 | 1 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
 | | **Functional Suitability** | | | | | |
-| 1 | I could find which kinds of units the boarding house has and how much they cost. *Nakita ko kung anong mga uri ng unit ang mayroon at kung magkano ang mga ito.* | | | | | |
-| 2 | I could see enough about a unit (its floor, how many people can stay, its floor plan) to decide whether to ask about it. *Nakita ko ang sapat na detalye ng isang unit (palapag, ilang tao ang puwede, floor plan) para magpasya kung magtatanong ako.* | | | | | |
-| 3 | I could send an inquiry about a unit without difficulty. *Nakapagpadala ako ng tanong tungkol sa isang unit nang walang hirap.* | | | | | |
+| 1 | I could find which kinds of units the boarding house has and how much they cost. | | | | | |
+| 2 | I could see enough about a unit (its floor, how many people can stay, its floor plan) to decide whether to ask about it. | | | | | |
+| 3 | I could send an inquiry about a unit without difficulty. | | | | | |
 | | **Usability** | | | | | |
-| 4 | I could tell what each part of the website is for without being taught. *Nauunawaan ko kung para saan ang bawat bahagi ng website kahit walang nagturo sa akin.* | | | | | |
-| 5 | The words used on the website are easy to understand. *Madaling maintindihan ang mga salitang ginamit sa website.* | | | | | |
-| 6 | When I made a mistake in the inquiry form, the message told me what to fix. *Kapag nagkamali ako sa inquiry form, sinabi ng mensahe kung ano ang dapat ayusin.* | | | | | |
+| 4 | I could tell what each part of the website is for without being taught. | | | | | |
+| 5 | The words used on the website are easy to understand. | | | | | |
+| 6 | When I made a mistake in the inquiry form, the message told me what to fix. | | | | | |
 | | **Performance Efficiency** | | | | | |
-| 7 | The website opens quickly. *Mabilis magbukas ang website.* | | | | | |
-| 8 | The pages respond without delay when I move around the website. *Mabilis tumugon ang mga pahina kapag lumilipat ako sa website.* | | | | | |
+| 7 | The website opens quickly. | | | | | |
+| 8 | The pages respond without delay when I move around the website. | | | | | |
 | | **Reliability** | | | | | |
-| 9 | The information shown (units, rates, availability) looks correct and up to date. *Mukhang tama at napapanahon ang impormasyong ipinapakita (mga unit, presyo, bakante).* | | | | | |
+| 9 | The information shown (units, rates, availability) looks correct and up to date. | | | | | |
 | | **Compatibility** | | | | | |
-| 10 | The website works correctly in the browser I normally use. *Gumagana nang maayos ang website sa browser na karaniwan kong ginagamit.* | | | | | |
+| 10 | The website works correctly in the browser I normally use. | | | | | |
 | | **Portability** | | | | | |
-| 11 | The website works on my own phone. *Gumagana ang website sa sarili kong cellphone.* | | | | | |
-| 12 | I did not need to install anything to use it. *Hindi ko kinailangang mag-install ng kahit ano para magamit ito.* | | | | | |
+| 11 | The website works on my own phone. | | | | | |
+| 12 | I did not need to install anything to use it. | | | | | |
 
-**Open questions (optional)**
+**Open comments**: What did you find most useful on the website?
 
-1. What did you find most useful on the website? *Ano ang pinakanakatulong sa iyo sa website?*
-2. What was difficult, confusing, or missing? *Ano ang nahirapan kang gawin, nakalito sa iyo, o kulang sa website?*
+**Open comments**: What was difficult, confusing, or missing?

@@ -17,6 +17,6 @@ question lists, the testing-day forms, the table numbering map, the audits) were
 | `APPENDIX_N_DATA_DICTIONARY.md` | Appendix N (generated from the live schema by `node scripts/manuscript/build-data-dictionary.mjs`) |
 | `APPENDIX_O_UAT_SIGN_OFF.md`, `UAT_SIGN_OFF_FORM.docx` | Appendix O; the form to print and have signed |
 | `CONSENT_FORM.pdf`, `.docx`, `_PRINT.html` | Appendix P |
-| `survey/` | Appendix J, the survey instrument, and the Google Form script `compute-survey.mjs` reads |
+| `survey/` | `LIVE_FORM_SNAPSHOT.json`, the live Google Form's text that Appendix J is printed from (13 Nov 2026); the survey instrument; and the Google Form script `compute-survey.mjs` reads |
 | `figures/` | Every figure; diagrams drawn by `node scripts/build-chapter-4-diagrams.mjs` |
 | `TENANT_QUICK_GUIDE_PRINT.html` | The one-page tenant handout (Appendix K, Part 1) |
