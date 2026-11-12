@@ -8,7 +8,8 @@
 
 This appendix holds the detailed results that Chapter 4 summarizes: the full functional walkthrough,
 the rating of every survey item by every group of the second round (the users and the technical evaluators who rated the redesigned system, as in Chapter 4's Table 22, with the first round summarized in Tables M-28 and M-29), the measured evidence for each quality
-characteristic, and every change made in response to the evaluation.
+characteristic, every change made in response to the evaluation, and the grading of the 44
+functional requirements (Table M-32).
 
 **Table M-1.** Results of the functional walkthrough (30 September 2026) (Chapter 4's Table 10 before 12 October 2026; summarized in Chapter 4, Section 4.3.4)
 
@@ -77,7 +78,7 @@ characteristic, and every change made in response to the evaluation.
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Functional completeness | Features named in Objective 2 that were implemented, X = A / B | 6 / 6 = 1.00 | Sections 4.2.2 to 4.2.7 |
-| Functional completeness | Functional requirements implemented in full or in part, X = A / B | 41 / 44 = 0.93 (25 as worded), graded early in the second iteration; the other 3 reach the landlady in another form | Section 4.1.2 |
+| Functional completeness | Functional requirements implemented in full or in part, X = A / B | 42 / 44 = 0.95 (33 as worded), graded against the final system on 13 November 2026 (Table M-32). The other 2 reach the landlady in another form | Section 4.1.2 |
 | Functional correctness | Report reconciliation checks that agreed with the database, X = A / B | 490 / 490 = 1.00 | Table 8 |
 | Functional correctness | Executed walkthrough steps that gave the expected result, X = A / B | 24 / 25 = 0.96 | Table 10 |
 | Functional correctness | Screens whose figures matched the database, after correction | 9 / 9, after 6 defects were corrected | Table 9 |
@@ -518,3 +519,54 @@ From `docs/TESTING_DAY/results/ROUND_2_T_observations.csv`, computed by `scripts
 | PageSpeed Insights, public page, desktop | 95 and 98, largest element 0.9 and 1.1 s (1 October) | 99, largest element 0.9 s | Google PageSpeed Insights |
 
 On 30 September the times were taken with a stopwatch on a Dell XPS 15 over the boarding house's Wi-Fi. On 10 November they were taken from the browser's own performance timer, on a Windows 11 laptop in the Chromium browser of the Claude desktop app, on a different network, with the landlady and the test tenant signed in by a team member. The two days used different laptops, networks and timing methods, so the comparison shows the direction of the change, not an exact difference. The Excel export and sending a repair request were not timed again: the first saves a file and the second writes to the live records. No phone was timed by hand on 10 November.
+
+**Table M-32.** The 44 functional requirements, graded against the code in September 2026 and against the final system on 13 November 2026 (summarized in Chapter 4, Section 4.1.2)
+
+| Code | Requirement | September 2026 | 13 November 2026 | What the final system does, where not as worded or where the grade changed |
+| :--- | :--- | :--- | :--- | :--- |
+| FR-001 | **Authentication.** The system shall authenticate administrators and active tenants. | As worded | As worded |  |
+| FR-002 | **Role-Based Access.** The system shall enforce access according to user role. | As worded | As worded |  |
+| FR-003 | **Public Website.** The system shall display property information, room information, amenities, photos, and availability information. | In part | In part | Units, rates, photos and availability come from the records. The amenities are written into the screens, not stored |
+| FR-004 | **Public Inquiry.** A visitor shall be able to submit an inquiry for a specific room when that room is accepting inquiries. | As worded | As worded |  |
+| FR-005 | **Inquiry Management.** The administrator shall view, manage, communicate with, and update inquiry statuses. | As worded | As worded |  |
+| FR-006 | **Inquiry Conversion.** The administrator shall be able to reuse inquiry information during tenant onboarding. | As worded | As worded |  |
+| FR-007 | **Room Management.** The administrator shall create, edit, view, publish, hide, reserve, occupy, maintain, and make rooms available. | As worded | As worded |  |
+| FR-008 | **Room History.** The system shall preserve room occupancy and tenant history. | In part | In part | Past tenancies and every rate change are kept, and moved-out tenants can be listed, but no screen shows a unit's past rates or its tenants over time |
+| FR-009 | **Tenant Management.** The administrator shall manage tenant records and account status. | As worded | As worded |  |
+| FR-010 | **Tenant Profile Updates.** Tenants shall be able to update permitted personal information. | As worded | As worded |  |
+| FR-011 | **Billing.** The system shall support rent and water billing records. | In part | In part | Bills are kept, but a bill is raised only when the tenant opens a payment, and the landlady cannot write one herself |
+| FR-012 | **Due Dates.** The system shall support individual due dates. | As worded | As worded |  |
+| FR-013 | **Overdue Monitoring.** The system shall identify overdue payments, a bill being overdue from the day after its due date, with no grace period. | As worded | As worded |  |
+| FR-014 | **Manual Payments.** The administrator shall be able to record manual payments. | As worded | As worded |  |
+| FR-015 | **Online Payments.** The system shall support optional online payment through Adyen for the GCash payment workflow. | As worded | As worded |  |
+| FR-016 | **Payment Verification.** The administrator shall be able to verify online payments. | As worded | As worded |  |
+| FR-017 | **Financial Corrections.** The administrator shall be able to correct financial records with auditability. | As worded | As worded |  |
+| FR-018 | **Expense Management.** The administrator shall record categorized expenses and room allocations. | In part | As worded | Each allocation must name a property area that exists, which the database enforces |
+| FR-019 | **Cash Flow.** The system shall calculate income, expenses, and net cash flow. | Not as worded | Not as worded | Income, expenses and net income are shown on the Overview, worked out on the screen, not by the server |
+| FR-020 | **Profitability Analytics.** The system shall present profitability-related graphs and trends. | Not as worded | Not as worded | The Overview's month-by-month chart of income and expenses, worked out on the screen, not by the server |
+| FR-021 | **Maintenance Tickets.** Tenants shall be able to create issue tickets. | As worded | As worded |  |
+| FR-022 | **Attachments.** Tenants shall be able to attach photos to issue tickets. | In part | As worded | The photo is sent through the server with the request, and the tenant sees it with the request |
+| FR-023 | **Ticket Priority.** Tickets shall support Emergency, High, Medium, and Low priority. | As worded | As worded |  |
+| FR-024 | **Ticket Status.** Tenants shall be able to view ticket status. | As worded | As worded |  |
+| FR-025 | **Ticket Administration.** The administrator shall manage and close tickets. | As worded | As worded |  |
+| FR-026 | **Communication.** The system shall centralize relevant tenant, inquiry, and issue communication. | In part | As worded | A prospective tenant can now read and answer replies with the reference code given when the inquiry was sent |
+| FR-027 | **Notifications.** The system shall provide in-system notifications for important events. | As worded | As worded |  |
+| FR-028 | **Reports.** The system shall provide live reports and export capabilities. | In part | In part | The Overview and the Excel workbooks are live, but no server endpoint returns report totals |
+| FR-029 | **Audit Logs.** The system shall record important actions and financial changes. | As worded | As worded |  |
+| FR-030 | **Offline-Ready Access.** The system may provide limited offline-ready access to cached resources and safe previously available data. | In part | In part | The app and the public pages work offline, but no signed-in record is kept for offline use |
+| FR-031 | **Monthly Income Report Layout.** The system shall reproduce the landlady's Monthly Income Report layout, units grouped by cluster (BH, Back Apartment, Penthouse, Front Apartment, Linda) in canonical order, with per-cluster and grand subtotals. | In part | As worded | The server builds the workbook in her layout: clusters in order, subtotals, and Linda apart |
+| FR-032 | **Guided Monthly Payment Entry.** The administrator shall record a monthly payment through a guided form (unit, date, contact and invoice, rent amount), with rent period, 50% share, and remitted amount computed automatically. | In part | As worded | The rent period comes from the anniversary date, and the 50% Share and remitted amount are computed columns |
+| FR-033 | **Occupant Count Memory.** The system shall pre-fill a unit's occupant count from the same tenant's previous month entry, editable by the administrator. | Not as worded | In part | The occupant count is filled in from the tenancy, editable, rather than from the previous month's receipt |
+| FR-034 | **Water Payment Validation.** The system shall validate that Water Payment equals Occupants × ₱200 and warn the administrator before saving a mismatched value. | In part | As worded | Water is worked out from the occupants at the configured rate, so a mismatched amount cannot be saved |
+| FR-035 | **One-Time Onboarding Fields.** The system shall capture Anniversary Date and Deposit once, at tenant onboarding, and reuse them on every subsequent monthly entry without re-entry. | In part | In part | The anniversary date is reused for every receipt. The deposit is shown on the tenant's pages, not on receipts |
+| FR-036 | **Linda Billing Flow.** The system shall record Linda's units (LF, LB) in their own section, separate from the other clusters. Water is charged at the same per-occupant rate as every other unit. | In part | As worded | Linda's units are kept in their own section, with water at the same per-occupant rate |
+| FR-037 | **Monthly Expenses Ledger.** The system shall reproduce the landlady's Monthly Expenses ledger (date, OR or supplier, one-or-more Property Area allocations, and one fixed expense category per entry). | As worded | As worded |  |
+| FR-038 | **Split Expense Entry.** The administrator shall be able to allocate a single expense entry's amount across more than one Property Area without re-entering its date, supplier, or category. | As worded | As worded |  |
+| FR-039 | **Automatic Expense Totals.** The system shall automatically compute an expense entry's row total, each Property Area's monthly bottom total, and each category's "this month" total. | In part | In part | Row totals are stored. The area and category totals are worked out on the screen and in the workbook |
+| FR-040 | **Expense Category Cumulative Totals.** The system shall automatically roll each expense category's cumulative total forward from the previous month. | In part | In part | The running total per category appears in the Excel workbook only |
+| FR-041 | **Fixed Expense Category Dropdown.** The system shall present the fixed expense category list (with Salaries sub-lines 6a/6b/6c) as a dropdown when tagging an expense entry. The administrator may add a category of her own after the thirteen. | As worded | As worded |  |
+| FR-042 | **Expense/Category Reconciliation Check.** The system shall be able to verify that the sum of category "this month" totals equals the sum of Property Area bottom totals for the same month. | As worded | As worded |  |
+| FR-043 | **Admin-Only Income/Expense Entry.** Only the administrator shall be able to create or edit Monthly Income Report and Monthly Expenses Report entries. | As worded | As worded |  |
+| FR-044 | **Excel Export of Income/Expense Reports.** The system shall export the Monthly Income Report and Monthly Expenses Report as Excel-compatible spreadsheet files, matching their defined layouts. | Interface only | As worded | The server writes both ledgers as Excel workbooks in their layouts |
+
+As worded: the system does what the requirement says. In part: it does some of it. Not as worded: what the requirement describes reaches the landlady in another form. Interface only: done in the browser with no part on the server. Counts on 13 November 2026: 33 as worded, 9 in part, 2 not as worded. Each requirement is worded as in the team's requirements register.
