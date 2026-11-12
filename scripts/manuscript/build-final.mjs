@@ -123,11 +123,11 @@ function once(text, a, b, where) {
 }
 // The Chapter 4 note on the signed form becomes a marker in the text, where the sentence goes.
 let ch4 = chapters[4];
-ch4 = once(ch4, `> **TEAM NOTE.** Once the owner has signed the acceptance form (Appendix O), add after this section's first`,
-  `**[TO DO when the owner signs Appendix O: add "The owner's signed acceptance form is in Appendix O." after this section's first paragraph. If she does not accept it yet, say what she asked for instead.]**\n\n> **TEAM NOTE.** Once the owner has signed the acceptance form (Appendix O), add after this section's first`, 'Ch 4');
+ch4 = once(ch4, `> **TEAM NOTE.** Once the landlady has signed the acceptance form (Appendix O), add after this section's first`,
+  `**[TO DO when the landlady signs Appendix O: add "The landlady's signed acceptance form is in Appendix O." after this section's first paragraph. If she does not accept it yet, say what she asked for instead.]**\n\n> **TEAM NOTE.** Once the landlady has signed the acceptance form (Appendix O), add after this section's first`, 'Ch 4');
 let appO = read(path.join(docs, 'APPENDIX_O_UAT_SIGN_OFF.md'));
 appO = once(appO, '> **TEAM NOTE (delete before pasting).** The course guide',
-  '**[TO DO: place the scan of the signed form here (print UAT_SIGN_OFF_FORM.docx; the owner signs only if she agrees).]**\n\n> **TEAM NOTE (delete before pasting).** The course guide', 'App O');
+  '**[TO DO: place the scan of the signed form here (print UAT_SIGN_OFF_FORM.docx; the landlady signs only if she agrees).]**\n\n> **TEAM NOTE (delete before pasting).** The course guide', 'App O');
 // Appendix M captions carry the drafts' old numbers ("Chapter 4's Table 10 before 12 October 2026");
 // in the final paper there is no old number to point at.
 let appM = appMRaw

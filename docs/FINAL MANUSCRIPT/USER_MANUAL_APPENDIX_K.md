@@ -1,11 +1,10 @@
 # APPENDIX K: USER'S MANUAL
 
-**For the owner and the tenants of the Fe Galang Da Silva Boarding House.** Written 2026-09-29
-against the system as deployed that night, and checked again on 10 November 2026 against the
-redesign of Iteration 3. Every button and screen name below is the one the system shows. Chapter 4, §4.5 (Table 25, stage 4) names this manual as the hand-over document.
+**For the landlady and the tenants of the Fe Galang Da Silva Boarding House.** Every button and
+screen name below is the one the system showed on 10 November 2026.
 
 Hivelet is at **https://hivelet.vercel.app**. It works in any current browser on a phone or a
-computer, and it can be installed on a phone's home screen (Part 1, step 6).
+computer, and it can be installed on a phone's home screen (Part 1, section 6).
 
 > **TEAM NOTE (delete before pasting into the manuscript).** Part 1 is also the one-page handout
 > for tenants: `TENANT_QUICK_GUIDE_PRINT.html` is the same text laid out to print, two per A4 sheet.
@@ -24,15 +23,15 @@ computer, and it can be installed on a phone's home screen (Part 1, step 6).
    you. *I-type ang inyong login ID at ang starting password na ibinigay ng landlady.*
 3. A window asks for **your own mobile number and your own password**. Type the starting
    password again, then your new one twice. It must have **at least 10 characters, a letter and a
-   number**. Your name stays as the landlady recorded it. *Ilagay ang sariling numero at password:
+   number**. *Ilagay ang sariling numero at password:
    hindi bababa sa 10 character, may letra at numero.*
 4. Keep your password to yourself. The slip stops working once you have your own.
    *Huwag ibahagi ang password.*
 
 **Forgot your password?** Ask the landlady. She can give you a new starting password from her
-screen. *Nakalimutan ang password? Lumapit sa landlady; bibigyan niya kayo ng bagong starting password.*
+screen. *Nakalimutan ang password? Lumapit sa landlady. Bibigyan niya kayo ng bagong starting password.*
 
-**Five wrong passwords** lock the account for 15 minutes; then it opens again by itself.
+**Five wrong passwords** lock the account for 15 minutes. Then it opens again by itself.
 
 ### 2. Overview / Pangunahing pahina
 
@@ -58,7 +57,7 @@ babayaran.*
 **Your recent actions** lists the last three things you did here (a repair request sent, a GCash
 payment started, your details updated), newest first. On a computer it is in the menu on the left,
 under the sections, on every page, headed **Recently**. On a phone it is in the same place, in the
-menu that opens from the top left. It is there to be read, not clicked. Only you see your own actions.
+menu that opens from the top left. Its lines cannot be clicked, and only you see them.
 *Ang huling tatlong ginawa ninyo dito.*
 
 ### 3. Payments and billing / Bayad at singil
@@ -73,8 +72,9 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
   dropdowns above it (on a phone, tap **Filters** first). The list changes as soon as you pick.
 - **The deposit** held for your tenancy is on your Overview, in the card for your unit.
   *Nasa Overview ang deposit, sa card ng inyong unit.*
-- **Pay with GCash**: optional online payment. **It runs in a test mode and takes no real money;
-  pay the landlady in person.** *Sa ngayon, sa landlady pa rin po magbayad nang personal.*
+- **Pay with GCash**: optional online payment, not live yet. **It works in Adyen's test environment
+  and takes no real money. Pay the landlady in person.** *Sa ngayon, sa landlady pa rin po magbayad
+  nang personal.*
 
 ### 4. Repairs / Pagpapaayos
 
@@ -99,9 +99,8 @@ menu that opens from the top left. It is there to be read, not clicked. Only you
 Keep your phone number and your **Emergency contact** (the person to call) up to date, then
 press **Save**. After your first sign-in you can sign in with your login ID or your phone number.
 Your name can only be changed by the landlady. A phone number is spaced as you type it
-(0917 123 4567). Both your number and the
-number of the person to call must be Philippine mobile numbers; if one is not, a note under the box
-says so and nothing is saved until it is corrected.
+(0917 123 4567). Both your number and the number of the person to call must be Philippine mobile
+numbers. If one is not, a note under the box says so, and nothing is saved until you correct it.
 **To change your password:** press **Change password** on My details, or tap your initials at the
 top right > **Change password**. *Para palitan ang password: Change password.*
 
@@ -139,8 +138,7 @@ it also removes the figures, names and notifications kept on the phone for viewi
 
 ## Part 2. For the landlady (administrator)
 
-The administrator account is Michelle's; the business keeps the name Fe Galang Da Silva Boarding
-House. The greeting at the top follows the time of day.
+This part is for the landlady, who signs in as the administrator.
 
 **Every list** (Rooms and rates, Tenants, Monthly Income, Monthly Expenses, Repairs, Inquiries)
 has the same bar at the top:
@@ -151,65 +149,80 @@ has the same bar at the top:
   a list can be drawn two ways, one picks **By cluster** or **As a list**. **Order** arranges the list: **By unit**, **By name (A to Z)**, **Newest first**
   or **Oldest first** (Repairs also has **Most urgent first**). The list changes the moment you pick.
   **On a phone**, tap **Filters** to open them under the bar, and tap it again to close them. The
-  filters in use are named under the bar; **Clear** removes them.
-- **Show 8 more** (or however many are next) and **Show all** under a long list open more of it; **Show fewer** closes it again.
+  filters in use are named under the bar, and **Clear** removes them.
+- **Show 8 more** (or however many are next) and **Show all** under a long list open more of it, and **Show fewer** closes it again.
 - **Click or tap a row or card** to open it and edit it. There is no separate edit button.
 
-**Also on every screen:** a short ping means something was saved, or someone else's change has
-arrived. Messages appear at the top centre of the screen. Tap one to close it. A window that slides
-up from the bottom closes when you tap the dimmed page outside it or swipe it down. Two never close
-that way, so nothing is lost: the one showing a new tenant's login ID and password, and the GCash
-payment. The phone's **Back** button goes back a
-page and closes any window that was open on it. In the installed app, **pull down from the top** of a
-page to reload it: the green hexagon turns until the figures are back, and grey outlines stand in
-for them meanwhile; the page does not go blank. **Light or dark:** your initials > **Appearance** > **System**, **Light** or
-**Dark** (System follows the phone or computer). On the public pages it is the sun/moon button at
-the top of the page. The band at the foot of the public pages gives your number under **Contact** and
-the privacy policy and terms under **Policies**. **The green hexagon** turns in the middle of the screen the first time the site opens on a phone
-or computer, when it is opened again after half an hour or more away, and when the public pages or
-the sign-in page are reloaded. Reloading one of your own screens during a visit shows grey outlines
-of the page instead while the figures load.
+**Also on every screen:**
+
+- A short ping means something was saved, or someone else's change has arrived.
+- Messages appear at the top centre of the screen. Tap one to close it.
+- A window that slides up from the bottom closes when you tap the dimmed page outside it or swipe it
+  down. Two never close that way, so nothing is lost: the one showing a new tenant's login ID and
+  password, and the GCash payment.
+- The phone's **Back** button goes back a page and closes any window that was open on it.
+- In the installed app, **pull down from the top** of a page to reload it: the green hexagon turns
+  until the figures are back, and grey outlines stand in for them meanwhile, so the page does not go
+  blank.
+- **The green hexagon** also turns in the middle of the screen the first time the site opens on a
+  phone or computer, when it is opened again after half an hour or more away, and when the public
+  pages or the sign-in page are reloaded. Reloading one of your own screens during a visit shows grey
+  outlines of the page instead while the figures load.
+- **Light or dark:** your initials > **Appearance** > **System**, **Light** or **Dark** (System
+  follows the phone or computer). On the public pages it is the sun/moon button at the top of the
+  page.
+- The band at the foot of the public pages gives your number under **Contact** and the privacy
+  policy and terms under **Policies**.
 
 **Downloads.** Where the browser offers a **Save** window (Chrome or Edge on a computer), the message
-**"Report downloaded"** appears only once the file is saved; cancelling the window says nothing and
-saves nothing. On a phone the message is **"Download started"**. The cluster of 22 main rooms is
+**"Report downloaded"** appears only once the file is saved. Cancelling the window says nothing and
+saves nothing. On a phone the message is **"Download started"**. The cluster of 22 main units is
 called **Boarding House** on every screen and in every downloaded workbook.
 
 ### 1. Signing in, your number and your password
 
-Sign in with your phone number and your password; your number is shown under your name when you
+Sign in with your phone number and your password. Your number is shown under your name when you
 tap your initials at the top right. To change either: your initials > **Change number / password**.
 Type your **current number and current password** first, then a new number, a new password, or
 both. If either current one is wrong the window says so without saying which, and nothing changes.
 A new number is the one you sign in with from then on, and the one every page of the website gives
-for calling you. Only you should know your password; the system's record of who did what is only
-as good as that.
+for calling you. Keep your password to yourself.
 
 ### 2. Overview
 
-The first screen: **Needs your attention**, in up to three parts: the payments waiting to be verified, the urgent
-repairs, and the inquiries waiting for an answer, three of each with a count of the rest. A part with
-nothing waiting is not shown, and with nothing waiting at all the card is not shown. Then come **Rent for** this month (for example **"Rent for November"**, the rent filed under November, whenever it was paid) with **Due this week** under it (each tenant whose rent falls due in the next seven days, with the period it pays for, such as "Unit 1A, Nov 7 to Dec 6". Three are shown, and tapping one opens **Record payment** for that unit), **Occupancy** (the units
-occupied out of 33, with each cluster's count, such as 22/22), and **Income and expenses**, the year month by month. Tap a
-month on the chart to see its **Income**, **Operating expenses** and **Net income** under the chart;
-the arrows beside **Income** and **Operating expenses** open Monthly Income and Monthly Expenses. Urgent repairs are listed only in Needs your attention.
-Net income deducts the operating costs only: personal spending is listed on Monthly Expenses beside them, and is not deducted from rental income. If a
-figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is back.
+The first screen shows, from the top:
+
+- **Needs your attention**, in up to three parts: the payments waiting to be verified, the urgent
+  repairs, and the inquiries waiting for an answer, three of each with a count of the rest. A part
+  with nothing waiting is not shown, and with nothing waiting at all the card is not shown. Urgent
+  repairs are listed only here.
+- **Rent for** this month (for example **"Rent for November"**, the rent filed under November,
+  whenever it was paid), with **Due this week** under it: each tenant whose rent falls due in the
+  next seven days, with the period it pays for, such as "Unit 1A, Nov 7 to Dec 6". Three are shown.
+  Tap one to open **Record payment** for that unit.
+- **Occupancy**: the units occupied out of 33, with each cluster's count, such as 22/22.
+- **Income and expenses**, the year month by month. Tap a month on the chart to see its **Income**,
+  **Operating expenses** and **Net income** under the chart. The arrows beside **Income** and
+  **Operating expenses** open Monthly Income and Monthly Expenses. Net income deducts the operating
+  costs only: personal spending is listed on Monthly Expenses beside them, and is not deducted from
+  rental income.
+
+If a figure cannot be loaded, the tile shows **"—"**, never ₱0.00: refresh when the connection is
+back.
 
 **Your recent actions** lists the last three things you did (a payment recorded, a GCash payment
 approved, a repair marked done), newest first. On a computer it is in the menu on the left, under
 the sections, on every page, headed **Recently**. On a phone it is in the same place, in the menu
-that opens from the top left. It is there to be read, not clicked. It shows only your own actions,
-never anyone else's.
+that opens from the top left. Its lines cannot be clicked, and it shows only your own actions.
 
 - **Record payment**, **Record expense** and **Move someone in/out** are the green buttons at the top. **On a phone**,
-  tap the green **+** at the bottom right to show them; tap it again to hide them.
+  tap the green **+** at the bottom right to show them, and tap it again to hide them.
 - **Another year:** tap the year beside the date (for example **2026 ⌄**) and choose one, or
   **2026, this year** to come back. A past year shows its year only, not today's date, and can be
   read but not added to: the green buttons are for this year. (Last year's late December rent is
   recorded from Monthly Income, section 3.)
 
-**The bell** at the top shows a **dot** when you have unread notifications; open it to read them.
+**The bell** at the top shows a **dot** when you have unread notifications. Open it to read them.
 The **filter icon** beside the title shows only **Unread**, **Payments**, **Repairs** or
 **Inquiries** (or **All**), and **X** closes. The list updates by itself. **Mark all read** is at
 the bottom.
@@ -221,8 +234,8 @@ only, so another phone or computer shows its own count.
 ### 3. Recording a payment (Monthly Income)
 
 1. **Monthly Income** > **Record payment**.
-2. Choose the **Unit**, the **Mode of payment** (Cash, GCash or Bank transfer. For GCash or a bank
-   transfer, type **Their reference number**), the **Date paid**, and the period it covers:
+2. Choose the **Unit**, the **Mode of payment** (Cash, GCash or Bank transfer, and for GCash or a
+   bank transfer, type **Their reference number**), the **Date paid**, and the period it covers:
    **Months covered** and **Covering from**. **Covering to** is worked out from them.
    **Covering from** starts on the day after that tenant's last recorded period, so payments
    entered oldest first need no change. Change it if this payment is for a different period.
@@ -237,12 +250,11 @@ only, so another phone or computer shows its own count.
    the occupants, that the tenant's record now shows the new number (their water from then on).
    **See it in Monthly Income** opens that month with the payment marked.
 
-The system never makes up an invoice number: it records yours, or none. The same invoice number
-cannot be recorded twice for the same unit and month.
+The same invoice number cannot be recorded twice for the same unit and month.
 
-**To correct a payment:** click or tap its row to open **Edit this payment**, change it, and press
-**Save changes**. **To remove one** recorded by mistake: open it and press **Delete payment**. It leaves the records and totals at once; the
-system's own record (section 9) keeps that it existed and who removed it.
+**To correct a payment:** click or tap its row to open **Edit this payment**, change it, and press **Save changes**. **Water** is worked out from **Occupants** and cannot be typed. **To remove one** recorded by mistake: open it and press **Delete payment**. It
+leaves the records and totals at once, and the system's own record (section 9) keeps that it
+existed and who removed it.
 
 **Online (GCash) payments** appear under **To verify**, beside **Records** (every payment recorded).
 When any are waiting, Monthly Income opens on **To verify**. Check the money arrived, then press
@@ -252,11 +264,11 @@ in Adyen's test environment and takes no real money. It is optional and not live
 **The month and the year.** **Rent for** at the top is **one month**, its total alone (for example
 "Rent for October": the rent filed under October, the month its period starts, not the month it
 was paid). Until something is recorded for this month it says so first, **Not recorded**, and
-gives the latest month recorded under it ("Latest recorded, October"; the year is named only when
-it is not the one at the top). Beside it, **Income by cluster**
+gives the latest month recorded under it ("Latest recorded, October", with the year named only
+when it is not the one at the top). Beside it, **Income by cluster**
 is the **year**: the year's total and how it divides across the clusters. Tap the green **cluster**
 to change it to **month**, the year month by month. Monthly Expenses is laid out the same way
-("Expenses for October"; **Expense by area**, or by **month** in red bars). The **All months** dropdown
+("Expenses for October", then **Expense by area**, or by **month** in red bars). The **All months** dropdown
 (under **Filters** on a phone) shows one month in Rent for. The year beside the page name (for example **2026 ⌄**) picks
 another year, or **All years** for everything since the records began. A past year can be read but
 not added to, so **Record payment**, **To verify** and opening a row to change it are not offered
@@ -269,7 +281,7 @@ instead read **Group by unit** or **Group by tenant (A to Z)**.
 that. The workbook is in your own layout (month blocks, cluster subtotals, Linda separate) and is
 named for what it holds: "Monthly Income March 2026" for one month, "Monthly Income 2025" for a
 year (this year's too), and for **All** the years it covers, such as "Monthly Income 2024-2026". In the workbook each cluster's subtotal is on a light-blue row
-and each **GRAND SUBTOTAL** is red with white letters; an acknowledgement receipt shows as **ACK**.
+and each **GRAND SUBTOTAL** is red with white letters, and an acknowledgement receipt shows as **ACK**.
 The Monthly Expenses workbook uses the same colors for each month's **TOTAL** and the **YEAR
 TOTAL**.
 
@@ -279,12 +291,12 @@ TOTAL**.
 2. The **Date of the expense**, then for each expense **What for**, **What kind**, **Where** (the
    property area) and **How much**.
 3. One expense for several areas: **Split across another area**. The parts must add up to the
-   expense; the total is worked out for you. **Choose an area** for each new part; each area can
+   expense, and the total is worked out for you. **Choose an area** for each new part. Each area can
    be given once, so two amounts for the same area go in as one.
 4. **Add another expense** records the next one without closing the form.
 5. A kind of expense that is not in the list: open **What kind**, choose **Add a new kind…**
    at the bottom, type its name and press **Add kind**. It is added after your 13, numbered 11,
-   12 and so on, and chosen for that expense; it is also in the **All kinds** dropdown and
+   12 and so on, and chosen for that expense. It is also in the **All kinds** dropdown and
    in the workbook's category summary. Your 13 stay as they are. A kind you add cannot be renamed
    or removed, so check the spelling.
 
@@ -296,7 +308,7 @@ file the same way ("Monthly Expenses March 2026").
 ### 5. Tenants
 
 - **Move someone in**: full name, unit, deposit, move-in date, whether the unit is shared and by
-  how many, and an emergency contact with their phone. The tenant adds their own phone number. Press **Move them in**. Their **login ID** and a **one-time password**
+  how many, and an emergency contact with their phone. Press **Move them in**. Their **login ID** and a **one-time password**
   are shown: write both down and give them to the tenant in person (the password is shown only
   once). At first sign-in they choose their own password and add their own phone number.
 - **Click or tap a tenant's row** to open their record. **On record** shows their login ID, phone,
@@ -307,13 +319,13 @@ file the same way ("Monthly Expenses March 2026").
   and their login ID and a new one-time password are shown. Their old password stops working and
   their phone is signed out. The login ID is also on their record, under **Login ID**.
 - **Move them out** (in the same window): type the unit code to confirm, and add a **reason** if you like (kept with the
-  move-out; the tenant does not see it). The tenant loses access at once, the unit becomes free to
+  move-out, and the tenant does not see it). The tenant loses access at once, the unit becomes free to
   let, and **their records stay**.
 - **Who lived where before**: change the dropdown that reads **Today** to a year (and pick a month
   in the **All months** dropdown if you like). The list
   then shows who paid for each unit then, read from your receipts: the months they paid,
   or for one month what the receipt covered, when it was paid and its number. A name you wrote two
-  ways in the same unit is shown once, with the other spelling under it; a tenant who moved units
+  ways in the same unit is shown once, with the other spelling under it, and a tenant who moved units
   says which other unit they rented. **Download** asks **Month**, **Year** or **All** and saves
   the list as a workbook, named like "Tenant History June 2025". **Clear** (under the search) goes back to your current
   tenants.
@@ -323,9 +335,9 @@ file the same way ("Monthly Expenses March 2026").
 Every unit, by cluster or as one list (**By cluster** or **As a list**, under **Filters** on a phone). The **All units** and **All clusters** dropdowns narrow them by
 status or cluster. Click or tap a unit to change its rate, kind, status, whether it is shown **On
 the website**, its description or its picture. A unit with no photograph shows its **Floor plan**, the same one visitors see on the
-public pages; **Replace photo** uploads one, and once saved the public page shows that
-photograph instead. Every rate change is kept in the unit's price history automatically; the system never
-raises a rate by itself.
+public pages. **Replace photo** uploads one, and once saved the public page shows that
+photograph instead. Every rate change is kept in the unit's price history. The system never raises
+a rate by itself.
 
 ### 7. Repairs
 
@@ -335,14 +347,14 @@ urgency. Click or tap a card to open it
 **Mark resolved** at the bottom right of its card, and the tenant is notified when you press it. When a tenant adds a note to a request, it reaches you as a notification that quotes it. **Log
 a repair** records one you were told about in person, or one for an empty unit. **Delete repair**
 (in **Manage this repair**) removes a request for good after you confirm it. **Status** in the filters shows one stage only. A request the tenant
-cancelled (they can, until work starts) is marked **Cancelled by the tenant**, with their reason as a
+cancelled (they can, until you send someone or start work) is marked **Cancelled by the tenant**, with their reason as a
 note if they gave one.
 
 ### 8. Inquiries
 
 Messages from people asking about a unit. Type a reply and press the arrow (**Send reply**), **Close inquiry** when settled, or
-**Move them in** to start a tenancy with the details already filled in. **Delete** (on any inquiry)
-asks **"Delete this inquiry?"** and then removes it and its conversation for good; it cannot be
+**Move them in** to start a tenancy with the details already filled in. A closed inquiry, or one whose
+person moved in, takes no more replies. **Delete** (only on those) asks **"Delete this inquiry?"** and then removes it and its conversation for good. It cannot be
 undone. If the person who sent it opens its page again, it tells them the inquiry was closed and
 removed. The **All inquiries** dropdown (under **Filters** on a phone)
 shows only those **Waiting for an answer**, **Answered**, **Moved in** or **Closed**.
@@ -359,9 +371,9 @@ no such page: call or text those people as before.
 ### 9. The record of who did what
 
 The system writes every payment, correction, tenant change, repair, sign-in and download to a
-permanent record: who did it, when, and what changed. Nobody can change or delete an entry. Since
-1 October 2026 this record is **kept in the database for the developers and is not shown in the
-app**. Ask the team if you need to know who changed something.
+permanent record: who did it, when, and what changed. Nobody can change or delete an entry. The
+record is **kept in the database and is not shown in the app**. Ask the team if you need to know
+who changed something.
 
 ### 10. When the connection is weak or gone
 
@@ -370,7 +382,7 @@ unavailable"**), and shows what each screen last loaded on this device: the Over
 inquiries and the notifications. Nothing can be recorded, moved or marked read until the connection
 returns, so **Record payment**, **Record expense**, **Move someone in**, the buttons in **Manage
 this repair** and **Log a repair**, and **Send reply** and **Close inquiry** are greyed out ("Needs
-a connection"), and the Overview's actions are hidden; when it returns, every screen reloads by
+a connection"), and the Overview's actions are hidden. When it returns, every screen reloads by
 itself. An inquiry's conversation (the replies) is not saved for offline viewing: its first message
 is shown, with a note that the replies could not be loaded. These essential
 figures, names and notifications stay on your own device only, and **signing out removes them**.
@@ -382,9 +394,8 @@ look at the list before recording it again, so it is not recorded twice.
 
 - The team takes a **backup** of every record before any change to the data, and whenever asked.
 - Record receipts as you collect them: tenants see their balance from what is recorded.
-- Five receipts from before the system are known to contain slips in the old book (for example a
-  year typed wrongly). They stay exactly as written, and the checks list them so that nobody
-  mistakes them for the system's errors.
+- Five receipts from before the system carry slips from the old book (for example a year typed
+  wrongly). They stay exactly as written, and they are not errors in the system.
 
 ### 12. Quick answers
 
@@ -393,6 +404,6 @@ look at the list before recording it again, so it is not recorded twice.
 | A tenant says their balance is wrong | Check that their receipts since the date shown are recorded (Monthly Income, their unit) |
 | A tenant cannot sign in | They sign in with the login ID on their record (Tenants, their row). Five wrong tries lock it for 15 minutes. If they forgot the password: **Reset password** |
 | A figure shows "—" | It could not be loaded. Refresh when the connection is back |
-| "Too many attempts from this connection" | Everyone on the house wifi shares one counter; wait 15 minutes or use mobile data |
-| A GCash payment appeared | GCash works in Adyen's test environment and takes no real money: reject it under **To verify** |
+| "Too many attempts from this connection" | Everyone on the house wifi shares one counter. Wait 15 minutes or use mobile data |
+| A GCash payment appeared | GCash works in Adyen's test environment, takes no real money and is not live. Reject it under **To verify** |
 | Something looks wrong | Take a screenshot and tell the team. Do not try to correct the numbers directly |

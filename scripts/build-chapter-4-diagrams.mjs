@@ -135,7 +135,7 @@ const svg = (w, h, body) =>
   `<rect width="${w}" height="${h}" fill="#fff"/>${DEFS}${body}</svg>`;
 
 // ---------------------------------------------------------------------------------------------
-// Figure 4. The owner's process before Hivelet (Section 4.1.1, Table 5)
+// Figure 4. The landlady's process before Hivelet (Section 4.1.1, Table 5)
 // ---------------------------------------------------------------------------------------------
 function asIs() {
   const W = 900, H = 760, L = 112;
@@ -144,7 +144,7 @@ function asIs() {
   const lanes = [
     ['', 0, 44],
     ['Tenant or prospect', 44, 196],
-    ['Owner', 196, 486],
+    ['Landlady', 196, 486],
     ['Records kept', 486, 636],
     ['Problem identified (Table 4-1)', 636, H - 2],
   ];
@@ -160,28 +160,28 @@ function asIs() {
   const BW = 166;
   // Rent collection
   s += box(cx(0), 118, BW, 62, 'Tenant pays rent in cash on site', { rx: 31 });
-  s += box(cx(0), 262, BW, 62, 'Owner writes an invoice in the paper invoice book');
-  s += box(cx(0), 396, BW, 96, 'Owner types the payment into the Monthly Income Report and adds the totals by hand');
+  s += box(cx(0), 262, BW, 62, 'Landlady writes an invoice in the paper invoice book');
+  s += box(cx(0), 396, BW, 96, 'Landlady types the payment into the Monthly Income Report and adds the totals by hand');
   s += line([[cx(0), 149], [cx(0), 231]]);
   s += line([[cx(0), 293], [cx(0), 348]]);
   s += doc(cx(0), 548, 150, 66, 'Invoice book (paper)');
   s += line([[cx(0) - BW / 2, 262], [L + 8, 262], [L + 8, 548], [cx(0) - 75, 548]]);
   // Expenses
-  s += box(cx(1), 262, BW, 62, 'Owner pays a supplier', { rx: 31 });
-  s += box(cx(1), 400, BW, 124, 'Owner types the expense into the Monthly Expenses Report and splits it across property areas by hand');
+  s += box(cx(1), 262, BW, 62, 'Landlady pays a supplier', { rx: 31 });
+  s += box(cx(1), 400, BW, 124, 'Landlady types the expense into the Monthly Expenses Report and splits it across property areas by hand');
   s += line([[cx(1), 293], [cx(1), 338]]);
   s += doc(cx(1), 552, 172, 88, 'Workbook on a USB flash drive, the only copy');
   s += line([[cx(0), 444], [cx(0), 474], [cx(1) - 50, 474], [cx(1) - 50, 508]]);
   s += line([[cx(1), 462], [cx(1), 508]]);
   // Repair requests
   s += box(cx(2), 118, BW, 78, 'Tenant reports a problem by message or in person', { rx: 39 });
-  s += box(cx(2), 300, BW, 62, 'Owner arranges the repair');
+  s += box(cx(2), 300, BW, 62, 'Landlady arranges the repair');
   s += line([[cx(2), 157], [cx(2), 269]]);
   s += box(cx(2), 560, 140, 50, 'No record', { dash: '6 5', italic: true });
   s += line([[cx(2), 331], [cx(2), 535]], { dash: '6 5' });
   // Inquiries
   s += box(cx(3), 118, BW, 62, 'Prospect asks about a unit', { rx: 31 });
-  s += box(cx(3), 300, BW, 62, 'Owner answers the prospect');
+  s += box(cx(3), 300, BW, 62, 'Landlady answers the prospect');
   s += line([[cx(3), 149], [cx(3), 269]]);
   s += box(cx(3), 560, 140, 50, 'No record', { dash: '6 5', italic: true });
   s += line([[cx(3), 331], [cx(3), 535]], { dash: '6 5' });
@@ -207,7 +207,7 @@ function architecture() {
     (sub ? T(x + w / 2, 0, sub, { size: 13.5, w: w - 24, fill: MUTED, top: y + 38 }) : '');
 
   // Client
-  s += group(16, 16, 230, 560, 'Client device', 'A phone or computer browser, used by visitors, tenants and the owner');
+  s += group(16, 16, 230, 560, 'Client device', 'A phone or computer browser, used by visitors, tenants and the landlady');
   s += box(131, 186, 196, 96, 'Hivelet web app (Vue 3, TypeScript), installable as a Progressive Web App');
   s += box(131, 316, 196, 70, 'Service worker: keeps the app\'s files so it opens offline');
   s += box(131, 470, 196, 70, 'Adyen Drop-in: the GCash payment form');
@@ -282,8 +282,8 @@ function context() {
   s += T(cx - 56, 178, 'Inquiry about a unit; follow-up messages', { w: 190, size: 14, anchor: 'end' });
   s += T(cx + 56, 178, 'Units, rates and availability; the inquiry\'s reference and replies', { w: 190, size: 14, anchor: 'start' });
 
-  // Owner (left)
-  s += gsEnt(14, cy - 60, 140, 120) + T(84, cy, 'Owner (administrator)', { w: 124, weight: 'bold' });
+  // Landlady (left)
+  s += gsEnt(14, cy - 60, 140, 120) + T(84, cy, 'Landlady (administrator)', { w: 124, weight: 'bold' });
   s += line([[154, cy - 34], [cx - edgeX(34), cy - 34]]);
   s += line([[cx - edgeX(34), cy + 34], [154, cy + 34]]);
   s += T(162, cy - 46, 'Sign-in; units and rates; move-ins and move-outs; payments with invoice numbers, verifications and voids; expenses; repair dispatch; inquiry replies',
@@ -327,7 +327,7 @@ function dfd() {
   const rowA = 350, rowB = 510;
 
   // External entities.
-  s += ent(16, 16, 862, 44, 'Owner (administrator)');
+  s += ent(16, 16, 862, 44, 'Landlady (administrator)');
   s += ent(16, H - 64, 150, 48, 'Visitor or prospect');
   s += ent(196, H - 64, 688, 48, 'Tenant');
 
@@ -340,13 +340,13 @@ function dfd() {
   s += store(406, rowB, 154, 'D6', 'Repair requests');
   s += store(606, rowB, 184, 'D2', 'Tenants, tenancies', true);
 
-  // Owner to the owner-only processes (row 1).
+  // Landlady to the landlady-only processes (row 1).
   for (const [k, t, head] of [['p2', 'Units, rates', 'end'], ['p3', 'Move-in, move-out', 'end'], ['p7', 'Overview, workbooks', 'start'], ['p6', 'Expenses', 'end']]) {
     const [x, y] = P[k];
     s += line([[x, 60], [x, y - R]], { head });
     s += lab(x + 8, 104, t, { anchor: 'start', w: 84 });
   }
-  // Owner to the shared processes (row 2): down a gap in row 1, then across.
+  // Landlady to the shared processes (row 2): down a gap in row 1, then across.
   for (const [k, gx, t] of [['p1', 22, 'Replies'], ['p8', 202, 'Own account'], ['p5', 398, 'Dispatch, close'], ['p4', 594, 'Record, verify, void']]) {
     const [x, y] = P[k];
     s += line([[gx, 60], [gx, y], [x - R, y]], { head: 'both' });
@@ -437,7 +437,7 @@ function useCases() {
 
   s += actor(VX, VY, 'Visitor or prospect');
   s += actor(TX, TY, 'Tenant');
-  s += actor(AX, AY, 'Owner (administrator)');
+  s += actor(AX, AY, 'Landlady (administrator)');
   s += actor(GX, GY - 4, 'Adyen (GCash)');
   return { W, H, body: s };
 }
@@ -590,7 +590,7 @@ function framework() {
     `<path d="M${x1},${y - 26} H${x2 - 40} V${y - 46} L${x2},${y} L${x2 - 40},${y + 46} V${y + 26} H${x1} Z" fill="${INK}"/>`;
 
   s += col(24, 30, 280, 530, 'INPUT', [
-    ['Objectives of the Study', '(e.g., streamlined financials, improved communication)'],
+    ['Objectives of the Study', '(Workflow integration, communication, operational control)'],
     ['Review of Related Literature', '(Contextual, integration and technology gaps)'],
     ['Client Interviews and Operational Workflow Observations', '(Property management and tenant feedback)'],
     ['Payment', '(Integration, payment workflow)'],
@@ -598,14 +598,14 @@ function framework() {
   s += col(382, 60, 276, 470, 'PROCESS', [
     ['AGILE', ''],
     ['Financial Tracking', '(Analytics, Reports)'],
-    ['Booking', '(Reservations, Logic)'],
+    ['Booking and Reservation', '(Inquiries, Reserved units)'],
     ['Tenant Management', '(Profiles, Records)'],
     ['Maintenance Ticketing', '(Requests, Notifications)'],
-    ['Adyen Payment API', '(Integration with GCash, transaction processing)'],
+    ['Adyen Payment API', '(Optional GCash, in the Adyen test environment)'],
   ]);
   s += col(736, 30, 280, 530, 'OUTPUT', [
     ['Hivelet System', ''],
-    ['System Modules', 'Financial Tracking Module (Analytics, Reports); Booking Module (Reservations, Logic); Tenant Management Module (Profiles, Records); Maintenance Ticketing Module (Requests, Notifications); Payment Module (Adyen Payment API with GCash)'],
+    ['System Modules', 'Financial Tracking Module (Analytics, Reports); Booking and Reservation Module (Inquiries, Reserved units); Tenant Management Module (Profiles, Records); Maintenance Ticketing Module (Requests, Notifications); Payment Module (Adyen Payment API with GCash)'],
     ['Finished Research Manuscript', ''],
     ['System Evaluation Results', '(ISO/IEC 25010:2011)'],
     ['User Manual', ''],
@@ -686,47 +686,47 @@ const CHILD = {
   '1': ['1.0 Handle inquiries', [
     ['1.1', 'Show units and rates', [['Visitor or prospect', 'Units, rates', 'out']], [['D1', 'Units and rates', 'in']]],
     ['1.2', 'Record an inquiry', [['Visitor or prospect', 'Inquiry about a unit', 'in']], [['D5', 'Inquiries', 'out']]],
-    ['1.3', 'Exchange messages', [['Visitor or prospect', 'Link or code; messages', 'both'], ['Owner (administrator)', 'Replies', 'both']], [['D5', 'Inquiries', 'both']]],
-    ['1.4', 'Advance, close or delete', [['Owner (administrator)', 'Status, deletion', 'in']], [['D5', 'Inquiries', 'out']]],
+    ['1.3', 'Exchange messages', [['Visitor or prospect', 'Link or code; messages', 'both'], ['Landlady (administrator)', 'Replies', 'both']], [['D5', 'Inquiries', 'both']]],
+    ['1.4', 'Advance, close or delete', [['Landlady (administrator)', 'Status, deletion', 'in']], [['D5', 'Inquiries', 'out']]],
   ]],
   '2': ['2.0 Manage units and rates', [
-    ['2.1', 'Show the unit directory', [['Owner (administrator)', 'Units, status, rates', 'out']], [['D1', 'Units and rates', 'in']]],
-    ['2.2', 'Edit a unit and its rate', [['Owner (administrator)', 'Unit details, new rate', 'in']], [['D1', 'Units and rates', 'both']]],
+    ['2.1', 'Show the unit directory', [['Landlady (administrator)', 'Units, status, rates', 'out']], [['D1', 'Units and rates', 'in']]],
+    ['2.2', 'Edit a unit and its rate', [['Landlady (administrator)', 'Unit details, new rate', 'in']], [['D1', 'Units and rates', 'both']]],
   ]],
   '3': ['3.0 Manage tenants and tenancies', [
-    ['3.1', 'Onboard a tenant', [['Owner (administrator)', 'Tenant details, unit', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
-    ['3.2', 'Edit a tenant record', [['Owner (administrator)', 'Corrections', 'in']], [['D2', 'Tenants, tenancies', 'both']]],
-    ['3.3', 'Reset a tenant\'s password', [['Owner (administrator)', 'Reset', 'in'], ['Tenant', 'One-time password', 'out']], [['D2', 'Tenants, tenancies', 'out']]],
-    ['3.4', 'End a tenancy', [['Owner (administrator)', 'Move-out', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
+    ['3.1', 'Onboard a tenant', [['Landlady (administrator)', 'Tenant details, unit', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
+    ['3.2', 'Edit a tenant record', [['Landlady (administrator)', 'Corrections', 'in']], [['D2', 'Tenants, tenancies', 'both']]],
+    ['3.3', 'Reset a tenant\'s password', [['Landlady (administrator)', 'Reset', 'in'], ['Tenant', 'One-time password', 'out']], [['D2', 'Tenants, tenancies', 'out']]],
+    ['3.4', 'End a tenancy', [['Landlady (administrator)', 'Move-out', 'in']], [['D2', 'Tenants, tenancies', 'out'], ['D1', 'Units and rates', 'out']]],
   ]],
   '4': ['4.0 Bill and record payments', [
     ['4.1', 'Raise a bill on demand', [['Tenant', 'Bills shown', 'out']], [['D1', 'Units and rates', 'in'], ['D3', 'Bills and receipts', 'out']]],
-    ['4.2', 'Record an on-site payment', [['Owner (administrator)', 'Cash received, invoice no.', 'in']], [['D3', 'Bills and receipts', 'out']]],
+    ['4.2', 'Record an on-site payment', [['Landlady (administrator)', 'Cash received, invoice no.', 'in']], [['D3', 'Bills and receipts', 'out']]],
     ['4.3', 'Take a GCash payment through Adyen', [['Tenant', 'GCash payment, receipt', 'both']], [['D3', 'Bills and receipts', 'out']]],
-    ['4.4', 'Verify or decline a payment', [['Owner (administrator)', 'Verify, decline', 'in'], ['Tenant', 'Outcome', 'out']], [['D3', 'Bills and receipts', 'both']]],
-    ['4.5', 'Correct or void a receipt', [['Owner (administrator)', 'Correction, void', 'in']], [['D3', 'Bills and receipts', 'both']]],
+    ['4.4', 'Verify or decline a payment', [['Landlady (administrator)', 'Verify, decline', 'in'], ['Tenant', 'Outcome', 'out']], [['D3', 'Bills and receipts', 'both']]],
+    ['4.5', 'Correct or void a receipt', [['Landlady (administrator)', 'Correction, void', 'in']], [['D3', 'Bills and receipts', 'both']]],
   ]],
   '5': ['5.0 Manage repair requests', [
     ['5.1', 'File a request', [['Tenant', 'Request, photos', 'in']], [['D6', 'Repair requests', 'out']]],
     ['5.2', 'Withdraw a request', [['Tenant', 'Withdrawal, reason', 'in']], [['D6', 'Repair requests', 'out']]],
-    ['5.3', 'Raise a ticket', [['Owner (administrator)', 'Ticket for a unit', 'in']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
-    ['5.4', 'Update a ticket\'s status', [['Owner (administrator)', 'New status', 'in'], ['Tenant', 'Status, notification', 'out']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
-    ['5.5', 'Add a note to a request', [['Tenant', 'Note', 'in'], ['Owner (administrator)', 'Note, as a notification', 'out']], [['D6', 'Repair requests', 'out']]],
+    ['5.3', 'Raise a ticket', [['Landlady (administrator)', 'Ticket for a unit', 'in']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
+    ['5.4', 'Update a ticket\'s status', [['Landlady (administrator)', 'New status', 'in'], ['Tenant', 'Status, notification', 'out']], [['D6', 'Repair requests', 'out'], ['D1', 'Units and rates', 'out']]],
+    ['5.5', 'Add a note to a request', [['Tenant', 'Note', 'in'], ['Landlady (administrator)', 'Note, as a notification', 'out']], [['D6', 'Repair requests', 'out']]],
   ]],
   '6': ['6.0 Record expenses', [
-    ['6.1', 'Add an expense', [['Owner (administrator)', 'Expense, areas', 'in']], [['D4', 'Expenses', 'out']]],
-    ['6.2', 'Edit or delete an expense', [['Owner (administrator)', 'Correction, deletion', 'in']], [['D4', 'Expenses', 'both']]],
-    ['6.3', 'Add a kind of expense', [['Owner (administrator)', 'New kind', 'in']], [['D4', 'Expenses', 'out']]],
-    ['6.4', 'Show the expense records', [['Owner (administrator)', 'Expense records', 'out']], [['D4', 'Expenses', 'in']]],
+    ['6.1', 'Add an expense', [['Landlady (administrator)', 'Expense, areas', 'in']], [['D4', 'Expenses', 'out']]],
+    ['6.2', 'Edit or delete an expense', [['Landlady (administrator)', 'Correction, deletion', 'in']], [['D4', 'Expenses', 'both']]],
+    ['6.3', 'Add a kind of expense', [['Landlady (administrator)', 'New kind', 'in']], [['D4', 'Expenses', 'out']]],
+    ['6.4', 'Show the expense records', [['Landlady (administrator)', 'Expense records', 'out']], [['D4', 'Expenses', 'in']]],
   ]],
   '7': ['7.0 Produce reports', [
-    ['7.1', 'Compute the Overview', [['Owner (administrator)', 'Overview figures', 'out']], [['D3', 'Bills and receipts', 'in'], ['D4', 'Expenses', 'in']]],
-    ['7.2', 'Build the workbooks', [['Owner (administrator)', 'Income, expense, tenant workbooks', 'out']], [['D3', 'Bills and receipts', 'in'], ['D4', 'Expenses', 'in']]],
+    ['7.1', 'Compute the Overview', [['Landlady (administrator)', 'Overview figures', 'out']], [['D3', 'Bills and receipts', 'in'], ['D4', 'Expenses', 'in']]],
+    ['7.2', 'Build the workbooks', [['Landlady (administrator)', 'Income, expense, tenant workbooks', 'out']], [['D3', 'Bills and receipts', 'in'], ['D4', 'Expenses', 'in']]],
   ]],
   '8': ['8.0 Sign in, manage own account', [
-    ['8.1', 'Sign in and out', [['Owner (administrator)', 'Login ID or phone, password', 'in'], ['Tenant', 'Login ID or phone, password', 'in']], [['D2', 'Tenants, tenancies', 'in']]],
-    ['8.2', 'Change own password', [['Owner (administrator)', 'Current, new password', 'in'], ['Tenant', 'Current, new password', 'in']], [['D2', 'Tenants, tenancies', 'out']]],
-    ['8.3', 'Change sign-in number', [['Owner (administrator)', 'Current and new number', 'in']], [['D2', 'Tenants, tenancies', 'out']]],
+    ['8.1', 'Sign in and out', [['Landlady (administrator)', 'Login ID or phone, password', 'in'], ['Tenant', 'Login ID or phone, password', 'in']], [['D2', 'Tenants, tenancies', 'in']]],
+    ['8.2', 'Change own password', [['Landlady (administrator)', 'Current, new password', 'in'], ['Tenant', 'Current, new password', 'in']], [['D2', 'Tenants, tenancies', 'out']]],
+    ['8.3', 'Change sign-in number', [['Landlady (administrator)', 'Current and new number', 'in']], [['D2', 'Tenants, tenancies', 'out']]],
     ['8.4', 'Edit own profile', [['Tenant', 'Own details', 'both']], [['D2', 'Tenants, tenancies', 'both']]],
   ]],
 };
@@ -851,7 +851,7 @@ function literatureMap() {
   // Converging: the synthesis, the gap, the study.
   const steps = [
     ['Synthesis (2.1.6)', 'Each study solves one part in isolation, finance, communication or tenant tracking, not all of them together. Recent housing systems were evaluated with ISO/IEC 25010 (Canlas et al., 2026; Pernate et al., 2025).', 860],
-    ['Gap (2.2)', 'No integrated system is built for a small, resource-constrained boarding house and used by both its owner and its tenants. Puspasari et al. (2025) serve the manager only.', 760],
+    ['Gap (2.2)', 'No integrated system is built for a small, resource-constrained boarding house and used by both its landlady and its tenants. Puspasari et al. (2025) serve the manager only.', 760],
     ['This study', 'Hivelet: one Progressive Web Application joining tenant and unit records, financial tracking, repair requests and inquiries, evaluated with ISO/IEC 25010.', 660],
   ];
   for (const [i, [head, text, w]] of steps.entries()) {

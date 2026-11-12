@@ -3,9 +3,10 @@
 The ISO/IEC 25010 questionnaire, as respondents saw it in a Google Form, from 30 September to
 18 October 2026 and again in the second round, from 31 October to 10 November 2026. The opening
 paragraphs are the data privacy notice through which the prospective tenants and the technical
-evaluators gave their consent (Section 3.3). Each respondent answered Section 1, which sent them to the one section for their
-group; the item numbers are those of Chapter 3, Table 3-6. Rated items: owner and administrator
-28, tenants 18, technical evaluators 33, prospective tenants 12.
+evaluators gave their consent (Section 3.4). Each respondent answered Section 1, which sent them to
+the one section for their group. The item numbers are those of Chapter 3, Table 3-6. Section 2,
+answered by the landlady, has 28 rated items, Section 3 for tenants 18, Section 4 for technical
+evaluators 33, and Section 5 for prospective tenants 12.
 
 **Hivelet System Evaluation: ISO/IEC 25010 Software Quality Assessment**
 

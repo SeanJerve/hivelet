@@ -3,10 +3,9 @@
 The test cases run on 30 September 2026 on the live system, with their results, as summarized in
 Chapter 4, Sections 4.3.4 to 4.3.7. Each case names the ISO/IEC 25010 characteristic it tests (FS
 Functional Suitability, PE Performance Efficiency, CO Compatibility, US Usability, RE Reliability,
-SE Security, MA Maintainability, PO Portability) and the requirement it traces to. Results: Pass;
-Fail; Pass after fix; NT, not tested. The prospective tenant's task cards (Part PR) were not
-recorded on the day and are not shown. All 114 cases were run again on 4 November 2026, after the
-redesign, and none failed (Appendix M, Table M-19). The second round of users, from 31 October to 10
+SE Security, MA Maintainability, PO Portability) and the requirement it traces to. A result is Pass,
+Fail, Pass after fix, or NT (not tested). The prospective tenant's task cards (Part PR) were not
+recorded on the day and are not shown. The 114 cases were gone through again on 4 November 2026, after the redesign: 77 were run and passed, 21 of them with wording the redesign had changed, and the 37 that need a person were left for one. None failed (Appendix M, Table M-19). The second round of users, from 31 October to 10
 November 2026, repeated the tenant tasks of Part T and the prospective tenants' tasks, and its
 results are in Appendix M, Table M-30.
 

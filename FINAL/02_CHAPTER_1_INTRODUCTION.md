@@ -2,18 +2,17 @@
 
 ## 1.1 Background of the Study
 
-Around the world, administrative processes in apartment management involve tenant record keeping,
-financial tracking, and maintenance coordination. Residential tenants ask often for minor repairs,
-and the software apartment managers use often does not connect with their other financial and
-operational tools, which leaves information in separate silos and makes consolidated reporting
-difficult (Burke, 2026). Property management and rental platforms aim to address these
-inefficiencies through centralized data storage and real-time processing (Kotkar et al., 2026), yet a
-review of 213 studies found that real estate as a whole still needs to improve its adoption of
-digital technologies and online platforms to move from traditional to smart practice (Ullah et al.,
-2018). Many of these systems are designed with assumptions aligned to large-scale or commercial
-property environments, such as stable infrastructure, structured workflows, and dedicated
-administrative personnel, which do not reflect the operational conditions of small-scale,
-resource-constrained boarding houses.
+Around the world, apartment management involves tenant record keeping, financial tracking, and
+maintenance coordination. Residential tenants often ask for minor repairs, and the software apartment
+managers use often does not connect with their other financial and operational tools, which leaves
+information in separate silos and makes consolidated reporting difficult (Burke, 2026). Property
+management and rental platforms aim to address these inefficiencies through centralized data storage
+and real-time processing (Kotkar et al., 2026), yet a review of 213 studies found that real estate as
+a whole still needs to improve its adoption of digital technologies and online platforms to move from
+traditional to smart practice (Ullah et al., 2018). Many of these systems assume the conditions of
+large or commercial properties, such as stable infrastructure, structured workflows, and dedicated
+administrative staff, which do not reflect the conditions of small, resource-constrained boarding
+houses.
 
 In the Philippines, a study of nine micro, small, and medium-sized enterprises during the COVID-19
 pandemic found that what held back their adoption of digital tools was less a lack of money,
@@ -22,37 +21,35 @@ fits how the business already works (Mia et al., 2024). A small boarding house i
 Magno et al. (2024) developed an apartment rental management system to address disorganized data
 management, difficulty in tracking pending and paid bills, missed payment deadlines, and reliance on
 paper-based records. They report that the system improved data management and reduced the errors of
-manual processes, but the system focuses on
-financial transactions and task management, without integrating communication, booking, and tenant
-interaction into a unified system. Boarding house studies elsewhere in the country show the same
-pattern. In Ormoc City, Pernate et al. (2025) built a mobile application for finding and booking
-boarding house rooms, and in Surigao City, Mangca (2023b) built a web-based booking system with SMS
-notifications. Both center on how a tenant finds and books a room rather than on the administration
-that follows.
+manual processes, but the system focuses on financial transactions and task management, without
+integrating communication, booking, and tenant interaction into a unified system. Boarding house
+studies elsewhere in the country show the same pattern. In Ormoc City, Pernate et al. (2025) built a
+mobile application for finding and booking boarding house rooms, and in Surigao City, Mangca (2023b)
+built a web-based booking system with SMS notifications. Both center on how a prospective tenant
+finds and books a room rather than on the administration that follows.
 
 In the Bicol Region, Pavia et al. (2022) developed a property management system for the mock hotel
 in which Hospitality Management students at Bicol College take their practical examinations,
 replacing third-party software, and its users rated its design, functionality, and user-friendliness
 positively. That setting is a controlled academic environment with predefined workflows and
-institutional support. While the study shows that system-based management can work there, these
-conditions differ significantly from small-scale boarding house operations, where
-administrative processes are informal, decentralized, and constrained by limited resources.
+institutional support, unlike a small boarding house, where administration is informal,
+decentralized, and constrained by limited resources.
 
 Locally, the Fe Galang Da Silva Boarding House, a 33-unit property in Legazpi City near Bicol
 University, shows these conditions directly. Its records were kept in standalone spreadsheet files
 on a USB flash drive, exposing them to accidental deletion, file corruption, duplication, and lack of
-version control. Rent is collected in cash, and tenant concerns and maintenance requests are
-communicated through messaging applications or verbal reporting, resulting in untracked requests,
-delayed responses, and inconsistent follow-up. Records, communication, and transactions are managed
-across separate, non-integrated tools, so the owner has difficulty keeping accurate records,
-monitoring financial transactions, and ensuring timely resolution of tenant concerns.
+version control. Rent is collected in cash, and tenants report repair requests and other concerns
+through messaging applications or verbally, so requests go untracked, responses are delayed, and
+follow-up is inconsistent. Because records, communication, and transactions sit in separate tools,
+the landlady, who runs the boarding house for its owner, has difficulty keeping accurate records,
+monitoring financial transactions, and resolving tenant concerns on time.
 
-Taken together, these studies demonstrate that digital solutions can improve specific aspects of
-property management, but they are implemented either as function-specific systems or within
-controlled environments, and they do not address the fragmented administrative workflows of a
-real-world, resource-constrained boarding house. This reveals the gap this study addresses: the
-absence of an integrated platform that consolidates tenant management, financial tracking,
-communication, and booking within a single system suited to a small boarding house.
+Taken together, these studies show that digital systems can improve specific parts of property
+management, but they were built either for one function or for a controlled environment, and they
+do not address the fragmented administration of a real, resource-constrained boarding house. This
+is the gap this study addresses: the absence of an integrated platform that brings tenant
+management, booking and reservation management, financial tracking, and communication into one
+system suited to a small boarding house.
 
 ## 1.2 Objectives of the Study
 
@@ -78,60 +75,48 @@ to November 2026, the study aims:
 
 ## 1.3 Significance of the Study
 
-The development of Hivelet, a web-based apartment management system implemented as a Progressive Web
-Application (PWA), is significant in addressing the operational challenges of fragmented and manual
-administrative workflows in small-scale, resource-constrained boarding house environments.
+Hivelet, a web-based apartment management system delivered as a PWA, addresses the fragmented,
+manual administration of a small, resource-constrained boarding house. The study is significant to
+the following groups.
 
-For property administrators and owners, the study provides a centralized system that reduces
-dependence on manual record-keeping practices such as spreadsheets kept on a USB flash drive,
-which are prone to data inconsistency, loss, and duplication. By integrating tenant records,
-financial transactions, and maintenance concerns into a unified platform, the system supports more
-reliable information management and improves administrative coordination in environments affected
-by cash-based transactions and limited digital infrastructure.
+For the landlady, the study provides one system in place of spreadsheets kept on a USB flash drive,
+which are prone to inconsistency, loss, and duplication. Keeping tenant records, financial
+transactions, and repair requests in one system makes the records more reliable and the
+administration easier to coordinate, even where rent is paid in cash.
 
-For tenants, the study improves communication efficiency by providing a structured mechanism for
-submitting and tracking maintenance concerns and viewing relevant account information. This reduces
-reliance on informal communication channels such as messaging applications and verbal reporting,
-which often result in delayed responses and untracked requests.
+For tenants, the system gives one place to submit and follow their repair requests and to view their
+own bills and receipts, in place of messaging applications and verbal reports, which leave requests
+untracked and responses delayed.
 
-For future researchers, the study contributes a localized implementation of a Progressive Web
-Application-based property management system designed specifically for small-scale residential
-contexts. The system architecture, integration approach, and evaluation using the ISO/IEC 25010
-model may serve as a reference for further research, particularly in developing systems that address
-the gap between enterprise-level property management solutions and resource-constrained residential
-operations.
+For future researchers, the study offers a PWA-based property management system built for a small
+residential property. Its architecture and its evaluation against the ISO/IEC 25010 model may serve
+as a reference for systems meant for small, resource-constrained residential operations rather than
+for enterprise-level property management.
 
 ## 1.4 Scope and Delimitations
 
-This study focuses on the design, development, and evaluation of Hivelet, a Progressive Web
-Application (PWA) created to transition the 33-unit Fe Galang Da Silva Boarding House, at 32
-Sampaguita Street, Barangay 4 Sagpon, Old Albay District, Legazpi City, near Bicol University, from
-spreadsheet- and paper-based administration to a centralized digital management system. To
-achieve this, Hivelet integrates comprehensive room and tenant management capabilities, facilitating
-seamless onboarding, the secure digital storage of records, real-time monitoring of room
-availability, and a public-facing booking module that allows prospective renters to submit
-reservation inquiries without requiring full system access. Furthermore, the application features a
-financial tracking component dedicated to monitoring cash flow, expenses, and tenant payments. It
-primarily supports manual, cash-based transaction recording, and it offers an optional online
-payment through GCash, which runs in Adyen's test environment and takes no real money. Operational
-communication is also streamlined through a structured issue ticketing system, enabling tenants to
-log maintenance requests that the administrator can assign, track, and update until resolution.
+This study covers the design, development, and evaluation of Hivelet, a PWA that moves the 33-unit
+Fe Galang Da Silva Boarding House, at 32 Sampaguita Street, Barangay 4 Sagpon, Old Albay District,
+Legazpi City, near Bicol University, from spreadsheet- and paper-based administration to one
+centralized system. Its tenant and room management moves tenants in, stores their records, and shows
+the current availability of every unit. Its booking and reservation management takes the form the
+landlady's practice needs. Prospective tenants see the units on a public page and send an inquiry about
+one without an account. The landlady answers the inquiry, can mark the unit Reserved, and moves the
+person in from it. Nothing is booked or paid for online. Financial tracking records tenant payments
+and expenses and monitors cash flow. It mainly records cash payments entered by hand, and it offers
+an optional online payment through GCash, described below. Maintenance ticketing lets tenants send repair
+requests, which the landlady assigns, tracks, and updates until they are resolved. Hivelet was
+evaluated against the eight characteristics of the ISO/IEC 25010 software quality model: functional
+suitability, performance efficiency, compatibility, usability, reliability, security,
+maintainability, and portability.
 
-Despite these comprehensive features, the scope is bound by specific delimitations regarding system
-accessibility and financial processing: although the PWA utilizes cached resources for limited
-offline access and responsive design for diverse devices, core functionalities, such as data
-encoding, real-time synchronization, and booking updates, strictly require an active internet
-connection to maintain data consistency. Additionally, the supplementary online payment feature lets
-a tenant pay a bill through GCash using the Adyen payment gateway; each such payment is recorded as
-pending and counts only after the administrator verifies it. The feature was built and works end
-to end, from the tenant's checkout to the gateway's signed notification and the owner's
-verification, but only in Adyen's test environment, so it is not live and takes no real money.
-Going live requires the owner to complete Adyen's merchant onboarding for GCash with her own
-business documents, which this study did not do; rent therefore continues to be paid in person and
-recorded by the owner. The feature also explicitly excludes
-refunds, which are made from the gateway's own dashboard, automated reconciliation against bank
-records, and direct banking integration. Ultimately, to ensure the system effectively resolves the
-boarding house's operational inefficiencies, Hivelet was evaluated against the ISO/IEC 25010
-software quality standard, with a specific emphasis on measuring its functional suitability,
-performance efficiency, compatibility, usability, reliability, security, maintainability, and
-portability.
+The study has two delimitations. First, the PWA caches resources for limited offline access and
+adapts to different devices, but entering data, keeping it synchronized in real time, and sending or
+answering inquiries require an internet connection, so that every device works from the same
+records. Second, the online payment feature lets a tenant pay a bill through GCash using the Adyen
+payment gateway. Each such payment is recorded as pending and counts only after the landlady verifies
+it. The feature was built and works end to end, from the tenant's checkout to the gateway's signed
+notification and the landlady's verification, but only in Adyen's test environment, so it is not live
+and takes no real money. Going live needs the owner's merchant onboarding documents, which were
+outside this study. Rent therefore continues to be paid in person and recorded by the landlady. The
+feature also excludes refunds (made from the gateway's own dashboard), automated reconciliation against bank records, and direct banking integration.

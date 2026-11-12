@@ -19,14 +19,14 @@ One row per rentable unit: 33 units in five clusters.
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
 | id | uuid | Yes | gen_random_uuid() | PK | Primary key |
-| room_number | varchar(20) | Yes |  |  | The unit's code, as the owner writes it (unique regardless of capitals) |
+| room_number | varchar(20) | Yes |  |  | The unit's code, as the landlady writes it (unique regardless of capitals) |
 | floor | integer | Yes |  |  | Building level: 1 to 3 residential, 4 the rooftop penthouse |
 | cluster_code | varchar(50) | Yes |  | FK clusters.code | The cluster the unit belongs to |
 | room_type | room_type_enum (Studio, One-bedroom, Two-bedroom, Three-bedroom) | Yes | Studio |  | Kind of unit (studio, one-bedroom and so on) |
 | description | text |  |  |  | Text shown on the public site |
 | capacity | integer | Yes |  |  | Most occupants the unit is meant for |
 | base_price | numeric(10,2) | Yes |  |  | The rate the unit was first set up with |
-| current_price | numeric(10,2) | Yes |  |  | The rate in effect now, set by the owner |
+| current_price | numeric(10,2) | Yes |  |  | The rate in effect now, set by the landlady |
 | operational_status | operational_status_type (Available, Reserved, Occupied, Under Maintenance) | Yes | Available |  | Available, Occupied, Reserved or under maintenance |
 | visibility_status | visibility_status_type (Published, Hidden) | Yes | Published |  | Whether the unit is listed on the public site |
 | available_from | date |  |  |  | When a unit becoming free can be moved into |
@@ -125,7 +125,7 @@ Tenancies: who occupies which unit, from when, with how many occupants.
 | id | uuid | Yes | gen_random_uuid() | PK | Primary key |
 | room_id | uuid | Yes |  | FK rooms.id | The unit |
 | tenant_profile_id | uuid | Yes |  | FK profiles.id | The tenant |
-| start_date | date | Yes |  |  | Move-in date (not recorded in the owner's workbook for transferred tenancies) |
+| start_date | date | Yes |  |  | Move-in date (not recorded in the landlady's workbook for transferred tenancies) |
 | end_date | date |  |  |  | Move-out date, once moved out |
 | anniversary_date | date | Yes |  |  | The day of the month rent runs from |
 | deposit_amount | numeric(10,2) | Yes | 0 |  | The deposit held: one month, set against repairs at move-out (BR-039) |
@@ -139,7 +139,7 @@ Tenancies: who occupies which unit, from when, with how many occupants.
 
 ### monthly_income_records
 
-The owner's Monthly Income ledger, one row per receipt per month covered (Chapter 4, Table 7A).
+The landlady's Monthly Income ledger, one row per receipt per month covered (Chapter 4, Table 7A).
 
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
@@ -151,7 +151,7 @@ The owner's Monthly Income ledger, one row per receipt per month covered (Chapte
 | month | integer | Yes |  |  | Month the rent is for (1 to 12) |
 | date_paid | date | Yes |  |  | Date the money was received |
 | contact_name | varchar(255) | Yes |  |  | Name as written on the receipt |
-| invoice_number | varchar(100) |  |  |  | The owner's invoice number (INV#…), an acknowledgement receipt, or none; never made up by the system |
+| invoice_number | varchar(100) |  |  |  | The landlady's invoice number (INV#…), an acknowledgement receipt, or none; never made up by the system |
 | rent_period_start | date | Yes |  |  | First day the payment covers |
 | rent_period_end | date | Yes |  |  | Last day it covers |
 | rent_amount | numeric(10,2) | Yes |  |  | Rent received for the period |
@@ -173,13 +173,13 @@ The owner's Monthly Income ledger, one row per receipt per month covered (Chapte
 
 ### monthly_expense_entries
 
-The owner's Monthly Expenses ledger: one row per expense.
+The landlady's Monthly Expenses ledger: one row per expense.
 
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
 | id | uuid | Yes | gen_random_uuid() | PK | Primary key |
 | expense_date | date | Yes |  |  | Date of the expense |
-| invoice_supplier | text | Yes |  |  | Invoice or supplier, as the owner writes it |
+| invoice_supplier | text | Yes |  |  | Invoice or supplier, as the landlady writes it |
 | category_code | varchar(20) | Yes |  | FK fixed_expense_categories.code | Expense category |
 | total_expenses | numeric(10,2) | Yes | 0 |  | Total, kept equal to its allocations by a trigger (BR-045) |
 | created_by | uuid |  |  | FK profiles.id | Who recorded it |
@@ -203,7 +203,7 @@ How each expense is split across property areas; the parts add up to the expense
 
 ### fixed_expense_categories
 
-The owner's expense categories (the thirteen numbered lines, with sub-lines), and any she adds.
+The landlady's expense categories (the thirteen numbered lines, with sub-lines), and any she adds.
 
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
@@ -221,7 +221,7 @@ Bills raised for a tenancy: rent and water for one whole month.
 | id | uuid | Yes | gen_random_uuid() | PK | Primary key |
 | room_id | uuid | Yes |  | FK rooms.id | The unit |
 | tenant_profile_id | uuid | Yes |  | FK profiles.id | The tenant billed |
-| bill_type | bill_type_enum (Rent, Water, Combined, Other) | Yes | Combined |  | Rent and water together, as the owner bills them |
+| bill_type | bill_type_enum (Rent, Water, Combined, Other) | Yes | Combined |  | Rent and water together, as the landlady bills them |
 | billing_period_start | date | Yes |  |  | First day of the whole month billed |
 | billing_period_end | date | Yes |  |  | Last day of it |
 | rent_amount | numeric(10,2) | Yes | 0 |  | The whole month's rent; never prorated |
@@ -236,7 +236,7 @@ Bills raised for a tenancy: rent and water for one whole month.
 
 ### payments
 
-Payments made against bills, online with GCash through Adyen or recorded by the owner, with their verification.
+Payments made against bills, online with GCash through Adyen or recorded by the landlady, with their verification.
 
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
@@ -247,23 +247,23 @@ Payments made against bills, online with GCash through Adyen or recorded by the 
 | amount | numeric(10,2) | Yes |  |  | Amount paid |
 | payment_method | payment_method_type (Cash, GCash, Bank Transfer, Adyen Online) | Yes | Cash |  | Cash, GCash or bank transfer |
 | payment_source | varchar(100) | Yes | On-Site Cash |  | Where it came from (on site, or online through Adyen with GCash) |
-| verification_status | verification_status_type (Verified, Pending Verification, Rejected) | Yes | Pending Verification |  | Pending Verification until the owner verifies or rejects it |
+| verification_status | verification_status_type (Verified, Pending Verification, Rejected) | Yes | Pending Verification |  | Pending Verification until the landlady verifies or rejects it |
 | transaction_reference | varchar(255) |  |  |  | The gateway reference (recorded once) |
 | paid_at | timestamptz | Yes | now() |  | When it was paid |
-| verified_at | timestamptz |  |  |  | When the owner verified it |
+| verified_at | timestamptz |  |  |  | When the landlady verified it |
 | verified_by | uuid |  |  | FK profiles.id | Who verified it |
 | created_at | timestamptz |  | now() |  | When the row was created |
 
 ### system_settings
 
-Values the owner can change without a new release, such as the water rate per occupant.
+Values the landlady can change without a new release, such as the water rate per occupant.
 
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
 | key | varchar(80) | Yes |  | PK | Name of the setting |
 | value | text | Yes |  |  | Its value |
 | value_type | varchar(20) | Yes | number |  | How the value is read (number, text) |
-| label | varchar(160) | Yes |  |  | Name shown to the owner |
+| label | varchar(160) | Yes |  |  | Name shown to the landlady |
 | description | text |  |  |  | What it does |
 | business_rule | varchar(20) |  |  |  | The business rule it serves |
 | updated_by | uuid |  |  | FK profiles.id | Who last changed it |
@@ -279,7 +279,7 @@ Repair requests, from submission to closing.
 | :--- | :--- | :---: | :--- | :--- | :--- |
 | id | uuid | Yes | gen_random_uuid() | PK | Primary key |
 | room_id | uuid | Yes |  | FK rooms.id | The unit |
-| tenant_profile_id | uuid |  |  | FK profiles.id | The tenant who reported it; empty for a repair the owner logged for an empty unit |
+| tenant_profile_id | uuid |  |  | FK profiles.id | The tenant who reported it; empty for a repair the landlady logged for an empty unit |
 | title | varchar(255) | Yes |  |  | Short title |
 | description | text | Yes |  |  | What is wrong |
 | category | varchar(100) | Yes | General Repair |  | Kind of repair |
@@ -288,12 +288,12 @@ Repair requests, from submission to closing.
 | created_at | timestamptz |  | now() |  | When the row was created |
 | resolved_at | timestamptz |  |  |  | When marked done |
 | closed_at | timestamptz |  |  |  | When closed |
-| closed_by | uuid |  |  | FK profiles.id | Who closed it (the owner, or the tenant who cancelled) |
+| closed_by | uuid |  |  | FK profiles.id | Who closed it (the landlady, or the tenant who cancelled) |
 | assigned_technician | varchar(160) |  |  |  | Who was sent |
 
 ### ticket_messages
 
-Notes added to a repair request by the tenant or the owner.
+Notes added to a repair request by the tenant or the landlady.
 
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
@@ -336,13 +336,13 @@ Questions sent from the public site about a unit.
 
 ### inquiry_messages
 
-The conversation on an inquiry between the visitor and the owner.
+The conversation on an inquiry between the visitor and the landlady.
 
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
 | id | uuid | Yes | gen_random_uuid() | PK | Primary key |
 | inquiry_id | uuid | Yes |  | FK inquiries.id | The inquiry |
-| sender_id | uuid |  |  | FK profiles.id | The owner, when she wrote it; empty for the visitor |
+| sender_id | uuid |  |  | FK profiles.id | The landlady, when she wrote it; empty for the visitor |
 | sender_name | varchar(255) | Yes |  |  | Name shown on the message |
 | message_body | text | Yes |  |  | The message |
 | sent_at | timestamptz |  | now() |  | When it was sent |
