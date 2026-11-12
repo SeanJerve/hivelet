@@ -89,7 +89,7 @@ optimize it on ISO/IEC 25010. *Section 1.2.*
 
 **Did you meet them?**
 All four, each with evidence: every gap traced to a module (Table 4-2); all six features in use on
-her real records; 82 of 83 tests passed (98.8%); rated Very High Quality, 4.82 by the users and 4.90 by the technical evaluators, with 51 changes made in response. *Chapter 5, Section 5.2.*
+her real records; 82 of 83 tests passed (98.8%); rated Very High Quality, 4.84 by the users and 4.90 by the technical evaluators, with 51 changes made in response. *Chapter 5, Section 5.2.*
 
 **What does the system NOT do?**
 It needs the internet to save, pay or sync (offline it only shows what was last loaded). Online payment
@@ -121,7 +121,7 @@ boarding house. *Section 2.2.*
 
 **Which study is closest to yours?**
 Canlas et al. (2026), FixHub: a Philippine dormitory maintenance system, built with Agile and rated on
-ISO/IEC 25010 by tenants, administrators and IT professionals. Our 4.82 and 4.90 are in the range they report.
+ISO/IEC 25010 by tenants, administrators and IT professionals. Our 4.84 and 4.90 are in the range they report.
 *Sections 2.1.4 and 4.4.3.*
 
 **Do you have local studies?**
@@ -164,7 +164,7 @@ need a person and were left for one, and none failed. Every automated check pass
 change, so
 the functional, reliability, security and performance results stand. A second round of users then
 used the redesigned system (31 October to 10 November): ten tenants and four prospects did the tasks,
-and 16 answered the same questionnaire, rating it 4.82. Those sixteen are the users' column of Table
+and 14 answered the same questionnaire, rating it 4.84. Those fourteen are the users' column of Table
 4-17. *Appendix M, Tables M-28 to M-30; Section 4.2.1; Appendix M, Table M-19.*
 
 **Why no Figma or separate design tool?**
@@ -428,21 +428,21 @@ was corrected the same day and is reported separately in Appendix M, Table M-27.
 ## 8. The ISO/IEC 25010 evaluation
 
 **What was the overall result?**
-Two columns, both Very High Quality overall: the users rated the redesigned system **4.82** (every
+Two columns, both Very High Quality overall: the users rated the redesigned system **4.84** (every
 characteristic Very High Quality) and the technical evaluators **4.90** (every characteristic Very High
 Quality too). *Table 4-17.*
 
-| Characteristic | Users (16) | Technical evaluators (3) |
+| Characteristic | Users (14) | Technical evaluators (3) |
 | :--- | --: | --: |
-| Functional Suitability | 4.72 | 4.93 |
-| Performance Efficiency | 4.89 | 4.89 |
-| Compatibility | 4.83 | 5.00 |
-| Usability | 4.78 | 4.87 |
-| Reliability | 4.65 | 4.83 |
+| Functional Suitability | 4.80 | 4.93 |
+| Performance Efficiency | 4.86 | 4.89 |
+| Compatibility | 4.79 | 5.00 |
+| Usability | 4.80 | 4.87 |
+| Reliability | 4.78 | 4.83 |
 | Security | 5.00 (the landlady) | 4.93 |
 | Maintainability | not rated | 4.73 |
-| Portability | 4.87 | 5.00 |
-| **Overall** | **4.82** | **4.90** |
+| Portability | 4.83 | 5.00 |
+| **Overall** | **4.84** | **4.90** |
 
 Before the redesign (first round, Appendix M, Table M-29): five users 4.75, five technical evaluators
 4.34, with their Usability and Reliability at 4.20, the top of High Quality.
@@ -453,7 +453,7 @@ system as a developer would judge it, and only the evaluators rated Maintainabil
 the mean of its own group means. *Sections 3.3 and 4.4.2.*
 
 **Who rated it?**
-Nineteen on the redesigned system: the landlady, eleven tenants and four prospective tenants (31
+Seventeen on the redesigned system: the landlady, ten tenants and three prospective tenants (31
 October to 10 November), and three technical evaluators, who reviewed the live system on 12 November. No member of the team. *Tables
 4-14 and 4-15.* The first round, before the redesign, had ten: the landlady, three tenants, one
 prospective tenant and five technical evaluators. The first of those evaluators, an IT professional in
@@ -477,7 +477,7 @@ agreeing to the data privacy notice that opens it, and signed no paper form. *Se
 The number of forms given to the users was not recorded, and the paper says so. Every form returned
 was complete. The technical evaluators: 3 sent, 3 returned. *Table 4-15.*
 
-**Nineteen respondents is very few. How can you claim Very High Quality?**
+**Seventeen respondents is very few. How can you claim Very High Quality?**
 We claim it only for the people who answered, and the paper says so: the results describe how they
 rated the system, not a population. What strengthens it is that every characteristic was also **measured**, and
 the measurements agree with the ratings on all eight. *Sections 4.4.1 and 4.4.5; Chapter 5,
@@ -485,23 +485,23 @@ conclusion 4.*
 
 **How did you compute the means?**
 Weighted mean per item, WM = Σ(f × w) / N; each characteristic's composite is the mean of its group
-means, so one landlady is not outweighed by eleven tenants on functions only she uses; each overall is
+means, so one landlady is not outweighed by ten tenants on functions only she uses; each overall is
 the mean of the characteristics its group rated (seven for the users, eight for the evaluators).
-Averaging every user's response together gives 4.80 instead of 4.82: the same interpretation and the
+Averaging every user's response together gives 4.80 instead of 4.84: the same interpretation and the
 same order. Worked example: the tenants' "I can see my own unit details, my bill, and what I still
-owe": nine 5s and two 4s, 53 / 11 = 4.82. *Section 3.3; Section 4.4.2, Table 4-16.*
+owe": eight 5s and two 4s, 48 / 10 = 4.80. *Section 3.3; Section 4.4.2, Table 4-16.*
 
 **Why did each group rate different characteristics?**
 Each rated only what it can judge: tenants did not rate Security or Maintainability, prospective
 tenants rated neither, and only the technical evaluators rated Maintainability. *Section 3.3.*
 
 **Why did Usability rise so much?**
-The users gave it 4.78 and the three technical evaluators 4.87 after the redesign. In the first round
+The users gave it 4.80 and the three technical evaluators 4.87 after the redesign. In the first round
 the evaluators gave it 4.20, the top of High Quality: the first gave 3 to all five items, before the
 fourteen changes made for that group, and the four who came after the changes gave 4.80, 4.60, 3.60
 and 5.00. The three on the redesigned system gave 4.80, 4.80 and 5.00. Among the users, the landlady
 gave every item 5 after the redesign, where she had given 3 to two items before it (users' Usability
-4.49 before, 4.78 after). The measurement agrees (nine tasks in ten or more without help, no
+4.49 before, 4.80 after). The measurement agrees (nine tasks in ten or more without help, no
 accessibility violation), and recommendation 6 acts on the first sign-in, where help was needed. *Section
 4.4.3.*
 

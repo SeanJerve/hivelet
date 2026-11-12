@@ -1085,24 +1085,24 @@ violation once one defect was fixed. **Where:** Section 4.3.6; Table 3-6.
 **Characteristic.** One of the eight quality areas in ISO/IEC 25010:2011 (the next eight entries).
 **Where:** Section 3.3; Table 3-6.
 
-**Compatibility.** Working with other products and exchanging data correctly (users 4.83, technical evaluators 5.00). **Where:**
+**Compatibility.** Working with other products and exchanging data correctly (users 4.79, technical evaluators 5.00). **Where:**
 Table 4-17.
 
-**Functional Suitability.** Doing the needed functions, correctly (users 4.72, technical evaluators 4.93). **Where:** Table 4-17.
+**Functional Suitability.** Doing the needed functions, correctly (users 4.80, technical evaluators 4.93). **Where:** Table 4-17.
 
 **Maintainability.** How easily the system can be changed and checked (4.73, rated by the technical evaluators only). **Where:**
 Table 4-17; Section 4.4.3.
 
-**Performance Efficiency.** Speed and use of resources under load (users 4.89, technical evaluators 4.89). **Where:** Table 4-17.
+**Performance Efficiency.** Speed and use of resources under load (users 4.86, technical evaluators 4.89). **Where:** Table 4-17.
 
-**Portability.** Moving to other devices and installing easily (users 4.87, technical evaluators 5.00). **Where:**
+**Portability.** Moving to other devices and installing easily (users 4.83, technical evaluators 5.00). **Where:**
 Table 4-17.
 
-**Reliability.** Working when needed and coping with faults (users 4.65, technical evaluators 4.83). **Where:** Table 4-17.
+**Reliability.** Working when needed and coping with faults (users 4.78, technical evaluators 4.83). **Where:** Table 4-17.
 
 **Security.** Protecting data and proving who did what (the landlady 5.00, technical evaluators 4.93). **Where:** Table 4-17; Section 4.4.4.
 
-**Usability.** How easily people learn and use it (users 4.78, technical evaluators 4.87). **Where:** Table 4-17; Section 4.4.3.
+**Usability.** How easily people learn and use it (users 4.80, technical evaluators 4.87). **Where:** Table 4-17; Section 4.4.3.
 
 **The 31 sub-characteristics of ISO/IEC 25010:2011** (Table 3-6 names what measured each one):
 
@@ -1237,8 +1237,8 @@ satisfaction, freedom from risk and context coverage. **Where:** Section 3.3; Se
 part, 1 interface only, 3 not as worded. **Where:** Section 4.1.2.
 
 **Respondent groups.** In Table 4-17: the users of the redesigned system (31 October to 10 November
-2026), the landlady (1), tenants (11) and prospective tenants (4), sixteen; and the technical evaluators
-(3, on 12 November); nineteen in all. The first round, before the redesign, had ten: the landlady,
+2026), the landlady (1), tenants (10) and prospective tenants (3), fourteen; and the technical evaluators
+(3, on 12 November); seventeen in all. The first round, before the redesign, had ten: the landlady,
 three tenants, one prospective tenant and five technical evaluators. **Where:**
 Table 4-14; App. M, Table M-28.
 
@@ -1317,7 +1317,7 @@ Table 3-4.
 **Mean.** The average: add up, divide by how many. **Where:** Section 3.3.
 
 **Mean of group means.** Each group averaged first, then the groups, so one landlady is not outweighed
-by eleven tenants on functions only she uses. **Where:** Section 3.3; Section 4.4.2.
+by ten tenants on functions only she uses. **Where:** Section 3.3; Section 4.4.2.
 
 **Mean wrong turns.** The average number of wrong taps or pages per task (0.2). **Where:**
 Table 4-11.
@@ -1327,14 +1327,14 @@ Table 4-11.
 **n / N.** The number of respondents (n per characteristic in Table 4-17; N in the formula).
 **Where:** Table 4-16; Table 4-17.
 
-**Overall mean.** The mean of a group's composites: users 4.82 (seven characteristics, since only the
+**Overall mean.** The mean of a group's composites: users 4.84 (seven characteristics, since only the
 evaluators rated Maintainability), technical evaluators 4.90 (all eight). Before the redesign: users 4.75, technical evaluators
 4.34. **Where:**
 Table 4-17; App. M, Table M-29.
 
 **Pass rate.** Tests passed divided by tests executed: 82 / 83 = 98.8%. **Where:** Table 4-12.
 
-**Pooled mean.** Averaging every response together, ignoring groups: 4.80 for the users instead of 4.82, same interpretation.
+**Pooled mean.** Averaging every response together, ignoring groups: 4.80 for the users instead of 4.84, same interpretation.
 **Where:** Section 4.4.2.
 
 **Purposive sampling.** Choosing people for a purpose: cash payers, less app-confident users, Android

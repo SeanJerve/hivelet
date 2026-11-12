@@ -137,18 +137,18 @@ of 32. Every task was completed, and no times were recorded in that round." [4.3
 M, Table M-30]
 
 **Slide 16. The evaluation** (50 s)
-**Land: users 4.82, technical evaluators 4.90; both Very High Quality.**
-"Sixteen users rated the redesigned system: the landlady, eleven tenants and four prospective
-tenants, 4.82 overall. Three technical evaluators rated it 4.90. Every characteristic is Very High
-Quality for both, the users' highest Performance Efficiency at 4.89 and the evaluators' lowest
+**Land: users 4.84, technical evaluators 4.90; both Very High Quality.**
+"Fourteen users rated the redesigned system: the landlady, ten tenants and three prospective
+tenants, 4.84 overall. Three technical evaluators rated it 4.90. Every characteristic is Very High
+Quality for both, the users' highest Performance Efficiency at 4.86 and the evaluators' lowest
 Maintainability, which only they rated, at 4.73. Before the redesign, five users had given 4.75 and
 five evaluators 4.34. We used the mean of the group means, so one landlady is not outweighed by
-eleven tenants." [Table 4-17, 4.4.2]
+ten tenants." [Table 4-17, 4.4.2]
 *Likely question: "Why two columns, not one overall?" The users and the evaluators answer different
 questions: the users about their own use, the evaluators about the system as a developer would judge
 it, and only the evaluators rated Maintainability. Each column is a fair overall of its own group.
 [4.4.2, 4.4.3]*
-*Likely question: "Nineteen is very few." We claim it only for the people who answered, and every
+*Likely question: "Seventeen is very few." We claim it only for the people who answered, and every
 characteristic was also measured. [4.4.1, 4.4.5]*
 
 **Slide 17. Measured and rated agree** (50 s)
@@ -166,7 +166,7 @@ made 51 changes in response, including all 14 of the technical evaluators' comme
 
 **Slide 18. Conclusions** (45 s)
 One line per objective, in order: every gap traced to a module; all six features in use on her real
-records, in her own layout; 82 of 83 tests passed with no critical defect; Very High Quality, 4.82
+records, in her own layout; 82 of 83 tests passed with no critical defect; Very High Quality, 4.84
 from the users and 4.90 from the technical evaluators, with 51 optimizations. "All four objectives were achieved." [5.2]
 
 **Slide 19. Recommendations** (40 s)

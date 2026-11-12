@@ -229,11 +229,11 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 16. ISO/IEC 25010 results
 {
-  const s = titled('ISO/IEC 25010: users 4.82, technical evaluators 4.90', 'Composite means (Table 4-17), mean of the group means; both Very High Quality overall. Users: the landlady, 11 tenants and 4 prospective tenants, on the redesigned system (16). Technical evaluators: 3, on 12 November. Before the redesign: users 4.75, evaluators 4.34. The users\' Security is the landlady\'s rating; only the evaluators rated Maintainability.');
-  const labels = ['Security', 'Performance Efficiency', 'Portability', 'Compatibility', 'Usability', 'Functional Suitability', 'Reliability', 'Maintainability'];
-  const users = [5.00, 4.89, 4.87, 4.83, 4.78, 4.72, 4.65, null];
-  const tech = [4.93, 4.89, 5.00, 5.00, 4.87, 4.93, 4.83, 4.73];
-  s.addChart(pptx.ChartType.bar, [{ name: 'Users (16)', labels, values: users }, { name: 'Technical evaluators (3)', labels, values: tech }], {
+  const s = titled('ISO/IEC 25010: users 4.84, technical evaluators 4.90', 'Composite means (Table 4-17), mean of the group means; both Very High Quality overall. Users: the landlady, 10 tenants and 3 prospective tenants, on the redesigned system (14). Technical evaluators: 3, on 12 November. Before the redesign: users 4.75, evaluators 4.34. The users\' Security is the landlady\'s rating; only the evaluators rated Maintainability.');
+  const labels = ['Security', 'Performance Efficiency', 'Portability', 'Usability', 'Functional Suitability', 'Compatibility', 'Reliability', 'Maintainability'];
+  const users = [5.00, 4.86, 4.83, 4.80, 4.80, 4.79, 4.78, null];
+  const tech = [4.93, 4.89, 5.00, 4.87, 4.93, 5.00, 4.83, 4.73];
+  s.addChart(pptx.ChartType.bar, [{ name: 'Users (14)', labels, values: users }, { name: 'Technical evaluators (3)', labels, values: tech }], {
     x: 0.6, y: 1.5, w: 12.1, h: 5.3, barDir: 'bar', barGrouping: 'clustered', chartColors: [C.brand, '9BC7AC'], valAxisMinVal: 1, valAxisMaxVal: 5,
     catAxisLabelFontFace: FONT, catAxisLabelFontSize: 13, valAxisLabelFontSize: 12, catAxisOrientation: 'maxMin',
     showValue: true, dataLabelFontSize: 11, dataLabelFormatCode: '0.00', valGridLine: { color: C.line, size: 1 },
@@ -246,7 +246,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
   const s = titled('Measured and rated evidence agree on all eight', 'Each rating is read beside the tests for its characteristic (Section 4.4.5).');
   bullets(s, [
     '27 of the 31 sub-characteristics measured by tests; 25 rated by the survey',
-    'Usability (users 4.78, evaluators 4.87, up from 4.20 before the redesign): nine tasks in ten or more done without help; after the redesign the landlady gave every item 5',
+    'Usability (users 4.80, evaluators 4.87, up from 4.20 before the redesign): nine tasks in ten or more done without help; after the redesign the landlady gave every item 5',
     'Maintainability (4.73, the evaluators\' lowest):checks pass on every change, but three database calls in four sit inside the request handlers',
     'The first technical evaluators\' 14 comments were all acted on',
     '51 optimizations in all, each traced to the finding that caused it (Appendix M)',
@@ -260,7 +260,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
     ['1. Analyze the practices', 'Every gap in the landlady\'s practices traced to a requirement and a module'],
     ['2. Develop the system', 'All six features built and in use on her real records, in her own layout'],
     ['3. Pilot test it', '82 of 83 tests passed (98.8%), with no critical defect'],
-    ['4. Evaluate and optimize', 'Very High Quality overall on ISO/IEC 25010: 4.82 from the users, 4.90 from the technical evaluators; 51 optimizations made'],
+    ['4. Evaluate and optimize', 'Very High Quality overall on ISO/IEC 25010: 4.84 from the users, 4.90 from the technical evaluators; 51 optimizations made'],
   ].forEach(([h, b], i) => box(s, 0.6 + (i % 2) * 6.15, 1.45 + Math.floor(i / 2) * 2.65, 5.95, 2.45, h, b, 19));
 }
 

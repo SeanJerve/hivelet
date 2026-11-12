@@ -27,12 +27,16 @@ name. Signed consent forms go only in `_CONSENT_FORMS (not in repo)/`.
 - [x] The Laudon et al. year (item 10).
 - [x] The Word manuscript, the slides, the study guides and the defense folder rebuilt.
 - [x] The three technical evaluators of 12 November added (Sean). The main result is now the
-  second round on the redesigned system: 16 users 4.82 and 3 technical evaluators 4.90, every
+  second round on the redesigned system: 14 users 4.84 and 3 technical evaluators 4.90, every
   characteristic Very High Quality. The October round (5 users 4.75, 5 evaluators 4.34) is the
   "before the redesign" comparison in Appendix M, Tables M-28 and M-29. Answers saved, names blank,
   in docs/TESTING_DAY/results/TECHNICAL_2026-11-12_ISO_IEC_25010_Software_Quality_Assessment.csv.
   Lloyd: Chapters 3 to 5, the abstract and Appendix M changed again, so take them from the new
-  CLAUDE MANUSCRIPT.docx.
+    CLAUDE MANUSCRIPT.docx.
+- [x] Round 2 survey cleaned (Sean, 12 November): Toledo, a prospect, answered the tenants' section
+  and Tricia the landlady's, and the 31 October prospect answer was the team testing the form. All
+  three are left out, so the users are the landlady, 10 tenants (matching the 10 consent scans) and 3
+  prospects (Janelle, Shannaya and one unnamed): 4.84 overall. The task results are unchanged.
 
 ---
 

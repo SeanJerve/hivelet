@@ -88,8 +88,8 @@ them:
 - Three tenants completed every task they attempted, **31 of 34 attempts without help**.
 - Evaluated on the eight characteristics of **ISO/IEC 25010:2011**, following the **ISO/IEC 25040**
   evaluation process, using two kinds of evidence: measures from the tests, and a survey of the landlady,
-  eleven tenants and four prospective tenants on the redesigned system, and three technical evaluators.
-- Rated **Very High Quality**: **4.82** overall by the users (every characteristic Very High Quality)
+  ten tenants and three prospective tenants on the redesigned system, and three technical evaluators.
+- Rated **Very High Quality**: **4.84** overall by the users (every characteristic Very High Quality)
   and **4.90** by the technical evaluators (every characteristic Very High Quality); the
   measurements agreed with the ratings on every characteristic.
 
@@ -670,7 +670,7 @@ are **25 terms**.
 
 ## 3.3 Evaluation Procedure
 
-This is the most important methods section for the defense. It explains how the 4.82 and the 4.90 were produced.
+This is the most important methods section for the defense. It explains how the 4.84 and the 4.90 were produced.
 
 **What it says**
 - Testing and evaluation follow the **ISO/IEC 25000 series**, called **SQuaRE** (Systems and software
@@ -712,7 +712,7 @@ The section then has four labelled parts.
   experience, and reviewed a **demonstration copy** with sample data on **15 to 18 October**. "None
   inspected the source code."
 - **A second round**, 31 October to 10 November 2026, on the redesigned system: ten tenants and four
-  prospective tenants did the same tasks, and sixteen answered the questionnaire (eleven tenants, four
+  prospective tenants did the same tasks, and fourteen answered the questionnaire (ten tenants, three
   prospective tenants and the landlady). Time on task was not recorded reliably and is not reported.
 
 **Instruments** (the tools used to collect data)
@@ -773,7 +773,7 @@ The section then has four labelled parts.
 **If the panel asks**
 - *"Why the mean of group means instead of averaging everyone?"* So that "the landlady is not
   outweighed by several tenants on functions only she uses". (Section 4.4.2 gives the other result:
-  averaging every user's answer gives 4.80 instead of 4.82.)
+  averaging every user's answer gives 4.80 instead of 4.84.)
 - *"Why only three tenants?"* Purposive and convenience sampling, and Nielsen and Landauer (1993):
   each extra tester finds fewer new usability problems.
 - *"Can you generalize your results?"* No. "No inferential test was made, so the results describe how
@@ -1440,7 +1440,7 @@ The section then has four labelled parts.
 ### 4.4.1 Respondents
 
 **What it says**
-- Nineteen people's ratings are reported: the landlady, eleven tenants and four prospective tenants,
+- Seventeen people's ratings are reported: the landlady, ten tenants and three prospective tenants,
   after using the redesigned system, and three technical evaluators after reviewing it, each after
   giving consent. No team member was a respondent.
 - The first round, before the redesign, had ten (Appendix M, Tables M-28 and M-29). Four of its five
@@ -1457,17 +1457,19 @@ The section then has four labelled parts.
   two on 18 October**. Users **4.75**, technical evaluators **4.34** (Appendix M, Table M-29).
 
 **Table 4-14. Distribution of respondents**
-- *What it shows*: the 19 respondents of Table 4-17. Landlady **1 (5.26%)**; Tenants **11 (57.89%)**;
-  Technical evaluators **3 (15.79%)**; Prospective tenants **4 (21.05%)**; Total **19**.
+- *What it shows*: the 17 respondents of Table 4-17. Landlady **1 (5.88%)**; Tenants **10 (58.82%)**;
+  Technical evaluators **3 (17.65%)**; Prospective tenants **3 (17.65%)**; Total **17**.
+- Left out: two prospective tenants who answered another group's section by mistake, and one answer
+  the team made while testing the form (Appendix M, Table M-28).
 
 **Table 4-15. Instrument administration and response rate**
 - *What it shows*: forms distributed, retrieved and valid per group. Technical evaluators **3, 3, 3,
   100%**. For the users, the forms given out were **not recorded**, so no response rate is given; all
-  **19** returned were valid.
+  **17** returned were valid.
 - *How to read it*: **response rate** = forms retrieved ÷ forms distributed.
 
 **If the panel asks**
-- *"Nineteen respondents is very few."* The paper agrees: the results describe how these
+- *"Seventeen respondents is very few."* The paper agrees: the results describe how these
   respondents rated the system, not a sample from which a wider population can be inferred. The
   measurements back the ratings (Section 4.4.5).
 - *"Why no response rate for the users?"* The forms given out were not counted; the paper says so.
@@ -1480,7 +1482,7 @@ The section then has four labelled parts.
   tenants, prospective tenants) are reported beside the technical evaluators'. Each overall is the mean
   of the characteristics that group rated: seven for the users (only the evaluators rated
   Maintainability), eight for the evaluators.
-- Averaging every user's answer together gives **4.80** instead of **4.82**: same interpretation, same
+- Averaging every user's answer together gives **4.80** instead of **4.84**: same interpretation, same
   order.
 
 **Table 4-16. Worked computation of a weighted mean**
@@ -1488,11 +1490,11 @@ The section then has four labelled parts.
 - *How to read it*: each row is a rating *w* (5 down to 1), how many chose it (*f*), and *f × w*. Add
   the last column (Σ = 53) and divide by N (11).
 - *Important cell*: the indicator is "I can see my own unit details, my bill, and what I still owe."
-  (Functional Suitability, rated by tenants). Nine tenants chose 5 and two chose 4, so **WM = 53 / 11 =
-  4.82**, Very High Quality.
+  (Functional Suitability, rated by tenants). Eight tenants chose 5 and two chose 4, so **WM = 48 / 10 =
+  4.80**, Very High Quality.
 
 **If the panel asks**
-- *"Show us how you computed a mean."* Table 4-16: 9 × 5 = 45, 2 × 4 = 8, 45 + 8 = 53, 53 ÷ 11 = 4.82.
+- *"Show us how you computed a mean."* Table 4-16: 8 × 5 = 40, 2 × 4 = 8, 40 + 8 = 48, 48 ÷ 10 = 4.80.
 - *"Isn't the mean of group means just inflating your score?"* The paper reports the pooled figure too:
   4.80 for the users, still Very High Quality.
 - *"Why two columns, not one overall?"* The users and the evaluators answer different questions, and
@@ -1501,31 +1503,31 @@ The section then has four labelled parts.
 ### 4.4.3 Results by Characteristic
 
 **What it says**
-- Users **4.82** overall and technical evaluators **4.90**, every characteristic of both Very High
+- Users **4.84** overall and technical evaluators **4.90**, every characteristic of both Very High
   Quality. Before the redesign: users **4.75**, technical evaluators **4.34** (Usability and Reliability
   at 4.20, the top of High Quality).
 - Each rating is read beside the measured evidence.
 
 **Key facts and numbers** (users; technical evaluators)
-- **Performance Efficiency 4.89; 4.89**: the users' highest of the characteristics all user groups
+- **Performance Efficiency 4.86; 4.89**: the users' highest of the characteristics all user groups
   rated. No failed request; after the redesign every screen timed again was ready sooner except
   sign-in, though screens still take two to three seconds on a phone.
-- **Portability 4.87; 5.00**: one code base installed on an Android phone and an iPhone without an app
+- **Portability 4.83; 5.00**: one code base installed on an Android phone and an iPhone without an app
   store.
-- **Compatibility 4.83; 5.00**: every browser combination tried worked.
+- **Compatibility 4.79; 5.00**: every browser combination tried worked.
 - **Security 5.00 (the landlady); 4.93** (Section 4.4.4).
-- **Usability 4.78; 4.87**: rose for both after the redesign. The landlady gave every item 5 (before
-  the redesign she gave 3 to two items, and the users' Usability was 4.49); tenants **4.76**,
-  prospective tenants **4.58**. First round evaluators **4.20**: the first gave 3 to all five items
+- **Usability 4.80; 4.87**: rose for both after the redesign. The landlady gave every item 5 (before
+  the redesign she gave 3 to two items, and the users' Usability was 4.49); tenants **4.74**,
+  prospective tenants **4.67**. First round evaluators **4.20**: the first gave 3 to all five items
   before the **fourteen changes** (eleven about usability); the next four gave **4.80, 4.60, 3.60 and
   5.00**. The three on the redesigned system gave **4.80, 4.80 and 5.00**.
   **76 accessibility scans of 19 screens** found no violation once one defect on three screens was
   corrected.
-- **Functional Suitability 4.72; 4.93**: every feature present; 96 to 100 percent of correctness
-  checks right. Lowest user item: the prospective tenants' **4.00** for seeing enough about a unit;
-  the evaluators' lowest, payment recording, **4.67**.
-- **Reliability 4.65; 4.83**: the users' lowest; their lowest item was whether the information shown
-  is correct and up to date (tenants 4.55, prospective tenants 4.25). In the first round the
+- **Functional Suitability 4.80; 4.93**: every feature present; 96 to 100 percent of correctness
+  checks right. Lowest user items: the prospective tenants' three, **4.67**; the evaluators' lowest,
+  payment recording, also **4.67**.
+- **Reliability 4.78; 4.83**: the users' lowest; the tenants' lowest item was whether the
+  information shown is correct and up to date (**4.50**). In the first round the
   evaluators' lowest item, **3.80**, for handling a failed request without showing wrong data, named
   the one failed test (the ₱0 of step 23b), since resolved.
 - **Maintainability 4.73** (evaluators only, their lowest): three respondents gave **4.40, 5.00 and
@@ -1536,12 +1538,12 @@ The section then has four labelled parts.
 
 **Table 4-17. Summary of evaluation results**
 - *What it shows*: the final score for each characteristic. This is the table that proves Objective 4.
-- *How to read it*: two columns, the **users' mean** (16: the landlady, 11 tenants, 4 prospective
+- *How to read it*: two columns, the **users' mean** (14: the landlady, 10 tenants, 3 prospective
   tenants) and the **technical evaluators' mean** (3), each with its interpretation from Table 3-5.
-- Values (users; evaluators): Functional Suitability 4.72; 4.93. Performance Efficiency 4.89; 4.89.
-  Compatibility 4.83; 5.00. Usability 4.78; 4.87. Reliability 4.65; 4.83. Security 5.00; 4.93.
-  Maintainability not rated; 4.73. Portability 4.87; 5.00.
-- *Important cells*: **Overall 4.82 and 4.90, both Very High Quality**. The users' Security is the
+- Values (users; evaluators): Functional Suitability 4.80; 4.93. Performance Efficiency 4.86; 4.89.
+  Compatibility 4.79; 5.00. Usability 4.80; 4.87. Reliability 4.78; 4.83. Security 5.00; 4.93.
+  Maintainability not rated; 4.73. Portability 4.83; 5.00.
+- *Important cells*: **Overall 4.84 and 4.90, both Very High Quality**. The users' Security is the
   landlady's alone, and Maintainability is the evaluators' alone, because of who could judge them.
 
 **If the panel asks**
@@ -1605,12 +1607,12 @@ The section then has four labelled parts.
   row. They should point the same way. Example: Maintainability (4.32, evaluators only) also has the
   one measured weakness: "**154 of 204 database calls inside the request handlers**".
 - *Important cells*: the **All** row: **31** sub-characteristics, **27** measured, **25** rated, overall
-  **4.82** (users) and **4.90** (evaluators). Other measured results to know: Performance Efficiency "every screen usable within 3.05 s
+  **4.84** (users) and **4.90** (evaluators). Other measured results to know: Performance Efficiency "every screen usable within 3.05 s
   on a phone"; Compatibility "5 of 5 device and browser combinations"; Usability "0 accessibility
   violations in 76 scans"; Security "A+ from all three outside scanners".
 
 **If the panel asks**
-- *"Why trust ratings from nineteen people?"* Because every characteristic was also measured, and the
+- *"Why trust ratings from seventeen people?"* Because every characteristic was also measured, and the
   measurements agree with the ratings on all eight.
 - *"Which sub-characteristics did you not evaluate?"* User interface aesthetics and reusability.
 
@@ -1734,9 +1736,9 @@ The section then has four labelled parts.
    On the redesigned system, ten tenants did 151 of 160 attempts without help and four prospective
    tenants 31 of 32.
 4. Evaluated by the five steps of ISO/IEC 25040; 27 of 31 sub-characteristics measured, 25 rated;
-   **51 changes** made. The sixteen users (the landlady, eleven tenants, four prospective tenants)
-   rated the redesigned system **4.82 overall**: Functional Suitability 4.72, Performance Efficiency
-   4.89, Compatibility 4.83, Usability 4.78, Reliability 4.65, Security 5.00, Portability 4.87. Three
+   **51 changes** made. The fourteen users (the landlady, ten tenants, three prospective tenants)
+   rated the redesigned system **4.84 overall**: Functional Suitability 4.80, Performance Efficiency
+   4.86, Compatibility 4.79, Usability 4.80, Reliability 4.78, Security 5.00, Portability 4.83. Three
    technical evaluators rated it **4.90 overall**: Functional Suitability 4.93, Performance
    Efficiency 4.89, Compatibility 5.00, Usability 4.87, Reliability 4.83, Security 4.93,
    Maintainability 4.73, Portability 5.00. Before the redesign: users 4.75, evaluators 4.34.
@@ -1759,7 +1761,7 @@ The section then has four labelled parts.
    critical defect (Tables 4-12 and 4-20). The one failure, a ₱0 shown with the connection cut, passed
    when re-tested on the landlady's laptop, and "none of the 77 test cases rerun on 4 November 2026
    failed".
-4. **Fourth objective achieved**: Very High Quality overall, 4.82 from the users (every characteristic
+4. **Fourth objective achieved**: Very High Quality overall, 4.84 from the users (every characteristic
    Very High Quality) and 4.90 from the technical evaluators (every characteristic Very High Quality), up from 4.75 and
    4.34 before the redesign, in agreement
    with the measured evidence (Tables 4-17 and 4-19), "as the view of these respondents rather than of
@@ -1807,9 +1809,9 @@ The section then has four labelled parts.
 6. Strengthen the lowest characteristics: **Maintainability (4.32)**, by moving the database work
    inside the request handlers (three calls in four) into service modules, one per kind of record,
    reviewed by more than one developer, and giving evaluators the architecture, ERD and data
-   dictionary; **Usability (users 4.78; first-round evaluators 4.20)**, by taking the landlady through each screen
+   dictionary; **Usability (users 4.80; first-round evaluators 4.20)**, by taking the landlady through each screen
    with the user manual before she uses it alone, and showing each new tenant first how to sign in and
-   find their unit and rent; **Reliability (users 4.65, their lowest)**, through recommendation 1
+   find their unit and rent; **Reliability (users 4.78, their lowest)**, through recommendation 1
    (every receipt entered on Monthly Income, so tenants' figures match the receipt book).
 
 *For future researchers*
@@ -1928,14 +1930,14 @@ prospective tenant's task cards were not recorded on the day. It is the raw evid
   2011 to 2023 mapping; M-22 simultaneous use; M-23 tests mapped to characteristics; M-24 offline and
   installation; M-25 simulated users; M-26 simultaneous saves; M-27 the correction of 13 October 2026.
 - M-28 the respondents before and after the redesign; M-29 the composite means before (users 4.75,
-  technical evaluators 4.34) and after (users 4.82, technical evaluators 4.90); M-30 the
+  technical evaluators 4.34) and after (users 4.84, technical evaluators 4.90); M-30 the
   second round's task results; M-31 the page timings before and after the redesign.
 It is there so every Chapter 4 number can be checked.
 
 *How to read a ratings table (for example Table M-2, Functional Suitability)*: rows are the items,
-grouped by who rated them; each group ends with a **group mean** (Landlady 5.00, Tenants 4.76, Technical
-evaluators 4.93, Prospective tenants 4.42); the last row, the **users' composite**, is the mean of the
-three user groups' means (4.72); the technical evaluators' mean is their column of Table 4-17.
+grouped by who rated them; each group ends with a **group mean** (Landlady 5.00, Tenants 4.73, Technical
+evaluators 4.93, Prospective tenants 4.67); the last row, the **users' composite**, is the mean of the
+three user groups' means (4.80); the technical evaluators' mean is their column of Table 4-17.
 
 **Appendix N. Data Dictionary.** Every table and column of the live database: type and length, whether
 required, default, keys and description, grouped as Property, People, Money, Requests, System and
@@ -2009,7 +2011,7 @@ Say each answer aloud, in your own words, with one number and where it is in the
 13. Explain the weighted mean formula and work Table 4-16.
 14. Why the mean of group means? What is the result if every response is averaged together?
 15. Read the bands of Table 3-5. What range is Very High Quality?
-16. Who were the nineteen respondents, and why did each group rate only some characteristics?
+16. Who were the seventeen respondents, and why did each group rate only some characteristics?
 17. How were the tenants sampled, and why three?
 18. How many requirements and business rules, and how were they graded on 16 September?
 19. Work the water fee, remitted amount and 50% Share for a ₱8,500 rent with two occupants.
