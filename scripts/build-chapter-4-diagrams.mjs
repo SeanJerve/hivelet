@@ -306,7 +306,7 @@ function context() {
 // Figure 7. Level 1 data flow diagram (Gane and Sarson notation)
 // ---------------------------------------------------------------------------------------------
 function dfd() {
-  const W = 900, H = 960;
+  const W = 900, H = 1040;
   let s = '';
   const R = 54;
   const proc = (x, y, n, name) => gsProc(x, y, R, R, n, name);
@@ -338,7 +338,10 @@ function dfd() {
   s += store(606, rowA, 150, 'D4', 'Expenses');
   s += store(30, rowB, 112, 'D5', 'Inquiries');
   s += store(406, rowB, 154, 'D6', 'Repair requests');
-  s += store(606, rowB, 184, 'D2', 'Tenants, tenancies', true);
+    s += store(606, rowB, 184, 'D2', 'Tenants, tenancies', true);
+  // D1 again under 5.0 and 4.0 (13 Nov 2026), so Figure 7 balances with Appendix F: 3.0 and 5.0
+  // update the units store (move-in, move-out, a unit under repair) and 4.0 reads its rate.
+  s += store(512, 776, 160, 'D1', 'Units and rates', true);
 
   // Landlady to the landlady-only processes (row 1).
   for (const [k, t, head] of [['p2', 'Units, rates', 'both'], ['p3', 'Move-in, move-out', 'both'], ['p7', 'Overview, workbooks', 'start'], ['p6', 'Expenses', 'both']]) {
@@ -357,11 +360,11 @@ function dfd() {
 
   // Visitor and tenant, from below.
   s += line([[P.p1[0], H - 64], [P.p1[0], P.p1[1] + R]], { head: 'both' });
-  s += lab(P.p1[0] + 8, 808, 'Inquiry, messages; units, replies', { anchor: 'start', w: 76 });
+  s += lab(P.p1[0] + 8, 888, 'Inquiry, messages; units, replies', { anchor: 'start', w: 76 });
   for (const [k, t] of [['p8', 'Sign-in, profile, password'], ['p5', 'Requests, photos, cancellations; status'], ['p4', 'GCash payment; bills, receipts']]) {
     const [x, y] = P[k];
     s += line([[x, H - 64], [x, y + R]], { head: 'both' });
-    s += lab(x + 8, 808, t, { anchor: 'start', w: 100 });
+    s += lab(x + 8, 888, t, { anchor: 'start', w: 100 });
   }
 
   // Processes and stores.
@@ -378,7 +381,13 @@ function dfd() {
   s += line([[P.p5[0], rowB + 32], [P.p5[0], P.p5[1] - R]], { head: 'both' });
   s += line([[576, 610], [576, rowA + 32]]) + hopH(576, 610, 652, [594], { head: 'none' }) +
     line([[652, 610], [652, P.p4[1] - at(40)]]);
-  s += line([[728, rowB + 32], [728, P.p4[1] - at(36)]]);
+    s += line([[728, rowB + 32], [728, P.p4[1] - at(36)]]);
+  // 3.0 writes D1: down from 3.0, across with a hop over the landlady's line to 8.0, into D1.
+  s += line([[262, P.p3[1] + R], [262, 288]], { head: 'none' }) + hopH(262, 288, 176, [202], { head: 'none' }) +
+    line([[176, 288], [176, rowA]]);
+  // 5.0 writes the second D1, and 4.0 reads it.
+  s += line([[528, P.p5[1] + R], [528, 776]]);
+  s += line([[656, 776], [656, P.p4[1] + R]]);
 
   // Processes last, so the lines end under them cleanly.
   s += proc(...P.p2, '2.0', 'Manage units and rates');
@@ -679,7 +688,7 @@ function gantt() {
 // Figure 7 opened into its steps, as Form 2 item 13 asks ("down to Level 2"). The steps and flows
 // are the endpoints the screens call (docs/SCREEN_CONTRACT.md, generated from the code); stores and
 // entities keep Figure 7's names. Each diagram shows every store its steps read or write. Figure 7
-// draws each process with its main stores only, so 3.0, 4.0 and 5.0 also show D1 here (13 Nov 2026).
+// connects D1 to 3.0, 4.0 and 5.0 as well (13 Nov 2026), so each Level 2 diagram balances with it.
 // Entities and stores are repeated on each row rather than crossed; a repeated store carries a
 // second bar, as in Figure 7. The audit trail is left out, as there.
 // ---------------------------------------------------------------------------------------------
