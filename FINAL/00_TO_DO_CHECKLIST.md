@@ -290,15 +290,23 @@ the team is allowed to schedule the final defense. Each item below is one we can
 
 ## E. Sean only
 
-### [ ] 17. Two questions for the landlady (B-115)
+### [x] 17. Two questions for the landlady (B-115): answered 12 November
 
 - **What:** while checking the records, two things could not be confirmed from her workbook:
   - **F1, August rent:** no August receipt is recorded for unit F1. Did the tenant pay it?
   - **Unit 2c, water:** her receipt charges water for 4 people. Is 4 the right number of people in 2c?
 - **Why:** the system shows exactly what is recorded. If something is missing or wrong, only she can
   say so, and then it is corrected by a numbered migration, never by hand.
+- **Answers (the landlady, through Lloyd, 12 November):**
+  - **F1 is paid through December.** August was paid; its receipt is just not entered. The landlady
+    enters F1's missing receipts on Monthly Income from her receipt book, which also settles the
+    August bill.
+  - **2c has 4 people.** Her receipt (water for 4, ₱800) is right.
 - **To do:**
-  - [ ] Ask Lloyd or the landlady, and tell Claude the answers.
+  - [x] Ask the landlady.
+  - [ ] The landlady enters F1's missing receipts (August onward) on Monthly Income.
+  - [ ] Sean: correct the 2c bill of 26 September (water for 1 instead of 4) by a numbered
+    migration if it is still open (B-115).
 
 ### [x] 18. Small design and wording choices (B-121): done 12 November
 
