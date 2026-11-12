@@ -1,3 +1,3 @@
-Scans for Appendices A (letter of request) and B (adviser appointments) (P10)
+The scan of the form signed by the landlady (P1): signed 12 November, kept outside the repository
 
 Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

@@ -8,6 +8,6 @@ Here:
   - Deployment report.docx
 
 Still needed (only a person can supply these):
-  - A Client or End-User Acceptance Form, or an MOA. None exists yet: ask the FIC whether the signed UAT form of item 09 serves
+  - Sir Jayvee's signature on the Client Acceptance Form and the MOA (the owner, the landlady and the team signed both 12 November); then the scans, kept outside the repository. Ask the FIC whether item 10 needs one or both
 
 Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

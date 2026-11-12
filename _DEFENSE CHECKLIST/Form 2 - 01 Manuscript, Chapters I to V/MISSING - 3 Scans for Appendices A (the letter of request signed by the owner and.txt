@@ -1,0 +1,3 @@
+Scans for Appendices A (the letter of request: signed by the owner and the team 12 November, Sir Jayvee still to sign as Noted by) and B (adviser appointments) (P10)
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

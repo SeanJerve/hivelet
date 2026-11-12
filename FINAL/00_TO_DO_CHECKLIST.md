@@ -95,7 +95,7 @@ the team is allowed to schedule the final defense. Each item below is one we can
   - [ ] If a passage is over the limit, send Claude the report: it rewrites those passages.
   - [ ] Put the report in folder 05.
 
-### [ ] 4. The landlady's signature on the UAT form (Form 2 item 9)
+### [ ] 4. The landlady's signature on the UAT form (Form 2 item 9): signed 12 November, scan left
 
 - **What it is:** UAT means **User Acceptance Testing**: the client uses the system herself and signs
   that it does what she needs. Our form is Appendix O. The landlady did the walkthrough on 30
@@ -104,11 +104,12 @@ the team is allowed to schedule the final defense. Each item below is one we can
   it, Chapter 4 can say she tested the system but not that she accepted it.
 - **Important:** she signs **only if she agrees.** Never sign it for her.
 - **To do:**
-  - [ ] Print `_DEFENSE CHECKLIST/Form 2 - 09 UAT sign-off/UAT sign-off form (blank, to print).docx`.
-  - [ ] The landlady reads it and signs if she agrees.
-  - [ ] Scan it into folder 09, and tell Claude: it adds one sentence to Section 4.3.7.
+  - [x] Print the form (the one-page version in `FINAL/PRINT FOR SIGNING/`, 12 November).
+  - [x] The landlady signed it (12 November). It has no line for the adviser.
+  - [ ] Scan it, keep the scan outside the repository, and tell Claude: it adds one sentence to
+    Section 4.3.7.
 
-### [ ] 5. Acceptance form or MOA (Form 2 item 10)
+### [ ] 5. Acceptance form or MOA (Form 2 item 10): both signed by the client, Sir Jayvee left
 
 - **What it is:** Form 2 item 10 asks for proof that the system was **deployed** where it is meant to
   be used, and that the client **accepted** it. It names two kinds of paper:
@@ -119,12 +120,15 @@ the team is allowed to schedule the final defense. Each item below is one we can
     does after.
 - **Why:** the deployment report (already in folder 10) shows the system runs. This paper shows the
   boarding house agreed to receive it.
-- **Where we stand:** neither exists yet. The UAT form of item 4 may be enough.
+- **Where we stand (12 November):** both exist, one page each, in `FINAL/PRINT FOR SIGNING/`. The
+  owner and the landlady signed the Client Acceptance Form, and the owner and the five of us signed
+  the MOA. **Sir Jayvee has not signed either yet** (Turned over by on the acceptance form, Noted by
+  on the MOA).
 - **To do:**
-  - [ ] Ask the FIC: "Does the signed UAT form count as the acceptance form for item 10, or do you
-    need a separate acceptance form or MOA? Is there a template?"
-  - [ ] If a separate one is needed, tell Claude which kind: it drafts it for the landlady to sign.
-  - [ ] Scan the signed paper into folder 10.
+  - [x] Draft, print and have the client sign both (12 November).
+  - [ ] Sir Jayvee signs both: bring them to the same visit as items 1 and 2.
+  - [ ] Ask the FIC whether item 10 needs the acceptance form, the MOA or both.
+  - [ ] Scan them, keeping the scans outside the repository.
 
 ### [ ] 6. Form 1 template (Form 2 items 1 and 4)
 
@@ -163,7 +167,8 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **Why:** the paper lists both appendices, but today they have only their headings. They prove the
   study had the boarding house's permission and an official adviser.
 - **To do:**
-  - [ ] Find the signed letter of request and scan it.
+  - [x] Letter of request: printed and signed by the owner and the five of us (12 November).
+  - [ ] Sir Jayvee signs it as Noted by (same visit as items 1, 2 and 5), then scan it.
   - [ ] Find the adviser appointment paper and scan it.
   - [ ] Give both to Claude: they go into the Word manuscript as Appendices A and B (the scans go in
     the Word file only, not in the repository, if they carry signatures).
@@ -199,21 +204,23 @@ the team is allowed to schedule the final defense. Each item below is one we can
 
 ## C. Consent forms (Sean)
 
-### [ ] 11. Scan the second round's consent forms
+### [x] 11. Scan the second round's consent forms (done 12 November)
 
 - **What:** the ten tenants who did the tasks between 31 October and 10 November signed paper consent
   forms. Prospective tenants and technical evaluators signed none: they agreed through the privacy
   notice at the start of the questionnaire, as Chapter 3 says.
 - **Why:** Chapter 3 says the landlady and each tenant signed. The scans are the proof if the panel asks.
 - **To do:**
-  - [ ] Scan the ten forms into `_CONSENT_FORMS (not in repo)/`. **Never into the repository.**
+  - [x] Scanned on 12 November: all ten, one PDF in `_CONSENT_FORMS (not in repo)/` on Lloyd's laptop.
+    **Never into the repository.** Some of the ten did not agree to photos or to their face in the
+    paper, so check a tenant's own form before any photo of them is used.
 
 ### [ ] 12. Fill in "Research team member present" on the 30 September forms
 
 - **What:** the line on each form for the team member who ran that person's session is blank on all
   four forms of 30 September (the landlady and three tenants).
 - **To do:**
-  - [ ] Write the name on each paper original. Do the same on the ten new forms if it is blank there.
+  - [ ] Write the name on each paper original. It is blank on all ten second-round forms too.
 
 ---
 

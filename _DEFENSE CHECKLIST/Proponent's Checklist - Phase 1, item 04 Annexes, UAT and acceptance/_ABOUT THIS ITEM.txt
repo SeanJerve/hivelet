@@ -7,7 +7,7 @@ Status on 12 November 2026: MISSING
 Here:
 
 Still needed (only a person can supply these):
-  - The signed UAT form (see Form 2 item 09)
-  - The acceptance form or MOA (see Form 2 item 10)
+  - The scan of the signed UAT form (signed 12 November; see Form 2 item 09)
+  - The scans of the Client Acceptance Form and the MOA once Sir Jayvee signs (see Form 2 item 10)
 
 Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

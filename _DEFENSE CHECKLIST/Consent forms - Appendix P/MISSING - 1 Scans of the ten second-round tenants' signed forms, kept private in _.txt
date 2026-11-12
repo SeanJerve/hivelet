@@ -1,3 +1,0 @@
-Scans of the ten second-round tenants' signed forms, kept private in _CONSENT_FORMS (not in repo). Prospects and evaluators consented in the questionnaire
-
-Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

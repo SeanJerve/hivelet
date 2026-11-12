@@ -1,0 +1,3 @@
+"Research team member present" filled in on all fourteen paper originals: the four of 30 September and the ten of the second round
+
+Put the scan or file in this folder, then run node scripts/manuscript/build-defense-folder.mjs again.

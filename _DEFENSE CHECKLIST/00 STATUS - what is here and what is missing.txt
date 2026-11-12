@@ -13,7 +13,7 @@ LATER    not due yet: on or after the defense day. The blank forms are already t
 PARTLY   Form 2 - 01 Manuscript, Chapters I to V
            still needed: The front matter in the team's Word file: title page, approval sheet, defense date and room, each member's Curriculum Vitae (P3)
            still needed: The Acknowledgement (P4)
-           still needed: Scans for Appendices A (letter of request) and B (adviser appointments) (P10)
+           still needed: Scans for Appendices A (the letter of request: signed by the owner and the team 12 November, Sir Jayvee still to sign as Noted by) and B (adviser appointments) (P10)
            still needed: A check of the layout against the Form 1 template
 MISSING  Form 2 - 02 Content Adviser comments addressed
            still needed: The consultation record with the Content Adviser
@@ -26,9 +26,9 @@ READY    Form 2 - 06 Live demonstration
 READY    Form 2 - 07 Revision log
 READY    Form 2 - 08 Test plan and test results
 PARTLY   Form 2 - 09 UAT sign-off
-           still needed: The scan of the form signed by the landlady (P1). She signs only if she agrees. Never sign it for her
+           still needed: The scan of the form signed by the landlady (P1): signed 12 November, kept outside the repository
 PARTLY   Form 2 - 10 Deployment report and acceptance form or MOA
-           still needed: A Client or End-User Acceptance Form, or an MOA. None exists yet: ask the FIC whether the signed UAT form of item 09 serves
+           still needed: Sir Jayvee's signature on the Client Acceptance Form and the MOA (the owner, the landlady and the team signed both 12 November); then the scans, kept outside the repository. Ask the FIC whether item 10 needs one or both
 READY    Form 2 - 11 User manual and repository
 READY    Form 2 - 12 Context diagram
 READY    Form 2 - 13 Data flow diagrams, Gane and Sarson, to Level 2
@@ -52,8 +52,8 @@ PARTLY   Form 2 - 22 Slides and demo script
 MISSING  Form 2 - 23 Copies for the panel and advisers
            still needed: Five printed copies of the manuscript
 MISSING  Proponent's Checklist - Phase 1, item 04 Annexes, UAT and acceptance
-           still needed: The signed UAT form (see Form 2 item 09)
-           still needed: The acceptance form or MOA (see Form 2 item 10)
+           still needed: The scan of the signed UAT form (signed 12 November; see Form 2 item 09)
+           still needed: The scans of the Client Acceptance Form and the MOA once Sir Jayvee signs (see Form 2 item 10)
 LATER    Proponent's Checklist - Phase 2 Scheduling and panel (items 10 to 15)
            still needed: Form 4, filled in and signed
            still needed: Form 6, the appointment letters signed by the Dean, with each conforme
@@ -71,8 +71,7 @@ LATER    Proponent's Checklist - Phase 5 Editing and approval (items 27 to 32)
 PARTLY   Proponent's Checklist - Phase 5, item 31 Turnover package
            still needed: The database script, a schema-only dump of the live database. Never database/FULL_DATABASE_SCHEMA.sql, which does not describe it (Sean)
 PARTLY   Consent forms - Appendix P
-           still needed: Scans of the ten second-round tenants' signed forms, kept private in _CONSENT_FORMS (not in repo). Prospects and evaluators consented in the questionnaire
-           still needed: "Research team member present" filled in on all four paper originals
+           still needed: "Research team member present" filled in on all fourteen paper originals: the four of 30 September and the ten of the second round
 READY    Study guides
 
 Put each scan or signed form in its folder and run, from the hivelet folder:

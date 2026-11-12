@@ -9,7 +9,6 @@ Here:
   - Where the signed forms are.txt
 
 Still needed (only a person can supply these):
-  - Scans of the ten second-round tenants' signed forms, kept private in _CONSENT_FORMS (not in repo). Prospects and evaluators consented in the questionnaire
-  - "Research team member present" filled in on all four paper originals
+  - "Research team member present" filled in on all fourteen paper originals: the four of 30 September and the ten of the second round
 
 Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

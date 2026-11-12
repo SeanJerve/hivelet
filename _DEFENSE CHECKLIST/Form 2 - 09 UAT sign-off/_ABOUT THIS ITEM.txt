@@ -8,6 +8,6 @@ Here:
   - UAT sign-off form (blank, to print).docx
 
 Still needed (only a person can supply these):
-  - The scan of the form signed by the landlady (P1). She signs only if she agrees. Never sign it for her
+  - The scan of the form signed by the landlady (P1): signed 12 November, kept outside the repository
 
 Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.
