@@ -1,6 +1,7 @@
 # Hivelet: what is left to do
 
-Written 12 November 2026 from Sean's answers the same day. Tick each box (`[x]`) when it is done.
+Written 12 November 2026 from Sean's answers the same day, and brought up to date that evening. Tick
+each box (`[x]`) when it is done.
 Every item says **what it is**, **why it is needed** and **what to do**. The paper itself is finished
 and checked: what is left is signatures, scans, forms and a few decisions only people can make.
 
@@ -10,6 +11,21 @@ it updates `00 STATUS` by itself.
 
 **The repository is public.** Never commit a signed form, a consent form or anything with a tenant's
 name. Signed consent forms go only in `_CONSENT_FORMS (not in repo)/`.
+
+**Done on 12 November, nothing for you to do:**
+- [x] The whole paper read for purpose: repeats, filler and claims with no basis cut, every number,
+  citation and reference kept.
+- [x] One name for one thing. Michelle manages the boarding house for its owner, so the paper, the
+  figures, the guides and the slides call her **the landlady**. "The owner" means only the proprietor
+  (for example, going live with GCash needs the owner's merchant onboarding documents).
+- [x] "Booking and reservation management" explained once: an inquiry the landlady answers, a unit she
+  can mark Reserved, and a move-in from the inquiry. Nothing is booked or paid for online.
+- [x] The 4 November rerun stated the same way everywhere: 77 of the 114 test cases run and passed,
+  37 left for a person, none failed.
+- [x] Recommendation 4 rests on the 15 October evaluator's written comment (Section 4.4.6).
+- [x] The small design and wording choices (B-121, item 18) are in the system and live.
+- [x] The Laudon et al. year (item 10).
+- [x] The Word manuscript, the slides, the study guides and the defense folder rebuilt.
 
 ---
 
@@ -32,7 +48,11 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **To do:**
   - [ ] Print it.
   - [ ] Have Sir Jayvee sign Sessions 1, 2 and 3.
-  - [ ] Hold Session 4 before the final defense, write down what he says, have him sign it.
+    - [ ] Hold Session 4 before the final defense, write down what he says, have him sign it.
+  - [ ] At Session 4, also ask him the two questions of item 9 (the AI wording and where the
+    statement goes), and whether he wants two outside suggestions back in recommendation 4: record
+    each tenancy's agreed term, and warn when a unit has more people than it holds. They are out of
+    the paper now because no survey answer or test supports them.
   - [ ] Scan the signed record into folders 16 and 17.
 
 ### [ ] 2. Forms 3A and 3B, signed (Form 2 items 18 and 19)
@@ -164,7 +184,8 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **Why:** using AI without saying so can be treated as dishonesty. Saying it plainly, with what the
   team did, protects the team at the defense and in the similarity check (item 3).
 - **To do:**
-  - [ ] Ask Sir Jayvee to read the wording in Section 3.1.1 and confirm it.
+    - [ ] Ask Sir Jayvee to read the wording in Section 3.1.1 and confirm it. One word in it changed on
+    12 November: "the owner's past records" became "the landlady's past records".
   - [ ] Ask him where the full statement goes (a page after the Abstract, the end of Section 3.2, or
     an appendix) and whether the prompt log must be attached. Tell Claude his answer.
   - [ ] Lloyd: on his laptop, run `node scripts/ai-use/export-prompt-log.mjs` and send Sean the file.
