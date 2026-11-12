@@ -1,6 +1,6 @@
 # APPENDIX O: USER ACCEPTANCE SIGN-OFF
 
-**[TO DO: place the scan of the signed form here (print UAT_SIGN_OFF_FORM.docx; the landlady signs only if she agrees).]**
+**[TO DO: place here the scan of the form the landlady signed on 12 November 2026.]**
 
 The user acceptance test was conducted at the Fe Galang Da Silva Boarding House on 30 September 2026
 by the landlady, three tenants and one prospective tenant, on the live system with the property's

@@ -544,12 +544,11 @@ changing the same record in different ways at once was not tried.
 
 ### 4.3.7 User Acceptance Testing with the Landlady and Tenants
 
-**[TO DO when the landlady signs Appendix O: add "The landlady's signed acceptance form is in Appendix O." after this section's first paragraph. If she does not accept it yet, say what she asked for instead.]**
-
 The landlady and three tenants used the live system for their own tasks on 30 September 2026, each on
-their own device and account, after giving written consent, by the procedure in Section 3.3. Where an
+their own device and account, after giving written consent (Section 3.4), by the procedure in Section 3.3. Where an
 observer's sheet and the system's activity record disagreed, the activity record was used. Table 4-11
-gives each task's result.
+gives each task's result. The landlady accepted the system and signed the acceptance form on 12 November
+2026 (Appendix O).
 
 **Table 4-11.** Tenant task results (30 September 2026)
 

@@ -106,8 +106,8 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **To do:**
   - [x] Print the form (the one-page version in `FINAL/PRINT FOR SIGNING/`, 12 November).
   - [x] The landlady signed it (12 November). It has no line for the adviser.
-  - [ ] Scan it, keep the scan outside the repository, and tell Claude: it adds one sentence to
-    Section 4.3.7.
+  - [x] Section 4.3.7 and conclusion 3 now say she accepted the system and signed (12 November).
+  - [ ] Scan it, keep the scan outside the repository, and place it in Appendix O of the Word file.
 
 ### [ ] 5. Acceptance form or MOA (Form 2 item 10): both signed by the client, Sir Jayvee left
 
@@ -147,6 +147,40 @@ the team is allowed to schedule the final defense. Each item below is one we can
 ---
 
 ## B. For the paper
+
+### [ ] 6b. Bring the team's Word manuscript up to date (Lloyd)
+
+- **What:** the team's Word file ("REVISED AFTER PROPOSAL", 240 pages, checked as a PDF on 12
+  November) has the right front matter but **old chapters**. Chapter 1 is from before 10 November:
+  it still cites Mia et al. (2024) for the opposite of what that study found, has no world-to-Legazpi
+  funnel, and ends 1.1 with "This study proposes Hivelet", which Form 3A item 3 does not allow.
+  Chapters 2 and 3 have the old section titles (for example 2.1.1 "Structural Inefficiencies in
+  Property Management Systems"). Chapters 4 and 5 and the appendices are from 10 to 11 November:
+  "the owner" appears 169 times, the old rerun wording and the old Booking Inquiry term are there.
+  The Abstract page is empty.
+- **Why:** the panel reads the Word file, not the repository. Everything checked and corrected since
+  10 November is only in `FINAL/CLAUDE MANUSCRIPT/CLAUDE MANUSCRIPT.docx`.
+- **To do:**
+  - [ ] Keep the front pages (title page to List of Figures). Replace everything from **1 INTRODUCTION**
+    to the end of the appendices with the same part of `FINAL/CLAUDE MANUSCRIPT/CLAUDE MANUSCRIPT.docx`
+    (already Arial 12, double spaced, 1.5 inch left margin, final table and figure numbers).
+  - [ ] Paste the Abstract from the same file onto the Abstract page.
+  - [ ] Appendix P: insert `docs/FINAL MANUSCRIPT/CONSENT_FORM.pdf` (the blank form) in place of its
+    TO DO line. Appendix O: insert the scan of the landlady's signed form (keep the scan out of the
+    repository).
+  - [ ] Fix the end of the file: a heading "Appendix N: Source Code" sits before the Curriculum Vitae,
+    Appendix Q's page holds CV template text, and Appendix R's text runs into the CV. Order must be
+    A to R, then the five CVs.
+  - [ ] Result of Final Oral Defense page: the date still says January 1, 2023, and the place is a
+    placeholder. Fill both once the defense is scheduled.
+  - [ ] Write Prof. Rodriguez's degrees the same way on every page ("MIT/MCS" on the panel pages,
+    "MSCS, MIT" on the approval sheet). Check the correct form with him or the department.
+  - [ ] The Acknowledgement page is missing (item 7). Add it after the Programming Adviser's
+    Certification.
+  - [ ] Update the table of contents last (right-click it, Update Field, Update entire table). Its
+    page numbers are wrong now (Chapter 4 listed at page 30 but starting at 46), it shows
+    "CURRICULUM VITAEx", and it lists Appendix N's 24 table names as entries. Keep only the appendix
+    titles.
 
 ### [ ] 7. Acknowledgement
 

@@ -70,7 +70,9 @@ Based on the results of the study, the following conclusions were drawn:
 3. **The third objective was achieved.** The system was pilot tested for functionality,
    responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8
    percent), above the course standard of 90 percent, with no critical defect (Chapter 4, Tables 4-12 and 4-20). The one failure, a ₱0 shown with the connection cut, passed when re-tested on the
-   landlady's laptop, and the redesigned system kept the result: none of the 77 test cases rerun on 4 November 2026 failed, and every task of the second round was completed.
+   landlady's laptop. The redesigned system kept the result: none of the 77 test cases rerun on
+   4 November 2026 failed, every task of the second round was completed, and the landlady accepted
+   the system and signed the acceptance form (Section 4.3.7).
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
    ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response, and its ten

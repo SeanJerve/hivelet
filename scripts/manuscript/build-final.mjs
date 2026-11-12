@@ -121,13 +121,12 @@ function once(text, a, b, where) {
   if (text.split(a).length !== 2) { problems.push(`${where}: expected once: ${a.slice(0, 60)}`); return text; }
   return text.replace(a, () => b);
 }
-// The Chapter 4 note on the signed form becomes a marker in the text, where the sentence goes.
-let ch4 = chapters[4];
-ch4 = once(ch4, `> **TEAM NOTE.** Once the landlady has signed the acceptance form (Appendix O), add after this section's first`,
-  `**[TO DO when the landlady signs Appendix O: add "The landlady's signed acceptance form is in Appendix O." after this section's first paragraph. If she does not accept it yet, say what she asked for instead.]**\n\n> **TEAM NOTE.** Once the landlady has signed the acceptance form (Appendix O), add after this section's first`, 'Ch 4');
+// The landlady signed the acceptance form on 12 November 2026, so Section 4.3.7 states it and the
+// marker that used to stand there is gone.
+const ch4 = chapters[4];
 let appO = read(path.join(docs, 'APPENDIX_O_UAT_SIGN_OFF.md'));
 appO = once(appO, '> **TEAM NOTE (delete before pasting).** The course guide',
-  '**[TO DO: place the scan of the signed form here (print UAT_SIGN_OFF_FORM.docx; the landlady signs only if she agrees).]**\n\n> **TEAM NOTE (delete before pasting).** The course guide', 'App O');
+  '**[TO DO: place here the scan of the form the landlady signed on 12 November 2026.]**\n\n> **TEAM NOTE (delete before pasting).** The course guide', 'App O');
 // Appendix M captions carry the drafts' old numbers ("Chapter 4's Table 10 before 12 October 2026");
 // in the final paper there is no old number to point at.
 let appM = appMRaw
