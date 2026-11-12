@@ -91,7 +91,8 @@ them:
   ten tenants and three prospective tenants on the redesigned system, and three technical evaluators.
 - Rated **Very High Quality**: **4.84** overall by the users (every characteristic Very High Quality)
   and **4.90** by the technical evaluators (every characteristic Very High Quality); the
-  measurements agreed with the ratings on every characteristic.
+  measurements supported the ratings on six characteristics and were less favorable on Security and
+  Maintainability.
 
 **Terms to know**
 - **Progressive Web Application (PWA)**: a website that can be installed on a phone or computer from
@@ -103,7 +104,8 @@ them:
 
 **If the panel asks**
 - *"In one sentence, what did you find?"* "The results show that an integrated system can be fitted to
-  a small, cash-based property without changing how its landlady keeps the accounts" (Abstract).
+  a small, cash-based property while keeping its landlady's own report layout, invoice numbers and
+  cash payments" (Abstract).
 
 ---
 
@@ -569,7 +571,7 @@ are **25 terms**.
 - Agile was chosen because the boarding house's needs could change while the system was being built,
   and it let the team work continuously with the landlady.
 - The work ran from July to November 2026: a first build (24 July to 28 August), then Iteration 1 (12
-  to 14 September), Iteration 2 (15 September to 31 October, the testing and formal evaluation) and
+  to 14 September), Iteration 2 (15 September to 31 October, the testing and the first evaluation) and
   Iteration 3 (from 1 November, the redesign, no new module).
 - The system was assessed against ISO/IEC 25010:2011 on its eight characteristics.
 
@@ -945,8 +947,8 @@ The section then has four labelled parts.
   of them with wording the redesign had changed), and the other **37 need a person and were left for
   one**. The automated checks passed after every later change, so the results of Iteration 2 stand.
   Never say "all 114 were rerun".
-- The formal ISO/IEC 25010 evaluation was done in Iteration 2, and its questionnaire and the users'
-  tasks were repeated with a second round of users in Iteration 3 (Tables M-28 to M-30).
+- The ISO/IEC 25010 evaluation was carried out twice, in Iteration 2 and again in Iteration 3 on the
+  redesigned system (Tables M-28 to M-30). Section 4.4 reports the second.
 - The ERD (Figure 4-6), drawn from the database's own catalogue on **5 October 2026**: **21 tables**,
   each with a primary key, and **37 foreign keys**.
 - Rules enforced by the database: one unit cannot have two active tenancies; one invoice number cannot
@@ -1092,7 +1094,7 @@ The section then has four labelled parts.
 - *What it shows*: every computed figure, its rule number, and an example.
 - *How to read it*: Rule (with its BR number), what is computed, and a worked example. Learn the
   examples:
-  - **BR-014 Water fee**: occupants × ₱200. Unit 2C, two occupants: 2 × ₱200 = ₱400.
+  - **BR-014 Water fee**: occupants × ₱200. A unit with two occupants: 2 × ₱200 = ₱400.
   - **BR-038 Remitted amount**: Rent Amount + Water Payment. ₱8,500 + ₱400 = ₱8,900.
   - **BR-035 50% Share**: a system-computed figure equal to half that row's Rent Amount, kept for ledger
     parity with the owner's historical spreadsheet. ₱8,500 ÷ 2 = ₱4,250.
@@ -1102,7 +1104,7 @@ The section then has four labelled parts.
     September: overdue from 14 September.
   - **BR-039 Deposit**: equal to the rent at move-in, set once. Moved in at ₱8,500: deposit ₱8,500.
   - **BR-040 Linda's units**: water at ₱200 per occupant, recorded separately, kept out of the remitted
-    amount. Unit LF, two occupants: ₱400 as Linda's water; remitted = rent only.
+    amount. A Linda unit with two occupants: ₱400 as Linda's water; remitted = rent only.
   - **BR-045 Expense total**: the sum of its allocations to property areas. ₱6,000 + ₱2,000 = ₱8,000.
 
 **If the panel asks**
@@ -1464,8 +1466,8 @@ The section then has four labelled parts.
 
 **Table 4-15. Instrument administration and response rate**
 - *What it shows*: forms distributed, retrieved and valid per group. Technical evaluators **3, 3, 3,
-  100%**. For the users, the forms given out were **not recorded**, so no response rate is given; all
-  **17** returned were valid.
+  100%**. For the users, the forms given out were **not recorded**, so no response rate is given. **19**
+  came back and **17** were valid: two prospective tenants answered another group's section.
 - *How to read it*: **response rate** = forms retrieved ÷ forms distributed.
 
 **If the panel asks**
@@ -1549,7 +1551,9 @@ The section then has four labelled parts.
 **If the panel asks**
 - *"Why did the ratings rise from the first round?"* The first round rated the system of Iteration 2
   (users 4.75, evaluators 4.34). The fourteen evaluator comments and the redesign came between, and
-  the second round rated the result. The measurements agree with both rounds.
+  the second round rated the result. Two of the users' composites were lower (Functional Suitability
+  and Portability), and the technical evaluators were different people, so say "higher than", never
+  "rose".
 - *"Only three technical evaluators?"* Yes, and the paper says three is a small group. The five of the
   first round are reported too (Appendix M, Table M-29).
 - *"Why is Maintainability the evaluators' lowest?"* The code itself shows the weakness: database calls written inside the request handlers. Recommendation 6.
@@ -1588,7 +1592,8 @@ The section then has four labelled parts.
 
 **What it says**
 - Puts both kinds of evidence side by side for each characteristic.
-- For all eight characteristics, the measured and rated evidence agree.
+- For six of the eight characteristics the measured and rated evidence agree. For Security and
+  Maintainability the measurements are less favorable than the ratings, and the paper says so.
 - **Quality in use** (the quality users experience in their own context) was measured in the
   acceptance test, in the manner of ISO/IEC 25022.
 
@@ -1613,7 +1618,7 @@ The section then has four labelled parts.
 
 **If the panel asks**
 - *"Why trust ratings from seventeen people?"* Because every characteristic was also measured, and the
-  measurements agree with the ratings on all eight.
+  measurements agree with the ratings on six of the eight (not Security or Maintainability).
 - *"Which sub-characteristics did you not evaluate?"* User interface aesthetics and reusability.
 
 ### 4.4.6 Optimization in Response to the Evaluation
@@ -1754,8 +1759,8 @@ The section then has four labelled parts.
    problem at the property was not the lack of a digital tool but the lack of connection between its
    records."
 2. **Second objective achieved**: all six features in use on the boarding house's real records; they
-   keep the landlady's own report layout, invoice numbers and cash as the main way to pay, "so using the
-   system requires no change to how she keeps the accounts". GCash is the one feature not in use with
+   keep the landlady's own report layout, invoice numbers and cash as the main way to pay, "so the system
+   follows the way she already keeps the accounts". GCash is the one feature not in use with
    real money.
 3. **Third objective achieved**: 82 of 83 (98.8 percent), above the course standard of 90 percent, no
    critical defect (Tables 4-12 and 4-20). The one failure, a ₱0 shown with the connection cut, passed
@@ -1769,7 +1774,7 @@ The section then has four labelled parts.
 
 **If the panel asks**
 - *"What is your main conclusion?"* The property's problem was the lack of connection between its
-  records, and Hivelet fixed it without changing how the landlady keeps the accounts.
+  records, and Hivelet connects them while keeping the landlady's own layout, invoice numbers and cash.
 - *"Did you rerun all 114 test cases after the redesign?"* No. Of the 114, 77 were run and passed (21
   with wording the redesign changed), 37 need a person and were left for one, and none failed.
 

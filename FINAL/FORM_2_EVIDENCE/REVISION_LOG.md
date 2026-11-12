@@ -1,7 +1,7 @@
 # Revision log
 
 **For Form 2, item 7** ("Revisions after testing are documented, and the revision log is up to date").
-Hivelet: A Web-Based Apartment Management System for the Fe Galang Da Silva Boarding House.
+Hivelet: A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House.
 Up to date on 12 November 2026.
 
 Each row is one round of testing or review, what it found, and what was revised because of it. Every

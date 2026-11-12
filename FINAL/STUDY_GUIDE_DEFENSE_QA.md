@@ -155,8 +155,9 @@ checked against each other; 22 recorded errors corrected). Iteration 2, consolid
 15 September to 31 October (her answers, real users, testing and evaluation). Iteration 3, interface
 redesign, from 1 November. *Section 4.2.1; Appendix M, Table M-19.*
 
-**Your evaluators rated an earlier design. Do the results still hold?**
-Yes. The evaluation was done in Iteration 2. Iteration 3 changed how the screens look and joined the
+**The first evaluation was of an earlier design. Do the results still hold?**
+Yes. The system was evaluated twice: in Iteration 2, and again in Iteration 3 on the redesigned
+system, which is the result Section 4.4 reports. Iteration 3 changed how the screens look and joined the
 sign-in and inquiry pages. It added no module and removed none. It added two rules: a closed year's
 records cannot be changed, and a tenant cannot cancel a repair once someone is sent. We reran the 114
 test cases on 4 November: 77 were run and passed (21 of them with wording the redesign changed), 37
@@ -311,7 +312,10 @@ The account locks after five failed sign-ins, for 15 minutes. *Section 4.2.6; Se
 
 **Can the landlady's changes be traced?**
 Every administrator action is written to an audit trail the application cannot edit, delete or empty.
-*Section 4.2.6.*
+It is kept in the database and has no screen: the screen that showed it was removed on the adviser's
+advice that it is a developer's record. If asked to show it, open the audit table in the database,
+or point to Recently in the side menu, which lists a person's own last three actions.
+*Section 4.2.6; Appendix K, Part 2, section 9.*
 
 **Did anyone outside test the security?**
 Three passive external scanners graded the site A+ (Qualys SSL Labs, Mozilla HTTP Observatory and
@@ -409,7 +413,7 @@ Table 4-11; Appendix M, Table M-30.*
 Purposive and convenience sampling of tenants at home that evening, chosen to cover cash payers, less
 app-confident users, Android and iPhone and more than one cluster; and Nielsen and Landauer (1993)
 show each additional tester finds fewer new usability problems. The second round added ten tenants
-for the tasks and eleven for the questionnaire. *Section 3.3, Participants; Appendix M, Tables M-28
+for the tasks and ten for the questionnaire. *Section 3.3, Participants; Appendix M, Tables M-28
 and M-30.*
 
 **Did two people saving at the same time cause problems?**
@@ -486,13 +490,15 @@ October evaluators and the prospective tenants, they answered the Google Form an
 agreeing to the data privacy notice that opens it, and signed no paper form. *Section 3.4.*
 
 **Why is the users' response rate not given?**
-The number of forms given to the users was not recorded, and the paper says so. Every form returned
-was complete. The technical evaluators: 3 sent, 3 returned. *Table 4-15.*
+The number of forms given to the users was not recorded, and the paper says so. Nineteen forms came
+back and seventeen were counted: two prospective tenants answered another group's section and were
+left out by the rule in Section 3.3. The technical evaluators: 3 sent, 3 returned. *Table 4-15.*
 
 **Seventeen respondents is very few. How can you claim Very High Quality?**
 We claim it only for the people who answered, and the paper says so: the results describe how they
-rated the system, not a population. What strengthens it is that every characteristic was also **measured**, and
-the measurements agree with the ratings on all eight. *Sections 4.4.1 and 4.4.5; Chapter 5,
+rated the system, not a population. What strengthens it is that every characteristic was also **measured**. The
+measurements agree with the ratings on six of the eight, and are less favorable on Security and
+Maintainability, which the paper says itself. *Sections 4.4.1 and 4.4.5; Chapter 5,
 conclusion 4.*
 
 **How did you compute the means?**
@@ -552,7 +558,8 @@ her own records: it runs beside them until both agree, which is the last stage o
 *Section 4.5, Table 4-22.*
 
 **Who keeps it running after you graduate?**
-It needs no equipment at the property: it is hosted on Vercel and Supabase, and every approved change
+We do, for the period in the memorandum of agreement signed with the owner, free of charge, and the
+records stay the boarding house's own. It needs no equipment at the property: it is hosted on Vercel and Supabase, and every approved change
 deploys automatically. The landlady is shown how to use it in the user manual (Appendix K). Backups are
 taken before any change to the data. *Section 4.5.*
 

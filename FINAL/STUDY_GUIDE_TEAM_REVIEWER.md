@@ -52,7 +52,7 @@ defense with it.
 | **2. The aim** | One general and four specific objectives | 4 | 1.2 |
 | **3. The gap** | Related systems solve one function, or suit big properties | 5, 6 | 2.1.6, 2.2, 2.3 |
 | **4. The build** | Agile in three iterations; the stack; six features; security | 7 to 12 | 3.2, 4.2 |
-| **5. The proof** | 82 of 83 tests; real users; 4.84 and 4.90; measured and rated agree on all eight; conclusions; recommendations | 13 to 19 | 4.3, 4.4, 5 |
+| **5. The proof** | 82 of 83 tests; real users; 4.84 and 4.90; measured and rated agree on six of eight; conclusions; recommendations | 13 to 19 | 4.3, 4.4, 5 |
 
 The slide deck is `HIVELET DEFENSE SLIDES.pptx` (20 slides). **Slide 1 still has square brackets** for
 the team members, the adviser and the defense date: fill them in.

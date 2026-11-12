@@ -151,11 +151,12 @@ it, and only the evaluators rated Maintainability. Each column is a fair overall
 *Likely question: "Seventeen is very few." We claim it only for the people who answered, and every
 characteristic was also measured. [4.4.1, 4.4.5]*
 
-**Slide 17. Measured and rated agree** (50 s)
-**Land: all eight agree.**
+**Slide 17. Measured and rated evidence** (50 s)
+**Land: they agree on six of eight, and we say where they do not.**
 "27 of the 31 sub-characteristics were measured and 25 rated. Usability: nine tasks in ten or more were done without
 help, and after the redesign the landlady gave every Usability item 5. Maintainability rests on the code: the
-checks pass on every change, but three database calls in four sit inside the request handlers. We
+checks pass on every change, but three database calls in four sit inside the request handlers. On
+Security and Maintainability the measurements are less favorable than the ratings, and the paper says so. We
 made 51 changes in response, including all 14 of the technical evaluators' comments."
 [4.4.3, 4.4.5, 4.4.6]
 *Hand-over to D: "So, the four objectives."*

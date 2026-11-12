@@ -2,7 +2,7 @@
 
 **For Form 2, item 10** ("The system is deployed or pilot-tested in its intended environment") and the
 **Proponent's Checklist, item 31** (installation and deployment notes for the turnover).
-Hivelet: A Web-Based Apartment Management System for the Fe Galang Da Silva Boarding House.
+Hivelet: A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House.
 Written 10 November 2026. The plan behind it is Chapter 4, Section 4.5 (Tables 4-21 and 4-22).
 
 ## 1. What is deployed, and where

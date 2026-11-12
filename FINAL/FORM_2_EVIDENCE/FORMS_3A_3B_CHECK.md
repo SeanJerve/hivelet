@@ -7,7 +7,7 @@ Checked against the paper on 10 November 2026, and rows 2, 3, 5, 7 and 9 to 11 a
 
 | No. | The form asks | Status | Where, or what to change |
 | :--- | :--- | :--- | :--- |
-| 1 | The title is concise and covers the study | OK | "Hivelet: A Web-Based Apartment Management System for the Fe Galang Da Silva Boarding House" |
+| 1 | The title is concise and covers the study | OK | "Hivelet: A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House" |
 | 2 | The background runs global, national, regional, local (inverted pyramid) | OK, fixed 10 Nov | 1.1 now runs around the world (Burke, Kotkar, Ullah), the Philippines (Mia, Magno, Pernate, Mangca), the Bicol Region (Pavia), then Legazpi City and this boarding house |
 | 3 | The **last** paragraph or sentence of the background states the gap | OK, fixed 10 Nov | The last sentence of 1.1 states the gap. The paragraph that introduced Hivelet is gone, since 1.2 introduces it |
 | 4 | The objectives are anchored on the gap | OK | 1.2's general objective restates the gap |

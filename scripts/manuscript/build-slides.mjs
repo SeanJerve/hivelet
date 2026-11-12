@@ -243,7 +243,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 17. Measured and rated
 {
-  const s = titled('Measured and rated evidence agree on all eight', 'Each rating is read beside the tests for its characteristic (Section 4.4.5).');
+  const s = titled('Measured and rated evidence, side by side', 'They agree on six of the eight characteristics. On Security and Maintainability the measurements are less favorable (Section 4.4.5).');
   bullets(s, [
     '27 of the 31 sub-characteristics measured by tests; 25 rated by the survey',
     'Usability (users 4.80, evaluators 4.87, up from 4.20 before the redesign): nine tasks in ten or more done without help; after the redesign the landlady gave every item 5',

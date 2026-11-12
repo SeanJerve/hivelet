@@ -1233,7 +1233,8 @@ satisfaction, freedom from risk and context coverage. **Where:** Section 3.3; Se
 
 **Rated quality.** What the survey respondents said. **Where:** Section 3.3; Table 4-18.
 
-**Requirements grading.** Each functional requirement graded against the code: 25 as worded, 15 in
+**Requirements grading.** Each functional requirement graded against the code early in the second
+iteration (16 September 2026), and not repeated since: 25 as worded, 15 in
 part, 1 interface only, 3 not as worded. **Where:** Section 4.1.2.
 
 **Respondent groups.** In Table 4-17: the users of the redesigned system (31 October to 10 November
@@ -1346,7 +1347,8 @@ and iPhone, more than one cluster. **Where:** Section 3.3.
 **Ratio X = A / B.** The 25023 form of a measure. Example: walkthrough steps passed over steps
 executed, 24 / 25 = 0.96. **Where:** Section 3.3; App. M, Table M-20.
 
-**Response rate.** Forms returned over forms given out: 10 of 10, 100%. **Where:** Table 4-15.
+**Response rate.** Forms returned over forms given out. Technical evaluators: 3 of 3, 100%. The users'
+forms given out were not recorded, so no rate is given. **Where:** Table 4-15.
 
 **Slowest 5% (95th percentile).** The time only one request in twenty took longer than: 0.52 s and
 0.80 s in the load tests. **Where:** App. M, Table M-25.
