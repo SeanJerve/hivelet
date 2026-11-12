@@ -16,11 +16,10 @@ acceptance levels, 82 of the 83 tests executed passed (98.8 percent), with no cr
 tenants completed every task they attempted, 31 of 34 attempts without help, and on the redesigned
 system ten tenants and four prospective tenants completed every task. The system was evaluated on
 the eight characteristics of ISO/IEC 25010:2011 by the process of ISO/IEC 25040, using measures from
-the tests and a survey. The landlady, three tenants, a prospective tenant and five technical
-evaluators rated it 4.59 overall, Very High Quality, with every characteristic Very High Quality,
-Portability highest and Maintainability lowest, and the measurements agreed with the ratings on every
-characteristic. Sixteen answers on the redesigned system rated it 4.82, and all 26 answers together
-4.61. The results show that an integrated system can be fitted to a small, cash-based property
+the tests and a survey. The landlady, eleven tenants and four prospective tenants rated the
+redesigned system 4.82 overall, Very High Quality, with every characteristic Very High Quality, and
+five technical evaluators rated it 4.34, Very High Quality, with Usability and Reliability lowest,
+and the measurements agreed with the ratings on every characteristic. The results show that an integrated system can be fitted to a small, cash-based property
 without changing how its landlady keeps the accounts. The study met its general objective: Hivelet
 was designed, developed and evaluated as a web-based apartment management system that improves
 administrative workflow integration, communication and operational control at the boarding house.

@@ -41,15 +41,14 @@ results are summarized below in the order of the specific objectives.
    four prospective tenants completed every task, 151 of 160 and 31 of 32 attempts without help.
 
 4. **The system was evaluated** by the five steps of ISO/IEC 25040: twenty-seven of the model's
-   thirty-one sub-characteristics had a measured result and twenty-five were rated. The ten
-   respondents of the first round, the landlady, three tenants, a prospective tenant and five technical
-   evaluators, rated the system 4.59 overall: Functional Suitability 4.79, Performance Efficiency
-   4.48, Compatibility 4.55, Usability 4.42, Reliability 4.61, Security 4.68, Maintainability 4.32
-   and Portability 4.86. In response to feedback and testing, 51 changes were made, among them each
-   of the technical evaluators' fourteen comments, and the third iteration then
-   redesigned the screens. The sixteen respondents of the second round, the
-   landlady, eleven tenants and four prospective tenants, rated the redesigned system 4.82, with
-   Usability at 4.78, and all 26 answers together rated it 4.61.
+   thirty-one sub-characteristics had a measured result and twenty-five were rated. In response to
+   feedback and testing, 51 changes were made, among them each of the technical evaluators' fourteen
+   comments, and the third iteration then redesigned the screens. The sixteen users, the landlady,
+   eleven tenants and four prospective tenants, rated the redesigned system 4.82 overall: Functional
+   Suitability 4.72, Performance Efficiency 4.89, Compatibility 4.83, Usability 4.78, Reliability
+   4.65, Security 5.00 and Portability 4.87. The five technical evaluators rated it 4.34 overall:
+   Functional Suitability 4.32, Performance Efficiency 4.27, Compatibility 4.53, Usability 4.20,
+   Reliability 4.20, Security 4.36, Maintainability 4.32 and Portability 4.53.
 
 ## 5.2 Conclusions
 
@@ -75,12 +74,11 @@ Based on the results of the study, the following conclusions were drawn:
    the system and signed the acceptance form (Section 4.3.7).
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
-   ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response, and its ten
-   respondents rated it Very High Quality overall (4.59), with every characteristic Very High Quality
-   on the scale of Chapter 3's Table 3-5 and in agreement with the measured evidence (Chapter 4, Tables
-   4-17 and 4-19). The sixteen answers of the second round, on the redesigned system, rated it 4.82, and
-   all 26 answers together 4.61, so the rating held after the redesign, as the view of these
-   respondents rather than of a wider population.
+   ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response. Its users rated it
+   Very High Quality overall (4.82), with every characteristic Very High Quality, and its technical
+   evaluators Very High Quality overall (4.34), with no characteristic below High Quality on the scale
+   of Chapter 3's Table 3-5, in agreement with the measured evidence (Chapter 4, Tables 4-17 and 4-19).
+   This is the view of these respondents rather than of a wider population.
 
 ## 5.3 Recommendations
 
@@ -114,15 +112,17 @@ Based on the summary and conclusions of the study, the following are recommended
 5. Make the public page appear faster on phones, where its largest element was drawn at 3.4 to 3.6
    seconds before the redesign and 4.2 to 4.4 seconds after it, by pre-rendering it and serving the
    typefaces from the site itself (Section 4.3.5).
-6. Strengthen the two characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.32)
+6. Strengthen the characteristics rated lowest (Section 4.4.3). Raise **Maintainability** (4.32)
    by moving the database work now written inside the request handlers, three calls in four, into
    service modules, one per kind of record, with the result reviewed by more than one developer, and
    give whoever evaluates it the architecture, the entity-relationship diagram and the data dictionary
-   (Figures 4-2 and 4-6, Appendix N) together with the system. Raise **Usability** (4.42 in the
-   first round, 4.78 in the second) by taking the landlady through each screen with the user manual
-   (Appendix K) before she uses the system alone, and by showing each new tenant first how to sign in
-   and find their unit and rent, where the tenants needed help, the first sign-in most of all in both
-   rounds (Section 4.3.7).
+   (Figures 4-2 and 4-6, Appendix N) together with the system. Raise **Usability** (4.20 from the
+   technical evaluators, 4.78 from the users) by taking the landlady through each screen with the
+   user manual (Appendix K) before she uses the system alone, and by showing each new tenant first how
+   to sign in and find their unit and rent, where the tenants needed help, the first sign-in most of
+   all in both rounds (Section 4.3.7). Raise **Reliability** (4.20 from the technical evaluators, 4.65
+   from the users, whose lowest item was whether the information shown is correct and up to date)
+   through recommendation 1, which keeps the figures tenants see in step with the receipt book.
 
 **For future researchers**
 

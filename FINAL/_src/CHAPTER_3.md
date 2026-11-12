@@ -247,8 +247,9 @@ WM = Σ(f × w) / N
 where *f* is the number of respondents choosing a rating, *w* the rating (1 to 5) and *N* the number of
 respondents, and interpreted using Table 4A. The composite mean of each characteristic is the mean of
 its group means, so that the landlady is not outweighed by several tenants on functions only she
-uses, and the overall mean is the mean of the eight composites. Each round was computed on its own
-and then together. For the acceptance test, the task completion rate is the number of tasks completed
+uses. The users' composites, from the landlady, the tenants and the prospective tenants, are reported
+beside the technical evaluators', and each overall mean is the mean of the composites its
+respondents rated. For the acceptance test, the task completion rate is the number of tasks completed
 without help divided by the number attempted, reported with the median time per task and the mean
 number of wrong turns. The results are descriptive, and no inferential test was made.
 

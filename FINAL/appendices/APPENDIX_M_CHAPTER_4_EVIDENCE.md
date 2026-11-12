@@ -1,7 +1,7 @@
 # APPENDIX M: SUPPORTING EVIDENCE FOR CHAPTER 4
 
 This appendix holds the detailed results that Chapter 4 summarizes: the full functional walkthrough,
-the rating of every survey item by every group, the measured evidence for each quality
+the rating of every survey item by every group (the users after the redesign and the technical evaluators, as in Chapter 4's Table 4-17; the users before the redesign are summarized in Table M-29), the measured evidence for each quality
 characteristic, and every change made in response to the evaluation.
 
 **Table M-1.** Results of the functional walkthrough (30 September 2026) (summarized in Chapter 4, Section 4.3.4)
@@ -48,23 +48,23 @@ characteristic, and every change made in response to the evaluation.
 | Payments I receive in person are recorded accurately against the correct unit and month. | Landlady | 5.00 |  | Very High Quality |
 | Online payments made by tenants appear correctly for me to verify before they are settled. | Landlady | 5.00 |  | Very High Quality |
 | Maintenance requests can be submitted, followed, and closed within the system. | Landlady | 5.00 |  | Very High Quality |
-| The financial reports the system produces match the records I keep. | Landlady | 4.00 |  | High Quality |
-| **Landlady mean** | | **4.83** | | Very High Quality |
-| I can see my own unit details, my bill, and what I still owe. | Tenants | 5.00 | 0.00 | Very High Quality |
-| I can submit a maintenance request and follow what happens to it. | Tenants | 5.00 | 0.00 | Very High Quality |
-| I can see a record of the payments I have made. | Tenants | 5.00 | 0.00 | Very High Quality |
-| **Tenant mean** | | **5.00** | | Very High Quality |
+| The financial reports the system produces match the records I keep. | Landlady | 5.00 |  | Very High Quality |
+| **Landlady mean** | | **5.00** | | Very High Quality |
+| I can see my own unit details, my bill, and what I still owe. | Tenants | 4.82 | 0.40 | Very High Quality |
+| I can submit a maintenance request and follow what happens to it. | Tenants | 4.73 | 0.65 | Very High Quality |
+| I can see a record of the payments I have made. | Tenants | 4.73 | 0.47 | Very High Quality |
+| **Tenant mean** | | **4.76** | | Very High Quality |
 | The system provides the functions required for tenant, unit, and occupancy management. | Technical | 4.80 | 0.45 | Very High Quality |
 | Rent and water charges are computed correctly and consistently. | Technical | 4.40 | 0.89 | Very High Quality |
 | Payment recording and verification behave correctly for both in-person and online payments. | Technical | 4.00 | 1.00 | High Quality |
 | The maintenance ticketing workflow supports submission, tracking, and closure. | Technical | 4.00 | 1.00 | High Quality |
 | Generated reports agree with the records held in the database. | Technical | 4.40 | 0.89 | Very High Quality |
 | **Technical evaluator mean** | | **4.32** | | Very High Quality |
-| I could find which kinds of units the boarding house has and how much they cost. | Prospects | 5.00 |  | Very High Quality |
-| I could see enough about a unit (its floor, how many people can stay, its floor plan) to decide whether to ask about it. | Prospects | 5.00 |  | Very High Quality |
-| I could send an inquiry about a unit without difficulty. | Prospects | 5.00 |  | Very High Quality |
-| **Prospective tenant mean** | | **5.00** | | Very High Quality |
-| **Composite mean** | | **4.79** | | **Very High Quality** |
+| I could find which kinds of units the boarding house has and how much they cost. | Prospects | 4.50 | 0.58 | Very High Quality |
+| I could see enough about a unit (its floor, how many people can stay, its floor plan) to decide whether to ask about it. | Prospects | 4.00 | 1.41 | High Quality |
+| I could send an inquiry about a unit without difficulty. | Prospects | 4.75 | 0.50 | Very High Quality |
+| **Prospective tenant mean** | | **4.42** | | Very High Quality |
+| **Users' composite (landlady, tenants, prospective tenants)** | | **4.72** | | **Very High Quality** |
 
 **Table M-3.** Measured evidence for Functional Suitability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
@@ -82,20 +82,20 @@ characteristic, and every change made in response to the evaluation.
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
 | The system responds quickly when I move between screens. | Landlady | 5.00 |  | Very High Quality |
-| Financial reports are produced without a long wait. | Landlady | 4.00 |  | High Quality |
+| Financial reports are produced without a long wait. | Landlady | 5.00 |  | Very High Quality |
 | The system stays responsive even when many records are shown at once. | Landlady | 5.00 |  | Very High Quality |
-| **Landlady mean** | | **4.67** | | Very High Quality |
-| The system opens quickly. | Tenants | 5.00 | 0.00 | Very High Quality |
-| The system responds without delay when I move between screens. | Tenants | 5.00 | 0.00 | Very High Quality |
-| **Tenant mean** | | **5.00** | | Very High Quality |
+| **Landlady mean** | | **5.00** | | Very High Quality |
+| The system opens quickly. | Tenants | 4.91 | 0.30 | Very High Quality |
+| The system responds without delay when I move between screens. | Tenants | 4.91 | 0.30 | Very High Quality |
+| **Tenant mean** | | **4.91** | | Very High Quality |
 | Response times are acceptable for the expected number of users and records. | Technical | 4.20 | 0.84 | High Quality |
 | Report generation completes within a reasonable time. | Technical | 4.40 | 0.55 | Very High Quality |
 | The system uses client and server resources efficiently. | Technical | 4.20 | 0.84 | High Quality |
 | **Technical evaluator mean** | | **4.27** | | Very High Quality |
-| The website opens quickly. | Prospects | 4.00 |  | High Quality |
-| The pages respond without delay when I move around the website. | Prospects | 4.00 |  | High Quality |
-| **Prospective tenant mean** | | **4.00** | | High Quality |
-| **Composite mean** | | **4.48** | | **Very High Quality** |
+| The website opens quickly. | Prospects | 4.75 | 0.50 | Very High Quality |
+| The pages respond without delay when I move around the website. | Prospects | 4.75 | 0.50 | Very High Quality |
+| **Prospective tenant mean** | | **4.75** | | Very High Quality |
+| **Users' composite (landlady, tenants, prospective tenants)** | | **4.89** | | **Very High Quality** |
 
 **Table M-5.** Measured evidence for Performance Efficiency (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
@@ -116,16 +116,16 @@ characteristic, and every change made in response to the evaluation.
 | Reports exported from the system open correctly in my spreadsheet program. | Landlady | 5.00 |  | Very High Quality |
 | I can use the system at the same time as the other applications on my device. | Landlady | 5.00 |  | Very High Quality |
 | **Landlady mean** | | **5.00** | | Very High Quality |
-| The system works correctly in the browser I normally use. | Tenants | 4.67 | 0.58 | Very High Quality |
-| I can use the system at the same time as my other apps. | Tenants | 4.67 | 0.58 | Very High Quality |
-| **Tenant mean** | | **4.67** | | Very High Quality |
+| The system works correctly in the browser I normally use. | Tenants | 4.73 | 0.47 | Very High Quality |
+| I can use the system at the same time as my other apps. | Tenants | 4.73 | 0.65 | Very High Quality |
+| **Tenant mean** | | **4.73** | | Very High Quality |
 | The system operates correctly across current mainstream browsers. | Technical | 4.40 | 0.89 | Very High Quality |
 | Exported files conform to formats that other applications can read. | Technical | 4.60 | 0.55 | Very High Quality |
 | The system coexists with other applications without interference. | Technical | 4.60 | 0.89 | Very High Quality |
 | **Technical evaluator mean** | | **4.53** | | Very High Quality |
-| The website works correctly in the browser I normally use. | Prospects | 4.00 |  | High Quality |
-| **Prospective tenant mean** | | **4.00** | | High Quality |
-| **Composite mean** | | **4.55** | | **Very High Quality** |
+| The website works correctly in the browser I normally use. | Prospects | 4.75 | 0.50 | Very High Quality |
+| **Prospective tenant mean** | | **4.75** | | Very High Quality |
+| **Users' composite (landlady, tenants, prospective tenants)** | | **4.83** | | **Very High Quality** |
 
 **Table M-7.** Measured evidence for Compatibility (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
@@ -140,29 +140,29 @@ characteristic, and every change made in response to the evaluation.
 
 | Indicator | Rated by | Mean | SD | Interpretation |
 | :--- | :--- | ---: | ---: | :--- |
-| I can tell what each screen is for without being taught. | Landlady | 3.00 |  | Moderate Quality |
-| The words and labels used match the way I actually talk about my property. | Landlady | 4.00 |  | High Quality |
+| I can tell what each screen is for without being taught. | Landlady | 5.00 |  | Very High Quality |
+| The words and labels used match the way I actually talk about my property. | Landlady | 5.00 |  | Very High Quality |
 | Before anything is changed or deleted, the system asks me to confirm and tells me what will happen. | Landlady | 5.00 |  | Very High Quality |
 | When something goes wrong, the message tells me what to do about it. | Landlady | 5.00 |  | Very High Quality |
-| I was able to learn the system without technical help. | Landlady | 3.00 |  | Moderate Quality |
-| **Landlady mean** | | **4.00** | | High Quality |
-| I can tell what each screen is for without being taught. | Tenants | 4.00 | 0.00 | High Quality |
-| The words used in the system are easy to understand. | Tenants | 5.00 | 0.00 | Very High Quality |
-| It is clear how much I owe and what the amount is made up of. | Tenants | 4.33 | 0.58 | Very High Quality |
-| When something goes wrong, the message tells me what to do about it. | Tenants | 4.67 | 0.58 | Very High Quality |
-| I was able to use the system without anyone explaining it to me. | Tenants | 4.33 | 0.58 | Very High Quality |
-| **Tenant mean** | | **4.47** | | Very High Quality |
+| I was able to learn the system without technical help. | Landlady | 5.00 |  | Very High Quality |
+| **Landlady mean** | | **5.00** | | Very High Quality |
+| I can tell what each screen is for without being taught. | Tenants | 4.73 | 0.65 | Very High Quality |
+| The words used in the system are easy to understand. | Tenants | 4.91 | 0.30 | Very High Quality |
+| It is clear how much I owe and what the amount is made up of. | Tenants | 4.73 | 0.47 | Very High Quality |
+| When something goes wrong, the message tells me what to do about it. | Tenants | 4.82 | 0.40 | Very High Quality |
+| I was able to use the system without anyone explaining it to me. | Tenants | 4.64 | 0.67 | Very High Quality |
+| **Tenant mean** | | **4.76** | | Very High Quality |
 | The interface is understandable without prior training. | Technical | 4.20 | 0.84 | High Quality |
 | Terminology is consistent across the system and appropriate to the users. | Technical | 4.20 | 1.10 | High Quality |
 | Destructive actions require confirmation and state their consequence. | Technical | 4.20 | 0.84 | High Quality |
 | Error messages are actionable rather than technical. | Technical | 4.00 | 1.00 | High Quality |
 | The interface is operable for users with limited technical background. | Technical | 4.40 | 0.89 | Very High Quality |
 | **Technical evaluator mean** | | **4.20** | | High Quality |
-| I could tell what each part of the website is for without being taught. | Prospects | 5.00 |  | Very High Quality |
-| The words used on the website are easy to understand. | Prospects | 5.00 |  | Very High Quality |
-| When I made a mistake in the inquiry form, the message told me what to fix. | Prospects | 5.00 |  | Very High Quality |
-| **Prospective tenant mean** | | **5.00** | | Very High Quality |
-| **Composite mean** | | **4.42** | | **Very High Quality** |
+| I could tell what each part of the website is for without being taught. | Prospects | 4.75 | 0.50 | Very High Quality |
+| The words used on the website are easy to understand. | Prospects | 4.75 | 0.50 | Very High Quality |
+| When I made a mistake in the inquiry form, the message told me what to fix. | Prospects | 4.25 | 0.96 | Very High Quality |
+| **Prospective tenant mean** | | **4.58** | | Very High Quality |
+| **Users' composite (landlady, tenants, prospective tenants)** | | **4.78** | | **Very High Quality** |
 
 **Table M-9.** Measured evidence for Usability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
@@ -184,18 +184,18 @@ characteristic, and every change made in response to the evaluation.
 | When information cannot be loaded, the system says so instead of showing a wrong amount. | Landlady | 5.00 |  | Very High Quality |
 | After an interruption, nothing I had already recorded was lost. | Landlady | 5.00 |  | Very High Quality |
 | **Landlady mean** | | **5.00** | | Very High Quality |
-| The system is available whenever I try to use it. | Tenants | 4.33 | 1.15 | Very High Quality |
-| The information shown to me is correct and up to date. | Tenants | 4.33 | 0.58 | Very High Quality |
-| When something cannot be loaded, the system says so instead of showing a wrong amount. | Tenants | 4.00 | 1.00 | High Quality |
-| **Tenant mean** | | **4.22** | | Very High Quality |
+| The system is available whenever I try to use it. | Tenants | 4.82 | 0.40 | Very High Quality |
+| The information shown to me is correct and up to date. | Tenants | 4.55 | 0.93 | Very High Quality |
+| When something cannot be loaded, the system says so instead of showing a wrong amount. | Tenants | 4.73 | 0.47 | Very High Quality |
+| **Tenant mean** | | **4.70** | | Very High Quality |
 | The system handles failure of a request without presenting incorrect data. | Technical | 3.80 | 1.10 | High Quality |
 | Recorded data is retained reliably. | Technical | 4.60 | 0.55 | Very High Quality |
 | The system distinguishes clearly between "no data" and "data could not be loaded". | Technical | 4.20 | 1.10 | High Quality |
 | The system recovers from interruption without data loss. | Technical | 4.20 | 0.84 | High Quality |
 | **Technical evaluator mean** | | **4.20** | | High Quality |
-| The information shown (units, rates, availability) looks correct and up to date. | Prospects | 5.00 |  | Very High Quality |
-| **Prospective tenant mean** | | **5.00** | | Very High Quality |
-| **Composite mean** | | **4.61** | | **Very High Quality** |
+| The information shown (units, rates, availability) looks correct and up to date. | Prospects | 4.25 | 0.96 | Very High Quality |
+| **Prospective tenant mean** | | **4.25** | | Very High Quality |
+| **Users' composite (landlady, tenants, prospective tenants)** | | **4.65** | | **Very High Quality** |
 
 **Table M-11.** Measured evidence for Reliability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
@@ -224,7 +224,7 @@ characteristic, and every change made in response to the evaluation.
 | Credentials are handled and stored appropriately. | Technical | 4.00 | 1.00 | High Quality |
 | Authentication and session handling follow accepted practice. | Technical | 4.20 | 0.84 | High Quality |
 | **Technical evaluator mean** | | **4.36** | | Very High Quality |
-| **Composite mean** | | **4.68** | | **Very High Quality** |
+| **Users' composite (landlady, tenants, prospective tenants)** | | **5.00** | | **Very High Quality** |
 
 **Table M-13.** Measured evidence for Security (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
@@ -250,7 +250,6 @@ characteristic, and every change made in response to the evaluation.
 | Automated checks exist that would catch a regression. | Technical | 4.20 | 0.84 | High Quality |
 | A change in one part of the system is unlikely to disturb unrelated parts. | Technical | 4.40 | 0.89 | Very High Quality |
 | **Technical evaluator mean** | | **4.32** | | Very High Quality |
-| **Composite mean** | | **4.32** | | **Very High Quality** |
 
 **Table M-15.** Measured evidence for Maintainability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
@@ -271,18 +270,18 @@ characteristic, and every change made in response to the evaluation.
 | I can install the system on my phone without going to an app store. | Landlady | 5.00 |  | Very High Quality |
 | I did not need to install any other software to use the system. | Landlady | 5.00 |  | Very High Quality |
 | **Landlady mean** | | **5.00** | | Very High Quality |
-| The system works on my own phone or computer. | Tenants | 5.00 | 0.00 | Very High Quality |
-| I can open the system on more than one device. | Tenants | 4.67 | 0.58 | Very High Quality |
-| I did not need to install anything extra to use it. | Tenants | 5.00 | 0.00 | Very High Quality |
-| **Tenant mean** | | **4.89** | | Very High Quality |
+| The system works on my own phone or computer. | Tenants | 4.91 | 0.30 | Very High Quality |
+| I can open the system on more than one device. | Tenants | 4.73 | 0.65 | Very High Quality |
+| I did not need to install anything extra to use it. | Tenants | 4.91 | 0.30 | Very High Quality |
+| **Tenant mean** | | **4.85** | | Very High Quality |
 | The system can be deployed to another environment without modification. | Technical | 4.20 | 0.84 | High Quality |
 | The client installs on a mobile device without an application store. | Technical | 4.60 | 0.55 | Very High Quality |
 | The system does not depend on software the target environment is unlikely to have. | Technical | 4.80 | 0.45 | Very High Quality |
 | **Technical evaluator mean** | | **4.53** | | Very High Quality |
-| The website works on my own phone. | Prospects | 5.00 |  | Very High Quality |
-| I did not need to install anything to use it. | Prospects | 5.00 |  | Very High Quality |
-| **Prospective tenant mean** | | **5.00** | | Very High Quality |
-| **Composite mean** | | **4.86** | | **Very High Quality** |
+| The website works on my own phone. | Prospects | 4.75 | 0.50 | Very High Quality |
+| I did not need to install anything to use it. | Prospects | 4.75 | 0.50 | Very High Quality |
+| **Prospective tenant mean** | | **4.75** | | Very High Quality |
+| **Users' composite (landlady, tenants, prospective tenants)** | | **4.87** | | **Very High Quality** |
 
 **Table M-17.** Measured evidence for Portability (summarized in Chapter 4, Section 4.4.5, Table 4-18)
 
@@ -358,7 +357,7 @@ characteristic, and every change made in response to the evaluation.
 | Development | Fifteen defects in behavior corrected, among them a partial payment that left no debt and cash recorded with nothing written to the books; the Excel downloads | Adyen with GCash working end to end in Adyen's test environment, with no real money (26 September); updates checked every two seconds; offline reading; the breached-password check (7 October) | The restyle of every screen; an inquiry the landlady deleted now says so to its sender; a signed-in account is sent from the inquiry pages to its own portal. The move-in form no longer asks for an anniversary date, which the server always set to the move-in date. Each screen keeps the figures it has loaded for the visit, so returning to it does not wait for them. A record dated in a closed year can no longer be recorded, changed or deleted, and last year stays open until every December receipt is in. A GCash payment settles the oldest unpaid bill. A tenant can no longer cancel a repair once someone is sent. The landlady's Manage window no longer shows a repair's messages, and a tenant's note reaches her as a notification |
 | Testing | Seven automated check suites, over 100 assertions, each defect covered by one | The screen-versus-database audit (26 and 29 September, six defects); 20 suites (29 September); the testing day with the landlady, three tenants and one prospective tenant (30 September); the technical evaluators' review (3 October) | All 114 test cases of Appendix L rerun on 4 November: none failed, 56 passed as written, 21 passed with wording the redesign had changed, and 37 need a person and were left for one. A click-by-click audit of every screen on 6 November. The 21 automated check suites passed after each change, and the screens were checked in light and dark at phone and desktop width. The page timings measured again on 10 November (Table M-31). A second round of users, 31 October to 10 November: ten tenants and four prospective tenants did the tasks, and sixteen answered the ISO/IEC 25010 questionnaire (Tables M-28 to M-30) |
 | Deployment | Unchanged | Hosted on Vercel from 24 September; tenant accounts prepared on 29 September; in use beside the landlady's own records (Table 4-22) | The same site. Four corrections to the data, each a numbered migration applied after a backup and read back. Migration 088 (2 November) moved sixteen units into the kind of unit they really are, with the old kinds kept in the audit record. Migration 089 (4 November) removed old password hashes from 16 audit rows. Migration 090 (5 November) removed a rehearsal test tenant. Migration 091 (6 November) ended two receipts' rent periods a month after they start, as each was one month's rent |
-| Review | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 4-19); the ISO/IEC 25010 survey (Section 4.4) | The team's review of the screens. The second round rated the system 4.82 overall, Very High Quality, and all 26 answers together 4.61 (Table M-29) |
+| Review | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 4-19); the ISO/IEC 25010 survey (Section 4.4) | The team's review of the screens. The users rated the redesigned system 4.82 overall, Very High Quality (Table M-29) |
 
 **Table M-20.** Quality in use (30 September 2026) (summarized in Chapter 4, Section 4.4.5)
 
@@ -446,33 +445,32 @@ characteristic, and every change made in response to the evaluation.
 | :--- | :--- | :--- | :--- | :--- |
 | Audit of the live records against what each tenant's screen shows, 13 October 2026 | Two tenants were shown their August rent as overdue (₱7,450 and ₱10,400), although the landlady's receipts record both as paid on 12 and 25 August. Severity high: a wrong amount shown. The landlady's ledger itself was correct | Each bill was raised on 26 September, when the tenant opened the payment screen. The landlady's August receipts were added on 30 September by a transfer from her workbook, which writes the receipts directly; only a receipt recorded on the Monthly Income screen settles the bills it covers | The same day, after a backup: each bill was settled by a verified payment carrying its receipt's number and date, as the Monthly Income screen would have done, with an entry in the audit trail. The ledger was unchanged (952 receipts). The transfer script now lists any open bill its receipts would pay and will not run until that is acknowledged | A new automated rule compares every bill shown as owed with the receipts; it failed, naming the two units, when the correction was undone in a test, and passes on the live records |
 
-**Table M-28.** Respondents by round (summarized in Chapter 4, Section 4.4.1)
+**Table M-28.** Users who answered the survey before and after the redesign (summarized in Chapter 4, Section 4.4.1)
 
-| Group | Round 1, 30 September to 18 October 2026 | Round 2, 31 October to 10 November 2026 | Both rounds |
+| Group | Before the redesign | After the redesign |
+| :--- | --: | --: |
+| Landlady | 1 | 1 |
+| Tenants | 3 | 11 |
+| Prospective tenants | 1 | 4 |
+| **Total** | **5** | **16** |
+
+The users before the redesign tested on 30 September 2026, and those after it from 31 October to 10 November 2026. The landlady answered both times. A prospective tenant who answered the landlady's section of the questionnaire by mistake is left out, since those items describe the landlady's use. The five technical evaluators are reported in their own column of Chapter 4's Table 4-17. Names are removed from the response files: `docs/TESTING_DAY/results/ROUND_1_...csv` and `ROUND_2_...csv`.
+
+**Table M-29.** Composite means of the users before and after the redesign, and of the technical evaluators (summarized in Chapter 4, Section 4.4.3)
+
+| Characteristic | Users before the redesign (5) | Users after the redesign (16, Chapter 4) | Technical evaluators (5, Chapter 4) |
 | :--- | --: | --: | --: |
-| Landlady | 1 | 1 | 2 |
-| Tenants | 3 | 11 | 14 |
-| Technical evaluators | 5 | 0 | 5 |
-| Prospective tenants | 1 | 4 | 5 |
-| **Total** | **10** | **16** | **26** |
+| Functional Suitability | 4.94 | 4.72 | 4.32 |
+| Performance Efficiency | 4.56 | 4.89 | 4.27 |
+| Compatibility | 4.56 | 4.83 | 4.53 |
+| Usability | 4.49 | 4.78 | 4.20 |
+| Reliability | 4.74 | 4.65 | 4.20 |
+| Security | 5.00 | 5.00 | 4.36 |
+| Maintainability | not rated | not rated | 4.32 |
+| Portability | 4.96 | 4.87 | 4.53 |
+| **Overall** | **4.75** | **4.82** | **4.34** |
 
-Round 1's users were the landlady, three tenants and one prospective tenant, who tested on 30 September 2026. The five technical evaluators reviewed the system separately, on 3 to 18 October, and their answers are counted with Round 1 in Chapter 4. The landlady answered in both rounds, and both of her answers are counted. A prospective tenant who answered the landlady's section of the questionnaire by mistake is left out, since those items describe the landlady's use. Round 2 had no technical evaluators, so its Maintainability rests on Round 1 alone, and its Security, which only the landlady and the evaluators rate, on the landlady's second answer. Names are removed from the response files: `docs/TESTING_DAY/results/ROUND_1_...csv`, `ROUND_2_...csv` and `COMBINED_...csv`.
-
-**Table M-29.** Composite means by round (summarized in Chapter 4, Section 4.4.3)
-
-| Characteristic | Round 1 (Chapter 4) | Round 2 | Both rounds |
-| :--- | --: | --: | --: |
-| Functional Suitability | 4.79 | 4.72 | 4.64 |
-| Performance Efficiency | 4.48 | 4.89 | 4.66 |
-| Compatibility | 4.55 | 4.83 | 4.71 |
-| Usability | 4.42 | 4.78 | 4.52 |
-| Reliability | 4.61 | 4.65 | 4.55 |
-| Security | 4.68 | 5.00 | 4.68 |
-| Maintainability | 4.32 | no responses | 4.32 |
-| Portability | 4.86 | 4.87 | 4.80 |
-| **Overall** | **4.59** | **4.82** | **4.61** |
-
-Each composite is the mean of the group means, as in Chapter 3. Every composite in every column is Very High Quality on the scale of Chapter 3's Table 3-5. Round 2's overall is the mean of seven characteristics, since it has no Maintainability ratings.
+Each users' composite is the mean of the group means of the landlady, the tenants and the prospective tenants, as in Chapter 3, and each users' overall is the mean of seven characteristics, since only the technical evaluators rated Maintainability. Security is the landlady's rating among the users. Every composite is Very High Quality on the scale of Chapter 3's Table 3-5 except the technical evaluators' Usability and Reliability, 4.20, at the top of High Quality.
 
 **Table M-30.** Task results, second round (summarized in Chapter 4, Section 4.3.7)
 

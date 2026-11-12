@@ -614,118 +614,128 @@ model.
 
 ### 4.4.1 Respondents
 
-Table 4-14 shows the respondents by group in each round, and Table 4-15 how many forms were given out
-and returned in the first round.
+Table 4-14 shows the respondents whose ratings are reported in this section, and Table 4-15 how many
+forms were given out and returned.
 
-**Table 4-14.** Distribution of respondents, by round
+**Table 4-14.** Distribution of respondents
 
-| Group | Round 1 | Percent | Round 2 | Both rounds | Percent |
-| :--- | ---: | ---: | ---: | ---: | ---: |
-| Landlady | 1 | 10.00% | 1 | 2 | 7.69% |
-| Tenants | 3 | 30.00% | 11 | 14 | 53.85% |
-| Technical evaluators | 5 | 50.00% | 0 | 5 | 19.23% |
-| Prospective tenants | 1 | 10.00% | 4 | 5 | 19.23% |
-| **Total** | **10** | 100% | **16** | **26** | 100% |
+| Group | Number | Percent |
+| :--- | ---: | ---: |
+| Landlady | 1 | 4.76% |
+| Tenants | 11 | 52.38% |
+| Technical evaluators | 5 | 23.81% |
+| Prospective tenants | 4 | 19.05% |
+| **Total** | **21** | 100% |
 
-Round 2 followed the redesign of the third iteration. The landlady answered in both rounds, so the 26
-answers come from 25 people.
-
-**Table 4-15.** Instrument administration and response rate, Round 1
+**Table 4-15.** Instrument administration and response rate
 
 | Group | Distributed | Retrieved | Valid | Response rate |
 | :--- | ---: | ---: | ---: | ---: |
-| Landlady | 1 | 1 | 1 | 100% |
-| Tenants | 3 | 3 | 3 | 100% |
+| Landlady | Not recorded | 1 | 1 | — |
+| Tenants | Not recorded | 11 | 11 | — |
 | Technical evaluators | 5 | 5 | 5 | 100% |
-| Prospective tenants | 1 | 1 | 1 | 100% |
-| **Total** | **10** | **10** | **10** | **100%** |
+| Prospective tenants | Not recorded | 4 | 4 | — |
+| **Total** | | **21** | **21** | |
 
-In the first round, ten people answered, each after using the system and giving consent as
-described in Section 3.3. No member of the development team was among them. Two of the four groups
-have one respondent each, so for those groups a mean is one person's rating. The results describe how
-these ten people rated the system, not a sample from which a wider population can be inferred. In the
-second round, sixteen answers were received on the redesigned system, from eleven tenants, four
-prospective tenants and the landlady again, with no technical evaluators (Appendix M, Table M-28).
+The number of forms given to the users was not recorded, so their response rate cannot be given;
+every form returned was complete and valid.
+
+The landlady, eleven tenants and four prospective tenants answered after using the redesigned system
+of the third iteration, and the five technical evaluators after reviewing the system, each after
+giving consent as described in Section 3.3. No member of the development team was among them. The
+landlady is one respondent, so her group's mean is one person's rating. The results describe how
+these respondents rated the system, not a sample from which a wider population can be inferred. Five
+users had also answered before the redesign, the landlady, three tenants and a prospective tenant
+(Appendix M, Table M-28).
 
 ### 4.4.2 Interpretation of Scores
 
 Each item was rated on the five-point scale in Table 3-4, and means are read using Chapter 3's Table
-3-5. The composite of each characteristic is the mean of its group means, so that the one landlady is not
-outweighed by three tenants on functions only she uses. The overall mean is the mean of the eight
-composites. Averaging every response together instead gives 4.47 rather than 4.59, with the same
-interpretation, Very High Quality, and the same highest characteristic, Portability. The order below
-it changes, with Usability lowest, because pooling lets the five technical evaluators outweigh the
-one landlady. Table 4-16 works one weighted mean in full, WM = Σ(f × w) / N.
+3-5. The composite of each characteristic is the mean of its group means, so that the one landlady is
+not outweighed by eleven tenants on functions only she uses. The users' composites, from the landlady,
+the tenants and the prospective tenants, are reported beside the technical evaluators', whose
+questionnaire asks about the system from a developer's side. Each overall mean is the mean of the
+characteristics its respondents rated: seven for the users, since only the technical evaluators rated
+Maintainability, and eight for the technical evaluators. Averaging every user's response together
+instead gives 4.80 rather than 4.82, with the same interpretation, Very High Quality, and the same
+order of characteristics. Table 4-16 works one weighted mean in full, WM = Σ(f × w) / N.
 
 **Table 4-16.** Worked computation of a weighted mean
 
 | Rating (w) | Meaning | Frequency (f) | f × w |
 | ---: | :--- | ---: | ---: |
-| 5 | Strongly Agree | 3 | 15 |
-| 4 | Agree | 0 | 0 |
+| 5 | Strongly Agree | 9 | 45 |
+| 4 | Agree | 2 | 8 |
 | 3 | Neutral | 0 | 0 |
 | 2 | Disagree | 0 | 0 |
 | 1 | Strongly Disagree | 0 | 0 |
-| **Total** | | **N = 3** | **Σ(f × w) = 15** |
+| **Total** | | **N = 11** | **Σ(f × w) = 53** |
 
 Indicator: "I can see my own unit details, my bill, and what I still owe." (Functional Suitability,
-rated by tenants). WM = 15 / 3 = **5.00**, which Table 3-5 reads as **Very High Quality**.
+rated by tenants). WM = 53 / 11 = **4.82**, which Table 3-5 reads as **Very High Quality**.
 
 ### 4.4.3 Results by Characteristic
 
 Table 4-17 summarizes the result for each characteristic. The rating of every item by every group is
-in Appendix M (Tables M-2 to M-17, ratings and measured evidence for each characteristic). Table 4-17
-reports the first round, the ten respondents in Table 4-14's first column; the second round is
-summarized after it and given in full in Appendix M, Table M-29.
+in Appendix M (Tables M-2 to M-17, ratings and measured evidence for each characteristic).
 
 **Table 4-17.** Summary of evaluation results
 
-| Characteristic | n | Composite mean | Interpretation | Rank |
-| :--- | ---: | ---: | :--- | ---: |
-| Functional Suitability | 10 | 4.79 | Very High Quality | 2 |
-| Performance Efficiency | 10 | 4.48 | Very High Quality | 6 |
-| Compatibility | 10 | 4.55 | Very High Quality | 5 |
-| Usability | 10 | 4.42 | Very High Quality | 7 |
-| Reliability | 10 | 4.61 | Very High Quality | 4 |
-| Security | 6 | 4.68 | Very High Quality | 3 |
-| Maintainability | 5 | 4.32 | Very High Quality | 8 |
-| Portability | 10 | 4.86 | Very High Quality | 1 |
-| **Overall** | | **4.59** | **Very High Quality** | |
+| Characteristic | Users' mean | Interpretation | Technical evaluators' mean | Interpretation |
+| :--- | ---: | :--- | ---: | :--- |
+| Functional Suitability | 4.72 | Very High Quality | 4.32 | Very High Quality |
+| Performance Efficiency | 4.89 | Very High Quality | 4.27 | Very High Quality |
+| Compatibility | 4.83 | Very High Quality | 4.53 | Very High Quality |
+| Usability | 4.78 | Very High Quality | 4.20 | High Quality |
+| Reliability | 4.65 | Very High Quality | 4.20 | High Quality |
+| Security | 5.00 | Very High Quality | 4.36 | Very High Quality |
+| Maintainability | not rated | | 4.32 | Very High Quality |
+| Portability | 4.87 | Very High Quality | 4.53 | Very High Quality |
+| **Overall** | **4.82** | **Very High Quality** | **4.34** | **Very High Quality** |
 
-The ten respondents rated the system **Very High Quality overall (4.59)**, and no group mean fell
-below High Quality. This is the range Canlas et al. (2026) report for a Philippine dormitory system
-rated by the same kinds of respondents, tenants, administrators and IT professionals. Here, each
-rating is also read beside the measured evidence for its characteristic (Section 4.4.5).
+Users: the landlady, eleven tenants and four prospective tenants (n = 16). Security is the landlady's
+rating, since tenants and prospective tenants did not rate it. Technical evaluators: n = 5.
 
-The second round, sixteen answers on the redesigned system, rated it **4.82
-overall**, with each of the seven characteristics it rated again Very High Quality. Across both
-rounds, 26 answers, the overall is **4.61** (Appendix M, Table M-29). Usability, rated 4.42 in the
-first round and the lowest of the characteristics all four groups rated, was 4.78 in the second,
-after the evaluators' changes and the redesign. Because the second round had no technical
-evaluators, Maintainability rests on the first round's five, and the second round's Security rating
-on the landlady's answer alone.
+The users rated the system **Very High Quality overall (4.82)**, and the technical evaluators **Very
+High Quality overall (4.34)**. Every users' composite is Very High Quality. Two of the technical
+evaluators' eight, Usability and Reliability at 4.20, fall at the top of High Quality, and no group
+mean fell below High Quality. This is the range Canlas et al. (2026) report for a Philippine
+dormitory system rated by the same kinds of respondents, tenants, administrators and IT
+professionals. The technical evaluators rated lower than the users on every characteristic; their
+items ask about the system as a developer would judge it (Appendix J). Here, each rating is
+also read beside the measured evidence for its characteristic (Section 4.4.5).
 
-**Portability** was rated highest (4.86), as one code base installed on an Android phone and an
-iPhone without an app store. **Functional Suitability** followed (4.79): every feature the objective
-names is present, and 96 to 100 percent of the executed checks of correctness gave the right result.
-**Security** (4.68) is discussed in Section 4.4.4. **Reliability** (4.61) agrees closely with the
-testing. The technical evaluators' lowest item, 3.80 for handling a failed request without
-presenting incorrect data, names the one test that failed, the ₱0 of step 23b, since resolved. **Compatibility**
-(4.55) agrees with the browser matrix, on which every combination tried worked. **Performance
-Efficiency** (4.48) matches the measurements: no failed request, but screens of two to three seconds
-on a phone.
+**Performance Efficiency** was the users' highest of the characteristics all three user groups rated
+(4.89; technical evaluators 4.27). It matches the measurements: no failed request, and after the
+redesign every screen timed again was ready sooner than before except sign-in, though screens still
+took two to three seconds on a phone (Section 4.3.5). **Portability** followed (4.87; 4.53), as one
+code base installed on an Android phone and an iPhone without an app store. **Compatibility** (4.83;
+4.53) agrees with the browser matrix, on which every combination tried worked. **Security** (5.00;
+4.36) is discussed in Section 4.4.4.
 
-**Usability (4.42)** is the lowest of the characteristics all four groups rated, though still Very
-High Quality. The prospective tenant gave every item 5 and the tenants 4.47. The landlady gave 3 to
-telling what each screen is for and to learning the system without help, and she learned it with
-each step read to her (Section 4.3.4). The technical evaluators' mean rose from 3.00 for the first
-of them to 4.20 for the group. The first gave 3 to all five items before the fourteen changes made
-for that group, eleven of them about usability. The four who reviewed afterwards gave 4.80, 4.60,
-3.60 and 5.00. Here the rating and the measurement agree. Nine tasks in ten were done without help,
-and 76 accessibility scans of 19 screens found no violation once one defect on three screens was
-corrected. The landlady's two 3s remain the clearest sign of where a first-time user needs help.
+**Usability** (4.78; 4.20) is the lowest of the technical evaluators' characteristics, with
+Reliability. The landlady gave every item 5, the tenants 4.76 and the prospective tenants 4.58.
+Before the redesign the users had given it 4.49, and the landlady had given 3 to telling what each
+screen is for and to learning the system without help (Appendix M, Table M-29). The technical
+evaluators' mean rose from 3.00 for the first of them to 4.20 for the group. The first gave 3 to all
+five items before the fourteen changes made for that group, eleven of them about usability. The four
+who reviewed afterwards gave 4.80, 4.60, 3.60 and 5.00. Here the rating and the measurement agree.
+At least nine tasks in ten were done without help in each round, and 76 accessibility scans of 19 screens
+found no violation once one defect on three screens was corrected.
 
-**Maintainability (4.32)** is the lowest composite, though also Very High Quality. Its five
+**Functional Suitability** (4.72; 4.32): every feature the objective names is present, and 96 to
+100 percent of the executed checks of correctness gave the right result. The landlady gave every item
+5. The lowest user item was the prospective tenants' 4.00 for seeing enough about a unit to decide
+whether to ask about it, and the technical evaluators gave 4.00 to payment recording and to the repair
+workflow.
+
+**Reliability** (4.65; 4.20) is the users' lowest. The item the tenants and prospective tenants rated
+lowest was whether the information shown is correct and up to date (4.55 and 4.25). The technical
+evaluators' lowest item, 3.80 for handling a failed request without presenting incorrect data, names
+the one test that failed, the ₱0 of step 23b, since resolved. The testing agrees: no critical defect
+was found, and the two offline defects found on real devices passed on re-test.
+
+**Maintainability** (4.32), rated by the technical evaluators only, is Very High Quality. Its five
 respondents gave 4.00, 5.00, 4.60, 3.00 and 5.00, each after reviewing the running system without
 inspecting its source code. Here the measurement, read from the code itself, therefore carries more
 weight than the rating, and it points the same way. The system can be checked as a whole on every
@@ -735,7 +745,7 @@ recommendation 6.
 
 ### 4.4.4 Security
 
-The landlady gave every Security item 5. The five technical evaluators gave a mean of 4.60 to role
+The landlady gave every Security item 5. The five technical evaluators, whose mean was 4.36, gave a mean of 4.60 to role
 restriction and to the audit trail, and 4.40 to a tenant being kept out of administrative data. They
 gave 4.20 to authentication and session handling, which agrees with two low-risk session weaknesses
 the code review accepted, and 4.00 to the handling of credentials, for which the measured evidence
@@ -760,20 +770,19 @@ drawn about them.
 
 **Table 4-18.** Measured and rated evidence by characteristic
 
-| Characteristic | Sub-characteristics | Measured | Rated | Measured result (Appendix M) | Composite mean (Table 4-17) |
-| :--- | ---: | ---: | ---: | :--- | ---: |
-| Functional Suitability | 3 | 3 | 3 | All six features present; 96 to 100 percent of correctness checks passed | 4.79 |
-| Performance Efficiency | 3 | 3 | 3 | No request failed under load; every screen usable within 3.05 s on a phone | 4.48 |
-| Compatibility | 2 | 1 | 2 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct | 4.55 |
-| Usability | 6 | 5 | 4 | 91 percent of tasks without help; 0 accessibility violations in 76 scans | 4.42 |
-| Reliability | 4 | 3 | 4 | No critical defect; the two offline defects found on real devices, a ₱0 shown for a figure that could not load and a late message, both passed on re-test | 4.61 |
-| Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | 4.68 |
-| Maintainability | 5 | 4 | 4 | 20 of 20 suites passed without writing to the records; every change a numbered migration; but 154 of 204 database calls inside the request handlers | 4.32 |
-| Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | 4.86 |
-| **All** | **31** | **27** | **25** | | **4.59** |
+| Characteristic | Sub-characteristics | Measured | Rated | Measured result (Appendix M) | Users' mean (Table 4-17) | Technical evaluators' mean (Table 4-17) |
+| :--- | ---: | ---: | ---: | :--- | ---: | ---: |
+| Functional Suitability | 3 | 3 | 3 | All six features present; 96 to 100 percent of correctness checks passed | 4.72 | 4.32 |
+| Performance Efficiency | 3 | 3 | 3 | No request failed under load; every screen usable within 3.05 s on a phone | 4.89 | 4.27 |
+| Compatibility | 2 | 1 | 2 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct | 4.83 | 4.53 |
+| Usability | 6 | 5 | 4 | 91 percent of tasks without help; 0 accessibility violations in 76 scans | 4.78 | 4.20 |
+| Reliability | 4 | 3 | 4 | No critical defect; the two offline defects found on real devices, a ₱0 shown for a figure that could not load and a late message, both passed on re-test | 4.65 | 4.20 |
+| Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | 5.00 | 4.36 |
+| Maintainability | 5 | 4 | 4 | 20 of 20 suites passed without writing to the records; every change a numbered migration; but 154 of 204 database calls inside the request handlers | not rated | 4.32 |
+| Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | 4.87 | 4.53 |
+| **All** | **31** | **27** | **25** | | **4.82** | **4.34** |
 
-For all eight characteristics the two kinds of evidence agree, Usability included once the later
-technical evaluators had rated it (Section 4.4.3).
+For all eight characteristics the two kinds of evidence agree (Section 4.4.3).
 
 Quality in use, which ISO/IEC 25010:2011 defines as the quality experienced by users in their own
 context, was measured by the acceptance test of Section 4.3.7 in the manner of ISO/IEC 25022
