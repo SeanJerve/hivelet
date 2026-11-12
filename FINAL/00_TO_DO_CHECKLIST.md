@@ -329,8 +329,7 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
 - [x] What they reviewed: the live site (Sean, 12 November). Chapter 3 and Section 4.4.1 now say so.
 - [x] Which account: both the test tenant and the administrator (Sean, 12 November). Section 3.4
   now says they could see the boarding house's records.
-- [ ] If a team member was with them the whole time and they copied nothing, tell Claude: one more
-  clause in Section 3.4 makes that the answer when the panel asks.
+- [x] A team member was with them throughout (Sean, 12 November). Section 3.4 says so.
 - [ ] If they were given the administrator's password itself, change it (Settings, Change password)
   and tell the landlady the new one.
 - [ ] How many were sent the form. Table 4-15 says "Not recorded" until you give the number.
