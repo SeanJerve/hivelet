@@ -222,7 +222,7 @@ resource-constrained residential settings.
 This study addresses this gap through the development of Hivelet, a Progressive Web
 Application-based apartment management system designed specifically for small-scale apartment
 operations. The system integrates centralized MIS principles, financial tracking mechanisms,
-structured issue ticketing, tenant management, booking coordination, and accessible cross-device
+structured issue ticketing, tenant management, inquiries and reservations, and accessible cross-device
 deployment within a unified operational environment.
 
 By consolidating these interconnected administrative functions into a single platform, the study
@@ -234,7 +234,7 @@ management contexts.
 
 This study is grounded in the concept of improving apartment management by integrating its core
 processes into a centralized digital platform. Apartment operations involve interconnected activities
-such as tenant management, payment tracking, booking coordination, and maintenance handling. In
+such as tenant management, payment tracking, inquiries and reservations, and maintenance handling. In
 traditional setups, these processes are often managed manually and separately, resulting in delays,
 inconsistencies, and increased administrative workload.
 
@@ -300,8 +300,9 @@ the owner's raw records, such as receipts, expenses and repair requests, into th
 on the Overview and in the downloaded workbooks.
 
 **Booking Inquiry** – A message a prospective tenant sends about a unit through the public website,
-without an account. The owner answers it in the system, and if the person rents, moves them in from
-it.
+without an account. The owner answers it in the system, may mark the unit Reserved so that it takes
+no other inquiry, and if the person rents, moves them in from it. This is the form booking and
+reservation management takes in this study: nothing is booked or paid for online.
 
 **Financial Tracking** – A system function that records and monitors tenant payments and operational
 expenses in a structured digital format, ensuring accurate financial records and supporting

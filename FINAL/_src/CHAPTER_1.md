@@ -108,9 +108,10 @@ Application (PWA) created to transition the 33-unit Fe Galang Da Silva Boarding 
 Sampaguita Street, Barangay 4 Sagpon, Old Albay District, Legazpi City, near Bicol University, from
 spreadsheet- and paper-based administration to a centralized digital management system. To
 achieve this, Hivelet integrates comprehensive room and tenant management capabilities, facilitating
-seamless onboarding, the secure digital storage of records, real-time monitoring of room
-availability, and a public-facing booking module that allows prospective renters to submit
-reservation inquiries without requiring full system access. Furthermore, the application features a
+seamless onboarding, the secure digital storage of records, real-time monitoring of room availability, and booking and reservation management in the form the
+owner's practice needs: a public page where prospective tenants see the units and send an inquiry
+about one without an account, which the owner answers, and from which she can reserve the unit and
+move the person in. Nothing is booked or paid for online. Furthermore, the application features a
 financial tracking component dedicated to monitoring cash flow, expenses, and tenant payments. It
 primarily supports manual, cash-based transaction recording, and it offers an optional online
 payment through GCash, which runs in Adyen's test environment and takes no real money. Operational
@@ -119,8 +120,7 @@ log maintenance requests that the administrator can assign, track, and update un
 
 Despite these comprehensive features, the scope is bound by specific delimitations regarding system
 accessibility and financial processing: although the PWA utilizes cached resources for limited
-offline access and responsive design for diverse devices, core functionalities, such as data
-encoding, real-time synchronization, and booking updates, strictly require an active internet
+offline access and responsive design for diverse devices, core functionalities, such as data encoding, real-time synchronization, and inquiries and their replies, strictly require an active internet
 connection to maintain data consistency. Additionally, the supplementary online payment feature lets
 a tenant pay a bill through GCash using the Adyen payment gateway; each such payment is recorded as
 pending and counts only after the administrator verifies it. The feature was built and works end

@@ -160,7 +160,7 @@ findings revealed inefficiencies such as inconsistent record-keeping, delayed co
 of centralized monitoring. Two later rounds of written questions, answered on 17 September and 12 October 2026, settled what
 the interviews had left open. Based on these insights, the researchers defined the system requirements,
 scope, and core functionalities of Hivelet. Emphasis was placed on the need for a centralized digital
-platform capable of integrating booking, financial tracking, and maintenance management within a
+platform capable of integrating inquiries and reservations, financial tracking, and maintenance management within a
 unified system.
 
 ### 3.2.2 Design
@@ -174,7 +174,7 @@ characterized by limited infrastructure, unstable internet connectivity, and min
 resources. To address these constraints, Hivelet was structured as a lightweight Progressive Web
 Application (PWA) with optimized performance, simple navigation, and minimal system requirements.
 
-Workflows for booking, financial monitoring, and maintenance requests were mapped and refined through
+Workflows for inquiries and reservations, financial monitoring, and maintenance requests were mapped and refined through
 stakeholder feedback to ensure alignment with real-world operations.
 
 ### 3.2.3 Development
@@ -182,8 +182,7 @@ stakeholder feedback to ensure alignment with real-world operations.
 This phase corresponds to the second objective of the study, which focuses on developing the system.
 The researchers implemented the Hivelet system using Vue 3 with TypeScript for the front-end
 interface, ensuring responsiveness across devices. The back-end was developed using Node.js and
-Express.js in TypeScript to manage core functionalities such as booking processing, financial
-computations, and maintenance ticket handling. An optional online payment feature was implemented
+Express.js in TypeScript to manage core functionalities such as inquiry handling, financial computations, and maintenance ticket handling. An optional online payment feature was implemented
 through the Adyen payment gateway, allowing a tenant to settle a bill through GCash without replacing
 the primary cash-based financial workflow. It was built and works end to end in Adyen's test
 environment, where it takes no real money; it was not taken live, because that needs the owner's

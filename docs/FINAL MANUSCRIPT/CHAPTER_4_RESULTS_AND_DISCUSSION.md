@@ -255,7 +255,9 @@ tenant's Overview, with the unit it is held for.
 
 ### 4.2.3 Booking and Reservation Management Module
 
-Figure 11 presents the public unit catalogue and the inquiry form. A visitor sees each unit with its
+Booking and reservation management takes the form the owner's practice needs. She arranges every viewing herself, so nothing is booked or paid for online: a visitor sends an inquiry
+about a unit, the owner answers it, may mark the unit Reserved, and moves the person in from the
+inquiry (Section 1.4). Figure 11 presents the public unit catalogue and the inquiry form. A visitor sees each unit with its
 rate, read live from the database, and sends an inquiry about a specific unit without an account. On
 sending, the visitor receives a private link and a short reference code; either one (the code with the
 phone number given) opens the conversation, where the owner's answer appears and the visitor can write
