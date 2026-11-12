@@ -327,9 +327,12 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
 - [ ] Who they are and why they count as technical evaluators (IT professional, developer or IT
   faculty), and that none is on the team. The paper says so (Section 4.4.1).
 - [x] What they reviewed: the live site (Sean, 12 November). Chapter 3 and Section 4.4.1 now say so.
-- [ ] Which account they used on the live site, and whether they saw any tenant's name or amounts.
-  Section 3.4 (ethics) needs one sentence on it: the four October evaluators used the demo copy
-  precisely so no outsider saw the landlady's records.
+- [x] Which account: both the test tenant and the administrator (Sean, 12 November). Section 3.4
+  now says they could see the boarding house's records.
+- [ ] If a team member was with them the whole time and they copied nothing, tell Claude: one more
+  clause in Section 3.4 makes that the answer when the panel asks.
+- [ ] If they were given the administrator's password itself, change it (Settings, Change password)
+  and tell the landlady the new one.
 - [ ] How many were sent the form. Table 4-15 says "Not recorded" until you give the number.
 
 ### [x] 18. Small design and wording choices (B-121): done 12 November

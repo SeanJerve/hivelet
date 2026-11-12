@@ -323,7 +323,8 @@ Data Privacy Act of 2012 (Republic Act No. 10173, 2012). Participation was volun
 withdrawn at any time without any effect on a tenant's tenancy. The landlady and each tenant signed
 the informed consent form (Appendix P), and the prospective tenants and the technical evaluators
 agreed through the data privacy notice that opens the questionnaire. The four technical evaluators
-reached through Panelista reviewed a demonstration copy holding sample data, so none of them saw the landlady's records. The three of the second round reviewed the live system. Each tenant used only their own account, which shows only their own
+reached through Panelista reviewed a demonstration copy holding sample data, so none of them saw the landlady's records. The three of the second round reviewed the live system, signed in both as the test tenant and
+as the administrator, so they could see the boarding house's records. Each tenant used only their own account, which shows only their own
 records, and received an individual starting password in person, which they replaced at first
 sign-in. Respondents could give a name so that the researchers could tell the responses apart. The
 names were removed before the responses were analyzed, and none appears in this paper. Names,
