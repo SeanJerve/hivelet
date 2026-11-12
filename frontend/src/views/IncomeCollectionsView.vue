@@ -895,7 +895,7 @@ const editMethod = ref<'Cash' | 'GCash' | 'Bank Transfer' | 'Adyen Online'>('Cas
 const editUnitOptions = computed(() =>
   rooms.map((r) => ({
     value: r.unitCode,
-    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'Vacant'} (${r.cluster})`,
+    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'no tenant'} (${r.cluster})`,
   }))
 );
 
@@ -937,8 +937,18 @@ const editDateCoveredEnd = computed(() => {
   return periodEnd(editDateCoveredStart.value, editMonthsCovered.value);
 });
 
+/**
+ * The water this receipt will carry once saved. The server never takes a typed figure: it writes
+ * occupants x rate on every edit (admin.ts, computeWaterFee), and the form does not even send one.
+ * So the box shows that figure and cannot be typed in, instead of accepting a number that would be
+ * replaced (B-121, 12 Nov 2026).
+ */
+const editWaterComputed = computed(
+  () => (Number(editOccupants.value) > 0 ? Number(editOccupants.value) : 1) * (waterRatePerOccupant.value ?? 200)
+);
+
 const editTotal = computed(() => {
-  return (Number(editRent.value) || 0) + (Number(editWater.value) || 0);
+  return (Number(editRent.value) || 0) + editWaterComputed.value;
 });
 
 function startEditIncome(r: IncomeRecord) {
@@ -1051,6 +1061,8 @@ function handleDeleteFromModal() {
 
 async function handleEditIncome() {
   if (!editingIncome.value) return;
+  editWater.value = editWaterComputed.value;
+
   const invalid = Number(editRent.value) < 0 || Number(editWater.value) < 0;
   if (invalid) {
     showToast('error', 'Check the amounts', 'An amount cannot be below zero.');
@@ -2036,7 +2048,8 @@ const isDownloadOpen = ref(false);
             </label>
             <label class="ws-field">
               Water
-              <input id="edit-water" v-model.number="editWater" type="number" min="0" step="any" class="ws-input w-full" required />
+                            <input id="edit-water" :value="editWaterComputed" type="number" readonly aria-readonly="true" class="ws-input w-full" />
+              <span class="ws-hint">Worked out from the occupants.</span>
             </label>
           </div>
 

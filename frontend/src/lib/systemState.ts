@@ -624,7 +624,8 @@ export const LANDLADY = {
     return showPhone(landladyPhone.value);
   },
   property: "Fe Galang Da Silva Boarding House",
-  address: "32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
+  // Written the same way on every page that shows it (B-121, 12 Nov 2026).
+  address: "32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City",
 };
 
 /**
@@ -979,7 +980,8 @@ export function asListedUnitCode(value: string): string {
  * e.g. "Mark Cruz + 2 roommates", or just "Mark Cruz" for someone living alone
  */
 export function formatUnitOccupantsSummary(unitCode: string): { text: string; count: number; residents: string[] } {
-  if (!unitCode) return { text: 'None (Vacant)', count: 0, residents: [] };
+  // One phrase for 'nobody lives here' on every screen; Vacant is a unit's status, not this (B-121, 12 Nov 2026).
+  if (!unitCode) return { text: 'No tenant', count: 0, residents: [] };
   const uCode = unitCode.toUpperCase();
 
   /**
@@ -1008,7 +1010,7 @@ export function formatUnitOccupantsSummary(unitCode: string): { text: string; co
       const txt = rQty > 0 ? `${r.tenant} + ${rQty} ${rQty === 1 ? 'roommate' : 'roommates'}` : r.tenant;
       return { text: txt, count: occ, residents: [r.tenant] };
     }
-    return { text: 'No active tenants', count: 0, residents: [] };
+    return { text: 'No tenant', count: 0, residents: [] };
   }
 
   let totalCount = 0;

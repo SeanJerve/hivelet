@@ -6,7 +6,7 @@
  *            and design identity established by InquireView.vue and user reference.
  */
 import type { DemoAccount } from '@/lib/demoAccounts.dev';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import { LogIn, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import { login, authError, isAuthenticating, homeRouteForRole, MOVED_OUT_FLAG } from '@/lib/authStore';
@@ -117,7 +117,19 @@ function describeLoginFailure(err: unknown): string | null {
   return null;
 }
 
-const shownError = computed(() => (authError.value ? loginFailure.value ?? authError.value : null));
+/**
+ * What is missing, in the page's own words, when Enter is pressed before both fields are filled.
+ * The form is `novalidate` so the browser's own "Please fill out this field" bubble, in its own
+ * style and language, never appears (B-121, 12 Nov 2026).
+ */
+const missingHint = ref<string | null>(null);
+watch([email, password], () => {
+  missingHint.value = null;
+});
+
+const shownError = computed(
+  () => missingHint.value ?? (authError.value ? loginFailure.value ?? authError.value : null)
+);
 
 /**
  * Shown once when a tenant arrives here because their account was closed on
@@ -140,7 +152,17 @@ onMounted(() => {
 });
 
 async function handleSubmit() {
-  if (!canSubmit.value) return;
+    if (!canSubmit.value) {
+    if (!isAuthenticating.value) {
+      missingHint.value = !email.value.trim()
+        ? 'Enter your login ID or phone number.'
+        : !password.value
+          ? 'Enter your password.'
+          : 'Enter your full login ID or phone number.';
+    }
+    return;
+  }
+  missingHint.value = null;
   loginFailure.value = null;
 
   try {
@@ -224,7 +246,7 @@ async function handleQuickLogin(account: DemoAccount) {
       sat side by side from 640px, with the note and both policy links
       between them and the button.
     -->
-    <form class="mt-8 lg:mt-6 max-w-md" @submit.prevent="handleSubmit">
+    <form class="mt-8 lg:mt-6 max-w-md" novalidate @submit.prevent="handleSubmit">
       <div class="grid gap-y-5">
         <div>
           <label
@@ -357,7 +379,7 @@ async function handleQuickLogin(account: DemoAccount) {
 
       <button
         type="submit"
-        :disabled="!canSubmit"
+        :disabled="isAuthenticating"
         class="pill-btn-brand mt-6 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />

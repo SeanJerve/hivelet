@@ -1142,7 +1142,7 @@ async function handleOnboard() {
         v-if="groupedRows.length === 0"
         class="ws-reveal py-16 text-center"
       >
-        <p class="text-base font-semibold text-ink">Nobody matches</p>
+        <p class="text-base font-semibold text-ink">Nothing matches</p>
         <p v-if="q" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
           Try a name, unit or phone number.
         </p>

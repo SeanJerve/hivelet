@@ -583,7 +583,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           </h2>
           <div class="max-w-md">
             <p class="text-xs sm:text-sm text-ink-soft leading-relaxed">
-              Galang's Compound, 32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Albay.
+              Galang's Compound, 32 Sampaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
             </p>
 
             <div class="mt-3">

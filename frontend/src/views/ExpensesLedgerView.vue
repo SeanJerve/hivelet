@@ -588,10 +588,11 @@ function submitAddExpense() {
   // The amount, as the income confirmation shows its total (audit, 4 Nov 2026).
   const total = formEntries.value.reduce((s, e) => s + e.allocations.reduce((t, a) => t + (Number(a.amount) || 0), 0), 0);
   const confirmMsg = n === 1
-    ? `Record this expense entry of ${peso(total, 2)} for ${formatDateForDisplay(date.value)}?`
-    : `Record these ${n} expense entries, ${peso(total, 2)} in all, for ${formatDateForDisplay(date.value)}?`;
+    ? `Record this expense of ${peso(total, 2)} for ${formatDateForDisplay(date.value)}?`
+    : `Record these ${n} expenses, ${peso(total, 2)} in all, for ${formatDateForDisplay(date.value)}?`;
   showConfirm(
-    n === 1 ? 'Record expense entry' : 'Record expense entries',
+    // Worded as Record payment's check is: a question, then Go back or Record it (B-121, 12 Nov 2026).
+    n === 1 ? 'Record this expense?' : 'Record these expenses?',
     confirmMsg,
     async () => {
       isSubmitting.value = true;
@@ -735,8 +736,9 @@ function submitAddExpense() {
         isSubmitting.value = false;
       }
     },
-    n === 1 ? 'Record entry' : `Record ${n} entries`,
-    false
+    n === 1 ? 'Record it' : 'Record them',
+    false,
+    'Go back'
   );
 }
 
@@ -820,13 +822,15 @@ const confirmAction = ref<(() => void) | null>(null);
  */
 const confirmLabel = ref('Delete expense');
 const confirmDestructive = ref(true);
+const confirmCancelLabel = ref('Cancel');
 
-function showConfirm(title: string, message: string, action: () => void, label = 'Delete expense', destructive = true) {
+function showConfirm(title: string, message: string, action: () => void, label = 'Delete expense', destructive = true, cancelLabel = 'Cancel') {
   confirmTitle.value = title;
   confirmMessage.value = message;
   confirmAction.value = action;
   confirmLabel.value = label;
-  confirmDestructive.value = destructive;
+    confirmDestructive.value = destructive;
+  confirmCancelLabel.value = cancelLabel;
   isConfirmOpen.value = true;
 }
 
@@ -1672,6 +1676,7 @@ async function handleEditExpense() {
       :title="confirmTitle"
       :message="confirmMessage"
       :confirm-label="confirmLabel"
+      :cancel-label="confirmCancelLabel"
       :destructive="confirmDestructive"
       :busy="isSubmitting"
       @cancel="isConfirmOpen = false"

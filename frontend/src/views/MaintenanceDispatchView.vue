@@ -152,7 +152,7 @@ const logDesc = ref('');
 const logUnitOptions = computed(() =>
   !roomsLoaded.value || roomsFetchFailed.value ? [] : rooms.map((r) => ({
     value: r.unitCode.toLowerCase(),
-    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'Vacant'}`,
+    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'no tenant'}`,
   })),
 );
 

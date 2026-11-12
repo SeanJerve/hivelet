@@ -237,7 +237,7 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **To do:**
   - [ ] Ask Lloyd or the landlady, and tell Claude the answers.
 
-### [ ] 18. Small design and wording choices (B-121)
+### [x] 18. Small design and wording choices (B-121): done 12 November
 
 - **What this means:** on 6 November every screen was clicked through. No errors were found, but
   some **small inconsistencies** were: two screens wording the same thing differently, or one button
@@ -259,9 +259,8 @@ the team is allowed to schedule the final defense. Each item below is one we can
   | i | 13 of the 33 tenancies have an anniversary date different from their move-in date | Keep: the anniversary comes from her workbook, and the system shows what is recorded |
   | j | Unit PH (the test tenant) has October and November bills still "Due" although test receipts cover them | Goes away when the test tenant is moved out (item 19) |
 
-- **To do:**
-  - [ ] Sean reads the table and answers "go with the suggestions", or says which to change.
-    None of them affects the paper.
+- **Done 12 November:** Sean chose the suggestions, and they are in the system. b, c, d, f and h
+  were changed. a, g and i were kept. e was already fixed. j waits for item 19.
 
 ### [ ] 19. Move the test tenant out of unit PH (after the defense)
 

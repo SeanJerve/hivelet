@@ -544,7 +544,7 @@ async function handleSendReply() {
           </p>
 
           <p v-else-if="filteredInquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
-            <template v-if="searchQuery.trim()">No inquiry matches “{{ searchQuery.trim() }}”.</template>
+            <template v-if="searchQuery.trim()">Nothing matches “{{ searchQuery.trim() }}”.</template>
             <!-- Only the status filter can empty the list without a search. -->
             <template v-else>No inquiry is “{{ statusWord(statusFilter) }}”.</template>
           </p>
@@ -787,7 +787,12 @@ async function handleSendReply() {
              (Sean, 2026-10-02). Nothing goes out by text or email: the reply is
              saved to `inquiry_messages`, and since 065 the visitor reads it on
              their inquiry page. -->
-        <form @submit.prevent="handleSendReply" class="space-y-2 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-5">
+        <!-- No reply box on a finished lead (B-121, 12 Nov 2026): the visitor's own page stops taking
+             replies once it is Closed or Converted, so a reply here would answer no one. -->
+        <p v-if="!isLeadOpen(activeInquiry.status)" class="border-t border-line p-3 text-sm text-ink-soft sm:p-5">
+          This inquiry is {{ activeInquiry.status === 'Converted' ? 'done: the person was moved in' : 'closed' }}, so no reply can be sent.
+        </p>
+        <form v-else @submit.prevent="handleSendReply" class="space-y-2 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-5">
           <label for="reply" class="sr-only">Your answer</label>
           <div class="relative">
             <textarea

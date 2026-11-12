@@ -152,7 +152,7 @@ const editVisibility = ref<'Published' | 'Hidden'>('Published');
 const isSaving = ref(false);
 
 const occupantsSummary = computed(() => {
-  if (!unit.value) return { text: 'No active tenants', count: 0, residents: [] };
+  if (!unit.value) return { text: 'No tenant', count: 0, residents: [] };
   return formatUnitOccupantsSummary(unit.value.unitCode);
 });
 
@@ -476,7 +476,7 @@ async function handleSave() {
             <div class="min-w-0">
               <p class="text-sm font-semibold text-ink">
                 <template v-if="occupantsSummary.count > 0">{{ occupantsSummary.text }}</template>
-                <template v-else>Nobody</template>
+                <template v-else>No tenant</template>
               </p>
             </div>
           </div>

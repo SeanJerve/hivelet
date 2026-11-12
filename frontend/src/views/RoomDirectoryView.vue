@@ -216,7 +216,7 @@ function statusTone(status: UnitStatus): 'paid' | 'verify' | 'neutral' {
  */
 function tenantLine(unitCode: string): string {
   const summary = formatUnitOccupantsSummary(unitCode);
-  return summary.count > 0 ? summary.text : 'Nobody';
+  return summary.count > 0 ? summary.text : 'No tenant';
 }
 
 function editUnit(u: RoomItem) {
@@ -466,7 +466,7 @@ function applyRoomFilters(v: FilterDraft) {
         class="ws-reveal py-16 text-center"
       >
         <Search class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
-        <p class="mt-3 text-base font-semibold text-ink">No unit matches</p>
+        <p class="mt-3 text-base font-semibold text-ink">Nothing matches</p>
         <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
           Clear the search, or change the filters.
         </p>
