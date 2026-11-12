@@ -34,10 +34,18 @@ name. Signed consent forms go only in `_CONSENT_FORMS (not in repo)/`.
   in docs/TESTING_DAY/results/TECHNICAL_2026-11-12_ISO_IEC_25010_Software_Quality_Assessment.csv.
   Lloyd: Chapters 3 to 5, the abstract and Appendix M changed again, so take them from the new
     CLAUDE MANUSCRIPT.docx.
-- [x] Round 2 survey cleaned (Sean, 12 November): Toledo, a prospect, answered the tenants' section
-  and Tricia the landlady's, and the 31 October prospect answer was the team testing the form. All
+- [x] Round 2 survey cleaned (Sean, 12 November): one prospect answered the tenants' section
+  and another the landlady's, and the 31 October prospect answer was the team testing the form. All
   three are left out, so the users are the landlady, 10 tenants (matching the 10 consent scans) and 3
-  prospects (Janelle, Shannaya and one unnamed): 4.84 overall. The task results are unchanged.
+  prospects: 4.84 overall. The task results are unchanged.
+- [x] Final realign-and-check pass (Prompt 2, Lloyd, 12 November). Every survey figure and task count
+  was recomputed from the data files and agrees with the paper. Every table and figure cited exists,
+  and every reference is cited. Fixed: prose semicolons and dashes (Chapter 2's definitions now read
+  "**Term**: definition"), "owner" and "resident" in Appendix L, the consent section number in 4.4.1,
+  the last date in Chapters 3 to 5, Chapter 3's order of the two rounds, and conclusion 4's table
+  numbers. "Both ratings rose" now reads "are higher than the first round's", since the evaluators
+  of the two rounds are different people. Left as it is: the em dash inside a question of Appendix J,
+  because that is the questionnaire's own wording as respondents saw it.
 
 ---
 
@@ -327,16 +335,19 @@ in the Word file, so the Word file gets the checked version.
 - **To do:**
   - [x] Ask the landlady.
   - [ ] The landlady enters F1's missing receipts (August onward) on Monthly Income.
-  - [ ] Sean: correct the 2c bill of 26 September (water for 1 instead of 4) by a numbered
-    migration if it is still open (B-115).
+  - [x] The 2c bill of 26 September: no migration needed (checked read-only, 12 November). It is
+    Paid: the landlady recorded her ₱9,300 receipt (water for 4) on Monthly Income on 31 October,
+    which settled it. The bill itself still reads water for 1 (₱8,700), but the ledger has her receipt,
+    and Sean's rule was to leave a settled bill alone (B-115).
 
-### [ ] 17b. The three technical evaluators of 12 November (Sean)
+### [x] 17b. The three technical evaluators of 12 November (Sean)
 
 The panel may ask about them, since three people gave nearly every item 5 within eleven minutes, and
 one comment quotes the 0.08 from our own Table M-31. Be ready to say:
 
-- [ ] Who they are and why they count as technical evaluators (IT professional, developer or IT
-  faculty), and that none is on the team. The paper says so (Section 4.4.1).
+- [x] Who they are: anonymous (Lloyd, 12 November). The paper names no respondent. Each chose
+  "Technical evaluator (IT professional, developer, or IT faculty)" on the form, and none is on the
+  team (Section 4.4.1). The Q&A guide has the answer, and one on the eleven minutes.
 - [x] What they reviewed: the live site (Sean, 12 November). Chapter 3 and Section 4.4.1 now say so.
 - [x] Which account: both the test tenant and the administrator (Sean, 12 November). Section 3.4
   now says they could see the boarding house's records.
@@ -347,8 +358,8 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
   paper form, which is what Section 3.4 already says.
 - [x] How many were sent the form: 3, all returned (Sean, 12 November). Table 4-15 says 100%.
 - [ ] Optional: the users' forms given out still read "Not recorded" in Table 4-15. If the forms went
-  to exactly the 10 tenants and 5 prospective tenants (Janelle, Shannaya, the unnamed one, Toledo and
-  Tricia), tell Claude: the table can then show 10 of 10 tenants (100%) and 3 valid of 5 prospects
+  to exactly the 10 tenants and the 5 prospective tenants who answered (the 3 counted and the 2 left
+  out), tell Claude: the table can then show 10 of 10 tenants (100%) and 3 valid of 5 prospects
   (60%). Only if you are sure; "Not recorded" is honest as it is.
 
 ### [x] 18. Small design and wording choices (B-121): done 12 November
@@ -371,17 +382,10 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
   | g | The inquiry form from a unit's page starts with text already typed in, but `/inquire` starts empty | Keep: the unit page knows which unit is asked about |
   | h | A Closed inquiry still shows the reply box | Hide the reply box once an inquiry is Closed |
   | i | 13 of the 33 tenancies have an anniversary date different from their move-in date | Keep: the anniversary comes from her workbook, and the system shows what is recorded |
-  | j | Unit PH (the test tenant) has October and November bills still "Due" although test receipts cover them | Goes away when the test tenant is moved out (item 19) |
+  | j | Unit PH (the test tenant) has October and November bills still "Due" although test receipts cover them | Goes away when the test tenant is moved out after the defense (Later, below) |
 
 - **Done 12 November:** Sean chose the suggestions, and they are in the system. b, c, d, f and h
-  were changed. a, g and i were kept. e was already fixed. j waits for item 19.
-
-### [ ] 19. Move the test tenant out of unit PH (after the defense)
-
-- **What:** since 1 October the team's test account has lived in unit PH so the demonstration can
-  pay and request repairs without touching a real tenant. Because of it the public site shows 33 of
-  33 units occupied, while the property really has 32.
-- [ ] After the defense, move the test tenant out through Tenants, so PH shows as vacant again (B-106).
+  were changed. a, g and i were kept. e was already fixed. j waits for the test tenant to move out after the defense.
 
 ---
 
@@ -392,4 +396,5 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
 | **Mock defense** (Form 2 items 20 and 21) | A practice defense before a panel. Form 2 asks for its evaluation sheet and the list of what the team changed after it. When it is held, send Claude the panel's comments and it records what was done |
 | **Front matter** | The title page, approval sheet, defense date and room, and each member's Curriculum Vitae, made in the team's Word file |
 | **Turnover database script** (Proponent's Checklist item 31) | A copy of the live database's structure only (no records), for the turnover package. Claude can make it when asked: it only reads |
+| **Move the test tenant out of unit PH** (after the defense) | The team's test account has lived in PH since 1 October for the demonstration, so the public site shows 33 of 33 occupied. Afterwards, move it out through Tenants so PH shows vacant again (B-106) |
 | **Forms 4 to 9** | The forms for scheduling, grading, revisions and editing. They come after the clearance. The blanks are in the defense folder |
