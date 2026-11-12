@@ -334,7 +334,9 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
   November). Nothing to change.
 - [x] Consent: they answered anonymously on the Google Form after its privacy notice, signing no
   paper form, which is what Section 3.4 already says.
-- [ ] How many were sent the form. Table 4-15 says "Not recorded" until you give the number.
+- [x] How many were sent the form: 3, all returned (Sean, 12 November). Table 4-15 says 100%. The
+  users' forms stay "Not recorded": the count remembered (10 tenants) is below the 11 tenants who
+  answered, so it cannot be the number given out.
 
 ### [x] 18. Small design and wording choices (B-121): done 12 November
 

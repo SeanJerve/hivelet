@@ -647,12 +647,12 @@ are reported in this section, and Table 12A how many forms were given out and re
 | :--- | ---: | ---: | ---: | ---: |
 | Landlady | Not recorded | 1 | 1 | — |
 | Tenants | Not recorded | 11 | 11 | — |
-| Technical evaluators | Not recorded | 3 | 3 | — |
+| Technical evaluators | 3 | 3 | 3 | 100% |
 | Prospective tenants | Not recorded | 4 | 4 | — |
 | **Total** | | **19** | **19** | |
 
-The number of forms given out was not recorded, so no response rate can be given; every form
-returned was complete and valid.
+The number of forms given to the users was not recorded, so their response rate cannot be given;
+every form returned was complete and valid.
 
 The landlady, eleven tenants and four prospective tenants answered after using the redesigned system
 of the third iteration, and three technical evaluators after reviewing the live system on 12 November 2026, each

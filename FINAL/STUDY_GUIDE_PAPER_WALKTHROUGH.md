@@ -1461,8 +1461,9 @@ The section then has four labelled parts.
   Technical evaluators **3 (15.79%)**; Prospective tenants **4 (21.05%)**; Total **19**.
 
 **Table 4-15. Instrument administration and response rate**
-- *What it shows*: forms distributed, retrieved and valid per group. The forms given out were **not
-  recorded**, so no response rate is given; all **19** returned were valid.
+- *What it shows*: forms distributed, retrieved and valid per group. Technical evaluators **3, 3, 3,
+  100%**. For the users, the forms given out were **not recorded**, so no response rate is given; all
+  **19** returned were valid.
 - *How to read it*: **response rate** = forms retrieved ÷ forms distributed.
 
 **If the panel asks**

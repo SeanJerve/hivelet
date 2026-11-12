@@ -474,8 +474,8 @@ October evaluators and the prospective tenants, they answered the Google Form an
 agreeing to the data privacy notice that opens it, and signed no paper form. *Section 3.4.*
 
 **Why is the users' response rate not given?**
-The number of forms given out in the second round was not recorded, and the paper says so. Every
-form returned was complete. *Table 4-15.*
+The number of forms given to the users was not recorded, and the paper says so. Every form returned
+was complete. The technical evaluators: 3 sent, 3 returned. *Table 4-15.*
 
 **Nineteen respondents is very few. How can you claim Very High Quality?**
 We claim it only for the people who answered, and the paper says so: the results describe how they
