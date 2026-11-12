@@ -1085,24 +1085,24 @@ violation once one defect was fixed. **Where:** Section 4.3.6; Table 3-6.
 **Characteristic.** One of the eight quality areas in ISO/IEC 25010:2011 (the next eight entries).
 **Where:** Section 3.3; Table 3-6.
 
-**Compatibility.** Working with other products and exchanging data correctly (users 4.83, technical evaluators 4.53). **Where:**
+**Compatibility.** Working with other products and exchanging data correctly (users 4.83, technical evaluators 5.00). **Where:**
 Table 4-17.
 
-**Functional Suitability.** Doing the needed functions, correctly (users 4.72, technical evaluators 4.32). **Where:** Table 4-17.
+**Functional Suitability.** Doing the needed functions, correctly (users 4.72, technical evaluators 4.93). **Where:** Table 4-17.
 
-**Maintainability.** How easily the system can be changed and checked (4.32, rated by the technical evaluators only). **Where:**
+**Maintainability.** How easily the system can be changed and checked (4.73, rated by the technical evaluators only). **Where:**
 Table 4-17; Section 4.4.3.
 
-**Performance Efficiency.** Speed and use of resources under load (users 4.89, technical evaluators 4.27). **Where:** Table 4-17.
+**Performance Efficiency.** Speed and use of resources under load (users 4.89, technical evaluators 4.89). **Where:** Table 4-17.
 
-**Portability.** Moving to other devices and installing easily (users 4.87, technical evaluators 4.53). **Where:**
+**Portability.** Moving to other devices and installing easily (users 4.87, technical evaluators 5.00). **Where:**
 Table 4-17.
 
-**Reliability.** Working when needed and coping with faults (users 4.65, technical evaluators 4.20). **Where:** Table 4-17.
+**Reliability.** Working when needed and coping with faults (users 4.65, technical evaluators 4.83). **Where:** Table 4-17.
 
-**Security.** Protecting data and proving who did what (the landlady 5.00, technical evaluators 4.36). **Where:** Table 4-17; Section 4.4.4.
+**Security.** Protecting data and proving who did what (the landlady 5.00, technical evaluators 4.93). **Where:** Table 4-17; Section 4.4.4.
 
-**Usability.** How easily people learn and use it (users 4.78, technical evaluators 4.20). **Where:** Table 4-17; Section 4.4.3.
+**Usability.** How easily people learn and use it (users 4.78, technical evaluators 4.87). **Where:** Table 4-17; Section 4.4.3.
 
 **The 31 sub-characteristics of ISO/IEC 25010:2011** (Table 3-6 names what measured each one):
 
@@ -1238,8 +1238,8 @@ part, 1 interface only, 3 not as worded. **Where:** Section 4.1.2.
 
 **Respondent groups.** In Table 4-17: the users of the redesigned system (31 October to 10 November
 2026), the landlady (1), tenants (11) and prospective tenants (4), sixteen; and the technical evaluators
-(5); twenty-one in all. Five users also answered before the redesign (the landlady, three tenants, one
-prospective tenant). **Where:**
+(3, on 12 November); nineteen in all. The first round, before the redesign, had ten: the landlady,
+three tenants, one prospective tenant and five technical evaluators. **Where:**
 Table 4-14; App. M, Table M-28.
 
 **SDLC (Software Development Life Cycle).** The stages of building software; Agile is one. **Where:**
@@ -1328,8 +1328,8 @@ Table 4-11.
 **Where:** Table 4-16; Table 4-17.
 
 **Overall mean.** The mean of a group's composites: users 4.82 (seven characteristics, since only the
-evaluators rated Maintainability), technical evaluators 4.34 (all eight). Users before the redesign:
-4.75. **Where:**
+evaluators rated Maintainability), technical evaluators 4.90 (all eight). Before the redesign: users 4.75, technical evaluators
+4.34. **Where:**
 Table 4-17; App. M, Table M-29.
 
 **Pass rate.** Tests passed divided by tests executed: 82 / 83 = 98.8%. **Where:** Table 4-12.

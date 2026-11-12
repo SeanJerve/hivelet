@@ -89,8 +89,7 @@ optimize it on ISO/IEC 25010. *Section 1.2.*
 
 **Did you meet them?**
 All four, each with evidence: every gap traced to a module (Table 4-2); all six features in use on
-her real records; 82 of 83 tests passed (98.8%); rated Very High Quality, 4.82 by the users and 4.34 by the technical
-evaluators, with 51 changes made in response. *Chapter 5, Section 5.2.*
+her real records; 82 of 83 tests passed (98.8%); rated Very High Quality, 4.82 by the users and 4.90 by the technical evaluators, with 51 changes made in response. *Chapter 5, Section 5.2.*
 
 **What does the system NOT do?**
 It needs the internet to save, pay or sync (offline it only shows what was last loaded). Online payment
@@ -122,7 +121,7 @@ boarding house. *Section 2.2.*
 
 **Which study is closest to yours?**
 Canlas et al. (2026), FixHub: a Philippine dormitory maintenance system, built with Agile and rated on
-ISO/IEC 25010 by tenants, administrators and IT professionals. Our 4.82 and 4.34 are in the range they report.
+ISO/IEC 25010 by tenants, administrators and IT professionals. Our 4.82 and 4.90 are in the range they report.
 *Sections 2.1.4 and 4.4.3.*
 
 **Do you have local studies?**
@@ -430,20 +429,23 @@ was corrected the same day and is reported separately in Appendix M, Table M-27.
 
 **What was the overall result?**
 Two columns, both Very High Quality overall: the users rated the redesigned system **4.82** (every
-characteristic Very High Quality) and the technical evaluators **4.34** (Usability and Reliability at
-4.20, the top of High Quality). *Table 4-17.*
+characteristic Very High Quality) and the technical evaluators **4.90** (every characteristic Very High
+Quality too). *Table 4-17.*
 
-| Characteristic | Users (16) | Technical evaluators (5) |
+| Characteristic | Users (16) | Technical evaluators (3) |
 | :--- | --: | --: |
-| Functional Suitability | 4.72 | 4.32 |
-| Performance Efficiency | 4.89 | 4.27 |
-| Compatibility | 4.83 | 4.53 |
-| Usability | 4.78 | 4.20 |
-| Reliability | 4.65 | 4.20 |
-| Security | 5.00 (the landlady) | 4.36 |
-| Maintainability | not rated | 4.32 |
-| Portability | 4.87 | 4.53 |
-| **Overall** | **4.82** | **4.34** |
+| Functional Suitability | 4.72 | 4.93 |
+| Performance Efficiency | 4.89 | 4.89 |
+| Compatibility | 4.83 | 5.00 |
+| Usability | 4.78 | 4.87 |
+| Reliability | 4.65 | 4.83 |
+| Security | 5.00 (the landlady) | 4.93 |
+| Maintainability | not rated | 4.73 |
+| Portability | 4.87 | 5.00 |
+| **Overall** | **4.82** | **4.90** |
+
+Before the redesign (first round, Appendix M, Table M-29): five users 4.75, five technical evaluators
+4.34, with their Usability and Reliability at 4.20, the top of High Quality.
 
 **Why two columns and not one overall?**
 The two groups answer different questions: the users about their own use, the evaluators about the
@@ -451,27 +453,25 @@ system as a developer would judge it, and only the evaluators rated Maintainabil
 the mean of its own group means. *Sections 3.3 and 4.4.2.*
 
 **Who rated it?**
-Twenty-one: the landlady, eleven tenants and four prospective tenants, who used the redesigned system
-(31 October to 10 November), and five technical evaluators. The first evaluator, an IT professional in
+Nineteen on the redesigned system: the landlady, eleven tenants and four prospective tenants (31
+October to 10 November), and three technical evaluators (12 November). No member of the team. *Tables
+4-14 and 4-15.* The first round, before the redesign, had ten: the landlady, three tenants, one
+prospective tenant and five technical evaluators. The first of those evaluators, an IT professional in
 software quality assurance, reviewed the live system on 3 October; the other four, reached through
 Panelista, reviewed the demonstration copy with sample data on 15 to 18 October, so no outsider saw
-the landlady's records. No member of the team. *Tables 4-14 and 4-15.* Five users had also answered
-before the redesign (the landlady, three tenants, one prospective tenant: 4.75). *Appendix M, Tables
-M-28 and M-29.*
+the landlady's records. *Appendix M, Tables M-28 and M-29.*
 
-**Did the technical evaluators rate the redesigned system?** *(The paper does not raise this; know it
-in case the panel does.)*
-No: they reviewed it in October, before the redesign of Iteration 3. Answer plainly, then explain why
-their ratings still describe the system: the redesign changed how the screens look and added no
-module; their fourteen comments were all acted on before it; and after it, 77 of the 114 test cases
-were rerun and none failed. The dates are in the paper (Table 4-23 and Appendix M, Table M-19). Never
-say they rated the redesign. *Sections 4.2.1 and 4.4.6.*
+**Did the technical evaluators rate the redesigned system?**
+Three did, on 12 November, and theirs are the ratings in Table 4-17 (4.90). The five of October
+reviewed the system before the redesign, and their 4.34 is the first round, reported beside the
+first round's users in Appendix M, Table M-29. Their fourteen comments were all acted on before the
+redesign. *Sections 4.4.1 and 4.4.6.*
 
 **Why is the users' response rate not given?**
-The number of forms given to the users after the redesign was not recorded, and the paper says so.
-Every form returned was complete. The evaluators' rate is 5 of 5. *Table 4-15.*
+The number of forms given out in the second round was not recorded, and the paper says so. Every
+form returned was complete. *Table 4-15.*
 
-**Twenty-one respondents is very few. How can you claim Very High Quality?**
+**Nineteen respondents is very few. How can you claim Very High Quality?**
 We claim it only for the people who answered, and the paper says so: the results describe how they
 rated the system, not a population. What strengthens it is that every characteristic was also **measured**, and
 the measurements agree with the ratings on all eight. *Sections 4.4.1 and 4.4.5; Chapter 5,
@@ -489,19 +489,20 @@ owe": nine 5s and two 4s, 53 / 11 = 4.82. *Section 3.3; Section 4.4.2, Table 4-1
 Each rated only what it can judge: tenants did not rate Security or Maintainability, prospective
 tenants rated neither, and only the technical evaluators rated Maintainability. *Section 3.3.*
 
-**Why is Usability the evaluators' lowest?**
-The evaluators gave it 4.20, the top of High Quality, tied with Reliability; the users gave it 4.78. The
-first technical evaluator gave 3 to all five items, before the fourteen changes made for that group;
-the four who came after the changes gave 4.80, 4.60, 3.60 and 5.00. Among the users, the landlady
+**Why did Usability rise so much?**
+The users gave it 4.78 and the three technical evaluators 4.87 after the redesign. In the first round
+the evaluators gave it 4.20, the top of High Quality: the first gave 3 to all five items, before the
+fourteen changes made for that group, and the four who came after the changes gave 4.80, 4.60, 3.60
+and 5.00. The three on the redesigned system gave 4.80, 4.80 and 5.00. Among the users, the landlady
 gave every item 5 after the redesign, where she had given 3 to two items before it (users' Usability
 4.49 before, 4.78 after). The measurement agrees (nine tasks in ten or more without help, no
 accessibility violation), and recommendation 6 acts on the first sign-in, where help was needed. *Section
 4.4.3.*
 
-**Why is Maintainability lowest, and only five respondents?**
-Only the technical evaluators can judge it (4.00, 5.00, 4.60, 3.00 and 5.00), and it is still Very High
-Quality (4.32); none inspected the code,
-so the measurement carries more weight. It points the same way: the system can be checked as a
+**Why is Maintainability the evaluators' lowest, and only three respondents?**
+Only the technical evaluators can judge it (4.40, 5.00 and 4.80), and it is still Very High Quality
+(4.73; 4.32 from the five of the first round, none of whom inspected the code). The measurement,
+read from the code itself, carries more weight. It points the same way: the system can be checked as a
 whole on every change, but 154 of 204 database calls are written inside the request handlers instead
 of service modules. *Sections 4.4.3 and 4.4.5; recommendation 6.*
 

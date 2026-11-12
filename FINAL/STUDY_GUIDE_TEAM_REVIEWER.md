@@ -40,7 +40,7 @@ defense with it.
 > We tested it at three levels: **82 of 83 tests passed (98.8%)**, with no critical defect, and three
 > tenants completed **all 34 task attempts, 31 without help**. On **ISO/IEC 25010**, sixteen users of the
 > redesigned system (the landlady, 11 tenants, 4 prospects) rated it **4.82 out of 5**, and five
-> technical evaluators **4.34**, both **Very High Quality**. All four objectives were met.
+> technical evaluators **4.90**, both **Very High Quality**. All four objectives were met.
 
 ---
 
@@ -52,7 +52,7 @@ defense with it.
 | **2. The aim** | One general and four specific objectives | 4 | 1.2 |
 | **3. The gap** | Related systems solve one function, or suit big properties | 5, 6 | 2.1.6, 2.2, 2.3 |
 | **4. The build** | Agile in three iterations; the stack; six features; security | 7 to 12 | 3.2, 4.2 |
-| **5. The proof** | 82 of 83 tests; real users; 4.82 and 4.34; measured and rated agree on all eight; conclusions; recommendations | 13 to 19 | 4.3, 4.4, 5 |
+| **5. The proof** | 82 of 83 tests; real users; 4.82 and 4.90; measured and rated agree on all eight; conclusions; recommendations | 13 to 19 | 4.3, 4.4, 5 |
 
 The slide deck is `HIVELET DEFENSE SLIDES.pptx` (20 slides). **Slide 1 still has square brackets** for
 the team members, the adviser and the defense date: fill them in.
@@ -66,7 +66,7 @@ the team members, the adviser and the defense date: fill them in.
 | 1 | Analyze the existing practices; set the requirements | Every gap traced to a requirement and a module (Table 4-2); 44 functional requirements, 49 business rules, 10 non-functional requirements |
 | 2 | Develop six features: tenant and room management, booking and reservation management (the public unit list, inquiries, Reserved units and moving in, with nothing booked or paid online), financial tracking with optional online payment, maintenance ticketing and notification, role-based access, PWA | All six built and in use on her real records, in her own layout (Sections 4.2.2 to 4.2.7) |
 | 3 | Pilot test it for functionality, responsiveness and operational performance | 82 of 83 tests passed (98.8%), above the course's 90%, no critical defect (Table 4-12) |
-| 4 | Evaluate and optimize it on ISO/IEC 25010 | Very High Quality: users 4.82, technical evaluators 4.34; 51 changes made in response (Tables 4-17 and 4-19) |
+| 4 | Evaluate and optimize it on ISO/IEC 25010 | Very High Quality: users 4.82, technical evaluators 4.90; 51 changes made in response (Tables 4-17 and 4-19) |
 
 ---
 
@@ -126,12 +126,12 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 
 | Figure | Value |
 | :--- | :--- |
-| Respondents | **21**: the landlady, 11 tenants and 4 prospective tenants on the redesigned system (31 Oct to 10 Nov), and 5 technical evaluators (4 of them on the demo copy). Table 4-14 |
-| Overall | Users **4.82**, technical evaluators **4.34**, both **Very High Quality** (users 4.80 if every answer is averaged together). Table 4-17 |
+| Respondents | **19** on the redesigned system: the landlady, 11 tenants and 4 prospective tenants (31 Oct to 10 Nov), and 3 technical evaluators (12 Nov). Table 4-14. First round: 10, with 5 technical evaluators (4 of them on the demo copy). App. M, M-28 |
+| Overall | Users **4.82**, technical evaluators **4.90**, both **Very High Quality** (users 4.80 if every answer is averaged together). Table 4-17 |
 | Why two columns | The groups answer different questions, and only the evaluators rated Maintainability |
 | Before the redesign | Five users (landlady, 3 tenants, 1 prospect) gave **4.75** (Appendix M, Tables M-28 and M-29) |
 | Second-round tasks | 10 tenants did 151 of 160 without help (94%), 4 prospects 31 of 32 (97%), none failed. No times this round (Table M-30) |
-| Lowest | Users: Reliability **4.65**. Evaluators: Usability and Reliability **4.20** (High), Maintainability **4.32** |
+| Lowest | Users: Reliability **4.65**. Evaluators: Maintainability **4.73**. Before the redesign: users 4.75, evaluators 4.34 |
 | If asked when the evaluators reviewed | In October, before the redesign. Say so plainly; the redesign added no module, their 14 comments were all acted on, and 77 rerun test cases passed. Never say they rated the redesign |
 | Sub-characteristics | **31**: 27 measured, 25 rated, 2 neither (UI aesthetics, reusability) |
 | Changes made in response | **51**; the evaluators' **14** comments, all addressed |
@@ -141,14 +141,14 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 
 | Characteristic | Users | Evaluators | Measured evidence |
 | :--- | --: | --: | :--- |
-| Functional Suitability | 4.72 | 4.32 | All six features present; 96 to 100% of correctness checks passed |
-| Performance Efficiency | 4.89 | 4.27 | No request failed under load; every screen usable within 3.05 s on a phone |
-| Compatibility | 4.83 | 4.53 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct |
-| Usability | 4.78 | 4.20 | 91% of tasks without help; 0 accessibility violations in 76 scans |
-| Reliability | 4.65 | 4.20 | No critical defect; both offline defects passed on re-test, 13 Oct |
-| Security | 5.00 (landlady) | 4.36 | Every protection tried held; A+ from three outside scanners |
-| Maintainability | not rated | 4.32 | 20 of 20 suites pass without writing; every change a migration; but 154 of 204 database calls inside handlers |
-| Portability | 4.87 | 4.53 | No screen wider than its window at four widths; installed on two phones without a store |
+| Functional Suitability | 4.72 | 4.93 | All six features present; 96 to 100% of correctness checks passed |
+| Performance Efficiency | 4.89 | 4.89 | No request failed under load; every screen usable within 3.05 s on a phone |
+| Compatibility | 4.83 | 5.00 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct |
+| Usability | 4.78 | 4.87 | 91% of tasks without help; 0 accessibility violations in 76 scans |
+| Reliability | 4.65 | 4.83 | No critical defect; both offline defects passed on re-test, 13 Oct |
+| Security | 5.00 (landlady) | 4.93 | Every protection tried held; A+ from three outside scanners |
+| Maintainability | not rated | 4.73 | 20 of 20 suites pass without writing; every change a migration; but 154 of 204 database calls inside handlers |
+| Portability | 4.87 | 5.00 | No screen wider than its window at four widths; installed on two phones without a store |
 
 ---
 
@@ -266,8 +266,8 @@ anyway**.
 **Presenting**
 - Lead with the story (Section 1 above), not the technology. Panels remember "43% of her rows had no
   anniversary date" longer than "Vue 3".
-- Keep slide 13 (82 of 83) and slide 16 (4.82 and 4.34) on screen long enough for the panel to read them.
-- Say the limits before the panel does: twenty-one respondents, the users' forms given out not counted,
+- Keep slide 13 (82 of 83) and slide 16 (4.82 and 4.90) on screen long enough for the panel to read them.
+- Say the limits before the panel does: nineteen respondents, three of them technical evaluators, the users' forms given out not counted,
   no task times in the second round, Adyen on its test
   account, the system still running beside her records. Each is in the paper; naming them shows you know the work.
 
@@ -333,10 +333,10 @@ Cover the answers and test yourself, or quiz each other. The answer to every que
 <details><summary>8. What was the one failed test?</summary>Walkthrough step 23b: ₱0 shown instead of "—" with no connection; fixed and passed on 13 Oct.</details>
 <details><summary>9. What did the screen-versus-database audit find?</summary>Six defects every automated suite had missed, all fixed on 26 Sep.</details>
 <details><summary>10. How did the tenants do?</summary>Round 1: all 34 attempts completed, 31 without help (91%), median 60 seconds; help only at first sign-in and finding their unit and rent. Round 2: ten tenants, 151 of 160 without help (94%); four prospects, 31 of 32 (97%); none failed; no times recorded.</details>
-<details><summary>11. Overall rating, highest and lowest?</summary>Users 4.82, technical evaluators 4.34, both Very High Quality. Users' highest Performance Efficiency 4.89, lowest Reliability 4.65; evaluators' lowest Usability and Reliability 4.20 (High), Maintainability 4.32.</details>
-<details><summary>12. Who were the respondents?</summary>Twenty-one: the landlady, eleven tenants and four prospective tenants on the redesigned system, and five technical evaluators. Five users also answered before the redesign (4.75, Appendix M).</details>
+<details><summary>11. Overall rating, highest and lowest?</summary>Users 4.82, technical evaluators 4.90, both Very High Quality. Users' highest Performance Efficiency 4.89, lowest Reliability 4.65; evaluators' highest Compatibility and Portability 5.00, lowest Maintainability 4.73. Before the redesign: users 4.75, evaluators 4.34.</details>
+<details><summary>12. Who were the respondents?</summary>Nineteen on the redesigned system: the landlady, eleven tenants, four prospective tenants and three technical evaluators. The first round, before the redesign, had ten: five users (4.75) and five technical evaluators (4.34), Appendix M.</details>
 <details><summary>13. Why the mean of group means?</summary>So one landlady is not outweighed by eleven tenants on functions only she uses. Averaging every user's answer gives 4.80 instead of 4.82, same interpretation.</details>
-<details><summary>14. Why is Maintainability low?</summary>Only the five technical evaluators rated it (4.00, 5.00, 4.60, 3.00 and 5.00), and none of them inspected the code; the code itself shows 154 of 204 database calls written inside request handlers. It is still Very High Quality. Recommendation 6.</details>
+<details><summary>14. Why is Maintainability low?</summary>Only the technical evaluators rated it: 4.73 from the three of the second round (4.40, 5.00, 4.80), 4.32 from the five of the first, none of whom inspected the code; the code itself shows 154 of 204 database calls written inside request handlers. It is still Very High Quality. Recommendation 6.</details>
 <details><summary>15. What are the two security weaknesses left?</summary>The sign-in token in browser storage; no second sign-in factor. Recommendation 3.</details>
 <details><summary>16. How is water computed?</summary>₱200 per occupant per month.</details>
 <details><summary>17. What is the 50% Share?</summary>A system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet.</details>
