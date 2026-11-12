@@ -9,10 +9,9 @@ information in separate silos and makes consolidated reporting difficult (Burke,
 management and rental platforms aim to address these inefficiencies through centralized data storage
 and real-time processing (Kotkar et al., 2026), yet a review of 213 studies found that real estate as
 a whole still needs to improve its adoption of digital technologies and online platforms to move from
-traditional to smart practice (Ullah et al., 2018). Many of these systems assume the conditions of
-large or commercial properties, such as stable infrastructure, structured workflows, and dedicated
-administrative staff, which do not reflect the conditions of small, resource-constrained boarding
-houses.
+traditional to smart practice (Ullah et al., 2018). These studies, however, describe properties far
+larger than a boarding house: the apartment complexes Burke (2026) examined have 50 to 500 units. A
+small, resource-constrained boarding house does not share the conditions of properties of that size.
 
 In the Philippines, a study of nine micro, small, and medium-sized enterprises during the COVID-19
 pandemic found that what held back their adoption of digital tools was less a lack of money,
@@ -110,7 +109,7 @@ evaluated against the eight characteristics of the ISO/IEC 25010 software qualit
 suitability, performance efficiency, compatibility, usability, reliability, security,
 maintainability, and portability.
 
-The study has two delimitations. First, the PWA caches resources for limited offline access and
+The study has three delimitations. First, the PWA caches resources for limited offline access and
 adapts to different devices, but entering data, keeping it synchronized in real time, and sending or
 answering inquiries require an internet connection, so that every device works from the same
 records. Second, the online payment feature lets a tenant pay a bill through GCash using the Adyen
@@ -120,3 +119,5 @@ notification and the landlady's verification, but only in Adyen's test environme
 and takes no real money. Going live needs the owner's merchant onboarding documents, which were
 outside this study. Rent therefore continues to be paid in person and recorded by the landlady. The
 feature also excludes refunds (made from the gateway's own dashboard), automated reconciliation against bank records, and direct banking integration.
+Third, electricity is outside the system, because each unit has its own meter and its tenant pays
+the electric company directly.

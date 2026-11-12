@@ -25,8 +25,8 @@ results are summarized below in the order of the specific objectives.
    person. Transferring her records, 937 income rows and 1,327 expense allocations, showed that 43%
    of the income rows lacked an anniversary date and deposit and that five invoice numbers had each
    been used for two payments. The analysis produced 44 functional requirements and 49 business
-   rules. Graded against the code, 25 of the requirements were implemented as worded, 15 in part, 1
-   in the interface only and 3 not as worded.
+   rules. Graded against the code early in the second iteration, 25 of the requirements were
+   implemented as worded, 15 in part, 1 in the interface only and 3 not as worded.
 
 2. **The system was developed** in three Agile iterations with Vue, Express and PostgreSQL, with
    the six features the objective names: tenant and room management, booking and reservation
@@ -50,13 +50,14 @@ results are summarized below in the order of the specific objectives.
 
 4. **The system was evaluated** by the five steps of ISO/IEC 25040: twenty-seven of the model's
    thirty-one sub-characteristics had a measured result and twenty-five were rated. In response to
-   feedback and testing, 51 changes were made, among them each of the first technical evaluators' fourteen comments, and the third iteration then redesigned the screens. The fourteen users, the landlady,
-   ten tenants and three prospective tenants, rated the redesigned system 4.84 overall: Functional
-   Suitability 4.80, Performance Efficiency 4.86, Compatibility 4.79, Usability 4.80, Reliability
-   4.78, Security 5.00 and Portability 4.83. Three technical evaluators rated it 4.90 overall:
-   Functional Suitability 4.93, Performance Efficiency 4.89, Compatibility 5.00, Usability 4.87,
-   Reliability 4.83, Security 4.93, Maintainability 4.73 and Portability 5.00. Before the redesign,
-   five users had rated the system 4.75 and five technical evaluators 4.34.
+   feedback and testing, 51 changes were made, among them each of the first technical evaluators'
+   fourteen comments, and the third iteration then redesigned the screens. The fourteen users, the
+   landlady, ten tenants and three prospective tenants, rated the redesigned system 4.84 overall, Very
+   High Quality. Of the characteristics all three user groups rated, Performance Efficiency was
+   highest (4.86) and Reliability lowest (4.78). Three technical evaluators rated it 4.90 overall, Very
+   High Quality, with Compatibility and Portability highest (5.00) and Maintainability lowest (4.73).
+   Both groups rated every characteristic Very High Quality. Before the redesign, five users had rated
+   the system 4.75 and five technical evaluators 4.34.
 
 ## 5.2 Conclusions
 
@@ -69,8 +70,8 @@ Based on the results of the study, the following conclusions were drawn:
 
 2. **The second objective was achieved.** All six features the objective names were developed and are
    in use on the boarding house's real records, and they keep the landlady's own report layout,
-   invoice numbers and cash as the main way to pay, so using the system requires no change to how she
-   keeps the accounts (Chapter 4, Sections 4.2.2 to 4.2.7). The optional GCash payment is the one
+   invoice numbers and cash as the main way to pay, so the system follows the way she already keeps
+   the accounts (Chapter 4, Sections 4.2.2 to 4.2.7). The optional GCash payment is the one
    feature not in use with real money: it works end to end in Adyen's test environment, and going
    live needs the owner's merchant onboarding documents.
 
@@ -83,13 +84,14 @@ Based on the results of the study, the following conclusions were drawn:
    the system and signed the acceptance form (Section 4.3.7).
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
-   ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response. Its users rated it
-   Very High Quality overall (4.84) and its technical evaluators Very High Quality overall (4.90),
-   with every characteristic of both Very High Quality on the scale of Chapter 3's Table 4A and in
-   agreement with the measured evidence (Chapter 4, Tables 22 and 22A). The changes made in response
-   are in Table 23. Both ratings are higher than the first round's, 4.75 and 4.34, given on the system
-   before the redesign.
-   This is the view of these respondents rather than of a wider population.
+   ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response (Chapter 4, Table 23).
+   Its users rated it Very High Quality overall (4.84) and its technical evaluators Very High Quality
+   overall (4.90), with every characteristic of both Very High Quality on the scale of Chapter 3's
+   Table 4A, and the measured evidence agreed on six characteristics and was less favorable on
+   Security and Maintainability (Chapter 4, Tables 22 and 22A). Both ratings are higher than the first
+   round's, 4.75 and 4.34, which a smaller group and other technical evaluators gave on the system
+   before the redesign, and they are the view of these seventeen respondents rather than of a wider
+   population.
 
 ## 5.3 Recommendations
 
@@ -102,7 +104,7 @@ Based on the results of the study, the following conclusions were drawn:
 > the scope in Section 1.4).
 >
 > **TEAM NOTE (16 Oct 2026).** Added to 4 and 5, still eight items: an outside technical reviewer
-> (John Dave Hermoso, through Panelista) used the demo copy on 15 to 16 October and advised archiving
+> (reached through Panelista) used the demo copy on 15 to 16 October and advised archiving
 > instead of deleting, a dated history of finished repairs, and caching on the dashboards. His
 > review came after the evaluation, so it is not in Chapter 4's data and the text does not cite it
 > as a finding. Already true, for the defense: voiding a receipt or expense keeps it with who, when
@@ -130,7 +132,7 @@ Based on the summary and conclusions of the study, the following are recommended
 1. Enter each receipt from her receipt book on Monthly Income, which also settles any bill it covers
    (Appendix M, Table M-27), so that the system's receipts agree with the book and the system can
    become her main record (Chapter 4, Table 25).
-2. Have a backup taken before any change to the records, as the team did throughout, and treat the
+2. Have a backup taken before any change to the records, as the researchers did throughout, and treat the
    five flagged invoice numbers as history, kept as she wrote them (Section 4.1.1).
 
 **For the continued development of the system**
@@ -149,7 +151,7 @@ Based on the summary and conclusions of the study, the following are recommended
    (Section 4.4.6), keep a deleted repair request or inquiry as an archived record, as a voided
    receipt or expense already is, and list finished repair requests by the dates they were resolved
    and closed. Call the Monthly Income action Void rather than Delete, since its button and warning
-   still read as an erasure, and let the landlady see the voided receipts.
+   still read as an erasure (Appendix L, case A-25), and let the landlady see the voided receipts.
 5. Make the public page appear faster on phones, where its largest element was drawn at 3.4 to 3.6
    seconds before the redesign and 4.2 to 4.4 seconds after it, by pre-rendering it and serving the
    typefaces from the site itself (Section 4.3.5).

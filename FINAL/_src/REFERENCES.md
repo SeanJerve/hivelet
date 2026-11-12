@@ -8,7 +8,7 @@ Anuar, N. N., & Othman, M. K. (2024). Development and validation of progressive 
 usability heuristics (PWAUH). *Universal Access in the Information Society, 23*(1), 245–273.
 https://doi.org/10.1007/s10209-022-00925-4
 
-Biørn-Hansen, A., Majchrzak, T. A., & Grønli, T. M. (2017). Progressive web apps: The possible
+Biørn-Hansen, A., Majchrzak, T. A., & Grønli, T.-M. (2017). Progressive web apps: The possible
 web-native unifier for mobile development. In *Proceedings of the 13th International Conference on
 Web Information Systems and Technologies (WEBIST 2017)* (pp. 344–351). SciTePress.
 https://doi.org/10.5220/0006353703440351

@@ -1,10 +1,11 @@
 # APPENDIX J: EVALUATION INSTRUMENT
 
-The ISO/IEC 25010 questionnaire, as respondents saw it in a Google Form, from 30 September to
+The ISO/IEC 25010 questionnaire that respondents answered in a Google Form, from 30 September to
 18 October 2026 and again in the second round, from 31 October to 10 November 2026. The opening
 paragraphs are the data privacy notice through which the prospective tenants and the technical
-evaluators gave their consent (Section 3.4). Each respondent answered Section 1, which sent them to
-the one section for their group. The item numbers are those of Chapter 3, Table 4B. Section 2,
+evaluators gave their consent (Section 3.4). The form then asked each respondent to agree to the
+notice and offered an optional field for a name. Each respondent answered Section 1, which sent them
+to the one section for their group. The item numbers are those of Chapter 3, Table 4B. Section 2,
 answered by the landlady, has 28 rated items, Section 3 for tenants 18, Section 4 for technical
 evaluators 33, and Section 5 for prospective tenants 12.
 
@@ -28,20 +29,20 @@ Your responses are used only for this academic study. Your name is not required 
 
 ## Section 1: About you
 
-**Q1. Which best describes you? / Alin ang naglalarawan sa inyo?**
+**Data Privacy Notice and Consent**
+
+- Yes, I agree
+
+**Full Name (optional)**
+
+**Which best describes you? / Alin ang naglalarawan sa inyo?**
 
 - Property owner or administrator / May-ari o administrador ng apartment
 - Tenant of the boarding house / Nangungupahan sa boarding house
 - Technical evaluator (IT professional, developer, or IT faculty) / Technical evaluator
 - Looking for a room (not living here yet) / Naghahanap ng kwarto (hindi pa nakatira dito)
 
-**Q2. How long have you been using or reviewing the system? / Gaano na kayo katagal gumagamit o sumusuri sa sistema?**
-
-- Less than one week / Wala pang isang linggo
-- One to two weeks / Isa hanggang dalawang linggo
-- More than two weeks / Higit sa dalawang linggo
-
-**Q3. Which device did you mainly use? / Anong device ang pangunahin ninyong ginamit?**
+**Which device did you mainly use? / Anong device ang pangunahin ninyong ginamit?**
 
 - Desktop or laptop computer / Desktop o laptop
 - Mobile phone / Cellphone

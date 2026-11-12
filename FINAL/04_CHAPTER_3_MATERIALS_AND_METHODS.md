@@ -58,7 +58,8 @@ used twice, were kept as written.
 ### 3.1.2 Hardware
 
 Because Hivelet is a PWA used on both computers and phones, its development and testing needed a
-workstation and a mobile device.
+workstation and a mobile device. Table 3-2 gives the minimum specification of the workstation used
+for local development, database management and testing.
 
 **Table 3-2.** Workstation hardware specifications
 
@@ -69,9 +70,8 @@ workstation and a mobile device.
 | Storage | 256 GB Solid State Drive (SSD) |
 | Internet connection | 25 Mbps broadband or fiber |
 
-Table 3-2 gives the minimum specification of the workstation used for local development, database
-management and testing. The baseline for mobile testing, in Table 3-3, was a current mid-range Android
-phone, on which layout and response were evaluated.
+The baseline for mobile testing, in Table 3-3, was a current mid-range Android phone, on which layout
+and response were evaluated.
 
 **Table 3-3.** Mobile testing hardware specifications (baseline)
 
@@ -131,8 +131,11 @@ and reservations, financial tracking and maintenance requests.
 
 In this phase the requirements were turned into the system's architecture and into working
 prototypes of its screens, built in code as described in Section 3.1.1, for three kinds of user: the
-public, tenants and the administrator. Each prototype was reviewed with the landlady on the device
-she uses, and the findings were applied in the next iteration (Chapter 4, Table 4-19). Because the
+public, tenants and the administrator. The system was modeled with a context diagram, data flow
+diagrams in the Gane and Sarson notation down to the second level, a use case diagram and an
+entity-relationship diagram (Chapter 4, Figures 4-3 to 4-6, and Appendix F). Each prototype was reviewed
+with the landlady on the device she uses, and the findings were applied in the next iteration
+(Chapter 4, Table 4-19). Because the
 boarding house has limited infrastructure, unstable internet and a single administrator, Hivelet was
 designed as a lightweight PWA with simple navigation and low device requirements. The workflows for
 inquiries and reservations, financial tracking and maintenance requests were mapped first and then
@@ -250,7 +253,8 @@ respondents, and interpreted using Table 3-5. The composite mean of each charact
 its group means, so that the landlady is not outweighed by several tenants on functions only she
 uses. The users' composites, from the landlady, the tenants and the prospective tenants, are reported
 beside the technical evaluators', and each overall mean is the mean of the composites its
-respondents rated. For the acceptance test, the task completion rate is the number of tasks completed
+respondents rated. An answer was counted only when it came from a respondent and was given in the
+section of the questionnaire written for that respondent's own group. For the acceptance test, the task completion rate is the number of tasks completed
 without help divided by the number attempted, reported with the median time per task and the mean
 number of wrong turns. The results are descriptive, and no inferential test was made.
 
@@ -323,7 +327,7 @@ Data Privacy Act of 2012 (Republic Act No. 10173, 2012). Participation was volun
 withdrawn at any time without any effect on a tenant's tenancy. The landlady and each tenant signed
 the informed consent form (Appendix P), and the prospective tenants and the technical evaluators
 agreed through the data privacy notice that opens the questionnaire. The four technical evaluators
-reached through Panelista reviewed a demonstration copy holding sample data, so none of them saw the landlady's records. The three of the second round reviewed the live system, which a member of the research team
+reached through Panelista, a platform that matches capstone projects with volunteer evaluators, reviewed a demonstration copy holding sample data, so none of them saw the landlady's records. The three of the second round reviewed the live system, which a member of the research team
 signed into as the test tenant and as the administrator and handed to them ready to use, so they
 could see the boarding house's records but were given no sign-in details. That member stayed with
 them throughout. Each tenant used only their own account, which shows only their own

@@ -65,9 +65,10 @@ al., 2024).
 
 The analysis produced **44 functional requirements** and **49 business rules**, each traced in a
 traceability matrix to the part of the system that implements it. Graded against the
-code, 25 of the 44 were implemented as worded, 15 in part, 1 in the interface
-only, and 3 not as worded, although what those three describe is visible to the landlady in another
-form. Table 6 traces each gap to the requirement and the module that meets it.
+code early in the second iteration, 25 of the 44 were implemented as worded, 15 in part, 1 in the
+interface only, and 3 not as worded, although what those three describe is visible to the landlady
+in another form. The grading was not repeated after the later changes. Table 6 traces each gap to
+the requirement and the module that meets it.
 
 **Table 6.** Identified gaps, system requirements and implementing modules
 
@@ -96,11 +97,11 @@ each was met.
 | NFR-005 | The system shall function on modern desktop and mobile browsers | Table 24; Section 4.4.3 (Compatibility) |
 | NFR-006 | The system shall preserve data consistency and avoid silent data loss | Sections 4.3.1, 4.3.3 and 4.3.6 (Appendix M, Table M-26) |
 | NFR-007 | The codebase shall use a modular, documented, maintainable architecture | Section 4.4.3 (Maintainability): partly met |
-| NFR-008 | The system shall be deployable to a hosting environment the team can maintain | Section 4.2.1; Table 24 |
+| NFR-008 | The system shall be deployable to a hosting environment the researchers can maintain | Section 4.2.1; Table 24 |
 | NFR-009 | Important financial and administrative changes shall be traceable | Section 4.2.6 (audit trail) |
 | NFR-010 | Relevant business data shall be usable outside the application | Section 4.2.4 (Excel downloads) |
 
-NFR-008 originally named the university's server. On the adviser's advice the team deployed the
+NFR-008 originally named the university's server. On the adviser's advice the researchers deployed the
 system on its own hosting instead (Section 3.2.5), and the requirement was reworded to match.
 
 Where a requirement needed the landlady's answer, it was asked rather than assumed. She confirmed that
@@ -129,9 +130,10 @@ can no longer cancel a repair once someone is sent. After the redesign, 77 of th
 were run again and passed, the other 37 needing a person, and none failed, so the results of the
 second iteration stand.
 
-The formal evaluation against ISO/IEC 25010 was carried out in the second iteration, because Section
-3.3 places it in actual use. Its questionnaire and the users' tasks were repeated in the third, with a second round of users
-and of technical evaluators (Sections 4.3.7 and 4.4). Table 7 lists the technology used.
+The evaluation against ISO/IEC 25010 was carried out twice, each time in actual use as Section 3.3
+requires: in the second iteration, and again in the third on the redesigned system, with a second
+round of users and of technical evaluators (Sections 4.3.7 and 4.4). Section 4.4 reports the second
+and gives the first for comparison. Table 7 lists the technology used.
 
 **Table 7.** Technology stack of the developed system
 
@@ -163,9 +165,10 @@ right is a data store, and a shaded square is a party outside the system. To tra
 landlady records a cash receipt through process 4.0, Bill and record payments, which writes it to store
 D3, Bills and receipts. Process 7.0, Produce reports, reads it from there for the Overview and the
 Excel workbooks. The notifications and the audit record are written by nearly every process and are
-left out of Figure 7 for readability. Adyen, the payment gateway, is drawn as part of the payment
-process rather than as a party outside the system, as in the data flow diagrams the team's Systems
-Analysis and Design professor approved. Taking a GCash payment through Adyen is step 4.3 of process
+left out of Figure 7 for readability, as are the reads and updates of the units store (D1) by
+processes 3.0, 4.0 and 5.0, which Appendix F shows. Adyen, the payment gateway, is drawn as part of
+the payment process rather than as a party outside the system, as in the data flow diagrams the
+researchers' Systems Analysis and Design professor approved. Taking a GCash payment through Adyen is step 4.3 of process
 4.0 (Appendix F), and Figure 5 shows where the gateway sits.
 
 *Figure 6. Context diagram.*
@@ -247,9 +250,7 @@ the landlady answers it, may mark the unit Reserved, and moves the person in fro
 with its rate, read live from the database, and sends an inquiry about a specific unit without an
 account. On sending, the visitor receives a private link and a short reference code. Either one
 (the code with the phone number given) opens the conversation, where the landlady's answer appears and
-the visitor can write back. If the landlady deletes an inquiry, its page tells the sender that it was
-closed and removed. Signing in, sending an inquiry and reading its replies share one screen, and a
-signed-in tenant or the landlady who opens the inquiry pages is taken to their own portal. The link's
+the visitor can write back. The link's
 secret is stored only in hashed form. An accepted inquiry becomes a tenancy linked to it, and a
 reserved unit accepts no new inquiries. The public site never shows a tenant's name, which is
 checked on every verification run against all 33 units.
@@ -291,13 +292,13 @@ the same amount.
 
 | Rule | What the system computes | Worked example |
 | :--- | :--- | :--- |
-| BR-014 Water fee | Water = number of occupants × ₱200 | Unit 2C with two occupants: 2 × ₱200 = ₱400 |
+| BR-014 Water fee | Water = number of occupants × ₱200 | A unit with two occupants: 2 × ₱200 = ₱400 |
 | BR-038 Remitted amount | Remitted = Rent Amount + Water Payment | ₱8,500 + ₱400 = ₱8,900 |
 | BR-035 50% Share | A system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet | ₱8,500 ÷ 2 = ₱4,250 |
 | BR-033 Rent period | The period a payment covers, from the tenancy's anniversary date | Anniversary on the 13th: rent for 13 August to 12 September |
 | BR-010, BR-011, BR-012 Due date and overdue | Due on the date the billing cycle sets; overdue from the next day, with no grace period | Due 13 September: overdue from 14 September |
 | BR-039 Deposit | Equal to the rent in effect at move-in, set once | Moved in at ₱8,500: deposit ₱8,500 |
-| BR-040 Linda's units | Water at the same ₱200 per occupant, recorded separately and kept out of the remitted amount | Unit LF with two occupants: ₱400 recorded as Linda's water; remitted = rent only |
+| BR-040 Linda's units | Water at the same ₱200 per occupant, recorded separately and kept out of the remitted amount | A Linda unit with two occupants: ₱400 recorded as Linda's water; remitted = rent only |
 | BR-045 Expense total | An expense entry's total = the sum of its allocations to property areas | ₱6,000 to the Boarding House + ₱2,000 to the Main House = ₱8,000 |
 
 ### 4.2.5 Maintenance Ticketing and Notification Module
@@ -307,10 +308,11 @@ and priority, follows it through to completion, and may cancel it until someone 
 work. The landlady can also log a repair she is told about in person, including one for an empty unit.
 Only the landlady closes a request, and the tenant is notified when it is done. In-app notifications
 also tell a tenant when a payment is verified or declined, and the landlady when a payment, inquiry or
-comment arrives. Opening one opens the record it is about. This is the change Saputra et al. (2025)
-report, in which complaints turned into traceable requests improved accountability. It also bears on
-the responsiveness Jing and Lim (2021) found central to residential satisfaction. A request now
-carries its status from submission to closing, where before it left no record (Figure 4).
+comment arrives. Opening one opens the record it is about. Saputra et al. (2025) likewise brought a
+boarding house's complaints into the system that holds its rooms and payments, and reported less
+administrative work. The change also bears on the quality of the management process, which Jing and
+Lim (2021) found matters most to residential satisfaction. A request now carries its status from
+submission to closing, where before it left no record (Figure 4).
 
 *Figure 13. Maintenance requests board.*
 
@@ -345,7 +347,9 @@ Passwords are stored as bcrypt hashes with a per-password salt. A new one needs 
 letter and a number, and is refused if it appears in a public list of breached passwords. An account
 locks after five failed sign-ins, a new account must change its password at first sign-in, and every
 administrator action is written to an audit trail the application cannot edit, delete or empty. The
-testing of these protections is reported in Section 4.4.4.
+trail is kept in the database and is read there. A screen that showed it was removed on the adviser's
+advice that it is a developer's record, and each person's side menu lists their own last three
+actions. The testing of these protections is reported in Section 4.4.4.
 
 ### 4.2.7 Progressive Web Application Implementation
 
@@ -421,7 +425,7 @@ after a backup, leaving the 937 income rows transferred from her workbook untouc
 
 The suites prove each part correct on its own, not that a screen shows a person what the database
 holds for them. A tenant's payment history once read "Nothing recorded" although the tenant had
-seven receipts that year, while every suite passed. The team therefore compared every figure on every
+seven receipts that year, while every suite passed. The researchers therefore compared every figure on every
 administrator and tenant screen with a read-only query of the live database for the same records. Table 9 shows the result.
 
 **Table 9.** Results of the screen-versus-database audit
@@ -429,11 +433,11 @@ administrator and tenant screen with a read-only query of the live database for 
 | Screen | What was compared | Result |
 | :--- | :--- | :--- |
 | Administrator overview | Collections for each month of 2026, the year's total, occupancy, rent per cluster, expected monthly income, operating and personal costs | Matched to the peso |
-| Monthly Income | Totals for rent and water ; collections by cluster | Matched after one defect was fixed |
+| Monthly Income | Totals for rent and water; collections by cluster | Matched after one defect was fixed |
 | Monthly Expenses | Total spent, split by kind and by area | Matched; one layout defect fixed |
 | Rooms and rates | Rent and number of occupants for each unit | Matched |
 | Tenants | Number of tenants per cluster; move-in dates | Counts matched; one defect fixed |
-| Activity (audit trail) | Each recent entry against the recorded action | One defect fixed |
+| Activity (audit trail), a screen later removed (Section 4.2.6) | Each recent entry against the recorded action | One defect fixed |
 | Repairs, inquiries | Number of open items | Matched |
 | Tenant payments | A tenant's receipts for 2026 | Two defects fixed |
 | Tenant overview, repairs and details | Unit, rate, occupants, monthly charge (rent plus ₱200 per occupant), the period the receipts reach, amount due, requests, contact details | Matched |
@@ -451,7 +455,7 @@ one database, yet six screens disagreed with it, so digitizing alone did not mak
 
 A 26-step walkthrough, 30 rows counting its sub-steps, exercised every function that writes data
 once, on the one unit then unoccupied, so that no real record was touched. The landlady performed it
-herself on her laptop, signed in to her own account, with a team member reading
+herself on her laptop, signed in to her own account, with one of the researchers reading
 each step. The full results are in Appendix M, Table M-1. Of the 30 rows, 24 passed the first time,
 1 failed and 5 were not performed as written. Every function a tenant uses passed, as did
 onboarding, the duplicate guards, voiding, inquiry replies, repairs, the Excel export and moving a
@@ -486,7 +490,8 @@ the page moving as its figures arrived (a layout shift of 0.22) and 0.7 seconds 
 phone (Chapter 5, recommendation 5).
 
 After the redesign of the third iteration, the screens were timed again on another laptop and
-network (Appendix M, Table M-31). Every screen timed was ready sooner than before except sign-in to the Overview, at 2.63 seconds against 2.10. The administrator's Overview now
+network (Appendix M, Table M-31). Every screen timed was ready sooner than before except sign-in to the Overview, at 2.63 seconds against 2.10. The two days used different laptops, networks and timing
+methods, so the comparison shows the direction of the change and not an exact difference. The administrator's Overview now
 moves by 0.08 as its figures arrive, down from 0.22 and below the 0.1 counted as good.
 PageSpeed Insights scored the public page 85 on a phone, as before, with its largest element at 4.2
 to 4.4 seconds, and 99 on a desktop.
@@ -560,8 +565,8 @@ one to find their unit and rent. Everything else, from finding payments to sendi
 and opening the GCash payment, was done alone in one to two minutes. The repair requests they sent
 reached the landlady at once, and she acted on them the same evening. Mia et al. (2024) found that a
 lack of digital skills was not necessarily a barrier for small Philippine enterprises, which relied
-on tools they already knew. These results agree: the help tenants needed was confined to the first
-two things a new user does.
+on tools they already knew. The tenants' results are consistent with this at the scale of one
+boarding house: the help they needed was confined to the first two things a new user does.
 
 The tests that needed several tenants saving at once were not performed, because only two attended
 together. In the session in which the landlady and two tenants used the system at the same time, every
@@ -595,6 +600,11 @@ Every level passed at least 96 percent of the tests executed, against the course
 percent. The one failure, at the system level, was not critical, and no critical defect was found in
 any activity. Table 23A, in Section 4.4.6, lists the defects by activity, severity and disposition.
 
+Table 11E counts the activities that correspond to the three test levels. The other cases of
+Appendix L, on the public site, offline use and installation, security, browsers and timings, are
+reported as measures in Sections 4.3.5, 4.3.6 and 4.4.4. One of them failed, the late message on the
+Android phone, and it was on time when re-tested.
+
 ---
 
 ## 4.4 Evaluation of the System Based on ISO/IEC 25010
@@ -603,13 +613,12 @@ any activity. Table 23A, in Section 4.4.6, lists the defects by activity, severi
 
 The evaluation followed the five steps of ISO/IEC 25040 (Table 12B), on the quality model of ISO/IEC
 25010:2011. That edition was used because the approved proposal (Section 3.3) named its eight
-characteristics as the evaluation criteria, and the instrument was built on them. Chapter 3 uses the
-same edition. Each
+characteristics as the evaluation criteria, and the instrument was built on them. Each
 characteristic was judged on **measured quality**, the results of Section 4.3 expressed as measures
 of its sub-characteristics in the manner of ISO/IEC 25023, and on **rated quality**, a survey in
 which each item belongs to one sub-characteristic (Chapter 3, Table 4B). Each respondent group rated
-only what it can judge. Tenants and prospective tenants did not rate Security or Maintainability, and
-only the technical evaluators, the group with the background to judge it, rated Maintainability.
+only what it can judge. Tenants and prospective tenants did not rate Security, and only the
+technical evaluators, the group with the background to judge it, rated Maintainability.
 
 **Table 12B.** The evaluation process, following ISO/IEC 25040
 
@@ -633,13 +642,13 @@ are reported in this section, and Table 12A how many forms were given out and re
 
 **Table 12.** Distribution of respondents
 
-| Group | Number | Percent |
-| :--- | ---: | ---: |
-| Landlady | 1 | 5.88% |
-| Tenants | 10 | 58.82% |
-| Technical evaluators | 3 | 17.65% |
-| Prospective tenants | 3 | 17.65% |
-| **Total** | **17** | 100% |
+| Group | Number | Percent | Basis for inclusion |
+| :--- | ---: | ---: | :--- |
+| Landlady | 1 | 5.88% | The system's only administrator |
+| Tenants | 10 | 58.82% | Users of the tenant portal on their own accounts |
+| Technical evaluators | 3 | 17.65% | Able to judge the technical characteristics |
+| Prospective tenants | 3 | 17.65% | Users of the public website |
+| **Total** | **17** | 100% | |
 
 **Table 12A.** Instrument administration and response rate
 
@@ -648,21 +657,24 @@ are reported in this section, and Table 12A how many forms were given out and re
 | Landlady | Not recorded | 1 | 1 | — |
 | Tenants | Not recorded | 10 | 10 | — |
 | Technical evaluators | 3 | 3 | 3 | 100% |
-| Prospective tenants | Not recorded | 3 | 3 | — |
-| **Total** | | **17** | **17** | |
+| Prospective tenants | Not recorded | 5 | 3 | — |
+| **Total** | | **19** | **17** | |
 
 The number of forms given to the users was not recorded, so their response rate cannot be given.
-Every form returned was complete and valid.
+Two of the five forms returned by prospective tenants were answered in another group's section, the
+landlady's and the tenants', and are left out by the rule of Section 3.3 (Appendix M, Table M-28).
+Every other form returned was complete and valid. One further answer, which the researchers made
+while testing the form, is not a respondent's and is not counted.
 
 The landlady, ten tenants and three prospective tenants answered after using the redesigned system
 of the third iteration, and three technical evaluators after reviewing the live system, each
-after giving consent as described in Section 3.4. No member of the development team was among them.
+after giving consent as described in Section 3.4. No member of the research team was among them.
 The landlady is one respondent, so her group's mean is one person's rating, and three technical
-evaluators are a small group. The results describe how these respondents rated the system, not a
-sample from which a wider population can be inferred. The first round, on the system of the second
-iteration, had ten respondents: the landlady, three tenants, a prospective tenant and five technical
-evaluators (Appendix M, Tables M-28 and M-29). Two answers by prospective tenants in another group's
-section, and one the team made while testing the form, are left out (Appendix M, Table M-28).
+evaluators are a small group. A member of the research team was with those three throughout
+(Section 3.4), which may have favored higher ratings. The results describe how these respondents
+rated the system, not a sample from which a wider population can be inferred. The first round, on
+the system of the second iteration, had ten respondents: the landlady, three tenants, a prospective
+tenant and five technical evaluators (Appendix M, Tables M-28 and M-29).
 
 ### 4.4.2 Interpretation of Scores
 
@@ -717,8 +729,11 @@ High Quality overall (4.90)**. Every composite of both is Very High Quality. Thi
 et al. (2026) report for a Philippine dormitory system rated by the same kinds of respondents,
 tenants, administrators and IT professionals. In the first round, on the system before the redesign,
 the users had given 4.75 and the five technical evaluators 4.34, with Usability and Reliability at
-4.20, the top of High Quality (Appendix M, Table M-29). Here, each rating is also read beside the
-measured evidence for its characteristic (Section 4.4.5).
+4.20, the top of High Quality (Appendix M, Table M-29). Two of the users' composites were lower than
+in that round, Functional Suitability (4.94 before) and Portability (4.96 before), from a group nearly
+three times as large. The differences between the characteristics are small: eleven of the fourteen
+users gave every item the same rating, nine of them 5 and two of them 4. Each rating is therefore
+also read beside the measured evidence for its characteristic (Section 4.4.5).
 
 **Performance Efficiency** was the users' highest of the characteristics all three user groups rated
 (4.86, technical evaluators 4.89). It matches the measurements: no failed request, and after the
@@ -743,7 +758,9 @@ found no violation once one defect on three screens was corrected.
 lowest was payment recording, also at 4.67.
 
 **Reliability** (4.78 and 4.83) is the users' lowest. The tenants' lowest item was whether the
-information shown is correct and up to date (4.50). The technical
+information shown is correct and up to date (4.50), to which one tenant gave 2. The probable cause is
+that not every receipt in the landlady's receipt book has been entered yet, so a month a tenant has
+paid can still read "Not recorded" on that tenant's screen (Section 4.2.4 and Table 25). The technical
 evaluators gave 4.67 to keeping recorded data and to telling "no data" from "could not be loaded",
 and 5.00 to the other two. In the first round their lowest item, 3.80 for handling a failed request
 without presenting incorrect data, named the one test that failed, the ₱0 of step 23b, since
@@ -794,14 +811,25 @@ drawn about them.
 | Functional Suitability | 3 | 3 | 3 | All six features present; 96 to 100 percent of correctness checks passed | 4.80 | 4.93 |
 | Performance Efficiency | 3 | 3 | 3 | No request failed under load; every screen usable within 3.05 s on a phone | 4.86 | 4.89 |
 | Compatibility | 2 | 1 | 2 | 5 of 5 device and browser combinations; gateway and spreadsheet exchange correct | 4.79 | 5.00 |
-| Usability | 6 | 5 | 4 | 91 percent of tasks without help; 0 accessibility violations in 76 scans | 4.80 | 4.87 |
+| Usability | 6 | 5 | 4 | 91 and 94 percent of the tenants' tasks without help in the two rounds; 0 accessibility violations in 76 scans | 4.80 | 4.87 |
 | Reliability | 4 | 3 | 4 | No critical defect; the two offline defects found on real devices, a ₱0 shown for a figure that could not load and a late message, both passed on re-test | 4.78 | 4.83 |
 | Security | 5 | 5 | 3 | Every protection tried held; A+ from all three outside scanners | 5.00 | 4.93 |
 | Maintainability | 5 | 4 | 4 | 20 of 20 suites passed without writing to the records; every change a numbered migration; but 154 of 204 database calls inside the request handlers | not rated | 4.73 |
 | Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | 4.83 | 5.00 |
 | **All** | **31** | **27** | **25** | | **4.84** | **4.90** |
 
-For all eight characteristics the two kinds of evidence agree (Section 4.4.3).
+The measured results are those of the second iteration, except the tenants' tasks of the second
+round. The 77 of the 114 test cases that need no person were run again on the redesigned system and
+none failed (Section 4.2.1).
+
+For six of the eight characteristics the two kinds of evidence agree. For Security and
+Maintainability the measurements are less favorable than the ratings. Two session weaknesses remain
+although the technical evaluators gave session handling 5 (Section 4.4.4), and three database calls
+in four sit inside the request handlers although they gave the organization of the code 5 (Section
+4.4.3; Appendix M, Tables M-14 and M-15). Taken together, the ratings and the measurements indicate
+that the system is acceptable for use at the boarding house. Both groups rated every characteristic
+Very High Quality, no critical defect is open, and the weaknesses the measurements show are carried
+into the recommendations of Chapter 5.
 
 Quality in use, which ISO/IEC 25010:2011 defines as the quality experienced by users in their own
 context, was measured by the acceptance test of Section 4.3.7 in the manner of ISO/IEC 25022
@@ -859,8 +887,9 @@ hardening.
 | Technical evaluators | 14 | Medium: phone, email and photo validation | 14 | None |
 | **All activities** | **35** | | **32** | **3 accepted** |
 
-No defect found was critical. The security audit records the reason each of the three accepted
-items was accepted.
+No defect found was critical. The two defects of Section 4.3.1 that lost a record are not among
+these: they were found and corrected in the first iteration, before pilot testing. The security audit
+records the reason each of the three accepted items was accepted.
 
 One further defect, of high severity, was found after these activities, in an audit of the live
 records, and corrected the same day: two tenants were shown as owing a month they
@@ -875,18 +904,20 @@ The system is hosted on Vercel at a public web address, with the database on Sup
 GCash payment through Adyen works end to end in Adyen's test environment, which takes no real money.
 It is not live, because going live needs the owner's merchant onboarding documents, and this study did
 not do that onboarding. Every approved change is deployed
-automatically from the project's main code branch. The team gives the system to the boarding house free,
-with no subscription to pay. Table 24 lists what is needed to use the system, and Table 25 the deployment
+automatically from the project's main code branch. The researchers give the system to the boarding
+house free, with no subscription to pay. Under the memorandum of agreement signed with the owner, they
+provide the system, its user manual and training and maintain and support it for an agreed period
+after turnover, and the boarding house's records remain its own. Table 24 lists what is needed to use the system, and Table 25 the deployment
 plan.
 
 **Table 24.** Software and hardware requirements for deployment
 
 | Side | Requirement | Used in testing |
 | :--- | :--- | :--- |
-| Landlady | A current web browser on a computer, and an internet connection | The landlady's laptop with Chrome; the team's laptop, a Dell XPS 15 on Windows 11 with Chrome, Edge and Firefox (Table 11) |
+| Landlady | A current web browser on a computer, and an internet connection | The landlady's laptop with Chrome; the researchers' laptop, a Dell XPS 15 on Windows 11 with Chrome, Edge and Firefox (Table 11) |
 | Tenants and visitors | A current web browser (Chrome, Edge, Firefox or Safari) on a phone or computer, and an internet connection | Infinix GT20 with Android and Chrome; iPhone 15 and iPhone 13 with Safari; the three tenants' own phones, models not recorded |
 | Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen test account with GCash (optional online payment; not live, takes no real money) | Vercel; PostgreSQL 17.6 on Supabase; Adyen Web Drop-in 6.44 and API Library 32.0 (Table 7) |
-| Administration | A computer that can run Node.js, used only for backups and verification runs | Node.js 22 on the team's Windows 11 computer |
+| Administration | A computer that can run Node.js, used only for backups and verification runs | Node.js 22 on the researchers' Windows 11 computer |
 
 **Table 25.** Deployment plan and strategies
 
@@ -902,7 +933,7 @@ The plan manages three risks:
 
 - **The records are the boarding house's real financial records.** A backup is taken before any change to
   the data, and every change is a numbered migration that can be reviewed before it runs.
-- **Gateway and database credentials** are kept outside the code, passed between team members
+- **Gateway and database credentials** are kept outside the code, passed between the researchers
   separately, and never written in any document. A check for committed credentials runs before
   every commit.
 - **The five historical receipt anomalies** are kept exactly as the landlady wrote them and reported

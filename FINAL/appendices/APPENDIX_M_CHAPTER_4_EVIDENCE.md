@@ -71,7 +71,7 @@ characteristic, and every change made in response to the evaluation.
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Functional completeness | Features named in Objective 2 that were implemented, X = A / B | 6 / 6 = 1.00 | Sections 4.2.2 to 4.2.7 |
-| Functional completeness | Functional requirements implemented in full or in part, X = A / B | 41 / 44 = 0.93 (25 as worded); the other 3 reach the landlady in another form | Section 4.1.2 |
+| Functional completeness | Functional requirements implemented in full or in part, X = A / B | 41 / 44 = 0.93 (25 as worded), graded early in the second iteration; the other 3 reach the landlady in another form | Section 4.1.2 |
 | Functional correctness | Report reconciliation checks that agreed with the database, X = A / B | 490 / 490 = 1.00 | Table 4-8 |
 | Functional correctness | Executed walkthrough steps that gave the expected result, X = A / B | 24 / 25 = 0.96 | Table M-1 |
 | Functional correctness | Screens whose figures matched the database, after correction | 9 / 9, after 6 defects were corrected | Table 4-9 |
@@ -201,7 +201,7 @@ characteristic, and every change made in response to the evaluation.
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
-| Maturity | Critical defects among those found in testing, X = A / B | 0 / 35; 31 resolved, 1 open, 3 accepted | Table 4-20 |
+| Maturity | Critical defects among those found in testing, X = A / B | 0 / 35; 32 resolved, 3 accepted | Table 4-20 |
 | Availability | Not measured as a share of time over a period; rated in the survey only | | |
 | Fault tolerance | Addresses that opened with no connection, X = A / B | 10 / 10 = 1.00 | Table M-24 |
 | Fault tolerance | A figure that could not be loaded shown as unavailable, not as ₱0 | Failed once on the testing day (step 23b); passed when re-tested on the landlady's laptop, 13 October 2026 | Tables M-1 and 4-20 |
@@ -231,14 +231,14 @@ characteristic, and every change made in response to the evaluation.
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
 | Confidentiality | Another tenant's record requested by its number | Answered "not found" (walkthrough step 17); each tenant saw only their own unit (C-02) | Tables M-1 and M-22 |
-| Confidentiality | Protections a user meets that held when tried by hand, X = A / B | 12 / 12 = 1.00 | Later in this section |
+| Confidentiality | Protections a user meets that held when tried by hand, X = A / B | 12 / 12 = 1.00 | Section 4.4.4 |
 | Confidentiality | Tables with row-level security and no rule opening them to a browser | Every table; no warning from the database's security advisor | Sections 4.2.6 and 4.4.4 |
 | Integrity | Payment gateway messages accepted only with a valid signature: checks passed, X = A / B | 73 / 73 = 1.00 | Table 4-8 |
-| Integrity | Requests that change data checked against a schema before use | Every one, in all 71 request handlers read | Later in this section |
+| Integrity | Requests that change data checked against a schema before use | Every one, in all 71 request handlers read | Section 4.4.4 |
 | Non-repudiation, accountability | Administrator actions written to an audit trail the application cannot edit or delete | Every administrator action | Section 4.2.6 |
-| Authenticity | Account after five wrong passwords | Locked for 15 minutes | Later in this section |
-| Authenticity | Grades from three passive external scans | SSL Labs A+; Mozilla HTTP Observatory A+ (115, 12 of 12 tests); securityheaders.com A+ | Later in this section |
-| All | High-severity problems found by the code review | 0 | Later in this section |
+| Authenticity | Account after five wrong passwords | Locked for 15 minutes | Section 4.4.4 |
+| Authenticity | Grades from three passive external scans | SSL Labs A+; Mozilla HTTP Observatory A+ (115, 12 of 12 tests); securityheaders.com A+ | Section 4.4.4 |
+| All | High-severity problems found by the code review | 0 | Section 4.4.4 |
 
 **Table M-14.** Evaluation results for Maintainability, by item and group (summarized in Chapter 4, Section 4.4.3, Table 4-17)
 
@@ -255,7 +255,7 @@ characteristic, and every change made in response to the evaluation.
 
 | Sub-characteristic | Measure | Result | Source |
 | :--- | :--- | :--- | :--- |
-| Modularity | Routes whose access comes from the one permission matrix, checked on every run, X = A / B | 55 / 55 = 1.00 | Section 4.2.6 |
+| Modularity | Routes whose access comes from the one permission matrix, checked on every run, X = A / B | 60 / 60 = 1.00 | Section 4.2.6 |
 | Modularity | Database calls made through service modules rather than inside the request handlers, X = A / B | 50 / 204 = 0.25; the administrator's handlers are one file of 5,120 lines | The server's code, counted 7 October 2026 |
 | Reusability | Not measured and not rated | | |
 | Analysability | Changes to the database kept as numbered, reviewable migrations | Every change; more than 70 by 5 October 2026 | Section 4.2.1 |
@@ -355,7 +355,7 @@ characteristic, and every change made in response to the evaluation.
 | Requirements | The landlady settled four questions on 13 September: 33 units, no grace period, no automatic rent increase, and tenants recorded without needing an email address | The landlady's answers of 17 and 19 to 20 September: the advance is the deposit, rent and water stay one bill, and a rate for each of the 33 units; acknowledgement receipts for payments with no invoice number (1 October) | The team's review of the deployed screens on a phone and a computer; no new requirement from the landlady. The team's own rules for past years and repairs are under Development |
 | Design | The business rule register rebuilt, 49 rules each with its evidence; the automatic rent increase removed from scope | The landlady's review on a phone (23 September) and the design rules the screens now follow; the tenant and administrator overviews reworked | Translucent glass surfaces over a light green page, in light and dark themes; boxes kept for what needs attention and what is looked for at a glance; sign in, inquiry and conversation joined in one screen |
 | Development | Fifteen defects in behavior corrected, among them a partial payment that left no debt and cash recorded with nothing written to the books; the Excel downloads | Adyen with GCash working end to end in Adyen's test environment, with no real money (26 September); updates checked every two seconds; offline reading; the breached-password check (7 October) | The restyle of every screen; an inquiry the landlady deleted now says so to its sender; a signed-in account is sent from the inquiry pages to its own portal. The move-in form no longer asks for an anniversary date, which the server always set to the move-in date. Each screen keeps the figures it has loaded for the visit, so returning to it does not wait for them. A record dated in a closed year can no longer be recorded, changed or deleted, and last year stays open until every December receipt is in. A GCash payment settles the oldest unpaid bill. A tenant can no longer cancel a repair once someone is sent. The landlady's Manage window no longer shows a repair's messages, and a tenant's note reaches her as a notification |
-| Testing | Seven automated check suites, over 100 assertions, each defect covered by one | The screen-versus-database audit (26 and 29 September, six defects); 20 suites (29 September); the testing day with the landlady, three tenants and one prospective tenant (30 September); the technical evaluators' review (3 October) | All 114 test cases of Appendix L rerun on 4 November: none failed, 56 passed as written, 21 passed with wording the redesign had changed, and 37 need a person and were left for one. A click-by-click audit of every screen on 6 November. The 21 automated check suites passed after each change, and the screens were checked in light and dark at phone and desktop width. The page timings measured again on 10 November (Table M-31). A second round of users, 31 October to 10 November: ten tenants and four prospective tenants did the tasks, and sixteen answered the ISO/IEC 25010 questionnaire (Tables M-28 to M-30) |
+| Testing | Seven automated check suites, over 100 assertions, each defect covered by one | The screen-versus-database audit (26 and 29 September, six defects); 20 suites (29 September); the testing day with the landlady, three tenants and one prospective tenant (30 September); the technical evaluators' review (3 October) | All 114 test cases of Appendix L rerun on 4 November: none failed, 56 passed as written, 21 passed with wording the redesign had changed, and 37 need a person and were left for one. A click-by-click audit of every screen on 6 November. The 21 automated check suites passed after each change, and the screens were checked in light and dark at phone and desktop width. The page timings measured again on 10 November (Table M-31). A second round of users, 31 October to 10 November: ten tenants and four prospective tenants did the tasks, and the landlady, ten tenants and three prospective tenants answered the ISO/IEC 25010 questionnaire (Tables M-28 to M-30). Three technical evaluators reviewed the live system and answered it on 12 November |
 | Deployment | Unchanged | Hosted on Vercel from 24 September; tenant accounts prepared on 29 September; in use beside the landlady's own records (Table 4-22) | The same site. Four corrections to the data, each a numbered migration applied after a backup and read back. Migration 088 (2 November) moved sixteen units into the kind of unit they really are, with the old kinds kept in the audit record. Migration 089 (4 November) removed old password hashes from 16 audit rows. Migration 090 (5 November) removed a rehearsal test tenant. Migration 091 (6 November) ended two receipts' rent periods a month after they start, as each was one month's rent |
 | Review | 22 recorded errors in the submitted documents corrected; four standing rules for how the team works | The technical evaluators' 14 comments, all acted on by 5 October (Table 4-19); the ISO/IEC 25010 survey (Section 4.4) | The team's review of the screens. The users rated the redesigned system 4.84 overall and three technical evaluators 4.90, both Very High Quality (Table M-29) |
 
