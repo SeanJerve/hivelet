@@ -330,8 +330,10 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
 - [x] Which account: both the test tenant and the administrator (Sean, 12 November). Section 3.4
   now says they could see the boarding house's records.
 - [x] A team member was with them throughout (Sean, 12 November). Section 3.4 says so.
-- [ ] If they were given the administrator's password itself, change it (Settings, Change password)
-  and tell the landlady the new one.
+- [x] No password was given: the team signed in and handed the system over ready to use (Sean, 12
+  November). Nothing to change.
+- [x] Consent: they answered anonymously on the Google Form after its privacy notice, signing no
+  paper form, which is what Section 3.4 already says.
 - [ ] How many were sent the form. Table 4-15 says "Not recorded" until you give the number.
 
 ### [x] 18. Small design and wording choices (B-121): done 12 November

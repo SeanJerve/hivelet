@@ -467,6 +467,12 @@ reviewed the system before the redesign, and their 4.34 is the first round, repo
 first round's users in Appendix M, Table M-29. Their fourteen comments were all acted on before the
 redesign. *Sections 4.4.1 and 4.4.6.*
 
+**The three used the live system. Did they see the landlady's records? Did they sign consent?**
+Yes, they could see them. One of us signed in as the test tenant and as the administrator, handed
+them the system ready to use, and stayed with them throughout; they were given no password. Like the
+October evaluators and the prospective tenants, they answered the Google Form anonymously after
+agreeing to the data privacy notice that opens it, and signed no paper form. *Section 3.4.*
+
 **Why is the users' response rate not given?**
 The number of forms given out in the second round was not recorded, and the paper says so. Every
 form returned was complete. *Table 4-15.*
