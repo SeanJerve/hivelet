@@ -46,7 +46,7 @@ const TABLES = {
   room_assignments: ['People', 'Tenancies: who occupies which unit, from when, with how many occupants.'],
   monthly_income_records: ['Money', 'The owner\'s Monthly Income ledger, one row per receipt per month covered (Chapter 4, Table 7A).'],
   monthly_expense_entries: ['Money', 'The owner\'s Monthly Expenses ledger: one row per expense.'],
-  expense_property_allocations: ['Money', 'How each expense is split across property areas; the parts add up to the expense.'],
+  expense_property_allocations: ['Money', 'How each expense is split across property areas. The parts add up to the expense.'],
   fixed_expense_categories: ['Money', 'The owner\'s expense categories (the thirteen numbered lines, with sub-lines), and any she adds.'],
   bills: ['Money', 'Bills raised for a tenancy: rent and water for one whole month.'],
   payments: ['Money', 'Payments made against bills, online with GCash through Adyen or recorded by the owner, with their verification.'],
@@ -168,7 +168,7 @@ let out = `# APPENDIX N: DATA DICTIONARY\n\n` +
   `> letters with the adviser. Chapter 4's Table 7A is the extract of this dictionary for the Monthly Income table.\n\n` +
   `This appendix lists every table and column of the Hivelet database as it stands in the live system, with the\n` +
   `type and length of each column, whether a value is required, its default, and the keys that link the tables.\n` +
-  `PK marks a primary key and FK a foreign key, with the table and column it refers to; a generated column is\n` +
+  `PK marks a primary key and FK a foreign key, with the table and column it refers to. A generated column is\n` +
   `computed by the database from the columns named and cannot be written. Allowed values of an enumerated type\n` +
   `are listed beside it. No sample values are given, because the rows hold tenants' personal data.\n`;
 let group = '';

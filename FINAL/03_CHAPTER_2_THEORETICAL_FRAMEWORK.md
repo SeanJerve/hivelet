@@ -237,62 +237,62 @@ the last one found.
 
 ## 2.4 Definition of Terms
 
-**Hivelet** – The web-based apartment management system, delivered as a PWA, that this study
+**Hivelet**: The web-based apartment management system, delivered as a PWA, that this study
 developed for the Fe Galang Da Silva Boarding House to keep tenant and room management, inquiries and
 reservations, financial tracking, and repair requests in one system.
 
-**Progressive Web Application (PWA)** – The form in which Hivelet is delivered: a website that the
+**Progressive Web Application (PWA)**: The form in which Hivelet is delivered: a website that the
 landlady or a tenant can add to a phone's home screen from the browser, without an app store, and that
 shows the figures last loaded when there is no connection.
 
-**Resource-Constrained Environment** – In this study, a small residential operation such as the Fe
+**Resource-Constrained Environment**: In this study, a small residential operation such as the Fe
 Galang Da Silva Boarding House, with limited money, staff, and technical infrastructure, whose
 management relies on a mix of manual and basic digital tools rather than an integrated system.
 
-**Fragmented Workflow** – The handling of tenant records, finances, and repair requests in
+**Fragmented Workflow**: The handling of tenant records, finances, and repair requests in
 disconnected tools (spreadsheets, paper records, and messaging applications), which leaves data
 inconsistent and coordination delayed.
 
-**Centralized System** – In this study, one database and one website holding every record the landlady
+**Centralized System**: In this study, one database and one website holding every record the landlady
 had kept in separate files and channels: tenants, units and rates, payments, expenses, repair
 requests and inquiries.
 
-**Small-Scale Apartment Management** – The administration of a resource-constrained environment as
+**Small-Scale Apartment Management**: The administration of a resource-constrained environment as
 defined above: in this study, the 33 units of the Fe Galang Da Silva Boarding House, run by the
 landlady as the system's only administrator.
 
-**Management Information System (MIS)** – The view of Hivelet taken in Chapter 2: a system that turns
+**Management Information System (MIS)**: The view of Hivelet taken in Chapter 2: a system that turns
 the landlady's raw records, such as receipts, expenses and repair requests, into the summaries she reads
 on the Overview and in the downloaded workbooks.
 
-**Inquiry** – A message a prospective tenant sends about a unit through the public website, without
+**Inquiry**: A message a prospective tenant sends about a unit through the public website, without
 an account. The landlady answers it in the system, may mark the unit Reserved so that it takes no other
 inquiry, and if the person rents, moves them in from it. This is the form booking and reservation
 management takes in this study: nothing is booked or paid for online.
 
-**Financial Tracking** – The Hivelet module in which the landlady records tenant payments and operating
+**Financial Tracking**: The Hivelet module in which the landlady records tenant payments and operating
 expenses, the figures that Cash Flow Monitoring summarizes.
 
-**Cash Flow Monitoring** – In this study, the landlady's view of money in and out: income, operating
+**Cash Flow Monitoring**: In this study, the landlady's view of money in and out: income, operating
 expenses and net income by month on the Overview, and the monthly income and expense workbooks she
 downloads.
 
-**Maintenance Ticketing** – The Hivelet module through which a tenant sends a repair request, which
+**Maintenance Ticketing**: The Hivelet module through which a tenant sends a repair request, which
 the landlady assigns, tracks, and updates until it is resolved.
 
-**User Authentication** – Signing in with a login ID or phone number and a password. The landlady creates
+**User Authentication**: Signing in with a login ID or phone number and a password. The landlady creates
 each tenant's account with an individual starting password, which the tenant replaces at the first
 sign-in.
 
-**Role-Based Access Control (RBAC)** – The rule that each of Hivelet's three kinds of user, the
+**Role-Based Access Control (RBAC)**: The rule that each of Hivelet's three kinds of user, the
 public, tenants and the administrator, can use only the functions given to that role, checked by the
 server on every request (Section 4.2.6).
 
-**Optional Online Payment Feature** – The Hivelet function through which a tenant may pay a bill with
+**Optional Online Payment Feature**: The Hivelet function through which a tenant may pay a bill with
 GCash through Adyen. A payment made this way is recorded as pending and counts only after the landlady
 verifies it. It supplements rent paid in person and recorded by the landlady, and does not replace it.
 
-**ISO/IEC 25010:2011** – The international software quality standard (International Organization for
+**ISO/IEC 25010:2011**: The international software quality standard (International Organization for
 Standardization & International Electrotechnical Commission [ISO/IEC], 2011a) against which this
 study evaluated Hivelet. It defines eight characteristics of product quality: functional
 suitability, performance efficiency, compatibility, usability, reliability, security,
@@ -302,34 +302,34 @@ from risk and context coverage. The 2023 revision renamed usability as interacti
 portability as flexibility, added safety as a ninth characteristic, and moved quality in use into a
 separate standard (ISO/IEC, 2023).
 
-**Adyen** – The payment gateway through which a tenant may pay a bill online with GCash. In this study
+**Adyen**: The payment gateway through which a tenant may pay a bill online with GCash. In this study
 it runs in Adyen's test environment, where it works end to end but takes no real money. Going live
 needs the owner's merchant onboarding documents, which were outside the study.
 
-**GCash** – A Philippine mobile wallet, offered in Hivelet as the optional online way to pay a bill.
+**GCash**: A Philippine mobile wallet, offered in Hivelet as the optional online way to pay a bill.
 It is not live, for the reason given under Adyen, so rent is paid in person and recorded by the
 landlady.
 
-**Landlady** – The person who runs the Fe Galang Da Silva Boarding House day to day on behalf of its
+**Landlady**: The person who runs the Fe Galang Da Silva Boarding House day to day on behalf of its
 owner, and the system's only administrator.
 
-**Owner** – The proprietor of the Fe Galang Da Silva Boarding House, for whom the landlady runs it.
+**Owner**: The proprietor of the Fe Galang Da Silva Boarding House, for whom the landlady runs it.
 Taking the GCash payment live needs the owner's merchant onboarding documents (Section 1.4).
 
-**Tenant** – A person renting a unit, who uses the system through their own account to view their
+**Tenant**: A person renting a unit, who uses the system through their own account to view their
 bills, receipts and repair requests and to pay online.
 
-**Prospective Tenant** – A person looking for a unit who uses only the public website, without an
+**Prospective Tenant**: A person looking for a unit who uses only the public website, without an
 account, to view the units and their rates and to send an inquiry.
 
-**Technical Evaluator** – An information technology professional from outside the research team who
+**Technical Evaluator**: An information technology professional from outside the research team who
 rated the system against ISO/IEC 25010:2011.
 
-**User Acceptance Testing (UAT)** – Testing in which the intended users perform their own tasks on the
+**User Acceptance Testing (UAT)**: Testing in which the intended users perform their own tasks on the
 live system, to decide whether it meets their needs (Section 4.3.7).
 
-**Weighted Mean** – The average rating of a survey item: the sum of each rating multiplied by the
+**Weighted Mean**: The average rating of a survey item: the sum of each rating multiplied by the
 number of respondents who chose it, divided by the number of respondents (Section 3.3).
 
-**50% Share** – A system-computed figure equal to half that row's Rent Amount, kept for ledger parity
+**50% Share**: A system-computed figure equal to half that row's Rent Amount, kept for ledger parity
 with the owner's historical spreadsheet.

@@ -637,12 +637,12 @@ are reported in this section, and Table 4-15 how many forms were given out and r
 | Prospective tenants | Not recorded | 3 | 3 | — |
 | **Total** | | **17** | **17** | |
 
-The number of forms given to the users was not recorded, so their response rate cannot be given;
-every form returned was complete and valid.
+The number of forms given to the users was not recorded, so their response rate cannot be given.
+Every form returned was complete and valid.
 
 The landlady, ten tenants and three prospective tenants answered after using the redesigned system
-of the third iteration, and three technical evaluators after reviewing the live system on 12 November 2026, each
-after giving consent as described in Section 3.3. No member of the development team was among them.
+of the third iteration, and three technical evaluators after reviewing the live system, each
+after giving consent as described in Section 3.4. No member of the development team was among them.
 The landlady is one respondent, so her group's mean is one person's rating, and three technical
 evaluators are a small group. The results describe how these respondents rated the system, not a
 sample from which a wider population can be inferred. The first round, on the system of the second
@@ -707,12 +707,12 @@ the users had given 4.75 and the five technical evaluators 4.34, with Usability 
 measured evidence for its characteristic (Section 4.4.5).
 
 **Performance Efficiency** was the users' highest of the characteristics all three user groups rated
-(4.86; technical evaluators 4.89). It matches the measurements: no failed request, and after the
+(4.86, technical evaluators 4.89). It matches the measurements: no failed request, and after the
 redesign every screen timed again was ready sooner than before except sign-in, though screens still
-took two to three seconds on a phone (Section 4.3.5). **Portability** followed (4.83; 5.00), as one
-code base installed on an Android phone and an iPhone without an app store. **Compatibility** (4.79; 5.00) agrees with the browser matrix, on which every combination tried worked. **Security** (5.00; 4.93) is discussed in Section 4.4.4.
+took two to three seconds on a phone (Section 4.3.5). **Portability** followed (4.83 and 5.00), as one
+code base installed on an Android phone and an iPhone without an app store. **Compatibility** (4.79 and 5.00) agrees with the browser matrix, on which every combination tried worked. **Security** (5.00 and 4.93) is discussed in Section 4.4.4.
 
-**Usability** (4.80; 4.87) rose for both after the redesign. The landlady gave every item 5, the
+**Usability** (4.80 and 4.87) was higher for both groups after the redesign. The landlady gave every item 5, the
 tenants 4.74 and the prospective tenants 4.67.
 Before the redesign the users had given it 4.49, and the landlady had given 3 to telling what each
 screen is for and to learning the system without help (Appendix M, Table M-29). The first
@@ -723,12 +723,12 @@ afterwards gave 4.80, 4.60, 3.60 and 5.00. The three who reviewed the redesigned
 At least nine tasks in ten were done without help in each round, and 76 accessibility scans of 19 screens
 found no violation once one defect on three screens was corrected.
 
-**Functional Suitability** (4.80; 4.93): every feature the objective names is present, and 96 to
+**Functional Suitability** (4.80 and 4.93): every feature the objective names is present, and 96 to
 100 percent of the executed checks of correctness gave the right result. The landlady gave every item
 5. The users' lowest items, at 4.67, were the prospective tenants' three, and the technical evaluators'
 lowest was payment recording, also at 4.67.
 
-**Reliability** (4.78; 4.83) is the users' lowest. The tenants' lowest item was whether the
+**Reliability** (4.78 and 4.83) is the users' lowest. The tenants' lowest item was whether the
 information shown is correct and up to date (4.50). The technical
 evaluators gave 4.67 to keeping recorded data and to telling "no data" from "could not be loaded",
 and 5.00 to the other two. In the first round their lowest item, 3.80 for handling a failed request

@@ -75,9 +75,11 @@ Based on the results of the study, the following conclusions were drawn:
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of
    ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response. Its users rated it
-   Very High Quality overall (4.84), with every characteristic Very High Quality, and its technical
-   evaluators Very High Quality overall (4.90), every characteristic of both Very High Quality on the
-   scale of Chapter 3's Table 3-5 and in agreement with the measured evidence (Chapter 4, Tables 4-17 and 4-19). Both ratings rose after the redesign, from 4.75 and 4.34 in the first round.
+   Very High Quality overall (4.84) and its technical evaluators Very High Quality overall (4.90),
+   with every characteristic of both Very High Quality on the scale of Chapter 3's Table 3-5 and in
+   agreement with the measured evidence (Chapter 4, Tables 4-17 and 4-18). The changes made in response
+   are in Table 4-19. Both ratings are higher than the first round's, 4.75 and 4.34, given on the system
+   before the redesign.
    This is the view of these respondents rather than of a wider population.
 
 ## 5.3 Recommendations

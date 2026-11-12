@@ -9,7 +9,7 @@ recorded on the day and are not shown. The 114 cases were gone through again on 
 November 2026, repeated the tenant tasks of Part T and the prospective tenants' tasks, and its
 results are in Appendix M, Table M-30.
 
-## Part A. Owner and administrator (A-05 to A-32 are the 26-step walkthrough)
+## Part A. Landlady (administrator) (A-05 to A-32 are the 26-step walkthrough)
 
 | ID | ISO | Req | Do | Should see | Result |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -17,8 +17,8 @@ results are in Appendix M, Table M-30.
 | A-02 | FS | FR-019 | Read the Overview. Ask her: "is this month's collection what you expect?" | Money tiles show figures; occupancy 32 of 33 | Pass |
 | A-03 | US | NFR-002 | Ask her to find, without help, where she would record a payment | Finds **Monthly Income** within about a minute | Pass |
 | A-04 | FS | FR-027 | Open the notification bell | Notifications list opens; unread count matches | Pass |
-| A-05 | FS | FR-003 | (Walkthrough 1) Open the public site signed out, browse units | 33 units, no resident names | Pass |
-| A-06 | SE | FR-003 | (2) Open LB and LF details | Rate, floor, cluster; **no resident name** | Pass |
+| A-05 | FS | FR-003 | (Walkthrough 1) Open the public site signed out, browse units | 33 units, no tenant names | Pass |
+| A-06 | SE | FR-003 | (2) Open LB and LF details | Rate, floor, cluster; **no tenant name** | Pass |
 | A-07 | FS | FR-004 | (3) Send one inquiry from a unit page | "Thank you" confirmation | Pass |
 | A-08 | US, SE | FR-001 | (4) Change Password, wrong current password first | "That is not your current password", still signed in | Pass |
 | A-09 | SE | FR-001 | (5) Change it for real | "Password changed", still signed in | Pass |
@@ -50,7 +50,7 @@ results are in Appendix M, Table M-30.
 | A-35 | US | NFR-002 | Ask: "What would you use first tomorrow morning?" Write the answer |  | Pass |
 | A-36 | SE, FS | FR-009 | **Before A-31**, on the REHEARSAL tenant only: Tenants > Edit > Reset password > confirm; sign in as that tenant with the new password (private window) | Confirmation says their phone is signed out; the password is shown once; signing in forces a new password; the old one is refused; Activity shows the reset without the password | Pass |
 
-## Part T. Tenant tasks (testers coded T1 to T3; P done alone, PH done with help, F not done, NT not tried)
+## Part T. Tenant tasks (testers coded T1 to T3, with P done alone, PH done with help, F not done and NT not tried)
 
 | ID | ISO | Req | T1 Time | T1 Result | T1 Errors | T2 Time | T2 Result | T2 Errors | T3 Time | T3 Result | T3 Errors |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -82,8 +82,8 @@ results are in Appendix M, Table M-30.
 | P-03 | SE | FR-003 | Open any occupied unit | No tenant name, phone or email anywhere | Pass |
 | P-04 | US | FR-004 | Inquiry form: press Send with everything empty | Each missing field says what it needs | Pass |
 | P-05 | US | FR-004 | Type a bad email and a short phone number | Plain messages under the fields; nothing sent | Pass |
-| P-06 | FS | FR-004 | Send one real-looking inquiry (a team member's own details) | Confirmation with **Open your conversation**, **Copy the link** and a reference code; the owner sees it in Inquiries (A-26) | Pass |
-| P-06b | FS | FR-004 | After the owner replies to P-06: open the link on the same phone, then on another phone open `/inquiry` and type the reference code and the phone number used | Her reply shows in both; write back once and it appears in her conversation, with a notification. A wrong code or wrong phone says only "No inquiry matches that" | Pass |
+| P-06 | FS | FR-004 | Send one real-looking inquiry (a team member's own details) | Confirmation with **Open your conversation**, **Copy the link** and a reference code; the landlady sees it in Inquiries (A-26) | Pass |
+| P-06b | FS | FR-004 | After the landlady replies to P-06: open the link on the same phone, then on another phone open `/inquiry` and type the reference code and the phone number used | Her reply shows in both; write back once and it appears in her conversation, with a notification. A wrong code or wrong phone says only "No inquiry matches that" | Pass |
 | P-07 | US | none | Open `/privacy` and `/terms` | Both readable on a phone | Pass |
 | P-08 | RE | none | Open a made-up address, `/this-does-not-exist` | A friendly "not found" page with a way back | Pass |
 
@@ -94,11 +94,11 @@ results are in Appendix M, Table M-30.
 | C-01 | PE, RE | NFR-004 | All tenants refresh Overview together | Every screen loads; note the slowest (seconds) | Pass |
 | C-02 | SE | FR-002 | Everyone checks the unit and name on screen | Each sees **only their own** unit. Any other name: STOP (guide §9) | Pass |
 | C-03 | FS, RE | FR-026 | Every tenant posts a note on their request within the same minute | Every note saved once, none lost, none doubled | NT |
-| C-04 | FS | FR-025 | Owner opens Repairs while C-03 happens, then refreshes | All new notes visible, each on the right request | NT |
-| C-05 | FS | FR-027 | Owner moves two requests to In Progress | Those two tenants get a notification; the others do not | NT |
+| C-04 | FS | FR-025 | Landlady opens Repairs while C-03 happens, then refreshes | All new notes visible, each on the right request | NT |
+| C-05 | FS | FR-027 | Landlady moves two requests to In Progress | Those two tenants get a notification; the others do not | NT |
 | C-06 | RE | NFR-006 | Two tenants double-tap Send on a note | Only one copy saved (the button disables while sending) | NT |
-| C-07 | PE | NFR-004 | Owner opens Monthly Income for the whole year while tenants are active | Loads; note the time | Pass |
-| C-08 | CO | NFR-005 | Owner uses the laptop, tenants use phones, at once | No one's session affects another's | Pass |
+| C-07 | PE | NFR-004 | Landlady opens Monthly Income for the whole year while tenants are active | Loads; note the time | Pass |
+| C-08 | CO | NFR-005 | Landlady uses the laptop, tenants use phones, at once | No one's session affects another's | Pass |
 
 ## Part O. Offline, weak signal and installing
 
@@ -132,7 +132,7 @@ results are in Appendix M, Table M-30.
 | S-09 | SE | FR-029 | Activity shows today's password changes and admin actions, without any password in it | As described | Pass |
 | S-10 | SE | FR-003 | Public pages and unit details: no tenant names (P-03) | As described | Pass |
 | S-11 | SE | FR-002 | Foreign ticket id (A-22) | Not found | Pass |
-| S-12 | SE | NFR-003 | Ask the owner: "Who else knows your password?" | Only she does (after A-09) | Pass |
+| S-12 | SE | NFR-003 | Ask the landlady: "Who else knows your password?" | Only she does (after A-09) | Pass |
 
 ## Part CO. Browsers and devices
 

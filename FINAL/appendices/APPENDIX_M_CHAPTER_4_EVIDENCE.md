@@ -1,7 +1,7 @@
 # APPENDIX M: SUPPORTING EVIDENCE FOR CHAPTER 4
 
 This appendix holds the detailed results that Chapter 4 summarizes: the full functional walkthrough,
-the rating of every survey item by every group of the second round (the users and the technical evaluators who rated the redesigned system, as in Chapter 4's Table 4-17; the first round is summarized in Tables M-28 and M-29), the measured evidence for each quality
+the rating of every survey item by every group of the second round (the users and the technical evaluators who rated the redesigned system, as in Chapter 4's Table 4-17, with the first round summarized in Tables M-28 and M-29), the measured evidence for each quality
 characteristic, and every change made in response to the evaluation.
 
 **Table M-1.** Results of the functional walkthrough (30 September 2026) (summarized in Chapter 4, Section 4.3.4)
@@ -33,7 +33,7 @@ characteristic, and every change made in response to the evaluation.
 | 21 | Repair resolution and notification | Request advanced to Resolved; tenant receives resolution notification | Moved to In Progress, then Resolved; the tenant was notified that the repair was done. | Pass |
 | 22 | Expense recording and allocation | ₱100 expense logged with property allocation; edits/deletion verified | Not performed as written: two separate expenses (₱60 and ₱40) were recorded instead of one ₱100 expense split 60/40, and neither was edited or deleted. | Not done |
 | 22b | Expense allocation split derivation | Expense split across areas; total derived automatically via trigger | Not performed as written: two separate expenses (₱60 and ₱40) were recorded instead of one ₱100 expense split 60/40, and neither was edited or deleted. | Not done |
-| 23 | Financial workbook export | income.xlsx and expenses.xlsx downloaded matching owner layout | As expected. | Pass |
+| 23 | Financial workbook export | income.xlsx and expenses.xlsx downloaded matching the landlady's layout | As expected. | Pass |
 | 23b | Fail-safe presentation on API interruption | Backend stopped; money tiles display "—" instead of misleading ₱0.00 | With the connection cut, the money tiles showed ₱0 and "Try again" instead of "—". | Fail |
 | 24 | Tenant vacating and tenancy termination | Tenancy ended; unit returns to Available; end_date recorded | The test tenant was moved out and the unit showed Available. | Pass |
 | 25 | Ledger baseline verification | Rehearsal records removed; ledger restored to exact 937 baseline rows | Done by the team after the session rather than on screen: the test tenant's bill, payments, voided receipt and repair were removed; the two test expenses of step 22 were voided on 1 October. | Not done |
@@ -439,7 +439,7 @@ characteristic, and every change made in response to the evaluation.
 | Two GCash checkouts opened on one bill at once, payment code with a stand-in database | Both opened, so both payments could be recorded | 1 opened, 1 refused |
 | A checkout 16 minutes after one was abandoned | | Opened: an abandoned checkout holds the bill for 15 minutes, not for good |
 
-**Table M-27.** Corrections after the testing activities (13 October 2026; referred to in Chapter 4, Section 4.4.6)
+**Table M-27.** Corrections after the testing activities (13 October 2026, referred to in Chapter 4, Section 4.4.6)
 
 | Found | What a person saw | Cause | Correction | Checked by |
 | :--- | :--- | :--- | :--- | :--- |

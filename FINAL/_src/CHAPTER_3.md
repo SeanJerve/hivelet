@@ -52,7 +52,7 @@ Later months were added by a second script that compares every row with the data
 the rows not yet there. That script and the later corrections were written with the help of the same
 AI coding assistant and reviewed by the researchers. Each correction was made as a numbered database
 migration, run after a backup, that records its evidence and the values before and after. The
-corrections make the records match what she wrote; her amounts, and the five invoice numbers she had
+corrections make the records match what she wrote. Her amounts, and the five invoice numbers she had
 used twice, were kept as written.
 
 ### 3.1.2 Hardware
@@ -217,18 +217,18 @@ sampling (Etikan et al., 2016) to include tenants who pay in cash, tenants less 
 applications, users of both Android and iPhone handsets, and more than one cluster. Three were
 observed, since the number of new usability problems found falls quickly with each additional tester
 (Nielsen & Landauer, 1993). A prospective tenant used the public website as a person looking for a
-unit would. Of the five technical evaluators of the first round, four reviewed a demonstration copy of the system
-holding sample data, so that they did not see the boarding house's records. The three technical
-evaluators of the second round reviewed the live system. After the screens were redesigned in the third iteration, the tasks and the questionnaire were
-repeated with a second round of tenants, prospective tenants and the landlady, and three more
-technical evaluators answered the questionnaire. Each group rated only the characteristics it
+unit would. Five technical evaluators reviewed the system, four of them on a demonstration copy holding sample
+data, so that they did not see the boarding house's records. After the screens were redesigned in
+the third iteration, the tasks and the questionnaire were repeated with a second round of tenants,
+prospective tenants and the landlady, and three more technical evaluators reviewed the live system
+and answered the questionnaire. Each group rated only the characteristics it
 was in a position to judge: tenants and prospective tenants did not rate Security, and only the
 technical evaluators rated Maintainability.
 
-**Instruments.** Four instruments were used: task cards read aloud to each tester in English and
-Filipino; an observation sheet recording, for each task, whether it was completed without help, with
-help, or not at all, the time taken, and the number of wrong turns; a defect log; and the ISO/IEC
-25010 survey questionnaire, with a section for each respondent group (Appendix J). Responses were
+**Instruments.** Four instruments were used. Task cards were read aloud to each tester in English and
+Filipino. An observation sheet recorded, for each task, whether it was completed without help, with
+help or not at all, the time taken and the number of wrong turns. A defect log recorded the defects
+found, and the ISO/IEC 25010 survey questionnaire had a section for each respondent group (Appendix J). Responses were
 given on the 5-point Likert scale of Table 4 (Likert, 1932).
 
 **Data gathering.** Each participant took part after giving consent (Section 3.4). Each tester used
@@ -325,7 +325,7 @@ the informed consent form (Appendix P), and the prospective tenants and the tech
 agreed through the data privacy notice that opens the questionnaire. The four technical evaluators
 reached through Panelista reviewed a demonstration copy holding sample data, so none of them saw the landlady's records. The three of the second round reviewed the live system, which a member of the research team
 signed into as the test tenant and as the administrator and handed to them ready to use, so they
-could see the boarding house's records but were given no sign-in details. The researcher stayed with
+could see the boarding house's records but were given no sign-in details. That member stayed with
 them throughout. Each tenant used only their own account, which shows only their own
 records, and received an individual starting password in person, which they replaced at first
 sign-in. Respondents could give a name so that the researchers could tell the responses apart. The

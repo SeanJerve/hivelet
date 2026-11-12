@@ -6,7 +6,7 @@
 
 This appendix lists every table and column of the Hivelet database as it stands in the live system, with the
 type and length of each column, whether a value is required, its default, and the keys that link the tables.
-PK marks a primary key and FK a foreign key, with the table and column it refers to; a generated column is
+PK marks a primary key and FK a foreign key, with the table and column it refers to. A generated column is
 computed by the database from the columns named and cannot be written. Allowed values of an enumerated type
 are listed beside it. No sample values are given, because the rows hold tenants' personal data.
 
@@ -191,7 +191,7 @@ The landlady's Monthly Expenses ledger: one row per expense.
 
 ### expense_property_allocations
 
-How each expense is split across property areas; the parts add up to the expense.
+How each expense is split across property areas. The parts add up to the expense.
 
 | Column | Type | Required | Default | Key | Description |
 | :--- | :--- | :---: | :--- | :--- | :--- |
