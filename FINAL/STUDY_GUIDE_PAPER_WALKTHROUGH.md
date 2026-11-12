@@ -1445,7 +1445,7 @@ The section then has four labelled parts.
   giving consent. No team member was a respondent.
 - The first round, before the redesign, had ten (Appendix M, Tables M-28 and M-29). Four of its five
   technical evaluators reviewed a demonstration copy (same software, separate database with sample
-  data) so no outsider saw the landlady's records.
+  data) so those four did not see the landlady's records.
 - The landlady is one respondent, so her mean is one person's rating; the results describe these
   respondents, not a wider population.
 
@@ -1516,7 +1516,7 @@ The section then has four labelled parts.
   store.
 - **Compatibility 4.79; 5.00**: every browser combination tried worked.
 - **Security 5.00 (the landlady); 4.93** (Section 4.4.4).
-- **Usability 4.80; 4.87**: rose for both after the redesign. The landlady gave every item 5 (before
+- **Usability 4.80; 4.87**: higher for both groups after the redesign. The landlady gave every item 5 (before
   the redesign she gave 3 to two items, and the users' Usability was 4.49); tenants **4.74**,
   prospective tenants **4.67**. First round evaluators **4.20**: the first gave 3 to all five items
   before the **fourteen changes** (eleven about usability); the next four gave **4.80, 4.60, 3.60 and

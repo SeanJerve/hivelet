@@ -458,8 +458,20 @@ October to 10 November), and three technical evaluators, who reviewed the live s
 4-14 and 4-15.* The first round, before the redesign, had ten: the landlady, three tenants, one
 prospective tenant and five technical evaluators. The first of those evaluators, an IT professional in
 software quality assurance, reviewed the live system on 3 October; the other four, reached through
-Panelista, reviewed the demonstration copy with sample data on 15 to 18 October, so no outsider saw
-the landlady's records. *Appendix M, Tables M-28 and M-29.*
+Panelista, reviewed the demonstration copy with sample data on 15 to 18 October, so those four did
+not see the landlady's records. *Appendix M, Tables M-28 and M-29.*
+
+**Who are the three technical evaluators of 12 November?**
+They answered anonymously, like every respondent, and the paper names none of them. On the form each
+chose the group "Technical evaluator (IT professional, developer, or IT faculty)", and none is a
+member of the team. Do not name them. *Sections 3.3, 3.4 and 4.4.1.*
+
+**Three people gave nearly every item 5, within eleven minutes. Is that believable?**
+The times are when each form was sent (9:33, 9:39 and 9:44), not how long each review took: they
+used the live system first, with one of us present (Section 3.4). Their ratings are reported as
+given, and the paper says three is a small group whose ratings describe only them (Section 4.4.1).
+Where the measurement is lower than their rating, the paper says so: session handling (Section
+4.4.4) and Maintainability (Section 4.4.3).
 
 **Did the technical evaluators rate the redesigned system?**
 Three did, on 12 November, and theirs are the ratings in Table 4-17 (4.90). The five of October

@@ -764,7 +764,7 @@ nothing. Example: record_income_for_months saves a three-month receipt as three 
 **Where:** `STUDY_GUIDE_CODE.md`, §5 and §7.
 
 **Demonstration copy.** The same software on a separate database with sample data, used by four
-technical evaluators so no outsider saw the landlady's records. **Where:** Section 3.3; Section 4.4.1.
+technical evaluators of the first round so that they did not see the landlady's records. **Where:** Section 3.3; Section 4.4.1.
 
 **Deploy (deployment).** Putting a new version on the live site. Every approved change deploys
 automatically from the main code branch. **Where:** Section 3.2.5; Section 4.5.
