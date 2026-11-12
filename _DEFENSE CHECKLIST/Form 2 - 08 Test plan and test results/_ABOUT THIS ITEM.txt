@@ -6,7 +6,7 @@ Status on 12 November 2026: READY
 
 Here:
   - Appendix L - Test cases and results (30 September 2026).docx
-  - Rerun of all 114 test cases (4 November 2026).docx
+  - Rerun of the 114 test cases (4 November 2026).docx
   - Summary.txt
 
 Rebuilt by node scripts/manuscript/build-defense-folder.mjs. It never deletes a file the team put here.

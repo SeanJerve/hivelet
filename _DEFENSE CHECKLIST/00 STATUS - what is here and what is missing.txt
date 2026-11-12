@@ -26,7 +26,7 @@ READY    Form 2 - 06 Live demonstration
 READY    Form 2 - 07 Revision log
 READY    Form 2 - 08 Test plan and test results
 PARTLY   Form 2 - 09 UAT sign-off
-           still needed: The scan of the form signed by the owner (P1). She signs only if she agrees. Never sign it for her
+           still needed: The scan of the form signed by the landlady (P1). She signs only if she agrees. Never sign it for her
 PARTLY   Form 2 - 10 Deployment report and acceptance form or MOA
            still needed: A Client or End-User Acceptance Form, or an MOA. None exists yet: ask the FIC whether the signed UAT form of item 09 serves
 READY    Form 2 - 11 User manual and repository
