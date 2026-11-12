@@ -48,7 +48,7 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **To do:**
   - [ ] Print it.
   - [ ] Have Sir Jayvee sign Sessions 1, 2 and 3.
-    - [ ] Hold Session 4 before the final defense, write down what he says, have him sign it.
+  - [ ] Hold Session 4 before the final defense, write down what he says, have him sign it.
   - [ ] At Session 4, also ask him the two questions of item 9 (the AI wording and where the
     statement goes), and whether he wants two outside suggestions back in recommendation 4: record
     each tenancy's agreed term, and warn when a unit has more people than it holds. They are out of
@@ -184,7 +184,7 @@ the team is allowed to schedule the final defense. Each item below is one we can
 - **Why:** using AI without saying so can be treated as dishonesty. Saying it plainly, with what the
   team did, protects the team at the defense and in the similarity check (item 3).
 - **To do:**
-    - [ ] Ask Sir Jayvee to read the wording in Section 3.1.1 and confirm it. One word in it changed on
+  - [ ] Ask Sir Jayvee to read the wording in Section 3.1.1 and confirm it. One word in it changed on
     12 November: "the owner's past records" became "the landlady's past records".
   - [ ] Ask him where the full statement goes (a page after the Abstract, the end of Section 3.2, or
     an appendix) and whether the prompt log must be attached. Tell Claude his answer.
