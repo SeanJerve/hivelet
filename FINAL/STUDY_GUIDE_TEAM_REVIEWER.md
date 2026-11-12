@@ -96,7 +96,7 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 | Figure | Value |
 | :--- | :--- |
 | Requirements | **44** functional, **49** business rules, **10** non-functional |
-| As worded / in part / interface only / not as worded | 25 / 15 / 1 / 3 (graded 16 Sep) |
+| As worded / in part / not as worded | 33 / 9 / 2 against the final system, 13 Nov (25 / 15 / 1 interface only / 3 in September). App. M, Table M-32 |
 | Iterations | **3**, after a first build (24 Jul to 28 Aug): 12 to 14 Sep (22 errors corrected); 15 Sep to 31 Oct; from 1 Nov (interface redesign) |
 | Database | **21** tables and 37 foreign keys in the ERD; **24** tables and 238 columns in Appendix N (three are backups from corrections) |
 | Routes checked against the permission matrix | **60** (administrator and tenant, 10 Nov); **71** request handlers reviewed for security (2 Oct) |

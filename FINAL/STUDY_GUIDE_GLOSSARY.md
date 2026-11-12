@@ -1233,9 +1233,10 @@ satisfaction, freedom from risk and context coverage. **Where:** Section 3.3; Se
 
 **Rated quality.** What the survey respondents said. **Where:** Section 3.3; Table 4-18.
 
-**Requirements grading.** Each functional requirement graded against the code early in the second
-iteration (16 September 2026), and not repeated since: 25 as worded, 15 in
-part, 1 interface only, 3 not as worded. **Where:** Section 4.1.2.
+**Requirements grading.** Each functional requirement graded against the code, first in September
+2026 (25 as worded, 15 in part, 1 interface only, 3 not as worded), then against the final system on
+13 November 2026 by the same rules: 33 as worded, 9 in part, 2 not as worded. **Where:** Section
+4.1.2; App. M, Table M-32.
 
 **Respondent groups.** In Table 4-17: the users of the redesigned system (31 October to 10 November
 2026), the landlady (1), tenants (10) and prospective tenants (3), fourteen; and the technical evaluators

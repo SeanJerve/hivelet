@@ -69,13 +69,17 @@ workbook, and two rounds of written questions answered on 17 September and 12 Oc
 
 **How many requirements did you end with?**
 44 functional requirements and 49 business rules, each traced in a traceability matrix. Graded against
-the code on 16 September: 25 implemented as worded, 15 in part, 1 in the interface only, 3 not as
-worded. Plus ten non-functional requirements. *Section 4.1.2, Tables 4-2 and 4-3.*
+the final system on 13 November 2026: 33 implemented as worded, 9 in part, 2 not as worded (25 as
+worded in September). Plus ten non-functional requirements. *Section 4.1.2, Tables 4-2 and 4-3;
+Appendix M, Table M-32.*
 
-**Why only 25 of 44 "as worded"?**
-Because we graded strictly against the exact wording, not against whether the need was met. The three
-"not as worded" describe things the landlady sees in another form. Being strict is why the number is
-honest. *Section 4.1.2.*
+**Why only 33 of 44 "as worded"?**
+Because we graded strictly against the exact wording, by the same rules as in September, not against
+whether the need was met. A requirement counted "in part" when part of it is done in the browser or
+in the Excel workbook rather than by the server, or when one clause is missing (the amenities are
+written into the screens, no screen shows a unit's past rates). The two "not as worded", cash flow and
+profitability, are on the landlady's Overview, worked out on the screen rather than by the server.
+Being strict is why the number is honest. *Section 4.1.2; Appendix M, Table M-32.*
 
 ---
 

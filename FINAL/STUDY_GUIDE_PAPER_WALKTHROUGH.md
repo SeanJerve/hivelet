@@ -876,9 +876,9 @@ The section then has four labelled parts.
 
 **Key facts and numbers**
 - **44 functional requirements** and **49 business rules**.
-- Graded against the code on **16 September 2026**: **25** implemented as worded, **15** in part,
-  **1** in the interface only, **3** not as worded (what those three describe is visible to the landlady in
-  another form).
+- Graded against the final system on **13 November 2026**: **33** implemented as worded, **9** in
+  part, **2** not as worded (cash flow and profitability, shown on the Overview but worked out on the
+  screen). In September it was 25, 15, 1 and 3. Every requirement, both grades: Appendix M, Table M-32.
 - **Ten non-functional requirements**: one per ISO/IEC 25010 characteristic plus two for auditability
   and exportability.
 - The landlady confirmed: a bill is **overdue from the day after its due date**; she **sets rates by
@@ -906,8 +906,8 @@ The section then has four labelled parts.
   used its own hosting, and the requirement was reworded.
 
 **If the panel asks**
-- *"Why only 25 of 44 as worded?"* The grading was against the exact wording; the three "not as worded"
-  are things "visible to the landlady in another form". (See
+- *"Why only 33 of 44 as worded?"* The grading was against the exact wording, and work done in the
+  browser rather than by the server counted as "in part". The two "not as worded" are on the Overview. (See
   [STUDY_GUIDE_DEFENSE_QA.md](STUDY_GUIDE_DEFENSE_QA.md), Section 1.)
 - *"Does rent go up automatically?"* No. She sets rates by hand; every change is recorded and "no
   increase is applied automatically."
@@ -1726,8 +1726,8 @@ The section then has four labelled parts.
 **Key facts and numbers**
 1. Existing practices: two-sheet workbook on a USB flash drive, paper invoice book, cash, requests by
    message or in person. 937 income rows and 1,327 expense allocations; 43% lacked an anniversary date
-   and deposit; five invoice numbers used twice. 44 functional requirements, 49 business rules; 25 as
-   worded, 15 in part, 1 interface only, 3 not as worded.
+   and deposit; five invoice numbers used twice. 44 functional requirements, 49 business rules; 33 as
+   worded, 9 in part, 2 not as worded against the final system (25 as worded in September).
 2. Developed in three Agile iterations with the six features the objective names, among them
    "booking and reservation management"; it holds the boarding house's real records. GCash "works end
    to end in Adyen's test environment and takes no real money. It is not live, because going live needs
