@@ -389,6 +389,80 @@ one comment quotes the 0.08 from our own Table M-31. Be ready to say:
 
 ---
 
+## F. From the strict review of 13 November
+
+A panel-style read of the whole paper. The text fixes are made and pushed (commits `c4d3daf4` to
+`5e26cf12`): Table 4-15, "agree on six of eight" in place of "all eight", the stale figures in
+Appendix M, the audit trail, and the limits now stated in Sections 4.4.1, 4.4.3 and 4.4.5. **Lloyd:
+take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left for a person.
+
+### [ ] 20. The three technical evaluators of 12 November: agree on the answer
+
+- **What:** their forms were sent six and four minutes apart, they named nothing to improve, and one
+  comment quotes the layout shift of 0.08, a figure found only in our Table M-31.
+- **Why:** it is the weakest evidence in the paper, and a panelist who opens the response file will ask.
+- **To do:**
+  - [ ] Agree what is true and say only that: each one's role, how long they used the system, and
+    whether they were shown the paper, the repository or our own measurements.
+  - [ ] Tell Claude whether they opened the repository: Appendix J says the form asked them to, and
+    Section 4.4.3 says only that the first round did not.
+
+### [ ] 21. The conflict-of-interest question (decision C8 and D1)
+
+- **What:** the paper is silent, by the team's decision, on a relation the panel is likely to raise.
+- **To do:**
+  - [ ] Ask Sir Jayvee at Session 4 whether one sentence belongs in Section 3.4.
+  - [ ] Whatever he says, all five rehearse the same honest answer.
+
+### [ ] 22. Compare Appendix J with the live Google Form
+
+- **What:** the response files show the form had a consent question and an optional name field, and
+  no "How long have you been using the system?" question. Appendix J is corrected for those. The
+  files also show the group label was not worded as the appendix prints it.
+- **To do:**
+  - [ ] Open the form, compare every question and the notice with Appendix J, and tell Claude each
+    difference, including whether the technical evaluators' section asks them to review the repository.
+
+### [ ] 23. Re-grade the 44 functional requirements (Sean)
+
+- **What:** "25 as worded, 15 in part, 1 in the interface only, 3 not as worded" was verified on 15
+  September. The paper now says it was graded early in the second iteration and not repeated.
+- **Why:** it reads as 19 of 44 unfinished, and two of the three "not as worded" are cash flow and
+  analytics, which the scope names.
+- **To do:**
+  - [ ] Grade them against the final system and tell Claude the counts. Claude then adds the list of
+    the 44 as an appendix table: the Chapter 4 guide asks for it, and Appendix L cites codes no reader
+    can look up.
+
+### [ ] 24. Facts only the team has (tell Claude, one line each)
+
+- [ ] The months the landlady's workbook covers (the guide asks for the covering period of records).
+- [ ] Who holds the hosting, database and gateway accounts after turnover, and the date in the MOA
+  until which the team supports the system.
+- [ ] The normal form of the database, in one sentence.
+- [ ] Whether anyone reviewed the questionnaire before it was used. The paper states no validation.
+- [ ] The adviser's correct title: the printed MOA and acceptance form say "Prof.", the manuscript "Dr."
+
+### [ ] 25. Ask Sir Jayvee at Session 4
+
+- [ ] What the proposal panel recommended, and where each point shows in the paper.
+- [ ] Whether Figure 2-2's PROCESS box may list the steps of the study (it lists the modules, and has
+  no testing or evaluation), and whether Chapter 2 needs a short theme on software quality evaluation.
+- [ ] Access to the repository for him as Programming Adviser (Form 2 item 11 asks for it).
+
+### [ ] 26. The demonstration: the audit trail has no screen
+
+- [ ] Decide how to show it if the panel asks: the audit table in the database, or "Recently" in the
+  side menu.
+
+### [ ] 27. Still for Claude, in a later session
+
+- [ ] Redraw Figure 4-4 with the units store connected to processes 3.0, 4.0 and 5.0.
+- [ ] One line per tenant task in Appendix L, Part T.
+- [ ] Decide whether Appendix L should say how the 77 cases were re-checked on 4 November (suites,
+  a harness with a mocked sign-in, read-only queries and reading the code; no sign-in on production).
+  The wording "77 run and passed" is kept as the team fixed it.
+
 ## Later, not now (Sean, 12 November)
 
 | Item | What it is |
