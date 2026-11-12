@@ -396,6 +396,14 @@ A panel-style read of the whole paper. The text fixes are made and pushed (commi
 Appendix M, the audit trail, and the limits now stated in Sections 4.4.1, 4.4.3 and 4.4.5. **Lloyd:
 take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left for a person.
 
+- [x] The review's two documents are written and kept outside the repository, in `REVIEW 2026-11`
+  above the hivelet folder. **Document A** is the strict audit: the scores, every finding and the
+  fix list. **Document B** is the defense study guide: each chapter, table and figure explained, 92
+  mock-panel questions with answers, the ten weakest points, and a labeled map of every appendix,
+  form and file. Read Document B before the mock defense.
+- [x] Every table and figure label checked (13 November): 87 captions, numbered in order with no
+  gap, each cited in the text by its number. Figure C-1 was not, and now is.
+
 ### [ ] 20. The three technical evaluators of 12 November: agree on the answer
 
 - **What:** their forms were sent six and four minutes apart, they named nothing to improve, and one
