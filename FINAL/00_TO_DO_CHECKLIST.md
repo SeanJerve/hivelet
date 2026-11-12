@@ -437,23 +437,28 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
     optional. Every response file agrees: each respondent filled their section's boxes.
 - Nothing in Chapters 1 to 5 depended on the old wording.
 
-### [ ] 23. Re-grade the 44 functional requirements (Sean)
+### [x] 23. Re-grade the 44 functional requirements (done by Claude, 13 November)
 
 - **What:** "25 as worded, 15 in part, 1 in the interface only, 3 not as worded" was verified on 15
   September. The paper now says it was graded early in the second iteration and not repeated.
 - **Why:** it reads as 19 of 44 unfinished, and two of the three "not as worded" are cash flow and
   analytics, which the scope names.
-- **To do:**
-  - [ ] Grade them against the final system and tell Claude the counts. Claude then adds the list of
-    the 44 as an appendix table: the Chapter 4 guide asks for it, and Appendix L cites codes no reader
-    can look up.
+- **Done:** graded against the final system by the same rules as in September, each upgrade checked
+  in the code and the database: **33 as worded, 9 in part, 2 not as worded** (was 25, 15, 1 and 3).
+  Eight went up (FR-018, 022, 026, 031, 032, 034, 036, 044), FR-033 went from not as worded to in
+  part, and none went down. Every requirement, worded in full, with both grades, is Appendix M, Table
+  M-32, which Appendix L now points to. Sections 4.1.2 and 5.1 and Table M-3 (now 42 / 44) follow.
+- [ ] Optional: read Table M-32 once. If you grade any requirement differently, tell Claude.
 
 ### [ ] 24. Facts only the team has (tell Claude, one line each)
 
-- [ ] The months the landlady's workbook covers (the guide asks for the covering period of records).
+- [x] The months the workbook covers: January 2024 to July 2026, read from the database (all 937
+  income rows and 1,327 allocations moved on 28 August). Section 4.1.1 now says so.
 - [ ] Who holds the hosting, database and gateway accounts after turnover, and the date in the MOA
   until which the team supports the system.
-- [ ] The normal form of the database, in one sentence.
+- [x] The normal form: Section 4.2.1 now says the tables follow the third normal form, with the
+  ledger's deliberate exceptions named (a receipt keeps what was written on it, a few stored totals),
+  checked against the database's own catalogue.
 - [ ] Whether anyone reviewed the questionnaire before it was used. The paper states no validation.
 - [ ] The adviser's correct title: the printed MOA and acceptance form say "Prof.", the manuscript "Dr."
 
@@ -469,13 +474,14 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
 - [ ] Decide how to show it if the panel asks: the audit table in the database, or "Recently" in the
   side menu.
 
-### [ ] 27. Still for Claude, in a later session
+### [x] 27. Still for Claude (done 13 November)
 
-- [ ] Redraw Figure 4-4 with the units store connected to processes 3.0, 4.0 and 5.0.
-- [ ] One line per tenant task in Appendix L, Part T.
-- [ ] Decide whether Appendix L should say how the 77 cases were re-checked on 4 November (suites,
-  a harness with a mocked sign-in, read-only queries and reading the code; no sign-in on production).
-  The wording "77 run and passed" is kept as the team fixed it.
+- [x] Figure 4-4 redrawn: D1 is drawn twice, written by 3.0 and 5.0 and read by 4.0, as in
+  Appendix F. The text no longer says Figure 4-4 leaves it out.
+- [x] Appendix L, Part T lists each of the 18 tasks as read to the tester, with what they should see.
+- [x] Appendix L now says how the 77 cases were re-checked on 4 November: no one signed in, and the
+  checks were the suites, refused requests, a copy of the screens with a simulated sign-in, read-only
+  queries, the code and read-only requests to the live site. "77 run and passed" is kept.
 
 ## Later, not now (Sean, 12 November)
 

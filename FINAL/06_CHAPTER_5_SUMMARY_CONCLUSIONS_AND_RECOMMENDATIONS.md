@@ -17,8 +17,8 @@ results are summarized below in the order of the specific objectives.
    person. Transferring her records, 937 income rows and 1,327 expense allocations, showed that 43%
    of the income rows lacked an anniversary date and deposit and that five invoice numbers had each
    been used for two payments. The analysis produced 44 functional requirements and 49 business
-   rules. Graded against the code early in the second iteration, 25 of the requirements were
-   implemented as worded, 15 in part, 1 in the interface only and 3 not as worded.
+   rules. Graded against the final system, 33 of the requirements were implemented as worded, 9 in part
+   and 2 not as worded, against 25 as worded early in the second iteration.
 
 2. **The system was developed** in three Agile iterations with Vue, Express and PostgreSQL, with
    the six features the objective names: tenant and room management, booking and reservation

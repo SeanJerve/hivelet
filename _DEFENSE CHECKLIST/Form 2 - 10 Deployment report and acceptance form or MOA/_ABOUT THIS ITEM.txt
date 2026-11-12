@@ -2,7 +2,7 @@ Form 2, item 10: Deployment report and acceptance form or MOA
 
 What the form asks: Deployed or pilot-tested in its intended environment, with the client or end-user acceptance signed.
 Checked or signed by: Programming Adviser
-Status on 12 November 2026: PARTLY
+Status on 13 November 2026: PARTLY
 
 Here:
   - Deployment report.docx

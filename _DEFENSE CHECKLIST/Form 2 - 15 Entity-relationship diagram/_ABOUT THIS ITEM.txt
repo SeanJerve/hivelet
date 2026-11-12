@@ -2,7 +2,7 @@ Form 2, item 15: Entity-relationship diagram
 
 What the form asks: An ERD or database diagram that supports the system (Form 3B annex).
 Checked or signed by: Programming Adviser
-Status on 12 November 2026: READY
+Status on 13 November 2026: READY
 
 Here:
   - Figure 4-6 and Appendix H - Entity-relationship diagram.png

@@ -42,7 +42,8 @@ from the others, or in no record at all, which is where each problem in Table 4-
 ![The landlady's process before the system](<../docs/FINAL MANUSCRIPT/figures/figure-4-current-process.png>)
 
 The strongest evidence came from the landlady's own records. Transferring her workbook into the system
-(937 income rows and 1,327 expense allocations) exposed problems the spreadsheet had hidden. **402 of
+(937 income rows and 1,327 expense allocations, from January 2024 to July 2026) exposed problems the
+spreadsheet had hidden. **402 of
 the 937 income rows (43%)** had no anniversary date and no deposit, and **five invoice numbers** were
 each used for two different payments, once for two tenants on the same day (Section 4.3.1). The main
 finding is that the problems did not sit in one area. **Each area kept its own informal record, and
@@ -52,10 +53,11 @@ al., 2024).
 ### 4.1.2 System Requirements
 
 The analysis produced **44 functional requirements** and **49 business rules**, each traced in a
-traceability matrix to the part of the system that implements it. Graded against the
-code early in the second iteration, 25 of the 44 were implemented as worded, 15 in part, 1 in the
-interface only, and 3 not as worded, although what those three describe is visible to the landlady
-in another form. The grading was not repeated after the later changes. Table 4-2 traces each gap to
+traceability matrix to the part of the system that implements it. Graded against the code early in the second iteration, 25 of the 44 were implemented as worded.
+Graded again by the same criteria against the final system, on 13 November 2026, 33 are implemented
+as worded, 9 in part and 2 not as worded (Appendix M, Table M-32). What those two describe, the
+income, expenses and net income and their trend by month, is shown on the landlady's Overview,
+worked out on the screen rather than by the server. Table 4-2 traces each gap to
 the requirement and the module that meets it.
 
 **Table 4-2.** Identified gaps, system requirements and implementing modules
@@ -153,8 +155,8 @@ right is a data store, and a shaded square is a party outside the system. To tra
 landlady records a cash receipt through process 4.0, Bill and record payments, which writes it to store
 D3, Bills and receipts. Process 7.0, Produce reports, reads it from there for the Overview and the
 Excel workbooks. The notifications and the audit record are written by nearly every process and are
-left out of Figure 4-4 for readability, as are the reads and updates of the units store (D1) by
-processes 3.0, 4.0 and 5.0, which Appendix F shows. Adyen, the payment gateway, is drawn as part of
+left out of Figure 4-4 for readability. The units store, D1, is drawn twice, the second time under
+processes 5.0 and 4.0, so that its lines cross no others. Adyen, the payment gateway, is drawn as part of
 the payment process rather than as a party outside the system, as in the data flow diagrams the
 researchers' Systems Analysis and Design professor approved. Taking a GCash payment through Adyen is step 4.3 of process
 4.0 (Appendix F), and Figure 4-2 shows where the gateway sits.
@@ -178,7 +180,12 @@ Figure 4-6, in Crow's Foot notation, is the entity-relationship diagram drawn fr
 catalogue: 21 tables, each with a primary key, and 37 foreign keys. Its two
 centers are the rooms table, which holds the units, and the profiles table, which holds the people.
 Every bill, payment, receipt, tenancy, repair request and inquiry belongs to one unit, and every
-tenancy, bill and payment to one person. The two ledgers are kept as the landlady kept them. Several
+tenancy, bill and payment to one person. The two ledgers are kept as the landlady kept them. The tables follow the third normal form, each
+column describing only its own table's key, with deliberate exceptions so that a record stays as it
+was made. A receipt keeps the name, occupants and amounts written on it, and a bill the amounts it was raised
+with. Receipts name their unit and tenant directly, since the 937 transferred from the workbook have no tenancy to point
+to, payments name theirs beside their bill, and a few totals are stored beside the figures they add
+up. Several
 rules live in the database itself, so no screen or script can bypass them. One unit cannot have two
 active tenancies, one invoice number cannot be used twice for the same unit and month, a gateway
 reference cannot be recorded twice, and the 50% Share and the remitted amount are computed columns.

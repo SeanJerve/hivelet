@@ -2,7 +2,7 @@ Form 2, item 11: User manual and repository
 
 What the form asks: The user manual complete, and the source code in version control, open to the Programming Adviser.
 Checked or signed by: Programming Adviser
-Status on 12 November 2026: READY
+Status on 13 November 2026: READY
 
 Here:
   - Appendix K - User manual.docx

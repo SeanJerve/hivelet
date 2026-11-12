@@ -3,9 +3,13 @@
 The test cases run on 30 September 2026 on the live system, with their results, as summarized in
 Chapter 4, Sections 4.3.4 to 4.3.7. Each case names the ISO/IEC 25010 characteristic it tests (FS
 Functional Suitability, PE Performance Efficiency, CO Compatibility, US Usability, RE Reliability,
-SE Security, MA Maintainability, PO Portability) and the requirement it traces to. A result is Pass,
+SE Security, MA Maintainability, PO Portability) and the requirement it traces to, worded in full in
+Appendix M, Table M-32 (FR codes) and Chapter 4, Section 4.1.2 (NFR codes). A result is Pass,
 Fail, Pass after fix, or NT (not tested). The prospective tenant's task cards (Part PR) were not
-recorded on the day and are not shown. The 114 cases were gone through again on 4 November 2026, after the redesign: 77 were run and passed, 21 of them with wording the redesign had changed, and the 37 that need a person were left for one. None failed (Appendix M, Table M-19). The second round of users, from 31 October to 10
+recorded on the day and are not shown. The 114 cases were gone through again on 4 November 2026, after the redesign: 77 were run and passed, 21 of them with wording the redesign had changed, and the 37 that need a person were left for one. None failed (Appendix M, Table M-19). No one signed in for the rerun. The cases were re-checked with
+the 21 automated check suites, requests the server refused, a copy of the screens with a simulated
+sign-in, read-only queries of the records, the code of each screen, and read-only requests to the
+live site. The second round of users, from 31 October to 10
 November 2026, repeated the tenant tasks of Part T and the prospective tenants' tasks, and its
 results are in Appendix M, Table M-30.
 
@@ -51,6 +55,32 @@ results are in Appendix M, Table M-30.
 | A-36 | SE, FS | FR-009 | **Before A-31**, on the REHEARSAL tenant only: Tenants > Edit > Reset password > confirm; sign in as that tenant with the new password (private window) | Confirmation says their phone is signed out; the password is shown once; signing in forces a new password; the old one is refused; Activity shows the reset without the password | Pass |
 
 ## Part T. Tenant tasks (testers coded T1 to T3, with P done alone, PH done with help, F not done and NT not tried)
+
+Each task was read aloud in English and in Filipino, without saying where to tap. The tasks, and what
+the tester should have seen:
+
+| ID | Task read to the tester | Should see |
+| :--- | :--- | :--- |
+| T-01 | "Sign in with the slip we gave you." | Asked to choose a new password straight away |
+| T-02 | "Choose your own password." | The rules shown (10 or more characters, a letter, a number), a weak one refused with a reason, a good one landing on Overview |
+| T-03 | "Which unit is yours and how much is the rent?" | Their correct unit and rate |
+| T-04 | "Do you owe anything right now?" | The answer clear on screen, and matching what they believe |
+| T-05 | "Find your payments this year." | Their receipts listed, and the tester asked whether the list is right |
+| T-06 | "How is your bill made up?" | Rent and water (₱200 per occupant) shown |
+| T-07 | "Find where to report something broken." | Finds Repairs |
+| T-08 | "Report it, and say how urgent it is." (a real problem, or a title starting TEST) | "Was sent to the landlady", and the request in their list |
+| T-09 | "Add a photo of it." | The photo attached, even a full-size phone photo, which is made smaller before sending |
+| T-10 | "Add a note to your request." | The note in the request's thread |
+| T-11 | "What is its status now?" | The status shown: Submitted, In progress or Done in the list, and Resolved or Closed in the thread |
+| T-12 | "Check your contact details and fix anything wrong." | Saved, or nothing to change |
+| T-13 | "Do you have any notifications?" | The bell opens, and marking one read lowers the count |
+| T-14 | "Open the GCash payment, but do not pay. Close it." | The GCash option appears, and closing it changes nothing |
+| T-15 | "Type /admin at the end of the address." | Not let in, and sent back to their own pages |
+| T-16 | "Sign out, then press Back." | No personal data shown after signing out |
+| T-17 | "Sign in again with your new password." | It works, and the slip's password no longer does |
+| T-18 | "Was anything confusing?" | Their own words, written down exactly (below) |
+
+The results:
 
 | ID | ISO | Req | T1 Time | T1 Result | T1 Errors | T2 Time | T2 Result | T2 Errors | T3 Time | T3 Result | T3 Errors |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
