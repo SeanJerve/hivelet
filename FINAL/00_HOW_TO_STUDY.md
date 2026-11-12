@@ -33,9 +33,9 @@ on, a quiz and the plan for the day). Sean shares it from the page's Share menu.
 2. **Everyone, the paper:** read each chapter (`01_ABSTRACT.md` to `06_...`), then its part of
    `STUDY_GUIDE_PAPER_WALKTHROUGH.md`. End with its checklist, "Can you explain these without notes?".
 3. **Everyone, the questions:** `STUDY_GUIDE_DEFENSE_QA.md`, or the Questions tab of the study page in
-   practice mode. Learn the three weak spots well: Usability (the landlady's two 3s), Maintainability
-   (154 of 204 database calls inside the request handlers) and the small sample (ten respondents in
-   the first round, sixteen in the second).
+   practice mode. Learn the three weak spots well: the technical evaluators' 4.20s (Usability and
+   Reliability) and when they reviewed, Maintainability (154 of 204 database calls inside the request
+   handlers) and the small sample (twenty-one respondents).
 4. **By topic, then go deeper on your own:**
    - the problem and the paper: `STUDY_GUIDE_REFERENCES.md` and the walkthrough of Chapters 1 to 3;
    - the system and the code: `STUDY_GUIDE_CODE.md`, then the two file-by-file guides;

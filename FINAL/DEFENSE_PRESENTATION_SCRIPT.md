@@ -137,22 +137,26 @@ of 32. Every task was completed, and no times were recorded in that round." [4.3
 M, Table M-30]
 
 **Slide 16. The evaluation** (50 s)
-**Land: 4.59, Very High Quality; every characteristic Very High Quality.**
-"Ten respondents: the landlady, three tenants, a prospective tenant and five technical evaluators. A
-second round on the redesigned system, 16 more answers, gave 4.82, and all 26 together 4.61.
-Portability highest at 4.86, Functional Suitability 4.79; even the lowest two, Usability 4.42 and
-Maintainability 4.32, are Very High Quality. We used the mean of the group means, so one landlady is not outweighed by
-three tenants." [Table 4-17, 4.4.2]
-*Likely question: "Ten is very few." We claim it only for the people who answered, every
-characteristic was also measured, and the second round of sixteen gave 4.82. [4.4.1, 4.4.5;
-Appendix M, Tables M-28 and M-29]*
+**Land: users 4.82, technical evaluators 4.34; both Very High Quality.**
+"Sixteen users rated the redesigned system: the landlady, eleven tenants and four prospective
+tenants, 4.82 overall. Five technical evaluators rated it 4.34. Every users' characteristic is Very
+High Quality, Performance Efficiency highest at 4.89. The evaluators were stricter on every
+characteristic: Usability and Reliability at 4.20, the top of High Quality, and Maintainability, which
+only they rated, 4.32. We used the mean of the group means, so one landlady is not outweighed by
+eleven tenants." [Table 4-17, 4.4.2]
+*Likely question: "Why two columns, not one overall?" The users and the evaluators answer different
+questions: the users about their own use, the evaluators about the system as a developer would judge
+it, and only the evaluators rated Maintainability. Each column is a fair overall of its own group.
+[4.4.2, 4.4.3]*
+*Likely question: "Twenty-one is very few." We claim it only for the people who answered, and every
+characteristic was also measured. [4.4.1, 4.4.5]*
 
 **Slide 17. Measured and rated agree** (50 s)
 **Land: all eight agree.**
-"27 of the 31 sub-characteristics were measured and 25 rated. Usability: nine tasks in ten were done without
-help, and the landlady's lower rating for learning alone shows where a first-timer needs help. Maintainability rests on the code: the
+"27 of the 31 sub-characteristics were measured and 25 rated. Usability: nine tasks in ten or more were done without
+help, and after the redesign the landlady gave every Usability item 5. Maintainability rests on the code: the
 checks pass on every change, but three database calls in four sit inside the request handlers. We
-made 51 changes in response, including all 14 of the technical evaluators' comments by 5 October."
+made 51 changes in response, including all 14 of the technical evaluators' comments."
 [4.4.3, 4.4.5, 4.4.6]
 *Hand-over to D: "So, the four objectives."*
 
@@ -162,8 +166,8 @@ made 51 changes in response, including all 14 of the technical evaluators' comme
 
 **Slide 18. Conclusions** (45 s)
 One line per objective, in order: every gap traced to a module; all six features in use on her real
-records, in her own layout; 82 of 83 tests passed with no critical defect; Very High Quality, 4.59,
-and 4.82 in the second round, with 51 optimizations. "All four objectives were achieved." [5.2]
+records, in her own layout; 82 of 83 tests passed with no critical defect; Very High Quality, 4.82
+from the users and 4.34 from the technical evaluators, with 51 optimizations. "All four objectives were achieved." [5.2]
 
 **Slide 19. Recommendations** (40 s)
 Grouped by who acts: the landlady (enter each receipt on Monthly Income, have backups taken); the

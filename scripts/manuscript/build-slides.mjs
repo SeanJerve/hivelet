@@ -229,24 +229,26 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 16. ISO/IEC 25010 results
 {
-  const s = titled('ISO/IEC 25010 evaluation: 4.59, Very High Quality', 'Composite means (Table 4-17), mean of the group means. Ten respondents: the landlady, three tenants, a prospective tenant and five technical evaluators. Every characteristic Very High Quality. Second round on the redesigned system: 4.82 from 16 answers, 4.61 from all 26.');
-  const labels = ['Portability', 'Functional Suitability', 'Security', 'Reliability', 'Compatibility', 'Performance Efficiency', 'Usability', 'Maintainability'];
-  const values = [4.86, 4.79, 4.68, 4.61, 4.55, 4.48, 4.42, 4.32];
-  s.addChart(pptx.ChartType.bar, [{ name: 'Composite mean', labels, values }], {
-    x: 0.6, y: 1.3, w: 12.1, h: 5.4, barDir: 'bar', chartColors: [C.brand], valAxisMinVal: 1, valAxisMaxVal: 5,
-    catAxisLabelFontFace: FONT, catAxisLabelFontSize: 14, valAxisLabelFontSize: 12, catAxisOrientation: 'maxMin',
-    showValue: true, dataLabelFontSize: 13, dataLabelFormatCode: '0.00', valGridLine: { color: C.line, size: 1 },
+  const s = titled('ISO/IEC 25010: users 4.82, technical evaluators 4.34', 'Composite means (Table 4-17), mean of the group means; both Very High Quality overall. Users: the landlady, 11 tenants and 4 prospective tenants, on the redesigned system (16). Technical evaluators: 5. The users\' Security is the landlady\'s rating; only the evaluators rated Maintainability.');
+  const labels = ['Security', 'Performance Efficiency', 'Portability', 'Compatibility', 'Usability', 'Functional Suitability', 'Reliability', 'Maintainability'];
+  const users = [5.00, 4.89, 4.87, 4.83, 4.78, 4.72, 4.65, null];
+  const tech = [4.36, 4.27, 4.53, 4.53, 4.20, 4.32, 4.20, 4.32];
+  s.addChart(pptx.ChartType.bar, [{ name: 'Users (16)', labels, values: users }, { name: 'Technical evaluators (5)', labels, values: tech }], {
+    x: 0.6, y: 1.5, w: 12.1, h: 5.3, barDir: 'bar', barGrouping: 'clustered', chartColors: [C.brand, '9BC7AC'], valAxisMinVal: 1, valAxisMaxVal: 5,
+    catAxisLabelFontFace: FONT, catAxisLabelFontSize: 13, valAxisLabelFontSize: 12, catAxisOrientation: 'maxMin',
+    showValue: true, dataLabelFontSize: 11, dataLabelFormatCode: '0.00', valGridLine: { color: C.line, size: 1 },
+    showLegend: true, legendPos: 't', legendFontFace: FONT, legendFontSize: 13,
   });
 }
 
 // 17. Measured and rated
 {
-  const s = titled('Measured and rated evidence agree on all eight', 'Usability agrees once the later technical evaluators had rated it. The landlady\'s two 3s still mark where a first-time user needs help (Section 4.4.5).');
+  const s = titled('Measured and rated evidence agree on all eight', 'Each rating is read beside the tests for its characteristic (Section 4.4.5).');
   bullets(s, [
     '27 of the 31 sub-characteristics measured by tests; 25 rated by the survey',
-    'Usability (4.42): nine tasks in ten done without help; the landlady rated learning without help lower',
+    'Usability (users 4.78, evaluators 4.20): nine tasks in ten or more done without help; after the redesign the landlady gave every item 5',
     'Maintainability (4.32): checks pass on every change, but three database calls in four sit inside the request handlers',
-    'The 14 comments of 3 October were all acted on by 5 October',
+    'The technical evaluators\' 14 comments were all acted on',
     '51 optimizations in all, each traced to the finding that caused it (Appendix M)',
   ]);
 }
@@ -258,7 +260,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
     ['1. Analyze the practices', 'Every gap in the landlady\'s practices traced to a requirement and a module'],
     ['2. Develop the system', 'All six features built and in use on her real records, in her own layout'],
     ['3. Pilot test it', '82 of 83 tests passed (98.8%), with no critical defect'],
-    ['4. Evaluate and optimize', 'Very High Quality overall (4.59) on ISO/IEC 25010, 4.82 in a second round; 51 optimizations made'],
+    ['4. Evaluate and optimize', 'Very High Quality overall on ISO/IEC 25010: 4.82 from the users, 4.34 from the technical evaluators; 51 optimizations made'],
   ].forEach(([h, b], i) => box(s, 0.6 + (i % 2) * 6.15, 1.45 + Math.floor(i / 2) * 2.65, 5.95, 2.45, h, b, 19));
 }
 
@@ -266,7 +268,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 {
   const s = titled('Recommendations', 'Grouped by who acts on them (Chapter 5, Section 5.3).');
   box(s, 0.6, 1.45, 3.9, 5.1, 'The landlady', 'Enter each receipt from her receipt book on Monthly Income.\n\nHave a backup taken before any change to the records.', 16);
-  box(s, 4.7, 1.45, 3.9, 5.1, 'The system', 'Take GCash live, if the owner wants it, with the owner\'s merchant onboarding documents, and add refunds.\n\nA protected sign-in cookie and a second sign-in factor.\n\nAutomated browser tests for the 26 walkthrough steps, and a faster public page on phones.\n\nRaise Maintainability (service modules) and Usability (first-use guidance).', 16);
+  box(s, 4.7, 1.45, 3.9, 5.1, 'The system', 'Take GCash live, if the owner wants it, with the owner\'s merchant onboarding documents, and add refunds.\n\nA protected sign-in cookie and a second sign-in factor.\n\nAutomated browser tests for the 26 walkthrough steps, and a faster public page on phones.\n\nRaise Maintainability (service modules), Usability (first-use guidance) and Reliability (receipts entered on Monthly Income).', 16);
   box(s, 8.8, 1.45, 3.9, 5.1, 'Future researchers', 'Check a system against its own real data, not only against test records.\n\nEvaluate over a longer period, with every tenant.', 16);
 }
 
