@@ -1,7 +1,7 @@
 // Act 1, one continuous camera move through a dark space.
 //   0       Her spreadsheet, typed into by hand. "33 units." "One spreadsheet."
 //   B[0]    The sheet shrinks into her workbook file, which slides into a drive.
-//   B[1..5] The other problems, each in its own place: receipts nobody checks,
+//   B[1..5] The other problems, each in its own place: invoices nobody checks,
 //           rows left incomplete, repairs in a chat, tenants asking what they owe,
 //           inquiries arriving from everywhere, the last one a visitor asking
 //           the landlady in person, which leaves nothing written down.
@@ -10,7 +10,7 @@
 //   HIVE    Each problem bends into a hexagon carrying its icon and flies into a
 //           hive; the cells close up into one piece and its outline straightens
 //           into the Hivelet mark, whole on the brass hit (BRAAM).
-// Facts: Chapter 4 and 5 (two sheets on removable storage, receipt numbers used
+// Facts: Chapter 4 and 5 (two sheets on removable storage, invoice numbers used
 // twice, 402 of 937 rows incomplete, requests by message or in person). How
 // prospects asked before the system (social media, text, walk-in) is from Sean;
 // the manuscript does not state it yet (see SCENES.md).
@@ -154,7 +154,7 @@ const MARK_R = {whole: 212, lockup: 143};
 
 // ---- The props ------------------------------------------------------------------
 
-const COLS = ['Unit', 'Name', 'Rent for', 'Date paid', 'OR No.', 'Rent', 'Water', 'Garbage', 'Total'];
+const COLS = ['Unit', 'Name', 'Rent for', 'Date paid', 'Invoice', 'Rent', 'Water', 'Garbage', 'Total'];
 const WIDTHS = [90, 230, 150, 150, 120, 150, 120, 130, 150];
 const NAMES = ['Andrea Villanueva', 'Paolo Dimayuga', 'Kristine Salcedo', 'Mark Lorenzo', 'Bea Magbanua', 'Joshua Ramirez', 'Ella Cordero', 'Carlo Buenaflor', 'Nicole Ong', 'Renzo Abrenica', 'Trisha Delos Santos', 'Miguel Santiago', 'Angela Pascual', 'Jerome Taduran'];
 const UNITS = ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '2a', '2b', '2c', '2d', '2e', '2f'];
@@ -250,7 +250,7 @@ const Usb: React.FC<{led: number}> = ({led}) => (
 
 export const Receipt: React.FC<{no: string; amt: string; unit: string; style?: React.CSSProperties; ring?: number}> = ({no, amt, unit, style, ring = 0}) => (
   <div style={{width: 340, height: 226, borderRadius: 14, background: '#f6f1e4', padding: 26, boxSizing: 'border-box', boxShadow: '0 30px 60px rgba(0,0,0,0.45)', position: 'relative', ...style}}>
-    <div style={{fontFamily: jakarta, fontWeight: 700, fontSize: 15, letterSpacing: '0.14em', color: '#7c735f'}}>OFFICIAL RECEIPT</div>
+    <div style={{fontFamily: jakarta, fontWeight: 700, fontSize: 15, letterSpacing: '0.14em', color: '#7c735f'}}>INVOICE</div>
     <div style={{fontFamily: hand, fontSize: 31, color: '#b3261e', marginTop: 10, position: 'relative', display: 'inline-block'}}>
       No. {no}
       {ring > 0 ? (
@@ -611,7 +611,7 @@ export const Act1: React.FC = () => {
       <Head dark text="33 units." size={140} at={20} out={98} sub="Every peso. Every tenant." subSize={38} top={380} />
       <Head dark text="One spreadsheet." accent={['spreadsheet.']} size={104} width={940} at={110} out={B[0] - 8} sub="Typed by hand." subSize={38} top={390} />
       <Head dark width={820} size={100} text={'One file.\nOne drive.'} accent={['drive.']} at={B[0] + 16} out={B[1] - 8} />
-      <Head dark width={820} size={100} text={'Receipts,\nunchecked.'} accent={['unchecked.']} accentColor={C.coral} at={B[1] + 14} out={B[2] - 8} sub="Duplicates go unnoticed." subSize={34} />
+      <Head dark width={820} size={100} text={'Invoices,\nunchecked.'} accent={['unchecked.']} accentColor={C.coral} at={B[1] + 14} out={B[2] - 8} sub="Duplicates go unnoticed." subSize={34} />
       <Head dark width={820} size={86} text={'402 of 937\nrows incomplete.'} accent={['402']} accentColor={C.amber} at={B[2] + 14} out={B[3] - 8} sub="No anniversary. No deposit." subSize={34} />
       <Head dark width={820} size={100} text={'Repairs,\nin a chat.'} accent={['chat.']} at={B[3] + 14} out={B[4] - 8} />
       <Head dark width={820} size={100} text={'Tenants had\nto ask.'} accent={['ask.']} at={B[4] + 14} out={B[5] - 8} sub="What do I owe?" subSize={34} />
