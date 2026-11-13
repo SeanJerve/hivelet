@@ -152,8 +152,9 @@ Based on the summary and conclusions of the study, the following are recommended
    or inquiry as an archived record and list finished repairs by their dates, and call the Monthly
    Income action Void rather than Delete (Appendix L, case A-25).
 5. Make the public page appear faster on phones, where its largest element took 4.2 to 4.4 seconds
-   on slow 4G after the redesign, by pre-rendering it and serving its typefaces from the site itself
-   (Section 4.3.5).
+   on slow 4G after the redesign, by pre-rendering it and serving its typefaces from the site itself (Section 4.3.5). Lighten the
+   work the landlady's Overview does as it loads, which kept a simulated slow phone busy for 1.8
+   seconds (Appendix L, case PF-10).
 6. Raise **Maintainability**, the technical evaluators' lowest at 4.73, by moving the database work
    now written inside the request handlers into service modules, one per kind of record. Help each
    new tenant through the first sign-in, where tenants needed help most in both rounds (Sections
