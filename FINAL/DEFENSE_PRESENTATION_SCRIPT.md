@@ -72,8 +72,8 @@ the next iteration." [2.3, Figure 2-2]
 12 to 14 September: we checked the system and its documents against each other and corrected 22
 recorded errors. Iteration 2, 15 September to 31 October: her answers, real users, testing and the
 evaluation. Iteration 3, from 1 November: a redesign of how the screens look. No module was added or
-removed. Afterwards we ran the 114 test cases again, from 4 to 13 November: 99 passed, the 8 timings were
-taken, 7 could not be run, and none failed. A second round of users tested the
+removed. Afterwards we ran the 114 test cases again, from 4 to 13 November: 99 passed, the 9 timings were
+taken, 6 could not be run, and none failed. A second round of users tested the
 redesign from 31 October to 10 November." [4.2.1, Appendix M Table M-19]
 *Likely question: "Did AI write it?" Yes, much of the code, at our direction; we reviewed and
 verified it, and iteration 1 exists because we did not trust it unchecked. [Q&A guide, Section 4]*

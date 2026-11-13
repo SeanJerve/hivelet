@@ -163,7 +163,7 @@ redesign, from 1 November. *Section 4.2.1; Appendix M, Table M-19.*
 Yes. The system was evaluated twice: in Iteration 2, and again in Iteration 3 on the redesigned
 system, which is the result Section 4.4 reports. Iteration 3 changed how the screens look and joined the
 sign-in and inquiry pages. It added no module and removed none. It added two rules: a closed year's
-records cannot be changed, and a tenant cannot cancel a repair once someone is sent. After it, the 114 test cases were run again from 4 to 13 November: 99 passed, the 8 timings were taken (every screen ready in 0.35 to 2.11 s on a laptop), 7 could not be run, and none failed. Every automated check passed after each later
+records cannot be changed, and a tenant cannot cancel a repair once someone is sent. After it, the 114 test cases were run again from 4 to 13 November: 99 passed, the 9 timings were taken (the screens in 0.35 to 2.11 s on a laptop), 6 could not be run, and none failed. Every automated check passed after each later
 change, so
 the functional, reliability, security and performance results stand. A second round of users then
 used the redesigned system (31 October to 10 November): ten tenants and four prospects did the tasks,

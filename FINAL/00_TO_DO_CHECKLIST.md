@@ -309,9 +309,9 @@ in the Word file, so the Word file gets the checked version.
 
 ### [x] 15b. The re-run of the 114 test cases (done 13 November)
 
-- **Result:** 99 passed, the 8 timings were taken, 7 could not be run, none failed. The team's 16
+- **Result:** 99 passed, the 9 timings were taken, 6 could not be run, none failed. The team's 16
   cases ran on 10 November in the second-round session; Claude's on 13 November. Not run: C-01, C-03,
-  C-04 and C-07 (no time), CO-02 (no Samsung phone), PF-01 and PF-10. The paper says so in Appendix
+  C-04 and C-07 (no time), CO-02 (no Samsung phone) and PF-10. PF-01 was timed on 13 November. The paper says so in Appendix
   L's last part, Sections 4.2.1 and 4.4.5, and Chapter 5. Nothing is left to do.
 
 ### [ ] 16. The day-before steps in `FINAL/DEMO_SCRIPT.md`

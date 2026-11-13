@@ -7,7 +7,7 @@ SE Security, MA Maintainability, PO Portability) and the requirement it traces t
 Appendix M, Table M-32 (FR codes) and Chapter 4, Section 4.1.2 (NFR codes). A result is Pass,
 Fail, Pass after fix, or NT (not tested). The prospective tenant's task cards (Part PR) were not
 recorded on the day and are not shown. After the redesign the 114 cases were run again, from 4 to 13 November 2026: 99 passed, the 8
-timing cases were timed, 7 could not be run, and none failed. The last part of this appendix gives
+timing cases were timed, 6 could not be run, and none failed. The last part of this appendix gives
 the counts by part, and how and when each was run. The second round of users, from 31 October to 10
 November 2026, repeated the tenant tasks of Part T and the prospective tenants' tasks, and its
 results are in Appendix M, Table M-30.
@@ -199,8 +199,8 @@ The results:
 
 ## The re-run after the redesign, 4 to 13 November 2026
 
-All 114 cases were taken up again on the redesigned system. 99 passed, the 8 timing cases were
-timed, 7 could not be run, and none failed.
+All 114 cases were taken up again on the redesigned system. 99 passed, the 9 timing cases were
+timed, 6 could not be run, and none failed.
 
 | Part | Cases | Passed | Timed | Not run |
 | :--- | --: | --: | --: | --: |
@@ -211,9 +211,9 @@ timed, 7 could not be run, and none failed.
 | O. Offline, weak signal and installing | 12 | 12 | | |
 | S. Security | 12 | 12 | | |
 | CO. Browsers and devices | 6 | 5 | | 1 |
-| PF. Performance timings | 10 | | 8 | 2 |
+| PF. Performance timings | 10 | | 9 | 1 |
 | N. Changes shipped on 30 September | 3 | 3 | | |
-| **All** | **114** | **99** | **8** | **7** |
+| **All** | **114** | **99** | **9** | **6** |
 
 **4 November: 77 cases, all passed.** No one signed in. The cases were checked with the 21
 automated check suites, requests the server refused, a copy of the screens with a simulated sign-in,
@@ -229,7 +229,7 @@ would first check whether the tenants have a new repair request or message, then
 rent." Asked whether anyone else knows her password (S-12), she said no one does. Asked whether
 anything was confusing (T-18), the tenants said nothing was.
 
-**13 November: 6 cases passed and 8 were timed.** The three outside security scans (S-01 to S-03)
+**13 November: 6 cases passed and 9 were timed.** The three outside security scans (S-01 to S-03)
 graded the site A+, with SSL Labs' second address at A as on 30 September. As the test tenant, the
 GCash window opened with Adyen's box and was closed without paying (A-19, T-14). With every save made
 to hang, the message that the system cannot tell whether a save went through appeared at 45.0
@@ -237,9 +237,16 @@ seconds (O-12). The laptop timings were taken with the browser's own timer: the 
 (PF-02), sign-in to the Overview 2.11 s (PF-03), Monthly Income for a year 1.05 s (PF-04), the year's
 workbook 0.48 s (PF-05), the tenant's Overview 1.15 s (PF-06), the tenant's payments 0.41 s (PF-07)
 and sending a repair request 0.86 s (PF-08). PageSpeed Insights (PF-09) gave the public page 80, 100,
-100 and 100 on a phone and 99, 100, 100 and 100 on a desktop.
+100 and 100 on a phone and 99, 100, 100 and 100 on a desktop. The first load with an empty cache
+(PF-01) was timed in a new Chrome each time: on the laptop's connection that morning, which took 2.4
+to 4.9 seconds just to deliver the first byte of the page, its largest element was drawn at a median
+of 6.7 seconds (0.84 to 11.46 s, ten runs). That figure describes the connection more than the
+system: PageSpeed Insights' controlled first load drew it in 0.8 seconds on a desktop and 4.4 seconds
+on a phone on slow 4G.
 
-**Not run (7):** C-01, C-03, C-04 and C-07, which need several tenants acting at the same moment,
-for lack of time in the session; CO-02, since no Samsung phone was present; PF-01, a first load with
-the cache cleared; and PF-10, Lighthouse in Chrome's developer tools. The phone column of the timings
-was not taken again.
+**Not run (6):** C-01, C-03, C-04 and C-07, which need several tenants acting at the same moment,
+for lack of time in the session; CO-02, since no Samsung phone was present; and PF-10, Lighthouse in
+Chrome's developer tools. The phone column of the timings was not taken again. What the four
+simultaneous-use cases test was tested automatically instead: twelve simulated visitors and six
+simulated readers at once (Appendix M, Table M-25), simultaneous saves (Table M-26), and the
+concurrency check suite, which passed again on 13 November.
