@@ -75,6 +75,10 @@ video/public/shots/
 video/public/voice/
 video/public/sfx/
 video/public/score.wav
+# Film B, the free version (video/NEXT_CUT_BRIEF.md): its source is committed, its
+# installs and renders are not.
+video-free/node_modules/
+video-free/out/
 video/public/fe-galang-building.webp
 video/public/icon-512.png
 video/public/floorplans/
