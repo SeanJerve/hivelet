@@ -1,6 +1,6 @@
 # The Hivelet film: every scene and where it comes from
 
-About 136 seconds, 1920x1080, rendered at 60 fps (timed in 30 fps frames, which every frame number
+About 138 seconds, 1920x1080, rendered at 60 fps (timed in 30 fps frames, which every frame number
 below uses). A synthesized score and soft object sounds; no voice.
 Headlines are short on purpose (two to four words a line, few sentences under them).
 
@@ -26,6 +26,29 @@ their page, the wordmark-only header and the bell's dot); **the proof shows the 
 The two typefaces now ship with the film (`public/fonts/`, SIL Open Font License), so it renders the
 same with no connection.
 
+Eighth cut, 2026-11-13, after the app was redesigned in November (NEXT_CUT_BRIEF.md; the paper's second iteration): Act 1 says
+"invoice" where it said "receipt", as the paper and the app do; **every app
+screen rebuilt from the app as it is now**, read off the running app on the sample-data harness (text,
+sizes and colours measured from the page, not copied from the seventh cut), in the redesign's glass
+style: the soft green wash behind everything, sections on the page with no card, glass tiles and
+dialogs, tinted-glass buttons, a status as a coloured word. What that changed on screen: the Overview
+opens on the whole workspace with its sidebar, then Needs your attention (payments to verify, urgent
+repairs, inquiries), Rent for September with who is due this week, Occupancy as one bar, and Income
+and expenses; Rooms and rates is the page by cluster, a vacant unit reading "No tenant"; Monthly
+Income has Income by cluster, Records and its toolbar, and Record payment as a sheet that rises from
+the bottom edge; the tenant's month chart, which the app no longer has, is the Record tab's list of
+months; there is no "Settled" tile any more, so her payment reads "Waiting for verification" and then
+"Verified"; the GCash dialog carries the app's own sentence that it runs in a test mode and takes no
+real money; the repairs board holds the other requests and the card takes Mark resolved while in
+progress; the visitor's dialog asks for no email address and reads "Your inquiry is sent" with "Copy
+the code"; Inquiries answers a saved reply with "Reply saved"; and the visitor's page is the redesigned
+conversation. **The proof shows the second round's result**, 4.84 from its users and 4.90 from three
+IT evaluators, side by side and never averaged, keeps 937 records and 82 of 83 tests, and says the
+one failure was fixed and passed when re-tested; the scene is 51 frames longer so four results can be
+read. Wording follows the app and the paper: "Her records", the invoice number, "She verifies it", and
+GCash "in Adyen's test environment". Nothing reads zero before it is counted: a section's figures
+appear with the count, not ahead of it.
+
 **The rule:** every piece of the app on screen is one of the app's own components, rebuilt in
 React from the Vue source (`src/ui/`) with the app's exact labels, sizes and colours. The
 people and amounts are invented sample data; unit codes, clusters and room types are the
@@ -38,19 +61,25 @@ nothing is enlarged from a small raster.
 **Layout:** `GRID` in `src/fx.tsx`. Text stays in the left column (x 120 to 860); the app stays
 in the zone to its right, masked before it can reach the text.
 
+**Glass:** the tokens are `GL` in `src/theme.ts`, from `frontend/src/glass.css`. In the app a dialog
+blurs what is under it with a backdrop filter; a backdrop filter cannot see the film's 3D stage, so
+the scene blurs the layer underneath instead (`under` in `src/ui/Kit.tsx`). The app multiplies a
+floor plan into the page; `capture/plans.mjs` writes each plan as ink on nothing, which gives the
+same picture under the film's masks and cameras.
+
 | Scene | Frames | What happens | App source | Facts |
 | :--- | :-- | :--- | :--- | :--- |
-| Act 1 | 0-1328 | Her spreadsheet typed into by hand ("33 units. Every peso. Every tenant.", "One spreadsheet."); the sheet shrinks into her workbook file and slides into a removable drive; the camera travels to each problem: two receipts with one number, the incomplete rows, repairs in a chat, a tenant asking what they owe, inquiries by social media, text and in person (a visitor walks up to the landlady and asks; she answers; nothing is written down); all six on a ring around "Nothing connected." with the links between them breaking; each bends into a flat-topped hexagon with its icon and the hive forms; the cells close up into one piece, their colours become one green, and the hive's outline straightens into the mark, whole on the brass hit: "One connected system." | Illustrations of the old way; the mark is `frontend/public/favicon.svg` (`HEX_PATH` and the roof and H in `src/ui/Kit.tsx`) | Chapter 4 and 5: two sheets on removable storage, receipt numbers used twice, 402 of 937 rows with no anniversary date and no deposit, requests by message. **Inquiries by social media, text and walk-in are from Sean (2026-09-29); the manuscript does not state them yet.** |
+| Act 1 | 0-1328 | Her spreadsheet typed into by hand ("33 units. Every peso. Every tenant.", "One spreadsheet."); the sheet shrinks into her workbook file and slides into a removable drive; the camera travels to each problem: two invoices with one number, the incomplete rows, repairs in a chat, a tenant asking what they owe, inquiries by social media, text and in person (a visitor walks up to the landlady and asks; she answers; nothing is written down); all six on a ring around "Nothing connected." with the links between them breaking; each bends into a flat-topped hexagon with its icon and the hive forms; the cells close up into one piece, their colours become one green, and the hive's outline straightens into the mark, whole on the brass hit: "One connected system." | Illustrations of the old way; the mark is `frontend/public/favicon.svg` (`HEX_PATH` and the roof and H in `src/ui/Kit.tsx`) | Chapter 4 and 5: two sheets on removable storage, five invoice numbers each used twice, 402 of 937 rows with no anniversary date and no deposit, requests by message. **Inquiries by social media, text and walk-in are from Sean (2026-09-29); the manuscript does not state them yet.** |
 | For the landlady | 1328-1388 | Chapter card | | |
-| Overview | 1388-1658 | The Overview assembles ("Good afternoon, Michelle", the year menu, Move someone in/out, Record expense, Record payment); the attention tile; the month's rent and water count up; the whole year by month | `views/AdminOverviewView.vue`, `components/overview/*` | Sample figures |
-| Rooms and rates | 1658-1838 | All 33 unit cards flip in; 1A steps forward | `views/RoomDirectoryView.vue` | 33 units, B3B vacant (sample) |
-| Monthly Income | 1838-2198 | Received this month and where the year's rent and water came from; the Boarding House ledger fills; Record payment; unit 2B; occupants set the water; the invoice number typed ("Saved as INV#5120"); months covered; the second-payment warning, "Record it anyway" | `views/IncomeCollectionsView.vue`, `components/modals/OnsitePaymentModal.vue` | The warning's wording is the modal's own |
+| Overview | 1388-1658 | Her whole workspace assembles: the sidebar (the seven pages, what is new on Repairs and Inquiries, Recently), "Good afternoon, Michelle", the year menu, Move someone in/out, Record expense, Record payment; close on Needs your attention (a payment to verify, an urgent repair; an inquiry beside them); Rent for September counts up and the three tenants due this week arrive; Income and expenses, the year by month | `views/AdminOverviewView.vue`, `components/overview/*`, `components/layout/AppSidebar.vue`, `components/overview/RecentActions.vue` | Sample figures; the Recently sentences are the ones `backend/src/services/recentActions.ts` writes |
+| Rooms and rates | 1658-1838 | One move up the whole page, from Linda Units past the vacant B3B ("Vacant", "No tenant") to the Boarding House, all 33 units standing up cluster by cluster; 1A steps forward under the pointer's highlight | `views/RoomDirectoryView.vue` | 33 units in five clusters, B3B vacant (sample tenants and rates) |
+| Monthly Income | 1838-2198 | Rent for September and Income by cluster; Records, its toolbar and the Boarding House's records filling in, newest first; Record payment, a sheet rising from the bottom; unit 2B; occupants set the water; the invoice number typed ("Saved as INV#5120"); the second-payment warning, "Record it anyway" | `views/IncomeCollectionsView.vue`, `components/modals/OnsitePaymentModal.vue`, `components/ui/PillSelect.vue` | The warning's wording is the dialog's own |
 | For the tenants | 2198-2258 | Chapter card | | |
-| Tenant | 2258-2960 | Amount due; the phone goes to Payments: "Your rent, month by month", October 2025 to September 2026, one month with nothing recorded, "Paid up to October 4, 2026", 11 of 12 paid ("Every month, in the open."); back to pay with GCash; her attention tile; "Settled"; a repair typed and sent, moving across her board column by column; "Your repair is done" | `views/TenantOverviewView.vue`, `views/TenantPaymentsView.vue`, `components/overview/PaymentMonths.vue`, `MonthCapsules.vue`, `lib/tenantPaymentMonths.ts`, `views/TenantTicketsView.vue`, `views/MaintenanceDispatchView.vue`, notification from `backend/src/routes/admin.ts` | A GCash payment counts once she verifies it. The app would also draw October 2026 as a dashed Due month from a week before; the film stops at September, the month it is set in |
+| Tenant | 2258-2960 | Amount due; the phone goes to Payments, Record: one row a month, October now due and not recorded yet, January to September each verified ("Every month, in the open."); back to pay with GCash: the dialog opens the payment page, confirms, "Payment sent"; the Amount due tile makes way and the payment waits for verification; it arrives in her Needs your attention and she opens Payments to verify; the phone's row turns to Verified; a repair typed and sent, moving across her board column by column; "Your repair is done" | `views/TenantOverviewView.vue`, `views/TenantPaymentsView.vue`, `components/modals/AdyenPaymentModal.vue`, `views/TenantTicketsView.vue`, `views/MaintenanceDispatchView.vue`, notification from `backend/src/routes/admin.ts` | A GCash payment counts once she verifies it. GCash works end to end in Adyen's test environment and takes no real money: the dialog says so in the app's own words, and the headline says "In Adyen's test environment" |
 | For guests | 2960-3020 | Chapter card | | |
-| Guests | 3020-3730 | Vacant unit B3B with its floor plan drawn in and the unit marked; the plan lifted for a closer look; "Ask about unit B3B"; the question typed and sent; the dialog becomes "Your message about unit B3B is saved" with "Open your conversation", "Copy the link" and reference K7QM-3XRD ("Ask here." / "No account needed."); it lands in her Inquiries, she answers and presses Save reply, and it reads Answered ("She answers in Hivelet."); the visitor's page, "Your inquiry", shows Michelle's answer and they write back ("Hear back here.") | `views/CategoryRoomsView.vue` (showcase, `lib/floorPlans.ts`, the inquiry dialog), `components/public/InquiryConversationLink.vue`, `views/InquiriesView.vue`, `views/InquiryThreadView.vue`; the plan is `frontend/public/floorplans/back3rdfloor.png` | B3B is on the back apartment's 3rd floor; the landlady is `LANDLADY.name` (Michelle) in `lib/systemState.ts`; a reply moves an inquiry from Pending to Contacted (`routes/admin.ts`); the reference code is a sample |
-| Proof | 3730-3895 | 937 income records, 82 of 83 tests passed (98.8%, none critical), 4.59 rated out of 5 (Very High Quality, ISO/IEC 25010) | | Chapter 4, Tables 4-12 and 4-17 |
-| End | 3895-4075 | Icon, name, "One connected system for the Fe Galang Da Silva Boarding House.", address, team: Lloyd, Sean, Eljohn, Vince, Kiel | | Group 4, Bicol University, IT 124 Capstone Project 2 |
+| Guests | 3020-3730 | Vacant unit B3B with its floor plan drawn in and the unit marked; the plan lifted for a closer look; "Ask about unit B3B"; a name, a phone number and the question, sent; the dialog becomes "Your inquiry is sent" with "Open your conversation", "Copy the code" and reference K7QM-3XRD ("Ask here." / "No account needed."); it lands in her Inquiries, she answers, "Reply saved", and it reads Answered ("She answers in Hivelet."); the visitor's page, "Your inquiry", shows the boarding house's answer and they write back ("Hear back here.") | `views/CategoryRoomsView.vue` (showcase, `lib/floorPlans.ts`, the inquiry dialog), `views/InquiriesView.vue`, `views/InquiryThreadView.vue`, `components/ui/ToastContainer.vue`; the plan is `frontend/public/floorplans/back3rdfloor.webp` | B3B is on the back apartment's 3rd floor; no email address is asked for; a reply moves an inquiry from Pending to Contacted (`routes/admin.ts`); the reference code is a sample |
+| Proof | 3730-3946 | 937 income records; 82 of 83 tests passed (98.8%, none critical, the one failure fixed and passed when re-tested); 4.84 rated by its users (the landlady, 10 tenants and 3 prospective tenants) and 4.90 rated by three IT evaluators, both Very High Quality on ISO/IEC 25010 | | Chapter 4: Table 11E and Table 23A for the tests, Section 4.4.3 and Table 4-17 for the ratings |
+| End | 3946-4126 | Icon, name, "One connected system for the Fe Galang Da Silva Boarding House.", address, team: Lloyd, Sean, Eljohn, Vince, Kiel | | Group 4, Bicol University, IT 124 Capstone Project 2 |
 
 ## Sound
 
@@ -70,7 +99,7 @@ two-note pop (`sms` for a text), the walk-in's two footsteps on a tiled floor (`
 strokes, the repair card a low slide between columns and a rising note as it lands in each
 (`status-1..3`), the hive's cells a click as each locks in (the cells closing into the mark have
 no effect of their own: the brass hit in the score lands as it becomes whole), the tenant's months
-a rising tone as they grow, a saved reply a sent-message pop, and an answer reaching the visitor a bell.
+a rising tone as they arrive, a saved reply a sent-message pop, and an answer reaching the visitor a bell.
 
 Typing is written once in `src/typing.mjs`: short text at an uneven, human pace. The same times
 put each character on screen and play its key, so a key is only heard as its letter appears.
@@ -88,14 +117,21 @@ Read every cue sheet: the thing named under each still must be moving or arrivin
 
 ```bash
 npm install
+node capture/plans.mjs       # the two floor plans, as ink on nothing (public/floorplans/)
 node capture/sfx.mjs         # effects
 node capture/score.mjs       # score, timed to src/timeline.json
 node capture/storyboard.mjs  # contact sheets for review
 npm run render               # out/hivelet.mp4, 60 fps, about 16 minutes on four cores
 ```
 
-The building photo, the app icon and B3B's floor plan are copied from `frontend/public/` by
-`capture/capture.mjs` (or by hand into `public/`). On a machine that cannot download Remotion's own
+The building photo and the app icon are copied from `frontend/public/` by `capture/capture.mjs` (or
+by hand into `public/`); the floor plans are written by `capture/plans.mjs`.
+
+`capture/harness.html` mounts the real app on invented sample data, for looking at a screen before
+rebuilding it: copy it to `frontend/_harness-video.html`, run the frontend, and open
+`/_harness-video.html?role=admin&route=/admin/overview` (roles `admin`, `tenant`, `public`). It
+answers every call itself and nothing is written anywhere. `inquiry=0..3`, `repair=0..3` and `paid=1`
+in the address set how far the film's story has got. On a machine that cannot download Remotion's own
 browser (a sandbox, a proxy), name one: `REMOTION_BROWSER_EXECUTABLE` for the stills scripts, and
 `--browser-executable=` on `npm run render`; `PLAYWRIGHT_CHROMIUM_EXECUTABLE` for the contact sheets
 and `capture.mjs`. Neither is needed on a normal laptop.
