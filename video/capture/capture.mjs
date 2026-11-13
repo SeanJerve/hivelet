@@ -27,9 +27,8 @@ const only = process.argv[2];
 mkdirSync(outDir, { recursive: true });
 copyFileSync(join(here, 'harness.html'), harnessCopy);
 // The building photo and the app icon appear in the video as they are on the site.
-// And the floor plan the public page shows for unit B3B.
-mkdirSync(join(here, '..', 'public', 'floorplans'), { recursive: true });
-for (const asset of ['fe-galang-building.webp', 'icon-512.png', 'floorplans/back3rdfloor.png']) {
+// The floor plans are written by capture/plans.mjs, which takes the white sheet out of them.
+for (const asset of ['fe-galang-building.webp', 'icon-512.png']) {
   copyFileSync(join(root, 'frontend', 'public', asset), join(here, '..', 'public', asset));
 }
 
