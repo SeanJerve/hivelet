@@ -3,7 +3,7 @@
 // Only the app's colours and fonts (plus the lighter accent steps in theme.ts).
 import React from 'react';
 import {AbsoluteFill} from 'remotion';
-import {C, H, W, jakarta, sora} from './theme';
+import {C, GL, H, W, jakarta, sora} from './theme';
 import {easeIn, easeInOut, lerp, pop, t01, useFrame} from './anim';
 
 // The grid every scene keeps to. Text lives in the left column; the visual
@@ -104,17 +104,18 @@ export const Honeycomb: React.FC<{opacity?: number; color?: string; r?: number; 
   );
 };
 
-// Backgrounds. Night: deep green with a soft glow behind the subject. Light: the
-// app's canvas, brightest behind the subject. Green: the brand colour.
+// Backgrounds. Night: deep green with a soft glow behind the subject. Light: the app's own page
+// since the redesign of November 2026, a near-white base under five soft green lights (GL.wash), a little
+// brighter behind the subject. Green: the brand colour.
 export const Bg: React.FC<{mood?: 'night' | 'light' | 'green'; hex?: boolean; glowX?: number; glowY?: number}> = ({mood = 'light', hex, glowX = 62, glowY = 46}) => {
   const bg = mood === 'night'
     ? `radial-gradient(ellipse 70% 80% at ${glowX}% ${glowY}%, ${C.moss} 0%, ${C.night} 48%, ${C.deep} 100%)`
     : mood === 'green'
       ? `radial-gradient(ellipse 80% 90% at 50% 45%, #1f7a50 0%, ${C.brand} 45%, ${C.brandStrong} 100%)`
-      : `radial-gradient(ellipse 75% 85% at ${glowX}% ${glowY}%, #ffffff 0%, #f4f7f5 40%, ${C.canvas} 72%, #e1e8e3 100%)`;
+      : `radial-gradient(ellipse 60% 70% at ${glowX}% ${glowY}%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%), ${GL.wash}`;
   return (
     <AbsoluteFill style={{background: bg}}>
-      {hex ? <Honeycomb opacity={mood === 'light' ? 0.55 : 0.07} color={mood === 'light' ? '#dde6e0' : '#ffffff'} /> : null}
+      {hex ? <Honeycomb opacity={mood === 'light' ? 0.5 : 0.07} color={mood === 'light' ? '#cfe0d6' : '#ffffff'} /> : null}
     </AbsoluteFill>
   );
 };

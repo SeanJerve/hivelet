@@ -1,88 +1,117 @@
-// The app's own building blocks, rebuilt from frontend/src/index.css and the
-// Vue components so they can move piece by piece. Sizes are the app's CSS
-// pixels: tiles are rounded-tile (24px) with p-6, buttons are 44px pills,
-// status pills are 12px semibold. Scenes scale the whole stage up.
+// The app's own building blocks, rebuilt from frontend/src/index.css, glass.css and the Vue
+// components so they can move piece by piece. Sizes are the app's CSS pixels, read from the
+// running app (13 Nov 2026, after the November redesign): a section sits on the page with no
+// card unless it is boxed, a boxed tile is rounded-tile (24px) glass with p-6, buttons are 44px
+// tinted-glass pills, a status is a coloured word, not a pill. Scenes scale the whole stage up.
 import React from 'react';
-import {ArrowUpRight, Bell, Menu} from 'lucide-react';
-import {C, jakarta, sora} from '../theme';
+import {ArrowUpRight, Bell, ChevronDown, Menu} from 'lucide-react';
+import {C, GL, jakarta, sora} from '../theme';
 
-export type Tone = 'plain' | 'soft' | 'brand' | 'night';
-const TILE: Record<Tone, React.CSSProperties> = {
-  plain: {background: C.tile, color: C.ink},
-  soft: {background: C.brandSoft, color: C.ink},
-  brand: {background: C.brand, color: C.onBrand},
-  night: {background: C.night, color: C.onNight},
+// The 1px bright rim round every glass surface (glass.css `::after`): a gradient drawn in the
+// padding box only, so the middle stays clear.
+export const Rim: React.FC<{bg?: string}> = ({bg = GL.rim}) => (
+  <div style={{position: 'absolute', inset: 0, padding: 1, borderRadius: 'inherit', pointerEvents: 'none', background: bg, zIndex: 1,
+    WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude'}} />
+);
+
+// A glass surface. `tile` is .bg-tile, `night` and `brand` the two dark tiles, `float` a dialog
+// or sheet (.ws-modal-panel, dialog.ws-dialog) and `menu` a dropdown or a toast (.shadow-lift).
+// In the app the two floating ones blur what is under them (backdrop-filter). Here the scene
+// blurs the layer underneath instead (see `Under` below): a backdrop filter cannot see the film's
+// 3D stage, and the result is the same frosted panel.
+export type GlassTone = 'tile' | 'night' | 'brand' | 'float' | 'menu';
+const GLASS: Record<GlassTone, React.CSSProperties> = {
+  tile: {background: GL.tile, boxShadow: `${GL.sheen}, ${GL.drop}`, color: C.ink},
+  night: {background: `linear-gradient(172deg, rgba(255,255,255,0.07), transparent 30%), ${GL.night}`, boxShadow: `inset 0 1px 1px rgba(255,255,255,0.2), ${GL.drop}`, color: C.onNight},
+  brand: {background: `radial-gradient(80% 110% at 8% -15%, rgba(255,255,255,0.09), transparent 62%), radial-gradient(70% 120% at 100% 115%, rgba(120,230,180,0.08), transparent 60%), ${GL.brand}`,
+    boxShadow: `inset 0 1px 1px rgba(255,255,255,0.2), ${GL.drop}`, color: C.onBrand},
+  float: {background: `${GL.floatSheen}, rgba(248,252,249,0.84)`, boxShadow: `${GL.sheen}, ${GL.dropFloat}`, color: C.ink},
+  menu: {background: `${GL.floatSheen}, rgba(249,253,250,0.96)`, boxShadow: `${GL.sheen}, ${GL.dropFloat}`, color: C.ink},
 };
-
-export const Tile: React.FC<{
-  tone?: Tone; w?: number; h?: number; title?: string; goto?: boolean; actions?: React.ReactNode;
-  style?: React.CSSProperties; children?: React.ReactNode;
-}> = ({tone = 'plain', w, h, title, goto, actions, style, children}) => {
-  const dark = tone === 'brand' || tone === 'night';
-  return (
-    <div style={{width: w, height: h, borderRadius: 24, padding: 24, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 16, fontFamily: jakarta, ...TILE[tone], ...style}}>
-      {title || goto || actions ? (
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12}}>
-          {title ? <div style={{fontSize: 15, lineHeight: '20px', fontWeight: 600, paddingTop: 10}}>{title}</div> : <span />}
-          <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
-            {actions}
-            {goto ? <IconBtn dark={dark}><ArrowUpRight size={16} strokeWidth={2} /></IconBtn> : null}
-          </div>
-        </div>
-      ) : null}
-      {children}
-    </div>
-  );
-};
-
-export const IconBtn: React.FC<{dark?: boolean; children: React.ReactNode; size?: number}> = ({dark, children, size = 44}) => (
-  <div style={{width: size, height: size, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-    border: `1px solid ${dark ? 'rgba(255,255,255,0.18)' : C.line}`, background: dark ? 'transparent' : C.tile, color: dark ? C.onNight : C.ink}}>
+export const Glass: React.FC<{tone?: GlassTone; r?: number | string; style?: React.CSSProperties; children?: React.ReactNode}> = ({tone = 'tile', r = 24, style, children}) => (
+  <div style={{position: 'relative', borderRadius: r, boxSizing: 'border-box', fontFamily: jakarta, ...GLASS[tone], ...style}}>
     {children}
+    <Rim bg={tone === 'night' || tone === 'brand' ? GL.rimDark : GL.rim} />
   </div>
 );
 
-export type PillTone = 'paid' | 'verify' | 'overdue' | 'neutral' | 'unentered' | 'expected' | 'on-dark';
-const PILL: Record<PillTone, React.CSSProperties> = {
-  paid: {background: C.brandSoft, color: C.brand},
-  verify: {background: C.verifySoft, color: C.verify},
-  overdue: {background: C.overdueSoft, color: C.overdue},
-  neutral: {background: C.canvas, color: C.inkSoft},
-  unentered: {background: C.tile, color: C.inkSoft, border: `1px solid ${C.line}`},
-  expected: {background: C.tile, color: C.inkSoft, border: `1px dashed ${C.hatch}`},
-  'on-dark': {background: 'rgba(255,255,255,0.1)', color: C.onNight},
+// What lies under a floating panel: blurred and washed by `p` (0 to 1), as the panel's own
+// backdrop filter does in the app (blur 28px, lower contrast, brighter).
+export const under = (p: number): React.CSSProperties => (p > 0 ? {filter: `blur(${14 * p}px) contrast(${1 - 0.25 * p}) brightness(${1 + 0.08 * p})`} : {});
+
+// A section of an overview (components/overview/OverviewTile.vue): its title in the display
+// face with the arrow that opens its page beside it, then what it holds. On the page with no
+// card by default; `boxed` and the two dark tones are glass tiles with p-6 (p-5 on a phone).
+export type Tone = 'plain' | 'boxed' | 'brand' | 'night';
+export const Tile: React.FC<{
+  tone?: Tone; w?: number; h?: number; title?: React.ReactNode; goto?: boolean; pad?: number; gap?: number;
+  style?: React.CSSProperties; children?: React.ReactNode;
+}> = ({tone = 'plain', w, h, title, goto, pad, gap = 16, style, children}) => {
+  const dark = tone === 'brand' || tone === 'night';
+  const inner = (
+    <>
+      {title || goto ? (
+        <div style={{display: 'flex', alignItems: 'flex-start', minHeight: goto ? 44 : 30}}>
+          {title ? <div style={{fontFamily: sora, fontSize: 15, lineHeight: '20px', fontWeight: 600, letterSpacing: '-0.02em', paddingTop: 10}}>{title}</div> : null}
+          {goto ? <span style={{width: 44, height: 44, marginLeft: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: dark ? '#fff' : C.ink}}><ArrowUpRight size={16} strokeWidth={2} /></span> : null}
+        </div>
+      ) : null}
+      {children}
+    </>
+  );
+  const box: React.CSSProperties = {width: w, height: h, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap, fontFamily: jakarta};
+  return tone === 'plain'
+    ? <div style={{...box, padding: `${pad ?? 8}px 0`, color: C.ink, ...style}}>{inner}</div>
+    : <Glass tone={tone === 'boxed' ? 'tile' : tone} style={{...box, padding: pad ?? 24, ...style}}>{inner}</Glass>;
+};
+
+// A status, set in the type (components/overview/StatusPill.vue): 13px medium, coloured by what
+// it says. Ochre for what is waiting, clay for what is wrong, brand green for what is done.
+export type PillTone = 'paid' | 'verify' | 'overdue' | 'neutral' | 'expected' | 'on-dark';
+const WORD: Record<PillTone, React.CSSProperties> = {
+  paid: {color: C.brand},
+  verify: {color: GL.statusWait},
+  overdue: {color: GL.statusAlert, fontWeight: 600},
+  neutral: {color: C.inkSoft},
+  expected: {color: GL.inkFaint},
+  'on-dark': {color: C.onNight},
 };
 export const Pill: React.FC<{tone?: PillTone; children: React.ReactNode; style?: React.CSSProperties}> = ({tone = 'neutral', children, style}) => (
-  <span style={{display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', borderRadius: 999, padding: '4px 10px', fontSize: 12, fontWeight: 600, lineHeight: '16px', fontFamily: jakarta, ...PILL[tone], ...style}}>
+  <span style={{display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', fontSize: 13, fontWeight: 500, lineHeight: '20px', fontFamily: jakarta, ...WORD[tone], ...style}}>
     {children}
   </span>
 );
 
-export type BtnKind = 'brand' | 'light' | 'plain' | 'night' | 'quiet';
+// The pills. `brand` is .pill-btn-brand (deep green glass), `light` .pill-btn-light (the white
+// one on a dark tile), `plain` .pill-btn (clear glass), `quiet` .pill-btn-quiet (words only).
+export type BtnKind = 'brand' | 'light' | 'plain' | 'quiet';
+const mirror = (tint: string, sheen: number) => `linear-gradient(180deg, rgba(255,255,255,${sheen}), rgba(255,255,255,0.03) 44%, transparent 62%, rgba(255,255,255,0.1)), ${tint}`;
 const BTN: Record<BtnKind, React.CSSProperties> = {
-  brand: {background: C.brand, color: C.onBrand, border: `1px solid ${C.brand}`},
-  light: {background: C.tile, color: C.ink, border: `1px solid ${C.tile}`},
-  plain: {background: C.tile, color: C.ink, border: `1px solid ${C.line}`},
-  night: {background: C.night, color: C.onNight, border: `1px solid ${C.night}`},
-  quiet: {background: 'transparent', color: C.inkSoft, border: '1px solid transparent'},
+  brand: {background: mirror(GL.brandBtn, 0.2), color: '#ffffff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)'},
+  light: {background: mirror('rgba(255,255,255,0.9)', 0.34), color: C.night, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)'},
+  plain: {background: GL.field, color: C.ink, border: `1px solid ${GL.fieldEdge}`, boxShadow: GL.fieldShadow},
+  quiet: {background: 'transparent', color: C.inkSoft},
 };
-// `press` is 0..1: the app's :active scale(0.97), plus the hover colour.
-export const Btn: React.FC<{kind?: BtnKind; icon?: React.ReactNode; children: React.ReactNode; press?: number; style?: React.CSSProperties; full?: boolean}> = ({kind = 'plain', icon, children, press = 0, style, full}) => (
-  <div style={{display: full ? 'flex' : 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 44, padding: '0 18px', borderRadius: 999, boxSizing: 'border-box',
+// `press` is 0..1: the app's :active scale(0.97), and the brand pill's deeper hover tint.
+export const Btn: React.FC<{kind?: BtnKind; icon?: React.ReactNode; children?: React.ReactNode; press?: number; style?: React.CSSProperties; full?: boolean}> = ({kind = 'plain', icon, children, press = 0, style, full}) => (
+  <div style={{position: 'relative', display: full ? 'flex' : 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 44, padding: '0 18px', borderRadius: 999, boxSizing: 'border-box',
     fontFamily: jakarta, fontSize: 14, fontWeight: 600, lineHeight: 1, whiteSpace: 'nowrap', transform: `scale(${1 - 0.03 * press})`,
-    ...BTN[kind], ...(kind === 'brand' && press > 0 ? {background: C.brandStrong, borderColor: C.brandStrong} : {}), ...style}}>
+    ...BTN[kind], ...(kind === 'brand' && press > 0 ? {background: mirror('rgba(14,72,46,0.88)', 0.2)} : {}), ...style}}>
     {icon}
     {children}
+    {kind === 'brand' || kind === 'light' ? <Rim bg={GL.rimBtn} /> : null}
   </div>
 );
 
-// A text input as the app draws it; `focus` draws its 3px focus ring.
-export const Input: React.FC<{value?: string; placeholder?: string; focus?: boolean; caret?: boolean; mono?: boolean; right?: React.ReactNode; disabled?: boolean; style?: React.CSSProperties; area?: boolean}> = ({value, placeholder, focus, caret, mono, right, disabled, style, area}) => (
-  <div style={{boxSizing: 'border-box', width: '100%', minHeight: area ? 96 : 44, border: `1px solid ${C.line}`, borderRadius: area ? 16 : 999,
-    background: disabled ? C.canvas : C.tile, color: value ? C.ink : C.inkFaint, padding: area ? '12px 16px' : '10px 18px', fontSize: 14, lineHeight: '20px',
-    fontFamily: mono ? 'ui-monospace, Consolas, monospace' : jakarta, display: 'flex', alignItems: area ? 'flex-start' : 'center', justifyContent: 'space-between',
-    boxShadow: focus ? `0 0 0 2px ${C.tile}, 0 0 0 5px ${C.ink}` : 'none', ...style}}>
-    <span>
+// A text input as the app draws it (.ws-input): clear glass with a bright edge. `float` is the
+// one inside a dialog, a little more solid. `focus` draws the workspace's 3px focus ring.
+export const Input: React.FC<{value?: string; placeholder?: string; focus?: boolean; caret?: boolean; mono?: boolean; right?: React.ReactNode; left?: React.ReactNode; float?: boolean; style?: React.CSSProperties; area?: boolean}> = ({value, placeholder, focus, caret, mono, right, left, float, style, area}) => (
+  <div style={{boxSizing: 'border-box', width: '100%', minHeight: area ? 96 : 44, border: `1px solid ${float ? GL.fieldFloatEdge : GL.fieldEdge}`, borderRadius: area ? 16 : 999,
+    background: float ? GL.fieldFloat : GL.field, color: value ? C.ink : GL.inkFaint, padding: area ? '12px 16px' : '10px 18px', fontSize: 14, lineHeight: area ? '24px' : '20px',
+    fontFamily: mono ? 'ui-monospace, Consolas, monospace' : jakarta, display: 'flex', alignItems: area ? 'flex-start' : 'center', gap: 10,
+    boxShadow: focus ? '0 0 0 2px rgba(255,255,255,0.9), 0 0 0 5px #101713' : GL.fieldShadow, ...style}}>
+    {left}
+    <span style={{flex: 1, minWidth: 0}}>
       {value || placeholder}
       {caret ? <span style={{display: 'inline-block', width: 1.5, height: 17, background: C.ink, marginLeft: 1, verticalAlign: 'text-bottom'}} /> : null}
     </span>
@@ -90,31 +119,47 @@ export const Input: React.FC<{value?: string; placeholder?: string; focus?: bool
   </div>
 );
 
-export const Field: React.FC<{label: string; children: React.ReactNode; style?: React.CSSProperties}> = ({label, children, style}) => (
-  <div style={{display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, lineHeight: '16px', color: C.inkFaint, fontFamily: jakarta, minWidth: 0, ...style}}>
+// The app's dropdown trigger (components/ui/PillSelect.vue): mirror glass with a fine green ring.
+export const Select: React.FC<{value: string; count?: string; open?: boolean; field?: boolean; w?: number | string; style?: React.CSSProperties}> = ({value, count, open, field, w = '100%', style}) => (
+  <div style={{position: 'relative', boxSizing: 'border-box', width: w, height: 44, borderRadius: 999, padding: field ? '8px 12px 8px 18px' : '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+    fontFamily: jakarta, fontSize: 14, lineHeight: '20px', fontWeight: field ? 400 : 500, color: C.ink, background: mirror('rgba(255,255,255,0.34)', 0.34),
+    boxShadow: open ? '0 0 0 2px rgba(255,255,255,0.9), 0 0 0 5px #101713' : 'inset 0 0 0 1px rgba(23,96,63,0.18), inset 0 1px 1px rgba(255,255,255,0.7)', ...style}}>
+    <span style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{value}</span>
+    <span style={{display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0}}>
+      {count ? <span style={{fontSize: 12, fontWeight: 600, color: C.inkSoft, fontVariantNumeric: 'tabular-nums'}}>{count}</span> : null}
+      <ChevronDown size={16} color={open ? C.brand : C.inkSoft} style={{transform: open ? 'rotate(180deg)' : undefined}} />
+    </span>
+  </div>
+);
+
+export const Field: React.FC<{label: string; children: React.ReactNode; float?: boolean; style?: React.CSSProperties}> = ({label, children, float, style}) => (
+  <div style={{display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, lineHeight: '16px', color: float ? GL.inkFaintFloat : GL.inkFaint, fontFamily: jakarta, minWidth: 0, ...style}}>
     {label}
     {children}
   </div>
 );
 
-// The top bar every signed-in page shares (components/layout/AppHeader.vue): the
-// wordmark alone, in the display face, and a dot on the bell when anything is
-// unread, red on the owner's side and green on a tenant's phone.
+// The top bar every signed-in page shares (components/layout/AppHeader.vue): a strip of glass
+// with the wordmark alone, in the display face, and a dot on the bell when anything is unread,
+// red on the landlady's side and green on a tenant's phone.
 export const AppHeader: React.FC<{initials: string; unread: number; phone?: boolean; ring?: number}> = ({initials, unread, phone, ring = 0}) => (
-  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: phone ? 64 : 62, borderBottom: `1px solid ${C.line}`, fontFamily: jakarta}}>
-    <div style={{display: 'flex', alignItems: 'center', gap: 18}}>
-      {phone ? <Menu size={22} color={C.inkSoft} /> : null}
-      <span style={{fontFamily: sora, fontSize: 20, fontWeight: 600, letterSpacing: '-0.025em', color: C.ink}}>Hivelet</span>
+  <div style={{position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64, padding: phone ? '0 16px' : 0, boxSizing: 'border-box', fontFamily: jakarta,
+    background: phone ? 'rgba(255,255,255,0.5)' : 'transparent', boxShadow: phone ? `inset 0 -1px 0 ${GL.line}, ${GL.sheen}` : `inset 0 -1px 0 ${GL.line}`}}>
+    <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
+      {phone ? <span style={{width: 44, height: 44, marginLeft: -4, display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Menu size={20} color={C.inkSoft} /></span> : null}
+      <span style={{fontFamily: sora, fontSize: 20, lineHeight: '28px', fontWeight: 600, letterSpacing: '-0.025em', color: C.ink}}>Hivelet</span>
     </div>
-    <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
+    <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
       <div style={{position: 'relative', transform: `rotate(${Math.sin(ring * Math.PI * 6) * 14 * (1 - ring)}deg)`}}>
-        <div style={{width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.ink}}><Bell size={20} strokeWidth={1.8} /></div>
+        <div style={{width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.ink}}><Bell size={20} strokeWidth={2} /></div>
         {unread > 0 ? (
-          <span style={{position: 'absolute', top: 6, right: 7, width: 10, height: 10, borderRadius: 5, background: phone ? C.brand : C.overdue,
+          <span style={{position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: 5, background: phone ? C.brand : C.overdue, boxShadow: '0 0 0 2px #edf1ee',
             transform: `scale(${1 + Math.sin(Math.min(1, ring * 3) * Math.PI) * 0.6})`}} />
         ) : null}
       </div>
-      <div style={{width: 36, height: 36, borderRadius: 18, background: C.brand, color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>{initials}</div>
+      <div style={{width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <div style={{width: 36, height: 36, borderRadius: 18, background: C.brand, color: '#fff', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>{initials}</div>
+      </div>
     </div>
   </div>
 );
@@ -133,7 +178,6 @@ export const Ripple: React.FC<{x: number; y: number; p: number; color?: string; 
       background: `${color}33`, opacity: 1 - p, transform: `scale(${0.3 + p * 1.3})`, zIndex: 49}} />
   );
 
-// The app icon: same mark as frontend/public/favicon.svg. `draw` strokes it on.
 // The Hivelet mark (frontend/public/favicon.svg): a green hexagon, the same cell
 // the hive is built from, with a minimal H under a roof. `draw` strokes the roof
 // and then the H in; `fill` fades the hexagon; `hex` colours it (the hive's
