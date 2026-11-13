@@ -217,16 +217,18 @@ which maps how inputs are transformed into outputs.
 ![Conceptual framework](figures/figure-2-2-conceptual-framework.png)
 
 In this study, the Input phase consists of the study objectives, review of related literature, client
-interviews, needfinding observations, and analysis of existing administrative and payment workflows.
+interviews, needfinding observations, analysis of the landlady's existing administrative and payment
+workflows and records, and the requirement for an optional online payment through GCash.
 From these inputs, the researchers identified the operational gaps, user requirements, and system
 constraints of the boarding house.
 
 The Process phase applies the Agile Software Development Life Cycle, with iterative stages of
 requirements, design, development, testing, deployment, and review (Section 3.2). Within this phase,
-the system modules are implemented: financial tracking (analytics and reports), booking and
-reservation management (inquiries and reservations), tenant management (profiles and records),
-maintenance ticketing (requests and notifications), and an optional online payment integration using
-the Adyen API with GCash.
+the six features named in Objective 2 are implemented: tenant and room management (tenants, units and
+rates), booking and reservation management (inquiries and reserved units), financial tracking (income
+and expense ledgers and reports) with an optional online payment integration using the Adyen API
+with GCash, maintenance ticketing and notification, role-based access control for the landlady,
+tenants and visitors, and Progressive Web Application support.
 
 The Output phase includes the developed Hivelet system, its functional modules, and generated
 outputs such as financial reports exportable as Excel files, inquiry and tenancy records, and payment

@@ -416,12 +416,14 @@ For each reference in depth, see [STUDY_GUIDE_REFERENCES.md](STUDY_GUIDE_REFEREN
 - *What it shows*: three boxes, **Input**, **Process** and **Output**, joined by arrows, with a
   **Feedback** box returning from Output to Input.
 - *How to read it*:
-  - **Input**: the objectives of the study; the review of related literature; client interviews and
-    observations of the workflow; and payment (integration and payment workflow).
-  - **Process**: **Agile**, in which the modules are built: Financial Tracking (Analytics, Reports),
-    **Booking and Reservation (Inquiries, Reserved units)**, Tenant Management (Profiles, Records),
-    Maintenance Ticketing (Requests, Notifications) and the Adyen Payment API (Optional GCash, in the
-    Adyen test environment).
+    - **Input**: the objectives of the study; the review of related literature; client interviews and
+    observations of the workflow (the landlady's practices and records, tenant feedback); and the
+    optional online payment (GCash through Adyen).
+  - **Process**: **Agile**, in which the six features of Objective 2 are built: Tenant and Room
+    Management, **Booking and Reservation (Inquiries, Reserved units)**, Financial Tracking (income
+    and expense ledgers, reports), the Adyen Payment API (Optional GCash, in the Adyen test
+    environment), Maintenance Ticketing and Notification, Role-Based Access Control and PWA Support.
+    Redrawn 13 November so the figure names all six (it had left out role-based access and PWA).
   - **Output**: the Hivelet system and its modules, the finished research manuscript, the system
     evaluation results (ISO/IEC 25010:2011) and the user manual.
   - **Feedback**: refinement in every phase from user evaluation and performance.

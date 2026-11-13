@@ -580,7 +580,7 @@ function erd() {
 // and the maintenance ticketing module that Objective 2 names and the old figure left out.
 // ---------------------------------------------------------------------------------------------
 function framework() {
-  const W = 1040, H = 700;
+  const W = 1040, H = 770;
   let s = '';
   const col = (x, y, w, h, title, items) => {
     let b = rect(x, y, w, h, { rx: 26, sw: 2 }) + rect(x + 16, y + 14, w - 32, 58, { rx: 16, sw: 1.8 }) +
@@ -598,32 +598,36 @@ function framework() {
   const arrow = (x1, x2, y) =>
     `<path d="M${x1},${y - 26} H${x2 - 40} V${y - 46} L${x2},${y} L${x2 - 40},${y + 46} V${y + 26} H${x1} Z" fill="${INK}"/>`;
 
-  s += col(24, 30, 280, 530, 'INPUT', [
+    // 13 Nov 2026: the PROCESS and OUTPUT columns name the six features of Objective 2 (role-based
+  // access and PWA support were missing, and tenant management left out the rooms).
+  s += col(24, 30, 280, 605, 'INPUT', [
     ['Objectives of the Study', '(Workflow integration, communication, operational control)'],
     ['Review of Related Literature', '(Contextual, integration and technology gaps)'],
-    ['Client Interviews and Operational Workflow Observations', '(Property management and tenant feedback)'],
-    ['Payment', '(Integration, payment workflow)'],
+        ['Client Interviews and Operational Workflow Observations', '(The landlady\u0027s practices and records, tenant feedback)'],
+    ['Optional Online Payment', '(GCash through Adyen)'],
   ]);
-  s += col(382, 60, 276, 470, 'PROCESS', [
+    s += col(382, 30, 276, 605, 'PROCESS', [
     ['AGILE', ''],
-    ['Financial Tracking', '(Analytics, Reports)'],
+    ['Tenant and Room Management', '(Tenants, units, rates)'],
     ['Booking and Reservation', '(Inquiries, Reserved units)'],
-    ['Tenant Management', '(Profiles, Records)'],
-    ['Maintenance Ticketing', '(Requests, Notifications)'],
+    ['Financial Tracking', '(Income and expense ledgers, reports)'],
     ['Adyen Payment API', '(Optional GCash, in the Adyen test environment)'],
+    ['Maintenance Ticketing and Notification', '(Requests, notifications)'],
+    ['Role-Based Access Control', '(Landlady, tenants, visitors)'],
+    ['PWA Support', '(Phones and computers, no app store)'],
   ]);
-  s += col(736, 30, 280, 530, 'OUTPUT', [
+    s += col(736, 30, 280, 605, 'OUTPUT', [
     ['Hivelet System', ''],
-    ['System Modules', 'Financial Tracking Module (Analytics, Reports); Booking and Reservation Module (Inquiries, Reserved units); Tenant Management Module (Profiles, Records); Maintenance Ticketing Module (Requests, Notifications); Payment Module (Adyen Payment API with GCash)'],
+        ['System Modules', 'Tenant and room management, booking and reservation, financial tracking with optional GCash payment through Adyen, maintenance ticketing and notification, role-based access control, PWA support'],
     ['Finished Research Manuscript', ''],
     ['System Evaluation Results', '(ISO/IEC 25010:2011)'],
     ['User Manual', ''],
   ]);
-  s += arrow(306, 380, 295) + arrow(660, 734, 295);
+    s += arrow(306, 380, 332) + arrow(660, 734, 332);
   // Feedback: from the output column down, along the bottom box, and back up into the input column.
-  s += rect(230, 600, 580, 70, { rx: 18, sw: 2 }) + T(520, 635, 'FEEDBACK', { size: 22, weight: 'bold' });
-  s += line([[880, 560], [880, 635], [812, 635]], { sw: 3 });
-  s += line([[230, 635], [164, 635], [164, 562]], { sw: 3 });
+      s += rect(230, 672, 580, 70, { rx: 18, sw: 2 }) + T(520, 707, 'FEEDBACK', { size: 22, weight: 'bold' });
+  s += line([[880, 635], [880, 707], [812, 707]], { sw: 3 });
+  s += line([[230, 707], [164, 707], [164, 637]], { sw: 3 });
   return { W, H, body: s };
 }
 
