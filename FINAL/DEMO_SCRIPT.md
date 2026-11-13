@@ -36,7 +36,26 @@ Its passwords are with Sean; never type them where the projector shows them.
    version (seen 13 October: a laptop's saved copy still had the street misspelled after the fix
    went live).
 8. **Ask the landlady** whether the panel may see her own screens. If she says no, show her side only
-   through the figures (Figures 4-7 to 4-10 use sample records).
+      through the figures (Figures 4-7 to 4-10 use sample records).
+9. **Prepare the audit trail tab.** On the laptop, sign in to Supabase, open the project's **SQL
+   Editor**, paste the query below, run it once to check it answers, and save it as "Audit trail,
+   unit PH". It only reads, and it shows only unit PH's repair requests, with the role of who acted
+   and no names:
+
+   ```sql
+   select a.created_at at time zone 'Asia/Manila' as "when",
+          a.action,
+          a.new_values->>'title'                  as request,
+          a.previous_values->>'status'            as before,
+          a.new_values->>'status'                 as after,
+          p.role                                  as done_by
+   from audit_logs a
+   left join profiles p on p.id = a.actor_profile_id
+   where a.entity_type = 'TICKET'
+     and a.new_values->>'room_id' = (select id::text from rooms where room_number = 'PH')
+   order by a.created_at desc
+   limit 5;
+   ```
 
 ---
 
@@ -78,6 +97,11 @@ Its passwords are with Sean; never type them where the projector shows them.
   in progress, then close it. The phone shows each change, with a notification.
 - Only with the landlady's consent, since the board shows other units' requests. Otherwise show it on
   the phone alone.
+- **The audit trail, if the panel asks or time allows (30 seconds).** Point to **Recently** in the
+  side menu: the landlady's own last actions. Then switch to the "Audit trail, unit PH" tab and run
+  it: the request just sent, and each status change, with when, before, after and by which role.
+  Say: "There is no screen for the full trail on purpose. The landlady does not need one, and no
+  screen can change or delete it."
 
 ### 5. Offline (phone, 1 minute). Objective 2: PWA support
 - Turn on airplane mode and reopen the app. It opens, shows what was last loaded under the bar
