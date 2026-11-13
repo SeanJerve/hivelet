@@ -7,34 +7,47 @@ import {Bg, Kin} from '../fx';
 import {Mark} from '../ui/Kit';
 import {Cues} from '../Sfx';
 
+// The study's own results, each counting up as it lands (Chapter 4: Table 11E for the tests,
+// Section 4.4.3 and Table 4-17 for the ratings). The ratings are the second round's, on the
+// redesigned system: 4.84 from its users (the landlady, 10 tenants and 3 prospective tenants)
+// and 4.90 from three IT evaluators, each on its own, never averaged. The one test that failed
+// was fixed and passed when re-tested (Table 23A).
+export const PROOF = {stats: [24, 38, 52, 66], count: 50};
 export const Proof: React.FC = () => {
   const f = useFrame();
-  // The study's own results (Chapter 4: Tables 4-12 and 4-17), each counting up as it lands.
-  const stats: {at: number; big: (f: number) => React.ReactNode; label: string; sub: string}[] = [
-    {at: 30, big: (f) => count(f, 30, 60, 937).toLocaleString('en-US'), label: 'income records', sub: 'carried over from her workbook'},
-    {at: 48, big: (f) => <>{count(f, 48, 60, 82)}<span style={{fontSize: 92, opacity: 0.62, letterSpacing: '-0.04em'}}>/83</span></>, label: 'tests passed', sub: '98.8%, none of them critical'},
-    {at: 66, big: (f) => (count(f, 66, 60, 459) / 100).toFixed(2), label: 'rated out of 5', sub: 'Very High Quality, ISO/IEC 25010'},
+  const rating = (at: number, to: number) => (count(f, at, PROOF.count, to) / 100).toFixed(2);
+  const [a0, a1, a2, a3] = PROOF.stats;
+  const stats: {at: number; big: React.ReactNode; label: string; sub: React.ReactNode}[] = [
+    {at: a0, big: count(f, a0, PROOF.count, 937).toLocaleString('en-US'), label: 'income records', sub: 'carried over from her workbook'},
+    {at: a1, big: <>{count(f, a1, PROOF.count, 82)}<span style={{fontSize: 80, opacity: 0.62, letterSpacing: '-0.04em'}}>/83</span></>, label: 'tests passed',
+      sub: <>98.8%, none of them critical.<br />The one failure was fixed and<br />passed when re-tested.</>},
+    {at: a2, big: rating(a2, 484), label: 'rated by its users', sub: <>the landlady, 10 tenants and<br />3 prospective tenants</>},
+    {at: a3, big: rating(a3, 490), label: 'rated by IT evaluators', sub: 'three of them, on the live system'},
   ];
+  const foot = t01(f, a3 + PROOF.count - 6, a3 + PROOF.count + 14);
   return (
     <AbsoluteFill>
       <Bg mood="green" hex />
-      <div style={{position: 'absolute', left: 0, right: 0, top: 170}}>
+      <div style={{position: 'absolute', left: 0, right: 0, top: 150}}>
         <Kin text="Real records. Real results." at={4} size={76} color="#fff" align="center" accent={['results.']} accentColor={C.amber} />
       </div>
-      <div style={{position: 'absolute', left: 0, right: 0, top: 390, display: 'flex', justifyContent: 'center'}}>
+      <div style={{position: 'absolute', left: 0, right: 0, top: 360, display: 'flex', justifyContent: 'center'}}>
         {stats.map(({at, big, label, sub}, i) => {
           const p = pop(f, at, {damping: 20, stiffness: 90});
           return (
-            <div key={label} style={{width: 540, textAlign: 'center', borderLeft: i ? `1px solid rgba(255,255,255,${0.22 * t01(f, at, at + 16)})` : 'none',
+            <div key={label} style={{width: 456, textAlign: 'center', borderLeft: i ? `1px solid rgba(255,255,255,${0.22 * t01(f, at, at + 16)})` : 'none',
               opacity: Math.min(1, p * 1.6), transform: `translateY(${(1 - p) * 40}px)`}}>
-              <div style={{fontFamily: sora, fontWeight: 800, fontSize: 170, letterSpacing: '-0.06em', color: '#fff', lineHeight: 0.95, fontVariantNumeric: 'tabular-nums'}}>
-                {big(f)}
+              <div style={{fontFamily: sora, fontWeight: 800, fontSize: 146, letterSpacing: '-0.06em', color: '#fff', lineHeight: 0.95, fontVariantNumeric: 'tabular-nums'}}>
+                {big}
               </div>
-              <div style={{fontFamily: jakarta, fontWeight: 600, fontSize: 34, color: '#fff', marginTop: 28}}>{label}</div>
-              <div style={{fontFamily: jakarta, fontSize: 26, color: 'rgba(255,255,255,0.68)', marginTop: 6}}>{sub}</div>
+              <div style={{fontFamily: jakarta, fontWeight: 600, fontSize: 31, color: '#fff', marginTop: 26}}>{label}</div>
+              <div style={{fontFamily: jakarta, fontSize: 23, lineHeight: 1.4, color: 'rgba(255,255,255,0.72)', marginTop: 8}}>{sub}</div>
             </div>
           );
         })}
+      </div>
+      <div style={{position: 'absolute', left: 0, right: 0, top: 850, textAlign: 'center', fontFamily: jakarta, fontSize: 27, color: 'rgba(255,255,255,0.86)', opacity: foot, transform: `translateY(${(1 - foot) * 14}px)`}}>
+        Both ratings out of 5: <b style={{color: C.amber, fontWeight: 700}}>Very High Quality</b> on ISO/IEC 25010.
       </div>
       <Cues scene="proof" />
     </AbsoluteFill>

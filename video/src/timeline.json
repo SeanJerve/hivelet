@@ -10,7 +10,7 @@
     {"id": "tenant", "frames": 702},
     {"id": "ch-guests", "frames": 60},
     {"id": "guests", "frames": 710},
-    {"id": "proof", "frames": 165},
+    {"id": "proof", "frames": 216},
     {"id": "end", "frames": 180}
   ],
   "act1": {"beats": [180, 330, 438, 546, 654, 762], "connected": 892, "hive": 1032, "braam": 1218}
