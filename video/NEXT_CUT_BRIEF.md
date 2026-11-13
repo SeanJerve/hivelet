@@ -56,7 +56,10 @@ For each row of the table above: read the Vue file as it is now and rebuild `src
 the layout, labels, sizes, colours and the glass style of the redesign. Use the sample-data harness
 (`frontend/_harness-figures.html?route=/admin/...`, and `_harness-figures-tenant.html` and
 `_harness-figures-phone.html` for the tenant's screens) to see each screen. Never the live site and
-never `_harness-tenant-real.html`, which show real tenants. Labels already known to differ:
+never `_harness-tenant-real.html`, which show real tenants. The harness files are not in git, so a
+laptop other than Sean's may not have them: then work from the Vue source and the paper's own
+screenshots of the redesigned app, Figures 4-7 to 4-11 in `FINAL/CLAUDE MANUSCRIPT/images/` (sample
+records). Labels already known to differ:
 
 | In the film | In the app now |
 | :--- | :--- |
@@ -120,25 +123,28 @@ Paste the first. When Film A is rendered and committed, paste the second.
 **Film A**
 
 ```text
-Read CLAUDE.md, then video/SCENES.md and video/NEXT_CUT_BRIEF.md. Make Film A, the eighth cut of the
-Hivelet film: keep its direction, story and style, make every change the brief lists (the proof
-card's new result, and every app screen rebuilt from the current Vue source after the third
-iteration's redesign, with the app's exact labels and sample data only), and improve any clip you
-judge could be better now that the app, the results and the wording have changed. Tell me each
-improvement in one line. Check every frame with cuecheck before rendering, render it, update
-SCENES.md, and commit in small pieces with real messages. Do not touch the paper, the backend or the
+First run git pull --ff-only origin main, then npm install inside video/. Read CLAUDE.md, then
+video/SCENES.md and video/NEXT_CUT_BRIEF.md. Make Film A, the eighth cut of the Hivelet film: keep
+its direction, story and style, make every change the brief lists (the proof card's new result, and
+every app screen rebuilt from the current Vue source after the third iteration's redesign, with the
+app's exact labels and sample data only), and improve any clip you judge could be better now that
+the app, the results and the wording have changed. On the proof card, keep "82/83 tests passed" and
+add under it that the one failure was fixed and passed when re-tested. Tell me each improvement in
+one line. Check every frame with cuecheck before rendering, render it, update SCENES.md, commit in
+small pieces with real messages, and push to main. Do not touch the paper, the backend or the
 database.
 ```
 
 **Film B**
 
 ```text
-Read CLAUDE.md and video/NEXT_CUT_BRIEF.md, section "Film B". Make Film B: your own film about
+First run git pull --ff-only origin main. Read CLAUDE.md and video/NEXT_CUT_BRIEF.md, section
+"Film B". Make Film B: your own film about
 Hivelet for the defense, in a completely different and better style of your own choosing. You may
 install packages and skills and use any technique, within the brief's limits: its own folder
 video-free/, true facts from the paper only, sample people only, the app as it looks now, free
 licences written in video-free/SOURCES.md, and skills read before installing. First tell me your
 concept in five lines and wait for my go-ahead. Then build it, check it frame by frame, render it to
-video-free/out/hivelet-free.mp4, write video-free/SCENES.md, and commit in small pieces. Do not
-touch video/, the paper, the backend or the database.
+video-free/out/hivelet-free.mp4, write video-free/SCENES.md, commit in small pieces and push to
+main. Do not touch video/, the paper, the backend or the database.
 ```
