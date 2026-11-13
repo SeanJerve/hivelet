@@ -410,18 +410,21 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
   comment quotes the layout shift of 0.08, a figure found only in our Table M-31.
 - **Why:** it is the weakest evidence in the paper, and a panelist who opens the response file will ask.
 - **To do:**
-  - [ ] Agree what is true and say only that: each one's role, how long they used the system, and
-    whether they were shown the paper, the repository or our own measurements.
-  - [ ] Tell Claude whether they opened the repository. The form never asked them to (checked on the
-    live form, 13 November; Appendix J used to say it did), and Section 4.4.3 says only that the
-    first round did not.
+    - [x] Agreed (Sean, 13 November): IT professionals and developers, about 30 minutes each on the
+    live system and its source code (they opened the repository). Sections 3.3, 4.4.1 and 4.4.3 now
+    say so, and the Q&A guide has the answers.
+  - [ ] **The 0.08.** It is the layout shift of the landlady's Overview after the redesign (Table
+    M-31): how much the page jumps while it loads, 0.22 before and 0.08 after. It is written in our
+    paper and in the repository they read, which is the likely source. Check with whoever sat with
+    them that no one told them the number, and tell Claude if the Q&A answer must change.
 
 ### [ ] 21. The conflict-of-interest question (decision C8 and D1)
 
 - **What:** the paper is silent, by the team's decision, on a relation the panel is likely to raise.
 - **To do:**
-  - [ ] Ask Sir Jayvee at Session 4 whether one sentence belongs in Section 3.4.
-  - [ ] Whatever he says, all five rehearse the same honest answer.
+  - [x] The landlady is Lloyd's mother (Sean, 13 November). Section 3.4 now says so in one sentence, with
+    how it was handled, and the Q&A guide has the answer for all five to rehearse.
+  - [ ] Show Sir Jayvee the sentence at Session 4 (`FINAL/SESSION_4_WITH_SIR_JAYVEE.md`).
 
 ### [x] 22. Compare Appendix J with the live Google Form
 
@@ -450,29 +453,36 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
   M-32, which Appendix L now points to. Sections 4.1.2 and 5.1 and Table M-3 (now 42 / 44) follow.
 - [ ] Optional: read Table M-32 once. If you grade any requirement differently, tell Claude.
 
-### [ ] 24. Facts only the team has (tell Claude, one line each)
+### [x] 24. Facts only the team has (done 13 November)
 
 - [x] The months the workbook covers: January 2024 to July 2026, read from the database (all 937
   income rows and 1,327 allocations moved on 28 August). Section 4.1.1 now says so.
-- [ ] Who holds the hosting, database and gateway accounts after turnover, and the date in the MOA
-  until which the team supports the system.
+- [x] The accounts: held by the team until turnover, then the landlady with Lloyd (Sean, 13
+  November). Section 4.5 now says so.
 - [x] The normal form: Section 4.2.1 now says the tables follow the third normal form, with the
   ledger's deliberate exceptions named (a receipt keeps what was written on it, a few stored totals),
   checked against the database's own catalogue.
-- [ ] Whether anyone reviewed the questionnaire before it was used. The paper states no validation.
-- [ ] The adviser's correct title: the printed MOA and acceptance form say "Prof.", the manuscript "Dr."
+- [x] Sir Jayvee reviewed the questionnaire before it was used (Sean, 13 November). Section 3.3 says so.
+- [x] The adviser's title: the team reprints the MOA and acceptance form to match the manuscript.
 
-### [ ] 25. Ask Sir Jayvee at Session 4
+### [ ] 25. Ask Sir Jayvee at Session 4: everything is in `FINAL/SESSION_4_WITH_SIR_JAYVEE.md`
+
+- [x] Figure 2-2 checked (13 November): the new figure already spelled Adyen right (the misspelling is
+  in the old figure in the team's Word file, replaced with the chapters). Its Process and Output now
+  name all six features of Objective 2, and Section 2.3 follows.
+- [x] Repository access for him: the team adds him.
 
 - [ ] What the proposal panel recommended, and where each point shows in the paper.
 - [ ] Whether Figure 2-2's PROCESS box may list the steps of the study (it lists the modules, and has
   no testing or evaluation), and whether Chapter 2 needs a short theme on software quality evaluation.
 - [ ] Access to the repository for him as Programming Adviser (Form 2 item 11 asks for it).
 
-### [ ] 26. The demonstration: the audit trail has no screen
+### [x] 26. The demonstration: the audit trail has no screen
 
-- [ ] Decide how to show it if the panel asks: the audit table in the database, or "Recently" in the
-  side menu.
+- [x] Decided (Sean, 13 November): "Recently" in the side menu, then a saved read-only query of the
+  audit table that shows only unit PH's repair requests, run right after the demo's repair step.
+  The steps and the query are in `FINAL/DEMO_SCRIPT.md` (day before, step 9, and demonstration
+  step 4).
 
 ### [x] 27. Still for Claude (done 13 November)
 

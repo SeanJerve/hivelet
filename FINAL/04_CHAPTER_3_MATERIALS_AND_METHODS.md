@@ -223,15 +223,16 @@ observed, since the number of new usability problems found falls quickly with ea
 unit would. Five technical evaluators reviewed the system, four of them on a demonstration copy holding sample
 data, so that they did not see the boarding house's records. After the screens were redesigned in
 the third iteration, the tasks and the questionnaire were repeated with a second round of tenants,
-prospective tenants and the landlady, and three more technical evaluators reviewed the live system
-and answered the questionnaire. Each group rated only the characteristics it
+prospective tenants and the landlady, and three more technical evaluators, IT professionals and developers, reviewed the live system and
+its source code for about 30 minutes each and then answered the questionnaire. Each group rated only the characteristics it
 was in a position to judge: tenants and prospective tenants did not rate Security, and only the
 technical evaluators rated Maintainability.
 
 **Instruments.** Four instruments were used. Task cards were read aloud to each tester in English and
 Filipino. An observation sheet recorded, for each task, whether it was completed without help, with
 help or not at all, the time taken and the number of wrong turns. A defect log recorded the defects
-found, and the ISO/IEC 25010 survey questionnaire had a section for each respondent group (Appendix J). Responses were
+found, and the ISO/IEC 25010 survey questionnaire had a section for each respondent group (Appendix J). The research adviser reviewed the
+questionnaire before it was used. Responses were
 given on the 5-point Likert scale of Table 3-4 (Likert, 1932).
 
 **Data gathering.** Each participant took part after giving consent (Section 3.4). Each tester used
@@ -329,8 +330,10 @@ the informed consent form (Appendix P), and the prospective tenants and the tech
 agreed through the data privacy notice that opens the questionnaire. The four technical evaluators
 reached through Panelista, a platform that matches capstone projects with volunteer evaluators, reviewed a demonstration copy holding sample data, so none of them saw the landlady's records. The three of the second round reviewed the live system, which a member of the research team
 signed into as the test tenant and as the administrator and handed to them ready to use, so they
-could see the boarding house's records but were given no sign-in details. That member stayed with
-them throughout. Each tenant used only their own account, which shows only their own
+could see the boarding house's records but were given no sign-in details. That member stayed with them throughout. The landlady is the mother of a member of the research
+team. Her answers are therefore reported as one respondent's, beside those of the tenants, the
+prospective tenants and the technical evaluators, and every characteristic was also measured by tests
+that do not depend on what any respondent said. Each tenant used only their own account, which shows only their own
 records, and received an individual starting password in person, which they replaced at first
 sign-in. Respondents could give a name so that the researchers could tell the responses apart. The
 names were removed before the responses were analyzed, and none appears in this paper. Names,

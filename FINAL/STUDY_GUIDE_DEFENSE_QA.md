@@ -493,6 +493,23 @@ them the system ready to use, and stayed with them throughout; they were given n
 October evaluators and the prospective tenants, they answered the Google Form anonymously after
 agreeing to the data privacy notice that opens it, and signed no paper form. *Section 3.4.*
 
+**Who were the three, and how long did they look?**
+IT professionals and developers, none of them on the team. Each used the live system and read its
+source code for about 30 minutes, then answered the form. *Sections 3.3 and 4.4.1.*
+
+**They answered within eleven minutes, nearly all 5s, and one quotes your 0.08. Did you coach them?**
+No. They read the repository, which is public and holds our measurements, among them the 0.08 layout
+shift of Table M-31, so a developer reading it can quote it. Say only what is true: *(the team
+confirms this answer, checklist item 20).* The paper itself calls three a small group and reports the
+first round's five evaluators beside them. *Section 4.4.1; Appendix M, Table M-29.*
+
+**Is the landlady related to anyone on the team?**
+Yes: she is Lloyd's mother, and the paper says so in Section 3.4. Her answers are one respondent's
+out of fourteen users, and every characteristic was also measured by tests that do not depend on
+anyone's opinion. Know one weak spot: the users' Security mean, 5.00, is hers alone, since tenants
+and prospects did not rate Security, which is why the technical evaluators' 4.93 and the measured
+evidence are reported beside it. *Sections 3.4, 4.4.3 and 4.4.4.*
+
 **Why is the users' response rate not given?**
 The number of forms given to the users was not recorded, and the paper says so. Nineteen forms came
 back and seventeen were counted: two prospective tenants answered another group's section and were
