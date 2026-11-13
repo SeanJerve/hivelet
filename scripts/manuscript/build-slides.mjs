@@ -123,7 +123,7 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 7. Method
 {
-  const s = titled('Method: Agile, in two iterations', 'Iteration 1 checked the system and its documents against each other and corrected 22 recorded errors, then put it in use, tested it and had it evaluated. Iteration 2 redesigned the screens and added no module. After it, the 114 test cases were run again: 99 passed, the 9 timings were taken, 6 could not be run, and none failed. A second round of users and evaluators then rated it (Appendix M, Table M-19).');
+  const s = titled('Method: Agile, in two iterations', 'Iteration 1 checked the system and its documents against each other and corrected 22 recorded errors, then put it in use, tested it and had it evaluated. Iteration 2 redesigned the screens and added no module. After it, the 114 test cases were run again: 99 passed, the 10 timings were taken, 5 could not be run, and none failed. A second round of users and evaluators then rated it (Appendix M, Table M-19).');
   image(s, 'appendix-c-gantt-chart.png', 0.5, 1.2, 7.6, 4.6);
   bullets(s, [
     'First build, 24 July to 28 August',

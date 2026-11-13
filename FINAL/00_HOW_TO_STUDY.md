@@ -64,5 +64,5 @@ on, a quiz and the plan for the day). Sean shares it from the page's Share menu.
 - The system takes no bookings. Booking and reservation management means the public list of units, the
   inquiry the landlady answers, a unit marked Reserved, and the move-in. Nothing is booked or paid for
   online.
-- The re-run after the redesign, 4 to 13 November: of the 114 test cases, 99 passed, the 9 timings
-  were taken, 6 could not be run, none failed. Say "108 of the 114 run again", never "all 114".
+- The re-run after the redesign, 4 to 13 November: of the 114 test cases, 99 passed, the 10 timings
+  were taken, 5 could not be run, none failed. Say "109 of the 114 run again", never "all 114".
