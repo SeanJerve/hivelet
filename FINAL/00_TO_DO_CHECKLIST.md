@@ -307,18 +307,12 @@ in the Word file, so the Word file gets the checked version.
   each of the **two advisers**. Sir Jayvee is both advisers, so ask the FIC whether that is four
   copies or five.
 
-### [ ] 15b. Run the last 26 test cases (one afternoon, before Lloyd's final Word file)
+### [x] 15b. The re-run of the 114 test cases (done 13 November)
 
-- **What:** of the 114 test cases, 88 have a result: 77 on 4 November, and on 13 November the three
-  outside security scans (A+), PageSpeed, and the laptop timings of PF-02 to PF-08 (every screen
-  ready in 0.35 to 2.11 s). All 21 automated suites also passed again on 13 November. The 26 left,
-  and the phone column of the timings, need the landlady, phones and other browsers.
-- **Why:** if all pass, the paper can say every one of the 114 was run again after the redesign and
-  passed, which is stronger than 77 of 114. It stays honest: never mark a case not done as passed.
-- **To do:**
-  - [ ] Print `FINAL/TEST_SESSION_REMAINING_CASES.md`, run what is left in one afternoon, write each
-    result.
-  - [ ] Give the filled sheet to Claude, who updates Appendix L, Chapter 4 and the summary.
+- **Result:** 99 passed, the 8 timings were taken, 7 could not be run, none failed. The team's 16
+  cases ran on 10 November in the second-round session; Claude's on 13 November. Not run: C-01, C-03,
+  C-04 and C-07 (no time), CO-02 (no Samsung phone), PF-01 and PF-10. The paper says so in Appendix
+  L's last part, Sections 4.2.1 and 4.4.5, and Chapter 5. Nothing is left to do.
 
 ### [ ] 16. The day-before steps in `FINAL/DEMO_SCRIPT.md`
 

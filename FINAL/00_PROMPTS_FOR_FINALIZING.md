@@ -49,8 +49,8 @@ THE FIXED FACTS (the paper must say exactly these, everywhere they appear):
 - GCash through Adyen works end to end in Adyen's test environment, takes no real money, is optional
   and not live, because going live needs the owner's merchant onboarding documents. Never "mock",
   "simulator", "pending consultation" or "under development".
-- Tests: 82 of 83 executed tests passed (98.8 percent), no critical defect. The rerun of 4 November
-  2026: 77 of the 114 test cases run and passed, 37 left for a person, none failed. 51 optimizations.
+- Tests: 82 of 83 executed tests passed (98.8 percent), no critical defect. The re-run after the redesign, 4 to 13 November 2026: of the 114 test cases, 99 passed, the 8
+  timings were taken, 7 could not be run, none failed (Appendix L, last part). 51 optimizations.
 - First round (Iteration 2, 30 September to 18 October 2026): the landlady, 3 tenants and 1
   prospective tenant (users 4.75) and 5 technical evaluators (4.34); all ten together 4.59. Three
   tenants: 34 task attempts completed, 31 without help.

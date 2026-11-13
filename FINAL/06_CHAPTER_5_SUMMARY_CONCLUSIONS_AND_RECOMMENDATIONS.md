@@ -35,8 +35,7 @@ results are summarized below in the order of the specific objectives.
    attempted, 31 of 34 attempts without help. Of the 83 tests executed across the three levels, 82
    passed (98.8 percent), and no critical defect was found. Every screen measured was usable within
    about three seconds on a phone, and no request failed under twelve simulated simultaneous visitors
-   or six simulated readers of the boarding house's records. After the redesign, the 77 of the 114 test
-   cases that need no person were run again and none failed, and every screen timed again was ready
+   or six simulated readers of the boarding house's records. After the redesign, 107 of the 114 test cases were run again and none failed, and every screen timed again was ready
    sooner than before except sign-in. On the redesigned system, ten tenants and
    four prospective tenants completed every task, 151 of 160 and 31 of 32 attempts without help.
 
@@ -70,8 +69,7 @@ Based on the results of the study, the following conclusions were drawn:
 3. **The third objective was achieved.** The system was pilot tested for functionality,
    responsiveness and operational performance, and 82 of the 83 tests executed passed (98.8
    percent), above the course standard of 90 percent, with no critical defect (Chapter 4, Tables 4-12 and 4-20). The one failure, a ₱0 shown with the connection cut, passed when re-tested on the
-   landlady's laptop. The redesigned system kept the result: none of the 77 test cases rerun after the
-   redesign failed, every task of the second round was completed, and the landlady accepted
+   landlady's laptop. The redesigned system kept the result: none of the 107 test cases rerun after the redesign failed, every task of the second round was completed, and the landlady accepted
    the system and signed the acceptance form (Section 4.3.7).
 
 4. **The fourth objective was achieved.** The system was evaluated on all eight characteristics of

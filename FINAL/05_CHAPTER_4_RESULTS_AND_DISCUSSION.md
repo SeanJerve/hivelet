@@ -116,9 +116,8 @@ checked the system and its documents against each other, corrected 22 recorded e
 automated checks. The second put the system in the hands of the landlady and her tenants and refined
 it from their feedback, the testing and the evaluation. The third redesigned the screens, added no
 module, and added two rules: a record dated in a closed year can no longer be changed, and a tenant
-can no longer cancel a repair once someone is sent. After the redesign, 77 of the 114 test cases
-were run again and passed, the other 37 needing a person, and none failed, so the results of the
-second iteration stand.
+can no longer cancel a repair once someone is sent. After the redesign, the 114 test cases were run again: 99 passed, the 8 timings were taken, 7
+could not be run, and none failed, so the results of the second iteration stand (Appendix L).
 
 The evaluation against ISO/IEC 25010 was carried out twice, each time in actual use as Section 3.3
 requires: in the second iteration, and again in the third on the redesigned system, with a second
@@ -815,8 +814,8 @@ drawn about them.
 | **All** | **31** | **27** | **25** | | **4.84** | **4.90** |
 
 The measured results are those of the second iteration, except the tenants' tasks of the second
-round. The 77 of the 114 test cases that need no person were run again on the redesigned system and
-none failed (Section 4.2.1).
+round. On the redesigned system, 107 of the 114 test cases were run again and none failed (Section
+4.2.1).
 
 For six of the eight characteristics the two kinds of evidence agree. For Security and
 Maintainability the measurements are less favorable than the ratings. Two session weaknesses remain

@@ -945,9 +945,9 @@ The section then has four labelled parts.
 - Iteration 3: **from 1 November**, the interface redesign: a glass look in light and dark, and the
   sign-in and inquiry pages joined in one screen. No module was added or removed. Two rules were added
   (a closed year's records cannot be changed, and a tenant cannot cancel a repair once someone is
-  sent). A rerun of the 114 test cases on 4 November found none failing: **77 were run and passed** (21
-  of them with wording the redesign had changed), and the other **37 need a person and were left for
-  one**. The automated checks passed after every later change, so the results of Iteration 2 stand.
+  sent). After it, the 114 test cases were run again from 4 to 13 November: **99 passed** (21 of them with
+  wording the redesign had changed), **the 8 timings were taken**, **7 could not be run**, and **none
+  failed** (Appendix L, last part). The automated checks passed after every later change, so the results of Iteration 2 stand.
   Never say "all 114 were rerun".
 - The ISO/IEC 25010 evaluation was carried out twice, in Iteration 2 and again in Iteration 3 on the
   redesigned system (Tables M-28 to M-30). Section 4.4 reports the second.
@@ -1738,8 +1738,7 @@ The section then has four labelled parts.
    screen defects found and corrected on 26 September; walkthrough 24 of 30 rows passed first time, one
    failed, five not performed; tenants 31 of 34 without help; **82 of 83 (98.8 percent)**; no critical
    defect; every screen within about three seconds on a phone; no failed request under twelve simulated
-   visitors or six simulated readers of the boarding house's records. In the third iteration, the rerun
-   of the 114 test cases on 4 November 2026 "passed the 77 that need no person and found none failing".
+   visitors or six simulated readers of the boarding house's records. After the redesign, "107 of the 114 test cases were run again and none failed".
    On the redesigned system, ten tenants did 151 of 160 attempts without help and four prospective
    tenants 31 of 32.
 4. Evaluated by the five steps of ISO/IEC 25040; 27 of 31 sub-characteristics measured, 25 rated;
@@ -1766,8 +1765,7 @@ The section then has four labelled parts.
    real money.
 3. **Third objective achieved**: 82 of 83 (98.8 percent), above the course standard of 90 percent, no
    critical defect (Tables 4-12 and 4-20). The one failure, a ₱0 shown with the connection cut, passed
-   when re-tested on the landlady's laptop, and "none of the 77 test cases rerun on 4 November 2026
-   failed".
+   when re-tested on the landlady's laptop, and "none of the 107 test cases rerun after the redesign failed".
 4. **Fourth objective achieved**: Very High Quality overall, 4.84 from the users (every characteristic
    Very High Quality) and 4.90 from the technical evaluators (every characteristic Very High Quality), up from 4.75 and
    4.34 before the redesign, in agreement
@@ -1777,8 +1775,10 @@ The section then has four labelled parts.
 **If the panel asks**
 - *"What is your main conclusion?"* The property's problem was the lack of connection between its
   records, and Hivelet connects them while keeping the landlady's own layout, invoice numbers and cash.
-- *"Did you rerun all 114 test cases after the redesign?"* No. Of the 114, 77 were run and passed (21
-  with wording the redesign changed), 37 need a person and were left for one, and none failed.
+- *"Did you rerun all 114 test cases after the redesign?"* 107 of them, from 4 to 13 November: 99
+  passed, the 8 timings were taken, and none failed. The 7 not run: four need several tenants acting
+  at the same moment (no time in the session), no Samsung phone was present, and two timings need
+  Chrome on a cleared cache. Appendix L, last part.
 
 ## 5.3 Recommendations
 
