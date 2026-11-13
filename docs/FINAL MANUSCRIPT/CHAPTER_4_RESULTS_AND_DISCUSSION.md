@@ -674,8 +674,10 @@ Every other form returned was complete and valid. One further answer, which the 
 while testing the form, is not a respondent's and is not counted.
 
 The landlady, ten tenants and three prospective tenants answered after using the redesigned system
-of the third iteration, and three technical evaluators after reviewing the live system, each
-after giving consent as described in Section 3.4. No member of the research team was among them.
+of the third iteration, and three technical evaluators, IT professionals and developers, after reviewing the live system and
+its source code for about 30 minutes each, each after giving consent as described in Section 3.4. No
+member of the research team was among them, and the landlady's relation to one is stated in Section
+3.4.
 The landlady is one respondent, so her group's mean is one person's rating, and three technical
 evaluators are a small group. A member of the research team was with those three throughout
 (Section 3.4), which may have favored higher ratings. The results describe how these respondents
@@ -775,7 +777,8 @@ resolved. The testing agrees: no critical defect
 was found, and the two offline defects found on real devices passed on re-test.
 
 **Maintainability** (4.73), rated by the technical evaluators only, is Very High Quality and their
-lowest. Its three respondents gave 4.40, 5.00 and 4.80, and its lowest items, at 4.33, were
+lowest. Its three respondents, who read the source code as well as using the system, gave 4.40, 5.00
+and 4.80, and its lowest items, at 4.33, were
 changing configurable values without changing code and automated checks that would catch a
 regression. In the first round five evaluators had given it 4.32, each after reviewing the running
 system without inspecting its source code. Here the measurement, read from the code itself, carries
@@ -914,7 +917,9 @@ not do that onboarding. Every approved change is deployed
 automatically from the project's main code branch. The researchers give the system to the boarding
 house free, with no subscription to pay. Under the memorandum of agreement signed with the owner, they
 provide the system, its user manual and training and maintain and support it for an agreed period
-after turnover, and the boarding house's records remain its own. Table 24 lists what is needed to use the system, and Table 25 the deployment
+after turnover, and the boarding house's records remain its own. Until turnover the hosting, database
+and payment gateway accounts are held by the research team. At turnover they pass to the landlady,
+together with the member of the team who is her son and knows the system. Table 24 lists what is needed to use the system, and Table 25 the deployment
 plan.
 
 **Table 24.** Software and hardware requirements for deployment
