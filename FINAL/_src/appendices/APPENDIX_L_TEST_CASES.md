@@ -6,10 +6,9 @@ Functional Suitability, PE Performance Efficiency, CO Compatibility, US Usabilit
 SE Security, MA Maintainability, PO Portability) and the requirement it traces to, worded in full in
 Appendix M, Table M-32 (FR codes) and Chapter 4, Section 4.1.2 (NFR codes). A result is Pass,
 Fail, Pass after fix, or NT (not tested). The prospective tenant's task cards (Part PR) were not
-recorded on the day and are not shown. The 114 cases were gone through again on 4 November 2026, after the redesign: 77 were run and passed, 21 of them with wording the redesign had changed, and the 37 that need a person were left for one. None failed (Appendix M, Table M-19). No one signed in for the rerun. The cases were re-checked with
-the 21 automated check suites, requests the server refused, a copy of the screens with a simulated
-sign-in, read-only queries of the records, the code of each screen, and read-only requests to the
-live site. The second round of users, from 31 October to 10
+recorded on the day and are not shown. After the redesign the 114 cases were run again, from 4 to 13 November 2026: 99 passed, the 8
+timing cases were timed, 7 could not be run, and none failed. The last part of this appendix gives
+the counts by part, and how and when each was run. The second round of users, from 31 October to 10
 November 2026, repeated the tenant tasks of Part T and the prospective tenants' tasks, and its
 results are in Appendix M, Table M-30.
 
@@ -197,3 +196,50 @@ The results:
 | N-01 | FS, US | FR-011, FR-013 | On a tenant's own account (a testing tenant, with their permission, or during T-05): **Payments** > **Your rent, month by month** | A sentence "Paid up to …" with Up to date / Due soon / Overdue; a bar per month (Paid, Due, Nothing recorded, Not due yet); Months paid, Paid in these months, Due now; **Show each month as a list**. The months and amounts agree with the tenant's own receipts (ask them) | NT |
 | N-02 | FS, RE | FR-003 | `/category/studio` (then one-bedroom, two-bedroom): tap units quickly one after another, across floors and on the same floor, then stop | The floor plan is always shown for the last unit tapped, never a blank box, without refreshing | Automated test, 30 Sep 14:36, headless Chrome on the live site, 390 px and 1280 px, all four categories (33 units): every unit tapped 60 ms apart, two units alternated 40 ms apart, first then last at once; plan visible and loaded after all 20 rounds (20/20). **Real phone: pending** |
 | N-03 | FS, RE | FR-003 | Open `hivelet.vercel.app/public`; read the pop-up | "1 unit is vacant right now" (only `PH` is vacant), then "Viewings are by appointment…" and **Inquire now**. With no signal: the old text, never a number | Automated test, 30 Sep: the live pop-up said "1 unit is vacant right now", matching `/api/public/rooms` (32 Occupied, 1 Available, `PH`). **Real phone: pending** |
+
+## The re-run after the redesign, 4 to 13 November 2026
+
+All 114 cases were taken up again on the redesigned system. 99 passed, the 8 timing cases were
+timed, 7 could not be run, and none failed.
+
+| Part | Cases | Passed | Timed | Not run |
+| :--- | --: | --: | --: | --: |
+| A. Landlady | 36 | 36 | | |
+| T. Tenant tasks | 18 | 18 | | |
+| P. Public site | 9 | 9 | | |
+| C. Simultaneous use | 8 | 4 | | 4 |
+| O. Offline, weak signal and installing | 12 | 12 | | |
+| S. Security | 12 | 12 | | |
+| CO. Browsers and devices | 6 | 5 | | 1 |
+| PF. Performance timings | 10 | | 8 | 2 |
+| N. Changes shipped on 30 September | 3 | 3 | | |
+| **All** | **114** | **99** | **8** | **7** |
+
+**4 November: 77 cases, all passed.** No one signed in. The cases were checked with the 21
+automated check suites, requests the server refused, a copy of the screens with a simulated sign-in,
+read-only queries of the records, the code of each screen, and read-only requests to the live site.
+21 of them passed with wording the redesign had changed.
+
+**10 November: 16 cases, all passed,** during the second round, with the landlady and tenants
+present: A-01, A-03, A-10, A-35 and S-12 with the landlady on a laptop, T-18, C-08, O-01 to O-03
+and N-02 with tenants on two iPhones and an Android phone, and CO-01 and CO-03 to CO-06 on those
+phones and on a Windows laptop in Chrome, Edge and Firefox. The landlady found Monthly Income in
+under 30 seconds (A-03). Asked what she would use first the next morning (A-35), she answered: "I
+would first check whether the tenants have a new repair request or message, then who is due to pay
+rent." Asked whether anyone else knows her password (S-12), she said no one does. Asked whether
+anything was confusing (T-18), the tenants said nothing was.
+
+**13 November: 6 cases passed and 8 were timed.** The three outside security scans (S-01 to S-03)
+graded the site A+, with SSL Labs' second address at A as on 30 September. As the test tenant, the
+GCash window opened with Adyen's box and was closed without paying (A-19, T-14). With every save made
+to hang, the message that the system cannot tell whether a save went through appeared at 45.0
+seconds (O-12). The laptop timings were taken with the browser's own timer: the public page 0.35 s
+(PF-02), sign-in to the Overview 2.11 s (PF-03), Monthly Income for a year 1.05 s (PF-04), the year's
+workbook 0.48 s (PF-05), the tenant's Overview 1.15 s (PF-06), the tenant's payments 0.41 s (PF-07)
+and sending a repair request 0.86 s (PF-08). PageSpeed Insights (PF-09) gave the public page 80, 100,
+100 and 100 on a phone and 99, 100, 100 and 100 on a desktop.
+
+**Not run (7):** C-01, C-03, C-04 and C-07, which need several tenants acting at the same moment,
+for lack of time in the session; CO-02, since no Samsung phone was present; PF-01, a first load with
+the cache cleared; and PF-10, Lighthouse in Chrome's developer tools. The phone column of the timings
+was not taken again.
