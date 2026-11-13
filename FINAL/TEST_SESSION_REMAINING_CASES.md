@@ -1,7 +1,8 @@
-# The 33 test cases left for people: one session sheet
+# The test cases left for people: one session sheet
 
-Of Appendix L's 114 test cases, 81 are already run (77 on 4 November, S-01 to S-03 and PF-09 on 13
-November, `docs/TESTING_DAY/results/`). These 33 need a person, a phone or another browser. Run them
+Of Appendix L's 114 test cases, 88 have a result: 77 run on 4 November, and on 13 November the three
+security scans, PageSpeed and the laptop timings of PF-02 to PF-08 (`docs/TESTING_DAY/results/`).
+The 26 below, and the phone column of the timings, need a person, a phone or another browser. Run them
 in one afternoon, write each result in the box, and give the sheet to Claude: the paper then reports
 the full re-run. **Write what happened.** A case not done is NT, never a pass, and a time not
 measured stays blank.
@@ -60,20 +61,21 @@ On each: open `hivelet.vercel.app`, open a unit, sign in, open the Overview and 
 | CO-05 | Windows, Edge | Everything works | |
 | CO-06 | Firefox | Everything works | |
 
-## Timings in seconds (9)
+## Timings in seconds
 
-Laptop column on the Windows laptop, phone column on a phone, both on the same Wi-Fi.
+The laptop column was timed by Claude on 13 November with the browser's own timer (filled in below).
+What is left: the phone column, PF-01, and PF-10. Phone on the same Wi-Fi as the laptop.
 
 | Case | Screen | How | Laptop | Phone |
 | :--- | :--- | :--- | :--- | :--- |
 | PF-01 | Public home, first load | Cache cleared (a private window), until the page is drawn | | |
-| PF-02 | Public home, second load | Normal reload | | |
-| PF-03 | Sign in to the Overview | From pressing Sign in until the figures show | | |
-| PF-04 | Monthly Income, full year | Until the last row is visible | | n/a |
-| PF-05 | Monthly Income workbook export | From the click until the file is saved | | n/a |
-| PF-06 | Tenant Overview, first load | Cache cleared, until Amount due shows | | |
-| PF-07 | Tenant Payments | From the menu until the history shows | | |
-| PF-08 | Send a repair request | From Send until the confirmation (loydtest, a title starting TEST) | | |
+| PF-02 | Public home, second load | Normal reload | 0.35 (done) | |
+| PF-03 | Sign in to the Overview | From pressing Sign in until the figures show | 2.11 (done) | |
+| PF-04 | Monthly Income, full year | Until the last row is visible | 1.05 (done) | n/a |
+| PF-05 | Monthly Income workbook export | From the click until the file arrives | 0.48 (done) | n/a |
+| PF-06 | Tenant Overview | Until Amount due shows | 1.15 (done) | |
+| PF-07 | Tenant Payments | From the menu until the history shows | 0.41 (done) | |
+| PF-08 | Send a repair request | From Send until the confirmation (loydtest, a title starting TEST) | 0.86 (done) | |
 | PF-10 | Lighthouse on a signed-in page | Chrome DevTools, Lighthouse, Analyze. Laptop column Desktop mode, phone column Mobile mode, both on the laptop. Write the four scores | | |
 
 ## The phone check (1)
