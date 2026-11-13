@@ -42,8 +42,9 @@ none of them critical"). Replace 4.59 with the second round's result:
 
 For each row of the table above: read the Vue file as it is now and rebuild `src/ui/` to match it,
 the layout, labels, sizes, colours and the glass style of the redesign. Use the sample-data harness
-(`frontend/_harness-figures.html?route=/admin/...`) to see each screen, never the live site with real
-tenants. Labels already known to differ:
+(`frontend/_harness-figures.html?route=/admin/...`, and `_harness-figures-tenant.html` and
+`_harness-figures-phone.html` for the tenant's screens) to see each screen. Never the live site and
+never `_harness-tenant-real.html`, which show real tenants. Labels already known to differ:
 
 | In the film | In the app now |
 | :--- | :--- |
