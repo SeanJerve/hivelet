@@ -307,6 +307,17 @@ in the Word file, so the Word file gets the checked version.
   each of the **two advisers**. Sir Jayvee is both advisers, so ask the FIC whether that is four
   copies or five.
 
+### [ ] 15b. Run the last 33 test cases (one afternoon, before Lloyd's final Word file)
+
+- **What:** of the 114 test cases, 81 are run (77 on 4 November, the three outside security scans
+  and PageSpeed on 13 November, all passing, and all 21 automated suites passed again on 13
+  November). The 33 left need the landlady, phones and other browsers.
+- **Why:** if all 33 pass, the paper can say every one of the 114 was run again after the redesign
+  and passed, which is stronger than 77 of 114. It stays honest: never mark a case not done as passed.
+- **To do:**
+  - [ ] Print `FINAL/TEST_SESSION_REMAINING_CASES.md`, run the 33 in one afternoon, write each result.
+  - [ ] Give the filled sheet to Claude, who updates Appendix L, Chapter 4 and the summary.
+
 ### [ ] 16. The day-before steps in `FINAL/DEMO_SCRIPT.md`
 
 - **What:** the checklist for the live demonstration: sign in once as the landlady and as the test
