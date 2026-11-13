@@ -224,9 +224,8 @@ read-only queries of the records, the code of each screen, and read-only request
 present: A-01, A-03, A-10, A-35 and S-12 with the landlady on a laptop, T-18, C-08, O-01 to O-03
 and N-02 with tenants on two iPhones and an Android phone, and CO-01 and CO-03 to CO-06 on those
 phones and on a Windows laptop in Chrome, Edge and Firefox. The landlady found Monthly Income in
-under 30 seconds (A-03). Asked what she would use first the next morning (A-35), she answered: "I
-would first check whether the tenants have a new repair request or message, then who is due to pay
-rent." Asked whether anyone else knows her password (S-12), she said no one does. Asked whether
+under 30 seconds (A-03). Asked what she would use first the next morning (A-35), she said she would first check for new
+repair requests and messages from the tenants, then who is due to pay rent. Asked whether anyone else knows her password (S-12), she said no one does. Asked whether
 anything was confusing (T-18), the tenants said nothing was.
 
 **13 November: 6 cases passed and 9 were timed.** The three outside security scans (S-01 to S-03)
