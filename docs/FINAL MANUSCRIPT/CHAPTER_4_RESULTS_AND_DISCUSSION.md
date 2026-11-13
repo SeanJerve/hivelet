@@ -65,7 +65,7 @@ al., 2024).
 ### 4.1.2 System Requirements
 
 The analysis produced **44 functional requirements** and **49 business rules**, each traced in a
-traceability matrix to the part of the system that implements it. Graded against the code early in the second iteration, 25 of the 44 were implemented as worded.
+traceability matrix to the part of the system that implements it. Graded against the code early in the first iteration, 25 of the 44 were implemented as worded.
 Graded again by the same criteria against the final system, on 13 November 2026, 33 are implemented
 as worded, 9 in part and 2 not as worded (Appendix M, Table M-32). What those two describe, the
 income, expenses and net income and their trend by month, is shown on the landlady's Overview,
@@ -118,21 +118,21 @@ do not report cash payments, because the landlady records every payment.
 *Answers Objective 2. Each feature the objective names has its own subsection.*
 
 Figures 5 to 9 model the system as built, and Figures 10 to 14 show its screens after the redesign
-of the third iteration. The names, payments, expenses and repair requests in the screen figures are
+of the second iteration. The names, payments, expenses and repair requests in the screen figures are
 sample records, so that no real tenant's name or payment appears in any figure.
 
 ### 4.2.1 System Architecture and Technology Stack
 
-The system was developed in three Agile iterations (Section 3.2; Appendix M, Table M-19). The first
+The system was developed in two Agile iterations (Section 3.2; Appendix M, Table M-19). The first
 checked the system and its documents against each other, corrected 22 recorded errors and added
-automated checks. The second put the system in the hands of the landlady and her tenants and refined
-it from their feedback, the testing and the evaluation. The third redesigned the screens, added no
+automated checks, then put the system in the hands of the landlady and her tenants and refined it
+from their feedback, the testing and the evaluation. The second redesigned the screens, added no
 module, and added two rules: a record dated in a closed year can no longer be changed, and a tenant
-can no longer cancel a repair once someone is sent. After the redesign, the 114 test cases were run again: 99 passed, the 9 timings were taken, 7
-could not be run, and none failed, so the results of the second iteration stand (Appendix L).
+can no longer cancel a repair once someone is sent. After the redesign, the 114 test cases were run again: 99 passed, the 9 timings were taken, 6
+could not be run, and none failed, so the results of the first iteration stand (Appendix L).
 
 The evaluation against ISO/IEC 25010 was carried out twice, each time in actual use as Section 3.3
-requires: in the second iteration, and again in the third on the redesigned system, with a second
+requires: in the first iteration, and again in the third on the redesigned system, with a second
 round of users and of technical evaluators (Sections 4.3.7 and 4.4). Section 4.4 reports the second
 and gives the first for comparison. Table 7 lists the technology used.
 
@@ -188,7 +188,9 @@ function the server grants to that role and refuses to every other (Table 7C).
 ![Use case diagram](figures/figure-8-use-case-diagram.png)
 
 Figure 9, in Crow's Foot notation, is the entity-relationship diagram drawn from the database's own
-catalogue: 21 tables, each with a primary key, and 37 foreign keys. Its two
+catalogue: 21 tables, each with a primary key, and 37 foreign keys. It draws 27 of the keys. The
+other ten only record who made, changed, closed, verified or sent a row, and are left out so that
+the figure stays readable. Its two
 centers are the rooms table, which holds the units, and the profiles table, which holds the people.
 Every bill, payment, receipt, tenancy, repair request and inquiry belongs to one unit, and every
 tenancy, bill and payment to one person. The two ledgers are kept as the landlady kept them. The tables follow the third normal form, each
@@ -477,7 +479,7 @@ from the tap until the figures the user came for were on screen (Table 11).
 
 **Table 11.** Page load and response times (seconds)
 
-| Screen | Laptop (Dell XPS 15, Chrome 154, Wi-Fi) | Phone (iPhone 15, Safari, mobile data) |
+| Screen | Laptop (Acer Nitro V15, Chrome 154, Wi-Fi) | Phone (iPhone 15, Safari, mobile data) |
 | :--- | --: | --: |
 | Public home page, first load | 1.85 | 2.42 |
 | Public home page, second load | 0.62 | 0.95 |
@@ -495,7 +497,7 @@ element at 3.4 to 3.6 seconds, and 100 for accessibility. On the administrator's
 the page moving as its figures arrived (a layout shift of 0.22) and 0.7 seconds of script work on the
 phone (Chapter 5, recommendation 5).
 
-After the redesign of the third iteration, the screens were timed again on another laptop and
+After the redesign of the second iteration, the screens were timed again on another laptop and
 network (Appendix M, Table M-31). Every screen timed was ready sooner than before except sign-in to the Overview, at 2.63 seconds against 2.10. The two days used different laptops, networks and timing
 methods, so the comparison shows the direction of the change and not an exact difference. The administrator's Overview now
 moves by 0.08 as its figures arrive, down from 0.22 and below the 0.1 counted as good.
@@ -582,7 +584,7 @@ offline behavior matched Appendix M, Table M-24, except that the Android phone s
 tell whether it was saved" message after 60 to 80 seconds instead of 45. Once corrected, it was on
 time when re-tested on that phone (Table 23A).
 
-**Second round.** On the redesigned system of the third iteration, ten tenants and four prospective tenants did the tasks set for them, the tenants the same tasks as
+**Second round.** On the redesigned system of the second iteration, ten tenants and four prospective tenants did the tasks set for them, the tenants the same tasks as
 in Table 11C (Appendix M, Table M-30). Every task was completed. The tenants did 151 of their 160 attempts without help (94 percent), and
 the prospective tenants 31 of 32 (97 percent). As in the first round, help was needed mostly at the
 first sign-in, where five of twenty attempts needed help, most often after a character on the
@@ -643,7 +645,7 @@ model.
 
 ### 4.4.1 Respondents
 
-Table 12 shows the respondents who rated the redesigned system of the third iteration, whose ratings
+Table 12 shows the respondents who rated the redesigned system of the second iteration, whose ratings
 are reported in this section, and Table 12A how many forms were given out and returned.
 
 **Table 12.** Distribution of respondents
@@ -673,7 +675,7 @@ Every other form returned was complete and valid. One further answer, which the 
 while testing the form, is not a respondent's and is not counted.
 
 The landlady, ten tenants and three prospective tenants answered after using the redesigned system
-of the third iteration, and three technical evaluators, IT professionals and developers, after reviewing the live system and
+of the second iteration, and three technical evaluators, IT professionals and developers, after reviewing the live system and
 its source code for about 30 minutes each, each after giving consent as described in Section 3.4. No
 member of the research team was among them, and the landlady's relation to one is stated in Section
 3.4.
@@ -681,7 +683,7 @@ The landlady is one respondent, so her group's mean is one person's rating, and 
 evaluators are a small group. A member of the research team was with those three throughout
 (Section 3.4), which may have favored higher ratings. The results describe how these respondents
 rated the system, not a sample from which a wider population can be inferred. The first round, on
-the system of the second iteration, had ten respondents: the landlady, three tenants, a prospective
+the system of the first iteration, had ten respondents: the landlady, three tenants, a prospective
 tenant and five technical evaluators (Appendix M, Tables M-28 and M-29).
 
 ### 4.4.2 Interpretation of Scores
@@ -827,7 +829,7 @@ drawn about them.
 | Portability | 3 | 3 | 2 | No screen wider than its window at four widths; installed on two phones without an app store | 4.83 | 5.00 |
 | **All** | **31** | **27** | **25** | | **4.84** | **4.90** |
 
-The measured results are those of the second iteration, except the tenants' tasks of the second
+The measured results are those of the first iteration, except the tenants' tasks of the second
 round. On the redesigned system, 108 of the 114 test cases were run again and none failed (Section
 4.2.1).
 
@@ -871,7 +873,7 @@ finding arrived.
 
 The four technical evaluators who reviewed the demonstration copy wrote their
 comments on the questionnaire after the period Table 23 counts. One asked for three things: figures
-kept rather than loaded again on Monthly Income and the dashboards, which the third iteration did (Appendix
+kept rather than loaded again on Monthly Income and the dashboards, which the second iteration did (Appendix
 M, Table M-31), finished repair requests listed by their dates so they can be looked back on, and a
 record archived rather than deleted. The last two were not done in this study (Chapter 5, recommendation 4). The three technical
 evaluators of the second round named nothing that needed improving. Their comments praised how
@@ -925,7 +927,7 @@ plan.
 
 | Side | Requirement | Used in testing |
 | :--- | :--- | :--- |
-| Landlady | A current web browser on a computer, and an internet connection | The landlady's laptop with Chrome; the researchers' laptop, a Dell XPS 15 on Windows 11 with Chrome, Edge and Firefox (Table 11) |
+| Landlady | A current web browser on a computer, and an internet connection | The researchers' Acer Nitro V15 laptops on Windows 11 with Chrome, Edge and Firefox (Table 11), one of which the landlady used |
 | Tenants and visitors | A current web browser (Chrome, Edge, Firefox or Safari) on a phone or computer, and an internet connection | Infinix GT20 with Android and Chrome; iPhone 15 and iPhone 13 with Safari; the three tenants' own phones, models not recorded |
 | Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen test account with GCash (optional online payment; not live, takes no real money) | Vercel; PostgreSQL 17.6 on Supabase; Adyen Web Drop-in 6.44 and API Library 32.0 (Table 7) |
 | Administration | A computer that can run Node.js, used only for backups and verification runs | Node.js 22 on the researchers' Windows 11 computer |

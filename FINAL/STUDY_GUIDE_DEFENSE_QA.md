@@ -153,15 +153,15 @@ The landlady's needs changed as she used the system, and Agile let us show her w
 device each iteration and change them. *Section 3.2.*
 
 **What were the iterations?**
-Three, after a first build from 24 July to 28 August 2026 (a working system and her records
-transferred). Iteration 1, verification and correction, 12 to 14 September (the system and documents
-checked against each other; 22 recorded errors corrected). Iteration 2, consolidation and testing,
-15 September to 31 October (her answers, real users, testing and evaluation). Iteration 3, interface
-redesign, from 1 November. *Section 4.2.1; Appendix M, Table M-19.*
+Two, after a first build from 24 July to 28 August 2026 (a working system and her records
+transferred, the "first design" of Appendix I). Iteration 1, 12 September to 31 October: verification first
+(the system and documents checked against each other, 22 recorded errors corrected), then her
+answers, real users, testing and the first round of evaluation. Iteration 2, from 1 November: the
+interface redesign and the second round of evaluation. *Section 4.2.1; Appendix M, Table M-19.*
 
 **The first evaluation was of an earlier design. Do the results still hold?**
-Yes. The system was evaluated twice: in Iteration 2, and again in Iteration 3 on the redesigned
-system, which is the result Section 4.4 reports. Iteration 3 changed how the screens look and joined the
+Yes. The system was evaluated twice: in Iteration 1, and again in Iteration 2 on the redesigned
+system, which is the result Section 4.4 reports. Iteration 2 changed how the screens look and joined the
 sign-in and inquiry pages. It added no module and removed none. It added two rules: a closed year's
 records cannot be changed, and a tenant cannot cancel a repair once someone is sent. After it, the 114 test cases were run again from 4 to 13 November: 99 passed, the 9 timings were taken (the screens in 0.35 to 2.11 s on a laptop), 6 could not be run, and none failed. Every automated check passed after each later
 change, so

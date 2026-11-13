@@ -637,7 +637,7 @@ function framework() {
 // events Chapter 4 reports.
 // ---------------------------------------------------------------------------------------------
 function gantt() {
-  const W = 1040, H = 600;
+  const W = 1040, H = 680;
   const x0 = 250, x1 = 1010; // 20 July to 20 November 2026
   const day = (m, d) => (Date.UTC(2026, m - 1, d) - Date.UTC(2026, 6, 20)) / 864e5;
   const span = day(11, 20);
@@ -650,19 +650,19 @@ function gantt() {
   }
   s += T(x0 + 6, 66, 'July', { size: 14, anchor: 'start', fill: MUTED });
   // Iteration bands across the top.
-  const it = [[[7, 24], [8, 28], 'First build'], [[9, 12], [9, 14], 'Iteration 1'], [[9, 15], [10, 31], 'Iteration 2: Consolidation and testing'], [[11, 1], [11, 20], 'Iteration 3']];
+  // Two iterations since 13 Nov 2026 (Sean): verification, testing and the first evaluation, then
+  // the redesign and the second evaluation.
+  const it = [[[7, 24], [8, 28], 'First build'], [[9, 12], [10, 31], 'Iteration 1: Verification and testing'], [[11, 1], [11, 20], 'Iteration 2']];
   for (const [a, b, name] of it) {
     s += rect(X(...a), 80, X(...b) - X(...a), 34, { sw: 1.4, fill: '#eee' });
-    // A bar too narrow for its name (Iteration 1, three days) is named underneath instead.
-    if (X(...b) - X(...a) > 90) s += T((X(...a) + X(...b)) / 2, 97, name, { size: 14, weight: 'bold' });
+    s += T((X(...a) + X(...b)) / 2, 97, name, { size: 14, weight: 'bold' });
   }
   s += rect(X(8, 29), 80, X(9, 11) - X(8, 29), 34, { sw: 1.2, dash: '5 4' });
   s += T((X(8, 29) + X(9, 11)) / 2, 97, 'Module 01', { size: 12.5, fill: MUTED });
-  s += T(X(9, 13), 130, 'Iteration 1: Verification, 12 to 14 Sep', { size: 12.5, weight: 'bold' });
   // One row per phase; a bar in every iteration the phase ran in. The numbers index `it`.
   const rows = [
-    ['Requirements', [2, 3, 4]], ['Design', [2, 3, 4]], ['Development', [1, 2, 3, 4]],
-    ['Testing', [2, 3, 4]], ['Deployment', [3, 4]], ['Review and maintenance', [2, 3, 4]],
+    ['Requirements', [2, 3]], ['Design', [2, 3]], ['Development', [1, 2, 3]],
+    ['Testing', [2, 3]], ['Deployment', [2, 3]], ['Review and maintenance', [2, 3]],
   ];
   const top = 150, rh = 48;
   rows.forEach(([name, its], i) => {
@@ -675,15 +675,15 @@ function gantt() {
     }
   });
   // Dated events (Chapter 4): a diamond on the date, its label below the rows.
-  const ev = [[[9, 24], 'Hosted on Vercel'], [[9, 30], 'Testing day'], [[10, 3], 'Evaluators\' review'], [[10, 13], 'Re-test']];
+  const ev = [[[9, 24], 'Hosted on Vercel'], [[9, 30], 'Testing day'], [[10, 3], 'Evaluators\' review'], [[10, 13], 'Re-test'], [[11, 10], 'Second round of users'], [[11, 12], 'Second evaluators\' review']];
   const ey = top + rows.length * rh + 10;
   ev.forEach(([d, name], i) => {
     const x = X(...d);
     s += `<path d="M${x},${ey} l9,9 l-9,9 l-9,-9 Z" fill="${INK}"/>`;
     s += line([[x, ey + 18], [x, ey + 34 + i * 22]], { head: 'none', sw: 1, stroke: MUTED });
-    s += T(x - 6, ey + 40 + i * 22, `${name} (${d[1]} ${d[0] === 9 ? 'Sep' : 'Oct'})`, { size: 13, anchor: 'end' });
+    s += T(x - 6, ey + 40 + i * 22, `${name} (${d[1]} ${['Sep', 'Oct', 'Nov'][d[0] - 9]})`, { size: 13, anchor: 'end' });
   });
-  s += T(x1, H - 18, 'Iteration 3 continues to the defense.', { size: 12.5, anchor: 'end', fill: MUTED });
+  s += T(x1, H - 18, 'Iteration 2 continues to the defense.', { size: 12.5, anchor: 'end', fill: MUTED });
   return { W, H, body: s };
 }
 

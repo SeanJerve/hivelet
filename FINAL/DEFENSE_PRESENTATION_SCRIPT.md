@@ -60,18 +60,18 @@ as rated. [`STUDY_GUIDE_REFERENCES.md`]*
 "Input, process, output: the objectives, literature and her workflows go in; the Agile cycle builds
 the modules, among them booking and reservation, which here means inquiries and Reserved units; the system, its reports, the evaluation and the manuscript come out, with feedback into
 the next iteration." [2.3, Figure 2-2]
-*Hand-over to B: "To build it, we worked in three iterations."*
+*Hand-over to B: "To build it, we worked in two iterations."*
 
 ---
 
 ## Block B. The build (slides 7 to 12)
 
-**Slide 7. Agile in three iterations** (50 s)
+**Slide 7. Agile in two iterations** (50 s)
 **Land: iteration 1 is where we checked our own work.**
-"First a build, 24 July to 28 August: a working system and her records transferred. Iteration 1,
-12 to 14 September: we checked the system and its documents against each other and corrected 22
-recorded errors. Iteration 2, 15 September to 31 October: her answers, real users, testing and the
-evaluation. Iteration 3, from 1 November: a redesign of how the screens look. No module was added or
+"First a build, 24 July to 28 August: a working system and her records transferred. Iteration 1, 12
+September to 31 October: we first checked the system and its documents against each other and
+corrected 22 recorded errors, then came her answers, real users, testing and the first evaluation.
+Iteration 2, from 1 November: a redesign of how the screens look, and the second evaluation. No module was added or
 removed. Afterwards we ran the 114 test cases again, from 4 to 13 November: 99 passed, the 9 timings were
 taken, 6 could not be run, and none failed. A second round of users tested the
 redesign from 31 October to 10 November." [4.2.1, Appendix M Table M-19]

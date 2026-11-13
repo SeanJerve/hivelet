@@ -96,7 +96,7 @@ for enterprise-level property management.
 
 This study covers the design, development, and evaluation of Hivelet, a PWA that moves the 33-unit
 Fe Galang Da Silva Boarding House, at 32 Sampaguita Street, Barangay 4 Sagpon, Old Albay District,
-Legazpi City, near Bicol University, from spreadsheet- and paper-based administration to one
+Legazpi City, from spreadsheet- and paper-based administration to one
 centralized system. Its tenant and room management moves tenants in, stores their records, and shows
 the current availability of every unit. Its booking and reservation management takes the form the
 landlady's practice needs. Prospective tenants see the units on a public page and send an inquiry about

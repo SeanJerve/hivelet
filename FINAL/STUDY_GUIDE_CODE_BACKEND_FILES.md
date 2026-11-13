@@ -232,7 +232,7 @@ tenant in; the per-route permissions are a second barrier.
 | `GET/POST /api/admin/tickets/:id/messages` | Read and add notes on any ticket | `ticket_messages` |
 | `GET /api/admin/notifications`, `/unread-count`; `PATCH .../:id/read`; `POST .../mark-all-read` | Her own notifications | `notifications` |
 
-**Closed years (Iteration 3).** Recording, correcting or voiding a receipt, and recording, editing or
+**Closed years (Iteration 2).** Recording, correcting or voiding a receipt, and recording, editing or
 voiding an expense, first call `refusePastYear`: a record dated in a year that is no longer open is
 refused with "Records from past years cannot be changed."
 

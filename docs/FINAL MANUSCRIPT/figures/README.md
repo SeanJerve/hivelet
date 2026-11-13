@@ -30,7 +30,7 @@ cannot tell whether a label collides with a line.
 
 ## Screenshots (Figures 10 to 14)
 
-Retaken on 10 November 2026, after the redesign of Iteration 3 (first made 5 October), from `main` as it stood that day, light theme, by headless Chrome
+Retaken on 10 November 2026, after the redesign of Iteration 2 (first made 5 October), from `main` as it stood that day, light theme, by headless Chrome
 (`chrome --headless=new --screenshot`, a throwaway profile), at twice the screen's resolution
 (three times for the phone). Numbered 4 to 8 until the diagrams were added the same night.
 
@@ -50,6 +50,8 @@ public list on 10 November 2026; every tenant is "Sample Tenant" plus the unit c
 each unit's published rate plus ₱200 water per occupant, January to October 2026; expenses,
 repairs and inquiries are invented. The administrator is shown as Michelle. Chapter 4, Section 4.2,
 says so in one sentence at the start of Section 4.2. Keep that sentence with the figures.
+
+**13 November 2026.** Figures 10, 12, 13 and 14 were taken again with Playwright and Chrome at the same sizes, because the harness pages do not load the site's typefaces (Sora and Plus Jakarta Sans, from Google Fonts in `index.html`), so the 10 November images fell back to the computer's own font. The script adds the same stylesheet to the page, waits until both typefaces have loaded, then takes the picture. Same sample records.
 
 **To make them again:** the two pages that supply the records (`frontend/_harness-figures.html`,
 `frontend/_harness-figures-tenant.html`, and the phone frame `_harness-figures-phone.html`) are

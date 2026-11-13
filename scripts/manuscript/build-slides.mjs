@@ -123,15 +123,14 @@ function box(s, x, y, w, h, head, body, size = 13) {
 
 // 7. Method
 {
-  const s = titled('Method: Agile, in three iterations', 'Iteration 1 is the honest part of the story: it checked the system and its documents against each other and corrected 22 recorded errors. Iteration 3 redesigned the screens and added no module. After it, the 114 test cases were run again: 99 passed, the 9 timings were taken, 6 could not be run, and none failed. A second round of users then tested it (Appendix M, Table M-19).');
+  const s = titled('Method: Agile, in two iterations', 'Iteration 1 checked the system and its documents against each other and corrected 22 recorded errors, then put it in use, tested it and had it evaluated. Iteration 2 redesigned the screens and added no module. After it, the 114 test cases were run again: 99 passed, the 9 timings were taken, 6 could not be run, and none failed. A second round of users and evaluators then rated it (Appendix M, Table M-19).');
   image(s, 'appendix-c-gantt-chart.png', 0.5, 1.2, 7.6, 4.6);
   bullets(s, [
     'First build, 24 July to 28 August',
-    'Iteration 1, 12 to 14 September: 22 recorded errors corrected',
-    'Iteration 2, 15 September to 31 October: testing and evaluation',
-    'Iteration 3, from 1 November: interface redesign',
+    'Iteration 1, 12 September to 31 October: verification, testing and the first evaluation',
+    'Iteration 2, from 1 November: interface redesign and the second evaluation',
   ], { x: 8.3, w: 4.6, h: 3.6, size: 17, numbered: true });
-  s.addText('Each iteration ran the phases it needed: requirements, design, development, testing, deployment and review. Iteration 1 had no deployment work.', { x: 8.3, y: 5.0, w: 4.6, h: 1.2, fontFace: FONT, fontSize: 14, italic: true, color: C.faint, valign: 'top' });
+  s.addText('Each iteration ran the phases of the Agile cycle: requirements, design, development, testing, deployment and review.', { x: 8.3, y: 5.0, w: 4.6, h: 1.2, fontFace: FONT, fontSize: 14, italic: true, color: C.faint, valign: 'top' });
 }
 
 // 8. Architecture

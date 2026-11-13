@@ -18,9 +18,9 @@ results are summarized below in the order of the specific objectives.
    of the income rows lacked an anniversary date and deposit and that five invoice numbers had each
    been used for two payments. The analysis produced 44 functional requirements and 49 business
    rules. Graded against the final system, 33 of the requirements were implemented as worded, 9 in part
-   and 2 not as worded, against 25 as worded early in the second iteration.
+   and 2 not as worded, against 25 as worded early in the first iteration.
 
-2. **The system was developed** in three Agile iterations with Vue, Express and PostgreSQL, with
+2. **The system was developed** in two Agile iterations with Vue, Express and PostgreSQL, with
    the six features the objective names: tenant and room management, booking and reservation
    management, financial tracking with optional online payment through Adyen with GCash, maintenance
    ticketing and notification, role-based access control, and Progressive Web Application support.
@@ -42,7 +42,7 @@ results are summarized below in the order of the specific objectives.
 4. **The system was evaluated** by the five steps of ISO/IEC 25040: twenty-seven of the model's
    thirty-one sub-characteristics had a measured result and twenty-five were rated. In response to
    feedback and testing, 51 changes were made, among them each of the first technical evaluators'
-   fourteen comments, and the third iteration then redesigned the screens. The fourteen users, the
+   fourteen comments, and the second iteration then redesigned the screens. The fourteen users, the
    landlady, ten tenants and three prospective tenants, rated the redesigned system 4.84 overall, Very
    High Quality. Of the characteristics all three user groups rated, Performance Efficiency was
    highest (4.86) and Reliability lowest (4.78). Three technical evaluators rated it 4.90 overall, Very
@@ -88,52 +88,36 @@ Based on the summary and conclusions of the study, the following are recommended
 
 **For the landlady of the Fe Galang Da Silva Boarding House**
 
-1. Enter each receipt from her receipt book on Monthly Income, which also settles any bill it covers
-   (Appendix M, Table M-27), so that the system's receipts agree with the book and the system can
-   become her main record (Chapter 4, Table 4-22).
-2. Have a backup taken before any change to the records, as the researchers did throughout, and treat the
-   five flagged invoice numbers as history, kept as she wrote them (Section 4.1.1).
+1. Enter each receipt from her receipt book on Monthly Income, so that the system's receipts agree
+   with the book and the system can become her main record (Appendix M, Table M-27; Chapter 4,
+   Table 4-22).
+2. Have a backup taken before any change to the records, as the researchers did throughout (Section
+   4.3.3).
 
 **For the continued development of the system**
 
-3. Take the GCash payment live, if the owner wants it, by completing Adyen's merchant onboarding for
-   GCash with the owner's merchant onboarding documents, which this study did not do, and moving the
-   account from Adyen's test environment to live. At the same time, let the system refund a GCash
-   payment the landlady rejects, since refunds were left out of this study and are made from the
-   gateway's own dashboard (Sections 1.4 and 4.2.4). Move the sign-in token into a cookie that no
-   script can read, and add a second sign-in factor for the administrator, the two weaknesses
-   Chapter 4 names (Section 4.4.4).
-4. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
-   every function that writes data is tested on every change rather than once by a person. Extend
-   the rule that refuses a second copy of a receipt to receipts with no invoice number and to
-   acknowledgement receipts (Sections 4.3.3, 4.3.4 and 4.3.6). As a technical evaluator advised
-   (Section 4.4.6), keep a deleted repair request or inquiry as an archived record, as a voided
-   receipt or expense already is, and list finished repair requests by the dates they were resolved
-   and closed. Call the Monthly Income action Void rather than Delete, since its button and warning
-   still read as an erasure (Appendix L, case A-25), and let the landlady see the voided receipts.
-5. Make the public page appear faster on phones, where its largest element was drawn at 3.4 to 3.6
-   seconds before the redesign and 4.2 to 4.4 seconds after it, by pre-rendering it and serving the
-   typefaces from the site itself (Section 4.3.5).
-6. Strengthen the characteristics rated lowest and the first sign-in (Section 4.4.3). Raise **Maintainability** (4.73, the technical evaluators' lowest)
-   by moving the database work now written inside the request handlers, three calls in four, into
-   service modules, one per kind of record, with the result reviewed by more than one developer, and
-   give whoever evaluates it the architecture, the entity-relationship diagram and the data dictionary
-   (Figures 4-2 and 4-6, Appendix N) together with the system. Make **Usability** (4.80 from the users, 4.20 from the technical evaluators before the redesign)
-   easier still to learn by taking the landlady through each screen with the
-   user manual (Appendix K) before she uses the system alone, and by showing each new tenant first how
-   to sign in and find their unit and rent, where the tenants needed help, the first sign-in most of
-   all in both rounds (Section 4.3.7). Raise **Reliability** (4.78, the users' lowest, whose lowest item was whether the information shown is correct and up to date)
-   through recommendation 1, which keeps the figures tenants see in step with the receipt book.
+3. Take the GCash payment live, if the owner wants it, by completing Adyen's merchant onboarding with
+   the owner's merchant onboarding documents, which this study did not do, and let the system refund
+   a GCash payment the landlady rejects (Sections 1.4 and 4.2.4). Close the two weaknesses Chapter 4
+   names: keep the sign-in token in a cookie that no script can read, and add a second sign-in factor
+   for the administrator (Section 4.4.4).
+4. Add automated browser tests that sign in and perform each step of the landlady's walkthrough
+   (Section 4.3.3). As a technical evaluator advised (Section 4.4.6), keep a deleted repair request
+   or inquiry as an archived record and list finished repairs by their dates, and call the Monthly
+   Income action Void rather than Delete (Appendix L, case A-25).
+5. Make the public page appear faster on phones, where its largest element took 4.2 to 4.4 seconds
+   on slow 4G after the redesign, by pre-rendering it and serving its typefaces from the site itself
+   (Section 4.3.5).
+6. Raise **Maintainability**, the technical evaluators' lowest at 4.73, by moving the database work
+   now written inside the request handlers into service modules, one per kind of record. Help each
+   new tenant through the first sign-in, where tenants needed help most in both rounds (Sections
+   4.3.7 and 4.4.3).
 
 **For future researchers**
 
 7. Check a system against its own real data, not only against test cases: the most important defects
    in this study passed every automated check and were found only by comparing each screen with the
    records it claimed to show (Section 4.3.3).
-8. Evaluate over a longer period of real use with every tenant, including two people changing the
-   same record in different ways at once, which this study did not test. Measure availability over
-   months, the landlady's time on record-keeping, and the two sub-characteristics no instrument here
-   covered, user interface aesthetics and reusability. Build the instrument on ISO/IEC 25010:2023
-   (Section 4.4 and Appendix M, Table M-21), and ask tenants what they find missing, as the survey
-   did when one asked to see the deposit, which the system now shows (Sections 4.2.2, 4.3.6 and
-   4.4.5).
+8. Evaluate over a longer period of real use with every tenant, measuring availability over months
+   and the landlady's time on record-keeping, with an instrument built on ISO/IEC 25010:2023
+   (Section 4.4; Appendix M, Table M-21).

@@ -3,7 +3,7 @@
 For the team, before the defense. This guide walks through **every file in `frontend/src`**, plus
 `frontend/vite.config.ts`, `frontend/index.html` and `frontend/public`, and says in plain words what
 each one does. Everything here was read from the code on 24 October 2026 and checked again on 10
-November 2026, after the redesign of Iteration 3. Where the code did not
+November 2026, after the redesign of Iteration 2. Where the code did not
 make something clear, this guide says "unclear from the code" instead of guessing.
 
 The companion guide, **`STUDY_GUIDE_CODE.md`**, already explains the whole system, each feature from
@@ -43,7 +43,7 @@ A few words first:
 | `components/ui/` | Small building blocks every screen shares: the one dialog, the one table, the toolbar, toasts |
 | `lib/` | Logic with no screen of its own: talking to the server, who is signed in, dates, money, offline copies |
 | `index.css` | The colours, fonts, dark mode and animations, as named tokens |
-| `glass.css` | The glass look of the Iteration 3 redesign (1 November 2026): translucent surfaces over a light green page, in light and dark. Loaded after `index.css` by `main.ts` |
+| `glass.css` | The glass look of the Iteration 2 redesign (1 November 2026): translucent surfaces over a light green page, in light and dark. Loaded after `index.css` by `main.ts` |
 
 ### How a page gets its data
 
@@ -113,7 +113,7 @@ versions of every animation. The fonts are Sora and Plus Jakarta Sans, loaded fr
 `index.html`.
 
 **`glass.css`**
-The look of the Iteration 3 redesign, about 1,000 lines, in one file loaded after `index.css` (so
+The look of the Iteration 2 redesign, about 1,000 lines, in one file loaded after `index.css` (so
 removing its one import in `main.ts` would bring back the old surfaces). The page stays near white
 with soft patches of light green behind it, and each surface is translucent white with a bright rim.
 It has three weights: a section, what floats (a dialog or menu, more opaque so a form stays
@@ -659,7 +659,7 @@ How a payment was made, in plain words: the stored value "Adyen Online" is shown
 The years that still take records, as the server decides them (`GET /admin/open-years`): this
 year, and last year while any of its December rent is unpaid. Until the answer arrives only this
 year is open, so a closed year never shows an edit button the server would refuse (the closed-year
-rule of Iteration 3).
+rule of Iteration 2).
 
 **`greeting.ts`**
 "Good morning", "Good noon", "Good afternoon" or "Good evening" on the Overviews, by Manila's clock,

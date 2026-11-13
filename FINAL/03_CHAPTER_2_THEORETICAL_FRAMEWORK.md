@@ -183,10 +183,11 @@ fills.
 ## 2.2 Gap Bridged by the Study
 
 The synthesis shows a research gap: the absence of an integrated apartment management system
-designed for small-scale, resource-constrained residential operations. Existing systems are commonly
-developed either as enterprise-oriented platforms or as solutions for a single administrative task,
-such as payment monitoring, room booking, tenant management, or maintenance coordination (Magno et
-al., 2024; Mangca, 2023b; Pernate et al., 2025; Saputra et al., 2025; Setty, 2022). Puspasari et al.
+designed for small-scale, resource-constrained residential operations. Existing systems are commonly developed either as enterprise-oriented platforms or around one part
+of the work. Some center on how a prospective tenant finds and books a room (Mangca, 2023b; Pernate
+et al., 2025; Setty, 2022). Others digitize the owner's records, such as rental records and payments
+(Magno et al., 2024), or room data, tenant registration, invoices and complaints (Saputra et al.,
+2025). Puspasari et al.
 (2025), for example, developed a web-based boarding house information system that monitors room
 status and sends billing notifications through WhatsApp, but its only user is the boarding house
 manager, so tenants cannot see their own bills or report a concern through it.

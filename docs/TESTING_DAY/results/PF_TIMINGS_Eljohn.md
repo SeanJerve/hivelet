@@ -2,7 +2,7 @@
 
 **Owner: Eljohn.** Results of the testing day, 30 September 2026. **Goes into Chapter 4:** Table 11 (§4.3.5) via `scripts/survey/fill-timings.mjs`; Performance Efficiency (§4.4.4).
 
-> **Done by:** Eljohn · **Date:** 30 Sep 2026 · **Device and browser:** laptop Dell XPS 15 (Chrome 154); phones Infinix GT20 (Chrome 154) and iPhone 15 (Safari) · **Network:** house wifi (laptop, GT20) / mobile data (iPhone 15)
+> **Done by:** Eljohn · **Date:** 30 Sep 2026 · **Device and browser:** laptop Acer Nitro V15 (corrected by Sean on 13 Nov 2026; first written as a Acer Nitro V15) (Chrome 154); phones Infinix GT20 (Chrome 154) and iPhone 15 (Safari) · **Network:** house wifi (laptop, GT20) / mobile data (iPhone 15)
 >
 > **Corrected 1 Oct 2026 (Sean, for Eljohn):** the browser versions were mistyped (the latest
 > stable Chrome was used: 154 on 30 Sep); the phones are the Infinix GT20 and the iPhone 15.
@@ -14,7 +14,7 @@
 > delete rows (a case not done is **NT**). No names of tenants or visitors: codes only (T1, PR1, L).
 > Commit with a message like `results: PF_TIMINGS_Eljohn.md filled` (pull first).
 
-**How to fill it:** Write seconds with a decimal point (1.8), not a comma. **Three runs each and write all three** as "1.9 / 1.7 / 1.8"; the middle one counts. Write the laptop and phone **models** here: laptop Dell XPS 15, phones Infinix GT20 / iPhone 15. PF-09 and PF-10: write the four scores and LCP, and the date and time of the run.
+**How to fill it:** Write seconds with a decimal point (1.8), not a comma. **Three runs each and write all three** as "1.9 / 1.7 / 1.8"; the middle one counts. Write the laptop and phone **models** here: laptop Acer Nitro V15 (corrected by Sean on 13 Nov 2026; first written as a Acer Nitro V15), phones Infinix GT20 / iPhone 15. PF-09 and PF-10: write the four scores and LCP, and the date and time of the run.
 
 ---
 

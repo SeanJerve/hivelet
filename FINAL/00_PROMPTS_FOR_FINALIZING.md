@@ -54,7 +54,7 @@ THE FIXED FACTS (the paper must say exactly these, everywhere they appear):
 - First round (Iteration 2, 30 September to 18 October 2026): the landlady, 3 tenants and 1
   prospective tenant (users 4.75) and 5 technical evaluators (4.34); all ten together 4.59. Three
   tenants: 34 task attempts completed, 31 without help.
-- Second round (Iteration 3, the redesigned system): tasks by 10 tenants (151 of 160 without help,
+- Second round (Iteration 2, the redesigned system): tasks by 10 tenants (151 of 160 without help,
   94 percent) and 4 prospective tenants (31 of 32, 97 percent), no times recorded. Survey: the
   landlady, 10 tenants and 3 prospective tenants, users 4.84 overall (Functional Suitability 4.80,
   Performance Efficiency 4.86, Compatibility 4.79, Usability 4.80, Reliability 4.78, Security 5.00,

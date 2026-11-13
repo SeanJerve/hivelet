@@ -2,7 +2,7 @@
 
 **Owner: Eljohn.** Results of the testing day, 30 September 2026. **Goes into Chapter 4:** Compatibility (§4.4.5) and the deployment environment table (versions of the devices and browsers actually used).
 
-> **Done by:** Eljohn · **Date:** 30 Sep 2026 · **Device and browser:** laptop Dell XPS 15 on Windows 11 (Chrome 154, Edge, Firefox 157); phones Infinix GT20 (Chrome 154) and iPhone 15 (Safari) · **Network:** house wifi (laptop, GT20) / mobile data (iPhone 15)
+> **Done by:** Eljohn · **Date:** 30 Sep 2026 · **Device and browser:** laptop Acer Nitro V15 (corrected by Sean on 13 Nov 2026; first written as a Acer Nitro V15) on Windows 11 (Chrome 154, Edge, Firefox 157); phones Infinix GT20 (Chrome 154) and iPhone 15 (Safari) · **Network:** house wifi (laptop, GT20) / mobile data (iPhone 15)
 >
 > **Corrected 1 Oct 2026 (Sean, for Eljohn):** the browser versions were mistyped (the latest
 > releases were used: Chrome 154 and Firefox 157, released 29 Sep); the phones are the Infinix

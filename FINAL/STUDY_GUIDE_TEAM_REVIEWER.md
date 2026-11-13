@@ -34,7 +34,7 @@ defense with it.
 > rent, can try the optional **GCash through Adyen** (it runs in Adyen's test environment and takes no
 > real money), and report repairs; and visitors ask about a
 > vacant unit without an account, which the landlady answers, can mark Reserved and moves the person
-> in from. Nothing is booked or paid for online. We built it in **three Agile iterations** with Vue, Express and
+> in from. Nothing is booked or paid for online. We built it in **two Agile iterations** with Vue, Express and
 > PostgreSQL, and it runs on her real records.
 >
 > We tested it at three levels: **82 of 83 tests passed (98.8%)**, with no critical defect, and three
@@ -51,7 +51,7 @@ defense with it.
 | **1. The problem** | Four areas, four separate records; the landlady's own data proved it | 2, 3 | 1.1, 4.1 |
 | **2. The aim** | One general and four specific objectives | 4 | 1.2 |
 | **3. The gap** | Related systems solve one function, or suit big properties | 5, 6 | 2.1.6, 2.2, 2.3 |
-| **4. The build** | Agile in three iterations; the stack; six features; security | 7 to 12 | 3.2, 4.2 |
+| **4. The build** | Agile in two iterations; the stack; six features; security | 7 to 12 | 3.2, 4.2 |
 | **5. The proof** | 82 of 83 tests; real users; 4.84 and 4.90; measured and rated agree on six of eight; conclusions; recommendations | 13 to 19 | 4.3, 4.4, 5 |
 
 The slide deck is `HIVELET DEFENSE SLIDES.pptx` (20 slides). **Slide 1 still has square brackets** for
@@ -97,7 +97,7 @@ Say a number only if it is on this page or in a chapter. If you forget one, say 
 | :--- | :--- |
 | Requirements | **44** functional, **49** business rules, **10** non-functional |
 | As worded / in part / not as worded | 33 / 9 / 2 against the final system, 13 Nov (25 / 15 / 1 interface only / 3 in September). App. M, Table M-32 |
-| Iterations | **3**, after a first build (24 Jul to 28 Aug): 12 to 14 Sep (22 errors corrected); 15 Sep to 31 Oct; from 1 Nov (interface redesign) |
+| Iterations | **2**, after a first build (24 Jul to 28 Aug): 12 Sep to 31 Oct (22 errors corrected first, then testing and the first evaluation); from 1 Nov (interface redesign and the second evaluation) |
 | Database | **21** tables and 37 foreign keys in the ERD; **24** tables and 238 columns in Appendix N (three are backups from corrections) |
 | Routes checked against the permission matrix | **60** (administrator and tenant, 10 Nov); **71** request handlers reviewed for security (2 Oct) |
 | App size when installed | about **1.2 MB** |
@@ -327,7 +327,7 @@ Cover the answers and test yourself, or quiz each other. The answer to every que
 <details><summary>2. What did her own records show when transferred?</summary>937 income rows and 1,327 expense allocations; 402 of 937 (43%) with no anniversary date and no deposit; five invoice numbers each used twice.</details>
 <details><summary>3. State the general objective.</summary>To design, develop and evaluate Hivelet, a web-based apartment management system that improves administrative workflow integration, communication and operational control for a small, resource-constrained boarding house.</details>
 <details><summary>4. Name the six features.</summary>Tenant and room management; booking and reservation management (inquiries and Reserved units, nothing booked online); financial tracking with optional online payment; maintenance ticketing and notifications; role-based access control; PWA support.</details>
-<details><summary>5. What were the three iterations?</summary>After a first build (24 Jul to 28 Aug), Iteration 1 was verification and correction (12 to 14 Sep, 22 errors corrected), Iteration 2 was consolidation and testing (15 Sep to 31 Oct), and Iteration 3 was the interface redesign (from 1 Nov).</details>
+<details><summary>5. What were the two iterations?</summary>After a first build (24 Jul to 28 Aug), Iteration 1 was verification, consolidation and testing (12 Sep to 31 Oct: 22 errors corrected first, then real users, testing and the first evaluation), and Iteration 2 was the interface redesign and the second evaluation (from 1 Nov).</details>
 <details><summary>6. What is the stack?</summary>Vue 3 and TypeScript (PWA), Express in TypeScript, PostgreSQL on Supabase, Adyen with GCash, hosted on Vercel.</details>
 <details><summary>7. How many tests passed?</summary>82 of 83 (98.8%), no critical defect, course standard 90%.</details>
 <details><summary>8. What was the one failed test?</summary>Walkthrough step 23b: ₱0 shown instead of "—" with no connection; fixed and passed on 13 Oct.</details>

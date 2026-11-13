@@ -8,7 +8,7 @@
 The user acceptance test was conducted at the Fe Galang Da Silva Boarding House on 30 September 2026
 by the landlady, three tenants and one prospective tenant, on the live system with the property's
 own records (Chapter 4, Section 4.3.7). A second round followed on the redesigned system of
-Iteration 3, from 31 October to 10 November 2026: ten tenants and four prospective tenants did the
+Iteration 2, from 31 October to 10 November 2026: ten tenants and four prospective tenants did the
 tasks, and ten tenants, three prospective tenants and the landlady answered the questionnaire
 (Appendix M, Tables M-28 to M-30). The landlady and the tenants signed consent forms. The
 prospective tenants and the technical evaluators agreed through the notice at the start of the

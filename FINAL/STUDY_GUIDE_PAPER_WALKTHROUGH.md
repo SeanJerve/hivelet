@@ -76,7 +76,7 @@ them:
 **Key facts and numbers**
 - "a 33-unit property in Legazpi City".
 - Her records: **937 income rows and 1,327 expense allocations**.
-- Built in **three Agile iterations** with **Vue, Express and PostgreSQL**.
+- Built in **two Agile iterations** with **Vue, Express and PostgreSQL**.
 - Features: tenant and room management, "a public list of units with inquiries the landlady answers",
   financial tracking with optional GCash payment through Adyen, repair requests with notifications,
   role-based access control, and installation on a phone or computer without an app store.
@@ -554,7 +554,7 @@ are **25 terms**.
   or equivalent); 8 GB RAM; 256 GB storage; 6.78-inch FHD+ display.
 
 **Key facts and numbers** (devices actually used)
-- Workstation: a **Dell XPS 15** with **Google Chrome 154**.
+- Workstation: a **Acer Nitro V15** with **Google Chrome 154**.
 - Response times: on the laptop over the boarding house's Wi-Fi, and on an **iPhone 15 in Safari over
   mobile data**.
 - Offline, installation and browser tests also used an **Infinix GT20** with Android and Chrome.
@@ -573,8 +573,8 @@ are **25 terms**.
 - Agile was chosen because the boarding house's needs could change while the system was being built,
   and it let the team work continuously with the landlady.
 - The work ran from July to November 2026: a first build (24 July to 28 August), then Iteration 1 (12
-  to 14 September), Iteration 2 (15 September to 31 October, the testing and the first evaluation) and
-  Iteration 3 (from 1 November, the redesign, no new module).
+  September to 31 October: verification, testing and the first evaluation) and Iteration 2 (from 1 November,
+  the redesign and the second evaluation, no new module).
 - The system was assessed against ISO/IEC 25010:2011 on its eight characteristics.
 
 **Figure 3-1. Agile Software Development Life Cycle.**
@@ -927,7 +927,7 @@ The section then has four labelled parts.
 ### 4.2.1 System Architecture and Technology Stack
 
 **What it says**
-- Built in **three Agile iterations**. Then the architecture (where each part runs), four diagrams of
+- Built in **two Agile iterations**. Then the architecture (where each part runs), four diagrams of
   the design, and an extract of the data dictionary.
 - The browser app talks to **one server program** (an Express API on Vercel), which alone reads or
   writes the database. **Row-level security** is on for every table.
@@ -938,18 +938,17 @@ The section then has four labelled parts.
 **Key facts and numbers**
 - A first build (not an iteration): **24 July to 28 August 2026**, a working system and the landlady's
   records transferred.
-- Iteration 1: **12 to 14 September**, system and documents checked against each other, **22 recorded
-  errors** corrected, automated checks added.
-- Iteration 2: **15 September to 31 October**, the landlady's answers, real users, feedback, testing and
-  evaluation.
-- Iteration 3: **from 1 November**, the interface redesign: a glass look in light and dark, and the
+- Iteration 1: **12 September to 31 October**. First the system and documents checked against each
+  other, **22 recorded errors** corrected, automated checks added (12 to 14 September); then the
+  landlady's answers, real users, feedback, testing and the first evaluation.
+- Iteration 2: **from 1 November**, the interface redesign: a glass look in light and dark, and the
   sign-in and inquiry pages joined in one screen. No module was added or removed. Two rules were added
   (a closed year's records cannot be changed, and a tenant cannot cancel a repair once someone is
   sent). After it, the 114 test cases were run again from 4 to 13 November: **99 passed** (21 of them with
   wording the redesign had changed), **the 9 timings were taken**, **6 could not be run**, and **none
-  failed** (Appendix L, last part). The automated checks passed after every later change, so the results of Iteration 2 stand.
+  failed** (Appendix L, last part). The automated checks passed after every later change, so the results of Iteration 1 stand.
   Never say "all 114 were rerun".
-- The ISO/IEC 25010 evaluation was carried out twice, in Iteration 2 and again in Iteration 3 on the
+- The ISO/IEC 25010 evaluation was carried out twice, in Iteration 1 and again in Iteration 2 on the
   redesigned system (Tables M-28 to M-30). Section 4.4 reports the second.
 - The ERD (Figure 4-6), drawn from the database's own catalogue on **5 October 2026**: **21 tables**,
   each with a primary key, and **37 foreign keys**.
@@ -1302,7 +1301,7 @@ The section then has four labelled parts.
   Overview moving as figures arrived (recommendation 5).
 
 **Key facts and numbers**
-- Measured **30 September 2026** on a Dell XPS 15 (Chrome 154, Wi-Fi) and an iPhone 15 (Safari, mobile
+- Measured **30 September 2026** on a Acer Nitro V15 (Chrome 154, Wi-Fi) and an iPhone 15 (Safari, mobile
   data).
 - Slowest: tenant portal first load, **3.05 seconds** on the phone.
 - **PageSpeed Insights** (Google's speed test), emulating a mid-range phone on slow 4G: public page
@@ -1551,7 +1550,7 @@ The section then has four labelled parts.
   landlady's alone, and Maintainability is the evaluators' alone, because of who could judge them.
 
 **If the panel asks**
-- *"Why did the ratings rise from the first round?"* The first round rated the system of Iteration 2
+- *"Why did the ratings rise from the first round?"* The first round rated the system of Iteration 1
   (users 4.75, evaluators 4.34). The fourteen evaluator comments and the redesign came between, and
   the second round rated the result. Two of the users' composites were lower (Functional Suitability
   and Portability), and the technical evaluators were different people, so say "higher than", never
@@ -1684,8 +1683,8 @@ The section then has four labelled parts.
 - *What it shows*: what each side needs to use the system, and what was actually used in testing on
   30 September 2026.
 - *How to read it*: Side (Landlady, Tenants and visitors, Hosting, Administration), the requirement, and
-  the device used. Landlady: a current browser on a computer and internet (her Acer Nitro V 15 with Chrome;
-  the team's Dell XPS 15 on Windows 11 with Chrome 154, Edge and Firefox 157). Tenants and visitors: any
+  the device used. Landlady: a current browser on a computer and internet (the team's Acer Nitro V15 laptops on
+  Windows 11, one of which she used, with Chrome 154, Edge and Firefox 157). Tenants and visitors: any
   current browser on a phone or computer (Infinix GT20 with Chrome 154; iPhone 15 and iPhone 13 with
   Safari; the tenants' own phones, models not recorded). Hosting: Vercel, Supabase, an Adyen merchant
   account with GCash. Administration: a computer that can run Node.js, only for backups and
@@ -1730,7 +1729,7 @@ The section then has four labelled parts.
    message or in person. 937 income rows and 1,327 expense allocations; 43% lacked an anniversary date
    and deposit; five invoice numbers used twice. 44 functional requirements, 49 business rules; 33 as
    worded, 9 in part, 2 not as worded against the final system (25 as worded in September).
-2. Developed in three Agile iterations with the six features the objective names, among them
+2. Developed in two Agile iterations with the six features the objective names, among them
    "booking and reservation management"; it holds the boarding house's real records. GCash "works end
    to end in Adyen's test environment and takes no real money. It is not live, because going live needs
    the owner's merchant onboarding documents."
@@ -1810,7 +1809,7 @@ The section then has four labelled parts.
    finding in Chapter 4.
 5. Make the public page appear faster on phones (largest element 3.4 to 3.6 seconds on 30 September,
    4.2 to 4.4 on 10 November) by pre-rendering it and serving the typefaces from the site itself. The
-   other speed findings were acted on in Iteration 3: each screen keeps the figures it has loaded, and
+   other speed findings were acted on in Iteration 2: each screen keeps the figures it has loaded, and
    the landlady's Overview moves by 0.08 as its figures arrive, where it moved by 0.22 before (Table
    M-31).
 6. Strengthen the lowest characteristics: **Maintainability (4.32)**, by moving the database work
@@ -1885,7 +1884,7 @@ supervised. Also marked **[TO DO: scan them in]**.
 
 **Appendix C. Gantt Chart.** Figure C-1, the development schedule from July to October 2026, taken
 from the project's version history. A **Gantt chart** shows each activity as a bar along a timeline. It
-shows the first build, the three iterations, that Iteration 1 had no deployment work, and a dashed
+shows the first build, the two iterations, the six dated events, and a dashed
 block for the Module 01 documents between the first build and Iteration 1. It is there to show the
 Agile schedule as it really ran.
 
@@ -1936,7 +1935,7 @@ prospective tenant's task cards were not recorded on the day. It is the raw evid
 - M-2 to M-17: for each characteristic, a ratings table (every item, by group, with mean, **SD** and
   interpretation) and a measured-evidence table (each measure as X = A / B). **SD (standard
   deviation)** shows how spread out the ratings were; 0.00 means everyone gave the same rating.
-- M-18 all 51 optimizations; M-19 the three iterations phase by phase; M-20 quality in use; M-21 the
+- M-18 all 51 optimizations; M-19 the two iterations phase by phase; M-20 quality in use; M-21 the
   2011 to 2023 mapping; M-22 simultaneous use; M-23 tests mapped to characteristics; M-24 offline and
   installation; M-25 simulated users; M-26 simultaneous saves; M-27 the correction of 13 October 2026.
 - M-28 the respondents before and after the redesign; M-29 the composite means before (users 4.75,
@@ -2014,7 +2013,7 @@ Say each answer aloud, in your own words, with one number and where it is in the
 6. Which study is closest to Hivelet, and how is Hivelet different?
 7. What is the research gap (Section 2.2)?
 8. Draw the conceptual framework (Figure 2-2) from memory: input, process, output, feedback.
-9. Why Agile? Name its six phases (Figure 3-1) and the dates of the three iterations.
+9. Why Agile? Name its six phases (Figure 3-1) and the dates of the two iterations.
 10. Why PostgreSQL, and what are row-level security and a trigger?
 11. What are SQuaRE, ISO/IEC 25010, 25040, 25023, 25022 and 29119-1, each in one line?
 12. What is the difference between measured quality and rated quality?

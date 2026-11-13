@@ -83,10 +83,12 @@ and response were evaluated.
 | Storage | 256 GB |
 | Display | 6.78-inch FHD+ (for UI/UX layout testing) |
 
-During testing, the workstation was a Dell XPS 15 laptop with Google Chrome. Response times were
-taken on it over the boarding house's Wi-Fi and on an iPhone 15 in Safari over mobile data, and the
+During development and testing, the workstations were the researchers' two Acer Nitro V15 laptops
+with Google Chrome, and the landlady recorded and tested on one of them. Response times were taken
+on a laptop over the boarding house's Wi-Fi and on an iPhone 15 in Safari over mobile data, and the
 offline, installation and browser tests also used an Infinix GT20 with Android and Chrome. The
-landlady used her own laptop with Chrome, and the tenants used their own phones.
+tenants used their own phones. Tables 2 and 3 are what developing and testing the system needed.
+Using it needs only a current web browser and an internet connection (Chapter 4, Table 24).
 
 ## 3.2 Software Methodology
 
@@ -109,11 +111,11 @@ The researchers refined the system from the feedback and test results of each it
 system was evaluated during its development rather than only at the end (Section 3.3).
 
 A first working system was built and the landlady's records were transferred into it. It was then
-developed in three iterations, each passing through the phases described below (Appendix C). The
-first verified the system and its documents against each other and corrected the errors found. The
-second put the system in the hands of the landlady and her tenants and refined it from their
-feedback, the testing and the evaluation. The third redesigned the screens and added no module, and
-a second round of users and technical evaluators tried and rated the redesigned system.
+developed in two iterations, each passing through the phases described below (Appendix C). The
+first verified the system and its documents against each other and corrected the errors found, then
+put the system in the hands of the landlady and her tenants and refined it from their feedback, the
+testing and the first round of evaluation. The second redesigned the screens and added no module,
+and a second round of users and technical evaluators tried and rated the redesigned system.
 
 ### 3.2.1 Requirements
 
@@ -222,7 +224,7 @@ observed, since the number of new usability problems found falls quickly with ea
 (Nielsen & Landauer, 1993). A prospective tenant used the public website as a person looking for a
 unit would. Five technical evaluators reviewed the system, four of them on a demonstration copy holding sample
 data, so that they did not see the boarding house's records. After the screens were redesigned in
-the third iteration, the tasks and the questionnaire were repeated with a second round of tenants,
+the second iteration, the tasks and the questionnaire were repeated with a second round of tenants,
 prospective tenants and the landlady, and three more technical evaluators, IT professionals and developers, reviewed the live system and
 its source code for about 30 minutes each and then answered the questionnaire. Each group rated only the characteristics it
 was in a position to judge: tenants and prospective tenants did not rate Security, and only the
