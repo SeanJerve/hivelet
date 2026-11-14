@@ -128,7 +128,7 @@ checked the system and its documents against each other, corrected 22 recorded e
 automated checks, then put the system in the hands of the landlady and her tenants and refined it
 from their feedback, the testing and the evaluation. The second redesigned the screens, added no
 module, and added two rules: a record dated in a closed year can no longer be changed, and a tenant
-can no longer cancel a repair once someone is sent. After the redesign, the 114 test cases were run again: 99 passed, the 10 timings were taken, 6
+can no longer cancel a repair once someone is sent. After the redesign, the 114 test cases were run again: 99 passed, the 10 timings were taken, 5
 could not be run, and none failed, so the results of the first iteration stand (Appendix L).
 
 The evaluation against ISO/IEC 25010 was carried out twice, each time in actual use as Section 3.3
