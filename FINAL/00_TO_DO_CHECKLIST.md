@@ -500,6 +500,29 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
   checks were the suites, refused requests, a copy of the screens with a simulated sign-in, read-only
   queries, the code and read-only requests to the live site. "77 run and passed" is kept.
 
+## G. The FIC's forms: which go into the manuscript (14 November)
+
+The professor's forms are filled in with the group's header, and edited copies are in
+`Downloads/NafillupanNaNeedsaFinalDefense/EDITED/` on Lloyd's laptop. Print from those.
+
+**Names on every form (Lloyd, 14 November):** the adviser is **Prof. JAYVEE CHRISTOPHER VIBAR, DIT**
+(PROF. ... in all-capital lines), and the chairman is **Dr. Aris J. Ordonez** (DR. ARIS J. ORDONEZ),
+with no "DIT". The team's Word file uses the same. The Dean's name differs between Form 6 and the
+Approval Sheet; Lloyd knows and it stays.
+
+**Bound into the manuscript:** the signed Approval Sheet and the two adviser certifications (front
+pages), the four diagram annexes (Appendices D to H), the signed UAT sign-off (Appendix O), the
+signed Client Acceptance Form or MOA (no appendix holds it yet), the appointment papers (Appendix B),
+and, after editing, the Editor's Certification (Form 9) if the FIC asks for it in the front pages.
+
+**Not bound into the manuscript; filed with the FIC:** Form 2, Forms 3A and 3B (attached to Form 4),
+Form 4, Forms 5A and 5B, Forms 6.1 to 6.4, Form 7, Form 8, the similarity report and the Proponent's
+Checklist.
+
+- [ ] Print and sign the forms (no scans until they are signed).
+- [ ] Dates, times and the venue: fill in once the defense is scheduled.
+- [ ] Decide where the signed Client Acceptance Form and MOA go in the manuscript.
+
 ## Later, not now (Sean, 12 November)
 
 | Item | What it is |
