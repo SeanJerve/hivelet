@@ -6,6 +6,10 @@ screen name below is the one the system showed on 10 November 2026.
 Hivelet is at **https://hivelet.vercel.app**. It works in any current browser on a phone or a
 computer, and it can be installed on a phone's home screen (Part 1, section 6).
 
+Figures K-1 to K-16 show the screens, taken from the system with sample data in place of the
+tenants' records. The red numbers mark where each step is done, and the sentence before each
+figure says what each number is.
+
 ---
 
 ## Part 1. For tenants / Para sa mga nangungupahan
@@ -21,6 +25,18 @@ computer, and it can be installed on a phone's home screen (Part 1, section 6).
    hindi bababa sa 10 character, may letra at numero.*
 4. Keep your password to yourself. The slip stops working once you have your own.
    *Huwag ibahagi ang password.*
+
+In Figure K-1, type the login ID in (1) and the password in (2), then press **Sign in** (3).
+Figure K-2 is the window that follows: (1) your mobile number, (2) the starting password,
+(3) the new password, (4) the new password again, and (5) **Save and continue**.
+
+*Figure K-1. The sign-in page on a phone.*
+
+![The sign-in page](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-01-sign-in-phone.png>)
+
+*Figure K-2. The window at a tenant's first sign-in.*
+
+![The window at the first sign-in](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-02-set-password-phone.png>)
 
 **Forgot your password?** Ask the landlady. She can give you a new starting password from her
 screen. *Nakalimutan ang password? Lumapit sa landlady. Bibigyan niya kayo ng bagong starting password.*
@@ -41,6 +57,13 @@ bottom right). Then:
   payments **Recorded by the landlady**.
 - Under a line: your **Monthly charge** (rent and water), the **Next rent** and when it is due
   (once you are settled), and the **Landlady**'s number to call or text.
+
+In Figure K-3, (1) is **Amount due** with **Pay with GCash**, (2) is your unit, (3) is
+**Payments**, and (4) is the green **Request a repair** button.
+
+*Figure K-3. A tenant's Overview on a phone.*
+
+![A tenant's Overview](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-03-tenant-overview-phone.png>)
 
 The amount due counts only the payments the landlady has recorded, up to the date it shows
 ("Payments recorded up to…"). If you have paid and it is not there yet, it appears once she records
@@ -70,6 +93,13 @@ menu that opens from the top left. Its lines cannot be clicked, and only you see
   and takes no real money. Pay the landlady in person.** *Sa ngayon, sa landlady pa rin po magbayad
   nang personal.*
 
+In Figure K-4, (1) is the bill, (2) is **Pay with GCash**, (3) are the **History** and **Record**
+tabs, and (4) is **Filters**.
+
+*Figure K-4. Payments and billing on a phone.*
+
+![Payments and billing](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-04-tenant-payments-phone.png>)
+
 ### 4. Repairs / Pagpapaayos
 
 1. Open **Repairs** (or press **Request a repair** on your Overview). Under **Report it**, fill in
@@ -88,6 +118,13 @@ menu that opens from the top left. Its lines cannot be clicked, and only you see
    has sent someone or started on it. Send her a note instead. A cancelled request stays in your list, marked
    **Cancelled**. *Puwedeng i-cancel habang hindi pa sinisimulan ng landlady.*
 
+Figure K-5 is numbered by the steps: (1) the boxes under **Report it**, (2) **Add a photo**,
+(3) **Send request**, and (4) **Your requests**.
+
+*Figure K-5. Repairs on a phone, numbered by the steps.*
+
+![Repairs](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-05-tenant-repairs-phone.png>)
+
 ### 5. My details / Aking detalye
 
 Keep your phone number and your **Emergency contact** (the person to call) up to date, then
@@ -97,6 +134,13 @@ Your name can only be changed by the landlady. A phone number is spaced as you t
 numbers. If one is not, a note under the box says so, and nothing is saved until you correct it.
 **To change your password:** press **Change password** on My details, or tap your initials at the
 top right > **Change password**. *Para palitan ang password: Change password.*
+
+In Figure K-6, (1) is your mobile number, (2) is **Change password**, (3) is the person to call
+under **Emergency contact**, and (4) is **Save**.
+
+*Figure K-6. My details on a phone.*
+
+![My details](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-06-tenant-details-phone.png>)
 
 ### 6. Install it on your phone / I-install sa cellphone
 
@@ -127,6 +171,13 @@ before sending again. *Kapag walang signal, makikita pa rin ang huling na-load n
 
 Tap your initials at the top right > **Sign out**. Always sign out on a phone that is not yours:
 it also removes the figures, names and notifications kept on the phone for viewing without signal.
+
+Figure K-7 is the menu that opens from your initials (1): (2) **Change password**, (3) **Sign
+out**, and (4) **System**, **Light** and **Dark** under **Appearance**.
+
+*Figure K-7. The menu under a tenant's initials.*
+
+![The menu under a tenant's initials](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-07-tenant-menu-phone.png>)
 
 ---
 
@@ -182,6 +233,13 @@ both. If either current one is wrong the window says so without saying which, an
 A new number is the one you sign in with from then on, and the one every page of the website gives
 for calling you. Keep your password to yourself.
 
+Figure K-8 is the menu that opens from your initials (1): (2) **Change number / password**,
+(3) **Sign out**, and (4) **System**, **Light** and **Dark** under **Appearance**.
+
+*Figure K-8. The menu under the landlady's initials.*
+
+![The menu under the landlady's initials](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-08-admin-menu.png>)
+
 ### 2. Overview
 
 The first screen shows, from the top:
@@ -225,6 +283,14 @@ the bottom.
 changes: a visitor writes back, or a repair is made more urgent. They are remembered on this device
 only, so another phone or computer shows its own count.
 
+In Figure K-9, (1) is the year, (2) the green buttons, (3) **Needs your attention**, (4) **Rent
+for** this month with **Due this week**, (5) **Occupancy**, (6) **Income and expenses**,
+(7) **Recently**, your recent actions, and (8) the bell.
+
+*Figure K-9. The landlady's Overview on a computer.*
+
+![The landlady's Overview](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-09-admin-overview.png>)
+
 ### 3. Recording a payment (Monthly Income)
 
 1. **Monthly Income** > **Record payment**.
@@ -243,6 +309,20 @@ only, so another phone or computer shows its own count.
    Then check the summary that appears: the months, rent, water, total, and, if you changed
    the occupants, that the tenant's record now shows the new number (their water from then on).
    **See it in Monthly Income** opens that month with the payment marked.
+
+In Figure K-10, (1) is **Record payment**, (2) **Rent for**, (3) **Income by cluster**, (4) the
+**Records** and **To verify** tabs, (5) **Reject** and **Verify payment**, and (6) **Download**.
+Figure K-11 is the **Record payment** window, numbered by the steps above: (2) the unit, the mode
+of payment, the period and the date paid, (3) **Occupants** and **Rent**, (4) the invoice box
+with **ACK**, and (5) **Record payment**.
+
+*Figure K-10. Monthly Income on a computer.*
+
+![Monthly Income](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-10-income.png>)
+
+*Figure K-11. The Record payment window, numbered by the steps.*
+
+![The Record payment window](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-11-record-payment.png>)
 
 The same invoice number cannot be recorded twice for the same unit and month.
 
@@ -299,6 +379,13 @@ opens on **this year**, and its year is chosen the same way, beside the page nam
 rule for past years. **Download** asks **Month**, **Year** or **All**, as for income, and names the
 file the same way ("Monthly Expenses March 2026").
 
+In Figure K-12, (1) is **Record expense**, (2) the dropdowns, (3) an expense, which opens for
+editing when clicked, and (4) **Download**.
+
+*Figure K-12. Monthly Expenses on a computer.*
+
+![Monthly Expenses](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-12-expenses.png>)
+
 ### 5. Tenants
 
 - **Move someone in**: full name, unit, deposit, move-in date, whether the unit is shared and by
@@ -324,6 +411,13 @@ file the same way ("Monthly Expenses March 2026").
   the list as a workbook, named like "Tenant History June 2025". **Clear** (under the search) goes back to your current
   tenants.
 
+In Figure K-13, (1) is **Move someone in**, (2) the dropdown that reads **Today**, and (3) a
+tenant's row, which opens their record.
+
+*Figure K-13. Tenants on a computer.*
+
+![Tenants](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-13-tenants.png>)
+
 ### 6. Rooms and rates
 
 Every unit, by cluster or as one list (**By cluster** or **As a list**, under **Filters** on a phone). The **All units** and **All clusters** dropdowns narrow them by
@@ -332,6 +426,12 @@ the website**, its description or its picture. A unit with no photograph shows i
 public pages. **Replace photo** uploads one, and once saved the public page shows that
 photograph instead. Every rate change is kept in the unit's price history. The system never raises
 a rate by itself.
+
+In Figure K-14, (1) are the dropdowns and (2) is a unit, which opens for editing when clicked.
+
+*Figure K-14. Rooms and rates on a computer.*
+
+![Rooms and rates](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-14-rooms.png>)
 
 ### 7. Repairs
 
@@ -344,6 +444,13 @@ a repair** records one you were told about in person, or one for an empty unit. 
 cancelled (they can, until you send someone or start work) is marked **Cancelled by the tenant**, with their reason as a
 note if they gave one.
 
+In Figure K-15, (1), (2) and (3) are the **To dispatch**, **In progress** and **Done** columns,
+(4) is **Mark resolved**, (5) is **Log a repair**, and (6) is the **Status** dropdown.
+
+*Figure K-15. Repairs on a computer.*
+
+![Repairs](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-15-repairs.png>)
+
 ### 8. Inquiries
 
 Messages from people asking about a unit. Type a reply and press the arrow (**Send reply**), **Close inquiry** when settled, or
@@ -352,6 +459,13 @@ person moved in, takes no more replies. **Delete** (only on those) asks **"Delet
 undone. If the person who sent it opens its page again, it tells them the inquiry was closed and
 removed. The **All inquiries** dropdown (under **Filters** on a phone)
 shows only those **Waiting for an answer**, **Answered**, **Moved in** or **Closed**.
+
+In Figure K-16, (1) is an inquiry in the list, (2) the reply box, (3) **Send reply**, (4) **Close
+inquiry**, (5) **Move them in**, and (6) the **All inquiries** dropdown.
+
+*Figure K-16. Inquiries on a computer.*
+
+![Inquiries](<../../docs/FINAL MANUSCRIPT/figures/appendix-k-16-inquiries.png>)
 
 The person who asked reads your reply on their inquiry's own page, and can write back there: when
 they send an inquiry they are given a link and a reference code for it, with **Copy the code**
