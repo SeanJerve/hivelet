@@ -1,10 +1,11 @@
-// Appendix K (User's Manual) screenshots, Figures K-1 to K-16, with red numbered callouts.
+// Appendix K (User's Manual) screenshots: a red box round each button or box the manual names, and red
+// numbers only where a section is a list of steps (Repairs, Record payment), numbered as the steps.
 // Sample data only: it drives a copy of harness.html, so no tenant's name is ever in a figure.
 //
 // 1. Copy video/capture/harness.html to frontend/_harness-manual.html (gitignored) and in the copy:
 //      full_name: 'Michelle'  ->  full_name: 'Landlady'
 //      each `mustChangePassword: false }`  ->  `mustChangePassword: params.get('mcp') === '1' }`, and for the
-//      tenant also `mustCompleteContact: params.get('mcp') === '1'` (the first sign-in window, Figure K-2).
+//      tenant also `mustCompleteContact: params.get('mcp') === '1'` (the first sign-in window).
 // 2. Start the frontend dev server (port 5173), then from video/: node capture/manual-shots.mjs [name part]
 // 3. Shrink: wider than 2000 px to 1800 px, 256-colour PNG (about 7 MB for all 16).
 // Files ending -phone.png are capped at 6.5 in tall by build-manuscript-docx.
@@ -34,7 +35,7 @@ const shots = [
     marks: [[1, [card(head('Amount due'))]], [2, [head('Unit 1A'), txt('Not recorded')], { wide: true }], [3, [head('Payments'), txt('Recorded by the landlady')], { wide: true }], [4, [lnk('Request a repair')]]] },
   { f: 'appendix-k-04-tenant-payments-phone', role: 'tenant', route: '/tenant/payments', vp: T, clip: 844,
     marks: [[1, [card(btn('Pay with GCash'))]], [2, [btn('Pay with GCash')]], [3, [css('[role=tab] >> nth=0'), css('[role=tab] >> nth=1')]], [4, [btn('Filters')]]] },
-  { f: 'appendix-k-05-tenant-repairs-phone', role: 'tenant', route: '/tenant/tickets', vp: T, clip: 940,
+  { f: 'appendix-k-05-tenant-repairs-phone', numbers: true, role: 'tenant', route: '/tenant/tickets', vp: T, clip: 940,
     marks: [[1, [lab('What needs fixing'), lab('Details')]], [2, [txt('Add a photo')]], [3, [btn('Send request')]], [4, [head('Your requests')]]] },
   { f: 'appendix-k-06-tenant-details-phone', role: 'tenant', route: '/tenant/profile', vp: T, clip: 870,
     marks: [[1, [lab('Your mobile number')]], [2, [btn('Change password')]], [3, [txt('Emergency contact'), lab('Their phone number')], { wide: true }], [4, [btn('Save')]]] },
@@ -47,7 +48,7 @@ const shots = [
     marks: [[1, [btn('Account menu for the administrator')], { tr: true }], [2, [btn('Change number / password')], { pad: -3 }], [3, [btn('Sign out')], { pad: -3 }], [4, [css('label:has-text("System")'), css('label:has-text("Dark")')]]] },
   { f: 'appendix-k-10-income', role: 'admin', route: '/admin/income', vp: A, clip: 900,
     marks: [[1, [btn('Record payment')]], [2, [head('Rent for')]], [3, [head('Income by cluster')]], [4, [css('[role=tab] >> nth=0'), css('[role=tab] >> nth=1')]], [5, [btn('Reject'), btn('Verify payment')]], [6, [btn('Download')]]] },
-  { f: 'appendix-k-11-record-payment', role: 'admin', route: '/admin/income', vp: A, click: 'Record payment',
+  { f: 'appendix-k-11-record-payment', numbers: true, role: 'admin', route: '/admin/income', vp: A, click: 'Record payment',
     marks: [[2, [cmb('Unit')]], [2, [cmb('Mode of payment')]], [2, [css('[role=dialog] input >> nth=3'), css('[role=dialog] input >> nth=5')]], [2, [css('[role=dialog] input >> nth=6')]], [3, [css('#onsite-occupants'), css('[role=dialog] input >> nth=1')]],
       [4, [css('#onsite-invoice')]], [5, [css('[role=dialog] button:has-text("Record payment")')]]] },
   { f: 'appendix-k-12-expenses', role: 'admin', route: '/admin/expenses', vp: A, clip: 900,
@@ -83,7 +84,7 @@ for (const s of shots) {
     if (o.wide) { x0 = 12; x1 = s.vp.w - 12; }
     if (ok) boxes.push({ n, x0, y0, x1, y1, pad: o.pad ?? 4, tr: !!o.tr });
   }
-  await page.evaluate((boxes) => {
+  await page.evaluate(({ boxes, numbers }) => {
     const sx = scrollX, sy = scrollY, W = document.documentElement.clientWidth;
     for (const b of boxes) {
       const pad = b.pad, r = document.createElement('div');
@@ -97,9 +98,10 @@ for (const s of shots) {
       Object.assign(d.style, { position: 'absolute', left: `${bl}px`, top: `${bt}px`, width: '26px', height: '26px', borderRadius: '50%', background: '#d32f2f', color: '#fff',
         font: '700 15px/26px Arial, sans-serif', textAlign: 'center', zIndex: 2147483647, pointerEvents: 'none', boxShadow: '0 0 0 2px #fff' });
       d.textContent = String(b.n);
-      document.body.append(r, d);
+      document.body.append(r);
+      if (numbers) document.body.append(d);
     }
-  }, boxes);
+  }, { boxes, numbers: !!s.numbers });
   const clip = s.clip ? { x: 0, y: 0, width: s.vp.w, height: s.clip } : undefined;
   await page.screenshot({ path: `${OUT}${s.f}.png`, fullPage: !!s.clip && s.clip > s.vp.h, clip });
   console.log(`saved ${s.f} (${boxes.length}/${s.marks.length} callouts)`);
