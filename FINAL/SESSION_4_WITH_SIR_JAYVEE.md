@@ -18,7 +18,7 @@ your notes. Written 13 November 2026.
 
 ## 2. Tell him what changed since Session 3 (22 September)
 
-- **A third iteration redesigned the screens**, and a second round of testing followed (31 October to
+- **The second iteration redesigned the screens**, and a second round of testing followed (31 October to
   12 November): 10 tenants and 4 prospective tenants did the tasks (151 of 160 and 31 of 32 without
   help), and the survey was answered again.
 - **Results on the redesigned system:** the users rated it 4.84 and three technical evaluators 4.90,
