@@ -111,18 +111,43 @@ sample records, so that no real tenant's name or payment appears in any figure.
 
 ### 4.2.1 System Architecture and Technology Stack
 
-The system was developed in two Agile iterations (Section 3.2; Appendix M, Table M-19). The first
-checked the system and its documents against each other, corrected 22 recorded errors and added
-automated checks, then put the system in the hands of the landlady and her tenants and refined it
-from their feedback, the testing and the evaluation. The second redesigned the screens, added no
-module, and added two rules: a record dated in a closed year can no longer be changed, and a tenant
-can no longer cancel a repair once someone is sent. After the redesign, the 114 test cases were run again: 99 passed, the 10 timings were taken, 5
-could not be run, and none failed, so the results of the first iteration stand (Appendix L).
+**How the system was built.** A first working version was built from 24 July to 28 August 2026, in
+95 commits. It had the public site, the tenant and landlady portals, the ledgers, repairs, inquiries,
+notifications and the audit trail, and the landlady's 937 income rows and 1,327 expense allocations
+were transferred into it from her workbook. Two Agile iterations followed, each passing through the
+six phases of Section 3.2 (Appendix C; Appendix M, Table M-19 gives each phase in full).
+
+The first iteration, verification, consolidation and testing, ran from 12 September to 31 October
+2026, in 1,732 commits. In requirements, the landlady answered the questions left open, from 13 to 20
+September: 33 units, no grace period, no automatic rent increase, tenants recorded without needing an
+email address, the advance being the deposit, and rent and water kept as one bill. In design, the
+business rule register was rebuilt with 49 rules, each with its evidence, and the tenant and
+administrator overviews were reworked after the landlady reviewed the screens on a phone on 23
+September. In development, fifteen defects in behavior were corrected and the Excel downloads were
+added. Adyen with GCash was made to work end to end in Adyen's test environment, with no real money,
+on 26 September, and offline reading and the breached-password check followed. In testing, seven
+automated check suites with over 100 assertions were written, each defect covered by one, and the
+screens were audited against the database. The landlady, three tenants and one prospective tenant
+used the system on the testing day of 30 September, and the technical evaluators reviewed it on 3
+October. The system has been hosted on Vercel since 24 September and was used beside the landlady's
+own records. In review, 22 recorded errors in the submitted documents were corrected, and the
+technical evaluators' 14 comments were all acted on by 5 October.
+
+The second iteration, the interface redesign, began on 1 November 2026. It added no requirement from
+the landlady and no module. Every screen was restyled with translucent glass surfaces over a light
+green page, in light and dark themes, and sign in, inquiry and conversation were joined in one
+screen. Among the changes were two new rules: a record dated in a closed year can no longer be
+recorded, changed or deleted, and a tenant can no longer cancel a repair once someone is sent. Four
+corrections to the data were made, each as a numbered migration applied after a backup and read
+back. From 4 to 13 November, the 114 test cases were run again: 99 passed, the 10 timings were taken,
+5 could not be run, and none failed, so the results of the first iteration stand (Appendix L).
 
 The evaluation against ISO/IEC 25010 was carried out twice, each time in actual use as Section 3.3
-requires: in the first iteration, and again in the third on the redesigned system, with a second
+requires: in the first iteration, and again in the second on the redesigned system, with a second
 round of users and of technical evaluators (Sections 4.3.7 and 4.4). Section 4.4 reports the second
-and gives the first for comparison. Table 4-4 lists the technology used.
+and gives the first for comparison.
+
+**Architecture and technology.** Table 4-4 lists the technology used.
 
 **Table 4-4.** Technology stack of the developed system
 
