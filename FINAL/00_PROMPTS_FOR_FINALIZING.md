@@ -115,6 +115,6 @@ in this order (checklist item 6b):
    Jayvee signs), Appendix B (adviser appointment), Appendix P (the blank consent form PDF).
 4. Put the appendices in order A to R, then the five CVs.
 5. Add the Acknowledgement (checklist item 7).
-6. Fill the defense date and room once scheduled, and write Prof. Rodriguez's degrees one way.
+6. Fill the defense date and room once scheduled.
 7. Update the table of contents last.
 8. Save a PDF and read it once from start to end before printing.

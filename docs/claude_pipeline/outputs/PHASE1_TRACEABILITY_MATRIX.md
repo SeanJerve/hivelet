@@ -3,8 +3,8 @@
 **Project:** Hivelet — Web-Based Boarding House Management & Financial Operations System
 **Client:** Fe Galang Da Silva Boarding House, Legazpi City
 **Course:** Bicol University College of Science — IT 124 Capstone Project 2, **Group 4**
-**Adviser:** Dr. Jayvee Christopher Vibar
-**Panel:** Dr. Aris J. Ordonez (Chair), Prof. Ryan A. Rodriguez, Prof. Laarni D. Pancho
+**Adviser:** Jayvee Christopher Vibar, DIT
+**Panel:** Aris J. Ordonez, DIT (Chair), Ryan A. Rodriguez, MIT, MCS, Prof. Laarni D. Pancho
 **Team:** Sean Jerve Ll. Rebancos (System Architect / Full-Stack) · John Lloyd M. Cuario (Database Administrator / Data Analyst) · Eljohn Paulo C. Loterte (Frontend / UI-UX) · Victor Noel A. Napay (Backend / Integration) · Kiel Hedrix V. Relos (QA / Systems Analyst)
 
 ---

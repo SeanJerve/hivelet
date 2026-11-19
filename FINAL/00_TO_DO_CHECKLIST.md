@@ -199,8 +199,8 @@ in the Word file, so the Word file gets the checked version.
     A to R, then the five CVs.
   - [ ] Result of Final Oral Defense page: the date still says January 1, 2023, and the place is a
     placeholder. Fill both once the defense is scheduled.
-  - [ ] Write Prof. Rodriguez's degrees the same way on every page ("MIT/MCS" on the panel pages,
-    "MSCS, MIT" on the approval sheet). Check the correct form with him or the department.
+  - [x] Write Prof. Rodriguez's degrees the same way on every page: "MIT, MCS" everywhere, as Lloyd
+    settled on 19 November.
   - [ ] The Acknowledgement page is missing (item 7). Add it after the Programming Adviser's
     Certification.
   - [ ] Update the table of contents last (right-click it, Update Field, Update entire table). Its
@@ -505,9 +505,11 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
 The professor's forms are filled in with the group's header, and edited copies are in
 `Downloads/NafillupanNaNeedsaFinalDefense/EDITED/` on Lloyd's laptop. Print from those.
 
-**Names on every form (Lloyd, 14 November):** the adviser is **Prof. JAYVEE CHRISTOPHER VIBAR, DIT**
-(PROF. ... in all-capital lines), and the chairman is **Dr. Aris J. Ordonez** (DR. ARIS J. ORDONEZ),
-with no "DIT". The team's Word file uses the same. The Dean's name differs between Form 6 and the
+**Names on every form (Lloyd, 19 November, replacing those of 14 November):** **JAYVEE CHRISTOPHER
+VIBAR, DIT** (the adviser), **Aris J. Ordonez, DIT** (the chairman), **Ryan A. Rodriguez, MIT, MCS**
+(panel member and department chair) and **Prof. Laarni D. Pancho**. No "Prof." or "Dr." before a name
+that has degrees after it. Each name is in capitals where its line is in capitals, and in normal case
+elsewhere. The team's Word file uses the same. The Dean's name differs between Form 6 and the
 Approval Sheet; Lloyd knows and it stays.
 
 **Bound into the manuscript:** the signed Approval Sheet and the two adviser certifications (front
