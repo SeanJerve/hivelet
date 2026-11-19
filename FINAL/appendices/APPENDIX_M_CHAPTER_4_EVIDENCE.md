@@ -472,7 +472,7 @@ The users before the redesign tested on 30 September 2026, and those after it fr
 | Portability | 4.96 | 4.53 | 4.83 | 5.00 |
 | **Overall** | **4.75** | **4.34** | **4.84** | **4.90** |
 
-Each users' composite is the mean of the group means of the landlady, the tenants and the prospective tenants, as in Chapter 3, and each users' overall is the mean of seven characteristics, since only the technical evaluators rated Maintainability. Security is the landlady's rating among the users. Every composite is Very High Quality on the scale of Chapter 3's Table 3-5 except the first round's technical evaluators' Usability and Reliability, 4.20, at the top of High Quality. All ten answers of the first round, taken as one group, rated the system 4.59.
+Each users' composite is the mean of the group means of the landlady, the tenants and the prospective tenants, as in Chapter 3, and each users' overall is the mean of seven characteristics, since only the technical evaluators rated Maintainability. Security is the landlady's rating among the users. Every composite is Very High Quality on the scale of Chapter 3's Table 3-8 except the first round's technical evaluators' Usability and Reliability, 4.20, at the top of High Quality. All ten answers of the first round, taken as one group, rated the system 4.59.
 
 **Table M-30.** Task results, second round (summarized in Chapter 4, Section 4.3.7)
 

@@ -76,7 +76,7 @@ Based on the results of the study, the following conclusions were drawn:
    ISO/IEC 25010:2011 by the process of ISO/IEC 25040 and optimized in response (Chapter 4, Table 4-19).
    Its users rated it Very High Quality overall (4.84) and its technical evaluators Very High Quality
    overall (4.90), with every characteristic of both Very High Quality on the scale of Chapter 3's
-   Table 3-5, and the measured evidence agreed on six characteristics and was less favorable on
+   Table 3-8, and the measured evidence agreed on six characteristics and was less favorable on
    Security and Maintainability (Chapter 4, Tables 4-17 and 4-18). Both ratings are higher than the first
    round's, 4.75 and 4.34, which a smaller group and other technical evaluators gave on the system
    before the redesign, and they are the view of these seventeen respondents rather than of a wider

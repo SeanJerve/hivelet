@@ -6,7 +6,7 @@ live form as it stood on 13 November 2026. The questions are worded exactly as i
 exported from it in both rounds. The form opens with a short description and the data privacy notice
 through which the prospective tenants and the technical evaluators gave their consent (Section 3.4),
 then asks for an optional name. Each respondent answered Section 1, which sent them to the one
-section for their group. The item numbers are those of Chapter 3, Table 3-6. Section 2, answered by
+section for their group. The item numbers are those of Chapter 3, Table 3-9. Section 2, answered by
 the landlady, has 28 rated items, Section 3 for tenants 18, Section 4 for technical evaluators 33,
 and Section 5 for prospective tenants 12. Every rated item and every open comment had to be
 answered; the consent question and the name did not.

@@ -400,7 +400,7 @@ The three qualities Objective 3 names are characteristics of ISO/IEC 25010:2011:
 **Functional Suitability**, responsiveness the time behavior of **Performance Efficiency**, and
 operational performance its capacity and **Reliability**. A test written for one quality often
 measures others, so each test was assigned in advance to the sub-characteristics it measures
-(Chapter 3, Table 3-6). Appendix M, Table M-23, lists them by test activity. The measures are brought
+(Chapter 3, Table 3-9). Appendix M, Table M-23, lists them by test activity. The measures are brought
 together by characteristic in Section 4.4.
 
 ### 4.3.1 Automated Verification
@@ -635,7 +635,7 @@ The evaluation followed the five steps of ISO/IEC 25040 (Table 4-13), on the qua
 characteristics as the evaluation criteria, and the instrument was built on them. Each
 characteristic was judged on **measured quality**, the results of Section 4.3 expressed as measures
 of its sub-characteristics in the manner of ISO/IEC 25023, and on **rated quality**, a survey in
-which each item belongs to one sub-characteristic (Chapter 3, Table 3-6). Each respondent group rated
+which each item belongs to one sub-characteristic (Chapter 3, Table 3-9). Each respondent group rated
 only what it can judge. Tenants and prospective tenants did not rate Security, and only the
 technical evaluators, the group with the background to judge it, rated Maintainability.
 
@@ -644,7 +644,7 @@ technical evaluators, the group with the background to judge it, rated Maintaina
 | Step | What it required | How it was carried out |
 | :--- | :--- | :--- |
 | 1. Establish the evaluation requirements | The purpose, the product, the quality model and who judges it | Objective 4; the live system at its public address, and for four of the first round's technical evaluators a demonstration copy of it with sample data; ISO/IEC 25010:2011, eight characteristics; the landlady, tenants, prospective tenants and technical evaluators (Section 3.3) |
-| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Appendix M, Table M-23); survey items assigned to sub-characteristics (Chapter 3, Table 3-6); criteria: Chapter 3's Table 3-5 for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
+| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Appendix M, Table M-23); survey items assigned to sub-characteristics (Chapter 3, Table 3-9); criteria: Chapter 3's Table 3-8 for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
 | 3. Design the evaluation | The activities, their order and schedule | The measurements, then the walkthrough and acceptance test, the technical evaluators' reviews, and the survey after each group's use of the system; a second round, of users with their tasks and of technical evaluators, with the same survey, after the redesign |
 | 4. Execute the evaluation | Take the measures and apply the criteria | Section 4.3 (measured) and the survey (rated; Appendix M, Tables M-2 to M-17 for the redesigned system, and Tables M-28 and M-29 for the first round) |
 | 5. Conclude the evaluation | Review the results, report them, and act on them | Tables 4-17 and 4-18, and the changes made in response (Table 4-19) |
@@ -699,8 +699,8 @@ tenant and five technical evaluators (Appendix M, Tables M-28 and M-29).
 
 ### 4.4.2 Interpretation of Scores
 
-Each item was rated on the five-point scale in Table 3-4, and means are read using Chapter 3's Table
-3-5. The composite of each characteristic is the mean of its group means, so that the one landlady is
+Each item was rated on the five-point scale in Table 3-7, and means are read using Chapter 3's Table
+3-8. The composite of each characteristic is the mean of its group means, so that the one landlady is
 not outweighed by ten tenants on functions only she uses. The users' composites, from the landlady,
 the tenants and the prospective tenants, are reported beside the technical evaluators', whose
 questionnaire asks about the system from a developer's side. Each overall mean is the mean of the
@@ -721,7 +721,7 @@ highest and lowest characteristics. Table 4-16 works one weighted mean in full, 
 | **Total** | | **N = 10** | **Σ(f × w) = 48** |
 
 Indicator: "I can see my own unit details, my bill, and what I still owe." (Functional Suitability,
-rated by tenants). WM = 48 / 10 = **4.80**, which Table 3-5 reads as **Very High Quality**.
+rated by tenants). WM = 48 / 10 = **4.80**, which Table 3-8 reads as **Very High Quality**.
 
 ### 4.4.3 Results by Characteristic
 

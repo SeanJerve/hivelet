@@ -141,6 +141,23 @@ and each of the 33 units has its own rate. On 1 October, acknowledgement receipt
 payments that have no invoice number. In the second iteration, the researchers reviewed the deployed
 screens on a phone and a computer, and the landlady raised no new requirement.
 
+Table 3-4 lists the questions put to the landlady after the proposal and what each answer settled.
+The questions were asked in person and in writing.
+
+**Table 3-4.** Questions put to the landlady and what each answer settled
+
+| When | Question | What the answer settled |
+| :--- | :--- | :--- |
+| Before July 2026 | How are the records kept, how is rent collected, and how do repair requests and inquiries arrive? | A workbook of income and expenses on a USB flash drive, rent in cash, repairs and inquiries by messaging application or in person (Chapter 4, Table 4-1) |
+| 13 September 2026 | How many units does the property have? | 33 units |
+| 13 September 2026 | Is there a grace period before rent is late? | No grace period. A bill is overdue from the day after its due date |
+| 13 September 2026 | Does rent rise by itself each year? | No. Rates are set by hand, so no increase is applied automatically |
+| 13 September 2026 | Must every tenant have an email address? | No. A tenant can be recorded without one |
+| 17, 19 and 20 September 2026 | Is the advance the deposit? | Yes, the advance is the deposit |
+| 17, 19 and 20 September 2026 | Are rent and water billed separately? | No. Rent and water stay one bill |
+| 17, 19 and 20 September 2026 | What is the rate of each unit today? | A rate for each of the 33 units, each agreeing with her receipts |
+| 1 October 2026 | How is a payment receipted when it has no invoice number? | It is given an acknowledgement receipt |
+
 ### 3.2.2 Design
 
 In this phase the requirements were turned into the system's architecture and into working
@@ -156,7 +173,7 @@ inquiries and reservations, financial tracking and maintenance requests were map
 refined from the feedback of the landlady and the tenants.
 
 Because the screens were prototyped in code, the first design was the first working version itself,
-as it stood on 28 August 2026 (Appendix I). In the first iteration, the business rule register was
+as it stood on 28 August 2026 (Figures 3-2 to 3-4). In the first iteration, the business rule register was
 rebuilt with 49 rules, each with its evidence, and the automatic rent increase was removed from the
 scope. The landlady reviewed the screens on a phone on 23 September, and her review led to the
 design rules the screens now follow and to reworked overviews for tenants and the administrator. In
@@ -164,6 +181,27 @@ the second iteration, the screens were redesigned with translucent glass surface
 page, in light and dark themes. Boxes were kept for what needs attention and for what is looked for
 at a glance, and signing in, sending an inquiry and the conversation that follows were joined in one
 screen.
+
+Figures 3-2 to 3-4 show three screens of the first working version, and Figure 3-5 shows one screen
+before and after the redesign of the second iteration. The tenants in them are sample records. The
+models of the system as built, its context diagram, data flow diagrams, use case diagram and
+entity-relationship diagram, are in Chapter 4, Figures 4-3 to 4-6.
+
+*Figure 3-2. Public landing page of the first working version, 28 August 2026.*
+
+![Public landing page, 28 August 2026](<../docs/FINAL MANUSCRIPT/figures/appendix-i-landing.png>)
+
+*Figure 3-3. A unit category on the public site, 28 August 2026.*
+
+![A unit category, 28 August 2026](<../docs/FINAL MANUSCRIPT/figures/appendix-i-unit_category.png>)
+
+*Figure 3-4. Tenant directory of the first working version, with sample tenants, 28 August 2026.*
+
+![Tenant directory, 28 August 2026](<../docs/FINAL MANUSCRIPT/figures/appendix-i-tenants.png>)
+
+*Figure 3-5. A tenant's overview on a phone, on 28 August 2026 (left) and after the redesign of the second iteration (right).*
+
+![A tenant's overview before and after the redesign](<../docs/FINAL MANUSCRIPT/figures/figure-3-design-before-after.png>)
 
 ### 3.2.3 Development
 
@@ -187,13 +225,32 @@ year can no longer be recorded, changed or deleted, a GCash payment settles the 
 and a tenant can no longer cancel a repair once someone is sent. Each screen also keeps the figures
 it has loaded for the visit, so returning to it does not wait for them.
 
+Figure 3-6 shows the work week by week, counted from the project's version history. Figures 3-7 and 3-8
+are two short excerpts of the code. The first is a database trigger that records every change of a
+unit's rate, with the old rate, the new rate and the date, in the same step as the change, so that
+no part of the system can change a rate without leaving that record. The second is the check that
+refuses a request from anyone whose role is not allowed to make it, which keeps the landlady's
+screens closed to tenants and the public. The repository's layout is in Appendix Q.
+
+*Figure 3-6. Commits each week, July to November 2026.*
+
+![Commits each week](<../docs/FINAL MANUSCRIPT/figures/figure-3-dev-commits-per-week.png>)
+
+*Figure 3-7. Excerpt of the code: the database trigger that records each rate change (migration 020).*
+
+![Rate change trigger](<../docs/FINAL MANUSCRIPT/figures/figure-3-dev-rate-trigger.png>)
+
+*Figure 3-8. Excerpt of the code: the role check on the server (backend/src/middleware/auth.ts).*
+
+![Role check](<../docs/FINAL MANUSCRIPT/figures/figure-3-dev-role-check.png>)
+
 ### 3.2.4 Testing
 
 This phase served the third objective of the study, pilot testing the system. Testing was done in the
 four parts below, at the test levels defined in ISO/IEC/IEEE 29119-1 (International Organization for
 Standardization, International Electrotechnical Commission, & Institute of Electrical and Electronics
 Engineers [ISO/IEC/IEEE], 2022): unit and integration, system, and acceptance. Each test was planned
-as a measure of an ISO/IEC 25010 sub-characteristic listed in Table 3-6.
+as a measure of an ISO/IEC 25010 sub-characteristic listed in Table 3-9.
 
 **Automated verification.** Twenty-one check suites were written alongside the system. They verify every endpoint and the separation of roles, re-derive the landlady's
 ledger and exported reports from the database, check the payment gateway's message signatures, and
@@ -228,6 +285,28 @@ each change, the screens were checked in light and dark themes at phone and desk
 page timings were measured again on 10 November. On the redesigned system, the second round of users
 ran from 31 October to 10 November, and three technical evaluators reviewed it on 12 November.
 
+Each test case named what the tester does, what should be seen and the result. Table 3-5 shows seven
+of them, and Appendix L lists all 114 with their results.
+
+Figure 3-9 shows the end of one automated suite, the payment gateway's, run on 19 November 2026: each
+line is one assertion, and the suite passes only if every assertion does.
+
+*Figure 3-9. The end of a run of the payment gateway's check suite, 19 November 2026.*
+
+![A run of the payment gateway's check suite](<../docs/FINAL MANUSCRIPT/figures/figure-3-test-check-run.png>)
+
+**Table 3-5.** Sample test cases from Appendix L
+
+| ID | What the tester does | What should be seen | Result |
+| :--- | :--- | :--- | :--- |
+| A-01 | The landlady signs in with her own password | She lands on the Overview | Pass |
+| A-03 | The landlady finds, without help, where she would record a payment | She finds Monthly Income within about a minute | Pass |
+| T-01 | A tenant signs in with the starting password given to them | They are asked to choose a new password straight away | Pass |
+| P-01 | A prospective tenant opens the public site on a phone | The landing page, the building photo and "Inquire now" | Pass |
+| C-02 | The landlady and two tenants, signed in at the same time, check the unit and name on screen | Each sees only their own unit | Pass |
+| O-01 | The application is installed from Chrome on an Android phone | The Hivelet icon on the home screen | Pass |
+| S-01 | The public site is scanned by the Mozilla HTTP Observatory | A grade for its security headers | Pass, A+ (115 of 100) |
+
 ### 3.2.5 Deployment
 
 The Hivelet system was deployed to Vercel, a cloud hosting service, with its database hosted on
@@ -243,6 +322,15 @@ accounts were prepared on 29 September. In the second iteration it stayed on the
 corrections to the data, from 2 to 6 November, were each made as a numbered migration applied after
 a backup and read back.
 
+Chapter 4, Figure 4-2 shows where each part runs: the screens reach the browser as a PWA from Vercel,
+one server program on Vercel answers every request, and only that program reads or writes the
+database on Supabase. Figure 3-10 shows the deployed system as a prospective tenant first sees it, at
+hivelet.vercel.app on a phone.
+
+*Figure 3-10. The deployed system at hivelet.vercel.app on a phone.*
+
+![The deployed system on a phone](<../docs/FINAL MANUSCRIPT/figures/figure-3-deploy-live-site-phone.png>)
+
 ### 3.2.6 Review and Maintenance
 
 In this phase the researchers corrected the issues found by testing and by the ISO/IEC 25010
@@ -253,6 +341,21 @@ researchers set four standing rules for how they work, and the technical evaluat
 were all acted on by 5 October. The first round of the ISO/IEC 25010 evaluation followed (Section
 3.3). In the second iteration, the researchers reviewed the redesigned screens, and the second round
 of the evaluation rated the redesigned system (Chapter 4, Section 4.4).
+
+Table 3-6 lists the main reviews and how many changes it led to. Chapter 4, Table 4-19 gives examples
+of what each found, and Appendix M, Table M-18 lists every change.
+
+**Table 3-6.** Reviews held during development and the changes each led to
+
+| Review | When | Changes made |
+| :--- | :--- | --: |
+| The system and its documents checked against each other | 12 to 14 September 2026 | 22 recorded errors corrected |
+| The landlady's review on a phone | 23 September 2026 | 4 |
+| Screen-versus-database audit | 26 and 29 September 2026 | 7 |
+| Testing day | 30 September 2026 | 3 |
+| Technical evaluators' review | 3 to 5 October 2026 | 14 |
+| The survey, first round | After each group's use of the system | 4 |
+| Second round of users and technical evaluators | 31 October to 12 November 2026 | None asked for by the technical evaluators |
 
 ## 3.3 Evaluation Procedure
 
@@ -268,7 +371,7 @@ Each characteristic was judged on two kinds of evidence. Measured quality came f
 Section 3.2.4, each expressed in the manner of ISO/IEC 25023 as a ratio X = A / B, such as the number
 of test steps that gave the correct result over the number executed (ISO/IEC, 2016b). Rated quality
 came from the survey questionnaire, in which each item was assigned to one sub-characteristic
-(Table 3-6). Quality in use was measured during the user acceptance test as the tasks completed and
+(Table 3-9). Quality in use was measured during the user acceptance test as the tasks completed and
 the time and wrong turns per task, following ISO/IEC 25022 (ISO/IEC, 2016a).
 
 **Respondents.** The survey questionnaire was given to four groups: the landlady as the system's only
@@ -292,7 +395,7 @@ Filipino. An observation sheet recorded, for each task, whether it was completed
 help or not at all, the time taken and the number of wrong turns. A defect log recorded the defects
 found, and the ISO/IEC 25010 survey questionnaire had a section for each respondent group (Appendix J). The research adviser reviewed the
 questionnaire before it was used. Responses were
-given on the 5-point Likert scale of Table 3-4 (Likert, 1932).
+given on the 5-point Likert scale of Table 3-7 (Likert, 1932).
 
 **Data gathering.** Each participant took part after giving consent (Section 3.4). Each tester used
 their own device, the landlady and the tenants on their own accounts, while a facilitator read the
@@ -309,7 +412,7 @@ load.
 WM = Σ(f × w) / N
 
 where *f* is the number of respondents choosing a rating, *w* the rating (1 to 5) and *N* the number of
-respondents, and interpreted using Table 3-5. The composite mean of each characteristic is the mean of
+respondents, and interpreted using Table 3-8. The composite mean of each characteristic is the mean of
 its group means, so that the landlady is not outweighed by several tenants on functions only she
 uses. The users' composites, from the landlady, the tenants and the prospective tenants, are reported
 beside the technical evaluators', and each overall mean is the mean of the composites its
@@ -318,7 +421,7 @@ section of the questionnaire written for that respondent's own group. For the ac
 without help divided by the number attempted, reported with the median time per task and the mean
 number of wrong turns. The results are descriptive, and no inferential test was made.
 
-**Table 3-4.** Likert scale
+**Table 3-7.** Likert scale
 
 | Scale | Meaning | Description |
 | :---: | :--- | :--- |
@@ -328,9 +431,9 @@ number of wrong turns. The results are descriptive, and no inferential test was 
 | 2 | Disagree | The respondent disagrees with the statement |
 | 1 | Strongly Disagree | The respondent strongly disagrees with the statement |
 
-Table 3-5 divides the range from 1 to 5 into five equal intervals of 0.80.
+Table 3-8 divides the range from 1 to 5 into five equal intervals of 0.80.
 
-**Table 3-5.** Interpretation of mean scores
+**Table 3-8.** Interpretation of mean scores
 
 | Mean score | Verbal interpretation |
 | :--- | :--- |
@@ -340,11 +443,11 @@ Table 3-5 divides the range from 1 to 5 into five equal intervals of 0.80.
 | 1.81 – 2.60 | Low Quality |
 | 1.00 – 1.80 | Very Low Quality |
 
-Table 3-6 assigns every survey item and every test to the sub-characteristic it measures. Item numbers
+Table 3-9 assigns every survey item and every test to the sub-characteristic it measures. Item numbers
 are those of each group's section of the questionnaire (O = administrator, T = tenants, E = technical
 evaluators, P = prospective tenants).
 
-**Table 3-6.** Survey items and tests assigned to the ISO/IEC 25010:2011 sub-characteristics
+**Table 3-9.** Survey items and tests assigned to the ISO/IEC 25010:2011 sub-characteristics
 
 | Characteristic | Sub-characteristic | O | T | E | P | Measured by (Section 3.2.4) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
