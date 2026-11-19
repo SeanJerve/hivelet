@@ -2,8 +2,8 @@
 
 ## 1.1 Background of the Study
 
-Around the world, apartment management involves tenant record keeping, financial tracking, and
-maintenance coordination. Residential tenants often ask for minor repairs, and the software apartment
+Administrative processes in apartment management typically involve tenant record keeping, financial
+tracking, and maintenance coordination. Residential tenants often ask for minor repairs, and the software apartment
 managers use often does not connect with their other financial and operational tools, which leaves
 information in separate silos and makes consolidated reporting difficult (Burke, 2026). Property
 management and rental platforms aim to address these inefficiencies through centralized data storage
@@ -43,10 +43,9 @@ follow-up is inconsistent. Because records, communication, and transactions sit 
 the landlady, who runs the boarding house for its owner, has difficulty keeping accurate records,
 monitoring financial transactions, and resolving tenant concerns on time.
 
-Taken together, these studies show that digital systems can improve specific parts of property
-management, but they were built either for one function or for a controlled environment, and they
-do not address the fragmented administration of a real, resource-constrained boarding house. This
-is the gap this study addresses: the absence of an integrated platform that brings tenant
+However, the digital systems these studies describe were built either for one function or for a
+controlled environment. They improve specific parts of property management, but they do not address
+the fragmented administration of a real, resource-constrained boarding house. This is the gap this study addresses: the absence of an integrated platform that brings tenant
 management, booking and reservation management, financial tracking, and communication into one
 system suited to a small boarding house.
 

@@ -110,17 +110,21 @@ testing.
 The researchers refined the system from the feedback and test results of each iteration, and the
 system was evaluated during its development rather than only at the end (Section 3.3).
 
-A first working system was built and the landlady's records were transferred into it. It was then
-developed in two iterations, each passing through the phases described below (Appendix C). The
-first verified the system and its documents against each other and corrected the errors found, then
-put the system in the hands of the landlady and her tenants and refined it from their feedback, the
-testing and the first round of evaluation. The second redesigned the screens and added no module,
-and a second round of users and technical evaluators tried and rated the redesigned system.
+The work ran in three stages, shown on the schedule in Appendix C. A first working version was built
+from 24 July to 28 August 2026, and the landlady's records were transferred into it. The system was
+then developed in two iterations, each passing through the six phases below. The first iteration ran
+from 12 September to 31 October 2026. It verified the system and its documents against each other
+and corrected the errors found, then put the system in the hands of the landlady and her tenants and
+refined it from their feedback, the testing and the first round of evaluation. The second iteration
+began on 1 November 2026. It redesigned the screens and added no module, and a second round of users
+and technical evaluators tried and rated the redesigned system. Sections 3.2.1 to 3.2.6 say what was
+done in each phase at each stage, and Appendix M, Table M-19 gives the full record.
 
 ### 3.2.1 Requirements
 
 This phase served the first objective of the study, identifying the boarding house's needs and
-operational challenges. The researchers gathered data through interviews with the landlady, through
+operational challenges. Before July 2026, for the study's proposal, the researchers gathered data
+through interviews with the landlady, through
 observation, and through a review of her income and expense workbook. They
 examined her existing practices: manual ledgers, fragmented financial tracking and unstructured
 communication about maintenance requests. These showed inconsistent record-keeping, delayed
@@ -128,6 +132,14 @@ communication and no central place to monitor the business. Written follow-up qu
 the interviews had left open. From these
 findings the researchers defined Hivelet's requirements and scope: one central system for inquiries
 and reservations, financial tracking and maintenance requests.
+
+In the first iteration, the landlady settled the questions the interviews had left open. On 13
+September she settled four of them: the property has 33 units, there is no grace period, there is no
+automatic rent increase, and a tenant can be recorded without an email address. Her answers of 17
+and 19 to 20 September settled three more: the advance is the deposit, rent and water stay one bill,
+and each of the 33 units has its own rate. On 1 October, acknowledgement receipts were added for
+payments that have no invoice number. In the second iteration, the researchers reviewed the deployed
+screens on a phone and a computer, and the landlady raised no new requirement.
 
 ### 3.2.2 Design
 
@@ -143,6 +155,16 @@ designed as a lightweight PWA with simple navigation and low device requirements
 inquiries and reservations, financial tracking and maintenance requests were mapped first and then
 refined from the feedback of the landlady and the tenants.
 
+Because the screens were prototyped in code, the first design was the first working version itself,
+as it stood on 28 August 2026 (Appendix I). In the first iteration, the business rule register was
+rebuilt with 49 rules, each with its evidence, and the automatic rent increase was removed from the
+scope. The landlady reviewed the screens on a phone on 23 September, and her review led to the
+design rules the screens now follow and to reworked overviews for tenants and the administrator. In
+the second iteration, the screens were redesigned with translucent glass surfaces over a light green
+page, in light and dark themes. Boxes were kept for what needs attention and for what is looked for
+at a glance, and signing in, sending an inquiry and the conversation that follows were joined in one
+screen.
+
 ### 3.2.3 Development
 
 This phase served the second objective of the study, developing the system. The researchers built it
@@ -151,6 +173,19 @@ results. An optional online payment was added through the Adyen payment gateway,
 pay a bill with GCash, while cash paid in person remains the main way to pay. It works end to end in
 Adyen's test environment, where it takes no real money. It is not live, because going live needs the
 owner's merchant onboarding documents.
+
+The first working version, built from 24 July to 28 August 2026 in 95 commits, had the public site,
+the tenant and landlady portals, the ledgers, repairs, inquiries, notifications and the audit trail,
+and the landlady's 937 income rows and 1,327 expense allocations were transferred into it from her
+workbook. In the first iteration, in 1,732 commits, fifteen defects in behavior were corrected,
+among them a partial payment that left no debt and a cash payment recorded with nothing written to
+the books. The Excel downloads were added, and Adyen with GCash was made to work end to end in
+Adyen's test environment, with no real money, on 26 September. The screens were made to check for
+updates every two seconds, offline reading was added, and on 7 October so was the check against
+breached passwords. In the second iteration, every screen was restyled. A record dated in a closed
+year can no longer be recorded, changed or deleted, a GCash payment settles the oldest unpaid bill,
+and a tenant can no longer cancel a repair once someone is sent. Each screen also keeps the figures
+it has loaded for the visit, so returning to it does not wait for them.
 
 ### 3.2.4 Testing
 
@@ -182,6 +217,17 @@ landlady and two of the tenants used it at the same time. One prospective tenant
 website on their own phone. In the second round, ten tenants and four prospective tenants did the
 same tasks on the redesigned system. Results are reported in Chapter 4, Section 4.3.
 
+**When the tests were run.** In the first iteration, the automated checks grew from seven suites,
+with over 100 assertions and each defect covered by one, to twenty by 29 September. The
+screen-versus-database audit was run on 26 and 29 September and found six defects. The landlady,
+three tenants and one prospective tenant used the system on the testing day of 30 September. The
+technical evaluators reviewed it on 3 October, and four more reviewed a demonstration copy from 15
+to 18 October. In the second iteration, all 114 test cases of Appendix L were run again from 4 to 13
+November, and every screen was audited click by click on 6 November. The check suites were run after
+each change, the screens were checked in light and dark themes at phone and desktop widths, and the
+page timings were measured again on 10 November. On the redesigned system, the second round of users
+ran from 31 October to 10 November, and three technical evaluators reviewed it on 12 November.
+
 ### 3.2.5 Deployment
 
 The Hivelet system was deployed to Vercel, a cloud hosting service, with its database hosted on
@@ -192,10 +238,21 @@ place on this deployment, as a pilot in which the system runs beside her own rec
 not yet replaced (Chapter 4, Section 4.5). The researchers did the configuration, database migrations
 and environment setup.
 
+The system has been on Vercel since 24 September 2026, in the first iteration, and the tenants'
+accounts were prepared on 29 September. In the second iteration it stayed on the same site. Four
+corrections to the data, from 2 to 6 November, were each made as a numbered migration applied after
+a backup and read back.
+
 ### 3.2.6 Review and Maintenance
 
 In this phase the researchers corrected the issues found by testing and by the ISO/IEC 25010
 evaluation. Chapter 4, Table 4-19 lists the changes made in response to the evaluation.
+
+In the first iteration, 22 recorded errors in the submitted documents were corrected, the
+researchers set four standing rules for how they work, and the technical evaluators' 14 comments
+were all acted on by 5 October. The first round of the ISO/IEC 25010 evaluation followed (Section
+3.3). In the second iteration, the researchers reviewed the redesigned screens, and the second round
+of the evaluation rated the redesigned system (Chapter 4, Section 4.4).
 
 ## 3.3 Evaluation Procedure
 
