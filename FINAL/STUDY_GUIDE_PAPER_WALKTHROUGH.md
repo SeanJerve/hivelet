@@ -634,7 +634,7 @@ are **25 terms**.
   **ISO/IEC/IEEE 29119-1**, a testing standard: **unit and integration** (small parts and how they
   connect), **system** (the whole system) and **acceptance** (the real users decide if it meets their
   needs).
-- Each test was planned in advance as a measure of an ISO/IEC 25010 sub-characteristic (Table 3-6).
+- Each test was planned in advance as a measure of an ISO/IEC 25010 sub-characteristic (Table 3-9).
 
 **Key facts and numbers** (the four parts)
 1. **Automated verification**: **twenty check suites**, and a twenty-first on 12 October 2026, that test every endpoint (address on the server
@@ -748,19 +748,19 @@ The section then has four labelled parts.
 - Only **descriptive statistics** (numbers that describe the data) were used. "No inferential test was
   made, so the results describe how these respondents rated the system."
 
-**Table 3-4. Likert scale**
+**Table 3-7. Likert scale**
 - *What it shows*: the five answer choices. A **Likert scale** (Likert, 1932) asks how much a person
   agrees with a statement.
 - *How to read it*: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree.
 
-**Table 3-5. Interpretation of mean scores**
-- *What it shows*: how to turn a mean into words. Table 3-5 "divides the range from 1 to 5 into five
+**Table 3-8. Interpretation of mean scores**
+- *What it shows*: how to turn a mean into words. Table 3-8 "divides the range from 1 to 5 into five
   equal intervals of 0.80."
 - *How to read it*: find the band your mean falls in. 4.21 – 5.00 Very High Quality; 3.41 – 4.20 High
   Quality; 2.61 – 3.40 Moderate Quality; 1.81 – 2.60 Low Quality; 1.00 – 1.80 Very Low Quality. The
   important row is the top one: every result in Table 4-17 falls in it.
 
-**Table 3-6. Survey items and tests assigned to the ISO/IEC 25010:2011 sub-characteristics**
+**Table 3-9. Survey items and tests assigned to the ISO/IEC 25010:2011 sub-characteristics**
 - *What it shows*: for each of the 31 sub-characteristics, which survey items rate it and which test
   measures it.
 - *How to read it*:
@@ -1194,7 +1194,7 @@ The section then has four labelled parts.
 - The three qualities are ISO/IEC 25010 characteristics: functionality = **Functional Suitability**;
   responsiveness = time behaviour of **Performance Efficiency**; operational performance = capacity and
   **Reliability**.
-- Each test was assigned in advance to the sub-characteristics it measures (Table 3-6; Appendix M,
+- Each test was assigned in advance to the sub-characteristics it measures (Table 3-9; Appendix M,
   Table M-23).
 
 ### 4.3.1 Automated Verification
@@ -1433,7 +1433,7 @@ The section then has four labelled parts.
   1. Establish the evaluation requirements: Objective 4; the live system (and for four evaluators a
      demonstration copy); ISO/IEC 25010:2011; the landlady, tenants and evaluators.
   2. Specify the evaluation: measures from the tests (Table M-23); survey items assigned to
-     sub-characteristics (Table 3-6); criteria: Table 3-5 for means, and for tests "at least 90 percent
+     sub-characteristics (Table 3-9); criteria: Table 3-8 for means, and for tests "at least 90 percent
      passed with no critical defect open".
   3. Design the evaluation: measurements 29 September; walkthrough and acceptance test 30 September;
      evaluators' review 3 October; four more evaluators 15 to 18 October.
@@ -1480,7 +1480,7 @@ The section then has four labelled parts.
 ### 4.4.2 Interpretation of Scores
 
 **What it says**
-- Items use the scale of Table 3-4 and are read with Table 3-5.
+- Items use the scale of Table 3-7 and are read with Table 3-8.
 - A characteristic's composite is the **mean of its group means**. The users' composites (landlady,
   tenants, prospective tenants) are reported beside the technical evaluators'. Each overall is the mean
   of the characteristics that group rated: seven for the users (only the evaluators rated
@@ -1542,7 +1542,7 @@ The section then has four labelled parts.
 **Table 4-17. Summary of evaluation results**
 - *What it shows*: the final score for each characteristic. This is the table that proves Objective 4.
 - *How to read it*: two columns, the **users' mean** (14: the landlady, 10 tenants, 3 prospective
-  tenants) and the **technical evaluators' mean** (3), each with its interpretation from Table 3-5.
+  tenants) and the **technical evaluators' mean** (3), each with its interpretation from Table 3-8.
 - Values (users; evaluators): Functional Suitability 4.80; 4.93. Performance Efficiency 4.86; 4.89.
   Compatibility 4.79; 5.00. Usability 4.80; 4.87. Reliability 4.78; 4.83. Security 5.00; 4.93.
   Maintainability not rated; 4.73. Portability 4.83; 5.00.
@@ -1915,7 +1915,7 @@ Section 1 (About you) sends each respondent to one section: Section 2 the landla
 "OWNER/LANDLADY"), Section 3 tenants, Section 4 technical evaluators, Section 5 prospective tenants
 ("LOOKING FOR A ROOM"). Each section ends with one required open comment; the prospective tenants'
 has two. Rated items: **landlady 28, tenants 18, technical evaluators 33, prospective tenants
-12**, numbered as in Table 3-6. It is there so the panel can see every question behind the means.
+12**, numbered as in Table 3-9. It is there so the panel can see every question behind the means.
 
 **Appendix K. User's Manual.** Part 1 for tenants (in English and Filipino) and Part 2 for the
 landlady: signing in, each screen, recording a payment or expense, tenants, rooms, repairs, inquiries,
@@ -2019,7 +2019,7 @@ Say each answer aloud, in your own words, with one number and where it is in the
 12. What is the difference between measured quality and rated quality?
 13. Explain the weighted mean formula and work Table 4-16.
 14. Why the mean of group means? What is the result if every response is averaged together?
-15. Read the bands of Table 3-5. What range is Very High Quality?
+15. Read the bands of Table 3-8. What range is Very High Quality?
 16. Who were the seventeen respondents, and why did each group rate only some characteristics?
 17. How were the tenants sampled, and why three?
 18. How many requirements and business rules, and how were they graded on 16 September?

@@ -1080,10 +1080,10 @@ meets their needs. **Where:** Section 2.4; Section 4.3.7.
 deployment and review, and changing course on feedback. **Where:** Section 3.2; Figure 3-1.
 
 **Axe-core.** The tool that scanned the screens against WCAG A and AA: 76 scans of 19 screens, no
-violation once one defect was fixed. **Where:** Section 4.3.6; Table 3-6.
+violation once one defect was fixed. **Where:** Section 4.3.6; Table 3-9.
 
 **Characteristic.** One of the eight quality areas in ISO/IEC 25010:2011 (the next eight entries).
-**Where:** Section 3.3; Table 3-6.
+**Where:** Section 3.3; Table 3-9.
 
 **Compatibility.** Working with other products and exchanging data correctly (users 4.79, technical evaluators 5.00). **Where:**
 Table 4-17.
@@ -1104,7 +1104,7 @@ Table 4-17.
 
 **Usability.** How easily people learn and use it (users 4.80, technical evaluators 4.87). **Where:** Table 4-17; Section 4.4.3.
 
-**The 31 sub-characteristics of ISO/IEC 25010:2011** (Table 3-6 names what measured each one):
+**The 31 sub-characteristics of ISO/IEC 25010:2011** (Table 3-9 names what measured each one):
 
 | Sub-characteristic | Plain meaning | Measured by |
 | :--- | :--- | :--- |
@@ -1309,12 +1309,12 @@ App. M, Table M-20.
 results describe only these ten people. **Where:** Section 3.3; Section 4.4.1.
 
 **Interpretation scale.** 4.21 to 5.00 Very High Quality; 3.41 to 4.20 High; 2.61 to 3.40 Moderate;
-1.81 to 2.60 Low; 1.00 to 1.80 Very Low. Five equal steps of 0.80. **Where:** Table 3-5.
+1.81 to 2.60 Low; 1.00 to 1.80 Very Low. Five equal steps of 0.80. **Where:** Table 3-8.
 
 **Item mean.** The weighted mean of one survey item. **Where:** Section 3.3.
 
 **Likert scale.** 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree. **Where:**
-Table 3-4.
+Table 3-7.
 
 **Mean.** The average: add up, divide by how many. **Where:** Section 3.3.
 
@@ -1505,7 +1505,7 @@ There are 44 (Section 4.1.2). App. L names the test cases that trace to each.
 | **N-01 to N-03** | Changes shipped on 30 September | App. L, Part N |
 | **P, PH, F, NT** | In Part T: done alone, done with help, not done, not tried | App. L |
 | **FS, PE, CO, US, RE, SE, MA, PO** | The eight characteristics, as App. L labels them | App. L |
-| **O, T, E, P** | Questionnaire sections: administrator (landlady), tenants, technical evaluators, prospective tenants | Table 3-6 |
+| **O, T, E, P** | Questionnaire sections: administrator (landlady), tenants, technical evaluators, prospective tenants | Table 3-9 |
 | **1.0 to 8.0** | DFD processes: inquiries, units and rates, tenants, billing and payments, repairs, expenses, reports, sign-in | Figure 4-4; App. F |
 | **D3** | The data store Bills and receipts | Section 4.2.1 |
 | **Table M-1 to M-27** | The evidence tables behind Chapter 4 | App. M |
