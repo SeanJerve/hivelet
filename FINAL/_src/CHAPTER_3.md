@@ -342,7 +342,7 @@ were all acted on by 5 October. The first round of the ISO/IEC 25010 evaluation 
 3.3). In the second iteration, the researchers reviewed the redesigned screens, and the second round
 of the evaluation rated the redesigned system (Chapter 4, Section 4.4).
 
-Table 3E lists the main reviews and how many changes it led to. Chapter 4, Table 23 gives examples
+Table 3E lists the main reviews and how many changes each led to. Chapter 4, Table 23 gives examples
 of what each found, and Appendix M, Table M-18 lists every change.
 
 **Table 3E.** Reviews held during development and the changes each led to
