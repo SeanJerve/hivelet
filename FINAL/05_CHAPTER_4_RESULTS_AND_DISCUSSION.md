@@ -105,7 +105,7 @@ do not report cash payments, because the landlady records every payment.
 
 *Answers Objective 2. Each feature the objective names has its own subsection.*
 
-Figures 4-2 to 4-6 model the system as built, and Figures 4-7 to 4-11 show its screens after the redesign
+Figure 4-2 shows the system's architecture, and Figures 4-3 to 4-7 show its screens after the redesign
 of the second iteration. The names, payments, expenses and repair requests in the screen figures are
 sample records, so that no real tenant's name or payment appears in any figure.
 
@@ -172,56 +172,11 @@ no equipment beyond the landlady's own laptop and phone.
 
 ![System architecture](<../docs/FINAL MANUSCRIPT/figures/figure-5-system-architecture.png>)
 
-Figure 4-3 is the context diagram: the system as one process, with the three parties outside it and the
-data that passes between them. Figure 4-4 opens it into eight processes and the stores each reads and
-writes, in the Gane and Sarson notation. A rounded rectangle is a process, a rectangle open on the
-right is a data store, and a shaded square is a party outside the system. To trace one path, the
-landlady records a cash receipt through process 4.0, Bill and record payments, which writes it to store
-D3, Bills and receipts. Process 7.0, Produce reports, reads it from there for the Overview and the
-Excel workbooks. The notifications and the audit record are written by nearly every process and are
-left out of Figure 4-4 for readability. The units store, D1, is drawn twice, the second time under
-processes 5.0 and 4.0, so that its lines cross no others. Adyen, the payment gateway, is drawn as part of
-the payment process rather than as a party outside the system, as in the data flow diagrams the
-researchers' Systems Analysis and Design professor approved. Taking a GCash payment through Adyen is step 4.3 of process
-4.0 (Appendix F), and Figure 4-2 shows where the gateway sits.
-
-*Figure 4-3. Context diagram.*
-
-![Context diagram](<../docs/FINAL MANUSCRIPT/figures/figure-6-context-diagram.png>)
-
-*Figure 4-4. Level 1 data flow diagram.*
-
-![Level 1 data flow diagram](<../docs/FINAL MANUSCRIPT/figures/figure-7-data-flow-level-1.png>)
-
-Figure 4-5 shows the same functions from the side of the people who use them. Each use case is a
-function the server grants to that role and refuses to every other (Table 4-7).
-
-*Figure 4-5. Use case diagram.*
-
-![Use case diagram](<../docs/FINAL MANUSCRIPT/figures/figure-8-use-case-diagram.png>)
-
-Figure 4-6, in Crow's Foot notation, is the entity-relationship diagram drawn from the database's own
-catalogue: 21 tables, each with a primary key, and 37 foreign keys. It draws 27 of the keys. The
-other ten only record who made, changed, closed, verified or sent a row, and are left out so that
-the figure stays readable. Its two
-centers are the rooms table, which holds the units, and the profiles table, which holds the people.
-Every bill, payment, receipt, tenancy, repair request and inquiry belongs to one unit, and every
-tenancy, bill and payment to one person. The two ledgers are kept as the landlady kept them. The tables follow the third normal form, each
-column describing only its own table's key, with deliberate exceptions so that a record stays as it
-was made. A receipt keeps the name, occupants and amounts written on it, and a bill the amounts it was raised
-with. Receipts name their unit and tenant directly, since the 937 transferred from the workbook have no tenancy to point
-to, payments name theirs beside their bill, and a few totals are stored beside the figures they add
-up. Several
-rules live in the database itself, so no screen or script can bypass them. One unit cannot have two
-active tenancies, one invoice number cannot be used twice for the same unit and month, a gateway
-reference cannot be recorded twice, and the 50% Share and the remitted amount are computed columns.
-Table 4-5 is an extract of the data dictionary for the table the landlady reads most. The complete
-dictionary, every column of all 24 tables, is in Appendix N. It holds the 21 tables drawn in Figure 4-6
-and three that keep backups made before corrections to the data.
-
-*Figure 4-6. Entity-relationship diagram.*
-
-![Entity-relationship diagram](<../docs/FINAL MANUSCRIPT/figures/figure-9-entity-relationship.png>)
+The context diagram, the data flow diagrams, the use case diagram and the entity-relationship
+diagram were drawn in the design phase and are presented with it, in Chapter 3, Section 3.2.2
+(Figures 3-2 to 3-5). Table 4-5 is an extract of the data dictionary for the table the landlady reads
+most. The complete dictionary, every column of all 24 tables, is in Appendix N. It holds the 21
+tables drawn in Figure 3-5 and three that keep backups made before corrections to the data.
 
 **Table 4-5.** Data dictionary extract: monthly income records
 
@@ -250,7 +205,7 @@ and three that keep backups made before corrections to the data.
 
 ### 4.2.2 Tenant and Room Management Module
 
-Figure 4-7 presents the Rooms and rates screen. Each unit carries its cluster, floor, current rate and
+Figure 4-3 presents the Rooms and rates screen. Each unit carries its cluster, floor, current rate and
 status, and each tenancy the number of occupants, the move-in date and emergency contacts. When the
 landlady changes a rate, a database trigger records the old rate, the new rate, the date and who made the
 change, so no path can change a rate without leaving that record. The landlady's workbook did not record
@@ -258,7 +213,7 @@ move-in dates, so for the transferred tenancies the screen says the date is not 
 showing a guessed one. A tenant can also see the deposit held for their tenancy on their Overview,
 as one tenant asked in the survey (Table 4-19).
 
-*Figure 4-7. Room and rate directory.*
+*Figure 4-3. Room and rate directory.*
 
 ![Room and Rate Directory](<../docs/FINAL MANUSCRIPT/figures/figure-10-rooms-and-rates.png>)
 
@@ -267,7 +222,7 @@ as one tenant asked in the survey (Table 4-19).
 Booking and reservation management takes the form the landlady's practice needs. She arranges every
 viewing herself, so nothing is booked or paid for online. A visitor sends an inquiry about a unit,
 the landlady answers it, may mark the unit Reserved, and moves the person in from the inquiry (Section
-1.4). Figure 4-8 presents the public unit catalogue and the inquiry form. A visitor sees each unit
+1.4). Figure 4-4 presents the public unit catalogue and the inquiry form. A visitor sees each unit
 with its rate, read live from the database, and sends an inquiry about a specific unit without an
 account. On sending, the visitor receives a private link and a short reference code. Either one
 (the code with the phone number given) opens the conversation, where the landlady's answer appears and
@@ -276,7 +231,7 @@ secret is stored only in hashed form. An accepted inquiry becomes a tenancy link
 reserved unit accepts no new inquiries. The public site never shows a tenant's name, which is
 checked on every verification run against all 33 units.
 
-*Figure 4-8. Public unit catalogue (top) and inquiry form (bottom).*
+*Figure 4-4. Public unit catalogue (top) and inquiry form (bottom).*
 
 ![Public unit catalogue](<../docs/FINAL MANUSCRIPT/figures/figure-11a-public-unit-catalogue.png>)
 
@@ -284,7 +239,7 @@ checked on every verification run against all 33 units.
 
 ### 4.2.4 Financial Tracking and Payment Recording Module
 
-Figure 4-9 presents Monthly Income. The landlady records a cash payment with the number of the
+Figure 4-5 presents Monthly Income. The landlady records a cash payment with the number of the
 invoice she issued, or with none, since not every payment has one. The system never makes up an
 invoice number, and it warns her if the unit already has a payment recorded for that period. The
 receipt is filed under the month the rent is for, not the day it was paid. Both the income and the
@@ -298,7 +253,7 @@ recorded", never as owed, because the records alone cannot tell an unpaid month 
 entered. Electricity is outside the system. Each unit has its own meter, and the tenant pays the
 electric company directly.
 
-*Figure 4-9. Monthly Income, with a GCash payment waiting to be verified.*
+*Figure 4-5. Monthly Income, with a GCash payment waiting to be verified.*
 
 ![Monthly Income](<../docs/FINAL MANUSCRIPT/figures/figure-12-monthly-income.png>)
 
@@ -324,7 +279,7 @@ the same amount.
 
 ### 4.2.5 Maintenance Ticketing and Notification Module
 
-Figure 4-10 presents the repairs board. A tenant submits a repair request with a title, description
+Figure 4-6 presents the repairs board. A tenant submits a repair request with a title, description
 and priority, follows it through to completion, and may cancel it until someone is sent to do the
 work. The landlady can also log a repair she is told about in person, including one for an empty unit.
 Only the landlady closes a request, and the tenant is notified when it is done. In-app notifications
@@ -335,7 +290,7 @@ administrative work. The change also bears on the quality of the management proc
 Lim (2021) found matters most to residential satisfaction. A request now carries its status from
 submission to closing, where before it left no record (Figure 4-1).
 
-*Figure 4-10. Maintenance requests board.*
+*Figure 4-6. Maintenance requests board.*
 
 ![Maintenance Requests Board](<../docs/FINAL MANUSCRIPT/figures/figure-13-repairs-board.png>)
 
@@ -374,7 +329,7 @@ actions. The testing of these protections is reported in Section 4.4.4.
 
 ### 4.2.7 Progressive Web Application Implementation
 
-Figure 4-11 presents the tenant portal on a phone. The client is a Progressive Web Application with a
+Figure 4-7 presents the tenant portal on a phone. The client is a Progressive Web Application with a
 service worker and a manifest, so it installs on a phone or computer without an app store. It is
 installed from the browser (**Add to Home Screen** in Safari, **Install app** or **Add to Home
 screen** in Chrome) and opens in its own window like an application. The application files it keeps
@@ -386,7 +341,7 @@ which stays within the delimitation in Section 1.4. Screens adapt to the device,
 row to a record. As Biørn-Hansen et al. (2017) describe, one code base served every device: the
 landlady's laptop, an Android phone in Chrome and an iPhone in Safari (Section 4.3.7).
 
-*Figure 4-11. The tenant portal on a mobile phone.*
+*Figure 4-7. The tenant portal on a mobile phone.*
 
 ![The Tenant Portal on a Mobile Phone](<../docs/FINAL MANUSCRIPT/figures/figure-14-tenant-portal-phone.png>)
 
@@ -400,7 +355,7 @@ The three qualities Objective 3 names are characteristics of ISO/IEC 25010:2011:
 **Functional Suitability**, responsiveness the time behavior of **Performance Efficiency**, and
 operational performance its capacity and **Reliability**. A test written for one quality often
 measures others, so each test was assigned in advance to the sub-characteristics it measures
-(Chapter 3, Table 3-9). Appendix M, Table M-23, lists them by test activity. The measures are brought
+(Chapter 3, Table 3-10). Appendix M, Table M-23, lists them by test activity. The measures are brought
 together by characteristic in Section 4.4.
 
 ### 4.3.1 Automated Verification
@@ -635,7 +590,7 @@ The evaluation followed the five steps of ISO/IEC 25040 (Table 4-13), on the qua
 characteristics as the evaluation criteria, and the instrument was built on them. Each
 characteristic was judged on **measured quality**, the results of Section 4.3 expressed as measures
 of its sub-characteristics in the manner of ISO/IEC 25023, and on **rated quality**, a survey in
-which each item belongs to one sub-characteristic (Chapter 3, Table 3-9). Each respondent group rated
+which each item belongs to one sub-characteristic (Chapter 3, Table 3-10). Each respondent group rated
 only what it can judge. Tenants and prospective tenants did not rate Security, and only the
 technical evaluators, the group with the background to judge it, rated Maintainability.
 
@@ -644,7 +599,7 @@ technical evaluators, the group with the background to judge it, rated Maintaina
 | Step | What it required | How it was carried out |
 | :--- | :--- | :--- |
 | 1. Establish the evaluation requirements | The purpose, the product, the quality model and who judges it | Objective 4; the live system at its public address, and for four of the first round's technical evaluators a demonstration copy of it with sample data; ISO/IEC 25010:2011, eight characteristics; the landlady, tenants, prospective tenants and technical evaluators (Section 3.3) |
-| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Appendix M, Table M-23); survey items assigned to sub-characteristics (Chapter 3, Table 3-9); criteria: Chapter 3's Table 3-8 for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
+| 2. Specify the evaluation | The measures for each sub-characteristic, and the criteria for judging them | Measures from the tests of Section 4.3 (Appendix M, Table M-23); survey items assigned to sub-characteristics (Chapter 3, Table 3-10); criteria: Chapter 3's Table 3-9 for every mean, and for tests the course standard of at least 90 percent passed with no critical defect open |
 | 3. Design the evaluation | The activities, their order and schedule | The measurements, then the walkthrough and acceptance test, the technical evaluators' reviews, and the survey after each group's use of the system; a second round, of users with their tasks and of technical evaluators, with the same survey, after the redesign |
 | 4. Execute the evaluation | Take the measures and apply the criteria | Section 4.3 (measured) and the survey (rated; Appendix M, Tables M-2 to M-17 for the redesigned system, and Tables M-28 and M-29 for the first round) |
 | 5. Conclude the evaluation | Review the results, report them, and act on them | Tables 4-17 and 4-18, and the changes made in response (Table 4-19) |
@@ -699,8 +654,8 @@ tenant and five technical evaluators (Appendix M, Tables M-28 and M-29).
 
 ### 4.4.2 Interpretation of Scores
 
-Each item was rated on the five-point scale in Table 3-7, and means are read using Chapter 3's Table
-3-8. The composite of each characteristic is the mean of its group means, so that the one landlady is
+Each item was rated on the five-point scale in Table 3-8, and means are read using Chapter 3's Table
+3-9. The composite of each characteristic is the mean of its group means, so that the one landlady is
 not outweighed by ten tenants on functions only she uses. The users' composites, from the landlady,
 the tenants and the prospective tenants, are reported beside the technical evaluators', whose
 questionnaire asks about the system from a developer's side. Each overall mean is the mean of the
@@ -721,7 +676,7 @@ highest and lowest characteristics. Table 4-16 works one weighted mean in full, 
 | **Total** | | **N = 10** | **Σ(f × w) = 48** |
 
 Indicator: "I can see my own unit details, my bill, and what I still owe." (Functional Suitability,
-rated by tenants). WM = 48 / 10 = **4.80**, which Table 3-8 reads as **Very High Quality**.
+rated by tenants). WM = 48 / 10 = **4.80**, which Table 3-9 reads as **Very High Quality**.
 
 ### 4.4.3 Results by Characteristic
 

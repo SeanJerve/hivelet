@@ -1,11 +1,11 @@
 # APPENDIX F: DATA FLOW DIAGRAMS (LEVEL 2)
 
-Figures F-1 to F-8 open each of the eight processes of the level 1 diagram (Figure 4-4) into its steps,
-in the Gane and Sarson notation used for Figures 4-3 and 4-4. A rounded rectangle is a process, with its
+Figures F-1 to F-8 open each of the eight processes of the level 1 diagram (Figure 3-3) into its steps,
+in the Gane and Sarson notation used for Figures 3-2 and 3-3. A rounded rectangle is a process, with its
 number in the band across the top. A rectangle open on the right is a data store. A shaded square is
 an external entity. Each step is one operation the system's screens perform. The stores and external
-entities keep the names of Figure 4-4. Each diagram shows every store its steps read or write, and
-each agrees with the stores Figure 4-4 connects to its process.
+entities keep the names of Figure 3-3. Each diagram shows every store its steps read or write, and
+each agrees with the stores Figure 3-3 connects to its process.
 Adyen, the payment gateway, is part of the payment process rather than an external entity, so it
 appears on no diagram as an entity. Taking a GCash payment through it is step 4.3 of Figure F-4.
 

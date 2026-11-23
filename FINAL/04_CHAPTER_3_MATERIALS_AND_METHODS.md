@@ -158,13 +158,17 @@ The questions were asked in person and in writing.
 | 17, 19 and 20 September 2026 | What is the rate of each unit today? | A rate for each of the 33 units, each agreeing with her receipts |
 | 1 October 2026 | How is a payment receipted when it has no invoice number? | It is given an acknowledgement receipt |
 
+**Tools and outputs.** The interviews and the written questions were the tools of this phase. Its
+outputs were 44 functional requirements, each traced to the part of the system that implements it
+(Chapter 4, Section 4.1.2), which the later phases followed.
+
 ### 3.2.2 Design
 
 In this phase the requirements were turned into the system's architecture and into working
 prototypes of its screens, built in code as described in Section 3.1.1, for three kinds of user: the
 public, tenants and the administrator. The system was modeled with a context diagram, data flow
 diagrams in the Gane and Sarson notation down to the second level, a use case diagram and an
-entity-relationship diagram (Chapter 4, Figures 4-3 to 4-6, and Appendix F). Each prototype was reviewed
+entity-relationship diagram (Figures 3-2 to 3-5 below, and Appendix F). Each prototype was reviewed
 with the landlady on the device she uses, and the findings were applied in the next iteration
 (Chapter 4, Table 4-19). Because the
 boarding house has limited infrastructure, unstable internet and a single administrator, Hivelet was
@@ -172,8 +176,56 @@ designed as a lightweight PWA with simple navigation and low device requirements
 inquiries and reservations, financial tracking and maintenance requests were mapped first and then
 refined from the feedback of the landlady and the tenants.
 
+The models were drawn in this phase from the requirements and redrawn whenever the system changed,
+so that they show the system as built. Figure 3-2 is the context diagram: the system as one process, with the three parties outside it and the
+data that passes between them. Figure 3-3 opens it into eight processes and the stores each reads and
+writes, in the Gane and Sarson notation. A rounded rectangle is a process, a rectangle open on the
+right is a data store, and a shaded square is a party outside the system. To trace one path, the
+landlady records a cash receipt through process 4.0, Bill and record payments, which writes it to store
+D3, Bills and receipts. Process 7.0, Produce reports, reads it from there for the Overview and the
+Excel workbooks. The notifications and the audit record are written by nearly every process and are
+left out of Figure 3-3 for readability. The units store, D1, is drawn twice, the second time under
+processes 5.0 and 4.0, so that its lines cross no others. Adyen, the payment gateway, is drawn as part of
+the payment process rather than as a party outside the system, as in the data flow diagrams the
+researchers' Systems Analysis and Design professor approved. Taking a GCash payment through Adyen is step 4.3 of process
+4.0 (Appendix F), and Chapter 4, Figure 4-2 shows where the gateway sits.
+
+*Figure 3-2. Context diagram.*
+
+![Context diagram](<../docs/FINAL MANUSCRIPT/figures/figure-6-context-diagram.png>)
+
+*Figure 3-3. Level 1 data flow diagram.*
+
+![Level 1 data flow diagram](<../docs/FINAL MANUSCRIPT/figures/figure-7-data-flow-level-1.png>)
+
+Figure 3-4 shows the same functions from the side of the people who use them. Each use case is a
+function the server grants to that role and refuses to every other (Chapter 4, Table 4-7).
+
+*Figure 3-4. Use case diagram.*
+
+![Use case diagram](<../docs/FINAL MANUSCRIPT/figures/figure-8-use-case-diagram.png>)
+
+Figure 3-5, in Crow's Foot notation, is the entity-relationship diagram drawn from the database's own
+catalogue: 21 tables, each with a primary key, and 37 foreign keys. It draws 27 of the keys. The
+other ten only record who made, changed, closed, verified or sent a row, and are left out so that
+the figure stays readable. Its two centers are the rooms table, which holds the units, and the profiles table, which holds the people.
+Every bill, payment, receipt, tenancy, repair request and inquiry belongs to one unit, and every
+tenancy, bill and payment to one person. The two ledgers are kept as the landlady kept them. The tables follow the third normal form, each
+column describing only its own table's key, with deliberate exceptions so that a record stays as it
+was made. A receipt keeps the name, occupants and amounts written on it, and a bill the amounts it was raised
+with. Receipts name their unit and tenant directly, since the 937 transferred from the workbook have no tenancy to point
+to, payments name theirs beside their bill, and a few totals are stored beside the figures they add
+up. Several
+rules live in the database itself, so no screen or script can bypass them. One unit cannot have two
+active tenancies, one invoice number cannot be used twice for the same unit and month, a gateway
+reference cannot be recorded twice, and the 50% Share and the remitted amount are computed columns.
+
+*Figure 3-5. Entity-relationship diagram.*
+
+![Entity-relationship diagram](<../docs/FINAL MANUSCRIPT/figures/figure-9-entity-relationship.png>)
+
 Because the screens were prototyped in code, the first design was the first working version itself,
-as it stood on 28 August 2026 (Figures 3-2 to 3-4). In the first iteration, the business rule register was
+as it stood on 28 August 2026 (Figures 3-6 to 3-8). In the first iteration, the business rule register was
 rebuilt with 49 rules, each with its evidence, and the automatic rent increase was removed from the
 scope. The landlady reviewed the screens on a phone on 23 September, and her review led to the
 design rules the screens now follow and to reworked overviews for tenants and the administrator. In
@@ -182,26 +234,29 @@ page, in light and dark themes. Boxes were kept for what needs attention and for
 at a glance, and signing in, sending an inquiry and the conversation that follows were joined in one
 screen.
 
-Figures 3-2 to 3-4 show three screens of the first working version, and Figure 3-5 shows one screen
-before and after the redesign of the second iteration. The tenants in them are sample records. The
-models of the system as built, its context diagram, data flow diagrams, use case diagram and
-entity-relationship diagram, are in Chapter 4, Figures 4-3 to 4-6.
+Figures 3-6 to 3-8 show three screens of the first working version, and Figure 3-9 shows one screen
+before and after the redesign of the second iteration. The tenants in them are sample records.
 
-*Figure 3-2. Public landing page of the first working version, 28 August 2026.*
+*Figure 3-6. Public landing page of the first working version, 28 August 2026.*
 
 ![Public landing page, 28 August 2026](<../docs/FINAL MANUSCRIPT/figures/appendix-i-landing.png>)
 
-*Figure 3-3. A unit category on the public site, 28 August 2026.*
+*Figure 3-7. A unit category on the public site, 28 August 2026.*
 
 ![A unit category, 28 August 2026](<../docs/FINAL MANUSCRIPT/figures/appendix-i-unit_category.png>)
 
-*Figure 3-4. Tenant directory of the first working version, with sample tenants, 28 August 2026.*
+*Figure 3-8. Tenant directory of the first working version, with sample tenants, 28 August 2026.*
 
 ![Tenant directory, 28 August 2026](<../docs/FINAL MANUSCRIPT/figures/appendix-i-tenants.png>)
 
-*Figure 3-5. A tenant's overview on a phone, on 28 August 2026 (left) and after the redesign of the second iteration (right).*
+*Figure 3-9. A tenant's overview on a phone, on 28 August 2026 (left) and after the redesign of the second iteration (right).*
 
 ![A tenant's overview before and after the redesign](<../docs/FINAL MANUSCRIPT/figures/figure-3-design-before-after.png>)
+
+**Tools and outputs.** The screens were prototyped in code with the tools of Section 3.1.1 and tried
+on the landlady's own phone, and the design rules they follow, for color, type, layout and wording,
+were written down in the system's design guideline. The outputs of this phase were the models in
+Figures 3-2 to 3-5 and Appendix F, the screen prototypes, and the design guideline.
 
 ### 3.2.3 Development
 
@@ -225,24 +280,49 @@ year can no longer be recorded, changed or deleted, a GCash payment settles the 
 and a tenant can no longer cancel a repair once someone is sent. Each screen also keeps the figures
 it has loaded for the visit, so returning to it does not wait for them.
 
-Figure 3-6 shows the work week by week, counted from the project's version history. Figures 3-7 and 3-8
+Figure 3-10 shows the work week by week, counted from the project's version history. Figures 3-11 and 3-12
 are two short excerpts of the code. The first is a database trigger that records every change of a
 unit's rate, with the old rate, the new rate and the date, in the same step as the change, so that
 no part of the system can change a rate without leaving that record. The second is the check that
 refuses a request from anyone whose role is not allowed to make it, which keeps the landlady's
 screens closed to tenants and the public. The repository's layout is in Appendix Q.
 
-*Figure 3-6. Commits each week, July to November 2026.*
+*Figure 3-10. Commits each week, July to November 2026.*
 
 ![Commits each week](<../docs/FINAL MANUSCRIPT/figures/figure-3-dev-commits-per-week.png>)
 
-*Figure 3-7. Excerpt of the code: the database trigger that records each rate change (migration 020).*
+*Figure 3-11. Excerpt of the code: the database trigger that records each rate change (migration 020).*
 
 ![Rate change trigger](<../docs/FINAL MANUSCRIPT/figures/figure-3-dev-rate-trigger.png>)
 
-*Figure 3-8. Excerpt of the code: the role check on the server (backend/src/middleware/auth.ts).*
+*Figure 3-12. Excerpt of the code: the role check on the server (backend/src/middleware/auth.ts).*
 
 ![Role check](<../docs/FINAL MANUSCRIPT/figures/figure-3-dev-role-check.png>)
+
+**How the code was written.** Each change followed the same steps. A researcher wrote it in Visual
+Studio Code on a laptop, with the help of the AI coding assistant described in Section 3.1.1, and
+ran the system locally to try it. The automated checks of Section 3.2.4 were run, and the change was
+then saved to the project's version history with Git, with a message describing the change, and shared through a GitHub repository. A check that runs before every commit refuses any
+change that contains a password or key. Changes to the database were written as numbered
+migrations, and a change to the records was run only after a backup and its result read back. The work was
+divided between two computers, the server and the database on one and the screens and the documents
+on the other, and each pulled the other's changes before sharing its own.
+
+**Tools and outputs.** Table 3-5 lists the records kept while the system was developed. They are the
+documentation of the process: each says what was done, when and why, and the repository keeps all of
+them.
+
+**Table 3-5.** Records kept during development
+
+| Record | What it holds |
+| :--- | :--- |
+| Version history (Git, on GitHub) | 2,137 commits from 24 July to 19 November 2026, each with its date and a message describing the change (Figure 3-10) |
+| Business rule register | 49 rules, each with its evidence |
+| Requirements traceability matrix | The 44 functional requirements, each traced to the part of the system that implements it |
+| Database migrations | 91 numbered changes to the database, applied in order (Appendix Q) |
+| Screen contract | Every screen and every call it makes to the server, and which calls write |
+| Automated check suites | 21 suites, run after every significant change (Section 3.2.4) |
+| Design guideline | The rules the screens follow for color, type, layout and wording |
 
 ### 3.2.4 Testing
 
@@ -250,7 +330,7 @@ This phase served the third objective of the study, pilot testing the system. Te
 four parts below, at the test levels defined in ISO/IEC/IEEE 29119-1 (International Organization for
 Standardization, International Electrotechnical Commission, & Institute of Electrical and Electronics
 Engineers [ISO/IEC/IEEE], 2022): unit and integration, system, and acceptance. Each test was planned
-as a measure of an ISO/IEC 25010 sub-characteristic listed in Table 3-9.
+as a measure of an ISO/IEC 25010 sub-characteristic listed in Table 3-10.
 
 **Automated verification.** Twenty-one check suites were written alongside the system. They verify every endpoint and the separation of roles, re-derive the landlady's
 ledger and exported reports from the database, check the payment gateway's message signatures, and
@@ -285,17 +365,17 @@ each change, the screens were checked in light and dark themes at phone and desk
 page timings were measured again on 10 November. On the redesigned system, the second round of users
 ran from 31 October to 10 November, and three technical evaluators reviewed it on 12 November.
 
-Each test case named what the tester does, what should be seen and the result. Table 3-5 shows seven
+Each test case named what the tester does, what should be seen and the result. Table 3-6 shows seven
 of them, and Appendix L lists all 114 with their results.
 
-Figure 3-9 shows the end of one automated suite, the payment gateway's, run on 19 November 2026: each
+Figure 3-13 shows the end of one automated suite, the payment gateway's, run on 19 November 2026: each
 line is one assertion, and the suite passes only if every assertion does.
 
-*Figure 3-9. The end of a run of the payment gateway's check suite, 19 November 2026.*
+*Figure 3-13. The end of a run of the payment gateway's check suite, 19 November 2026.*
 
 ![A run of the payment gateway's check suite](<../docs/FINAL MANUSCRIPT/figures/figure-3-test-check-run.png>)
 
-**Table 3-5.** Sample test cases from Appendix L
+**Table 3-6.** Sample test cases from Appendix L
 
 | ID | What the tester does | What should be seen | Result |
 | :--- | :--- | :--- | :--- |
@@ -306,6 +386,11 @@ line is one assertion, and the suite passes only if every assertion does.
 | C-02 | The landlady and two tenants, signed in at the same time, check the unit and name on screen | Each sees only their own unit | Pass |
 | O-01 | The application is installed from Chrome on an Android phone | The Hivelet icon on the home screen | Pass |
 | S-01 | The public site is scanned by the Mozilla HTTP Observatory | A grade for its security headers | Pass, A+ (115 of 100) |
+
+**Tools and outputs.** The check suites ran in Node.js, and the offline, installation, accessibility
+and simultaneous-use tests in an automated Chrome browser. The outputs were the 114 test cases with
+their results (Appendix L), the observers' record of each task, and the survey answers (Section
+3.3).
 
 ### 3.2.5 Deployment
 
@@ -324,12 +409,18 @@ a backup and read back.
 
 Chapter 4, Figure 4-2 shows where each part runs: the screens reach the browser as a PWA from Vercel,
 one server program on Vercel answers every request, and only that program reads or writes the
-database on Supabase. Figure 3-10 shows the deployed system as a prospective tenant first sees it, at
+database on Supabase. Figure 3-14 shows the deployed system as a prospective tenant first sees it, at
 hivelet.vercel.app on a phone.
 
-*Figure 3-10. The deployed system at hivelet.vercel.app on a phone.*
+*Figure 3-14. The deployed system at hivelet.vercel.app on a phone.*
 
 ![The deployed system on a phone](<../docs/FINAL MANUSCRIPT/figures/figure-3-deploy-live-site-phone.png>)
+
+**How it was deployed.** Vercel builds and serves the screens and the server program from the
+configuration kept in the repository, and the database runs on Supabase. The keys the system needs
+are kept in Vercel's settings, never in the code. Each change to the database was applied as a
+numbered migration after a backup, and the payment gateway sends its notifications to the deployed
+address.
 
 ### 3.2.6 Review and Maintenance
 
@@ -342,10 +433,10 @@ were all acted on by 5 October. The first round of the ISO/IEC 25010 evaluation 
 3.3). In the second iteration, the researchers reviewed the redesigned screens, and the second round
 of the evaluation rated the redesigned system (Chapter 4, Section 4.4).
 
-Table 3-6 lists the main reviews and how many changes each led to. Chapter 4, Table 4-19 gives examples
+Table 3-7 lists the main reviews and how many changes each led to. Chapter 4, Table 4-19 gives examples
 of what each found, and Appendix M, Table M-18 lists every change.
 
-**Table 3-6.** Reviews held during development and the changes each led to
+**Table 3-7.** Reviews held during development and the changes each led to
 
 | Review | When | Changes made |
 | :--- | :--- | --: |
@@ -356,6 +447,10 @@ of what each found, and Appendix M, Table M-18 lists every change.
 | Technical evaluators' review | 3 to 5 October 2026 | 14 |
 | The survey, first round | After each group's use of the system | 4 |
 | Second round of users and technical evaluators | 31 October to 12 November 2026 | None asked for by the technical evaluators |
+
+**Tools and outputs.** Each finding and what was done about it was recorded in Appendix M, Table
+M-18, so that every change made in response to the evaluation can be traced to the finding behind
+it.
 
 ## 3.3 Evaluation Procedure
 
@@ -371,7 +466,7 @@ Each characteristic was judged on two kinds of evidence. Measured quality came f
 Section 3.2.4, each expressed in the manner of ISO/IEC 25023 as a ratio X = A / B, such as the number
 of test steps that gave the correct result over the number executed (ISO/IEC, 2016b). Rated quality
 came from the survey questionnaire, in which each item was assigned to one sub-characteristic
-(Table 3-9). Quality in use was measured during the user acceptance test as the tasks completed and
+(Table 3-10). Quality in use was measured during the user acceptance test as the tasks completed and
 the time and wrong turns per task, following ISO/IEC 25022 (ISO/IEC, 2016a).
 
 **Respondents.** The survey questionnaire was given to four groups: the landlady as the system's only
@@ -395,7 +490,7 @@ Filipino. An observation sheet recorded, for each task, whether it was completed
 help or not at all, the time taken and the number of wrong turns. A defect log recorded the defects
 found, and the ISO/IEC 25010 survey questionnaire had a section for each respondent group (Appendix J). The research adviser reviewed the
 questionnaire before it was used. Responses were
-given on the 5-point Likert scale of Table 3-7 (Likert, 1932).
+given on the 5-point Likert scale of Table 3-8 (Likert, 1932).
 
 **Data gathering.** Each participant took part after giving consent (Section 3.4). Each tester used
 their own device, the landlady and the tenants on their own accounts, while a facilitator read the
@@ -412,7 +507,7 @@ load.
 WM = Σ(f × w) / N
 
 where *f* is the number of respondents choosing a rating, *w* the rating (1 to 5) and *N* the number of
-respondents, and interpreted using Table 3-8. The composite mean of each characteristic is the mean of
+respondents, and interpreted using Table 3-9. The composite mean of each characteristic is the mean of
 its group means, so that the landlady is not outweighed by several tenants on functions only she
 uses. The users' composites, from the landlady, the tenants and the prospective tenants, are reported
 beside the technical evaluators', and each overall mean is the mean of the composites its
@@ -421,7 +516,7 @@ section of the questionnaire written for that respondent's own group. For the ac
 without help divided by the number attempted, reported with the median time per task and the mean
 number of wrong turns. The results are descriptive, and no inferential test was made.
 
-**Table 3-7.** Likert scale
+**Table 3-8.** Likert scale
 
 | Scale | Meaning | Description |
 | :---: | :--- | :--- |
@@ -431,9 +526,9 @@ number of wrong turns. The results are descriptive, and no inferential test was 
 | 2 | Disagree | The respondent disagrees with the statement |
 | 1 | Strongly Disagree | The respondent strongly disagrees with the statement |
 
-Table 3-8 divides the range from 1 to 5 into five equal intervals of 0.80.
+Table 3-9 divides the range from 1 to 5 into five equal intervals of 0.80.
 
-**Table 3-8.** Interpretation of mean scores
+**Table 3-9.** Interpretation of mean scores
 
 | Mean score | Verbal interpretation |
 | :--- | :--- |
@@ -443,11 +538,11 @@ Table 3-8 divides the range from 1 to 5 into five equal intervals of 0.80.
 | 1.81 – 2.60 | Low Quality |
 | 1.00 – 1.80 | Very Low Quality |
 
-Table 3-9 assigns every survey item and every test to the sub-characteristic it measures. Item numbers
+Table 3-10 assigns every survey item and every test to the sub-characteristic it measures. Item numbers
 are those of each group's section of the questionnaire (O = administrator, T = tenants, E = technical
 evaluators, P = prospective tenants).
 
-**Table 3-9.** Survey items and tests assigned to the ISO/IEC 25010:2011 sub-characteristics
+**Table 3-10.** Survey items and tests assigned to the ISO/IEC 25010:2011 sub-characteristics
 
 | Characteristic | Sub-characteristic | O | T | E | P | Measured by (Section 3.2.4) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
