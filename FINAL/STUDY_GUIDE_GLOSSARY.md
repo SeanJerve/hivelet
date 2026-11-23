@@ -231,7 +231,7 @@ term, renamed from "Issue Ticketing System" on 12 November 2026. **Where:** Sect
 reproduce it: expenses by date, area and category. **Where:** Section 4.1.1; Section 4.2.4.
 
 **Monthly Income Report.** The first sheet of her workbook, and the screen and Excel workbook that
-reproduce it: receipts by month and cluster. **Where:** Section 4.1.1; Section 4.2.4; Figure 4-9.
+reproduce it: receipts by month and cluster. **Where:** Section 4.1.1; Section 4.2.4; Figure 4-5.
 
 **Move in (onboarding).** Starting a tenancy: full name, unit, deposit, move-in date, whether the
 unit is shared and by how many, and an emergency contact. The anniversary date is set to the
@@ -500,7 +500,7 @@ screen.
 Section 4.2.4; side menu.
 
 **Monthly Income (screen).** The landlady's income ledger, by cluster, in her layout, with Record payment
-and To verify. **Where:** Section 4.2.4; Figure 4-9; side menu.
+and To verify. **Where:** Section 4.2.4; Figure 4-5; side menu.
 
 **Months paid in (year).** On the Tenants screen's history of a past year, how many months each
 person paid for, read from the receipts. **Where:** Tenants screen.
@@ -553,7 +553,7 @@ App. K, Part 1, §1, and Part 2, §5.
 Part 2.
 
 **Overview.** The first screen after sign-in, for the landlady and for each tenant. **Where:**
-Figure 4-11; App. K.
+Figure 4-7; App. K.
 
 **Pay with GCash.** The tenant's button to pay a bill online. It is hidden when offline. **Where:**
 Section 4.2.4; App. K, Part 1, §3.
@@ -597,12 +597,12 @@ App. K, Part 2, §3.
 Monthly Income screen; BR-038.
 
 **Repairs (board).** The landlady's board of repair requests in three columns: To dispatch, In
-progress, Done. **Where:** Figure 4-10; side menu.
+progress, Done. **Where:** Figure 4-6; side menu.
 
 **Reset password.** The landlady gives a tenant a new one-time password; the old one stops working and
 their phone is signed out. **Where:** App. K, Part 2, §5.
 
-**Rooms and rates.** The landlady's screen of every unit's rate and status. **Where:** Figure 4-7; side
+**Rooms and rates.** The landlady's screen of every unit's rate and status. **Where:** Figure 4-3; side
 menu.
 
 **Search.** Narrows a list as you type. When nothing is found it says **Nothing matches**. **Where:**
@@ -736,7 +736,7 @@ App. M, Table M-19; App. Q.
 from, so an injected script is blocked. Hivelet's is enforced. **Where:** Section 4.4.4.
 
 **Context diagram.** A data flow diagram showing the whole system as one process, with the three
-outside parties and the data between them. **Where:** Figure 4-3; App. D.
+outside parties and the data between them. **Where:** Figure 3-2; App. D.
 
 **Cookie.** A small value a website keeps in the browser. Ch. 5 recommends keeping the sign-in token
 in a cookie no script can read. **Where:** Ch. 5, recommendation 3.
@@ -745,14 +745,14 @@ in a cookie no script can read. **Where:** Ch. 5, recommendation 3.
 never written in any document; a check for them runs before every commit. **Where:** Section 4.5.
 
 **Crow's Foot notation.** The way the ERD draws relationships, with a three-pronged end for "many".
-**Where:** Figure 4-6.
+**Where:** Figure 3-5.
 
 **Data dictionary.** A list of every table and column with its type, whether it is required, and its
 meaning. **Where:** Table 4-5; App. N.
 
 **Data flow diagram (DFD).** A diagram of processes, data stores and outside parties, and the data
 moving between them. Level 1 has eight processes, and the Level 2 diagrams open all eight. **Where:**
-Figure 4-4; App. E; App. F.
+Figure 3-3; App. E; App. F.
 
 **Data store.** In a DFD, a place data is kept, such as D3, Bills and receipts. **Where:**
 Section 4.2.1.
@@ -774,7 +774,7 @@ and tenant routes (42 in admin.ts, 18 in tenant.ts, counted 10 November 2026) ar
 the permission matrix. **Where:** Section 4.2.6; Table 4-7.
 
 **Entity-relationship diagram (ERD).** A diagram of the database tables and how they link: 21 tables
-and 37 foreign keys. **Where:** Figure 4-6; App. H.
+and 37 foreign keys. **Where:** Figure 3-5; App. H.
 
 **Enumeration (enum).** A column that accepts only a fixed list of values, such as Verified, Pending
 Verification or Rejected. **Where:** Table 4-5; App. N.
@@ -786,7 +786,7 @@ Section 4.2.4; NFR-010.
 **Where:** Table 3-1; Table 4-4.
 
 **Foreign key (FK).** A column that points to a row in another table, such as room_id pointing to a
-unit. **Where:** Table 4-5; Figure 4-6.
+unit. **Where:** Table 4-5; Figure 3-5.
 
 **Frontend.** The screens in the browser (Vue). **Where:** Section 3.2.3.
 
@@ -1080,10 +1080,10 @@ meets their needs. **Where:** Section 2.4; Section 4.3.7.
 deployment and review, and changing course on feedback. **Where:** Section 3.2; Figure 3-1.
 
 **Axe-core.** The tool that scanned the screens against WCAG A and AA: 76 scans of 19 screens, no
-violation once one defect was fixed. **Where:** Section 4.3.6; Table 3-9.
+violation once one defect was fixed. **Where:** Section 4.3.6; Table 3-10.
 
 **Characteristic.** One of the eight quality areas in ISO/IEC 25010:2011 (the next eight entries).
-**Where:** Section 3.3; Table 3-9.
+**Where:** Section 3.3; Table 3-10.
 
 **Compatibility.** Working with other products and exchanging data correctly (users 4.79, technical evaluators 5.00). **Where:**
 Table 4-17.
@@ -1104,7 +1104,7 @@ Table 4-17.
 
 **Usability.** How easily people learn and use it (users 4.80, technical evaluators 4.87). **Where:** Table 4-17; Section 4.4.3.
 
-**The 31 sub-characteristics of ISO/IEC 25010:2011** (Table 3-9 names what measured each one):
+**The 31 sub-characteristics of ISO/IEC 25010:2011** (Table 3-10 names what measured each one):
 
 | Sub-characteristic | Plain meaning | Measured by |
 | :--- | :--- | :--- |
@@ -1273,7 +1273,7 @@ Section 2.4; Section 3.3.
 **Unit and integration testing.** Testing parts alone and together: the automated suites. **Where:**
 Table 4-12.
 
-**Use case diagram.** A diagram of what each kind of user can do. **Where:** Figure 4-5; App. G.
+**Use case diagram.** A diagram of what each kind of user can do. **Where:** Figure 3-4; App. G.
 
 **Walkthrough (functional walkthrough).** 26 steps (30 rows) exercising every function that writes
 data once, on the vacant unit, done by the landlady: 24 passed, 1 failed, 5 not performed as written.
@@ -1309,12 +1309,12 @@ App. M, Table M-20.
 results describe only these ten people. **Where:** Section 3.3; Section 4.4.1.
 
 **Interpretation scale.** 4.21 to 5.00 Very High Quality; 3.41 to 4.20 High; 2.61 to 3.40 Moderate;
-1.81 to 2.60 Low; 1.00 to 1.80 Very Low. Five equal steps of 0.80. **Where:** Table 3-8.
+1.81 to 2.60 Low; 1.00 to 1.80 Very Low. Five equal steps of 0.80. **Where:** Table 3-9.
 
 **Item mean.** The weighted mean of one survey item. **Where:** Section 3.3.
 
 **Likert scale.** 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree. **Where:**
-Table 3-7.
+Table 3-8.
 
 **Mean.** The average: add up, divide by how many. **Where:** Section 3.3.
 
@@ -1505,8 +1505,8 @@ There are 44 (Section 4.1.2). App. L names the test cases that trace to each.
 | **N-01 to N-03** | Changes shipped on 30 September | App. L, Part N |
 | **P, PH, F, NT** | In Part T: done alone, done with help, not done, not tried | App. L |
 | **FS, PE, CO, US, RE, SE, MA, PO** | The eight characteristics, as App. L labels them | App. L |
-| **O, T, E, P** | Questionnaire sections: administrator (landlady), tenants, technical evaluators, prospective tenants | Table 3-9 |
-| **1.0 to 8.0** | DFD processes: inquiries, units and rates, tenants, billing and payments, repairs, expenses, reports, sign-in | Figure 4-4; App. F |
+| **O, T, E, P** | Questionnaire sections: administrator (landlady), tenants, technical evaluators, prospective tenants | Table 3-10 |
+| **1.0 to 8.0** | DFD processes: inquiries, units and rates, tenants, billing and payments, repairs, expenses, reports, sign-in | Figure 3-3; App. F |
 | **D3** | The data store Bills and receipts | Section 4.2.1 |
 | **Table M-1 to M-27** | The evidence tables behind Chapter 4 | App. M |
 | **Step 23b** | The one failed walkthrough step (₱0 instead of "—"), passed on re-test 13 Oct | Section 4.3.4 |
@@ -1532,8 +1532,8 @@ There are 44 (Section 4.1.2). App. L names the test cases that trace to each.
 | **CO** | Compatibility | App. L label |
 | **CSP** | Content Security Policy | Where scripts may come from |
 | **CSS** | Cascading Style Sheets | How web pages are styled (Tailwind CSS) |
-| **DFD** | Data flow diagram | Figure 4-4; App. E, F |
-| **ERD** | Entity-relationship diagram | Figure 4-6 |
+| **DFD** | Data flow diagram | Figure 3-3; App. E, F |
+| **ERD** | Entity-relationship diagram | Figure 3-5 |
 | **F1, F2F, F2B** | Front Apartment units | |
 | **FHD+** | Full High Definition plus | The test phone's screen (Table 3-3) |
 | **FK** | Foreign key | A column pointing to another table |

@@ -115,7 +115,7 @@ Based on the results of the study, the following conclusions were drawn:
 > code: the Monthly Income delete is already a void (`void_income_record`; kept with who, when and
 > why), but its button says "Delete payment" and its warning says the receipt "cannot be brought
 > back", which is why it read as a delete. A headcount over capacity is accepted and audited by
-> design. The ERD and architecture are Figures 4-6 and 4-2; he was not sent them.
+> design. The ERD and architecture are Figures 3-5 and 4-2; he was not sent them.
 >
 > **TEAM NOTE (12 Nov 2026).** Recommendation 4 keeps what the 15 October evaluator wrote on the
 > questionnaire (archive, dated repair history, Void), now reported in Section 4.4.6. Left out, since

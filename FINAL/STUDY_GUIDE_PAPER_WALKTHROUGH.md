@@ -634,7 +634,7 @@ are **25 terms**.
   **ISO/IEC/IEEE 29119-1**, a testing standard: **unit and integration** (small parts and how they
   connect), **system** (the whole system) and **acceptance** (the real users decide if it meets their
   needs).
-- Each test was planned in advance as a measure of an ISO/IEC 25010 sub-characteristic (Table 3-9).
+- Each test was planned in advance as a measure of an ISO/IEC 25010 sub-characteristic (Table 3-10).
 
 **Key facts and numbers** (the four parts)
 1. **Automated verification**: **twenty check suites**, and a twenty-first on 12 October 2026, that test every endpoint (address on the server
@@ -748,19 +748,19 @@ The section then has four labelled parts.
 - Only **descriptive statistics** (numbers that describe the data) were used. "No inferential test was
   made, so the results describe how these respondents rated the system."
 
-**Table 3-7. Likert scale**
+**Table 3-8. Likert scale**
 - *What it shows*: the five answer choices. A **Likert scale** (Likert, 1932) asks how much a person
   agrees with a statement.
 - *How to read it*: 5 Strongly Agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly Disagree.
 
-**Table 3-8. Interpretation of mean scores**
-- *What it shows*: how to turn a mean into words. Table 3-8 "divides the range from 1 to 5 into five
+**Table 3-9. Interpretation of mean scores**
+- *What it shows*: how to turn a mean into words. Table 3-9 "divides the range from 1 to 5 into five
   equal intervals of 0.80."
 - *How to read it*: find the band your mean falls in. 4.21 – 5.00 Very High Quality; 3.41 – 4.20 High
   Quality; 2.61 – 3.40 Moderate Quality; 1.81 – 2.60 Low Quality; 1.00 – 1.80 Very Low Quality. The
   important row is the top one: every result in Table 4-17 falls in it.
 
-**Table 3-9. Survey items and tests assigned to the ISO/IEC 25010:2011 sub-characteristics**
+**Table 3-10. Survey items and tests assigned to the ISO/IEC 25010:2011 sub-characteristics**
 - *What it shows*: for each of the 31 sub-characteristics, which survey items rate it and which test
   measures it.
 - *How to read it*:
@@ -919,10 +919,10 @@ The section then has four labelled parts.
 *Answers Objective 2. Each feature the objective names has its own subsection.*
 
 **What it says**
-- Figures 4-2 to 4-6 model the system as built; Figures 4-7 to 4-11 show its screens as they stood on
+- Figures 4-2 to 3-5 model the system as built; Figures 4-3 to 4-7 show its screens as they stood on
   **10 November 2026**, after the redesign. They were retaken that day with sample tenants only.
-- The units, rates and statuses in Figures 4-7 and 4-8 are real; the names, payments, expenses and
-  repair requests in Figures 4-7, 4-9, 4-10 and 4-11 are **sample records**, so no real tenant appears.
+- The units, rates and statuses in Figures 4-3 and 4-4 are real; the names, payments, expenses and
+  repair requests in Figures 4-3, 4-5, 4-6 and 4-7 are **sample records**, so no real tenant appears.
 
 ### 4.2.1 System Architecture and Technology Stack
 
@@ -950,7 +950,7 @@ The section then has four labelled parts.
   Never say "all 114 were rerun".
 - The ISO/IEC 25010 evaluation was carried out twice, in Iteration 1 and again in Iteration 2 on the
   redesigned system (Tables M-28 to M-30). Section 4.4 reports the second.
-- The ERD (Figure 4-6), drawn from the database's own catalogue on **5 October 2026**: **21 tables**,
+- The ERD (Figure 3-5), drawn from the database's own catalogue on **5 October 2026**: **21 tables**,
   each with a primary key, and **37 foreign keys**.
 - Rules enforced by the database: one unit cannot have two active tenancies; one invoice number cannot
   be used twice for the same unit and month; a gateway reference cannot be recorded twice; the 50%
@@ -974,7 +974,7 @@ The section then has four labelled parts.
   audit record, workbook downloads). The bottom line: "Payment details go from the form to Adyen
   directly, never through the API".
 
-**Figure 4-3. Context diagram.**
+**Figure 3-2. Context diagram.**
 - *What it shows*: the whole system as one rounded box (process 0) with the three outside parties:
   Visitor or prospect, Landlady (administrator) and Tenant. Adyen is not drawn: as the SAD professor
   approved, it is part of the payment process, not an entity, and appears as step 4.3 in Appendix F.
@@ -982,7 +982,7 @@ The section then has four labelled parts.
 - *How to read it*: each arrow is data going in or out. For example, the landlady sends payments with
   invoice numbers, and gets overview figures, the income and expense records and workbook downloads back.
 
-**Figure 4-4. Level 1 data flow diagram.**
+**Figure 3-3. Level 1 data flow diagram.**
 - *What it shows*: the system opened into **eight processes** and **six data stores**, in the
   **Gane and Sarson notation** (rounded rectangles are processes, rectangles open on the right are
   stores, shaded squares are outside parties).
@@ -993,7 +993,7 @@ The section then has four labelled parts.
   records a cash receipt through **4.0**, which writes it to **D3**, and **7.0** reads it from D3 for the
   Overview and the Excel workbooks. Notifications and the audit record are left out for readability.
 
-**Figure 4-5. Use case diagram.**
+**Figure 3-4. Use case diagram.**
 - *What it shows*: what each type of user can do. Actors (stick figures): Visitor or prospect, Tenant,
   Landlady (administrator) and Adyen (GCash). Ovals are use cases.
 - *How to read it*: a line from an actor to an oval means that actor may use that function. Shared
@@ -1001,7 +1001,7 @@ The section then has four labelled parts.
   actions) connect to both tenant and landlady. "Each use case is a function the server grants to that
   role and refuses to every other (Table 4-7)."
 
-**Figure 4-6. Entity-relationship diagram.**
+**Figure 3-5. Entity-relationship diagram.**
 - *What it shows*: the database tables and how they link, in **Crow's Foot notation** (the line ends
   show "one" or "many").
 - *How to read it*: rooms and profiles are the two centers. Every bill, payment, receipt, tenancy,
@@ -1037,7 +1037,7 @@ The section then has four labelled parts.
 - Since **13 October 2026** a tenant can see the deposit held for their tenancy, as one tenant asked
   in the survey. Since 5 November it is on their Overview, in the card for their unit.
 
-**Figure 4-7. Room and rate directory.**
+**Figure 4-3. Room and rate directory.**
 - *What it shows*: the landlady's Rooms and rates screen, with the property's real units, rates and
   statuses (names are samples).
 
@@ -1065,7 +1065,7 @@ The section then has four labelled parts.
   be read back.)
 - The no-names rule is checked on every verification run against **all 33 units**.
 
-**Figure 4-8. Public unit catalogue (top) and inquiry form (bottom).**
+**Figure 4-4. Public unit catalogue (top) and inquiry form (bottom).**
 - *What it shows*: two screenshots, the public list of units with rates, and the form to ask about a
   unit.
 
@@ -1086,7 +1086,7 @@ The section then has four labelled parts.
 - Discussion: agrees with Magno et al. (2024) and Encarnacion et al. (2025), and adds that
   consolidation also exposed errors already in her records.
 
-**Figure 4-9. Monthly Income, with a GCash payment waiting to be verified.**
+**Figure 4-5. Monthly Income, with a GCash payment waiting to be verified.**
 - *What it shows*: the landlady's Monthly Income screen in her workbook's layout (sample records). Its
   two tabs are **Records** and **To verify**. While a GCash payment is waiting, the page opens on To
   verify.
@@ -1128,7 +1128,7 @@ The section then has four labelled parts.
 - Discussion: matches Saputra et al. (2025) on traceable requests and Jing and Lim (2021) on
   responsiveness.
 
-**Figure 4-10. Maintenance requests board.**
+**Figure 4-6. Maintenance requests board.**
 - *What it shows*: the repairs board, with requests in columns by status (sample records).
 
 ### 4.2.6 Role-Based Access Control
@@ -1179,7 +1179,7 @@ The section then has four labelled parts.
 - App files kept on the device: **about 1.2 MB** (as built on 13 October 2026).
 - Offline copy since **1 and 2 October 2026**.
 
-**Figure 4-11. The tenant portal on a mobile phone.**
+**Figure 4-7. The tenant portal on a mobile phone.**
 - *What it shows*: the tenant's screen on a phone (sample records).
 
 **If the panel asks**
@@ -1194,7 +1194,7 @@ The section then has four labelled parts.
 - The three qualities are ISO/IEC 25010 characteristics: functionality = **Functional Suitability**;
   responsiveness = time behaviour of **Performance Efficiency**; operational performance = capacity and
   **Reliability**.
-- Each test was assigned in advance to the sub-characteristics it measures (Table 3-9; Appendix M,
+- Each test was assigned in advance to the sub-characteristics it measures (Table 3-10; Appendix M,
   Table M-23).
 
 ### 4.3.1 Automated Verification
@@ -1433,7 +1433,7 @@ The section then has four labelled parts.
   1. Establish the evaluation requirements: Objective 4; the live system (and for four evaluators a
      demonstration copy); ISO/IEC 25010:2011; the landlady, tenants and evaluators.
   2. Specify the evaluation: measures from the tests (Table M-23); survey items assigned to
-     sub-characteristics (Table 3-9); criteria: Table 3-8 for means, and for tests "at least 90 percent
+     sub-characteristics (Table 3-10); criteria: Table 3-9 for means, and for tests "at least 90 percent
      passed with no critical defect open".
   3. Design the evaluation: measurements 29 September; walkthrough and acceptance test 30 September;
      evaluators' review 3 October; four more evaluators 15 to 18 October.
@@ -1480,7 +1480,7 @@ The section then has four labelled parts.
 ### 4.4.2 Interpretation of Scores
 
 **What it says**
-- Items use the scale of Table 3-7 and are read with Table 3-8.
+- Items use the scale of Table 3-8 and are read with Table 3-9.
 - A characteristic's composite is the **mean of its group means**. The users' composites (landlady,
   tenants, prospective tenants) are reported beside the technical evaluators'. Each overall is the mean
   of the characteristics that group rated: seven for the users (only the evaluators rated
@@ -1542,7 +1542,7 @@ The section then has four labelled parts.
 **Table 4-17. Summary of evaluation results**
 - *What it shows*: the final score for each characteristic. This is the table that proves Objective 4.
 - *How to read it*: two columns, the **users' mean** (14: the landlady, 10 tenants, 3 prospective
-  tenants) and the **technical evaluators' mean** (3), each with its interpretation from Table 3-8.
+  tenants) and the **technical evaluators' mean** (3), each with its interpretation from Table 3-9.
 - Values (users; evaluators): Functional Suitability 4.80; 4.93. Performance Efficiency 4.86; 4.89.
   Compatibility 4.79; 5.00. Usability 4.80; 4.87. Reliability 4.78; 4.83. Security 5.00; 4.93.
   Maintainability not rated; 4.73. Portability 4.83; 5.00.
@@ -1888,18 +1888,18 @@ shows the first build, the two iterations, the six dated events, and a dashed
 block for the Module 01 documents between the first build and Iteration 1. It is there to show the
 Agile schedule as it really ran.
 
-**Appendix D. Context Diagram.** The same image as Figure 4-3, placed here as the full-page version.
+**Appendix D. Context Diagram.** The same image as Figure 3-2, placed here as the full-page version.
 
-**Appendix E. Data Flow Diagram (Level 1).** The same image as Figure 4-4.
+**Appendix E. Data Flow Diagram (Level 1).** The same image as Figure 3-3.
 
 **Appendix F. Data Flow Diagrams (Level 2).** Figures F-1 to F-8 open each of the eight level 1
 processes into its steps, so the diagrams go down to Level 2 as Form 2 item 13 asks. A **Level 2
 diagram** is a more detailed drawing of one process. It is there to show
 the design one level deeper.
 
-**Appendix G. Use Case Diagram.** The same image as Figure 4-5.
+**Appendix G. Use Case Diagram.** The same image as Figure 3-4.
 
-**Appendix H. Entity-Relationship Diagram.** The same image as Figure 4-6.
+**Appendix H. Entity-Relationship Diagram.** The same image as Figure 3-5.
 
 **Appendix I. Initial Design.** Figures I-1 to I-4: four screens of the first working version, **28
 August 2026** (public landing page, a unit category, the tenant directory, the tenant overview on a
@@ -1915,7 +1915,7 @@ Section 1 (About you) sends each respondent to one section: Section 2 the landla
 "OWNER/LANDLADY"), Section 3 tenants, Section 4 technical evaluators, Section 5 prospective tenants
 ("LOOKING FOR A ROOM"). Each section ends with one required open comment; the prospective tenants'
 has two. Rated items: **landlady 28, tenants 18, technical evaluators 33, prospective tenants
-12**, numbered as in Table 3-9. It is there so the panel can see every question behind the means.
+12**, numbered as in Table 3-10. It is there so the panel can see every question behind the means.
 
 **Appendix K. User's Manual.** Part 1 for tenants (in English and Filipino) and Part 2 for the
 landlady: signing in, each screen, recording a payment or expense, tenants, rooms, repairs, inquiries,
@@ -1984,7 +1984,7 @@ defense; know them, and say what each part says.
 > date_paid_import_backup_032, rent_period_drift_backup_030). The
 > [Defense Q&A](STUDY_GUIDE_DEFENSE_QA.md) (Section 5) says both are right.
 
-> **Notes 2 to 4, fixed on 24 October 2026.** Appendix I now names the screens as Figures 4-7 to 4-11
+> **Notes 2 to 4, fixed on 24 October 2026.** Appendix I now names the screens as Figures 4-3 to 4-7
 > (it said 4-4 to 4-8), the appendix list gave Appendix M as Tables M-1 to M-27 (it said M-26). Appendix M now runs to
 M-31, so check the list says so.
 > and Appendix J now gives the survey as 30 September to 18 October 2026 (it said 4 October), matching
@@ -2019,7 +2019,7 @@ Say each answer aloud, in your own words, with one number and where it is in the
 12. What is the difference between measured quality and rated quality?
 13. Explain the weighted mean formula and work Table 4-16.
 14. Why the mean of group means? What is the result if every response is averaged together?
-15. Read the bands of Table 3-8. What range is Very High Quality?
+15. Read the bands of Table 3-9. What range is Very High Quality?
 16. Who were the seventeen respondents, and why did each group rate only some characteristics?
 17. How were the tenants sampled, and why three?
 18. How many requirements and business rules, and how were they graded on 16 September?

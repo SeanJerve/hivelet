@@ -117,7 +117,7 @@ do not report cash payments, because the landlady records every payment.
 
 *Answers Objective 2. Each feature the objective names has its own subsection.*
 
-Figures 5 to 9 model the system as built, and Figures 10 to 14 show its screens after the redesign
+Figure 5 shows the system's architecture, and Figures 10 to 14 show its screens after the redesign
 of the second iteration. The names, payments, expenses and repair requests in the screen figures are
 sample records, so that no real tenant's name or payment appears in any figure.
 
@@ -184,56 +184,11 @@ no equipment beyond the landlady's own laptop and phone.
 
 ![System architecture](figures/figure-5-system-architecture.png)
 
-Figure 6 is the context diagram: the system as one process, with the three parties outside it and the
-data that passes between them. Figure 7 opens it into eight processes and the stores each reads and
-writes, in the Gane and Sarson notation. A rounded rectangle is a process, a rectangle open on the
-right is a data store, and a shaded square is a party outside the system. To trace one path, the
-landlady records a cash receipt through process 4.0, Bill and record payments, which writes it to store
-D3, Bills and receipts. Process 7.0, Produce reports, reads it from there for the Overview and the
-Excel workbooks. The notifications and the audit record are written by nearly every process and are
-left out of Figure 7 for readability. The units store, D1, is drawn twice, the second time under
-processes 5.0 and 4.0, so that its lines cross no others. Adyen, the payment gateway, is drawn as part of
-the payment process rather than as a party outside the system, as in the data flow diagrams the
-researchers' Systems Analysis and Design professor approved. Taking a GCash payment through Adyen is step 4.3 of process
-4.0 (Appendix F), and Figure 5 shows where the gateway sits.
-
-*Figure 6. Context diagram.*
-
-![Context diagram](figures/figure-6-context-diagram.png)
-
-*Figure 7. Level 1 data flow diagram.*
-
-![Level 1 data flow diagram](figures/figure-7-data-flow-level-1.png)
-
-Figure 8 shows the same functions from the side of the people who use them. Each use case is a
-function the server grants to that role and refuses to every other (Table 7C).
-
-*Figure 8. Use case diagram.*
-
-![Use case diagram](figures/figure-8-use-case-diagram.png)
-
-Figure 9, in Crow's Foot notation, is the entity-relationship diagram drawn from the database's own
-catalogue: 21 tables, each with a primary key, and 37 foreign keys. It draws 27 of the keys. The
-other ten only record who made, changed, closed, verified or sent a row, and are left out so that
-the figure stays readable. Its two
-centers are the rooms table, which holds the units, and the profiles table, which holds the people.
-Every bill, payment, receipt, tenancy, repair request and inquiry belongs to one unit, and every
-tenancy, bill and payment to one person. The two ledgers are kept as the landlady kept them. The tables follow the third normal form, each
-column describing only its own table's key, with deliberate exceptions so that a record stays as it
-was made. A receipt keeps the name, occupants and amounts written on it, and a bill the amounts it was raised
-with. Receipts name their unit and tenant directly, since the 937 transferred from the workbook have no tenancy to point
-to, payments name theirs beside their bill, and a few totals are stored beside the figures they add
-up. Several
-rules live in the database itself, so no screen or script can bypass them. One unit cannot have two
-active tenancies, one invoice number cannot be used twice for the same unit and month, a gateway
-reference cannot be recorded twice, and the 50% Share and the remitted amount are computed columns.
-Table 7A is an extract of the data dictionary for the table the landlady reads most. The complete
-dictionary, every column of all 24 tables, is in Appendix N. It holds the 21 tables drawn in Figure 9
-and three that keep backups made before corrections to the data.
-
-*Figure 9. Entity-relationship diagram.*
-
-![Entity-relationship diagram](figures/figure-9-entity-relationship.png)
+The context diagram, the data flow diagrams, the use case diagram and the entity-relationship
+diagram were drawn in the design phase and are presented with it, in Chapter 3, Section 3.2.2
+(Figures 6 to 9). Table 7A is an extract of the data dictionary for the table the landlady reads
+most. The complete dictionary, every column of all 24 tables, is in Appendix N. It holds the 21
+tables drawn in Figure 9 and three that keep backups made before corrections to the data.
 
 **Table 7A.** Data dictionary extract: monthly income records
 

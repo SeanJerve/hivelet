@@ -30,10 +30,10 @@ Checked against the paper on 10 November 2026, and rows 2, 3, 5, 7 and 9 to 11 a
 | :--- | :--- | :--- | :--- |
 | 1 | The project realized the objectives: needs assessment, development method, deployment plan, evaluation | OK | 4.1, 4.2, 4.5 and 4.4 |
 | 2 | Developed with the method approved at the proposal defense | OK | Agile, Section 3.2. Confirm the panel approved Agile |
-| 3 | Context diagram, standard model (annex) | OK | Figure 4-3, Appendix D |
-| 4 | Data flow diagram, Gane and Sarson, down to Level 2 (annex) | OK | Figure 4-4, Appendix E, and Appendix F (Level 2, all eight processes) |
-| 5 | Use case diagram (annex) | OK | Figure 4-5, Appendix G |
-| 6 | Entity-relationship diagram, conceptually correct (annex) | OK | Figure 4-6, Appendix H |
+| 3 | Context diagram, standard model (annex) | OK | Figure 3-2, Appendix D |
+| 4 | Data flow diagram, Gane and Sarson, down to Level 2 (annex) | OK | Figure 3-3, Appendix E, and Appendix F (Level 2, all eight processes) |
+| 5 | Use case diagram (annex) | OK | Figure 3-4, Appendix G |
+| 6 | Entity-relationship diagram, conceptually correct (annex) | OK | Figure 3-5, Appendix H |
 
 ## Forms 4 to 9: what the team fills in
 

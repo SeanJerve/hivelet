@@ -94,11 +94,11 @@ only after she verifies it); maintenance ticketing and notification; roles and t
 **Slide 10. What a visitor and a tenant see** (30 s)
 "On the left, the public catalogue: a vacant unit, its rate and floor plan, and the inquiry form. On
 the right, the tenant's phone: what is due, and Pay with GCash. The names
-and payments in our figures are samples; the units and rates are real." [Figures 4-8, 4-11]
+and payments in our figures are samples; the units and rates are real." [Figures 4-4, 4-7]
 
 **Slide 11. What the landlady sees** (30 s)
 "Her ledger, in her workbook's own layout, and the repair board from request to done." [Figures
-4-9, 4-10]
+4-5, 4-6]
 
 **Slide 12. Security** (40 s)
 **Land: protections at every layer, and two weaknesses we name ourselves.**

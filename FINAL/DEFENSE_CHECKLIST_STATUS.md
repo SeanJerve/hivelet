@@ -29,10 +29,10 @@ Figure and table numbers are the final paper's (`FINAL/05_CHAPTER_4_...`), not t
 | 9 | UAT signed by the client | Appendix O, printed from `docs/FINAL MANUSCRIPT/UAT_SIGN_OFF_FORM.docx` | Waiting on the landlady's signature (P1) | Team, with the landlady |
 | 10 | Deployed or pilot-tested, with a Deployment Report and a Client or End-User Acceptance Form or MOA | **`FINAL/FORM_2_EVIDENCE/DEPLOYMENT_REPORT.md`**, and the acceptance form or MOA | Deployment Report **done 10 Nov**. **No acceptance form or MOA found.** Ask the FIC whether the signed UAT form of item 9 serves, or whether Module 06's form is separate | Team |
 | 11 | User manual complete, and the source code in version control and open to the Programming Adviser | Appendix K, and the repository link | Done, with one catch: if the repository goes private before the defense (P9), **add the Programming Adviser as a collaborator** | Sean |
-| 12 | Context Diagram in the standard model | Figure 4-3 and Appendix D | Done. Gane and Sarson, three outside parties: Adyen is part of process 4.0, as the SAD professor approved | |
-| 13 | Data Flow Diagram in Gane and Sarson notation, down to Level 2 | Figure 4-4 (Level 1) and Appendix F (Level 2, all eight processes, Figures F-1 to F-8) | Done | See the level naming note below |
-| 14 | Use Case Diagram | Figure 4-5 and Appendix G | Done | |
-| 15 | ERD or database diagram | Figure 4-6 and Appendix H, drawn from the live database catalogue | Done | |
+| 12 | Context Diagram in the standard model | Figure 3-2 and Appendix D | Done. Gane and Sarson, three outside parties: Adyen is part of process 4.0, as the SAD professor approved | |
+| 13 | Data Flow Diagram in Gane and Sarson notation, down to Level 2 | Figure 3-3 (Level 1) and Appendix F (Level 2, all eight processes, Figures F-1 to F-8) | Done | See the level naming note below |
+| 14 | Use Case Diagram | Figure 3-4 and Appendix G | Done | |
+| 15 | ERD or database diagram | Figure 3-5 and Appendix H, drawn from the live database catalogue | Done | |
 | 16, 17 | Consultation records with each adviser, signed sessions | `FINAL/FORM_2_EVIDENCE/CONSULTATION_RECORD.md`, one record for both, since Sir Jayvee is both advisers: 26 February, 2 March and 22 September 2026, and one before the final defense | Ready to print. Signatures open | Team, with Sir Jayvee |
 | 18, 19 | Forms 3A and 3B signed, all items ticked, the four diagram annexes attached to 3B | Forms 3A and 3B. The annexes are Appendices D, E and F, G and H. Each form is checked item by item in `FORM_2_EVIDENCE/FORMS_3A_3B_CHECK.md` | All 16 items of 3A and all 6 of 3B met (3A items 2, 3, 5 and 11 fixed in Chapters 1 and 2 on 10 Nov, item 11 again on 12 Nov when Booking Inquiry became Inquiry). Signatures open | Team |
 | 20, 21 | Mock defense held, every recommendation acted on | The mock defense evaluation and a list of actions taken | Open | Team. Send the recommendations and Claude records what was done |
@@ -61,7 +61,7 @@ Sean sent it on 4 November. It matches the paper's diagrams in style: Gane and S
    which keeps them balanced, and step 4.3 of Appendix F is "Take a GCash payment through Adyen".
    Section 4.2.1 says why. Figure 4-2 (the architecture) and the use case diagram still show Adyen,
    since those are not data flow diagrams.
-2. **Processes.** The lab has five. The paper's Figure 4-4 has eight, drawn from what was built, and
+2. **Processes.** The lab has five. The paper's Figure 3-3 has eight, drawn from what was built, and
    nothing is booked or approved online: a visitor sends an inquiry, the landlady answers it, may mark the unit Reserved and moves the person in. The
    lab was the planned design, and the paper shows the system as built, which is what Chapter 4
    reports and tests. If asked, say exactly that.

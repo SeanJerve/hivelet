@@ -493,8 +493,8 @@ take the chapters from the rebuilt `CLAUDE MANUSCRIPT.docx`.** These are left fo
 
 ### [x] 27. Still for Claude (done 13 November)
 
-- [x] Figure 4-4 redrawn: D1 is drawn twice, written by 3.0 and 5.0 and read by 4.0, as in
-  Appendix F. The text no longer says Figure 4-4 leaves it out.
+- [x] Figure 3-3 redrawn: D1 is drawn twice, written by 3.0 and 5.0 and read by 4.0, as in
+  Appendix F. The text no longer says Figure 3-3 leaves it out.
 - [x] Appendix L, Part T lists each of the 18 tasks as read to the tester, with what they should see.
 - [x] Appendix L now says how the 77 cases were re-checked on 4 November: no one signed in, and the
   checks were the suites, refused requests, a copy of the screens with a simulated sign-in, read-only

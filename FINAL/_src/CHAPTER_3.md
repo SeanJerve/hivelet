@@ -158,19 +158,71 @@ The questions were asked in person and in writing.
 | 17, 19 and 20 September 2026 | What is the rate of each unit today? | A rate for each of the 33 units, each agreeing with her receipts |
 | 1 October 2026 | How is a payment receipted when it has no invoice number? | It is given an acknowledgement receipt |
 
+**Tools and outputs.** The interviews and the written questions were the tools of this phase. Its
+outputs were 44 functional requirements, each traced to the part of the system that implements it
+(Chapter 4, Section 4.1.2), which the later phases followed.
+
 ### 3.2.2 Design
 
 In this phase the requirements were turned into the system's architecture and into working
 prototypes of its screens, built in code as described in Section 3.1.1, for three kinds of user: the
 public, tenants and the administrator. The system was modeled with a context diagram, data flow
 diagrams in the Gane and Sarson notation down to the second level, a use case diagram and an
-entity-relationship diagram (Chapter 4, Figures 6 to 9, and Appendix F). Each prototype was reviewed
+entity-relationship diagram (Figures 6 to 9 below, and Appendix F). Each prototype was reviewed
 with the landlady on the device she uses, and the findings were applied in the next iteration
 (Chapter 4, Table 23). Because the
 boarding house has limited infrastructure, unstable internet and a single administrator, Hivelet was
 designed as a lightweight PWA with simple navigation and low device requirements. The workflows for
 inquiries and reservations, financial tracking and maintenance requests were mapped first and then
 refined from the feedback of the landlady and the tenants.
+
+The models were drawn in this phase from the requirements and redrawn whenever the system changed,
+so that they show the system as built. Figure 6 is the context diagram: the system as one process, with the three parties outside it and the
+data that passes between them. Figure 7 opens it into eight processes and the stores each reads and
+writes, in the Gane and Sarson notation. A rounded rectangle is a process, a rectangle open on the
+right is a data store, and a shaded square is a party outside the system. To trace one path, the
+landlady records a cash receipt through process 4.0, Bill and record payments, which writes it to store
+D3, Bills and receipts. Process 7.0, Produce reports, reads it from there for the Overview and the
+Excel workbooks. The notifications and the audit record are written by nearly every process and are
+left out of Figure 7 for readability. The units store, D1, is drawn twice, the second time under
+processes 5.0 and 4.0, so that its lines cross no others. Adyen, the payment gateway, is drawn as part of
+the payment process rather than as a party outside the system, as in the data flow diagrams the
+researchers' Systems Analysis and Design professor approved. Taking a GCash payment through Adyen is step 4.3 of process
+4.0 (Appendix F), and Chapter 4, Figure 5 shows where the gateway sits.
+
+*Figure 6. Context diagram.*
+
+![Context diagram](figures/figure-6-context-diagram.png)
+
+*Figure 7. Level 1 data flow diagram.*
+
+![Level 1 data flow diagram](figures/figure-7-data-flow-level-1.png)
+
+Figure 8 shows the same functions from the side of the people who use them. Each use case is a
+function the server grants to that role and refuses to every other (Chapter 4, Table 7C).
+
+*Figure 8. Use case diagram.*
+
+![Use case diagram](figures/figure-8-use-case-diagram.png)
+
+Figure 9, in Crow's Foot notation, is the entity-relationship diagram drawn from the database's own
+catalogue: 21 tables, each with a primary key, and 37 foreign keys. It draws 27 of the keys. The
+other ten only record who made, changed, closed, verified or sent a row, and are left out so that
+the figure stays readable. Its two centers are the rooms table, which holds the units, and the profiles table, which holds the people.
+Every bill, payment, receipt, tenancy, repair request and inquiry belongs to one unit, and every
+tenancy, bill and payment to one person. The two ledgers are kept as the landlady kept them. The tables follow the third normal form, each
+column describing only its own table's key, with deliberate exceptions so that a record stays as it
+was made. A receipt keeps the name, occupants and amounts written on it, and a bill the amounts it was raised
+with. Receipts name their unit and tenant directly, since the 937 transferred from the workbook have no tenancy to point
+to, payments name theirs beside their bill, and a few totals are stored beside the figures they add
+up. Several
+rules live in the database itself, so no screen or script can bypass them. One unit cannot have two
+active tenancies, one invoice number cannot be used twice for the same unit and month, a gateway
+reference cannot be recorded twice, and the 50% Share and the remitted amount are computed columns.
+
+*Figure 9. Entity-relationship diagram.*
+
+![Entity-relationship diagram](figures/figure-9-entity-relationship.png)
 
 Because the screens were prototyped in code, the first design was the first working version itself,
 as it stood on 28 August 2026 (Figures 3a to 3c). In the first iteration, the business rule register was
@@ -183,9 +235,7 @@ at a glance, and signing in, sending an inquiry and the conversation that follow
 screen.
 
 Figures 3a to 3c show three screens of the first working version, and Figure 3d shows one screen
-before and after the redesign of the second iteration. The tenants in them are sample records. The
-models of the system as built, its context diagram, data flow diagrams, use case diagram and
-entity-relationship diagram, are in Chapter 4, Figures 6 to 9.
+before and after the redesign of the second iteration. The tenants in them are sample records.
 
 *Figure 3a. Public landing page of the first working version, 28 August 2026.*
 
@@ -202,6 +252,11 @@ entity-relationship diagram, are in Chapter 4, Figures 6 to 9.
 *Figure 3d. A tenant's overview on a phone, on 28 August 2026 (left) and after the redesign of the second iteration (right).*
 
 ![A tenant's overview before and after the redesign](figures/figure-3-design-before-after.png)
+
+**Tools and outputs.** The screens were prototyped in code with the tools of Section 3.1.1 and tried
+on the landlady's own phone, and the design rules they follow, for color, type, layout and wording,
+were written down in the system's design guideline. The outputs of this phase were the models in
+Figures 6 to 9 and Appendix F, the screen prototypes, and the design guideline.
 
 ### 3.2.3 Development
 
@@ -243,6 +298,31 @@ screens closed to tenants and the public. The repository's layout is in Appendix
 *Figure 3g. Excerpt of the code: the role check on the server (backend/src/middleware/auth.ts).*
 
 ![Role check](figures/figure-3-dev-role-check.png)
+
+**How the code was written.** Each change followed the same steps. A researcher wrote it in Visual
+Studio Code on a laptop, with the help of the AI coding assistant described in Section 3.1.1, and
+ran the system locally to try it. The automated checks of Section 3.2.4 were run, and the change was
+then saved to the project's version history with Git, with a message describing the change, and shared through a GitHub repository. A check that runs before every commit refuses any
+change that contains a password or key. Changes to the database were written as numbered
+migrations, and a change to the records was run only after a backup and its result read back. The work was
+divided between two computers, the server and the database on one and the screens and the documents
+on the other, and each pulled the other's changes before sharing its own.
+
+**Tools and outputs.** Table 3F lists the records kept while the system was developed. They are the
+documentation of the process: each says what was done, when and why, and the repository keeps all of
+them.
+
+**Table 3F.** Records kept during development
+
+| Record | What it holds |
+| :--- | :--- |
+| Version history (Git, on GitHub) | 2,137 commits from 24 July to 19 November 2026, each with its date and a message describing the change (Figure 3e) |
+| Business rule register | 49 rules, each with its evidence |
+| Requirements traceability matrix | The 44 functional requirements, each traced to the part of the system that implements it |
+| Database migrations | 91 numbered changes to the database, applied in order (Appendix Q) |
+| Screen contract | Every screen and every call it makes to the server, and which calls write |
+| Automated check suites | 21 suites, run after every significant change (Section 3.2.4) |
+| Design guideline | The rules the screens follow for color, type, layout and wording |
 
 ### 3.2.4 Testing
 
@@ -307,6 +387,11 @@ line is one assertion, and the suite passes only if every assertion does.
 | O-01 | The application is installed from Chrome on an Android phone | The Hivelet icon on the home screen | Pass |
 | S-01 | The public site is scanned by the Mozilla HTTP Observatory | A grade for its security headers | Pass, A+ (115 of 100) |
 
+**Tools and outputs.** The check suites ran in Node.js, and the offline, installation, accessibility
+and simultaneous-use tests in an automated Chrome browser. The outputs were the 114 test cases with
+their results (Appendix L), the observers' record of each task, and the survey answers (Section
+3.3).
+
 ### 3.2.5 Deployment
 
 The Hivelet system was deployed to Vercel, a cloud hosting service, with its database hosted on
@@ -330,6 +415,12 @@ hivelet.vercel.app on a phone.
 *Figure 3h. The deployed system at hivelet.vercel.app on a phone.*
 
 ![The deployed system on a phone](figures/figure-3-deploy-live-site-phone.png)
+
+**How it was deployed.** Vercel builds and serves the screens and the server program from the
+configuration kept in the repository, and the database runs on Supabase. The keys the system needs
+are kept in Vercel's settings, never in the code. Each change to the database was applied as a
+numbered migration after a backup, and the payment gateway sends its notifications to the deployed
+address.
 
 ### 3.2.6 Review and Maintenance
 
@@ -356,6 +447,10 @@ of what each found, and Appendix M, Table M-18 lists every change.
 | Technical evaluators' review | 3 to 5 October 2026 | 14 |
 | The survey, first round | After each group's use of the system | 4 |
 | Second round of users and technical evaluators | 31 October to 12 November 2026 | None asked for by the technical evaluators |
+
+**Tools and outputs.** Each finding and what was done about it was recorded in Appendix M, Table
+M-18, so that every change made in response to the evaluation can be traced to the finding behind
+it.
 
 ## 3.3 Evaluation Procedure
 

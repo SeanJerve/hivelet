@@ -36,7 +36,7 @@ Its passwords are with Sean; never type them where the projector shows them.
    version (seen 13 October: a laptop's saved copy still had the street misspelled after the fix
    went live).
 8. **Ask the landlady** whether the panel may see her own screens. If she says no, show her side only
-      through the figures (Figures 4-7 to 4-10 use sample records).
+      through the figures (Figures 4-3 to 4-6 use sample records).
 9. **Prepare the audit trail tab.** On the laptop, sign in to Supabase, open the project's **SQL
    Editor**, paste the query below, run it once to check it answers, and save it as "Audit trail,
    unit PH". It only reads, and it shows only unit PH's repair requests, with the role of who acted

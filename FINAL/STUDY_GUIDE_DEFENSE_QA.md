@@ -231,7 +231,7 @@ either one (the code with their phone number) opens the conversation, where the 
 and they can write back. The link's secret is stored only hashed. *Section 4.2.3.*
 
 **How many tables does the database have? Your ERD says 21 and Appendix N says 24.**
-Both are right. The ERD (Figure 4-6, drawn from the catalogue on 5 October) shows the 21 working
+Both are right. The ERD (Figure 3-5, drawn from the catalogue on 5 October) shows the 21 working
 tables with 37 foreign keys. Appendix N lists all 24, which adds three backup tables kept from data
 corrections. *Section 4.2.1; Appendix N.*
 
@@ -281,7 +281,7 @@ No, it can be voided: it is kept, marked with when, by whom and why, and drops o
 Their own unit, rent and amount due, their payments month by month (only receipts the landlady verified
 count as paid, and a month with no receipt says "Not recorded", never "owed"), their repair requests,
 notifications and details, and the deposit held for them, shown since 13 October after a survey
-answer asked for it, on their Overview since 5 November. *Sections 4.2.2, 4.2.4, 4.2.7; Figure 4-11.*
+answer asked for it, on their Overview since 5 November. *Sections 4.2.2, 4.2.4, 4.2.7; Figure 4-7.*
 
 **Why "Not recorded" instead of "Unpaid"?**
 Because the records alone cannot tell an unpaid month from one the landlady has not entered yet. Saying
