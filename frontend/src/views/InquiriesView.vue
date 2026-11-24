@@ -11,7 +11,7 @@ import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed,
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
-import { ArrowLeft, Inbox, Phone, Send, Loader2, UserPlus, XCircle, Trash2 } from 'lucide-vue-next';
+import { ArrowLeft, Inbox, Phone, Send, Loader2, UserPlus, XCircle, Trash2, Bookmark, BookmarkX } from 'lucide-vue-next';
 import { sortRows, orderOptions, type RowOrder } from '@/lib/rowOrder';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import { screenRef, screenLoaded } from '@/lib/screenCache';
@@ -173,6 +173,58 @@ function handleCloseLead() {
         isSubmitting.value = false;
       }
     }
+  );
+}
+
+/**
+ * Reserve the unit from the conversation (Lloyd, 24 Nov 2026): the moment she agrees with a prospect
+ * is in the thread, so the button is here as well as in the unit editor's Status menu, which stays
+ * for arrangements made outside the system. Same request the editor sends, status only
+ * (PATCH /admin/rooms/:roomId, audited as ROOM_UPDATE). A Reserved unit refuses new inquiries
+ * (BR-006, public.ts); this conversation stays open, and Move them in still sets it Occupied.
+ *
+ * Offered only on a vacant unit, and Unreserve only on a reserved one. Unreserving goes back to
+ * Occupied if someone already lives there (reserved by hand for a coming vacancy), else Available.
+ * Never offered on rates that did not load: a seeded room has no real id to send.
+ */
+const reserveAction = computed<'reserve' | 'unreserve' | null>(() => {
+  const unit = activeUnit.value;
+  if (!unit || !roomsLoaded.value || roomsFetchFailed.value) return null;
+  if (unit.status === 'vacant') return 'reserve';
+  if (unit.status === 'pending') return 'unreserve';
+  return null;
+});
+
+function handleReserveToggle() {
+  const inq = activeInquiry.value;
+  const unit = activeUnit.value;
+  const action = reserveAction.value;
+  if (!inq || !unit || !action) return;
+  const code = unit.unitCode.toUpperCase();
+  const next = action === 'reserve' ? 'Reserved' : unit.tenant ? 'Occupied' : 'Available';
+
+  showConfirm(
+    action === 'reserve' ? `Reserve unit ${code}?` : `Unreserve unit ${code}?`,
+    action === 'reserve'
+      ? `For ${inq.name}.\n\nNew inquiries about ${code} will be refused until you unreserve it. This conversation stays open, and you can still move them in.`
+      : `${code} will take new inquiries again.`,
+    async () => {
+      isSubmitting.value = true;
+      try {
+        await api.patch(`/admin/rooms/${unit.id}`, { operational_status: next });
+        await fetchRooms();
+        showToast(
+          'success',
+          action === 'reserve' ? `Unit ${code} reserved` : `Unit ${code} unreserved`,
+          action === 'reserve' ? `Held for ${inq.name}. New inquiries about it are refused.` : `It takes new inquiries again.`
+        );
+      } catch (err: any) {
+        showToast('error', failureTitle(err, 'Not changed'), err?.message || `Unit ${code} was not changed.`);
+      } finally {
+        isSubmitting.value = false;
+      }
+    },
+    action === 'reserve' ? 'Reserve unit' : 'Unreserve'
   );
 }
 
@@ -716,6 +768,19 @@ async function handleSendReply() {
                 >
                   <XCircle class="size-3.5" aria-hidden="true" />
                   <span>Close inquiry</span>
+                </button>
+
+                <button
+                  v-if="reserveAction"
+                  type="button"
+                  class="pill-btn-quiet max-xl:flex-1"
+                  :disabled="isSubmitting || writesUnavailable"
+                  :title="writesUnavailable ? 'Needs a connection' : undefined"
+                  @click="handleReserveToggle"
+                >
+                  <Bookmark v-if="reserveAction === 'reserve'" class="size-3.5" aria-hidden="true" />
+                  <BookmarkX v-else class="size-3.5" aria-hidden="true" />
+                  <span>{{ reserveAction === 'reserve' ? 'Reserve unit' : 'Unreserve' }}</span>
                 </button>
 
                 <button
