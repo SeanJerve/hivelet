@@ -112,41 +112,17 @@ async function submitInquiry() {
 
   isSubmitting.value = true;
   try {
-    // `inquiries.room_id` is required, and this form is a general enquiry with no
-    // unit attached. Every message from this page used to be filed against
-    // `publicRooms[0]` - unit 1a - so the landlady's inbox attributed general
-    // interest to one specific room regardless of what the prospect wanted.
-    // A vacant unit is a better guess than an arbitrary one, and the message body
-    // carries what they actually asked.
-    const publicRooms = await api.get<any[]>('/public/rooms', false);
-    const available = (publicRooms ?? []).filter(
-      (r) => String(r.operational_status || '').toLowerCase() === 'available'
-    );
     /**
-     * NEVER FALL BACK ONTO A RESERVED UNIT.
+     * A general inquiry names no unit (migration 092, Lloyd, 24 Nov 2026).
      *
-     * The fallback was `available[0] ?? publicRooms[0]`, and BR-006 makes the
-     * endpoint refuse a Reserved unit outright. So on a day with no vacancy the
-     * general enquiry form filed against whatever unit happened to be first -
-     * and if that one was Reserved, answered "Room 1a is currently reserved and
-     * is not accepting new inquiries" to somebody who had never mentioned a
-     * room. A refusal about a unit they did not ask about is worse than no
-     * vacancy, which is at least true.
+     * `inquiries.room_id` used to be required, so this page guessed: a vacant unit if any, else
+     * the first unit that was not Reserved. With every unit occupied, every general inquiry was
+     * filed against unit 1A, a room the visitor never mentioned, and the landlady's inbox said
+     * so. Now it is sent with no unit and her inbox shows it as a general inquiry. Asking about
+     * one unit is done from that unit's page, which still names it.
      */
-    const anyNotReserved = (publicRooms ?? []).find(
-      (r) => String(r.operational_status || '').toLowerCase() !== 'reserved'
-    );
-    const defaultRoom = available[0] ?? anyNotReserved ?? null;
-
-    if (!defaultRoom) {
-      formError.value =
-        'Your message was not sent: no unit is open for inquiries right now. Try again in a ' +
-        `few days, or call us on ${LANDLADY.phoneShown.replace(/ /g, '\u00a0')}.`; // no-break: the number never splits over two lines (audit 2026-10-09)
-      return;
-    }
-
-    const saved = await api.post<{ conversation?: { token: string; referenceCode: string } | null; room_id?: string }>('/public/inquiries', {
-      roomId: defaultRoom.id,
+    const saved = await api.post<{ conversation?: { token: string; referenceCode: string } | null; room_id?: string | null }>('/public/inquiries', {
+      roomId: null,
       prospectName: inquiryName.value.trim(),
       prospectPhone: inquiryPhone.value.trim(),
       message: inquiryMsg.value.trim(),

@@ -27,6 +27,7 @@ import {
   fetchTenants,
   fetchInquiries,
   inquiries,
+  inquiryUnitLabel,
   inquiriesFetchFailed,
   waterChargeFor,
   type RoomItem,
@@ -1055,7 +1056,7 @@ const archiveExpensesLink = computed(() => `/admin/expenses?year=${selectedArchi
                   :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 >
                   <span class="break-words text-lg font-semibold leading-snug">{{ q.name }}</span>
-                  <span class="text-lg font-semibold">Unit {{ q.unit.toUpperCase() }}</span>
+                  <span class="text-lg font-semibold">{{ inquiryUnitLabel(q.unit) }}</span>
                   <span class="text-sm text-ink-soft">{{ q.date }}</span>
                 </li>
               </ul>

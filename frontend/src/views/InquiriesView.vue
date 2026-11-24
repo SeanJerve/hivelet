@@ -7,7 +7,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useLiveRefresh } from '@/lib/live';
 import { writesUnavailable } from '@/lib/offlineCache';
 import { useRoute, useRouter } from 'vue-router';
-import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, roomsLoaded, fetchRooms, showToast } from '@/lib/systemState';
+import { inquiries, inquiryUnitLabel, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, roomsLoaded, fetchRooms, showToast } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
@@ -142,7 +142,7 @@ function handleDeleteInquiry() {
   );
   deletePreview.value = {
     name: inq.name,
-    detail: [`Unit ${inq.unit.toUpperCase()}`, showPhone(inq.phone)].filter(Boolean).join(', '),
+    detail: [inquiryUnitLabel(inq.unit), showPhone(inq.phone)].filter(Boolean).join(', '),
     date: inq.date,
     messages: [...activeMessages.value],
   };
@@ -160,7 +160,7 @@ function handleCloseLead() {
 
   showConfirm(
     'Close this inquiry?',
-    `${inq.name}, unit ${inq.unit.toUpperCase()}.\n\nYou can still read it, but they will no longer be able to write back.`,
+    `${inq.name}, ${inq.unit ? `unit ${inq.unit.toUpperCase()}` : 'general inquiry'}.\n\nYou can still read it, but they will no longer be able to write back.`,
     async () => {
       isSubmitting.value = true;
       try {
@@ -362,6 +362,8 @@ watch(conversationOpen, async (open, wasOpen) => {
 
 const activeUnit = computed(() => {
   if (!activeInquiry.value) return null;
+  // A general inquiry names no unit (migration 092): no unit, no rate, no Reserve button.
+  if (!activeInquiry.value.unit) return null;
   return rooms.find(u => u.unitCode.toLowerCase() === activeInquiry.value?.unit.toLowerCase()) || null;
 });
 
@@ -647,7 +649,7 @@ async function handleSendReply() {
 
                 <div class="mt-1.5 flex flex-wrap items-center gap-2">
                   <span class="text-sm font-semibold text-brand">
-                    Unit {{ inq.unit.toUpperCase() }}
+                    {{ inquiryUnitLabel(inq.unit) }}
                   </span>
                   <StatusPill :tone="statusTone(inq.status)">{{ statusWord(inq.status) }}</StatusPill>
                 </div>
@@ -693,6 +695,7 @@ async function handleSendReply() {
               <p v-if="activeUnit" class="truncate text-xs text-ink-soft xl:hidden">
                 Unit <span class="font-semibold uppercase">{{ activeUnit.unitCode }}</span><template v-if="roomsLoaded && !roomsFetchFailed">, {{ peso(activeUnit.price) }} a month</template>
               </p>
+              <p v-else-if="!activeInquiry.unit" class="truncate text-xs text-ink-soft xl:hidden">General inquiry, no unit named</p>
               <span
                 v-if="activeInquiry.referenceCode"
                 class="tabular text-xs tracking-[0.08em] text-ink-faint max-xl:hidden"
@@ -754,6 +757,10 @@ async function handleSendReply() {
                   <span class="tabular font-semibold text-ink">{{ peso(activeUnit.price) }}</span>
                   a month</template
                 >
+              </p>
+              <p v-else-if="!activeInquiry.unit" class="mt-2 text-sm text-ink-soft max-xl:hidden">
+                <span class="font-semibold text-ink">General inquiry</span>, no unit named. Ask which unit
+                they want; Move them in lets you choose it.
               </p>
             </div>
 

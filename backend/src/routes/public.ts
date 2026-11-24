@@ -188,7 +188,12 @@ router.get(
 );
 
 const inquirySchema = z.object({
-  roomId: z.string().uuid('A valid room must be selected.'),
+  /**
+   * Optional since migration 092 (Lloyd, 24 Nov 2026). An inquiry from a unit's own page names
+   * that unit; one from the general "Inquire now" page names none. It used to be required, so
+   * that page guessed a unit, and with every unit occupied every general inquiry landed on 1A.
+   */
+  roomId: z.string().uuid('A valid room must be selected.').nullish(),
   prospectName: z.string().min(2).max(120),
   // No email (Sean, 20 Oct 2026; migration 085): the inquiry is answered on its own page and by
   // phone. An older copy of the form that still sends one has it dropped here, unread.
@@ -237,33 +242,38 @@ router.post(
       throw ApiError.tooManyRequests('Too many inquiries are arriving right now. Please try again in a few minutes.');
     }
 
-    const { data: room, error: roomError } = await db
-      .from('rooms')
-      .select('id, room_number, operational_status, visibility_status')
-      .eq('id', input.roomId)
-      .maybeSingle<{
-        id: string;
-        room_number: string;
-        operational_status: string;
-        visibility_status: string;
-      }>();
+    // A general inquiry names no unit, so there is no room to check (migration 092).
+    let room: { id: string; room_number: string } | null = null;
+    if (input.roomId) {
+      const { data: found, error: roomError } = await db
+        .from('rooms')
+        .select('id, room_number, operational_status, visibility_status')
+        .eq('id', input.roomId)
+        .maybeSingle<{
+          id: string;
+          room_number: string;
+          operational_status: string;
+          visibility_status: string;
+        }>();
 
-    if (roomError) throw ApiError.internal(roomError.message);
-    if (!room || room.visibility_status !== 'Published') {
-      throw ApiError.notFound('Room not found.');
-    }
+      if (roomError) throw ApiError.internal(roomError.message);
+      if (!found || found.visibility_status !== 'Published') {
+        throw ApiError.notFound('Room not found.');
+      }
 
-    // BR-006 — reservation blocks new inquiries for that room.
-    if (room.operational_status === 'Reserved') {
-      throw ApiError.conflict(
-        `Room ${room.room_number} is currently reserved and is not accepting new inquiries.`
-      );
+      // BR-006 — reservation blocks new inquiries for that room.
+      if (found.operational_status === 'Reserved') {
+        throw ApiError.conflict(
+          `Room ${found.room_number} is currently reserved and is not accepting new inquiries.`
+        );
+      }
+      room = found;
     }
 
     const { data, error } = await db
       .from('inquiries')
       .insert({
-        room_id: input.roomId,
+        room_id: room?.id ?? null,
         prospect_name: input.prospectName,
         prospect_phone: input.prospectPhone,
         message: input.message,
@@ -295,13 +305,15 @@ router.post(
       action: 'INQUIRY_CREATE',
       entityType: 'INQUIRY',
       entityId: data.id,
-      newValues: { room_id: input.roomId, prospect_name: input.prospectName },
+      newValues: { room_id: room?.id ?? null, prospect_name: input.prospectName },
     });
 
     // Notify Landlady about the new prospective inquiry
     await notificationService.notify({
       title: 'New inquiry',
-      message: `${input.prospectName} submitted an inquiry for Room ${room.room_number}.`,
+      message: room
+        ? `${input.prospectName} submitted an inquiry for Room ${room.room_number}.`
+        : `${input.prospectName} sent a general inquiry (no unit named).`,
       type: 'Inquiry',
       priority: 'Medium',
       relatedEntityType: 'INQUIRY',

@@ -459,6 +459,11 @@ export const expenseRecords = reactive<ExpenseRecord[]>([]);
 export const maintenanceTickets = reactive<MaintenanceTicket[]>([]);
 export const inquiries = reactive<Inquiry[]>([]);
 
+/** "Unit 1A", or "General inquiry" for one sent from the general page with no unit (migration 092). */
+export function inquiryUnitLabel(unit: string): string {
+  return unit ? `Unit ${unit.toUpperCase()}` : 'General inquiry';
+}
+
 /**
  * Set when the matching fetch below could not refresh its array - a rejected
  * request, or a response that carried no rows. The array itself is left at
@@ -1337,7 +1342,8 @@ export async function fetchInquiries(opts: { quiet?: boolean } = {}): Promise<In
     if (Array.isArray(res)) {
       const mapped: Inquiry[] = res.map((i: any) => {
         // Her spelling, not ours - see the note in `fetchRooms` above.
-        const unit = i.rooms?.room_number || '—';
+        // Empty for a general inquiry, which names no unit (migration 092); the inbox says so.
+        const unit = i.rooms?.room_number || '';
         const dateFormatted = i.created_at 
           ? new Date(i.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : NOT_RECORDED;

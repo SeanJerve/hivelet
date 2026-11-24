@@ -1,0 +1,21 @@
+-- 092 - an inquiry may name no unit
+--
+-- Lloyd, 24 Nov 2026: the public "Inquire now" page is a general inquiry, but `inquiries.room_id`
+-- was required, so the page had to guess a unit for it: a vacant one if any, else the first unit
+-- that was not Reserved. With all 33 units occupied, every general inquiry was filed against
+-- unit 1A, a room the visitor never mentioned. An inquiry sent from a unit's own page still names
+-- that unit; one sent from the general page now names none, and the landlady sees it as a
+-- general inquiry.
+--
+-- Schema only: nothing is deleted or rewritten, and every existing inquiry keeps its unit.
+-- Checked in the catalogue on 24 Nov 2026: `inquiries_room_id_fkey` (ON DELETE CASCADE) accepts
+-- NULL, `idx_inquiries_room` is a plain index, no policy or trigger reads the column, and the one
+-- function that mentions the table, `live_version`, does not read `room_id`. Only its NOT NULL
+-- stood in the way.
+--
+-- Backup taken before this migration: backups/2026-11-24T01-19-16 (26,559 rows, 21 tables).
+-- Verify:
+--   SELECT is_nullable FROM information_schema.columns
+--    WHERE table_schema = 'public' AND table_name = 'inquiries' AND column_name = 'room_id';   -- YES
+
+ALTER TABLE inquiries ALTER COLUMN room_id DROP NOT NULL;
