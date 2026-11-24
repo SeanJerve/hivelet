@@ -130,54 +130,58 @@ system can be traced, coordinated, and followed to completion.
 
 ### 2.1.5 Progressive Web Applications as an Accessibility and Integration Framework
 
-A centralized system also has to be reachable on the devices and connections its users have. PWAs
-provide a technological framework for meeting that need in resource-constrained environments
-(Biørn-Hansen et al., 2017; Muawwal, 2024).
+Bringing the records into one system helps only if the people who need them can open it. At a small
+boarding house, that means a landlady on an ordinary laptop or phone and tenants on their own
+handsets, often on a connection that is not stable. The literature points to Progressive Web
+Applications (PWAs) as one way to meet that need where resources are limited (Biørn-Hansen et al.,
+2017; Muawwal, 2024).
 
-Muawwal (2024) shows that a PWA, built from a web app manifest and a service worker, gives a website
-the features of an installed application without a separate native application for each platform:
-it could be installed on mobile and desktop devices and remained accessible offline or on an unstable
-connection. Biørn-Hansen et al. (2017) likewise explain that PWAs reduce development complexity by
-letting a single application operate across multiple platforms without separate native
-implementations. Because a PWA is used like an installed application but delivered as a website, its
-usability has also been given heuristics of its own (Anuar & Othman, 2024).
+A PWA is still a website. Muawwal (2024) explains that two additions, a web app manifest and a
+service worker, are what let it be installed on a phone or a computer and stay usable offline or on
+an unstable connection, with no separate native app to build for each platform. Biørn-Hansen et al.
+(2017) make a similar point from the developer's side: a single application runs across several
+platforms, which spares the work of writing and maintaining separate native versions. Because people
+use a PWA as they would an installed app while it is still delivered through the browser, Anuar and
+Othman (2024) set out usability heuristics written for PWAs in particular.
 
-These characteristics matter in small-scale apartment operations, where limited infrastructure,
-inconsistent connectivity, and varied devices can keep conventional enterprise systems out of reach.
-Mia et al. (2024) found that small Philippine enterprises adopted the digital tools they already
-knew and could use at no upfront cost, such as social media, and that what held back adoption was
-less money or skill than the owners' hesitation and readiness, including doubt that a tool fits how
-the business already works. Accessibility, simplicity of deployment, and a fit with existing practice
-are therefore critical considerations. A PWA serves as the delivery layer that keeps the centralized
-functions of an MIS accessible across devices and conditions.
+This matters for a property like the one in this study. Small operations rarely have the
+infrastructure, the steady connection or the matching devices that conventional enterprise systems
+take for granted. Mia et al. (2024) saw the same pattern among small Philippine enterprises: owners
+stayed with tools they already knew and could use without paying upfront, social media among them,
+and what slowed adoption was less a lack of money or skill than the owners' hesitation and
+readiness, including doubt that a new tool would suit the way the business already ran. A system for
+such a setting has to be easy to reach, easy to set up and close to existing practice. In this
+study, the PWA is the layer that carries the centralized functions of the MIS to whatever device the
+landlady or a tenant has at hand.
 
 ### 2.1.6 Synthesis of Literature
 
-The reviewed literature shows that the inefficiencies of apartment management come mainly from
-fragmented administration rather than from a complete absence of digital technologies. Property
-management studies find systems that do not connect with one another and records that are
-disorganized and inaccurate (Burke, 2026; Magno et al., 2024). Information systems and software
-engineering literature links better decisions to the quality of the data an organization holds and
-analyzes (Ghasemaghaei et al., 2018) and credits integrated systems with reducing redundancy and
-streamlining the flow of data (Pressman & Maxim, 2020).
+Taken together, the studies reviewed lead to one conclusion: apartment management is inefficient
+mostly because its administration is split into separate pieces, not because no digital tools exist.
+Studies of property management describe systems that do not connect with one another and records
+that are disorganized and inaccurate (Burke, 2026; Magno et al., 2024). In information systems,
+better decisions are tied to the quality of the data an organization keeps and analyzes
+(Ghasemaghaei et al., 2018), and in software engineering, integrated systems are credited with
+cutting redundant work and smoothing the flow of data (Pressman & Maxim, 2020).
 
-Financial studies further show that structured payment records improve administrative oversight and
-transparency (Encarnacion et al., 2025; Magno et al., 2024). Communication and maintenance studies
-emphasize that accountability improves when issues are resolved through structured digital workflows
-rather than informal communication channels (Jing & Lim, 2021; Saputra et al., 2025).
+The same holds for money and for repairs. Payment records kept in a structured form give the person
+in charge better oversight and make the accounts more transparent (Encarnacion et al., 2025; Magno
+et al., 2024). Requests handled through a structured digital workflow, instead of through chat or
+word of mouth, make it clearer who is responsible for each one (Jing & Lim, 2021; Saputra et al.,
+2025).
 
-PWA literature shows how these integrated functions can stay accessible across varying device
-conditions (Biørn-Hansen et al., 2017; Muawwal, 2024), which matters for small enterprises that
-hesitate over tools that do not fit their practice (Mia et al., 2024). Recent housing systems have
-also been evaluated with ISO/IEC 25010 (Canlas et al., 2026; Pernate et al., 2025), the quality model
-this study uses.
+Two further strands complete the picture. The PWA studies show how these functions can remain within
+reach across different devices and connections (Biørn-Hansen et al., 2017; Muawwal, 2024), which is
+important because small enterprises are wary of tools that do not fit the way they already work (Mia
+et al., 2024). Recent housing systems were also judged against ISO/IEC 25010 (Canlas et al., 2026;
+Pernate et al., 2025), the same quality model used in this study.
 
-Yet the systems these studies describe are mostly built in isolation. They frequently address one
-function, such as financial management, communication, or tenant tracking, and so remain partial
-solutions that do not address how apartment management workflows depend on one another. The
-literature therefore points to the need for one system that centralizes administrative processes,
-formalizes communication, supports financial monitoring, and remains accessible in resource-constrained
-residential settings. Appendix R maps these studies by theme, from the problem to the gap this study
+What is still missing is a system that brings these parts together. Most of the systems described
+were built on their own and cover a single function, whether finances, communication or the tracking
+of tenants, so each solves part of the problem and leaves out how the steps of apartment management
+depend on one another. The need that follows is for one system that centralizes the administrative
+work, gives communication a formal channel, supports financial monitoring and stays usable where
+resources are limited. Appendix R maps the studies by theme, from the problem to the gap this study
 fills.
 
 ## 2.2 Gap Bridged by the Study
