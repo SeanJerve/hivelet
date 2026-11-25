@@ -2,76 +2,75 @@
 
 This chapter sets out the theoretical and empirical basis of the Hivelet system from the literature
 on property management systems, Management Information Systems (MIS), financial analytics, digital
-communication systems, and Progressive Web Applications (PWA). It treats these domains as connected
-parts of one apartment management operation, and argues that the inefficiencies of small-scale
-residential operations come mainly from fragmented administration, in which records, financial
-monitoring, communication, and coordination sit in disconnected tools and processes. The reviewed
-literature supports the need for an integrated, centralized, and accessible management system for
-resource-constrained apartment operations.
+communication systems, and Progressive Web Applications (PWA). The chapter looks at these fields as
+parts of one operation, the running of an apartment. Its argument is that small residential
+operations lose efficiency mainly because their administration is fragmented: the records, the
+tracking of money, the communication and the coordination each sit in a different tool or process.
+The literature reviewed here supports building one integrated and accessible management system for
+apartment operations with limited resources.
 
 ## 2.1 Review of Related Literature
 
 ### 2.1.1 Fragmentation and Operational Inefficiencies in Property Management
 
-The reviewed studies identify fragmented administrative workflows as one of the primary operational
-issues in residential property management (Burke, 2026; Magno et al., 2024). As tenants,
-transactions, and maintenance activities increase, manual documentation, spreadsheet-based tracking,
-and informal communication become difficult to manage consistently and accurately.
+Fragmented administrative work comes up in the reviewed studies as one of the main operational
+problems in residential property management (Burke, 2026; Magno et al., 2024). The more tenants,
+transactions and repairs a property has, the harder it is to keep handwritten records, spreadsheets
+and informal messages consistent and accurate.
 
-Burke (2026), examining apartment complexes of 50 to 500 units, finds operational, tenant,
-regulatory, labor, and technology challenges that differ from those of commercial properties. Among
-them, residential tenants often ask for minor repairs, and the software in use often does not
-connect with other financial and operational tools, which leaves information in separate silos.
-Thevaraju et al. (2019) describe the same condition at an apartment of eight blocks and more than
-1,000 units whose maintenance transactions were recorded by hand. They built a web system, developed
-with the Agile methodology, through which management handles apartment and tenant data, maintenance
-requests, notices, and complaints. Across the sector, Ullah et al. (2018), reviewing 213 studies of
-smart real estate technology, find that real estate still needs to improve its adoption of digital
-technologies and online platforms to move from traditional to smart practice.
+Burke (2026) studied apartment complexes of 50 to 500 units and found operational, tenant,
+regulatory, labor and technology challenges unlike those of commercial properties. Residential
+tenants, for instance, often ask for minor repairs, and the software in use often does not connect
+with the other financial and operational tools, so information stays in separate silos. Thevaraju et
+al. (2019) describe the same condition at an apartment of eight blocks and more than 1,000 units
+whose maintenance transactions were recorded by hand. They built a web system, developed with the
+Agile methodology, through which management handles apartment and tenant data, maintenance requests,
+notices, and complaints. Across the sector, Ullah et al. (2018), reviewing 213 studies of smart real
+estate technology, find that real estate still needs to improve its adoption of digital technologies
+and online platforms to move from traditional to smart practice.
 
 Local studies show the same condition. Magno et al. (2024) observed that apartment rental management
 suffers from tracking pending and paid bills across units, missed payment deadlines, and informal,
 paper-based records, and that their system improved data management and reduced the errors of manual
-processes. Pavia et al. (2022) built a property management system for the mock hotel in which
+processes. Pavia et al. (2022) built a property management system for the mock hotel where
 hospitality students take their practical examinations, and its users rated its design,
-functionality, and user-friendliness positively. That is an institutional setting with predefined
-workflows and technical support, which differs significantly from resource-constrained apartment
-operations.
+functionality and ease of use positively. A school setting like that has fixed workflows and
+technical support on hand, which is very different from an apartment operation running on limited
+resources.
 
-Together, these studies show that the main challenge in apartment management is not the absence of
-digital tools but the absence of a structure that consolidates administrative functions into one
-environment.
+What these studies have in common is that the problem is rarely a lack of digital tools. What is
+missing is a structure that pulls the administrative work into one place.
 
 ### 2.1.2 Management Information Systems as the Foundation of Centralization
 
-The study's theoretical foundation is MIS. According to Laudon et al. (2026), an MIS is an organized
-system that collects, processes, stores, and distributes information to support operational control,
-coordination, and administrative decision-making. Within apartment management, this framework
-explains why manual and semi-digital operations become inefficient: information is distributed across
-isolated records, disconnected tools, and inconsistent communication channels. Figure 1, adapted from
-Laudon et al. (2026), illustrates the flow from operational inputs through processing to outputs that
-support decision-making.
+MIS is the theory this study rests on. Laudon et al. (2026) define an MIS as an organized system
+that collects, processes, stores and distributes information so that an organization can control its
+operations, coordinate its work and make administrative decisions. Applied to apartment management,
+the framework explains why manual and half-digital operations fall behind: the information is
+scattered across separate records, tools that do not connect and communication channels used
+inconsistently. Figure 1, adapted from Laudon et al. (2026), shows how operational inputs are
+processed into outputs that support decisions.
 
 *Figure 1. Management Information System (MIS) framework, adapted from Laudon et al. (2026).*
 
 ![Management Information System framework](figures/figure-2-1-mis-framework.png)
 
-Ghasemaghaei et al. (2018) find that a firm's data analytics competency, which includes the quality
-of its data, improves its decision-making performance. Pressman and Maxim (2020) explain that
-integrated software systems improve consistency, maintainability, and operational reliability by
-reducing redundancy and streamlining data flow across system components.
+According to Ghasemaghaei et al. (2018), a firm's competence in data analytics, which includes the
+quality of its data, improves how well it makes decisions. Pressman and Maxim (2020) add that
+integrated software systems are more consistent, easier to maintain and more reliable, because they
+cut redundancy and let data move smoothly between the parts of a system.
 
-Within apartment management, these principles support a centralized design that keeps tenant
-information, maintenance records, communication, and financial transactions in one system. Property
-management studies point the same way, locating operational inefficiency where information systems
-lack interoperability and centralized accessibility (Burke, 2026; Magno et al., 2024).
+For apartment management, these ideas favor a centralized design, with tenant information,
+maintenance records, communication and payments kept in one system. Studies of property management
+lead to the same place: operations become inefficient where information systems cannot work together
+and records cannot be reached from one point (Burke, 2026; Magno et al., 2024).
 
 ### 2.1.3 Financial Analytics and Administrative Decision Support
 
-Financial management is central to apartment administration, since payment monitoring, expense
-tracking, and cash flow visibility shape managerial decisions. The reviewed studies emphasize that
-financial inefficiencies emerge when payment records are kept through fragmented or manual processes
-(Encarnacion et al., 2025; Magno et al., 2024).
+Money sits at the center of apartment administration, because what a manager decides depends on
+knowing who has paid, what was spent and how cash is moving. The reviewed studies find that
+financial problems begin when payment records are kept by hand or scattered across separate
+processes (Encarnacion et al., 2025; Magno et al., 2024).
 
 Encarnacion et al. (2025) built a web-based payment tracking system for boarding houses near a
 university in Butuan City, where rent had been tracked through notes and verbal reminders, with
@@ -96,12 +95,12 @@ coordination. The reviewed studies identify informal communication as a contribu
 responses, inconsistent issue tracking, and reduced tenant satisfaction (Jing & Lim, 2021; Saputra et
 al., 2025).
 
-Jing and Lim (2021) found, among residents of high-rise apartments in China, that management service
-quality affects residential satisfaction and the willingness to recommend, and that the quality of
-the management process matters most. Interviewing 150 dormitory residents, Altinay et al. (2024)
-found that dormitory management needed improvement in information management, communication, and
-service quality, and proposed digital communication platforms, regular maintenance schedules, and
-more transparent financial management.
+Among residents of high-rise apartments in China, Jing and Lim (2021) found that the quality of
+management service affects how satisfied residents are and whether they would recommend the place,
+with the quality of the management process mattering most. Altinay et al. (2024) interviewed 150
+dormitory residents and found that dormitory management had to improve its handling of information,
+its communication and its service. They proposed digital communication platforms, regular
+maintenance schedules and more transparent financial management.
 
 Saputra et al. (2025) built a web-based room management system for a boarding house that handles
 room data, tenant registration, payment invoices, and complaints. In acceptance testing with its
@@ -124,9 +123,9 @@ the Technology Acceptance Model through surveys of tenants, administrators, and 
 rated it very highly on every criterion. Its scope is maintenance concerns, emergency alerts, and
 complaints.
 
-The literature therefore treats structured communication and maintenance ticketing as integral parts
-of an apartment management system rather than supplementary features: a concern recorded in one
-system can be traced, coordinated, and followed to completion.
+For these reasons, the studies treat structured communication and maintenance ticketing as core
+parts of an apartment management system, not as extras. Once a concern is recorded in one system, it
+can be traced, coordinated and followed until it is resolved.
 
 ### 2.1.5 Progressive Web Applications as an Accessibility and Integration Framework
 
@@ -186,99 +185,100 @@ fills.
 
 ## 2.2 Gap Bridged by the Study
 
-The synthesis shows a research gap: the absence of an integrated apartment management system
-designed for small-scale, resource-constrained residential operations. Existing systems are commonly developed either as enterprise-oriented platforms or around one part
-of the work. Some center on how a prospective tenant finds and books a room (Mangca, 2023b; Pernate
-et al., 2025; Setty, 2022). Others digitize the owner's records, such as rental records and payments
-(Magno et al., 2024), or room data, tenant registration, invoices and complaints (Saputra et al.,
-2025). Puspasari et al.
-(2025), for example, developed a web-based boarding house information system that monitors room
-status and sends billing notifications through WhatsApp, but its only user is the boarding house
-manager, so tenants cannot see their own bills or report a concern through it.
+The synthesis leaves one gap open: no integrated apartment management system has been designed for
+small residential operations with limited resources. Existing systems are commonly developed either
+as enterprise-oriented platforms or around one part of the work. Some center on how a prospective
+tenant finds and books a room (Mangca, 2023b; Pernate et al., 2025; Setty, 2022). Others digitize
+the owner's records, such as rental records and payments (Magno et al., 2024), or room data, tenant
+registration, invoices and complaints (Saputra et al., 2025). Puspasari et al. (2025), for example,
+developed a web-based boarding house information system that monitors room status and sends billing
+notifications through WhatsApp, but its only user is the boarding house manager, so tenants cannot
+see their own bills or report a concern through it.
 
-While these systems improve specific operational areas, small apartment and boarding house operations
-face conditions they were not built around: small portfolios that find it hardest to pay for better
-software and so keep systems that do not integrate (Burke, 2026), and owners who hesitate over a tool
-that does not fit how the business already works (Mia et al., 2024). As a result, many small
-operations continue to rely on manual documentation, spreadsheet-based records, informal
-communication channels, and disconnected payment records.
+These systems do improve particular areas of the work. Small apartments and boarding houses,
+however, face conditions the systems were not designed for. Small portfolios find it hardest to pay
+for better software, so they hold on to systems that do not integrate (Burke, 2026), and owners
+hesitate over any tool that does not fit how the business already works (Mia et al., 2024). Many
+small operations therefore keep relying on handwritten records, spreadsheets, informal messages and
+payment records that are not linked to anything else.
 
-This study addresses this gap through Hivelet, a PWA-based apartment management system built for a
-small boarding house. It brings tenant and room management, booking and reservation management,
-financial tracking, and maintenance ticketing into one system, organized on MIS principles and
-usable across devices.
+This study responds to that gap with Hivelet, an apartment management system delivered as a PWA and
+built for a small boarding house. Tenant and room management, booking and reservation management,
+financial tracking and maintenance ticketing sit in one system, organized on MIS principles and
+usable on whatever device is at hand.
 
 ## 2.3 Concept of the Study
 
-The concept of this study is that apartment management improves when its connected processes,
-namely tenant management, payment tracking, inquiries and reservations, and maintenance handling,
-move from separate manual handling into one centralized digital platform.
+The idea behind this study is that apartment management works better when its connected tasks,
+namely tenant management, payment tracking, inquiries and reservations, and repairs, stop being
+handled separately by hand and are brought into one central digital platform.
 
-Figure 2 illustrates the study's conceptual framework using the Input-Process-Output (IPO) model,
-which maps how inputs are transformed into outputs.
+Figure 2 presents the conceptual framework of the study as an Input-Process-Output (IPO) model,
+which traces how inputs become outputs.
 
 *Figure 2. Conceptual Framework.*
 
 ![Conceptual framework](figures/figure-2-2-conceptual-framework.png)
 
-In this study, the Input phase consists of the study objectives, review of related literature, client
-interviews, needfinding observations, analysis of the landlady's existing administrative and payment
-workflows and records, and the requirement for an optional online payment through GCash.
-From these inputs, the researchers identified the operational gaps, user requirements, and system
-constraints of the boarding house.
+The Input phase of this study is made up of the study objectives, the review of related literature,
+interviews with the client, needfinding observations, an analysis of the landlady's existing
+administrative and payment workflows and records, and the requirement for an optional online payment
+through GCash. From these, the researchers worked out the boarding house's operational gaps, what
+its users needed and the constraints the system had to respect.
 
-The Process phase applies the Agile Software Development Life Cycle, with iterative stages of
-requirements, design, development, testing, deployment, and review (Section 3.2). Within this phase,
-the six features named in Objective 2 are implemented: tenant and room management (tenants, units and
-rates), booking and reservation management (inquiries and reserved units), financial tracking (income
-and expense ledgers and reports) with an optional online payment integration using the Adyen API
-with GCash, maintenance ticketing and notification, role-based access control for the landlady,
-tenants and visitors, and Progressive Web Application support.
+The Process phase follows the Agile Software Development Life Cycle, which repeats the stages of
+requirements, design, development, testing, deployment and review in iterations (Section 3.2). It is
+in this phase that the six features named in Objective 2 are built: tenant and room management
+(tenants, units and rates); booking and reservation management (inquiries and reserved units);
+financial tracking (income and expense ledgers and reports), with an optional online payment through
+the Adyen API with GCash; maintenance ticketing and notification; role-based access control for the
+landlady, tenants and visitors; and Progressive Web Application support.
 
-The Output phase includes the developed Hivelet system, its functional modules, and generated
-outputs such as financial reports exportable as Excel files, inquiry and tenancy records, and payment
-records. It also includes the completed research manuscript, system evaluation results based on
-ISO/IEC 25010:2011, and the user manual. Feedback from the outputs, chiefly the users' evaluation and
-the system's operational performance, returns to the input, so that each iteration starts from what
-the last one found.
+The Output phase contains the finished Hivelet system and its modules, together with what the system
+produces, such as financial reports that export to Excel, inquiry and tenancy records, and payment
+records. It also contains the completed research manuscript, the results of the evaluation against
+ISO/IEC 25010:2011, and the user manual. What the outputs show, mainly the users' evaluation and how
+the system performs in operation, is fed back into the input, so each iteration begins from what the
+previous one found.
 
 ## 2.4 Definition of Terms
 
-**Hivelet**: The web-based apartment management system, delivered as a PWA, that this study
-developed for the Fe Galang Da Silva Boarding House to keep tenant and room management, inquiries and
-reservations, financial tracking, and repair requests in one system.
+**Hivelet**: The web-based apartment management system this study built for the Fe Galang Da Silva
+Boarding House, delivered as a PWA. It keeps tenant and room management, inquiries and reservations,
+financial tracking and repair requests together in one system.
 
-**Progressive Web Application (PWA)**: The form in which Hivelet is delivered: a website that the
-landlady or a tenant can add to a phone's home screen from the browser, without an app store, and that
-shows the figures last loaded when there is no connection.
+**Progressive Web Application (PWA)**: How Hivelet is delivered. It is a website that the landlady
+or a tenant can add to a phone's home screen straight from the browser, with no app store, and that
+still shows the last figures loaded when the connection drops.
 
-**Resource-Constrained Environment**: In this study, a small residential operation such as the Fe
-Galang Da Silva Boarding House, with limited money, staff, and technical infrastructure, whose
-management relies on a mix of manual and basic digital tools rather than an integrated system.
+**Resource-Constrained Environment**: In this study, a small residential operation like the Fe
+Galang Da Silva Boarding House, which has little money, few staff and limited technical
+infrastructure, and is managed with a mix of manual work and basic digital tools instead of an
+integrated system.
 
-**Fragmented Workflow**: The handling of tenant records, finances, and repair requests in
-disconnected tools (spreadsheets, paper records, and messaging applications), which leaves data
-inconsistent and coordination delayed.
+**Fragmented Workflow**: Handling tenant records, money and repair requests in tools that do not
+connect, such as spreadsheets, paper records and messaging applications, so that the data falls out
+of step and coordination is slow.
 
-**Centralized System**: In this study, one database and one website holding every record the landlady
-had kept in separate files and channels: tenants, units and rates, payments, expenses, repair
-requests and inquiries.
+**Centralized System**: In this study, a single database and a single website that hold every record
+the landlady used to keep in separate files and channels: tenants, units and rates, payments,
+expenses, repair requests and inquiries.
 
-**Small-Scale Apartment Management**: The administration of a resource-constrained environment as
-defined above: in this study, the 33 units of the Fe Galang Da Silva Boarding House, run by the
-landlady as the system's only administrator.
+**Small-Scale Apartment Management**: Running a resource-constrained environment as defined above.
+In this study, that means the 33 units of the Fe Galang Da Silva Boarding House, with the landlady
+as the system's only administrator.
 
-**Management Information System (MIS)**: The view of Hivelet taken in Chapter 2: a system that turns
-the landlady's raw records, such as receipts, expenses and repair requests, into the summaries she reads
-on the Overview and in the downloaded workbooks.
+**Management Information System (MIS)**: How Chapter 2 views Hivelet: a system that takes the
+landlady's raw records, such as receipts, expenses and repair requests, and turns them into the
+summaries she reads on the Overview and in the workbooks she downloads.
 
-**Inquiry**: A message a prospective tenant sends about a unit through the public website, without
-an account. The landlady answers it in the system, may mark the unit Reserved so that it takes no other
-inquiry, and if the person rents, moves them in from it. This is the form booking and reservation
-management takes in this study: nothing is booked or paid for online.
+**Inquiry**: A message about a unit that a prospective tenant sends through the public website
+without an account. The landlady replies in the system, can mark the unit Reserved so that no other
+inquiry is taken for it, and moves the person in from the inquiry if they decide to rent. In this
+study, this is what booking and reservation management means; nothing is booked or paid for online.
 
-**Financial Tracking**: The Hivelet module in which the landlady records tenant payments and operating
-expenses, the figures that Cash Flow Monitoring summarizes.
+**Financial Tracking**: The part of Hivelet where the landlady records what tenants pay and what the
+property spends, which Cash Flow Monitoring then summarizes.
 
 **Cash Flow Monitoring**: In this study, the landlady's view of money in and out: income, operating
 expenses and net income by month on the Overview, and the monthly income and expense workbooks she
@@ -287,8 +287,8 @@ downloads.
 **Maintenance Ticketing**: The Hivelet module through which a tenant sends a repair request, which
 the landlady assigns, tracks, and updates until it is resolved.
 
-**User Authentication**: Signing in with a login ID or phone number and a password. The landlady creates
-each tenant's account with an individual starting password, which the tenant replaces at the first
+**User Authentication**: Signing in with a login ID or a phone number and a password. The landlady
+sets up each tenant's account with its own starting password, and the tenant changes it on first
 sign-in.
 
 **Role-Based Access Control (RBAC)**: The rule that each of Hivelet's three kinds of user, the

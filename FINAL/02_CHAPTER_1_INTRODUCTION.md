@@ -2,52 +2,55 @@
 
 ## 1.1 Background of the Study
 
-Administrative processes in apartment management typically involve tenant record keeping, financial
-tracking, and maintenance coordination. Residential tenants often ask for minor repairs, and the software apartment
-managers use often does not connect with their other financial and operational tools, which leaves
-information in separate silos and makes consolidated reporting difficult (Burke, 2026). Property
-management and rental platforms aim to address these inefficiencies through centralized data storage
-and real-time processing (Kotkar et al., 2026), yet a review of 213 studies found that real estate as
-a whole still needs to improve its adoption of digital technologies and online platforms to move from
-traditional to smart practice (Ullah et al., 2018). These studies, however, describe properties far
-larger than a boarding house: the apartment complexes Burke (2026) examined have 50 to 500 units. A
-small, resource-constrained boarding house does not share the conditions of properties of that size.
+Running an apartment involves three kinds of administrative work: keeping tenant records, tracking
+money and arranging repairs. Residential tenants often ask for small repairs, and the software
+apartment managers use for this often cannot exchange data with their other financial and
+operational tools, so information ends up in separate silos and a combined report is hard to produce
+(Burke, 2026). Property management and rental platforms aim to address these inefficiencies through
+centralized data storage and real-time processing (Kotkar et al., 2026), yet a review of 213 studies
+found that real estate as a whole still needs to improve its adoption of digital technologies and
+online platforms to move from traditional to smart practice (Ullah et al., 2018). These studies,
+however, describe properties far larger than a boarding house: the apartment complexes Burke (2026)
+examined have 50 to 500 units. A small, resource-constrained boarding house does not share the
+conditions of properties of that size.
 
 In the Philippines, a study of nine micro, small, and medium-sized enterprises during the COVID-19
 pandemic found that what held back their adoption of digital tools was less a lack of money,
 infrastructure, or skills than the owners' hesitation and readiness, including doubt that a tool
-fits how the business already works (Mia et al., 2024). A small boarding house is such an enterprise.
-Magno et al. (2024) developed an apartment rental management system to address disorganized data
-management, difficulty in tracking pending and paid bills, missed payment deadlines, and reliance on
-paper-based records. They report that the system improved data management and reduced the errors of
-manual processes, but the system focuses on financial transactions and task management, without
-integrating communication, booking, and tenant interaction into a unified system. Boarding house
-studies elsewhere in the country show the same pattern. In Ormoc City, Pernate et al. (2025) built a
-mobile application for finding and booking boarding house rooms, and in Surigao City, Mangca (2023b)
-built a web-based booking system with SMS notifications. Both center on how a prospective tenant
-finds and books a room rather than on the administration that follows.
+fits how the business already works (Mia et al., 2024). A small boarding house is such an
+enterprise. Magno et al. (2024) developed an apartment rental management system to address
+disorganized data management, difficulty in tracking pending and paid bills, missed payment
+deadlines, and reliance on paper-based records. They report that the system improved data management
+and reduced the errors of manual processes, but the system focuses on financial transactions and
+task management, without integrating communication, booking, and tenant interaction into a unified
+system. Boarding house studies elsewhere in the country show the same pattern. In Ormoc City,
+Pernate et al. (2025) built a mobile application for finding and booking boarding house rooms, and
+in Surigao City, Mangca (2023b) built a web-based booking system with SMS notifications. Both are
+about how a prospective tenant finds and books a room. Neither covers the administration that comes
+after.
 
-In the Bicol Region, Pavia et al. (2022) developed a property management system for the mock hotel
-in which Hospitality Management students at Bicol College take their practical examinations,
-replacing third-party software, and its users rated its design, functionality, and user-friendliness
-positively. That setting is a controlled academic environment with predefined workflows and
-institutional support, unlike a small boarding house, where administration is informal,
-decentralized, and constrained by limited resources.
+Closer to home, in the Bicol Region, Pavia et al. (2022) built a property management system for the
+mock hotel where Hospitality Management students at Bicol College take their practical examinations.
+It replaced third-party software, and its users rated its design, functionality and ease of use
+positively. A school's practice hotel, though, runs on set workflows with the institution behind it.
+A small boarding house has none of that: its administration is informal and decentralized, and it
+works within tight resources.
 
-Locally, the Fe Galang Da Silva Boarding House, a 33-unit property in Legazpi City near Bicol
-University, shows these conditions directly. Its records were kept in standalone spreadsheet files
-on a USB flash drive, exposing them to accidental deletion, file corruption, duplication, and lack of
-version control. Rent is collected in cash, and tenants report repair requests and other concerns
-through messaging applications or verbally, so requests go untracked, responses are delayed, and
-follow-up is inconsistent. Because records, communication, and transactions sit in separate tools,
-the landlady, who runs the boarding house for its owner, has difficulty keeping accurate records,
-monitoring financial transactions, and resolving tenant concerns on time.
+The Fe Galang Da Silva Boarding House, a 33-unit property in Legazpi City near Bicol University, is
+a case of exactly these conditions. Its records lived in separate spreadsheet files on one USB flash
+drive, where they could be deleted by accident, corrupted or duplicated, with nothing to show which
+version was current. Rent is collected in cash, and tenants report repair requests and other
+concerns through messaging applications or verbally, so requests go untracked, responses are
+delayed, and follow-up is inconsistent. The records, the messages and the money are all kept in
+different places. For the landlady, who runs the boarding house for its owner, this makes it hard to
+keep the records accurate, to follow the money coming in and going out, and to deal with tenants'
+concerns on time.
 
-However, the digital systems these studies describe were built either for one function or for a
-controlled environment. They improve specific parts of property management, but they do not address
-the fragmented administration of a real, resource-constrained boarding house. This is the gap this study addresses: the absence of an integrated platform that brings tenant
-management, booking and reservation management, financial tracking, and communication into one
-system suited to a small boarding house.
+However, each system described above was built either for a single function or for a controlled
+setting such as a school. Each improves one part of property management, and none takes on the
+scattered administration of a real boarding house with little to spend. That is the gap this study
+addresses: there is no integrated platform that puts tenant management, booking and reservation
+management, financial tracking and communication into one system sized for a small boarding house.
 
 ## 1.2 Objectives of the Study
 
@@ -73,18 +76,18 @@ to November 2026, the study aims:
 
 ## 1.3 Significance of the Study
 
-Hivelet, a web-based apartment management system delivered as a PWA, addresses the fragmented,
-manual administration of a small, resource-constrained boarding house. The study is significant to
-the following groups.
+Hivelet is a web-based apartment management system, delivered as a PWA, for a small boarding house
+whose administration is done by hand and split across separate tools, with few resources to change
+that. The study matters to three groups.
 
-For the landlady, the study provides one system in place of spreadsheets kept on a USB flash drive,
-which are prone to inconsistency, loss, and duplication. Keeping tenant records, financial
-transactions, and repair requests in one system makes the records more reliable and the
-administration easier to coordinate, even where rent is paid in cash.
+For the landlady, the study replaces the spreadsheets on a USB flash drive, which easily fall out of
+step, get lost or get copied twice, with a single system. With tenant records, payments and repair
+requests in one place, the records are easier to trust and the work is easier to coordinate, even
+though rent is still paid in cash.
 
-For tenants, the system gives one place to submit and follow their repair requests and to view their
-own bills and receipts, in place of messaging applications and verbal reports, which leave requests
-untracked and responses delayed.
+For tenants, the system is one place to send a repair request and see what has happened to it, and
+to look up their own bills and receipts. Before, requests went through messaging applications or
+were said in person, so they were not tracked and were answered late.
 
 For future researchers, the study offers a PWA-based property management system built for a small
 residential property. Its architecture and its evaluation against the ISO/IEC 25010 model may serve
@@ -112,11 +115,12 @@ The study has three delimitations. First, the PWA caches resources for limited o
 adapts to different devices, but entering data, keeping it synchronized in real time, and sending or
 answering inquiries require an internet connection, so that every device works from the same
 records. Second, the online payment feature lets a tenant pay a bill through GCash using the Adyen
-payment gateway. Each such payment is recorded as pending and counts only after the landlady verifies
-it. The feature was built and works end to end, from the tenant's checkout to the gateway's signed
-notification and the landlady's verification, but only in Adyen's test environment, so it is not live
-and takes no real money. Going live needs the owner's merchant onboarding documents, which were
-outside this study. Rent therefore continues to be paid in person and recorded by the landlady. The
-feature also excludes refunds (made from the gateway's own dashboard), automated reconciliation against bank records, and direct banking integration.
+payment gateway. A payment made this way is saved as pending, and it counts only once the landlady
+has verified it. The whole path was built and works end to end, from the tenant's checkout, through
+the signed notification the gateway sends back, to the landlady's verification. It runs only in
+Adyen's test environment, however, so it is not live and takes no real money. Going live needs the
+owner's merchant onboarding documents, which this study did not cover. Rent is therefore still paid
+in person and recorded by the landlady. The feature also excludes refunds (made from the gateway's
+own dashboard), automated reconciliation against bank records, and direct banking integration.
 Third, electricity is outside the system, because each unit has its own meter and its tenant pays
 the electric company directly.
