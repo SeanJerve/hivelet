@@ -880,7 +880,83 @@ function literatureMap() {
   return { W, H: y + 16, body: s };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Deployment plan (Section 4.5). Every box restates Section 4.5 and its two tables, or Section 3.2's
+// account of how changes were made (Git on GitHub, a check before every commit, numbered migrations
+// run after a backup). Change the stages here only when Table 4-22 changes.
+// ---------------------------------------------------------------------------------------------
+function deployment() {
+  const W = 920;
+  let s = '';
+  const head = (y, text) => T(16, y, text, { size: 16, weight: 'bold', anchor: 'start' });
+
+  // A. The five stages, left to right, with their status.
+  s += head(24, 'A. Rollout stages');
+  const stages = [
+    ['1', 'Environment preparation', 'Hosting, database and payment gateway set up; security settings applied', 'Done'],
+    ['2', 'Record transfer', "The landlady's workbook transferred: 937 income rows and 1,327 expense allocations", 'Done'],
+    ['3', 'Pilot use', "The system used alongside the landlady's existing records; differences investigated", 'In progress'],
+    ['4', 'Training and hand-over', 'Landlady and tenants shown the system; user manual (Appendix K) handed over; accounts issued', 'Done'],
+    ['5', 'Full transition', "The system becomes the landlady's main record once both records agree", 'Not yet'],
+  ];
+  const bw = 160, gap = 24, top = 44, bh = 210;
+  stages.forEach(([n, name, act, status], i) => {
+    const x = 16 + i * (bw + gap), cx = x + bw / 2;
+    s += rect(x, top, bw, bh, { rx: 10, sw: status === 'Done' ? 1.8 : 1.6, dash: status === 'Not yet' ? '7 5' : undefined });
+    s += T(cx, 0, `Stage ${n}`, { top: top + 10, size: 13, fill: MUTED });
+    s += T(cx, 0, name, { top: top + 28, size: 14.5, weight: 'bold', w: bw - 14 });
+    s += line([[x + 10, top + 72], [x + bw - 10, top + 72]], { head: 'none', sw: 0.8 });
+    s += T(cx, 0, act, { top: top + 80, size: 13, w: bw - 16 });
+    s += line([[x, top + bh - 36], [x + bw, top + bh - 36]], { head: 'none', sw: 1.2 });
+    s += T(cx, top + bh - 18, status, { size: 14, weight: 'bold' });
+    if (i < 4) s += line([[x + bw + 3, top + bh / 2 - 20], [x + bw + gap - 3, top + bh / 2 - 20]], { sw: 1.8 });
+  });
+  s += T(W / 2, top + bh + 22, 'Pilot use continues until the system and the landlady\'s own records agree; only then does stage 5 begin. A dashed box is a stage not yet started.', { size: 13, fill: MUTED, w: W - 40 });
+
+  // B. How a change reaches the live system.
+  const yB = top + bh + 74;
+  s += head(yB, 'B. How a change reaches the live system');
+  const r1 = yB + 70, r2 = r1 + 150; // centre lines of the two rows
+  s += box(110, r1, 188, 112, "Researchers' computer: a change made and checked; a check for credentials runs before every commit", { size: 14 });
+  s += box(330, r1, 160, 72, 'GitHub: the main code branch');
+  s += rect(455, r1 - 64, 210, 128, { rx: 10, sw: 1.4, dash: '7 5' });
+  s += T(560, r1 - 44, 'Vercel (hosting)', { size: 15, weight: 'bold' });
+  s += box(560, r1 + 12, 190, 74, 'Deployed automatically: the built app and the Express API', { size: 14 });
+  s += box(812, r1, 184, 92, 'Landlady, tenants and visitors in a browser, at hivelet.vercel.app');
+  s += line([[204, r1], [250, r1]]);
+  s += line([[410, r1], [455, r1]]);
+  s += T(432, r1 - 14, 'push', { size: 12.5, fill: MUTED });
+  s += line([[665, r1], [720, r1]], { head: 'both' });
+  s += T(692, r1 - 14, 'HTTPS', { size: 12.5, fill: MUTED });
+
+  // The database path: backup, then a numbered migration, then the live database.
+  s += box(110, r2, 188, 64, 'Backup taken before any change to the data');
+  s += box(330, r2, 180, 84, 'Numbered migration, reviewed before it runs, result read back');
+  s += box(560, r2, 190, 64, 'Supabase: PostgreSQL database (live records)');
+  s += box(812, r2, 184, 84, 'Adyen with GCash: test environment, optional, takes no real money');
+  s += line([[110, r1 + 46], [110, r2 - 32]]);
+  s += T(116, (r1 + 46 + r2 - 32) / 2, 'data changes', { size: 12.5, fill: MUTED, anchor: 'start' });
+  s += line([[204, r2], [240, r2]]);
+  s += line([[420, r2], [465, r2]]);
+  s += line([[560, r1 + 49], [560, r2 - 32]], { head: 'both' });
+  s += T(566, (r1 + 49 + r2 - 32) / 2, 'queries', { size: 12.5, fill: MUTED, anchor: 'start' });
+  s += line([[655, r1 + 36], [695, r1 + 36], [695, r2], [720, r2]], { head: 'both' });
+  s += T(703, r1 + 76, 'payment session and signed notice', { size: 12.5, fill: MUTED, anchor: 'start', w: 190 });
+
+  // C. Turnover.
+  const yC = r2 + 80;
+  s += head(yC, 'C. Turnover');
+  const t = yC + 22, th = 84;
+  s += box(170, t + th / 2, 308, th, 'Until turnover: the hosting, database and payment gateway accounts are held by the research team');
+  s += box(555, t + th / 2, 320, th, 'At turnover: the accounts pass to the landlady, with the team member who is her son and knows the system');
+  s += box(822, t + th / 2, 164, th, 'Support for an agreed period, under the memorandum of agreement', { size: 13.5 });
+  s += line([[324, t + th / 2], [395, t + th / 2]], { sw: 1.8 });
+  s += line([[715, t + th / 2], [740, t + th / 2]], { sw: 1.8 });
+  return { W, H: t + th + 16, body: s };
+}
+
 const DIAGRAMS = {
+  deployment: { file: 'figure-15-deployment-plan.png', make: deployment },
   'as-is': { file: 'figure-4-current-process.png', make: asIs },
   architecture: { file: 'figure-5-system-architecture.png', make: architecture },
   context: { file: 'figure-6-context-diagram.png', make: context },
