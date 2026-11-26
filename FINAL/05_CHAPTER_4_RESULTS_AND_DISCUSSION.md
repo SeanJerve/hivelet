@@ -887,8 +887,7 @@ provide the system, its user manual and training and maintain and support it for
 after turnover, and the boarding house's records remain its own. Until turnover the hosting, database
 and payment gateway accounts are held by the research team. At turnover they pass to the landlady,
 together with the member of the team who is her son and knows the system. Table 4-21 lists what is needed to use the system, and Table 4-22 the deployment
-plan. The plan is drawn in Figure 4-8: its five stages, the path a change takes to the live
-system, and the turnover.
+plan.
 
 **Table 4-21.** Software and hardware requirements for deployment
 
@@ -908,10 +907,6 @@ system, and the turnover.
 | 3. Pilot use | The system used alongside the landlady's existing records; differences investigated | In progress |
 | 4. Training and hand-over | The landlady and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | Done: every tenant account issued with its own starting password; the landlady guided through the system, and the landlady and tenants using it on their own accounts (Section 4.3.7) |
 | 5. Full transition | The system becomes the landlady's main record once both records agree | Not yet: the system runs beside the landlady's own records |
-
-*Figure 4-8. Deployment plan: rollout stages, the path of a change to the live system, and turnover.*
-
-![Deployment plan](<../docs/FINAL MANUSCRIPT/figures/figure-15-deployment-plan.png>)
 
 The plan manages three risks:
 
