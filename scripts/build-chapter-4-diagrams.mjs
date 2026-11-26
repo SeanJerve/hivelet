@@ -881,9 +881,11 @@ function literatureMap() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Deployment plan (Section 4.5). Every box restates Section 4.5 and its two tables, or Section 3.2's
-// account of how changes were made (Git on GitHub, a check before every commit, numbered migrations
-// run after a backup). Change the stages here only when Table 4-22 changes.
+// Appendix S. Deployment plan (Section 4.5). Every box restates Section 4.5 and its two tables, or
+// Section 3.2's account of how changes were made (Git on GitHub, a check before every commit, numbered
+// migrations run after a backup); Table S-1 lists where. Checked 26 Nov 2026 against the submitted Word
+// file's Section 4.5, vercel.json, .githooks/pre-commit and Vercel's production deployments of main.
+// Change the stages here only when Table 4-22 changes.
 // ---------------------------------------------------------------------------------------------
 function deployment() {
   const W = 920;
@@ -891,15 +893,15 @@ function deployment() {
   const head = (y, text) => T(16, y, text, { size: 16, weight: 'bold', anchor: 'start' });
 
   // A. The five stages, left to right, with their status.
-  s += head(24, 'A. Rollout stages');
+  s += head(24, 'A. Rollout stages, with the status each had at submission');
   const stages = [
-    ['1', 'Environment preparation', 'Hosting, database and payment gateway set up; security settings applied', 'Done'],
+    ['1', 'Environment preparation', 'Hosting, database and gateway set up; security settings applied', 'Done'],
     ['2', 'Record transfer', "The landlady's workbook transferred: 937 income rows and 1,327 expense allocations", 'Done'],
     ['3', 'Pilot use', "The system used alongside the landlady's existing records; differences investigated", 'In progress'],
-    ['4', 'Training and hand-over', 'Landlady and tenants shown the system; user manual (Appendix K) handed over; accounts issued', 'Done'],
+    ['4', 'Training and hand-over', 'The landlady and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued', 'Done'],
     ['5', 'Full transition', "The system becomes the landlady's main record once both records agree", 'Not yet'],
   ];
-  const bw = 160, gap = 24, top = 44, bh = 210;
+  const bw = 160, gap = 24, top = 44, bh = 226;
   stages.forEach(([n, name, act, status], i) => {
     const x = 16 + i * (bw + gap), cx = x + bw / 2;
     s += rect(x, top, bw, bh, { rx: 10, sw: status === 'Done' ? 1.8 : 1.6, dash: status === 'Not yet' ? '7 5' : undefined });
@@ -913,9 +915,9 @@ function deployment() {
   });
   s += T(W / 2, top + bh + 22, 'Pilot use continues until the system and the landlady\'s own records agree; only then does stage 5 begin. A dashed box is a stage not yet started.', { size: 13, fill: MUTED, w: W - 40 });
 
-  // B. How a change reaches the live system.
+  // B. How a change reaches the running system.
   const yB = top + bh + 74;
-  s += head(yB, 'B. How a change reaches the live system');
+  s += head(yB, 'B. How a change reaches the running system');
   const r1 = yB + 70, r2 = r1 + 150; // centre lines of the two rows
   s += box(110, r1, 188, 112, "Researchers' computer: a change made and checked; a check for credentials runs before every commit", { size: 14 });
   s += box(330, r1, 160, 72, 'GitHub: the main code branch');
@@ -956,7 +958,7 @@ function deployment() {
 }
 
 const DIAGRAMS = {
-  deployment: { file: 'figure-15-deployment-plan.png', make: deployment },
+  deployment: { file: 'appendix-s-deployment-plan.png', make: deployment },
   'as-is': { file: 'figure-4-current-process.png', make: asIs },
   architecture: { file: 'figure-5-system-architecture.png', make: architecture },
   context: { file: 'figure-6-context-diagram.png', make: context },
